@@ -16,6 +16,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
 
 import io.vertx.core.logging.Logger;
@@ -42,6 +43,7 @@ public class WebRootLinkReplacer {
 	/**
 	 * Replace the links in the content.
 	 * 
+	 * @param ac
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @param edgeType
@@ -56,7 +58,7 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(String releaseUuid, ContainerType edgeType, String content, LinkType type, String projectName, List<String> languageTags) {
+	public String replace(ActionContext ac, String releaseUuid, ContainerType edgeType, String content, LinkType type, String projectName, List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
 		}
@@ -99,12 +101,12 @@ public class WebRootLinkReplacer {
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 2) {
-				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
+				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
-				segments.add(
-						resolve(releaseUuid, edgeType, linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags.size()])));
+				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags
+						.size()])));
 			} else {
-				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName));
+				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName));
 			}
 
 			lastPos = endPos + END_TAG.length();
@@ -120,6 +122,7 @@ public class WebRootLinkReplacer {
 	/**
 	 * Resolve the link to the node with uuid (in the given language) into an observable
 	 * 
+	 * @param ac
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @param edgeType
@@ -134,7 +137,8 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return observable of the rendered link
 	 */
-	public String resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName, String... languageTags) {
+	public String resolve(ActionContext ac, String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
+			String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = boot.meshRoot().getNodeRoot().findByUuid(uuid);
@@ -155,12 +159,13 @@ public class WebRootLinkReplacer {
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
 		}
-		return resolve(releaseUuid, edgeType, node, type, languageTags);
+		return resolve(ac, releaseUuid, edgeType, node, type, languageTags);
 	}
 
 	/**
 	 * Resolve the link to the given node
 	 * 
+	 * @param ac
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @param edgeType
@@ -173,7 +178,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public String resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
+	public String resolve(ActionContext ac, String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
 			languageTags = new String[] { defaultLanguage };
@@ -198,7 +203,7 @@ public class WebRootLinkReplacer {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + languageTags + " with type " + type);
 		}
-		String path = node.getPath(releaseUuid, edgeType, languageTags);
+		String path = node.getPath(ac, releaseUuid, edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
 		}

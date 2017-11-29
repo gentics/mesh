@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
@@ -36,7 +37,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
 		try {
 
-			try (Tx tx = db.tx()) {
+			try (Tx tx = DB.get().tx()) {
 				Release release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");

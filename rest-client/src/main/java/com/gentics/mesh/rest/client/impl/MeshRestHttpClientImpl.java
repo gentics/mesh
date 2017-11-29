@@ -1081,8 +1081,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public void eventbus(Handler<WebSocket> wsConnect) {
-		getClient().websocket(getBaseUri() + "/eventbus/websocket", wsConnect);
+	public void eventbus(Handler<WebSocket> wsConnect, Handler<Throwable> failureHandler) {
+		getClient().websocket(getBaseUri() + "/eventbus/websocket", wsConnect, failureHandler);
 	}
 
 	@Override

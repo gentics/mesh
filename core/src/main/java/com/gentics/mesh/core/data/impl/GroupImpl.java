@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
@@ -176,7 +177,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Group update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
@@ -192,8 +193,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 			setName(requestModel.getName());
 			batch.store(this, true);
+			return true;
+		} else {
+			return false;
 		}
-		return this;
 	}
 
 	@Override
@@ -241,7 +244,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Single<GroupResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db.operateTx(() -> {
+		return DB.get().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

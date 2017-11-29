@@ -162,7 +162,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public SCV update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 

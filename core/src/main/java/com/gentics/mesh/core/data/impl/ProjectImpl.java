@@ -52,6 +52,7 @@ import com.gentics.mesh.core.data.search.impl.DummySearchQueueBatch;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -235,7 +236,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Project update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 		RouterStorage routerStorage = MeshInternal.get().routerStorage();
 
@@ -255,12 +256,15 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 			// Update the project and its nodes in the index
 			batch.store(this, true);
+			return true;
+		} else {
+			return false;
 		}
-		return this;
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			getSchemaContainerRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			getMicroschemaContainerRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -334,7 +338,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Single<ProjectResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db.operateTx(() -> {
+		return DB.get().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

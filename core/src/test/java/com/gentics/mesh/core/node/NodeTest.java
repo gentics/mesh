@@ -69,11 +69,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGetPath() throws Exception {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
-			String path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
+			InternalActionContext ac = mockActionContext();
+			String path = newsNode.getPath(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
 			assertEquals("/News/News%20Overview.en.html", path);
-
-			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					english().getLanguageTag());
+			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english()
+					.getLanguageTag());
 			assertEquals("News Overview.en.html", pathSegementFieldValue);
 		}
 	}
@@ -300,10 +300,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// Add Contents
 			affectedElements.put("content: news.2014.news_2014", new ElementEntry(DELETE_ACTION, content("news_2014").getUuid(), "en", "de"));
 			affectedElements.put("content: news.overview", new ElementEntry(DELETE_ACTION, content("news overview").getUuid(), "en", "de"));
-			affectedElements.put("content: news.2014.march.news_in_march",
-					new ElementEntry(DELETE_ACTION, content("new_in_march_2014").getUuid(), "en", "de"));
-			affectedElements.put("content: news.2014.special_news",
-					new ElementEntry(DELETE_ACTION, content("special news_2014").getUuid(), "en", "de"));
+			affectedElements.put("content: news.2014.march.news_in_march", new ElementEntry(DELETE_ACTION, content("new_in_march_2014").getUuid(),
+					"en", "de"));
+			affectedElements.put("content: news.2014.special_news", new ElementEntry(DELETE_ACTION, content("special news_2014").getUuid(), "en",
+					"de"));
 			affectedElements.put("content: news.2015.news_2015", new ElementEntry(DELETE_ACTION, content("news_2015").getUuid(), "en", "de"));
 
 			uuid = node.getUuid();
@@ -406,8 +406,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 5. assert searchqueuebatch
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
-			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
+			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(), initialRelease
+					.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
 					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			assertThat(batch).containsEntries(affectedElements);
@@ -470,15 +470,15 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 10. assert for initial release
 			List<Node> nodes = new ArrayList<>();
-			project.getNodeRoot().findAll(mockActionContext("release=" + initialRelease.getName()),
-					new PagingParametersImpl(1, 10000, "name", SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
+			project.getNodeRoot().findAll(mockActionContext("release=" + initialRelease.getName()), new PagingParametersImpl(1, 10000, "name",
+					SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
 			assertThat(nodes).as("Nodes in initial release").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialRelease);
 
 			// 11. assert searchqueuebatch
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
-			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
+			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(), initialRelease
+					.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
 					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			assertThat(batch).containsEntries(affectedElements);
@@ -496,8 +496,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String folderUuid = db().tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				SearchQueueBatch batch = createBatch();
-				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
-						Collections.emptySet());
+				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+						GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
@@ -506,12 +506,12 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. assert published and draft node
 			db().tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"),
-						new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"),
-						new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 				return null;
 			});
@@ -527,13 +527,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 4. assert published and draft gone
 			db().tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"),
-						new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"),
-						new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 				return null;
 			});
@@ -563,8 +563,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String folderUuid = tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				SearchQueueBatch batch = createBatch();
-				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
-						Collections.emptySet());
+				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+						GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
@@ -588,26 +588,26 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 4. assert published and draft gone from initial release
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft&release=" + initialRelease.getUuid()),
-						new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=draft&release=" + initialRelease.getUuid()), new PagingParametersImpl(1,
+						10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published&release=" + initialRelease.getUuid()),
-						new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=published&release=" + initialRelease.getUuid()), new PagingParametersImpl(1,
+						10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 
 			// 5. assert published and draft still there for new release
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"),
-						new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(
+						node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"),
-						new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(
+						node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});
 

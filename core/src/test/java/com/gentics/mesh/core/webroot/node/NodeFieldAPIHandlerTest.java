@@ -5,12 +5,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
+import com.gentics.mesh.context.InternalActionContext;
+import io.vertx.core.file.FileSystemException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,48 +53,50 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 	@Test
 	public void testFileUploadHandler() throws IOException {
 
-		FileUpload fileUpload = mockUpload();
+		InternalActionContext ac = mockContext();
 		File uploadFolder = getUploadFolder();
-		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
+		String fileUpload = mockUpload();
 
-		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
-		assertNotNull(hashOutput);
-		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
-		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
+		ac.put("sourceFile", fileUpload);
+		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
+		handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
+		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertThat(uploadFolder).as("The upload folder should have been created").exists();
 		FileUtils.deleteDirectory(uploadFolder);
 
 		fileUpload = mockUpload();
+		ac.put("sourceFile", fileUpload);
 		assertThat(uploadFolder).as("The upload folder should have been created").doesNotExist();
-		hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
-		assertNotNull(hashOutput);
-		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
-		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
+		handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
+		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertTrue("The upload folder should have been created.", uploadFolder.exists());
 	}
 
 	@Test
 	public void testHandlerCase2() throws IOException {
 		segmentedPath = "/cdfb/34f9/598a/4173/bb34/f959/8ae1/7330/";
-		FileUpload fileUpload = mockUpload();
+		InternalActionContext ac = mockContext();
+		String fileUpload = mockUpload();
+		ac.put("sourceFile", fileUpload);
 		File uploadFolder = getUploadFolder();
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
 
-		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
-		assertNotNull(hashOutput);
-		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
-		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
+		handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
+		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertThat(uploadFolder).as("The upload folder should have been created").exists();
 		FileUtils.deleteDirectory(uploadFolder);
 	}
 
-	@Test(expected = GenericRestException.class)
+	@Test(expected = FileSystemException.class)
 	public void testFileUploadWithNoUploadFile() throws Throwable {
-		FileUpload fileUpload = mockUpload();
+		InternalActionContext ac = mockContext();
+		String fileUpload = mockUpload();
+		ac.put("sourceFile", fileUpload);
+
 		// Delete the file on purpose in order to invoke an error
-		new File(fileUpload.uploadedFileName()).delete();
+		new File(fileUpload).delete();
 		try {
-			handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
+			handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
 		} catch (CompositeException e) {
 			throw e.getExceptions().get(1);
 		}
@@ -98,7 +106,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		return new File(uploadOptions.getDirectory(), segmentedPath);
 	}
 
-	private FileUpload mockUpload() throws IOException {
+	private String mockUpload() throws IOException {
 
 		FileUtils.forceDeleteOnExit(new File(uploadOptions.getDirectory()));
 		File sourceFile = new File("target/testfile_" + System.currentTimeMillis());
@@ -109,7 +117,19 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		FileUpload fileUpload = mock(FileUpload.class);
 		when(fileUpload.fileName()).thenReturn("bla");
 		when(fileUpload.uploadedFileName()).thenReturn(sourceFile.getAbsolutePath());
-		return fileUpload;
+		return sourceFile.getAbsolutePath();
 	}
 
+	private InternalActionContext mockContext() {
+		AtomicReference<Object> file = new AtomicReference<>();
+		InternalActionContext context = mock(InternalActionContext.class);
+
+		when(context.get("sourceFile")).thenAnswer(answer -> file.get());
+		when(context.put(eq("sourceFile"), anyObject())).thenAnswer(answer -> {
+			file.set(answer.getArgumentAt(1, Object.class));
+			return context;
+		});
+
+		return context;
+	}
 }

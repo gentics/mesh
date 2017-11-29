@@ -1,10 +1,17 @@
 package com.gentics.mesh.core.data;
 
 /**
- * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to releases and are either of type
- * "Initial, Draft or Published"
+ * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to releases and are either of type "Initial, Draft or
+ * Published"
  */
 public interface GraphFieldContainerEdge {
+
+	public static final String LANGUAGE_TAG_KEY = "languageTag";
+
+	public static final String RELEASE_UUID_KEY = "releaseUuid";
+
+	public static final String EDGE_TYPE_KEY = "edgeType";
+
 	/**
 	 * Get the language tag
 	 * 

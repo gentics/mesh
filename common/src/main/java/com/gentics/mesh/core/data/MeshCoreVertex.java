@@ -24,8 +24,9 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 * @param ac
 	 * @param batch
 	 *            Batch to which entries will be added in order to update the search index.
+	 * @return true if the element was updated. Otherwise false
 	 */
-	V update(InternalActionContext ac, SearchQueueBatch batch);
+	boolean update(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Return the type info of the element.

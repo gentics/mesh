@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
@@ -43,7 +44,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	private static final Logger log = LoggerFactory.getLogger(JobImpl.class);
 
 	@Override
-	public Job update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Jobs can't be updated");
 	}
 
@@ -274,7 +275,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	@Override
 	public void process() {
 		log.info("Processing job {" + getUuid() + "}");
-		db.tx(() -> {
+		DB.get().tx(() -> {
 			setStartTimestamp();
 			setStatus(STARTING);
 			setNodeName();

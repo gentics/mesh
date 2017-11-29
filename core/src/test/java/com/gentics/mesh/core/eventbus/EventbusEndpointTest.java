@@ -1,15 +1,23 @@
 package com.gentics.mesh.core.eventbus;
 
+import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
 import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -47,6 +55,36 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		Mesh.vertx().eventBus().send(allowedAddress, msg);
 
 		failingLatch(latch);
+	}
+
+	@Test
+	public void testNodeUpdateEvent() throws Exception {
+		CountDownLatch latch = new CountDownLatch(1);
+		client().eventbus(ws -> {
+			// Register
+			JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_UPDATED);
+			ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+
+			// Handle msgs
+			ws.handler(buff -> {
+				String str = buff.toString();
+				JsonObject received = new JsonObject(str);
+				assertNotNull(received.getJsonObject("body").getString("uuid"));
+				latch.countDown();
+			});
+		});
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.getFields().put("slug", FieldUtil.createStringField("blub"));
+		request.setVersion(response.getVersion());
+		request.setLanguage("en");
+		call(() -> client().updateNode(PROJECT_NAME, contentUuid(), request));
+
+		NodeResponse response2 = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
+		assertNotEquals(response.getVersion(), response2.getVersion());
+		failingLatch(latch);
+
 	}
 
 	@Test

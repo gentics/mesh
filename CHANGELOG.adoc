@@ -4,6 +4,8 @@
 
 == 0.11.3 (TBD)
 
+icon:plus[] Websocket: It is now possible to register to a larger set of internal events. A full list of all events is documented within the link:https://getmesh.io/docs/beta/features.html#_eventbus_bridge_websocket[eventbus bridge / websocket documentation].
+
 icon:plus[] Config: The eventloop and worker pool size can now be configured within the `mesh.yml` file.
 
 icon:plus[] Logging: The logging verbosity was reduced.
@@ -11,6 +13,10 @@ icon:plus[] Logging: The logging verbosity was reduced.
 icon:plus[] GraphQL: It is now possible to load a list of all languages of a node via the added `.languages` field.
 
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 6.0
+
+icon:check[] Core: Fixed a bug which prevented uploading multiple binaries to the same node.
+
+icon:check[] Memory: The memory usage for micronode migrations has been improved.
 
 == 0.11.2 (21.11.2017)
 

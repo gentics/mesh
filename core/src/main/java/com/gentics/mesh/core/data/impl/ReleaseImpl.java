@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
@@ -76,7 +77,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Release update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		Database db = MeshInternal.get().database();
 		ReleaseUpdateRequest requestModel = ac.fromJson(ReleaseUpdateRequest.class);
 
@@ -89,12 +90,10 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			setName(requestModel.getName());
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
+			return true;
+		} else {
+			return false;
 		}
-		// TODO: Not yet fully implemented
-		// if (requestModel.getActive() != null) {
-		// setActive(requestModel.getActive());
-		// }
-		return this;
 	}
 
 	@Override
@@ -378,7 +377,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Single<ReleaseResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db.operateTx(() -> {
+		return DB.get().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

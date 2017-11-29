@@ -40,6 +40,7 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -178,7 +179,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public TagFamily update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Project project = ac.getProject();
 		String newName = requestModel.getName();
@@ -191,13 +192,18 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
-		this.setName(newName);
-		batch.store(this, true);
-		return this;
+		if(!getName().equals(newName)) {
+			this.setName(newName);
+			batch.store(this, true);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Tag tag : findAllIt()) {
 				tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -255,7 +261,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Single<TagFamilyResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db.operateTx(() -> {
+		return DB.get().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
