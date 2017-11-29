@@ -225,7 +225,7 @@ public class MeshTestContext extends TestWatcher {
 		// if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
 		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
 		// }
-		PermissionStore.invalidate();
+		PermissionStore.invalidate(false);
 	}
 
 	public TestDataProvider getData() {

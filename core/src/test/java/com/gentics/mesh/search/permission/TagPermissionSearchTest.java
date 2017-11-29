@@ -17,7 +17,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true, startESServer = true)
+@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true, startESServer = false)
 public class TagPermissionSearchTest extends AbstractMeshTest {
 
 	@Test

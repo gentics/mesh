@@ -38,6 +38,8 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		EndpointRoute queryEndpoint = createEndpoint();
 		queryEndpoint.method(POST);
 		queryEndpoint.exampleRequest(graphqlExamples.createQueryRequest());
