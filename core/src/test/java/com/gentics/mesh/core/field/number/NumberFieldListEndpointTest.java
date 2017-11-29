@@ -11,7 +11,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -24,6 +27,10 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import rx.Completable;
+import rx.Observable;
+import rx.Single;
+import rx.functions.Func1;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
@@ -196,4 +203,51 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
 	}
 
+	@Test
+	public void testListOrder() throws Exception {
+		final int elementCount = 50;
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		NodeResponse response = createNode(FIELD_NAME, listField);
+
+		addNumbers(response, elementCount).await();
+		response = client().findNodeByUuid(PROJECT_NAME, response.getUuid()).toSingle().toBlocking().value();
+
+		Integer[] expected = IntStream.range(0, elementCount)
+			.boxed()
+			.toArray(Integer[]::new);
+
+		List<Integer> actual = response.getFields().getNumberFieldList(FIELD_NAME)
+			.getItems().stream().map(Number::intValue).collect(Collectors.toList());
+
+		assertThat(actual).containsExactly(expected);
+	}
+
+	/**
+	 * Adds numbers to a number field list of node until the count is reached.
+	 * @param node
+	 * @param count
+	 * @return
+	 */
+	private Completable addNumbers(NodeResponse node, int count) {
+		FieldMap fields = node.getFields();
+		NumberFieldListImpl numbers = fields.getNumberFieldList(FIELD_NAME);
+		if (numbers.getItems().size() < count) {
+			int nr;
+			if (numbers.getItems().size() == 0) {
+				nr = 0;
+			} else {
+				nr = numbers.getItems().get(numbers.getItems().size() - 1).intValue() + 1;
+			}
+			numbers.add(nr);
+			fields.put(FIELD_NAME, numbers);
+			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest()
+				.setFields(fields)
+				.setLanguage(node.getLanguage())
+				.setVersion(node.getVersion());
+			return client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest).toSingle()
+				.flatMapCompletable(nodeRes -> addNumbers(nodeRes, count));
+		} else {
+			return Completable.complete();
+		}
+	}
 }
