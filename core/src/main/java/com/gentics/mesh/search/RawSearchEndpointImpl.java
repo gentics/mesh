@@ -66,6 +66,8 @@ public class RawSearchEndpointImpl extends AbstractEndpoint implements SearchEnd
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addSearchEndpoints();
 	}
 
