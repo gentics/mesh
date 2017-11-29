@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.field.micronode;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -368,6 +371,29 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELD_NAME);
 			assertNull(field);
 		}
+	}
+
+	/**
+	 * Covers issue #84 (https://github.com/gentics/mesh/issues/84)
+	 */
+	@Test
+	public void testListOrder() {
+		int nodeCount = 50;
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		String[] expected = new String[nodeCount];
+		for (int i = 0; i < nodeCount; i++) {
+			String name = "name" + i;
+			field.add(createItem(name, name));
+			expected[i] = name;
+		}
+		NodeResponse node = updateNode(FIELD_NAME, field);
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+
+		Stream<String> actual = response.getFields().getMicronodeFieldList(FIELD_NAME).getItems().stream()
+			.map(it -> it.getFields().getStringField("firstName").getString());
+
+		assertThat(actual).containsExactly(expected);
 	}
 
 	/**
