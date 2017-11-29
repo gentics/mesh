@@ -55,6 +55,7 @@ public class EventbusEndpoint extends AbstractEndpoint {
 			});
 		}
 
+		secureAll();
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.setRAMLPath("/");
 		endpoint.description("This endpoint provides a sockjs complient websocket which can be used to interface with the vert.x eventbus.");

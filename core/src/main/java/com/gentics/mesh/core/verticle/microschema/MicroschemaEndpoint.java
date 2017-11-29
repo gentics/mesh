@@ -46,6 +46,8 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addDiffHandler();
 		addChangesHandler();
 

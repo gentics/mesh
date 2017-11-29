@@ -36,6 +36,8 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addErrorHandlers();
 		addPathHandler();
 	}

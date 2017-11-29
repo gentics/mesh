@@ -23,13 +23,11 @@ import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import dagger.Module;
 import dagger.Provides;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
 /**
  * Main dagger module class.
@@ -116,9 +114,9 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static Handler<RoutingContext> bodyHandler() {
+	public static BodyHandlerImpl bodyHandler() {
 		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
-		BodyHandler handler = new MeshBodyHandlerImpl(tempDirectory);
+		BodyHandlerImpl handler = new MeshBodyHandlerImpl(tempDirectory);
 		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
 		// TODO check for windows issues
 		handler.setUploadsDirectory(tempDirectory);

@@ -48,8 +48,11 @@ public class UserEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void registerEndPoints() {
+		withBodyHandler();
+
 		addUpdateHandler();
 		secureAll();
+
 		addCreateHandler();
 		addReadHandler();
 		addDeleteHandler();
@@ -63,7 +66,8 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
-		endpoint.description("Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
+		endpoint.description(
+				"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
@@ -176,7 +180,7 @@ public class UserEndpoint extends AbstractEndpoint {
 
 	private void addUpdateHandler() {
 
-		// Add the user token handler first in order to allow for recovery token handling 
+		// Add the user token handler first in order to allow for recovery token handling
 		getRouter().route("/:userUuid").method(POST).handler(userTokenHandler);
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
 		getRouter().route("/:userUuid").method(POST).handler(authHandler);

@@ -145,6 +145,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setPort(port);
 		options.setHost(host);
 		options.setCompressionSupported(true);
+		//options.setLogActivity(true);
 		// MeshOptions meshOptions = Mesh.mesh().getOptions();
 		// HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
 		// if (httpServerOptions.isSsl()) {

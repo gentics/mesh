@@ -38,6 +38,9 @@ public class ProjectRawSearchEndpointImpl extends AbstractProjectEndpoint implem
 
 	@Override
 	public void registerEndPoints() {
+		secureAll();
+		withBodyHandler();
+
 		registerRawSearchHandler("nodes", nodeSearchHandler);
 		registerRawSearchHandler("tags", tagSearchHandler);
 		registerRawSearchHandler("tagFamilies", tagFamilySearchHandler);

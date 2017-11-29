@@ -53,6 +53,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		if (tagFamilyCrudHandler != null) {
 			getRouter().routeWithRegex("\\/([^\\/]{32})\\/.*").handler(tagFamilyCrudHandler.getUuidHandler("tagfamily_not_found"));
 		}

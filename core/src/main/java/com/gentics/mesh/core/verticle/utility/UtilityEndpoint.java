@@ -40,6 +40,8 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addResolveLinkHandler();
 		addSchemaValidationHandler();
 		addMicroschemaValidationHandler();

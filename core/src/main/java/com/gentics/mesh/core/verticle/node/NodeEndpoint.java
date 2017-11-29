@@ -65,6 +65,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
 		if (getCrudHandler() != null) {
 			route("/:nodeUuid").handler(getCrudHandler().getUuidHandler("node_not_found_for_uuid"));
 		}

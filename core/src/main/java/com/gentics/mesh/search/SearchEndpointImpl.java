@@ -94,6 +94,8 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addSearchEndpoints();
 	}
 
@@ -101,22 +103,22 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userSearchHandler, userExamples
-				.getUserListResponse());
-		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupSearchHandler, groupExamples
-				.getGroupListResponse());
-		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleSearchHandler, roleExamples
-				.getRoleListResponse());
+		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userSearchHandler,
+				userExamples.getUserListResponse());
+		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupSearchHandler,
+				groupExamples.getGroupListResponse());
+		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleSearchHandler,
+				roleExamples.getRoleListResponse());
 
-		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
-				.getNodeListResponse());
-		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
-				.createTagListResponse());
+		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler,
+				nodeExamples.getNodeListResponse());
+		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler,
+				tagExamples.createTagListResponse());
 		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
 
-		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectSearchHandler, projectExamples
-				.getProjectListResponse());
+		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectSearchHandler,
+				projectExamples.getProjectListResponse());
 		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, schemaContainerSearchHandler,
 				schemaExamples.getSchemaListResponse());
 		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,

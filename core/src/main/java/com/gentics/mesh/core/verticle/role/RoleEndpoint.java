@@ -42,6 +42,8 @@ public class RoleEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();

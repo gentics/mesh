@@ -23,14 +23,12 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
-import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
@@ -71,14 +69,12 @@ public class RouterStorage {
 	private Lazy<Database> db;
 
 	private CorsHandler corsHandler;
-	private Handler<RoutingContext> bodyHandler;
 
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, Lazy<BootstrapInitializer> boot, Lazy<Database> db) {
+	public RouterStorage(CorsHandler corsHandler, Lazy<BootstrapInitializer> boot, Lazy<Database> db) {
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
-		this.bodyHandler = bodyHandler;
 		RouterStorage.instance = this;
 	}
 
@@ -137,7 +133,7 @@ public class RouterStorage {
 	 * Initialize the router storage. This will setup the basic route handlers for /api/v1 and cookie/cors handling.
 	 */
 	public void init() {
-		initAPIRouter(corsHandler, bodyHandler);
+		initAPIRouter();
 	}
 
 	/**
@@ -185,12 +181,11 @@ public class RouterStorage {
 	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
 	 * /api/v1/[groups|users|roles]
 	 */
-	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
+	private void initAPIRouter() {
 		Router router = getAPIRouter();
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(corsHandler);
 		}
-		router.route().handler(bodyHandler);
 		router.route().handler(CookieHandler.create());
 	}
 

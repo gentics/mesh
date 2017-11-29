@@ -53,6 +53,8 @@ public class AdminEndpoint extends AbstractEndpoint {
 		addMeshStatusHandler();
 
 		secureAll();
+		withBodyHandler();
+
 		addBackupHandler();
 		addRestoreHandler();
 		addClusterStatusHandler();

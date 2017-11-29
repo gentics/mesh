@@ -45,6 +45,8 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();

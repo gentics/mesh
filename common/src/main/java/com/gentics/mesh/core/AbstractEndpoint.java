@@ -13,6 +13,7 @@ import com.gentics.mesh.rest.impl.EndpointImpl;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
 /**
  * An abstract class that should be used when creating new endpoints.
@@ -28,6 +29,9 @@ public abstract class AbstractEndpoint implements Endpoint {
 
 	@Inject
 	public MeshAuthHandler authHandler;
+
+	@Inject
+	public BodyHandlerImpl bodyHandler;
 
 	/**
 	 * Constructor to be invoked from implementation.
@@ -50,6 +54,10 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 */
 	protected void secureAll() {
 		getRouter().route("/*").handler(authHandler);
+	}
+
+	protected void withBodyHandler() {
+		getRouter().route("/*").handler(bodyHandler);
 	}
 
 	/**

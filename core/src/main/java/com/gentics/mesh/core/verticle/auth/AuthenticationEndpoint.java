@@ -53,6 +53,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 			authRestHandler.handleMe(new InternalRoutingActionContextImpl(rc));
 		});
 
+		withBodyHandler();
 		EndpointRoute basicAuthLoginEndpoint = createEndpoint();
 		basicAuthLoginEndpoint.path("/login");
 		basicAuthLoginEndpoint.method(GET);

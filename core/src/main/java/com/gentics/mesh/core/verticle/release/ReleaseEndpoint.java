@@ -46,6 +46,8 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
+
 		addCreateHandler();
 		addSchemaInfoHandler();
 		addMicroschemaInfoHandler();

@@ -43,6 +43,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+		withBodyHandler();
 
 		addGroupUserHandlers();
 		addGroupRoleHandlers();
