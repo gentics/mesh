@@ -179,7 +179,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public TagFamily update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Project project = ac.getProject();
 		String newName = requestModel.getName();
@@ -192,13 +192,18 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
-		this.setName(newName);
-		batch.store(this, true);
-		return this;
+		if(!getName().equals(newName)) {
+			this.setName(newName);
+			batch.store(this, true);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Tag tag : findAllIt()) {
 				tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);

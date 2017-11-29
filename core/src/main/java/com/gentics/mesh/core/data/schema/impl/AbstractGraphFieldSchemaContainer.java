@@ -84,7 +84,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public SC update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 

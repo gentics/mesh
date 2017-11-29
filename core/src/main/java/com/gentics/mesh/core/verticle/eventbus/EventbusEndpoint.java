@@ -1,15 +1,19 @@
 package com.gentics.mesh.core.verticle.eventbus;
 
-import static com.gentics.mesh.Events.MESH_MIGRATION;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractEndpoint;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.auth.User;
+import io.vertx.ext.web.handler.sockjs.BridgeEventType;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -20,6 +24,8 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
  */
 @Singleton
 public class EventbusEndpoint extends AbstractEndpoint {
+
+	private static final Logger log = LoggerFactory.getLogger(EventbusEndpoint.class);
 
 	@Inject
 	public EventbusEndpoint(RouterStorage routerStorage) {
@@ -45,17 +51,24 @@ public class EventbusEndpoint extends AbstractEndpoint {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
 			handler = SockJSHandler.create(Mesh.vertx(), sockJSoptions);
 			BridgeOptions bridgeOptions = new BridgeOptions();
-			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION));
-			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION));
-			// handler.bridge(bridgeOptions);
+			for (String addr : Events.publicEvents()) {
+				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(addr));
+				bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(addr));
+			}
 			handler.bridge(bridgeOptions, event -> {
-				// if (event.type() == BridgeEventType.SOCKET_CREATED) {
-				// log.info("A socket was created");
-				// }
-				event.complete(true);
+				if (log.isDebugEnabled()) {
+					if (event.type() == BridgeEventType.SOCKET_CREATED) {
+						log.debug("A websocket was created");
+					}
+				}
+				// Only grant access to authenticated users
+				User user = event.socket().webUser();
+				boolean isAuthenticated = user != null;
+				event.complete(isAuthenticated);
 			});
 		}
 
+		secureAll();
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.setRAMLPath("/");
 		endpoint.description("This endpoint provides a sockjs complient websocket which can be used to interface with the vert.x eventbus.");

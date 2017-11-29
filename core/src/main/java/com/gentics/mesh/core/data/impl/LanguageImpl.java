@@ -76,7 +76,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Language update(InternalActionContext rc, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext rc, SearchQueueBatch batch) {
 		throw new NotImplementedException("Languages can't be updated");
 	}
 

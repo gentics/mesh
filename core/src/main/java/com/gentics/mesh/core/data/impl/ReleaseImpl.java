@@ -77,7 +77,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Release update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		Database db = MeshInternal.get().database();
 		ReleaseUpdateRequest requestModel = ac.fromJson(ReleaseUpdateRequest.class);
 
@@ -90,12 +90,10 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			setName(requestModel.getName());
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
+			return true;
+		} else {
+			return false;
 		}
-		// TODO: Not yet fully implemented
-		// if (requestModel.getActive() != null) {
-		// setActive(requestModel.getActive());
-		// }
-		return this;
 	}
 
 	@Override

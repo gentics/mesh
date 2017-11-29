@@ -141,18 +141,20 @@ public class HandlerUtilities {
 			// Check whether we need to update a found element or whether we need to create a new one.
 			if (element != null) {
 				final T updateElement = element;
-				Tuple<T, SearchQueueBatch>  tuple = database.tx(() -> {
+				Tuple<Boolean, SearchQueueBatch> tuple = database.tx(() -> {
 					SearchQueueBatch batch = searchQueue.create();
-					T updatedElement = updateElement.update(ac, batch);
-					return Tuple.tuple(updatedElement, batch);
+					boolean updated = updateElement.update(ac, batch);
+					return Tuple.tuple(updated, batch);
 				});
 				SearchQueueBatch b = tuple.v2();
-				T updatedElement = tuple.v1();
-				RestModel model = updatedElement.transformToRestSync(ac, 0);
+				Boolean isUpdated = tuple.v1();
+				RestModel model = updateElement.transformToRestSync(ac, 0);
 				info = new ResultInfo(model, b);
-				updatedElement.onUpdated();
+				if (isUpdated) {
+					updateElement.onUpdated();
+				}
 			} else {
-				Tuple<T, SearchQueueBatch>  tuple = database.tx(() -> {
+				Tuple<T, SearchQueueBatch> tuple = database.tx(() -> {
 					SearchQueueBatch batch = searchQueue.create();
 					created.set(true);
 					return Tuple.tuple(root.create(ac, batch, uuid), batch);
@@ -163,11 +165,11 @@ public class HandlerUtilities {
 				String path = createdElement.getAPIPath(ac);
 				info = new ResultInfo(model, b);
 				info.setProperty("path", path);
-				//String path = info.getProperty("path");
+				// String path = info.getProperty("path");
 				ac.setLocation(path);
 				createdElement.onCreated();
 			}
-		
+
 			// 3. The updating transaction has succeeded. Now lets store it in the index
 			final ResultInfo info2 = info;
 			return database.tx(() -> {

@@ -1475,7 +1475,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	@Override
-	public Node update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "error_language_not_set");
@@ -1508,6 +1508,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 			}
 			batch.store(latestDraftVersion, release.getUuid(), DRAFT, false);
+			return true;
 		} else {
 			if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion())) {
 				throw error(BAD_REQUEST, "node_error_version_missing");
@@ -1575,9 +1576,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 				latestDraftVersion = newDraftVersion;
 				batch.store(newDraftVersion, release.getUuid(), DRAFT, false);
+				return true;
 			}
 		}
-		return this;
+		return false;
 	}
 
 	@Override

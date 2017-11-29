@@ -191,8 +191,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public User update(InternalActionContext ac, SearchQueueBatch batch) {
-				return null;
+			public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+				return true;
 			}
 
 			@Override

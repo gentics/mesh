@@ -44,7 +44,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	private static final Logger log = LoggerFactory.getLogger(JobImpl.class);
 
 	@Override
-	public Job update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Jobs can't be updated");
 	}
 

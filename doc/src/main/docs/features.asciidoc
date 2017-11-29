@@ -2071,8 +2071,52 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 
 [options="header"]
 |======
-| Eventname       | Description
-| mesh.migration  | Receive node and micronode migration specific events
+| Eventname           | Description
+| mesh.migration      | Receive node and micronode migration specific events
+
+| mesh.cluster.node.joined | Triggered when a node joined the cluster
+| mesh.cluster.node.left   | Triggered when a node left the cluster
+| mesh.cluster.db.status   | Triggered when the database status changes. The database can either be `OFFLINE`, `STARTING`, `ONLINE`, `MERGING` or `SHUTTINGDOWN`
+
+| mesh.user.created   | Triggered on user creation
+| mesh.user.updated   | Triggered on user update
+| mesh.user.deleted   | Triggered on user deletion
+
+| mesh.group.created  | Triggered on group creation
+| mesh.group.updated  | Triggered on group update
+| mesh.group.deleted  | Triggered on group deletion
+
+| mesh.role.created   | Triggered on role creation
+| mesh.role.updated   | Triggered on role update
+| mesh.role.deleted   | Triggered on role deletion
+
+| mesh.tag.created    | Triggered on tag creation
+| mesh.tag.updated    | Triggered on tag update
+| mesh.tag.deleted    | Triggered on tag deletion
+
+| mesh.tagfamily.created | Triggered on tagFamily creation
+| mesh.tagfamily.updated | Triggered on tagFamily update
+| mesh.tagfamily.deleted | Triggered on tagFamily deletion
+
+| mesh.project.created  | Triggered on project creation
+| mesh.project.updated  | Triggered on project update
+| mesh.project.deleted  | Triggered on project deletion
+
+| mesh.node.created  | Triggered on node creation
+| mesh.node.updated  | Triggered on node update
+| mesh.node.deleted  | Triggered on node deletion
+
+| mesh.schema.created  | Triggered on schema creation
+| mesh.schema.updated  | Triggered on schema update
+| mesh.schema.deleted  | Triggered on schema deletion
+
+| mesh.microschema.created  | Triggered on microschema creation
+| mesh.microschema.updated  | Triggered on microschema update
+| mesh.microschema.deleted  | Triggered on microschema deletion
+
+| mesh.release.created  | Triggered on release creation
+| mesh.release.updated  | Triggered on release update
+| mesh.release.deleted  | Triggered on release deletion
 |======
 
 == Clustering

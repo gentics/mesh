@@ -177,7 +177,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Group update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
@@ -193,8 +193,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 			setName(requestModel.getName());
 			batch.store(this, true);
+			return true;
+		} else {
+			return false;
 		}
-		return this;
 	}
 
 	@Override

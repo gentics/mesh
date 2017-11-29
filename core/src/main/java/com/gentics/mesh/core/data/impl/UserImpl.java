@@ -277,8 +277,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				Vertex role = roleEdge.getVertex(Direction.IN);
 				// Find all permission edges between the found role and target
 				// vertex with the specified label
-				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
-						MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
+				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout", MeshInternal.get().database().createComposedIndexKey(
+						elementId, role.getId()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
@@ -468,35 +468,38 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
+		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
 			User conflictingUser = MeshInternal.get().boot().userRoot().findByUsername(requestModel.getUsername());
 			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}
 			setUsername(requestModel.getUsername());
+			modified = true;
 		}
 
 		if (shouldUpdate(requestModel.getFirstname(), getFirstname())) {
 			setFirstname(requestModel.getFirstname());
+			modified = true;
 		}
 
 		if (shouldUpdate(requestModel.getLastname(), getLastname())) {
 			setLastname(requestModel.getLastname());
+			modified = true;
 		}
 
 		if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
 			setEmailAddress(requestModel.getEmailAddress());
+			modified = true;
 		}
 
 		if (!isEmpty(requestModel.getPassword())) {
 			BCryptPasswordEncoder encoder = MeshInternal.get().passwordEncoder();
 			setPasswordHash(encoder.encode(requestModel.getPassword()));
+			modified = true;
 		}
-
-		setEditor(ac.getUser());
-		setLastEditedTimestamp();
 
 		if (requestModel.getNodeReference() != null) {
 			ExpandableNode reference = requestModel.getNodeReference();
@@ -523,10 +526,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				NodeRoot nodeRoot = project.getNodeRoot();
 				Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
 				setReferencedNode(node);
+				modified = true;
 			}
 		}
-		batch.store(this, true);
-		return this;
+
+		if (modified) {
+			setEditor(ac.getUser());
+			setLastEditedTimestamp();
+			batch.store(this, true);
+		}
+		return modified;
 	}
 
 	@Override
@@ -536,8 +545,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		keyBuilder.append(getLastEditedTimestamp());
 
 		Node referencedNode = getReferencedNode();
-		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
-				|| ac.getNodeParameters().getExpandAll();
+		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference") || ac.getNodeParameters()
+				.getExpandAll();
 		// We only need to compute the full etag if the referenced node is expanded.
 		if (referencedNode != null && expandReference) {
 			keyBuilder.append("-");

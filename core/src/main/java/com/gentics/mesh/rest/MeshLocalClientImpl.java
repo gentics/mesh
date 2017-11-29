@@ -1062,7 +1062,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public void eventbus(Handler<WebSocket> wsConnect) {
+	public void eventbus(Handler<WebSocket> wsConnect, Handler<Throwable> failureHandler) {
 		// TODO Auto-generated method stub
 	}
 

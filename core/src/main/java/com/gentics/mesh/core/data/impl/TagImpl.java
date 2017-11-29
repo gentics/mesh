@@ -166,8 +166,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	 */
 	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Release release, List<String> languageTags, ContainerType type) {
 
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark()
-				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark().outE(
+				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
 
 		if (type != null) {
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
@@ -178,7 +178,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public Tag update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		String newTagName = requestModel.getName();
 		if (isEmpty(newTagName)) {
@@ -189,17 +189,20 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			// Check for conflicts
 			Tag foundTagWithSameName = tagFamily.findByName(newTagName);
 			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
-						tagFamily.getName());
+				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily
+						.getName());
 			}
 
-			setEditor(ac.getUser());
-			setLastEditedTimestamp();
-			setName(requestModel.getName());
+			if (!newTagName.equals(getName())) {
+				setEditor(ac.getUser());
+				setLastEditedTimestamp();
+				setName(newTagName);
+				batch.store(getTagFamily(), false);
+				batch.store(this, true);
+				return true;
+			}
 		}
-		batch.store(getTagFamily(), false);
-		batch.store(this, true);
-		return this;
+		return false;
 
 	}
 

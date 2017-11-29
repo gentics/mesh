@@ -171,7 +171,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Role update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		if (shouldUpdate(requestModel.getName(), getName())) {
@@ -183,8 +183,10 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 			setName(requestModel.getName());
 			batch.store(this, true);
+			return true;
+		} else {
+			return false;
 		}
-		return this;
 	}
 
 	@Override
