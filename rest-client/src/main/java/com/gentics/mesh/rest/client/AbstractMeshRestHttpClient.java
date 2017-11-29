@@ -44,7 +44,6 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	private String baseUri = DEFAULT_BASEURI;
 
-
 	public AbstractMeshRestHttpClient(String host, int port, boolean ssl, Vertx vertx) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);

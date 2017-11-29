@@ -6,7 +6,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
 
