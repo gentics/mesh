@@ -628,6 +628,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getTagFamilyRoot();
 			meshRoot.getProjectRoot();
 			meshRoot.getLanguageRoot();
+			meshRoot.getJobRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
 			UserRoot userRoot = meshRoot.getUserRoot();

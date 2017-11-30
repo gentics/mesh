@@ -293,6 +293,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	default public void addItem(T item) {
 		FramedGraph graph = getGraph();
+		// Check whether the item was already added by checking the index
 		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.getId(),
 				getId()));
 		if (!edges.iterator().hasNext()) {

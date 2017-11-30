@@ -41,12 +41,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -122,6 +124,7 @@ import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
@@ -1943,6 +1946,24 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public User getCreator() {
 		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public void onUpdated() {
+		String address = getTypeInfo().getOnUpdatedAddress();
+		if (address != null) {
+			JsonObject json = new JsonObject();
+			if (this instanceof NamedElement) {
+				json.put("name", ((NamedElement) this).getName());
+			}
+			json.put("schemaName", getSchemaContainer().getName());
+			json.put("schemaUuid", getSchemaContainer().getUuid());
+			json.put("uuid", getUuid());
+			Mesh.vertx().eventBus().publish(address, json);
+			if (log.isDebugEnabled()) {
+				log.debug("Updated event sent {" + address + "}");
+			}
+		}
 	}
 
 	@Override

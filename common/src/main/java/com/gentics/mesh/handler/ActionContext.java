@@ -9,7 +9,6 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpHeaders;
 
 /**
  * Abstraction of the vertx-web routing context.

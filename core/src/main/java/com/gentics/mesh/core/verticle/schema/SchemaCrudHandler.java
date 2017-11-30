@@ -73,7 +73,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.asyncTx(ac, () -> {
+		utils.asyncTx(ac, tx1 -> {
 
 			// 1. Load the schema container with update permissions
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
@@ -94,7 +94,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
-			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
+			Tuple<SearchQueueBatch, String> info = db.tx(tx -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -163,7 +163,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());
 			}
 
-		}, model -> ac.send(model, OK));
+		}, model -> ac.send(model, OK), true);
 	}
 
 	/**

@@ -246,6 +246,12 @@ public class HandlerUtilities {
 		}, action);
 	}
 
+	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Action1<RM> action, boolean order) {
+		async(ac, () -> {
+			return database.tx(handler);
+		}, action, order);
+	}
+
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction0 handler, Action1<RM> action) {
 		async(ac, () -> {
 			database.tx(handler);
@@ -266,6 +272,10 @@ public class HandlerUtilities {
 		}, action);
 	}
 
+	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
+		async(ac, handler, action, false);
+	}
+
 	/**
 	 * Asynchronously execute the handler.
 	 * 
@@ -273,14 +283,14 @@ public class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
-	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
+	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action, boolean order) {
 		Mesh.vertx().executeBlocking(bc -> {
 			try {
 				bc.complete(handler.handle());
 			} catch (Exception e) {
 				bc.fail(e);
 			}
-		}, false, (AsyncResult<RM> rh) -> {
+		}, order, (AsyncResult<RM> rh) -> {
 			if (rh.failed()) {
 				ac.fail(rh.cause());
 			} else {

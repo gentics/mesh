@@ -88,6 +88,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, versionUuid, type);
 		CreateIndexEntry entry = new CreateIndexEntryImpl(nodeContainerIndexHandler, indexName);
 		entry.setSchema(schema);
+		// entry.getContext().setSchemaContainerVersionUuid(versionUuid);
 		addEntry(entry);
 		return this;
 	}
@@ -242,11 +243,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return Completable.defer(() -> {
 			// Process the batch
 			Completable obs = Completable.complete();
-			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION)
-					.collect(Collectors.toList());
+			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION).collect(
+					Collectors.toList());
 
-			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION)
-					.collect(Collectors.toList());
+			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION).collect(Collectors
+					.toList());
 
 			if (!nonStoreEntries.isEmpty()) {
 				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
@@ -286,8 +287,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	@Override
 	public void processSync(long timeout, TimeUnit unit) {
 		if (!processAsync().await(timeout, unit)) {
-			throw error(INTERNAL_SERVER_ERROR,
-					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name() + "} exceeded.");
+			throw error(INTERNAL_SERVER_ERROR, "Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
+					+ "} exceeded.");
 		}
 	}
 

@@ -21,6 +21,11 @@ import io.vertx.core.logging.LoggerFactory;
 @Singleton
 public class CoreVerticleLoader {
 
+	/**
+	 * Default amount of verticle instances which should be deployed.
+	 */
+	private static final int DEFAULT_VERTICLE_DEPLOYMENTS = 4;
+
 	private static Logger log = LoggerFactory.getLogger(CoreVerticleLoader.class);
 
 	@Inject
@@ -45,10 +50,13 @@ public class CoreVerticleLoader {
 		defaultConfig.put("host", configuration.getHttpServerOptions().getHost());
 		for (AbstractVerticle verticle : getMandatoryVerticleClasses()) {
 			try {
-				if (log.isInfoEnabled()) {
-					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
+				for (int i = 0; i < DEFAULT_VERTICLE_DEPLOYMENTS; i++) {
+					if (log.isInfoEnabled()) {
+						log.info("Deploying mandatory verticle {" + verticle.getClass().getName() + "} " + i + " of " + DEFAULT_VERTICLE_DEPLOYMENTS
+								+ " instances");
+					}
+					deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
 				}
-				deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
 			} catch (Exception e) {
 				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
 			}
