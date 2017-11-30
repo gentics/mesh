@@ -4,6 +4,12 @@
 
 == 0.11.3 (TBD)
 
+icon:check[] UI: Fixed error message handling for failed save requests.
+
+icon:check[] UI: Fixed the dropdown positioning in IE within the node edit area.
+
+icon:plus[] Core: Various performance enhancements have been made to increase the concurrency handling and to lower the request times.
+
 icon:plus[] Websocket: It is now possible to register to a larger set of internal events. A full list of all events is documented within the link:https://getmesh.io/docs/beta/features.html#_eventbus_bridge_websocket[eventbus bridge / websocket documentation].
 
 icon:plus[] Config: The eventloop and worker pool size can now be configured within the `mesh.yml` file.
