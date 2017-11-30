@@ -244,7 +244,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Single<GroupResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().operateTx(() -> {
+		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

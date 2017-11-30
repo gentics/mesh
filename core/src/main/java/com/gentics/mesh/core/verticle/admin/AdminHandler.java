@@ -56,7 +56,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -74,7 +74,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleRestore(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -132,7 +132,7 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleClusterStatus(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

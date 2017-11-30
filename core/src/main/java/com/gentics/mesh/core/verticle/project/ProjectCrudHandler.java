@@ -40,7 +40,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 *            Name of the project which should be read.
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			RootVertex<Project> root = getRootVertex(ac);
 			Project project = root.findByName(ac, projectName, READ_PERM);
 			return project.transformToRestSync(ac, 0);

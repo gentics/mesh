@@ -118,7 +118,7 @@ public class TxTest extends AbstractMeshTest {
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db().operateTx(() -> {
+		db().asyncTx(() -> {
 			throw new RuntimeException("error");
 		}).toBlocking().value();
 		assertEquals("error", cf.get().getMessage());
@@ -127,7 +127,7 @@ public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		String result = db().operateTx(() -> {
+		String result = db().asyncTx(() -> {
 			TestUtils.run(() -> {
 				TestUtils.sleep(1000);
 			});
@@ -138,7 +138,7 @@ public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = db().operateTx(() -> {
+		String result = db().asyncTx(() -> {
 			return Single.just("OK");
 		}).toBlocking().value();
 		assertEquals("OK", result);

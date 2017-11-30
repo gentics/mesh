@@ -91,7 +91,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PUBLISHED_PERM);
 			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
@@ -307,7 +307,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "image_error_language_not_set");
 		}
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			// Load needed elements
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);

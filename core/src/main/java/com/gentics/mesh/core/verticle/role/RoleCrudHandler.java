@@ -74,7 +74,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -117,7 +117,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}

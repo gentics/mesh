@@ -61,7 +61,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
@@ -80,7 +80,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			// Handle idempotency
@@ -119,7 +119,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			// TODO check whether the role is actually part of the group
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -147,7 +147,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
@@ -169,7 +169,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			ResultInfo info = db.tx(() -> {
@@ -197,7 +197,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
