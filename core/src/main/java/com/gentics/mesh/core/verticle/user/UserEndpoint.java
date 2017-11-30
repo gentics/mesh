@@ -67,7 +67,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleIssueAPIToken(ac, uuid);
@@ -81,7 +81,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token.");
-		deleteEndpoint.blockingHandler(rc -> {
+		deleteEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDeleteAPIToken(ac, uuid);
@@ -98,7 +98,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");

@@ -59,7 +59,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		//basicAuthLoginEndpoint.produces(APPLICATION_JSON);
 		basicAuthLoginEndpoint.description("Login via basic authentication.");
 		basicAuthLoginEndpoint.exampleResponse(OK, "Login was sucessful");
-		basicAuthLoginEndpoint.blockingHandler(basicAuthLoginHandler);
+		basicAuthLoginEndpoint.handler(basicAuthLoginHandler);
 
 		EndpointRoute loginEndpoint = createEndpoint();
 		loginEndpoint.path("/login");
