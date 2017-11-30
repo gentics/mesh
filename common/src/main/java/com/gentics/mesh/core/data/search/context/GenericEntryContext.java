@@ -71,4 +71,12 @@ public interface GenericEntryContext extends EntryContext {
 	 */
 	String getSchemaContainerVersionUuid();
 
+	/**
+	 * Set the schema container version uuid.
+	 * 
+	 * @param uuid
+	 * @return Fluent API
+	 */
+	GenericEntryContext setSchemaContainerVersionUuid(String uuid);
+
 }

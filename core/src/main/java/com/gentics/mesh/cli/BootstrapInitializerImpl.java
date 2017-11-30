@@ -316,7 +316,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initVertx(MeshOptions options, boolean isClustered) {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
-		vertxOptions.setBlockedThreadCheckInterval(1000 * 60 * 60);
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 		if (vertxOptions.isClustered()) {
@@ -629,6 +628,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getTagFamilyRoot();
 			meshRoot.getProjectRoot();
 			meshRoot.getLanguageRoot();
+			meshRoot.getJobRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
 			UserRoot userRoot = meshRoot.getUserRoot();

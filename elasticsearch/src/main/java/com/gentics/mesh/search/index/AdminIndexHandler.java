@@ -42,7 +42,7 @@ public class AdminIndexHandler {
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				searchProvider.clear();
 

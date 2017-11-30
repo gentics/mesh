@@ -61,7 +61,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
@@ -97,7 +97,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();

@@ -78,7 +78,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 			String uuid) {
-		operateTx(ac, (tx) -> {
+		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			String elementUuid = element.getUuid();
@@ -124,7 +124,7 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 			TxAction1<RootVertex<T>> handler) {
 		AtomicBoolean created = new AtomicBoolean(false);
-		operateTx(ac, (tx) -> {
+		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 
 			// 1. Load the element from the root element using the given uuid (if not null)
@@ -192,7 +192,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 			TxAction1<RootVertex<T>> handler, GraphPermission perm) {
-		operateTx(ac, (tx) -> {
+		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, perm);
 			String etag = element.getETag(ac);
@@ -214,7 +214,7 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
-		operateTx(ac, (tx) -> {
+		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
@@ -240,30 +240,40 @@ public class HandlerUtilities {
 	 * @param action
 	 *            Action which will be invoked once the handler has finished
 	 */
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction<RM> handler, Action1<RM> action) {
-		operate(ac, () -> {
+	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Action1<RM> action) {
+		async(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction0 handler, Action1<RM> action) {
-		operate(ac, () -> {
+	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Action1<RM> action, boolean order) {
+		async(ac, () -> {
+			return database.tx(handler);
+		}, action, order);
+	}
+
+	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction0 handler, Action1<RM> action) {
+		async(ac, () -> {
 			database.tx(handler);
 			return null;
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
-		operate(ac, () -> {
+	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
+		async(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction2 handler, Action1<RM> action) {
-		operate(ac, () -> {
+	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction2 handler, Action1<RM> action) {
+		async(ac, () -> {
 			database.tx(handler);
 			return null;
 		}, action);
+	}
+
+	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
+		async(ac, handler, action, false);
 	}
 
 	/**
@@ -273,14 +283,14 @@ public class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
-	private <RM extends RestModel> void operate(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
+	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action, boolean order) {
 		Mesh.vertx().executeBlocking(bc -> {
 			try {
 				bc.complete(handler.handle());
 			} catch (Exception e) {
 				bc.fail(e);
 			}
-		}, (AsyncResult<RM> rh) -> {
+		}, order, (AsyncResult<RM> rh) -> {
 			if (rh.failed()) {
 				ac.fail(rh.cause());
 			} else {

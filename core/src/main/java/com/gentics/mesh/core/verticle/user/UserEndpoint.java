@@ -71,7 +71,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleIssueAPIToken(ac, uuid);
@@ -85,7 +85,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token.");
-		deleteEndpoint.blockingHandler(rc -> {
+		deleteEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDeleteAPIToken(ac, uuid);
@@ -102,7 +102,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -119,7 +119,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleFetchToken(ac, uuid);
@@ -137,7 +137,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
-		readOne.blockingHandler(rc -> {
+		readOne.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleRead(ac, uuid);
@@ -156,7 +156,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(VersioningParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
-		readAll.blockingHandler(rc -> {
+		readAll.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleReadList(ac);
 		});
@@ -171,7 +171,7 @@ public class UserEndpoint extends AbstractEndpoint {
 				"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "User was deactivated.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -195,7 +195,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.addQueryParameters(UserParametersImpl.class);
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
 		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -211,7 +211,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));
 		endpoint.exampleResponse(CREATED, userExamples.getUserResponse1("newuser"), "User response of the created user.");
-		endpoint.blockingHandler(rc -> {
+		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleCreate(ac);
 		});

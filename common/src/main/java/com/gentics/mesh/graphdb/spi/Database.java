@@ -61,7 +61,13 @@ public interface Database extends TxFactory {
 	 */
 	void clear();
 
-	default <T> Single<T> operateTx(TxAction1<Single<T>> trxHandler) {
+	/**
+	 * Executes the given action in a worker pool thread and returns a single which can be subscribed to get the result.
+	 * 
+	 * @param trxHandler
+	 * @return
+	 */
+	default <T> Single<T> asyncTx(TxAction1<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {

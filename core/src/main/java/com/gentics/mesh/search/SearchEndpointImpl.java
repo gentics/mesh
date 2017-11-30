@@ -133,7 +133,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 		statusEndpoint.description("Returns the search index status.");
 		statusEndpoint.produces(APPLICATION_JSON);
 		statusEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Search index status.");
-		statusEndpoint.handler(rc -> {
+		statusEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			adminHandler.handleStatus(ac);
 		});

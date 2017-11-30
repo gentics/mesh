@@ -70,6 +70,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 				String str = buff.toString();
 				JsonObject received = new JsonObject(str);
 				assertNotNull(received.getJsonObject("body").getString("uuid"));
+				assertEquals("content", received.getJsonObject("body").getString("schemaName"));
 				latch.countDown();
 			});
 		});

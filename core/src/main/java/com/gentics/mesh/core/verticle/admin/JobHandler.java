@@ -50,7 +50,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		utils.operateTx(ac, (tx) -> {
+		utils.asyncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -73,7 +73,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.operateTx(ac, (tx) -> {
+		utils.asyncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -94,7 +94,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	@Override
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.operateTx(ac, (tx) -> {
+		utils.asyncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -122,7 +122,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param uuid
 	 */
 	public void handleResetJob(InternalActionContext ac, String uuid) {
-		utils.operateTx(ac, (tx) -> {
+		utils.asyncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -139,7 +139,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param ac
 	 */
 	public void handleInvokeJobWorker(InternalActionContext ac) {
-		utils.operateTx(ac, (tx) -> {
+		utils.asyncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

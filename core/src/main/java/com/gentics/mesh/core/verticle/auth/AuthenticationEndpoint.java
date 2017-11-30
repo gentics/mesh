@@ -70,7 +70,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		loginEndpoint.description("Login via this dedicated login endpoint.");
 		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
 		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
-		loginEndpoint.handler(rc -> {
+		loginEndpoint.blockingHandler(rc -> {
 			authRestHandler.handleLoginJWT(new InternalRoutingActionContextImpl(rc));
 		});
 

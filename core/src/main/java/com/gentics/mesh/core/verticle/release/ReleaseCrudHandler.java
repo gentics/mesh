@@ -84,7 +84,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		utils.operateTx(ac, (tx) -> {
+		utils.asyncTx(ac, (tx) -> {
 			Database db = MeshInternal.get().database();
 			User user = ac.getUser();
 
@@ -123,7 +123,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return getSchemaVersionsInfo(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -138,7 +138,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignSchemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			ReleaseInfoSchemaList schemaReferenceList = ac.fromJson(ReleaseInfoSchemaList.class);
@@ -183,7 +183,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
 			return getMicroschemaVersions(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -198,7 +198,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			ReleaseInfoMicroschemaList microschemaReferenceList = ac.fromJson(ReleaseInfoMicroschemaList.class);
@@ -269,7 +269,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	}
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			Project project = ac.getProject();
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
@@ -307,7 +307,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleMigrateRemainingNodes(InternalActionContext ac, String releaseUuid) {
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
 			Release release = ac.getProject().getReleaseRoot().findByUuid(releaseUuid);

@@ -129,6 +129,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
+
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");

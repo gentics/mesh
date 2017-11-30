@@ -12,7 +12,6 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -21,7 +20,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
-import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -29,6 +27,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.tx.Tx;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
@@ -39,17 +38,14 @@ public class WebRootHandler {
 
 	private WebRootServiceImpl webrootService;
 
-	private ImageManipulator imageManipulator;
-
 	private BinaryFieldResponseHandler binaryFieldResponseHandler;
 
 	private Database db;
 
 	@Inject
-	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootServiceImpl webrootService,
+	public WebRootHandler(Database database, WebRootServiceImpl webrootService,
 			BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.db = database;
-		this.imageManipulator = imageManipulator;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 	}
@@ -65,7 +61,7 @@ public class WebRootHandler {
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 
 			String releaseUuid = ac.getRelease().getUuid();
 			// Load all nodes for the given path

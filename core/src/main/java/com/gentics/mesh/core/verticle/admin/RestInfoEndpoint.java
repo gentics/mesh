@@ -60,12 +60,12 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		endpoint.displayName("RAML specification");
 		endpoint.exampleResponse(OK, "123");
 		endpoint.produces(APPLICATION_YAML);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			RAMLGenerator generator = new RAMLGenerator();
 			String raml = generator.generate();
 			rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_YAML_UTF8);
 			rc.response().end(raml);
-		});
+		}, false);
 
 		EndpointRoute infoEndpoint = createEndpoint();
 		infoEndpoint.path("/");
@@ -74,7 +74,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		infoEndpoint.produces(APPLICATION_JSON);
 		infoEndpoint.exampleResponse(OK, examples.getInfoExample(), "JSON which contains version information");
 		infoEndpoint.method(GET);
-		infoEndpoint.handler(rc -> {
+		infoEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshServerInfoModel info = new MeshServerInfoModel();
 			info.setDatabaseVendor(db.getVendorName());
@@ -85,7 +85,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			info.setMeshNodeId(Mesh.mesh().getOptions().getNodeName());
 			info.setVertxVersion(VersionCommand.getVersion());
 			ac.send(info, OK);
-		});
+		}, false);
 	}
 
 	@Override

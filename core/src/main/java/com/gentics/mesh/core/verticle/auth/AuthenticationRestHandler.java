@@ -35,7 +35,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMe(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			// TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
 			return requestUser.transformToRest(ac, 0);

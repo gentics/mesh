@@ -111,13 +111,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		} else {
 			String indexName = composeIndexNameFromEntry(entry);
 			String documentId = composeDocumentIdFromEntry(entry);
-			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).doOnCompleted(
-					() -> {
-						if (log.isDebugEnabled()) {
-							log.debug("Updated object in index.");
-						}
-						searchProvider.refreshIndex();
-					});
+			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).doOnCompleted(() -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Updated object in index.");
+				}
+				searchProvider.refreshIndex();
+			});
 		}
 	}
 

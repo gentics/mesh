@@ -56,7 +56,7 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleResolveLinks(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {
 				projectName = "project";
@@ -73,7 +73,7 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void validateSchema(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Schema schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 			JsonObject fullSettings = nodeIndexHandler.createIndexSettings(schema);
 			SchemaValidationResponse response = new SchemaValidationResponse();
@@ -106,7 +106,7 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void validateMicroschema(InternalActionContext ac) {
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 			model.validate();
 			SchemaValidationResponse report = new SchemaValidationResponse();

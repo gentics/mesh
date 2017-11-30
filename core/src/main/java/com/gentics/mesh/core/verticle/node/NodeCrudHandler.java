@@ -72,7 +72,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
@@ -101,7 +101,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 			Language language = MeshInternal.get().boot().meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
@@ -132,7 +132,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(toUuid, "toUuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			Project project = ac.getProject();
 
 			// Load the node that should be moved
@@ -160,7 +160,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToNavigation(ac);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -177,7 +177,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			NodeParameters nodeParams = ac.getNodeParameters();
 			PagingParameters pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
@@ -214,7 +214,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			try {
 				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getRelease());
@@ -246,7 +246,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -279,7 +279,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -306,7 +306,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToPublishStatus(ac);
 		}, model -> ac.send(model, OK));
@@ -323,7 +323,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch sqb = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
@@ -345,7 +345,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch batch = searchQueue.create();
 			node.takeOffline(ac, batch);
@@ -366,7 +366,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToPublishStatus(ac, languageTag);
 		}, model -> ac.send(model, OK));
@@ -385,7 +385,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch sqb = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
@@ -409,7 +409,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
@@ -433,7 +433,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
 
-		utils.operateTx(ac, () -> {
+		utils.asyncTx(ac, () -> {
 			RootVertex<Node> root = handler.handle();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
@@ -456,7 +456,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleBulkTagUpdate(InternalActionContext ac, String nodeUuid) {
 		validateParameter(nodeUuid, "nodeUuid");
 
-		db.operateTx(() -> {
+		db.asyncTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 			Tuple<TransformablePage<? extends Tag>, SearchQueueBatch> tuple = db.tx(() -> {

@@ -67,12 +67,7 @@ public class GenericEntryContextImpl implements GenericEntryContext {
 		return schemaContainerVersionUuid;
 	}
 
-	/**
-	 * Set the schema container version uuid.
-	 * 
-	 * @param schemaContainerVersionUuid
-	 * @return Fluent API
-	 */
+	@Override
 	public GenericEntryContextImpl setSchemaContainerVersionUuid(String schemaContainerVersionUuid) {
 		this.schemaContainerVersionUuid = schemaContainerVersionUuid;
 		return this;
