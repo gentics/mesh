@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -21,8 +22,11 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -104,14 +108,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 		}
 
-		JsonObject newQuery = new JsonObject()
-			.put("bool", new JsonObject()
-				.put("filter", new JsonObject()
-					.put("terms", new JsonObject()
-						.put("_roleUuids", roleUuids)
-					)
-				)
-			);
+		JsonObject newQuery = new JsonObject().put("bool",
+				new JsonObject().put("filter", new JsonObject().put("terms", new JsonObject().put("_roleUuids", roleUuids))));
 
 		// Wrap the original query in a nested bool query in order check the role perms
 		JsonObject originalQuery = userJson.getJsonObject("query");
@@ -140,20 +138,20 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		SearchRequestBuilder builder = null;
 		try {
 			JsonObject query = prepareSearchQuery(ac, searchQuery);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(parseQuery(query.toString()));
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
 		}
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		builder.execute(new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
 				ac.send(response.toString(), OK);
 			}
 
-			public void onFailure(Throwable e) {
+			public void onFailure(Exception e) {
 				log.error("Search query failed", e);
 				try {
 					JsonObject json = convertToJson(e);
@@ -165,6 +163,23 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 		});
 
+	}
+
+	/**
+	 * Parses an Elasticsearch query string to the SearchSourceBuilder object, which is used to send queries to ES.
+	 * 
+	 * @param query
+	 *            The query to be sent to ES
+	 * @return The SearchSourceBuilder object
+	 * @throws IOException
+	 *             if the query could not be parsed
+	 */
+	protected SearchSourceBuilder parseQuery(String query) {
+		try {
+			return SearchSourceBuilder.fromXContent(XContentType.JSON.xContent().createParser(NamedXContentRegistry.EMPTY, query));
+		} catch (IOException e) {
+			throw new RuntimeException("Error while parsing query", e);
+		}
 	}
 
 	@Override
@@ -192,13 +207,13 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		SearchRequestBuilder builder = null;
 		try {
 			JsonObject query = prepareSearchQuery(ac, searchQuery);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(parseQuery(query.toString()));
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
 		}
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		builder.execute(new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
@@ -294,7 +309,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 
 			@Override
-			public void onFailure(Throwable e) {
+			public void onFailure(Exception e) {
 				log.error("Search query failed", e);
 				GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
 				if (e instanceof ElasticsearchException) {
@@ -323,12 +338,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		return "No ElasticsearchException found";
 	}
 
-	private static JsonObject convertToJson(Throwable e) throws Exception {
+	private static JsonObject convertToJson(Exception e) throws Exception {
 		// Create a mocked channel and convert the throwable to json
 		MeshRestChannel channel = new MeshRestChannel(null, true);
 		BytesRestResponse response = new BytesRestResponse(channel, e);
 		BytesReference ref = response.content();
-		return new JsonObject(new String(ref.array()));
+		return new JsonObject(new String(ref.utf8ToString()));
 	}
 
 	@Override
@@ -344,13 +359,13 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		try {
 			JsonObject queryJson = prepareSearchQuery(ac, query);
 			Set<String> indices = indexHandler.getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryJson.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(parseQuery(queryJson.toString()));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		builder.execute(new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
@@ -374,7 +389,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 
 			@Override
-			public void onFailure(Throwable e) {
+			public void onFailure(Exception e) {
 				log.error("Search query failed", e);
 				future.completeExceptionally(e);
 			}

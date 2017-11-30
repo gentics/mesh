@@ -208,19 +208,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable clearIndex() {
-		Set<Completable> obs = new HashSet<>();
-		// Iterate over all indices which the handler is responsible for and
-		// clear all of them.
-		getIndices().keySet().forEach(index -> obs.add(searchProvider.clearIndex(index)));
-		if (obs.isEmpty()) {
-			return Completable.complete();
-		} else {
-			return Completable.merge(obs);
-		}
-	}
-
-	@Override
 	public boolean accepts(Class<?> clazzOfElement) {
 		return getElementClass().isAssignableFrom(clazzOfElement);
 	}
