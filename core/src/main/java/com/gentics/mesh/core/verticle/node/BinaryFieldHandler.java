@@ -410,7 +410,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param ac Action context
 	 * @param uuid
 	 * @param segmentedPath
-	 * @return calculated SHA 512 sum
 	 */
 	public void moveBinaryFile(InternalActionContext ac, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();

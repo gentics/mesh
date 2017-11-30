@@ -401,7 +401,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Handle admin password reset
-
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			try (Tx tx = db.tx()) {

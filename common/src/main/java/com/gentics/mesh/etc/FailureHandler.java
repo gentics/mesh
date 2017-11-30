@@ -63,8 +63,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String msg = I18NUtil.get(ac, "error_not_authorized");
-			rc.response().setStatusCode(401);
-			rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
+			rc.response().setStatusCode(401).end(JsonUtil.toJson(new GenericMessageResponse(msg)));
 			return;
 		} else {
 			Throwable failure = rc.failure();

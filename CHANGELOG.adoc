@@ -2,7 +2,9 @@
 
 = Gentics Mesh Changelog
 
-== 0.11.3 (TBD)
+== 0.11.3 (30.11.2017)
+
+icon:plus[] Core: Various performance enhancements have been made to increase the concurrency handling and to lower the request times.
 
 icon:plus[] Websocket: It is now possible to register to a larger set of internal events. A full list of all events is documented within the link:https://getmesh.io/docs/beta/features.html#_eventbus_bridge_websocket[eventbus bridge / websocket documentation].
 
@@ -15,6 +17,10 @@ icon:plus[] GraphQL: It is now possible to load a list of all languages of a nod
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 6.0
 
 icon:check[] Core: Fixed a bug which prevented uploading multiple binaries to the same node.
+
+icon:check[] UI: Fixed error message handling for failed save requests.
+
+icon:check[] UI: Fixed the dropdown positioning in IE within the node edit area.
 
 icon:check[] Memory: The memory usage for micronode migrations has been improved.
 
