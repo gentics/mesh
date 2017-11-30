@@ -107,13 +107,6 @@ public interface SearchProvider {
 	void reset();
 
 	/**
-	 * Clear the given index. This will effectively remove all documents from the index without removing the index itself.
-	 * 
-	 * @param indexName
-	 */
-	Completable clearIndex(String indexName);
-
-	/**
 	 * Delete all indices.
 	 */
 	void clear();
@@ -138,30 +131,6 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Completable deleteIndex(String indexName, boolean failOnMissingIndex);
-
-	/**
-	 * Delete all documents which were found using the query.
-	 * 
-	 * @param query
-	 *            Search query
-	 * @param indices
-	 *            Indices to be searched for documents
-	 * @return Single which emits the amount of deleted documents
-	 */
-	Single<Integer> deleteDocumentsViaQuery(String query, String... indices);
-
-	/**
-	 * Delete all documents which were found using the query.
-	 * 
-	 * @param query
-	 *            Search query
-	 * @param indices
-	 *            Indices to be searched for documents
-	 * @return Single which emits the amount of deleted nodes
-	 */
-	default Single<Integer> deleteDocumentsViaQuery(JSONObject query, String... indices) {
-		return deleteDocumentsViaQuery(query.toString(), indices);
-	}
 
 	/**
 	 * Returns the search provider vendor name.

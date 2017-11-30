@@ -3,8 +3,7 @@ package com.gentics.mesh.core.console;
 import java.io.IOException;
 
 import javax.inject.Inject;
-
-import groovy.lang.Singleton;
+import javax.inject.Singleton;
 
 @Singleton
 public class ConsoleProviderImpl implements ConsoleProvider {

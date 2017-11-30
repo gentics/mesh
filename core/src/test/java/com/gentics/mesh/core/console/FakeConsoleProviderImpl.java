@@ -3,8 +3,8 @@ package com.gentics.mesh.core.console;
 import java.io.IOException;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
-import groovy.lang.Singleton;
 
 /**
  * Fake console provider which will not block tests.
