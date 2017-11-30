@@ -193,7 +193,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 					bh.fail("Invalid credentials!");
 				}
 			}
-		}, resultHandler);
+		}, false, resultHandler);
 
 	}
 
