@@ -5,8 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -40,14 +40,14 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	/**
 	 * Cache for project specific releases.
 	 */
-	private Map<Project, Release> releaseCache = new HashMap<>();
+	private Map<Project, Release> releaseCache = new ConcurrentHashMap<>();
 
 	@Override
 	public Release getRelease(Project project) {
+		if (project == null) {
+			project = getProject();
+		}
 		return releaseCache.computeIfAbsent(project, p -> {
-			if (p == null) {
-				p = getProject();
-			}
 			if (p == null) {
 				// TODO i18n
 				throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
