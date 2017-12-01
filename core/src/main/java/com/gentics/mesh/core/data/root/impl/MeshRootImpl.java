@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE_ROOT;
@@ -24,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.binary.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
@@ -65,6 +68,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private static SchemaContainerRoot schemaContainerRoot;
 	private static MicroschemaContainerRoot microschemaContainerRoot;
 	private static JobRoot jobRoot;
+	private static BinaryRoot binaryRoot;
 
 	public static void init(Database database) {
 		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
@@ -81,6 +85,25 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
+	public BinaryRoot getBinaryRoot() {
+		if (binaryRoot == null) {
+			synchronized (MeshRootImpl.class) {
+				BinaryRoot foundAssetBinaryRoot = out(HAS_BINARY_ROOT).nextOrDefaultExplicit(BinaryRootImpl.class, null);
+				if (foundAssetBinaryRoot == null) {
+					binaryRoot = getGraph().addFramedVertex(BinaryRootImpl.class);
+					linkOut(binaryRoot, HAS_BINARY_ROOT);
+					if (log.isInfoEnabled()) {
+						log.info("Created binary root {" + binaryRoot.getUuid() + "}");
+					}
+				} else {
+					binaryRoot = foundAssetBinaryRoot;
+				}
+			}
+		}
+		return binaryRoot;
+	}
+
+	@Override
 	public JobRoot getJobRoot() {
 		if (jobRoot == null) {
 			synchronized (MeshRootImpl.class) {
@@ -89,7 +112,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 					jobRoot = getGraph().addFramedVertex(JobRootImpl.class);
 					linkOut(jobRoot, HAS_JOB_ROOT);
 					if (log.isDebugEnabled()) {
-						log.debug("Created job queue {" + jobRoot.getUuid() + "}");
+						log.debug("Created job root {" + jobRoot.getUuid() + "}");
 					}
 				} else {
 					jobRoot = foundJobRoot;
@@ -179,8 +202,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public SchemaContainerRoot getSchemaContainerRoot() {
 		if (schemaContainerRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(
-						SchemaContainerRootImpl.class, null);
+				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class)
+						.nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
 				if (foundSchemaContainerRoot == null) {
 					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 					linkOut(schemaContainerRoot, HAS_SCHEMA_ROOT);

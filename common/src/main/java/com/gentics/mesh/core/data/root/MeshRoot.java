@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 
 /**
@@ -88,6 +89,13 @@ public interface MeshRoot extends MeshVertex {
 	 * @return
 	 */
 	TagFamilyRoot getTagFamilyRoot();
+
+	/**
+	 * Return the binary aggregation vertex.
+	 * 
+	 * @return
+	 */
+	BinaryRoot getBinaryRoot();
 
 	/**
 	 * Returns the schema container aggregation vertex.
