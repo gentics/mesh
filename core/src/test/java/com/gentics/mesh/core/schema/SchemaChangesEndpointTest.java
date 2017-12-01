@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.testcontainers.shaded.com.google.common.collect.Iterators;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -491,7 +492,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// Validate schema changes and versions
 		try (Tx tx = tx()) {
-			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, container.findAll().size());
+			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, Iterators.size(container.findAll().iterator()));
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
 			assertNull("The last version should not have any futher versions", container.getLatestVersion().getNextVersion());
 

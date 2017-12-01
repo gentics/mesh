@@ -3,10 +3,12 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 
 import java.util.Iterator;
 import java.util.List;
@@ -24,10 +26,13 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -149,6 +154,34 @@ public class SchemaContainerVersionImpl extends
 		return MeshInternal.get().database().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public Iterable<Job> referencedJobsViaTo() {
+		return in(HAS_TO_VERSION).frame(Job.class);
+	}
+
+	@Override
+	public Iterable<Job> referencedJobsViaFrom() {
+		return in(HAS_FROM_VERSION).frame(Job.class);
+	}
+
+	@Override
+	public void delete(SearchQueueBatch batch) {
+		// Delete change
+		SchemaChange<?> change = getNextChange();
+		if (change != null) {
+			change.remove();
+		}
+		// Delete referenced jobs
+		for (Job job : referencedJobsViaFrom()) {
+			job.remove();
+		}
+		for (Job job : referencedJobsViaTo()) {
+			job.remove();
+		}
+		// Delete version
+		remove();
 	}
 
 	@Override

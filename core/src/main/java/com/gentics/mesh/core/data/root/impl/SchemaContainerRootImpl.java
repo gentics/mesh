@@ -169,16 +169,16 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 		// Check whether a container was actually found
 		if (schemaContainer == null) {
-			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
-					isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
+					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 		}
 		if (schemaVersion == null) {
 			return schemaContainer.getLatestVersion();
 		} else {
 			SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
 			if (foundVersion == null) {
-				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
-						isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
+						: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 			} else {
 				return foundVersion;
 			}

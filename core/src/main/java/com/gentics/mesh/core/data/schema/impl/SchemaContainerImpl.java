@@ -75,8 +75,10 @@ public class SchemaContainerImpl extends
 		Iterator<? extends NodeImpl> it = getNodes().iterator();
 		if (!it.hasNext()) {
 			batch.delete(this, true);
-			getElement().remove();
-			// TODO handel related elements?
+			for(SchemaContainerVersion v : findAll()) {
+				v.delete(batch);
+			}
+			remove();
 		} else {
 			throw error(BAD_REQUEST, "schema_delete_still_in_use", getUuid());
 		}

@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -68,8 +67,8 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public List<? extends SCV> findAll() {
-		return out(HAS_PARENT_CONTAINER).toListExplicit(getContainerVersionClass());
+	public Iterable<? extends SCV> findAll() {
+		return out(HAS_PARENT_CONTAINER).frameExplicit(getContainerVersionClass());
 	}
 
 	@Override
