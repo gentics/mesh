@@ -53,12 +53,16 @@ public class VersioningExamples extends AbstractExamples {
 	public ReleaseCreateRequest createReleaseCreateRequest(String name) {
 		ReleaseCreateRequest create = new ReleaseCreateRequest();
 		create.setName(name);
+		create.setHostname("getmesh.io");
+		create.setSsl(true);
 		return create;
 	}
 
 	public ReleaseUpdateRequest createReleaseUpdateRequest(String name) {
 		ReleaseUpdateRequest update = new ReleaseUpdateRequest();
 		update.setName(name);
+		update.setHostname("getmesh.io");
+		update.setSsl(true);
 		// update.setActive(false);
 		return update;
 	}
@@ -83,6 +87,8 @@ public class VersioningExamples extends AbstractExamples {
 		response.setCreator(createUserReference());
 		response.setEdited(createTimestamp());
 		response.setEditor(createUserReference());
+		response.setHostname("getmesh.io");
+		response.setSsl(true);
 		response.setMigrated(true);
 		response.setPermissions(READ, UPDATE,  DELETE, CREATE);
 		response.setRolePerms(READ, UPDATE,  DELETE, CREATE);

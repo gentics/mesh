@@ -56,6 +56,8 @@ public class ProjectExamples extends AbstractExamples {
 	public ProjectCreateRequest getProjectCreateRequest(String name) {
 		ProjectCreateRequest projectCreate = new ProjectCreateRequest();
 		projectCreate.setName(name);
+		projectCreate.setHostname("getmesh.io");
+		projectCreate.setSsl(true);
 		projectCreate.setSchema(new SchemaReferenceImpl().setName("folder").setUuid(randomUUID()));
 		return projectCreate;
 	}

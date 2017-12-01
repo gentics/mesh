@@ -134,7 +134,6 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addReadHandler() {
-
 		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:releaseUuid");
 		readOne.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());

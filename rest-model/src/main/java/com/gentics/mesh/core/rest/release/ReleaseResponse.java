@@ -13,6 +13,14 @@ public class ReleaseResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("Name of the release")
 	private String name;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The hostname of the release which will be used to generate links across multiple projects.")
+	private String hostname;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("SSL flag of the release which will be used to generate links across multiple projects.")
+	private Boolean ssl;
+
 	// private boolean active;
 
 	@JsonProperty(required = true)
@@ -58,5 +66,21 @@ public class ReleaseResponse extends AbstractGenericRestResponse {
 
 	public void setMigrated(boolean migrated) {
 		this.migrated = migrated;
+	}
+
+	public String getHostname() {
+		return hostname;
+	}
+
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
+
+	public Boolean getSsl() {
+		return ssl;
+	}
+
+	public void setSsl(Boolean ssl) {
+		this.ssl = ssl;
 	}
 }

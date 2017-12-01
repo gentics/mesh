@@ -80,6 +80,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		Database db = MeshInternal.get().database();
 		ReleaseUpdateRequest requestModel = ac.fromJson(ReleaseUpdateRequest.class);
+		boolean modified = false;
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflicting project name
@@ -88,12 +89,24 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 				throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", requestModel.getName());
 			}
 			setName(requestModel.getName());
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getHostname(), getHostname())) {
+			setHostname(requestModel.getHostname());
+			modified = true;
+		}
+
+		if (requestModel.getSsl() != null && requestModel.getSsl() != getSsl()) {
+			setSsl(requestModel.getSsl());
+			modified = true;
+		}
+
+		if (modified) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
-			return true;
-		} else {
-			return false;
 		}
+		return modified;
 	}
 
 	@Override
@@ -101,6 +114,8 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
+		restRelease.setHostname(getHostname());
+		restRelease.setSsl(getSsl());
 		// restRelease.setActive(isActive());
 		restRelease.setMigrated(isMigrated());
 
@@ -116,13 +131,35 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return getProperty(NAME);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		setProperty(NAME, name);
 		setProperty(UNIQUENAME_PROPERTY_KEY, getRoot().getUniqueNameKey(name));
+	}
+
+	@Override
+	public String getHostname() {
+		return getProperty(HOSTNAME);
+	}
+
+	@Override
+	public Release setHostname(String hostname) {
+		setProperty(HOSTNAME, hostname);
+		return this;
+	}
+
+	@Override
+	public boolean getSsl() {
+		return getProperty(SSL);
+	}
+
+	@Override
+	public Release setSsl(boolean ssl) {
+		setProperty(SSL, ssl);
+		return this;
 	}
 
 	@Override
