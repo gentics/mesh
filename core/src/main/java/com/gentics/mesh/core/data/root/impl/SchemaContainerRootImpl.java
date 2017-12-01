@@ -12,6 +12,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -71,7 +72,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
-		validateSchema(schema);
+		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
+		// https://github.com/gentics/mesh/issues/210
+		if (Mesh.vertx() != null) {
+			validateSchema(schema);
+		}
 
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		if (uuid != null) {
