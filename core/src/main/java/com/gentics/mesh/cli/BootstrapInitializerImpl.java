@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -579,6 +580,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public NodeRoot nodeRoot() {
 		return meshRoot().getNodeRoot();
+	}
+
+	@Override
+	public BinaryRoot binaryRoot() {
+		return meshRoot().getBinaryRoot();
 	}
 
 	@Override

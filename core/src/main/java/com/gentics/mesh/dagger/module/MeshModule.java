@@ -20,6 +20,8 @@ import com.gentics.mesh.image.ImgscalrImageManipulator;
 import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
+import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.storage.BinaryStorageService;
 
 import dagger.Module;
 import dagger.Provides;
@@ -57,6 +59,18 @@ public class MeshModule {
 	@Singleton
 	public static DatabaseService databaseService() {
 		return DatabaseService.getInstance();
+	}
+
+	@Provides
+	@Singleton
+	public static BinaryStorageService storageService() {
+		return BinaryStorageService.getInstance();
+	}
+
+	@Provides
+	@Singleton
+	public static BinaryStorage binaryStorage() {
+		return storageService().getStorage();
 	}
 
 	@Provides

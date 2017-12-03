@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.util.PropReadFileStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -28,7 +28,11 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.util.PropReadFileStream;
+import com.gentics.mesh.util.RxUtil;
 
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.rxjava.core.Vertx;
 import rx.Single;
 
@@ -121,8 +125,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<PropReadFileStream> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters) {
-		File cacheFile = getCacheFile(sha512sum, parameters);
+	public Single<PropReadFileStream> handleResize(ReadStream<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
+		File cacheFile = getCacheFile(cacheKey, parameters);
 
 		// 1. Check the cache file directory
 		if (cacheFile.exists()) {
@@ -132,23 +136,26 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// 2. Read the image
 		BufferedImage bi = null;
 		try {
-			bi = ImageIO.read(ins);
-			if (bi == null) {
-				throw error(BAD_REQUEST, "image_error_reading_failed");
-			}
-			if (bi.getTransparency() == Transparency.TRANSLUCENT) {
-				// NOTE: For BITMASK images, the color model is likely IndexColorModel,
-				// and this model will contain the "real" color of the transparent parts
-				// which is likely a better fit than unconditionally setting it to white.
+			Single<Buffer> data = RxUtil.readEntireData(stream);
+			try (InputStream ins = new ByteArrayInputStream(data.toBlocking().value().getBytes())) {
+				bi = ImageIO.read(ins);
+				if (bi == null) {
+					throw error(BAD_REQUEST, "image_error_reading_failed");
+				}
+				if (bi.getTransparency() == Transparency.TRANSLUCENT) {
+					// NOTE: For BITMASK images, the color model is likely IndexColorModel,
+					// and this model will contain the "real" color of the transparent parts
+					// which is likely a better fit than unconditionally setting it to white.
 
-				// Fill background with white
-				Graphics2D graphics = bi.createGraphics();
-				try {
-					graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
-					graphics.setPaint(Color.WHITE);
-					graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-				} finally {
-					graphics.dispose();
+					// Fill background with white
+					Graphics2D graphics = bi.createGraphics();
+					try {
+						graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
+						graphics.setPaint(Color.WHITE);
+						graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+					} finally {
+						graphics.dispose();
+					}
 				}
 			}
 		} catch (Exception e) {

@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.AsyncFile;
+import io.vertx.core.streams.ReadStream;
+import io.vertx.lang.rxjava.TypeArg;
 import rx.Completable;
 import rx.Observable;
-import rx.Single;
 import rx.Observable.Transformer;
+import rx.Single;
 import rx.Subscriber;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -80,12 +81,12 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Reads the entire AsyncFile object and returns its contents as a buffer.
+	 * Reads the entire stream and returns its contents as a buffer.
 	 */
-	public static Single<Buffer> readEntireFile(AsyncFile file) {
-		return new io.vertx.rxjava.core.file.AsyncFile(file).toObservable()
+	@Deprecated
+	public static Single<Buffer> readEntireData(ReadStream<Buffer> stream) {
+		return io.vertx.rxjava.core.streams.ReadStream.newInstance(stream, TypeArg.of(Buffer.class)).toObservable()
 			.reduce((a, b) -> a.appendBuffer(b))
-			.toSingle()
-			.map(it -> it.getDelegate());
+			.toSingle();
 	}
 }

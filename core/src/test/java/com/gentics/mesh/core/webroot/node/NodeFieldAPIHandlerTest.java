@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.webroot.node;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -12,27 +13,27 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.gentics.mesh.context.InternalActionContext;
-import io.vertx.core.file.FileSystemException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.file.FileSystemException;
 import io.vertx.ext.web.FileUpload;
-import rx.exceptions.CompositeException;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 	private BinaryFieldHandler handler;
+
+	private BinaryStorage storage;
 
 	private MeshUploadOptions uploadOptions;
 
@@ -44,6 +45,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 	public void setup() throws Exception {
 		uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		handler = meshDagger().nodeFieldAPIHandler();
+		storage = meshDagger().binaryStorage();
 	}
 
 	@Test
@@ -55,7 +57,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 		ac.put("sourceFile", fileUpload);
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
-		handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
+		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
 		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertThat(uploadFolder).as("The upload folder should have been created").exists();
 		FileUtils.deleteDirectory(uploadFolder);
@@ -63,7 +65,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		fileUpload = mockUpload();
 		ac.put("sourceFile", fileUpload);
 		assertThat(uploadFolder).as("The upload folder should have been created").doesNotExist();
-		handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
+		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
 		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertTrue("The upload folder should have been created.", uploadFolder.exists());
 	}
@@ -77,7 +79,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		File uploadFolder = getUploadFolder();
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
 
-		handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
+		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
 		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertThat(uploadFolder).as("The upload folder should have been created").exists();
 		FileUtils.deleteDirectory(uploadFolder);
@@ -91,11 +93,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 		// Delete the file on purpose in order to invoke an error
 		new File(fileUpload).delete();
-		try {
-			handler.moveBinaryFile(ac, UUIDUtil.randomUUID(), segmentedPath);
-		} catch (CompositeException e) {
-			throw e.getExceptions().get(1);
-		}
+		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
 	}
 
 	private File getUploadFolder() {

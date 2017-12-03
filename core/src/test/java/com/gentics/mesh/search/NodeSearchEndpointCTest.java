@@ -1,8 +1,8 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
@@ -14,7 +14,9 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -22,6 +24,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -76,12 +79,16 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.jpg").setFileSize(200).setImageHeight(200)
-					.setImageWidth(400).setMimeType("image/jpeg").setSHA512Sum("someHash").setImageDominantColor("#super");
+			Binary binary = MeshInternal.get().boot().binaryRoot().create("someHash");
+			binary.setSize(200);
+			binary.setImageHeight(200);
+			binary.setImageWidth(400);
+			BinaryGraphField field = nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName("somefile.jpg")
+					.setMimeType("image/jpeg").setImageDominantColor("#super");
 
 			// file
-			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.dat").setFileSize(200)
-					.setMimeType("application/test").setSHA512Sum("someHash");
+			BinaryGraphField fieldB = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName("somefile.dat")
+					.setMimeType("application/test");
 			recreateIndices();
 			tx.success();
 		}

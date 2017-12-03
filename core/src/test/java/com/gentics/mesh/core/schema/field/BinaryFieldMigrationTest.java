@@ -20,13 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.script.ScriptException;
 
-import com.gentics.mesh.util.RxUtil;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.buffer.Buffer;
 
@@ -36,11 +39,13 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	String sha512Sum;
 
 	final DataProvider FILL = (container, name) -> {
-		BinaryGraphField field = container.createBinary(name);
+		Binary binary = MeshInternal.get().boot().binaryRoot().create(sha512Sum);
+		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		sha512Sum = meshDagger().nodeFieldAPIHandler().hashAndStoreBinaryFile(Buffer.buffer(FILECONTENTS), field.getUuid(), field.getSegmentedPath());
-		field.setSHA512Sum(sha512Sum);
+		Buffer buffer = Buffer.buffer(FILECONTENTS);
+		String sha512sum = BinaryStorage.hashBuffer(buffer);
+		meshDagger().binaryStorage().store(buffer, sha512sum);
 	};
 
 	@Test
@@ -56,8 +61,8 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
 			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-			assertThat(container.getBinary(name).getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
-			Buffer contents = container.getBinary(name).getFileStream().flatMap(RxUtil::readEntireFile).toBlocking().value();
+			assertThat(container.getBinary(name).getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
+			Buffer contents = container.getBinary(name).getBinary().getStream().flatMap(RxUtil::readEntireData).toBlocking().value();
 			assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
 		});
 	}
@@ -69,8 +74,8 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
 			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-			assertThat(container.getBinary(name).getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
-			Buffer contents = container.getBinary(name).getFileStream().flatMap(RxUtil::readEntireFile).toBlocking().value();
+			assertThat(container.getBinary(name).getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
+			Buffer contents = container.getBinary(name).getBinary().getStream().flatMap(RxUtil::readEntireData).toBlocking().value();
 			assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
 		});
 	}
@@ -197,8 +202,8 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 					assertThat(newField).as(NEWFIELD).isNotNull();
 					assertThat(newField.getFileName()).as(NEWFIELDVALUE).isEqualTo("bla" + FILENAME);
 					assertThat(newField.getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-					assertThat(newField.getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
-					Buffer contents = container.getBinary(name).getFileStream().flatMap(RxUtil::readEntireFile).toBlocking().value();
+					assertThat(newField.getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
+					Buffer contents = container.getBinary(name).getBinary().getStream().flatMap(RxUtil::readEntireData).toBlocking().value();
 					assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
 				});
 	}

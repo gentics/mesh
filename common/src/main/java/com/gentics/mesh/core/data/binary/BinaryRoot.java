@@ -37,6 +37,14 @@ public interface BinaryRoot extends MeshVertex {
 		}
 	}
 
+	/**
+	 * Find the binary with the given hashsum.
+	 * 
+	 * @param hash
+	 * @return
+	 */
+	Binary findByHash(String hash);
+
 	default public String getRootLabel() {
 		return HAS_BINARY;
 	}
@@ -53,7 +61,7 @@ public interface BinaryRoot extends MeshVertex {
 	public Class<? extends Binary> getPersistanceClass();
 
 	/**
-	 * Create a new binary.
+	 * Create a new binary or return the binary that exists for the given hash. 
 	 * 
 	 * @param sha512sum
 	 * @return

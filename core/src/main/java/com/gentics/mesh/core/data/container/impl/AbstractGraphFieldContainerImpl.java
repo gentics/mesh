@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -192,30 +192,15 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public BinaryGraphField createBinary(String fieldKey) {
-		BinaryGraphField existing = getBinary(fieldKey);
-		BinaryGraphFieldImpl field = getGraph().addFramedVertex(BinaryGraphFieldImpl.class);
-		field.setFieldKey(fieldKey);
-
-		MeshEdgeImpl edge = getGraph().addFramedEdge(this, field, HAS_FIELD, MeshEdgeImpl.class);
-		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey);
-
-		if (existing != null) {
-			// Copy the old values to the new field
-			existing.copyTo(field);
-
-			unlinkOut(existing, HAS_FIELD);
-			// Remove the field if no more containers are using it
-			if (existing.in(HAS_FIELD).count() == 0) {
-				existing.remove();
-			}
-		}
-		return field;
+	public BinaryGraphField createBinary(String fieldKey, Binary binary) {
+		BinaryGraphField edge = addFramedEdge(HAS_FIELD, binary, BinaryGraphFieldImpl.class);
+		edge.setFieldKey(fieldKey);
+		return edge;
 	}
 
 	@Override
 	public BinaryGraphField getBinary(String key) {
-		return out(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
+		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
 	}
 
 	@Override

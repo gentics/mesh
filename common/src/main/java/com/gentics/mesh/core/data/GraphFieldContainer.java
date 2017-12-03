@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -58,12 +59,13 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	BinaryGraphField getBinary(String key);
 
 	/**
-	 * Create the binary graph field with the given key.
+	 * Create a binary field and use the given binary to be referenced by the field.
 	 * 
-	 * @param key
+	 * @param fieldKey
+	 * @param binary
 	 * @return
 	 */
-	BinaryGraphField createBinary(String key);
+	BinaryGraphField createBinary(String fieldKey, Binary binary);
 
 	/**
 	 * Return the node graph field for the given key.
@@ -349,4 +351,5 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 *            schema container version
 	 */
 	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version);
+
 }

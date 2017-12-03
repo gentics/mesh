@@ -5,21 +5,23 @@ import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
-import java.io.File;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.http.MeshHeaders;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.streams.Pump;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -30,9 +32,12 @@ public class BinaryFieldResponseHandler {
 
 	private ImageManipulator imageManipulator;
 
+	private BinaryStorage storage;
+
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage) {
 		this.imageManipulator = imageManipulator;
+		this.storage = storage;
 	}
 
 	/**
@@ -42,16 +47,16 @@ public class BinaryFieldResponseHandler {
 	 * @param binaryField
 	 */
 	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
-		File binaryFile = binaryField.getFile();
-		if (!binaryFile.exists()) {
+		if (!storage.exists(binaryField)) {
 			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
 			return;
 		} else {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String contentLength = String.valueOf(binaryField.getFileSize());
+			Binary binary = binaryField.getBinary();
+			String contentLength = String.valueOf(binary.getSize());
 			String fileName = binaryField.getFileName();
 			String contentType = binaryField.getMimeType();
-			String sha512sum = binaryField.getSHA512Sum();
+			String sha512sum = binary.getSHA512Sum();
 
 			// Check the etag
 			String etagKey = sha512sum;
@@ -66,8 +71,8 @@ public class BinaryFieldResponseHandler {
 				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
-				imageManipulator.handleResize(binaryField.getFile(), binaryField.getSHA512Sum(), ac.getImageParameters())
-				.subscribe(fileWithProps -> {
+				ReadStream<Buffer> data = storage.read(binaryField);
+				imageManipulator.handleResize(data, binary.getSHA512Sum(), ac.getImageParameters()).subscribe(fileWithProps -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -82,7 +87,7 @@ public class BinaryFieldResponseHandler {
 					Pump.pump(file, rc.response()).start();
 				}, rc::fail);
 			} else {
-				binaryField.getFileStream().subscribe(file -> {
+				binary.getStream().subscribe(file -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -93,7 +98,6 @@ public class BinaryFieldResponseHandler {
 
 					file.endHandler(ignore -> {
 						rc.response().end();
-						file.close();
 					});
 					Pump.pump(file, rc.response()).start();
 				}, rc::fail);

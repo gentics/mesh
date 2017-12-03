@@ -11,9 +11,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -30,6 +30,8 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
@@ -48,6 +50,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		String hash = "6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc";
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
 			// Update the schema and add a binary field
@@ -55,14 +58,12 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 			schema.addField(createFieldSchema(true));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-			BinaryGraphField field = container.createBinary(BINARY_FIELD);
+			Binary binary = meshRoot().getBinaryRoot().create(hash);
+			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");
-			field.setSHA512Sum(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
-			field.setImageHeight(200);
-			field.setImageWidth(300);
+			binary.setImageHeight(200);
+			binary.setImageWidth(300);
 			tx.success();
 		}
 
@@ -75,6 +76,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 			BinaryField deserializedNodeField = response.getFields().getBinaryField(BINARY_FIELD);
 			assertNotNull(deserializedNodeField);
+			assertEquals(hash, deserializedNodeField.getSha512sum());
 			assertEquals(200, deserializedNodeField.getHeight().intValue());
 			assertEquals(300, deserializedNodeField.getWidth().intValue());
 		}
@@ -85,34 +87,32 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-
-			BinaryGraphField field = container.createBinary(BINARY_FIELD);
+			Binary binary = meshRoot().getBinaryRoot().create(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
+			field.getBinary().setSize(220);
 			assertNotNull(field);
 			assertEquals(BINARY_FIELD, field.getFieldKey());
 
 			field.setFileName("blume.jpg");
 			field.setMimeType("image/jpg");
-			field.setFileSize(220);
 			field.setImageDominantColor("#22A7F0");
-			field.setImageHeight(133);
-			field.setImageWidth(7);
-			field.setSHA512Sum(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
-			System.out.println(field.getSegmentedPath());
+			field.getBinary().setImageHeight(133);
+			field.getBinary().setImageWidth(7);
 
 			BinaryGraphField loadedField = container.getBinary(BINARY_FIELD);
+			Binary loadedBinary = loadedField.getBinary();
 			assertNotNull("The previously created field could not be found.", loadedField);
-			assertEquals(220, loadedField.getFileSize());
+			assertEquals(220, loadedBinary.getSize());
 
 			assertEquals("blume.jpg", loadedField.getFileName());
 			assertEquals("image/jpg", loadedField.getMimeType());
-			assertEquals(220, loadedField.getFileSize());
 			assertEquals("#22A7F0", loadedField.getImageDominantColor());
-			assertEquals(133, loadedField.getImageHeight().intValue());
-			assertEquals(7, loadedField.getImageWidth().intValue());
+			assertEquals(133, loadedField.getBinary().getImageHeight().intValue());
+			assertEquals(7, loadedField.getBinary().getImageWidth().intValue());
 			assertEquals(
 					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
-					loadedField.getSHA512Sum());
+					loadedBinary.getSHA512Sum());
 		}
 	}
 
@@ -122,18 +122,18 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-			BinaryGraphField field = container.createBinary(BINARY_FIELD);
+			Binary binary = meshRoot().getBinaryRoot().create(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
+			field.getBinary().setSize(220);
 			assertNotNull(field);
 			assertEquals(BINARY_FIELD, field.getFieldKey());
 
 			field.setFileName("blume.jpg");
 			field.setMimeType("image/jpg");
-			field.setFileSize(220);
 			field.setImageDominantColor("#22A7F0");
-			field.setImageHeight(133);
-			field.setImageWidth(7);
-			field.setSHA512Sum(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+			field.getBinary().setImageHeight(133);
+			field.getBinary().setImageWidth(7);
 
 			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			field.cloneTo(otherContainer);
@@ -148,8 +148,10 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testEquals() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BinaryGraphField fieldA = container.createBinary("fieldA");
-			BinaryGraphField fieldB = container.createBinary("fieldB");
+
+			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID());
+			BinaryGraphField fieldA = container.createBinary("fieldA", binary);
+			BinaryGraphField fieldB = container.createBinary("fieldB", binary);
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.setFileName("someText");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -166,7 +168,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BinaryGraphField fieldA = container.createBinary(BINARY_FIELD);
+			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID());
+			BinaryGraphField fieldA = container.createBinary(BINARY_FIELD, binary);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
 		}
@@ -177,7 +180,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BinaryGraphField fieldA = container.createBinary("fieldA");
+			Binary binary = meshRoot().getBinaryRoot().create("hashsum");
+			BinaryGraphField fieldA = container.createBinary("fieldA", binary);
 
 			// graph empty - rest empty
 			assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl()));

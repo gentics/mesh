@@ -6,8 +6,10 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-
 import com.gentics.mesh.util.PropReadFileStream;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.streams.ReadStream;
 import rx.Single;
 import rx.functions.Func0;
 
@@ -17,25 +19,16 @@ import rx.functions.Func0;
 public interface ImageManipulator {
 
 	/**
-	 * Resize the given binary file and return a buffer to the resized image data.
+	 * Resize the given binary data and return a buffer to the resized image data.
 	 * 
-	 * @param binaryFile
-	 *            Binary file in the filesystem to be used for resizing
-	 * @param sha512sum
+	 * @param binaryData
+	 *            Binary data to be used for resizing
+	 * @param cacheKey
+	 *            Key used to name the local cache file
 	 * @param imageRequestParameter
 	 * @return
 	 */
-	Single<PropReadFileStream> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters imageRequestParameter);
-
-	/**
-	 * Read the {@link InputStream} and resize the image data.
-	 * 
-	 * @param ins
-	 * @param sha512sum
-	 * @param parameters
-	 * @return PropReadFileStream which contains the resized image data
-	 */
-	Single<PropReadFileStream> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters);
+	Single<PropReadFileStream> handleResize(ReadStream<Buffer> binaryData, String cacheKey, ImageManipulationParameters imageRequestParameter);
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.
@@ -52,7 +45,7 @@ public interface ImageManipulator {
 	 * @param insFunc
 	 * @return
 	 */
-	Single<ImageInfo> readImageInfo(Func0<InputStream> insFunc);
+	Single<ImageInfo> readImageInfo(Func0<ReadStream<Buffer>> insFunc);
 
 	/**
 	 * Return the dominant color in the image.
