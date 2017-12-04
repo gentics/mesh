@@ -31,6 +31,7 @@ public final class ChangesList {
 		list.add(new PurgeOldJobs());
 		list.add(new UpdateReleaseSchemaEdge());
 		list.add(new MigrateSchemaRawInfo());
+		list.add(new ChangeNumberStringsToNumber());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}
