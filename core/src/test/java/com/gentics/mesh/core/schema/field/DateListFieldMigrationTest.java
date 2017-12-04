@@ -30,14 +30,14 @@ import static com.gentics.mesh.test.TestSize.FULL;
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class DateListFieldMigrationTest extends AbstractFieldMigrationTest implements DateListFieldHelper {
 
-
 	/**
-	 * Cast a long number to int if possible
+	 * Cast a long to int if its possible.
+	 * A long can be cast to int if it is smaller than Integer.MAX_VALUE.
 	 *
-	 * @param num t
-	 * @return the number
+	 * @param num the number to cast
+	 * @return the int or long number
 	 */
-	public Number castToInt(long num) {
+	private Number castToInt(long num) {
 		if (num < Integer.MAX_VALUE) {
 			return (int) num;
 		} else {

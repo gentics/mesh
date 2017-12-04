@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
-public class NumberFieldEndpointParameterTest extends AbstractNumberFieldEndpointTest {
+public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEndpointTest {
 
 
 	@Parameterized.Parameters(name= "{index}: {1}")

@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.11.4 (TBD)
+
+icon:check[] Core: The values of number-fields where stored as strings in the db which caused issues when converting numbers to and from string. This has been fixed: the values of number-fields will now be stored as numbers.
+
 == 0.11.3 (30.11.2017)
 
 icon:plus[] Core: Various performance enhancements have been made to increase the concurrency handling and to lower the request times.
