@@ -30,6 +30,21 @@ import static com.gentics.mesh.test.TestSize.FULL;
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class DateListFieldMigrationTest extends AbstractFieldMigrationTest implements DateListFieldHelper {
 
+
+	/**
+	 * Cast a long number to int if possible
+	 *
+	 * @param num t
+	 * @return the number
+	 */
+	public Number castToInt(long num) {
+		if (num < Integer.MAX_VALUE) {
+			return (int) num;
+		} else {
+			return num;
+		}
+	}
+
 	@Override
 	@Test
 	public void testRemove() throws Exception {
@@ -152,7 +167,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(DATEVALUE, OTHERDATEVALUE);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).contains(castToInt(DATEVALUE), castToInt(OTHERDATEVALUE));
 		});
 	}
 
