@@ -1,13 +1,21 @@
 package com.gentics.mesh.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gentics.mesh.Mesh;
+
 import io.vertx.core.buffer.Buffer;
+import io.vertx.rx.java.RxHelper;
 import rx.Completable;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Single;
+import rx.SingleSubscriber;
 import rx.Subscriber;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -84,5 +92,25 @@ public final class RxUtil {
 	@Deprecated
 	public static Single<Buffer> readEntireData(Observable<Buffer> stream) {
 		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
+	}
+
+	public static InputStream toInputStream(Observable<Buffer> stream, SingleSubscriber<?> sub) throws IOException {
+		PipedInputStream pis = new PipedInputStream();
+		PipedOutputStream pos = new PipedOutputStream(pis);
+		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx())).doOnCompleted(() -> {
+			try {
+				pos.close();
+				sub.onSuccess(null);
+			} catch (IOException e) {
+				sub.onError(e);
+			}
+		}).subscribe(buf -> {
+			try {
+				pos.write(buf);
+			} catch (IOException e) {
+				sub.onError(e);
+			}
+		});
+		return pis;
 	}
 }

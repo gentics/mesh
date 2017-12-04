@@ -89,7 +89,10 @@ public class BinaryFieldResponseHandler {
 					pump.start();
 				}, rc::fail);
 			} else {
-				Observable<io.vertx.rxjava.core.buffer.Buffer> stream = binary.getStream().map(buf -> new io.vertx.rxjava.core.buffer.Buffer(buf));
+				Observable<io.vertx.rxjava.core.buffer.Buffer> stream = binary.getStream().map(buf -> {
+					System.out.println( "BUF");
+					return new io.vertx.rxjava.core.buffer.Buffer(buf);	
+				});
 				rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 				rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 				rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -98,8 +101,11 @@ public class BinaryFieldResponseHandler {
 				// TODO images and pdf files should be shown in inline format
 				rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
 
+				stream = stream.map(m -> {
+					System.out.println("DATA");
+					return m;
+				});
 				// rc.response().setChunked(true);
-				System.out.println(contentLength);
 				io.vertx.rxjava.core.streams.Pump pump = io.vertx.rxjava.core.streams.Pump.pump(stream, new HttpServerResponse(rc.response()));
 				// stream.on
 				// System.out.println("Done" + pump.numberPumped());
@@ -107,6 +113,9 @@ public class BinaryFieldResponseHandler {
 				// });
 				pump.start();
 				stream.toCompletable().subscribe(() -> {
+					rc.response().end();
+					System.out.println(pump.numberPumped());
+					System.out.println("ENDD");
 				}, rc::fail);
 			}
 		}

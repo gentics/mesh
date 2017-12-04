@@ -9,7 +9,6 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.PropReadFileStream;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.ReadStream;
 import rx.Observable;
 import rx.Single;
 
@@ -45,7 +44,7 @@ public interface ImageManipulator {
 	 * @param stream
 	 * @return
 	 */
-	Single<ImageInfo> readImageInfo(ReadStream<Buffer> stream);
+	Single<ImageInfo> readImageInfo(Observable<Buffer> stream);
 
 	/**
 	 * Return the dominant color in the image.
@@ -62,7 +61,5 @@ public interface ImageManipulator {
 	 * @return
 	 */
 	Single<Map<String, String>> getMetadata(InputStream ins);
-
-	Single<ImageInfo> readImageInfo(Observable<Buffer> stream);
 
 }

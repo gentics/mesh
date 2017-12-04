@@ -1,7 +1,6 @@
 package com.gentics.mesh.storage;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.util.FileUtils;
 
 import io.vertx.core.buffer.Buffer;
 import rx.Completable;
@@ -36,15 +35,5 @@ public interface BinaryStorage {
 	 * @return
 	 */
 	Observable<Buffer> read(String hashsum);
-
-	/**
-	 * Hash the given buffer and return a sha512 checksum.
-	 * 
-	 * @param buffer
-	 * @return sha512 checksum
-	 */
-	static String hashBuffer(Buffer buffer) {
-		return FileUtils.generateSha512Sum(buffer);
-	}
 
 }

@@ -142,7 +142,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		Func1<String, Observable<NodeResponse>> uploadBinary = (fieldName) ->
 			client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(),
-            nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
+			nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
 			.doOnSubscribe(() -> System.out.println("Requesting " + fieldName));
 
 		Observable<String> imageFields = Observable.just("image1", "image2");
@@ -164,7 +164,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		imageFields
 			.flatMap(downloadBinary)
 			.map(NodeDownloadResponse::getBuffer)
-			.map(FileUtils::generateSha512Sum)
+			.map(FileUtils::hash)
+			.map(e -> e.toBlocking().value())
 			.doOnNext(assertSum)
 			.toCompletable().await();
 	}

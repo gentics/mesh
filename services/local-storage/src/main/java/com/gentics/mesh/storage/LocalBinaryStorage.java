@@ -13,13 +13,14 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
+import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.file.AsyncFile;
 import io.vertx.rxjava.core.file.FileSystem;
 import io.vertx.rxjava.core.streams.Pump;
 import io.vertx.rxjava.core.streams.WriteStream;
 import rx.Completable;
 import rx.Observable;
-import rx.Single;
 
 @Singleton
 public class LocalBinaryStorage extends AbstractBinaryStorage {
@@ -51,11 +52,16 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			}
 			File targetFile = new File(uploadFolder, sha512sum + ".bin");
 
-			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
-				Pump pump = Pump.pump(stream, (WriteStream) file);
+			fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
+				ReadStream<Buffer> st = RxHelper.toReadStream(stream);
+				io.vertx.core.streams.Pump pump = io.vertx.core.streams.Pump.pump(st, file.getDelegate());
 				pump.start();
-				return stream;
-			}).toCompletable();
+				return file;
+			}).doOnSuccess(file -> {
+				file.flush();
+			}).toCompletable().await();
+			System.out.println("Size2: " + targetFile.length());
+			return Completable.complete();
 			// log.error("Failed to save file to {" + targetPath + "}", error);
 			// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
@@ -82,8 +88,8 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Observable<Buffer> read(String hashsum) {
 		String path = getFilePath(hashsum);
-		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable().flatMap(
-				AsyncFile::toObservable).map(buf -> buf.getDelegate());
+		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable()
+				.flatMap(AsyncFile::toObservable).map(buf -> buf.getDelegate());
 		return obs;
 	}
 
