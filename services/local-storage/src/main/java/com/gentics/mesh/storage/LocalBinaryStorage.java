@@ -10,14 +10,16 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.AsyncFile;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.Pump;
-import io.vertx.core.streams.ReadStream;
+import io.vertx.rxjava.core.file.AsyncFile;
+import io.vertx.rxjava.core.file.FileSystem;
+import io.vertx.rxjava.core.streams.Pump;
+import io.vertx.rxjava.core.streams.WriteStream;
 import rx.Completable;
+import rx.Observable;
+import rx.Single;
 
 @Singleton
 public class LocalBinaryStorage extends AbstractBinaryStorage {
@@ -29,9 +31,9 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable store(ReadStream<Buffer> stream, String sha512sum) {
-		return Completable.create(sub -> {
-			FileSystem fileSystem = Mesh.vertx().fileSystem();
+	public Completable store(Observable<Buffer> stream, String sha512sum) {
+		return Completable.defer(() -> {
+			FileSystem fileSystem = FileSystem.newInstance(Mesh.vertx().fileSystem());
 			String path = getFilePath(sha512sum);
 			log.debug("Saving data for field to path {" + path + "}");
 			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
@@ -49,23 +51,22 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			}
 			File targetFile = new File(uploadFolder, sha512sum + ".bin");
 
-			fileSystem.open(targetFile.getAbsolutePath(), new OpenOptions(), result -> {
-				if (result.succeeded()) {
-					AsyncFile file = result.result();
-					Pump pump = Pump.pump(stream, file);
-					pump.start();
-					stream.endHandler(eh -> {
-						sub.onCompleted();
-					});
-				} else {
-
-				}
-			});
+			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
+				Pump pump = Pump.pump(stream, (WriteStream) file);
+				pump.start();
+				return stream;
+			}).toCompletable();
 			// log.error("Failed to save file to {" + targetPath + "}", error);
 			// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
 	}
 
+	/**
+	 * Return the absolute path to the binary data for the given hashsum.
+	 * 
+	 * @param sha512sum
+	 * @return
+	 */
 	public String getFilePath(String sha512sum) {
 		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath(sha512sum));
 		File binaryFile = new File(folder, sha512sum + ".bin");
@@ -75,18 +76,19 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public boolean exists(BinaryGraphField field) {
 		String sha512sum = field.getBinary().getSHA512Sum();
-		return false;
+		return new File(getFilePath(sha512sum)).exists();
 	}
 
 	@Override
-	public ReadStream<Buffer> read(BinaryGraphField field) {
-		String sha512sum = field.getBinary().getSHA512Sum();
-		String path = getFilePath(sha512sum);
-		return Mesh.vertx().fileSystem().openBlocking(path, new OpenOptions());
+	public Observable<Buffer> read(String hashsum) {
+		String path = getFilePath(hashsum);
+		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable().flatMap(
+				AsyncFile::toObservable).map(buf -> buf.getDelegate());
+		return obs;
 	}
 
 	public static String getSegmentedPath(String binaryFieldUuid) {
-		String[] parts = binaryFieldUuid.split("(?<=\\G.{4})");
+		String[] parts = binaryFieldUuid.split("(?<=\\G.{12})");
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(File.separator);
 		for (String part : parts) {
@@ -102,7 +104,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	 * @param targetPath
 	 */
 	private void moveUploadIntoPlace(String fileUpload, String targetPath) {
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
+		FileSystem fileSystem = new FileSystem(Mesh.vertx().fileSystem());
 		fileSystem.moveBlocking(fileUpload, targetPath);
 		if (log.isDebugEnabled()) {
 			log.debug("Moved upload file from {" + fileUpload + "} to {" + targetPath + "}");

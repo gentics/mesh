@@ -1,17 +1,5 @@
 package com.gentics.mesh.storage;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
-
 public class LocalBinaryStorageTest {
 
 //	@Test

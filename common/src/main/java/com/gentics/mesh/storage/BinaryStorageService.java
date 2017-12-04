@@ -1,5 +1,7 @@
 package com.gentics.mesh.storage;
 
+import java.util.Iterator;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import com.gentics.mesh.graphdb.DatabaseService;
@@ -31,7 +33,26 @@ public class BinaryStorageService {
 		return service;
 	}
 
+	/**
+	 * Iterate over all providers and return the last provider.
+	 * 
+	 * @return
+	 */
 	public BinaryStorage getStorage() {
-		return null;
+		BinaryStorage binaryStorage = null;
+		// TODO fail when more than one provider was found?
+		try {
+			Iterator<BinaryStorage> providers = loader.iterator();
+			while (binaryStorage == null && providers.hasNext()) {
+				binaryStorage = providers.next();
+				log.debug("Found service provider {" + binaryStorage.getClass() + "}");
+			}
+		} catch (ServiceConfigurationError serviceError) {
+			serviceError.printStackTrace();
+		}
+		if (binaryStorage == null) {
+			throw new RuntimeException("Could not find image provider.");
+		}
+		return binaryStorage;
 	}
 }

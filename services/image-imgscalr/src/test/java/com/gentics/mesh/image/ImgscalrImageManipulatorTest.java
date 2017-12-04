@@ -44,7 +44,6 @@ import io.vertx.rxjava.core.Vertx;
 import rx.Observable;
 import rx.Single;
 import rx.functions.Action6;
-import rx.functions.Func0;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -70,11 +69,10 @@ public class ImgscalrImageManipulatorTest {
 	@Test
 	public void testResize() throws Exception {
 
-		checkImages((imageName, width, height, color, refImage, ins) -> {
+		checkImages((imageName, width, height, color, refImage, bs) -> {
 			log.debug("Handling " + imageName);
-			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
-				.map(PropReadFileStream::getFile)
-				.flatMap(RxUtil::readEntireData);
+			Single<Buffer> obs = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+					.map(PropReadFileStream::getFile).flatMap(RxUtil::readEntireData);
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {
@@ -104,8 +102,8 @@ public class ImgscalrImageManipulatorTest {
 
 	@Test
 	public void testExtractImageInfo() throws IOException, JSONException {
-		checkImages((imageName, width, height, color, refImage, ins) -> {
-			Single<ImageInfo> obs = manipulator.readImageInfo(ins);
+		checkImages((imageName, width, height, color, refImage, stream) -> {
+			Single<ImageInfo> obs = manipulator.readImageInfo(stream);
 			ImageInfo info = obs.toBlocking().value();
 			assertEquals("The width or image {" + imageName + "} did not match.", width, info.getWidth());
 			assertEquals("The height or image {" + imageName + "} did not match.", height, info.getHeight());
@@ -113,7 +111,7 @@ public class ImgscalrImageManipulatorTest {
 		});
 	}
 
-	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Func0<ReadStream<Buffer>>> action) throws JSONException, IOException {
+	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, ReadStream<Buffer>> action) throws JSONException, IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
@@ -126,7 +124,7 @@ public class ImgscalrImageManipulatorTest {
 				throw new RuntimeException("Could not find image {" + path + "}");
 			}
 			byte[] bytes = IOUtils.toByteArray(ins);
-			ReadStream<Buffer> stream = RxHelper.toReadStream(Observable.just(Buffer.buffer(bytes)));
+			ReadStream<Buffer> bs = RxHelper.toReadStream(Observable.just(Buffer.buffer(bytes)));
 			int width = image.getInt("w");
 			int height = image.getInt("h");
 			String color = image.getString("dominantColor");
@@ -137,7 +135,7 @@ public class ImgscalrImageManipulatorTest {
 			}
 			BufferedImage refImage = ImageIO.read(insRef);
 			insRef.close();
-			action.call(imageName, width, height, color, refImage, () -> stream);
+			action.call(imageName, width, height, color, refImage, bs);
 		}
 	}
 
@@ -154,8 +152,8 @@ public class ImgscalrImageManipulatorTest {
 		BufferedImage outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
-		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
-				outputImage.hashCode());
+		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
+				.hashCode());
 
 		// Height only
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
@@ -168,8 +166,8 @@ public class ImgscalrImageManipulatorTest {
 		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
-		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
-				outputImage.hashCode());
+		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
+				.hashCode());
 
 		// Height and Width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
@@ -189,8 +187,8 @@ public class ImgscalrImageManipulatorTest {
 		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100).setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
-		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
-				outputImage.hashCode());
+		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
+				.hashCode());
 
 	}
 

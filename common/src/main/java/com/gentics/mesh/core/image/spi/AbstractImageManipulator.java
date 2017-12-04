@@ -6,10 +6,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.RxUtil;
@@ -18,8 +22,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 import rx.Single;
-import rx.functions.Func0;
 
 /**
  * Abstract image manipulator implementation.
@@ -67,11 +72,52 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(Func0<ReadStream<Buffer>> insFunc) {
+	public Single<ImageInfo> readImageInfo(Observable<Buffer> stream) {
+		return Single.create(sub -> {
+			try (PipedInputStream pis = new PipedInputStream()) {
+				PipedOutputStream pos = new PipedOutputStream(pis);
+				stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx())).doOnCompleted(() -> {
+					try {
+						pos.close();
+					} catch (IOException e) {
+						sub.onError(e);
+					}
+				}).subscribe(buf -> {
+					try {
+						pos.write(buf);
+					} catch (IOException e) {
+						sub.onError(e);
+					}
+				});
+
+				BufferedImage bi = ImageIO.read(pis);
+				if (bi == null) {
+					throw error(BAD_REQUEST, "image_error_reading_failed");
+				}
+				ImageInfo info = new ImageInfo();
+				info.setWidth(bi.getWidth());
+				info.setHeight(bi.getHeight());
+				int[] rgb = calculateDominantColor(bi);
+				// By default we assume white for the images
+				String colorHex = "#FFFFFF";
+				if (rgb.length >= 3) {
+					colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
+				}
+				info.setDominantColor(colorHex);
+				sub.onSuccess(info);
+			} catch (IOException e1) {
+				sub.onError(e1);
+			}
+		});
+	}
+
+	@Override
+	public Single<ImageInfo> readImageInfo(ReadStream<Buffer> stream) {
 		return Single.create(sub -> {
 			// 1. Read the image
 			ImageInfo info = new ImageInfo();
-			Single<Buffer> data = RxUtil.readEntireData(insFunc.call());
+			Single<Buffer> data = RxUtil.readEntireData(stream);
+			// Single<Buffer> data = Single.just(Buffer.buffer());
 			try (InputStream ins = new ByteArrayInputStream(data.toBlocking().value().getBytes())) {
 				BufferedImage bi = ImageIO.read(ins);
 				if (bi == null) {

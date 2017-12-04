@@ -1,16 +1,17 @@
 package com.gentics.mesh.core.data.binary.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.storage.BinaryStorage;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.ReadStream;
-import rx.Single;
+import rx.Observable;
 
 /**
  * @see Binary
@@ -23,13 +24,13 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	@Override
 	public Iterable<? extends BinaryGraphField> findFields() {
-		return inE(HAS_BINARY).frameExplicit(BinaryGraphFieldImpl.class);
+		return inE(HAS_FIELD).frameExplicit(BinaryGraphFieldImpl.class);
 	}
-	
+
 	@Override
-	public Single<ReadStream<Buffer>> getStream() {
-		// TODO Auto-generated method stub
-		return null;
+	public Observable<Buffer> getStream() {
+		BinaryStorage storage = MeshInternal.get().binaryStorage();
+		return storage.read(getSHA512Sum());
 	}
 
 }

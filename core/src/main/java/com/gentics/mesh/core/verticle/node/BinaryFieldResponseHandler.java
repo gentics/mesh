@@ -21,8 +21,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.streams.Pump;
-import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.rxjava.core.http.HttpServerResponse;
+import rx.Observable;
 
 /**
  * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
@@ -71,8 +72,8 @@ public class BinaryFieldResponseHandler {
 				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
-				ReadStream<Buffer> data = storage.read(binaryField);
-				imageManipulator.handleResize(data, binary.getSHA512Sum(), ac.getImageParameters()).subscribe(fileWithProps -> {
+				Observable<Buffer> data = storage.read(sha512sum);
+				imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).subscribe(fileWithProps -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -80,30 +81,35 @@ public class BinaryFieldResponseHandler {
 					// TODO encode filename?
 					rc.response().putHeader("content-disposition", "inline; filename=" + fileName);
 					AsyncFile file = fileWithProps.getFile();
+					Pump pump = Pump.pump(file, rc.response());
 					file.endHandler(ignore -> {
 						rc.response().end();
 						file.close();
 					});
-					Pump.pump(file, rc.response()).start();
+					pump.start();
 				}, rc::fail);
 			} else {
-				binary.getStream().subscribe(file -> {
-					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
-					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
-					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-					rc.response().putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-					// TODO encode filename?
-					// TODO images and pdf files should be shown in inline format
-					rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
+				Observable<io.vertx.rxjava.core.buffer.Buffer> stream = binary.getStream().map(buf -> new io.vertx.rxjava.core.buffer.Buffer(buf));
+				rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
+				rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
+				rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+				rc.response().putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+				// TODO encode filename?
+				// TODO images and pdf files should be shown in inline format
+				rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
 
-					file.endHandler(ignore -> {
-						rc.response().end();
-					});
-					Pump.pump(file, rc.response()).start();
+				// rc.response().setChunked(true);
+				System.out.println(contentLength);
+				io.vertx.rxjava.core.streams.Pump pump = io.vertx.rxjava.core.streams.Pump.pump(stream, new HttpServerResponse(rc.response()));
+				// stream.on
+				// System.out.println("Done" + pump.numberPumped());
+				// rc.response().end() ;
+				// });
+				pump.start();
+				stream.toCompletable().subscribe(() -> {
 				}, rc::fail);
 			}
 		}
-
 	}
 
 }

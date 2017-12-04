@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.ReadStream;
-import io.vertx.lang.rxjava.TypeArg;
 import rx.Completable;
 import rx.Observable;
 import rx.Observable.Transformer;
@@ -52,7 +50,7 @@ public final class RxUtil {
 	}
 
 	public static <T> Observable<T> concatListNotEager(List<Observable<T>> input) {
-		//TODO handle empty list
+		// TODO handle empty list
 		return Observable.create(sub -> {
 			AtomicInteger index = new AtomicInteger();
 			Subscriber<T> subscriber = new Subscriber<T>() {
@@ -84,9 +82,7 @@ public final class RxUtil {
 	 * Reads the entire stream and returns its contents as a buffer.
 	 */
 	@Deprecated
-	public static Single<Buffer> readEntireData(ReadStream<Buffer> stream) {
-		return io.vertx.rxjava.core.streams.ReadStream.newInstance(stream, TypeArg.of(Buffer.class)).toObservable()
-			.reduce((a, b) -> a.appendBuffer(b))
-			.toSingle();
+	public static Single<Buffer> readEntireData(Observable<Buffer> stream) {
+		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
 	}
 }

@@ -9,10 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
+import io.vertx.rx.java.RxHelper;
+import rx.Single;
 
 public final class FileUtils {
 
@@ -41,6 +43,19 @@ public final class FileUtils {
 		} catch (Exception e) {
 			log.error("Error while hashing file {" + path + "}", e);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e);
+		}
+	}
+
+	public static Single<String> generateHash(ReadStream<Buffer> stream) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-512");
+			return RxHelper.toObservable(stream).reduce(md, (digest, buffer) -> {
+				digest.update(buffer.getBytes());
+				return digest;
+			}).map(digest -> digest.digest()).map(FileUtils::bytesToHex).toSingle();
+		} catch (Exception e) {
+			log.error("Error while hashing data", e);
+			return Single.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e));
 		}
 	}
 

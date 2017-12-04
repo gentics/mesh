@@ -10,8 +10,8 @@ import com.gentics.mesh.util.PropReadFileStream;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.ReadStream;
+import rx.Observable;
 import rx.Single;
-import rx.functions.Func0;
 
 /**
  * SPI provider interface for image manipulators.
@@ -21,14 +21,14 @@ public interface ImageManipulator {
 	/**
 	 * Resize the given binary data and return a buffer to the resized image data.
 	 * 
-	 * @param binaryData
-	 *            Binary data to be used for resizing
+	 * @param stream
+	 *            Binary data stream to be used for resizing
 	 * @param cacheKey
 	 *            Key used to name the local cache file
 	 * @param imageRequestParameter
 	 * @return
 	 */
-	Single<PropReadFileStream> handleResize(ReadStream<Buffer> binaryData, String cacheKey, ImageManipulationParameters imageRequestParameter);
+	Single<PropReadFileStream> handleResize(Observable<Buffer> stream, String cacheKey, ImageManipulationParameters imageRequestParameter);
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.
@@ -42,10 +42,10 @@ public interface ImageManipulator {
 	/**
 	 * Read the image information from the given image data stream.
 	 * 
-	 * @param insFunc
+	 * @param stream
 	 * @return
 	 */
-	Single<ImageInfo> readImageInfo(Func0<ReadStream<Buffer>> insFunc);
+	Single<ImageInfo> readImageInfo(ReadStream<Buffer> stream);
 
 	/**
 	 * Return the dominant color in the image.
@@ -62,5 +62,7 @@ public interface ImageManipulator {
 	 * @return
 	 */
 	Single<Map<String, String>> getMetadata(InputStream ins);
+
+	Single<ImageInfo> readImageInfo(Observable<Buffer> stream);
 
 }

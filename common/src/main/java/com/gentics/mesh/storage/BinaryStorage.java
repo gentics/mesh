@@ -4,8 +4,6 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.util.FileUtils;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.ReadStream;
-import io.vertx.rx.java.RxHelper;
 import rx.Completable;
 import rx.Observable;
 
@@ -15,25 +13,13 @@ import rx.Observable;
 public interface BinaryStorage {
 
 	/**
-	 * Stores the given buffer within the binary storage.
-	 * 
-	 * @param buffer
-	 * @param sha512sum
-	 * @deprecated Handling full buffers should be avoided. Use {@link #store(ReadStream, String)} instead.
-	 * @return
-	 */
-	default Completable store(Buffer buffer, String sha512sum) {
-		return store(RxHelper.toReadStream(Observable.just(buffer)), sha512sum);
-	}
-
-	/**
 	 * Stores the contents of the stream.
 	 * 
 	 * @param stream
 	 * @param hashsum
 	 * @return
 	 */
-	Completable store(ReadStream<Buffer> stream, String hashsum);
+	Completable store(Observable<Buffer> stream, String hashsum);
 
 	/**
 	 * Checks whether the binary data for the given field exists
@@ -44,12 +30,12 @@ public interface BinaryStorage {
 	boolean exists(BinaryGraphField field);
 
 	/**
-	 * Read the binary data which is linked to the field and return the stream.
+	 * Read the binary data which is identified by the given hash sum.
 	 * 
-	 * @param field
+	 * @param hashsum
 	 * @return
 	 */
-	ReadStream<Buffer> read(BinaryGraphField field);
+	Observable<Buffer> read(String hashsum);
 
 	/**
 	 * Hash the given buffer and return a sha512 checksum.

@@ -139,7 +139,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			field.cloneTo(otherContainer);
 
 			BinaryGraphField clonedField = otherContainer.getBinary(BINARY_FIELD);
-			assertThat(clonedField).as("cloned field").isNotNull().isEqualToComparingFieldByField(field);
+			assertThat(clonedField).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(field, "outV", "id", "uuid", "element");
+			assertThat(clonedField.getBinary()).as("referenced binary of cloned field").isNotNull().isEqualToComparingFieldByField(field.getBinary());
 		}
 	}
 

@@ -60,8 +60,14 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			return;
 		}
 
+		// Handle Update
+
 		// Always create a new binary field since each update must create a new field instance. The old field must be detached from the given container.
 		Binary currentBinary = graphBinaryField.getBinary();
+
+		// We can't update the graphNodeField since it is in fact an edge.
+		// We need to delete it and create a new one.
+		container.deleteFieldEdge(fieldKey);
 		BinaryGraphField newGraphBinaryField = container.createBinary(fieldKey, currentBinary);
 
 		// Handle Update - Dominant Color
@@ -133,24 +139,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		return getProperty(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
-	// @Override
-	// public String getSegmentedPath() {
-	// String[] parts = getUuid().split("(?<=\\G.{4})");
-	// StringBuffer buffer = new StringBuffer();
-	// buffer.append(File.separator);
-	// for (String part : parts) {
-	// buffer.append(part + File.separator);
-	// }
-	// return buffer.toString();
-	// }
-	//
-	// @Override
-	// public String getFilePath() {
-	// File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath());
-	// File binaryFile = new File(folder, getUuid() + ".bin");
-	// return binaryFile.getAbsolutePath();
-	// }
-
 	@Override
 	public boolean hasImage() {
 		String contentType = getMimeType();
@@ -170,29 +158,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		setProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
 		return this;
 	}
-
-	// @Override
-	// public String getSHA512Sum() {
-	// return getProperty(BINARY_SHA512SUM_PROPERTY_KEY);
-	// }
-	//
-	// @Override
-	// public BinaryGraphField setSHA512Sum(String sha512HashSum) {
-	// setProperty(BINARY_SHA512SUM_PROPERTY_KEY, sha512HashSum);
-	// return this;
-	// }
-	//
-	// @Override
-	// public long getFileSize() {
-	// Long size = getProperty(BINARY_FILESIZE_PROPERTY_KEY);
-	// return size == null ? 0 : size;
-	// }
-	//
-	// @Override
-	// public BinaryGraphField setFileSize(long sizeInBytes) {
-	// setProperty(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
-	// return this;
-	// }
 
 	@Override
 	public BinaryGraphField setFileName(String filenName) {
@@ -222,16 +187,24 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		if (!getBinary().findFields().iterator().hasNext()) {
 			// TODO delete the binary data as well
 			getBinary().remove();
+			// This will in turn also get rid of the edge. Thus it is not needed to remove the edge.
+		} else {
+			remove();
 		}
-		remove();
 	}
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		BinaryGraphFieldImpl edge = getGraph().addFramedEdge(container, getBinary(), HAS_FIELD, BinaryGraphFieldImpl.class);
-		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, getFieldKey());
-		// TODO clone properties
-		return container.getBinary(getFieldKey());
+		BinaryGraphFieldImpl field = getGraph().addFramedEdge(container, getBinary(), HAS_FIELD, BinaryGraphFieldImpl.class);
+		field.setFieldKey(getFieldKey());
+		for (String key : getPropertyKeys()) {
+			if (key.equals("uuid") || key.equals("ferma_type")) {
+				continue;
+			}
+			Object value = getProperty(key);
+			field.setProperty(key, value);
+		}
+		return field;
 	}
 
 	@Override

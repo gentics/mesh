@@ -4,8 +4,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.ReadStream;
-import rx.Single;
+import rx.Observable;
 
 /**
  * Vertex which contains the actual information about the binary content that is referenced by an {@link BinaryGraphField}.
@@ -25,7 +24,7 @@ public interface Binary extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	Single<ReadStream<Buffer>> getStream();
+	Observable<Buffer> getStream();
 
 	/**
 	 * Return the sha512 checksum.

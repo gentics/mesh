@@ -32,8 +32,8 @@ import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.ReadStream;
 import io.vertx.rxjava.core.Vertx;
+import rx.Observable;
 import rx.Single;
 
 /**
@@ -125,7 +125,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<PropReadFileStream> handleResize(ReadStream<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
+	public Single<PropReadFileStream> handleResize(Observable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
 		File cacheFile = getCacheFile(cacheKey, parameters);
 
 		// 1. Check the cache file directory

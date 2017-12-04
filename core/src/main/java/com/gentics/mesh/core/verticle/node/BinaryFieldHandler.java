@@ -63,7 +63,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
-import rx.Completable;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 import rx.Single;
 
 /**
@@ -290,7 +291,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 			// We only need to handle the binary data if it has not yet been processed.
 			if (storeBinary) {
-				storeBinary(ac, ul, nodeUuid, field).await();
+				storeBinary(ac, ul, nodeUuid, field);
 			} else {
 
 			}
@@ -304,37 +305,49 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
-	private Completable storeBinary(ActionContext ac, FileUpload ul, String nodeUuid, BinaryGraphField field) {
+	private void storeBinary(ActionContext ac, FileUpload ul, String nodeUuid, BinaryGraphField field) {
 		AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(ul.uploadedFileName(), new OpenOptions());
 		String hash = field.getBinary().getSHA512Sum();
 		String contentType = ul.contentType();
 		String fileName = ul.fileName();
 
+		Observable<Buffer> stream = RxHelper.toObservable(asyncFile).replay(0).autoConnect();
+//		Single<String> s1 = stream.reduce("test", (v, buf) -> {
+//			System.out.println("buf2");
+//			return "test";
+//		}).toSingle();
+//		Single<String> s2 = stream.reduce("test", (v, buf) -> {
+//			System.out.println("buf3");
+//			return "test";
+//		}).toSingle();
+//		
+//		Single.zip(s1, s2 , (a, b) -> {
+//			System.out.println("blub!");
+//			return "blub";
+//		}).toBlocking().value();
+
 		// Only gather image info for actual images. Otherwise return an empty image info object.
 		Single<ImageInfo> imageInfo = Single.just(null);
 		if (contentType.startsWith("image/")) {
-			imageInfo = processImageInfo(ac, asyncFile);
-			// TODO store image info
+			imageInfo = imageManipulator.readImageInfo(stream);
+			//imageInfo = processImageInfo(ac, asyncFile);
 		}
 
 		// Store the data
-		Single<Long> store = binaryStorage.store(asyncFile, hash).andThen(Single.just(ul.size()));
-
-		return Single.zip(imageInfo, store, (info, size) -> {
-			return new TransformationResult(hash, 0, info);
-		}).doOnSuccess(info -> {
-			field.setFileName(fileName);
-			field.getBinary().setSize(ul.size());
-			field.setMimeType(contentType);
-			// field.getBinary().setSHA512Sum(hash);
-			if (info.getImageInfo() != null) {
-				Binary binary = field.getBinary();
-				binary.setImageHeight(info.getImageInfo().getHeight());
-				binary.setImageWidth(info.getImageInfo().getWidth());
-				field.setImageDominantColor(info.getImageInfo().getDominantColor());
-			}
-		}).toCompletable();
-
+		Single<Long> store = binaryStorage.store(stream, hash).andThen(Single.just(ul.size()));
+		TransformationResult info = Single.zip(imageInfo, store, (imageinfo, size) -> {
+			return new TransformationResult(hash, 0, imageinfo);
+		}).toBlocking().value();
+		field.setFileName(fileName);
+		field.getBinary().setSize(ul.size());
+		field.setMimeType(contentType);
+		// field.getBinary().setSHA512Sum(hash);
+		if (info.getImageInfo() != null) {
+			Binary binary = field.getBinary();
+			binary.setImageHeight(info.getImageInfo().getHeight());
+			binary.setImageWidth(info.getImageInfo().getWidth());
+			field.setImageDominantColor(info.getImageInfo().getDominantColor());
+		}
 	}
 
 	/**
@@ -342,17 +355,17 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * tx retry). In that case the previously loaded image info is returned.
 	 * 
 	 * @param ac
-	 * @param file
+	 * @param stream
 	 * @return
 	 */
-	private Single<ImageInfo> processImageInfo(ActionContext ac, AsyncFile file) {
+	private Single<ImageInfo> processImageInfo(ActionContext ac, ReadStream<Buffer> stream) {
 		// Caches the image info in the action context so that it does not need to be
 		// calculated again if the transaction failed
 		ImageInfo imageInfo = ac.get("imageInfo");
 		if (imageInfo != null) {
 			return Single.just(imageInfo);
 		} else {
-			return imageManipulator.readImageInfo(() -> file).doOnSuccess(ii -> ac.put("imageInfo", ii));
+			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> ac.put("imageInfo", ii));
 		}
 		// try {
 		// } catch (Exception e) {
@@ -412,8 +425,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
-						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
+								transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
@@ -427,21 +440,18 @@ public class BinaryFieldHandler extends AbstractHandler {
 					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion,
 							true);
 
-					// String fieldSegmentedPath = field.getSegmentedPath();
-					// String fieldPath = field.getFilePath();
-
 					// 1. Resize the original image and store the result in the filesystem
-					ReadStream<Buffer> data = binaryStorage.read(initialField);
-					Single<TransformationResult> obsTransformation = imageManipulator
-							.handleResize(data, initialField.getBinary().getSHA512Sum(), imageManipulationParameter).flatMap(file -> {
+					String hashsum = initialField.getBinary().getSHA512Sum();
+					Observable<Buffer> stream = binaryStorage.read(hashsum);
+					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, hashsum, imageManipulationParameter).flatMap(
+							file -> {
 								// 2. Hash the resized image data and store it using the computed fieldUuid + hash
+								// return FileUtils.generateHash(file);
 								return RxUtil.readEntireData(file.getFile()).map(buffer -> {
 									return BinaryStorage.hashBuffer(buffer);
 								}).flatMap(hash -> {
 									// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
-									return imageManipulator.readImageInfo(() -> {
-										return file.getFile();
-									}).map(info -> {
+									return imageManipulator.readImageInfo(file.getFile()).map(info -> {
 										// Return a POJO which hold all information that is needed to update the field
 										return new TransformationResult(hash, file.getProps().size(), info);
 									});
@@ -465,7 +475,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					field.setMimeType("image/jpeg");
 					// TODO should we rename the image, if the extension is wrong?
 					field.getBinary().setImageHeight(result.getImageInfo().getHeight());
-					field.getBinary()	.setImageWidth(result.getImageInfo().getWidth());
+					field.getBinary().setImageWidth(result.getImageInfo().getWidth());
 					batch.store(newDraftVersion, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
 					return batch;
 				});
