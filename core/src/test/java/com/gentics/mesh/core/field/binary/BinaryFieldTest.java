@@ -9,6 +9,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -19,6 +23,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.field.AbstractFieldTest;
+import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -27,11 +32,18 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.verticle.node.TransformationResult;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
+
+import io.vertx.core.buffer.Buffer;
+import rx.Observable;
+import rx.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
@@ -254,6 +266,31 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 				assertEquals("The html of the field was not updated.", "someFile.txt", field.getFileName());
 			});
 		}
+	}
+
+	/**
+	 * Verifies that the buffer stream of a source can be handled in parallel for hashing and image prop extraction.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testMultiStreamHandling() throws IOException {
+		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).replay(0).autoConnect();
+
+		//Single<String> hash = FileUtils.hash(obs);
+		Single<String> hash = Single.just("test");
+
+		Single<ImageInfo> info = MeshInternal.get().imageManipulator().readImageInfo(obs);
+
+		TransformationResult result = Single.zip(hash, info, (hashV, infoV) -> {
+			return new TransformationResult(hashV, 0, infoV);
+		}).toBlocking().value();
+
+		assertNotNull(result.getHash());
+		assertEquals(1376, result.getImageInfo().getHeight().intValue());
+		assertEquals(1160, result.getImageInfo().getWidth().intValue());
 	}
 
 }

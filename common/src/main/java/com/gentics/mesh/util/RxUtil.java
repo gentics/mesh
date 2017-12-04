@@ -94,21 +94,20 @@ public final class RxUtil {
 		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
 	}
 
-	public static InputStream toInputStream(Observable<Buffer> stream, SingleSubscriber<?> sub) throws IOException {
+	public static InputStream toInputStream(Observable<Buffer> stream) throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		PipedOutputStream pos = new PipedOutputStream(pis);
 		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx())).doOnCompleted(() -> {
 			try {
 				pos.close();
-				sub.onSuccess(null);
 			} catch (IOException e) {
-				sub.onError(e);
+				throw new RuntimeException(e);
 			}
 		}).subscribe(buf -> {
 			try {
 				pos.write(buf);
 			} catch (IOException e) {
-				sub.onError(e);
+				throw new RuntimeException(e);
 			}
 		});
 		return pis;

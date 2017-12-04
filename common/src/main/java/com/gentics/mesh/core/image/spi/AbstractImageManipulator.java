@@ -68,7 +68,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	@Override
 	public Single<ImageInfo> readImageInfo(Observable<Buffer> stream) {
 		return Single.create(sub -> {
-			try (InputStream pis = RxUtil.toInputStream(stream, sub)) {
+			try (InputStream pis = RxUtil.toInputStream(stream)) {
 				BufferedImage bi = ImageIO.read(pis);
 				if (bi == null) {
 					throw error(BAD_REQUEST, "image_error_reading_failed");

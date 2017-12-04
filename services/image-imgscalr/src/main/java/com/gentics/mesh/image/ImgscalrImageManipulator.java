@@ -136,7 +136,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		return Single.create(sub -> {
 			BufferedImage bi = null;
 			try {
-				try (InputStream ins = RxUtil.toInputStream(stream, sub)) {
+				try (InputStream ins = RxUtil.toInputStream(stream)) {
 					bi = ImageIO.read(ins);
 					if (bi == null) {
 						throw error(BAD_REQUEST, "image_error_reading_failed");
