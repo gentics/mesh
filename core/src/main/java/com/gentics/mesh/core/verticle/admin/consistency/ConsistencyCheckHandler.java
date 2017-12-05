@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -13,11 +13,18 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.GroupCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.MicroschemaContainerCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.NodeCheck;
 import com.gentics.mesh.core.verticle.admin.consistency.asserter.ProjectCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.ReleaseCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.RoleCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.SchemaContainerCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.TagCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.TagFamilyCheck;
 import com.gentics.mesh.core.verticle.admin.consistency.asserter.UserCheck;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -30,7 +37,25 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	private Database db;
 
-	private List<ConsistencyCheck> checks = new ArrayList<>();
+	private static List<ConsistencyCheck> checks = Arrays.asList(
+			new GroupCheck(),
+			new MicroschemaContainerCheck(),
+			new NodeCheck(),
+			new ProjectCheck(),
+			new ReleaseCheck(),
+			new RoleCheck(),
+			new SchemaContainerCheck(),
+			new TagCheck(),
+			new TagFamilyCheck(),
+			new UserCheck());
+
+	/**
+	 * Get the list of checks
+	 * @return list of checks
+	 */
+	public static List<ConsistencyCheck> getChecks() {
+		return checks;
+	}
 
 	private BootstrapInitializer boot;
 
@@ -38,8 +63,6 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	public ConsistencyCheckHandler(Database db, BootstrapInitializer boot) {
 		this.db = db;
 		this.boot = boot;
-		checks.add(new ProjectCheck());
-		checks.add(new UserCheck());
 	}
 
 	public void invokeCheck(InternalActionContext ac) {
@@ -51,11 +74,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
 			// Check domain model
 			for (ConsistencyCheck check : checks) {
-				check.invoke(boot, response);
-			}
-			// Check raw graph
-			for(Vertex vertex : tx.getGraph().getVertices()) {
-				// TODO check for dangling vertices
+				check.invoke(db, response);
 			}
 			return Single.just(response);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

@@ -38,4 +38,8 @@ public class InconsistencyInfo {
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("%s: %s (%s)", severity, description, elementUuid);
+	}
 }

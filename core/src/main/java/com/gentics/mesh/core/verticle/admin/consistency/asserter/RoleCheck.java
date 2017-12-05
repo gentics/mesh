@@ -4,10 +4,13 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import java.util.Iterator;
+
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * Role specific consistency checks.
@@ -15,9 +18,10 @@ import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 public class RoleCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (Role role : boot.roleRoot().findAllIt()) {
-			checkRole(role, response);
+	public void invoke(Database db, ConsistencyCheckResponse response) {
+		Iterator<? extends Role> it = db.getVerticesForType(RoleImpl.class);
+		while (it.hasNext()) {
+			checkRole(it.next(), response);
 		}
 	}
 
