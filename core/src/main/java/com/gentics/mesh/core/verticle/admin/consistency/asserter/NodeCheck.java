@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
@@ -10,6 +12,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
@@ -31,6 +34,9 @@ public class NodeCheck implements ConsistencyCheck {
 
 	private void checkNode(Node node, ConsistencyCheckResponse response) {
 		String uuid = node.getUuid();
+
+		checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+
 		Project project = node.getProject();
 		if (project == null) {
 			response.addInconsistency("The project link for the node could not be found", uuid, HIGH);
@@ -40,10 +46,6 @@ public class NodeCheck implements ConsistencyCheck {
 		boolean isBaseNode = false;
 		if (uuid.equals(baseNode.getUuid())) {
 			isBaseNode = true;
-		}
-
-		if (node.getCreator() == null) {
-			response.addInconsistency("The node has no creator", uuid, MEDIUM);
 		}
 
 		if (node.getCreationDate() == null) {
