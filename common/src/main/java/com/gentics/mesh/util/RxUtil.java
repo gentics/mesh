@@ -15,7 +15,6 @@ import rx.Completable;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Single;
-import rx.SingleSubscriber;
 import rx.Subscriber;
 import rx.functions.Func0;
 import rx.functions.Func1;

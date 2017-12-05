@@ -11,7 +11,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -124,50 +123,12 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}, ac::fail);
 	}
 
-	// /**
-	// * Store the upload which is included in the action context.
-	// *
-	// * @param ac
-	// */
-	// public BinaryField storeUpload(InternalActionContext ac) {
-	// /**
-	// * Hash the file upload data and move the temporary uploaded file to its final destination.
-	// */
-	// Iterator<FileUpload> it = ac.getFileUploads().iterator();
-	// FileUpload upload = it.next();
-	// if (it.hasNext()) {
-	// throw new RuntimeException("The upload included more then one binary. Please only include a single binary per request");
-	// }
-	//
-	// String uploadFile = upload.uploadedFileName();
-	// AsyncFile dataFile = vertx.fileSystem().openBlocking(uploadFile, new OpenOptions());
-	// BinaryRoot binaryRoot = boot.get().binaryRoot();
-	// RxUtil.readEntireData(dataFile).map(buffer -> {
-	// return BinaryStorage.hashBuffer(buffer);
-	// String hash =
-	// boot.get().binaryRoot().findByHash(hash);
-	// return binaryStorage.store(dataFile, hashSum);
-	// // Check whether the binary has already been stored
-	// Binary binary = binaryRoot.findByHash(hash);
-	// if(binary ==null) {
-	// binary = binaryRoot.create(sha512sum);
-	// }
-	// return binaryField;
-	// }).toBlocking().value();
-	// // binaryStorage.hashBuffer(buffer)
-	// // Since this function can be called multiple times (if a transaction fails), we have to
-	// // update the path so that moving the file works again.
-	// // ac.put("sourceFile", targetPath);
-	// return binaryField;
-	//
-	// }
-
 	/**
 	 * Handle a request to create a new field.
 	 * 
 	 * @param ac
 	 * @param nodeUuid
-	 *            Uuid of the node which should be updated
+	 *            UUID of the node which should be updated
 	 * @param fieldName
 	 *            Name of the field which should be created
 	 * @param attributes
@@ -202,7 +163,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 		if (ul.size() > byteLimit) {
 			if (log.isDebugEnabled()) {
-				log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+				log.debug("Upload size of {" + ul.size() + "} exceeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
 			}
 			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
 			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
@@ -312,9 +273,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 		String contentType = ul.contentType();
 		String fileName = ul.fileName();
 		boolean isImage = contentType.startsWith("image/");
-
-		System.out.println("Size:" + new File(ul.uploadedFileName()).length());
-
 		Observable<Buffer> stream = RxHelper.toObservable(asyncFile).publish().autoConnect(isImage ? 2 : 1);
 
 		// Only gather image info for actual images. Otherwise return an empty image info object.
@@ -362,11 +320,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 				ac.put("imageInfo", ii);
 			});
 		}
-		// try {
-		// } catch (Exception e) {
-		// log.error("Could not load schema for node {" + nodeUuid + "}");
-		// throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-		// }
 	}
 
 	/**
@@ -375,6 +328,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * 
 	 * @param rc
 	 *            routing context
+	 * @param uuid
+	 * @param fieldName
 	 */
 	public void handleTransformImage(RoutingContext rc, String uuid, String fieldName) {
 		validateParameter(uuid, "uuid");
@@ -441,18 +396,21 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, hashsum, imageManipulationParameter)
 							.flatMap(file -> {
-								Observable<Buffer> resizedImageData = RxHelper.toObservable(file.getFile()).replay(0).autoConnect();
+								Observable<Buffer> resizedImageData = RxHelper.toObservable(file.getFile()).publish().autoConnect(2);
 
-								// 2. Hash the resized image data and store it using the computed fieldUuid + hash
+								// Hash the resized image data and store it using the computed fieldUuid + hash
 								Single<String> hash = FileUtils.hash(resizedImageData);
 
-								// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
-								Single<ImageInfo> info = imageManipulator.readImageInfo(stream);
+								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
+								Single<ImageInfo> info = imageManipulator.readImageInfo(resizedImageData);
 
 								return Single.zip(hash, info, (hashV, infoV) -> {
+									file.getFile().setReadPos(0);
+									Observable<Buffer> data = RxHelper.toObservable(file.getFile());
 									// Return a POJO which hold all information that is needed to update the field
-									return new TransformationResult(hashV, file.getProps().size(), infoV);
-								});
+									TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV);
+									return binaryStorage.store(data, hashV).andThen(Single.just(result));
+								}).flatMap(e -> e);
 							});
 
 					TransformationResult result = obsTransformation.toBlocking().value();
@@ -463,10 +421,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 						binary = binaryRoot.create(hashSum);
 					}
 					// Now create the binary field in which we store the information about the file
+					BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
-					String fieldUuid = field.getUuid();
-
-					// field.getBinary().setSHA512Sum(result.getHash());
+					if (oldField != null) {
+						oldField.remove();
+					}
 					field.getBinary().setSize(result.getSize());
 					// The resized image will always be a JPEG
 					field.setMimeType("image/jpeg");

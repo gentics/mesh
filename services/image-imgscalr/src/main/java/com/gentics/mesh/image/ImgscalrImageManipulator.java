@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,8 +64,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (parameters.hasAllCropParameters()) {
 			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
-						parameters.getCroph());
+				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(), parameters
+						.getCroph());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -125,64 +126,78 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	@Override
 	public Single<PropReadFileStream> handleResize(Observable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
+		// Validate the resize parameters
+		try {
+			parameters.validate();
+			parameters.validateLimits(options);
+		} catch (Exception e) {
+			return Single.error(e);
+		}
 		File cacheFile = getCacheFile(cacheKey, parameters);
 
-		// 1. Check the cache file directory
+		// Check the cache file directory
 		if (cacheFile.exists()) {
 			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
 		}
 
-		// 2. Read the image
-		return Single.create(sub -> {
-			BufferedImage bi = null;
-			try {
-				try (InputStream ins = RxUtil.toInputStream(stream)) {
-					bi = ImageIO.read(ins);
-					if (bi == null) {
-						throw error(BAD_REQUEST, "image_error_reading_failed");
-					}
-					if (bi.getTransparency() == Transparency.TRANSLUCENT) {
-						// NOTE: For BITMASK images, the color model is likely IndexColorModel,
-						// and this model will contain the "real" color of the transparent parts
-						// which is likely a better fit than unconditionally setting it to white.
+		// Read the image
+		try {
+			InputStream ins = RxUtil.toInputStream(stream);
+			Single<BufferedImage> obs = new Vertx(Mesh.vertx()).rxExecuteBlocking(bc -> {
+				try {
+					BufferedImage image = ImageIO.read(ins);
+					ins.close();
+					bc.complete(image);
+				} catch (IOException e) {
+					bc.fail(e);
+				}
+			}, false);
 
-						// Fill background with white
-						Graphics2D graphics = bi.createGraphics();
-						try {
-							graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
-							graphics.setPaint(Color.WHITE);
-							graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-						} finally {
-							graphics.dispose();
-						}
+			return obs.flatMap(bi -> {
+				if (bi == null) {
+					throw error(BAD_REQUEST, "image_error_reading_failed");
+				}
+				if (bi.getTransparency() == Transparency.TRANSLUCENT) {
+					// NOTE: For BITMASK images, the color model is likely IndexColorModel,
+					// and this model will contain the "real" color of the transparent parts
+					// which is likely a better fit than unconditionally setting it to white.
+
+					// Fill background with white
+					Graphics2D graphics = bi.createGraphics();
+					try {
+						graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
+						graphics.setPaint(Color.WHITE);
+						graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+					} finally {
+						graphics.dispose();
 					}
 				}
-			} catch (Exception e) {
-				throw error(BAD_REQUEST, "image_error_reading_failed", e);
-			}
+				// Convert the image to RGB for images with transparency (gif, png)
+				BufferedImage rgbCopy = bi;
+				if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
+					rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+					Graphics2D graphics = rgbCopy.createGraphics();
+					graphics.drawImage(bi, 0, 0, Color.WHITE, null);
+					graphics.dispose();
+				}
 
-			// Convert the image to RGB for images with transparency (gif, png)
-			BufferedImage rgbCopy = bi;
-			if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
-				rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-				Graphics2D graphics = rgbCopy.createGraphics();
-				graphics.drawImage(bi, 0, 0, Color.WHITE, null);
-				graphics.dispose();
-			}
+				// Manipulate image
+				rgbCopy = cropIfRequested(rgbCopy, parameters);
+				rgbCopy = resizeIfRequested(rgbCopy, parameters);
 
-			// 3. Manipulate image
-			rgbCopy = cropIfRequested(rgbCopy, parameters);
-			rgbCopy = resizeIfRequested(rgbCopy, parameters);
+				// Write image
+				try {
+					ImageIO.write(rgbCopy, "jpg", cacheFile);
+				} catch (Exception e) {
+					throw error(BAD_REQUEST, "image_error_writing_failed", e);
+				}
+				// Return buffer to written cache file
+				return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
+			});
+		} catch (IOException e) {
+			return Single.error(e);
+		}
 
-			// 4. Write image
-			try {
-				ImageIO.write(rgbCopy, "jpg", cacheFile);
-			} catch (Exception e) {
-				throw error(BAD_REQUEST, "image_error_writing_failed", e);
-			}
-			sub.onSuccess(null);
-			// 5. Return buffer to written cache file
-		}).toCompletable().andThen(PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath()));
 	}
 
 	@Override

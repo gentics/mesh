@@ -18,10 +18,10 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.AsyncFile;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.streams.Pump;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 /**
@@ -65,43 +65,37 @@ public class BinaryFieldResponseHandler {
 			}
 
 			String etagHeaderValue = ETag.prepareHeader(ETag.hash(etagKey), false);
-			rc.response().putHeader(ETAG, etagHeaderValue);
+			HttpServerResponse response = rc.response();
+			response.putHeader(ETAG, etagHeaderValue);
 			String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
+
 			if (requestETag != null && requestETag.equals(etagHeaderValue)) {
-				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
+				response.setStatusCode(NOT_MODIFIED.code()).end();
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
-				Observable<Buffer> data = storage.read(sha512sum);
-				imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).subscribe(fileWithProps -> {
-					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
-					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
-					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-					rc.response().putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-					// TODO encode filename?
-					rc.response().putHeader("content-disposition", "inline; filename=" + fileName);
-					AsyncFile file = fileWithProps.getFile();
-					Pump pump = Pump.pump(file, rc.response());
-					file.endHandler(ignore -> {
-						rc.response().end();
-						file.close();
-					});
-					pump.start();
-				}, rc::fail);
+				Observable<Buffer> data = binary.getStream();
+				Observable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).toObservable().map(
+						fileWithProps -> {
+							response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
+							response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
+							response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+							response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+							// TODO encode filename?
+							response.putHeader("content-disposition", "inline; filename=" + fileName);
+							return fileWithProps.getFile();
+						}).flatMap(file -> {
+							return RxHelper.toObservable(file);
+						});
+				resizedData.subscribe(response::write, rc::fail, response::end);
 			} else {
-				Observable<Buffer> stream = binary.getStream();
-				rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
-				rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
-				rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-				rc.response().putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+				response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
+				response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
+				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 				// TODO encode filename?
 				// TODO images and pdf files should be shown in inline format
-				rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
-
-				stream.subscribe(buf -> {
-					rc.response().write(buf);
-				}, rc::fail, () -> {
-					rc.response().end();
-				});
+				response.putHeader("content-disposition", "attachment; filename=" + fileName);
+				binary.getStream().subscribe(response::write, rc::fail, response::end);
 			}
 		}
 	}
