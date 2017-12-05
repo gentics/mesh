@@ -22,7 +22,6 @@ import io.vertx.core.file.AsyncFile;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.rxjava.core.http.HttpServerResponse;
 import rx.Observable;
 
 /**
@@ -89,9 +88,7 @@ public class BinaryFieldResponseHandler {
 					pump.start();
 				}, rc::fail);
 			} else {
-				Observable<io.vertx.rxjava.core.buffer.Buffer> stream = binary.getStream().map(buf -> {
-					return new io.vertx.rxjava.core.buffer.Buffer(buf);
-				});
+				Observable<Buffer> stream = binary.getStream();
 				rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 				rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 				rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -100,12 +97,11 @@ public class BinaryFieldResponseHandler {
 				// TODO images and pdf files should be shown in inline format
 				rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
 
-				stream.reduce(rc.response(), (response, buf) -> {
-					response.write(buf.getDelegate());
-					return response;
-				}).toCompletable().subscribe(() -> {
+				stream.subscribe(buf -> {
+					rc.response().write(buf);
+				}, rc::fail, () -> {
 					rc.response().end();
-				}, rc::fail);
+				});
 			}
 		}
 	}
