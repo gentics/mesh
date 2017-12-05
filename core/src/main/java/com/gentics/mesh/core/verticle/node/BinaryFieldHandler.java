@@ -62,6 +62,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.rx.java.RxHelper;
+import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.file.FileSystem;
 import rx.Observable;
 import rx.Single;
 
@@ -292,7 +294,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 		field.setFileName(fileName);
 		field.getBinary().setSize(ul.size());
 		field.setMimeType(contentType);
-		// field.getBinary().setSHA512Sum(hash);
 		if (info.getImageInfo() != null) {
 			Binary binary = field.getBinary();
 			binary.setImageHeight(info.getImageInfo().getHeight());
@@ -340,6 +341,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "image_error_language_not_set");
 		}
 
+		FileSystem fs = new Vertx(vertx).fileSystem();
 		db.asyncTx(() -> {
 			// Load needed elements
 			Project project = ac.getProject();
@@ -375,8 +377,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
-								transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
+						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
@@ -405,8 +407,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 								Single<ImageInfo> info = imageManipulator.readImageInfo(resizedImageData);
 
 								return Single.zip(hash, info, (hashV, infoV) -> {
-									file.getFile().setReadPos(0);
-									Observable<Buffer> data = RxHelper.toObservable(file.getFile());
+									// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
+									Observable<Buffer> data = fs.rxOpen(file.getPath(), new OpenOptions()).toObservable()
+											.flatMap(f -> f.toObservable()).map(b -> b.getDelegate());
 									// Return a POJO which hold all information that is needed to update the field
 									TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV);
 									return binaryStorage.store(data, hashV).andThen(Single.just(result));

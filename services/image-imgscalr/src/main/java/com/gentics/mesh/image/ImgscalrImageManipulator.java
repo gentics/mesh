@@ -64,14 +64,13 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (parameters.hasAllCropParameters()) {
 			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(), parameters
-						.getCroph());
+				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
+						parameters.getCroph());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
 				throw error(BAD_REQUEST, "image_error_cropping_failed", e);
 			}
-
 		}
 		return originalImage;
 	}
@@ -140,10 +139,60 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
 		}
 
-		// Read the image
+		return readImage(stream).flatMap(bi -> {
+			if (bi == null) {
+				throw error(BAD_REQUEST, "image_error_reading_failed");
+			}
+			if (bi.getTransparency() == Transparency.TRANSLUCENT) {
+				// NOTE: For BITMASK images, the color model is likely IndexColorModel,
+				// and this model will contain the "real" color of the transparent parts
+				// which is likely a better fit than unconditionally setting it to white.
+
+				// Fill background with white
+				Graphics2D graphics = bi.createGraphics();
+				try {
+					graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
+					graphics.setPaint(Color.WHITE);
+					graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+				} finally {
+					graphics.dispose();
+				}
+			}
+			// Convert the image to RGB for images with transparency (gif, png)
+			BufferedImage rgbCopy = bi;
+			if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
+				rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+				Graphics2D graphics = rgbCopy.createGraphics();
+				graphics.drawImage(bi, 0, 0, Color.WHITE, null);
+				graphics.dispose();
+			}
+
+			// Manipulate image
+			rgbCopy = cropIfRequested(rgbCopy, parameters);
+			rgbCopy = resizeIfRequested(rgbCopy, parameters);
+
+			// Write image
+			try {
+				ImageIO.write(rgbCopy, "jpg", cacheFile);
+			} catch (Exception e) {
+				throw error(BAD_REQUEST, "image_error_writing_failed", e);
+			}
+			// Return buffer to written cache file
+			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
+		});
+
+	}
+
+	/**
+	 * Read the image data stream and return the decoded image.
+	 * 
+	 * @param stream
+	 * @return
+	 */
+	private Single<BufferedImage> readImage(Observable<Buffer> stream) {
 		try {
 			InputStream ins = RxUtil.toInputStream(stream);
-			Single<BufferedImage> obs = new Vertx(Mesh.vertx()).rxExecuteBlocking(bc -> {
+			return new Vertx(Mesh.vertx()).rxExecuteBlocking(bc -> {
 				try {
 					BufferedImage image = ImageIO.read(ins);
 					ins.close();
@@ -152,52 +201,9 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					bc.fail(e);
 				}
 			}, false);
-
-			return obs.flatMap(bi -> {
-				if (bi == null) {
-					throw error(BAD_REQUEST, "image_error_reading_failed");
-				}
-				if (bi.getTransparency() == Transparency.TRANSLUCENT) {
-					// NOTE: For BITMASK images, the color model is likely IndexColorModel,
-					// and this model will contain the "real" color of the transparent parts
-					// which is likely a better fit than unconditionally setting it to white.
-
-					// Fill background with white
-					Graphics2D graphics = bi.createGraphics();
-					try {
-						graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
-						graphics.setPaint(Color.WHITE);
-						graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-					} finally {
-						graphics.dispose();
-					}
-				}
-				// Convert the image to RGB for images with transparency (gif, png)
-				BufferedImage rgbCopy = bi;
-				if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
-					rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-					Graphics2D graphics = rgbCopy.createGraphics();
-					graphics.drawImage(bi, 0, 0, Color.WHITE, null);
-					graphics.dispose();
-				}
-
-				// Manipulate image
-				rgbCopy = cropIfRequested(rgbCopy, parameters);
-				rgbCopy = resizeIfRequested(rgbCopy, parameters);
-
-				// Write image
-				try {
-					ImageIO.write(rgbCopy, "jpg", cacheFile);
-				} catch (Exception e) {
-					throw error(BAD_REQUEST, "image_error_writing_failed", e);
-				}
-				// Return buffer to written cache file
-				return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
-			});
-		} catch (IOException e) {
-			return Single.error(e);
+		} catch (IOException e1) {
+			return Single.error(e1);
 		}
-
 	}
 
 	@Override

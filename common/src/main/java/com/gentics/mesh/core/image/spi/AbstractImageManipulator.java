@@ -35,17 +35,6 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		this.options = options;
 	}
 
-	// @Override
-	// public Single<PropReadFileStream> handleResize(ReadStream<Buffer> stream, String sha512sum, ImageManipulationParameters parameters) {
-	// try {
-	// parameters.validate();
-	// parameters.validateLimits(options);
-	// } catch (Exception e) {
-	// return Single.error(e);
-	// }
-	// return handleResize(stream, sha512sum, parameters);
-	// }
-
 	@Override
 	public File getCacheFile(String sha512sum, ImageManipulationParameters parameters) {
 
@@ -75,32 +64,40 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 				try {
 					BufferedImage image = ImageIO.read(pis);
 					pis.close();
-					bc.complete(image);
+					if (image == null) {
+						bc.fail(error(BAD_REQUEST, "image_error_reading_failed"));
+					} else {
+						bc.complete(image);
+					}
 				} catch (IOException e) {
 					bc.fail(e);
 				}
 			}, false);
-
-			return obs.map(bi -> {
-				if (bi == null) {
-					throw error(BAD_REQUEST, "image_error_reading_failed");
-				}
-				ImageInfo info = new ImageInfo();
-				info.setWidth(bi.getWidth());
-				info.setHeight(bi.getHeight());
-				int[] rgb = calculateDominantColor(bi);
-				// By default we assume white for the images
-				String colorHex = "#FFFFFF";
-				if (rgb.length >= 3) {
-					colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
-				}
-				info.setDominantColor(colorHex);
-				return info;
-			});
+			return obs.map(this::toImageInfo);
 		} catch (IOException e) {
 			return Single.error(e);
 		}
 
+	}
+
+	/**
+	 * Extract the image information from the given buffered image.
+	 * 
+	 * @param bi
+	 * @return
+	 */
+	private ImageInfo toImageInfo(BufferedImage bi) {
+		ImageInfo info = new ImageInfo();
+		info.setWidth(bi.getWidth());
+		info.setHeight(bi.getHeight());
+		int[] rgb = calculateDominantColor(bi);
+		// By default we assume white for the images
+		String colorHex = "#FFFFFF";
+		if (rgb.length >= 3) {
+			colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
+		}
+		info.setDominantColor(colorHex);
+		return info;
 	}
 
 }
