@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -7,6 +11,8 @@ import java.util.Iterator;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.impl.GroupImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -27,17 +33,16 @@ public class GroupCheck implements ConsistencyCheck {
 	private void checkGroup(Group group, ConsistencyCheckResponse response) {
 		String uuid = group.getUuid();
 
+		checkIn(group, HAS_GROUP, GroupRootImpl.class, response, HIGH);
+
+		checkOut(group, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		checkOut(group, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+
 		if (isEmpty(group.getName())) {
 			response.addInconsistency("Group has no valid name", uuid, MEDIUM);
 		}
 		if (group.getCreationTimestamp() == null) {
 			response.addInconsistency("The group creation date is not set", uuid, MEDIUM);
-		}
-		if (group.getCreator() == null) {
-			response.addInconsistency("The group creator is not set", uuid, MEDIUM);
-		}
-		if (group.getEditor() == null) {
-			response.addInconsistency("The group editor is not set", uuid, MEDIUM);
 		}
 		if (group.getLastEditedTimestamp() == null) {
 			response.addInconsistency("The group edit timestamp is not set", uuid, MEDIUM);
