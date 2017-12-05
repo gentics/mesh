@@ -1,7 +1,6 @@
 package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.json.JsonArray;
@@ -11,17 +10,37 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-/**
- * Created by sebastian on 04.12.17.
- */
+
 public class ChangeNumberStringsToNumber extends AbstractChange {
+	private static final String NUMBER_TYPE = "number";
+	private static final String LIST_TYPE = "list";
+	private static final String SCHEMA_FIELDS = "fields";
+	private static final String FIELD_TYPE_KEY = "type";
+	private static final String FIELD_LIST_TYPE_KEY = "listType";
+	private static final String FIELD_NAME_KEY = "name";
+
+	private static final String UUID = "uuid";
+	private static final String FIELD_KEY = "fieldkey";
+	private static final String JSON_FIELD = "json";
+	private static final String SCHEMA_CONTAINER_VERSION_CLASS = "SchemaContainerVersionImpl";
+	private static final String HAS_SCHEMA_CONTAINER_VERSION = "HAS_SCHEMA_CONTAINER_VERSION";
+	private static final String MICROSCHEMA_CONTAINER_VERSION_CLASS = "MicroschemaContainerVersionImpl";
+	private static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
+	private static final String HAS_LIST = "HAS_LIST";
+	private static final String ITEM_PREFIX = "item-";
 
 	private static final Logger log = LoggerFactory.getLogger(ChangeNumberStringsToNumber.class);
 
 	private static final NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
+
+	private final Map<String, Map<String, JsonObject>> schemaMap = new HashMap<>();
 
 	@Override
 	public String getName() {
@@ -33,70 +52,91 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		return "Changes the values of number fields (and number list fields) from strings to actual numbers.";
 	}
 
-	private JsonObject getSchemaContainerVersion(Vertex fieldContainer, String label) {
-		Iterator<Vertex> schemaContainerVersionIt = fieldContainer.getVertices(Direction.OUT, label).iterator();
-		if (schemaContainerVersionIt.hasNext()) {
-			return new JsonObject(schemaContainerVersionIt.next().getProperty("json").toString());
-		}
-		return null;
+	private Map<String, JsonObject> buildSchemaFromVertex(Vertex schemaVertex) {
+		return schemaMap.computeIfAbsent(schemaVertex.getProperty(UUID), uuid -> {
+			String json = schemaVertex.getProperty(JSON_FIELD);
+			if (json == null) {
+				return new HashMap<>();
+			}
+			JsonObject schema = new JsonObject(json);
+			if (!schema.containsKey(SCHEMA_FIELDS)) {
+				return new HashMap<>();
+			}
+			JsonArray fields = schema.getJsonArray(SCHEMA_FIELDS);
+			return IntStream.range(0, fields.size())
+					.mapToObj(fields::getJsonObject)
+					.filter(f -> {
+						String type = f.getString(FIELD_TYPE_KEY);
+						return NUMBER_TYPE.equals(type) || (LIST_TYPE.equals(type) && NUMBER_TYPE.equals(f.getString(FIELD_LIST_TYPE_KEY)));
+					})
+					.collect(Collectors.toMap(o -> o.getString(FIELD_NAME_KEY), Function.identity()));
+		});
 	}
 
-
-	private void updateField(Vertex node, JsonObject field) {
-		String fieldName = field.getString("name");
-		if ("number".equals(field.getString("type")) && node.getProperty(fieldName) != null) {
-			String strVal = node.getProperty(fieldName);
-			Number numVal;
-			try {
-				numVal = format.parse(strVal);
-			} catch (ParseException e) {
-				log.warn("Could not parse the number '{}', for field '{}' in field-container {}", strVal, fieldName, node.getId());
-				numVal = 0;
-			}
-			node.removeProperty(fieldName);
-			node.setProperty(fieldName, numVal);
-		} else if ("list".equals(field.getString("type")) && "number".equals(field.getString("listType"))) {
-			for (Vertex list: node.getVertices(Direction.OUT, "HAS_LIST")) {
-
-			}
-		}
-	}
-
-	private void updateFields(Vertex node, JsonObject schema) {
-		if (!schema.containsKey("fields")) {
+	private void updateProperty(String propertyName, Vertex node) {
+		Object obj = node.getProperty(propertyName);
+		if (obj == null) {
 			return;
 		}
-		JsonArray fields = schema.getJsonArray("fields");
-		for (int i = 0; i < fields.size(); i++) {
+		if (!(obj instanceof String)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName, node.getProperty(UUID), obj.getClass(), obj);
+			}
+			return;
+		}
+		String strVal = (String) obj;
+		Number numVal;
+		try {
+			numVal = format.parse(strVal);
+		} catch (ParseException e) {
+			log.warn("Could not parse the number '{}', for field '{}' in node {}", strVal, propertyName, node.getId());
+			numVal = 0;
+		}
+		node.removeProperty(propertyName);
+		node.setProperty(propertyName, numVal);
+	}
 
-
-			JsonObject field = fields.getJsonObject(i);
-			updateField(node, field);
+	private void updateLists(Vertex container, Map<String, JsonObject> fieldMap) {
+		for (Vertex listElement: container.getVertices(Direction.OUT, HAS_LIST)) {
+			String fieldName = listElement.getProperty(FIELD_KEY);
+			if (fieldMap.containsKey(fieldName) && NUMBER_TYPE.equals(fieldMap.get(fieldName).getString(FIELD_LIST_TYPE_KEY))) {
+				listElement.getPropertyKeys().stream()
+						.filter(k -> k.startsWith(ITEM_PREFIX))
+						.forEach(k -> updateProperty(k, listElement));
+			}
 		}
 	}
 
+	private void updateFields(Vertex container, Map<String, JsonObject> fieldMap) {
+		fieldMap.entrySet().stream()
+				.map(Map.Entry::getValue)
+				.filter(f -> NUMBER_TYPE.equals(f.getString(FIELD_TYPE_KEY)))
+				.forEach(f -> updateProperty(f.getString(FIELD_NAME_KEY) + "-" + NUMBER_TYPE, container));
+	}
 
-	private void updateNode(Vertex node, String type) {
-		JsonObject schema = getSchemaContainerVersion(node,"node".equals(type) ? "HAS_SCHEMA_CONTAINER_VERSION" : "HAS_MICROSCHEMA_CONTAINER");
-		if (schema == null) {
-			log.info("No schema found for {} with uuid: {}", type, node.getId());
-		} else {
-			updateFields(node, schema);
+
+	public void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
+		for (Vertex vertex : schemaVertex.getVertices(Direction.IN, label)) {
+			updateFields(vertex, fieldMap);
+			updateLists(vertex, fieldMap);
+		}
+	}
+
+	public void convertViaSchema(String schemaVersionClassName, String label) {
+		for (Vertex schemaVertex : getGraph().getVertices("ferma_type", schemaVersionClassName)) {
+			Map<String, JsonObject> fieldMap = buildSchemaFromVertex(schemaVertex);
+			if (!fieldMap.isEmpty()) {
+				updateVerticesForSchema(schemaVertex, fieldMap, label);
+			}
 		}
 	}
 
 	@Override
 	public void apply() {
-		Vertex meshRoot = getMeshRootVertex();
-		Vertex nodeRoot = meshRoot.getVertices(Direction.OUT, "HAS_NODE_ROOT").iterator().next();
-		for (Vertex nodeImpl: nodeRoot.getVertices(Direction.OUT, "HAS_NODE")) {
-			for (Vertex fieldContainer : nodeImpl.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER")) {
-				updateNode(fieldContainer, "node");
-			}
-		}
-		for (Vertex micronode : getGraph().getVertices("ferma_type", "MicronodeImpl")) {
-			updateNode(micronode, "micronode");
-		}
+		log.info("Start converting numbers in nodes.");
+		convertViaSchema(SCHEMA_CONTAINER_VERSION_CLASS, HAS_SCHEMA_CONTAINER_VERSION);
+		log.info("Start converting numbers in micronodes.");
+		convertViaSchema(MICROSCHEMA_CONTAINER_VERSION_CLASS, HAS_MICROSCHEMA_CONTAINER);
 	}
 
 	@Override
