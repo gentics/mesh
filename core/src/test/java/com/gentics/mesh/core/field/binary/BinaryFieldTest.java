@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.TransformationResult;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
@@ -44,7 +45,6 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.buffer.Buffer;
 import rx.Observable;
 import rx.Single;
-import rx.observables.ConnectableObservable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
@@ -202,15 +202,15 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 			// graph set - rest set - same value - different type
 			fieldA.setFileName("someText");
-			assertFalse("The field should not be equal to a string rest field. Even if it has the same value",
-					fieldA.equals(new StringFieldImpl().setString("someText")));
+			assertFalse("The field should not be equal to a string rest field. Even if it has the same value", fieldA.equals(new StringFieldImpl()
+					.setString("someText")));
 			// graph set - rest set - different value
-			assertFalse("The field should not be equal to the rest field since the rest field has a different value.",
-					fieldA.equals(new BinaryFieldImpl().setFileName("blub")));
+			assertFalse("The field should not be equal to the rest field since the rest field has a different value.", fieldA.equals(
+					new BinaryFieldImpl().setFileName("blub")));
 
 			// graph set - rest set - same value
-			assertTrue("The binary field filename value should be equal to a rest field with the same value",
-					fieldA.equals(new BinaryFieldImpl().setFileName("someText")));
+			assertTrue("The binary field filename value should be equal to a rest field with the same value", fieldA.equals(new BinaryFieldImpl()
+					.setFileName("someText")));
 		}
 	}
 
@@ -278,13 +278,17 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testMultiStreamHandling() throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
-		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
+		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(3);
 
 		Single<String> hash = FileUtils.hash(obs);
 
 		Single<ImageInfo> info = MeshInternal.get().imageManipulator().readImageInfo(obs);
 
-		TransformationResult result = Single.zip(hash, info, (hashV, infoV) -> {
+		BinaryStorage localStorage = MeshInternal.get().binaryStorage();
+
+		Single<String> store = localStorage.store(obs, "bogus").toSingleDefault("null");
+
+		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
 			return new TransformationResult(hashV, 0, infoV);
 		}).toBlocking().value();
 

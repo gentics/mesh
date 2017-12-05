@@ -286,6 +286,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 			if (storeBinary) {
 				binary = binaryRoot.create(hashSum);
 			}
+			BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
+			if (oldField != null) {
+				oldField.remove();
+			}
 			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
 			// We only need to handle the binary data if it has not yet been processed.
@@ -307,14 +311,15 @@ public class BinaryFieldHandler extends AbstractHandler {
 		String hash = field.getBinary().getSHA512Sum();
 		String contentType = ul.contentType();
 		String fileName = ul.fileName();
+		boolean isImage = contentType.startsWith("image/");
 
 		System.out.println("Size:" + new File(ul.uploadedFileName()).length());
 
-		Observable<Buffer> stream = RxHelper.toObservable(asyncFile).replay(0).autoConnect();
+		Observable<Buffer> stream = RxHelper.toObservable(asyncFile).publish().autoConnect(isImage ? 2 : 1);
 
 		// Only gather image info for actual images. Otherwise return an empty image info object.
 		Single<ImageInfo> imageInfo = Single.just(null);
-		if (contentType.startsWith("image/")) {
+		if (isImage) {
 			imageInfo = processImageInfo(ac, stream);
 		}
 
@@ -415,8 +420,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
-						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
+								transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
