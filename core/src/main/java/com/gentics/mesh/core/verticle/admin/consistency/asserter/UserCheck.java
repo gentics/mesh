@@ -4,10 +4,13 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import java.util.Iterator;
+
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * User specific checks.
@@ -15,9 +18,10 @@ import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 public class UserCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (User user : boot.userRoot().findAllIt()) {
-			checkUser(user, response);
+	public void invoke(Database db, ConsistencyCheckResponse response) {
+		Iterator<? extends User> it = db.getVerticesForType(UserImpl.class);
+		while (it.hasNext()) {
+			checkUser(it.next(), response);
 		}
 	}
 

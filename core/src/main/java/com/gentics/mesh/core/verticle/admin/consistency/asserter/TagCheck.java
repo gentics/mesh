@@ -4,10 +4,13 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import java.util.Iterator;
+
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * Tag specific consistency checks.
@@ -15,9 +18,10 @@ import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 public class TagCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (Tag tag : boot.tagRoot().findAllIt()) {
-			checkTag(tag, response);
+	public void invoke(Database db, ConsistencyCheckResponse response) {
+		Iterator<? extends Tag> it = db.getVerticesForType(TagImpl.class);
+		while (it.hasNext()) {
+			checkTag(it.next(), response);
 		}
 	}
 

@@ -3,16 +3,18 @@ package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
+import java.util.Iterator;
 import java.util.List;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * Node specific consistency checks.
@@ -20,10 +22,10 @@ import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 public class NodeCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-
-		for (Node node : boot.nodeRoot().findAllIt()) {
-			checkNode(node, response);
+	public void invoke(Database db, ConsistencyCheckResponse response) {
+		Iterator<? extends Node> it = db.getVerticesForType(NodeImpl.class);
+		while (it.hasNext()) {
+			checkNode(it.next(), response);
 		}
 	}
 

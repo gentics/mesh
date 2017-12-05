@@ -3,10 +3,13 @@ package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import java.util.Iterator;
+
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * Tag specific checks.
@@ -14,9 +17,10 @@ import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 public class TagFamilyCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (TagFamily tagFamily : boot.tagFamilyRoot().findAllIt()) {
-			checkTagFamily(tagFamily, response);
+	public void invoke(Database db, ConsistencyCheckResponse response) {
+		Iterator<? extends TagFamily> it = db.getVerticesForType(TagFamilyImpl.class);
+		while (it.hasNext()) {
+			checkTagFamily(it.next(), response);
 		}
 	}
 
