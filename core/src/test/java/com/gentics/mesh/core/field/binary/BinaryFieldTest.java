@@ -277,10 +277,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testMultiStreamHandling() throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
-		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).replay(0).autoConnect();
+		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
 
-		//Single<String> hash = FileUtils.hash(obs);
-		Single<String> hash = Single.just("test");
+		Single<String> hash = FileUtils.hash(obs);
 
 		Single<ImageInfo> info = MeshInternal.get().imageManipulator().readImageInfo(obs);
 
