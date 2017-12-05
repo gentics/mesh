@@ -97,7 +97,7 @@ public final class RxUtil {
 	public static InputStream toInputStream(Observable<Buffer> stream) throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		PipedOutputStream pos = new PipedOutputStream(pis);
-		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx())).doOnCompleted(() -> {
+		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).doOnCompleted(() -> {
 			try {
 				pos.close();
 			} catch (IOException e) {

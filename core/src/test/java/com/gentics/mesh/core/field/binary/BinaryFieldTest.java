@@ -44,6 +44,7 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.buffer.Buffer;
 import rx.Observable;
 import rx.Single;
+import rx.observables.ConnectableObservable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {

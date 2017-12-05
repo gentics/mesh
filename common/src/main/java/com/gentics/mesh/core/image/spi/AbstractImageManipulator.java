@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.RxUtil;
@@ -17,6 +18,7 @@ import com.gentics.mesh.util.RxUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rxjava.core.Vertx;
 import rx.Observable;
 import rx.Single;
 
@@ -67,9 +69,19 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	@Override
 	public Single<ImageInfo> readImageInfo(Observable<Buffer> stream) {
-		return Single.create(sub -> {
-			try (InputStream pis = RxUtil.toInputStream(stream)) {
-				BufferedImage bi = ImageIO.read(pis);
+		try {
+			InputStream pis = RxUtil.toInputStream(stream);
+			Single<BufferedImage> obs = new Vertx(Mesh.vertx()).rxExecuteBlocking(bc -> {
+				try {
+					BufferedImage image = ImageIO.read(pis);
+					pis.close();
+					bc.complete(image);
+				} catch (IOException e) {
+					bc.fail(e);
+				}
+			}, false);
+
+			return obs.map(bi -> {
 				if (bi == null) {
 					throw error(BAD_REQUEST, "image_error_reading_failed");
 				}
@@ -83,11 +95,12 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 					colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
 				}
 				info.setDominantColor(colorHex);
-				sub.onSuccess(info);
-			} catch (IOException e1) {
-				sub.onError(e1);
-			}
-		});
+				return info;
+			});
+		} catch (IOException e) {
+			return Single.error(e);
+		}
+
 	}
 
 }
