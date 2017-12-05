@@ -40,7 +40,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 
 	private static final NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
 
-	private final Map<String, Map<String, JsonObject>> schemaMap = new HashMap<>();
+	private final Map<String, Schema> schemaMap = new HashMap<>();
 
 	@Override
 	public String getName() {
@@ -52,24 +52,32 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		return "Changes the values of number fields (and number list fields) from strings to actual numbers.";
 	}
 
-	private Map<String, JsonObject> buildSchemaFromVertex(Vertex schemaVertex) {
+
+	private Schema buildSchemaFromVertex(Vertex schemaVertex, String className) {
 		return schemaMap.computeIfAbsent(schemaVertex.getProperty(UUID), uuid -> {
+			Schema schema = new Schema();
+			schema.type = className;
+			schema.uuid = uuid;
+			schema.version = schemaVertex.getProperty("version");
+
 			String json = schemaVertex.getProperty(JSON_FIELD);
 			if (json == null) {
-				return new HashMap<>();
+				return schema;
 			}
-			JsonObject schema = new JsonObject(json);
-			if (!schema.containsKey(SCHEMA_FIELDS)) {
-				return new HashMap<>();
+			JsonObject jsonSchema = new JsonObject(json);
+			if (!jsonSchema.containsKey(SCHEMA_FIELDS)) {
+				return schema;
 			}
-			JsonArray fields = schema.getJsonArray(SCHEMA_FIELDS);
-			return IntStream.range(0, fields.size())
+			schema.name = jsonSchema.getString("name");
+			JsonArray fields = jsonSchema.getJsonArray(SCHEMA_FIELDS);
+			schema.fieldMap = IntStream.range(0, fields.size())
 					.mapToObj(fields::getJsonObject)
 					.filter(f -> {
 						String type = f.getString(FIELD_TYPE_KEY);
 						return NUMBER_TYPE.equals(type) || (LIST_TYPE.equals(type) && NUMBER_TYPE.equals(f.getString(FIELD_LIST_TYPE_KEY)));
 					})
 					.collect(Collectors.toMap(o -> o.getString(FIELD_NAME_KEY), Function.identity()));
+			return schema;
 		});
 	}
 
@@ -116,17 +124,25 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 
 
 	public void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
+		long count = 0;
 		for (Vertex vertex : schemaVertex.getVertices(Direction.IN, label)) {
+			count++;
 			updateFields(vertex, fieldMap);
 			updateLists(vertex, fieldMap);
+			if (count % 200 == 0) {
+				log.info("Updated vertices {}", count);
+			}
 		}
 	}
 
 	public void convertViaSchema(String schemaVersionClassName, String label) {
-		for (Vertex schemaVertex : getGraph().getVertices("ferma_type", schemaVersionClassName)) {
-			Map<String, JsonObject> fieldMap = buildSchemaFromVertex(schemaVertex);
-			if (!fieldMap.isEmpty()) {
-				updateVerticesForSchema(schemaVertex, fieldMap, label);
+		for (Vertex schemaVertex : getGraph().getVertices("@class", schemaVersionClassName)) {
+			Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
+			if (!schema.fieldMap.isEmpty()) {
+				log.info("Update vertices for {}", schema);
+				updateVerticesForSchema(schemaVertex, schema.fieldMap, label);
+				log.info("Commit changes to database...");
+				getGraph().commit();
 			}
 		}
 	}
@@ -135,12 +151,29 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	public void apply() {
 		log.info("Start converting numbers in nodes.");
 		convertViaSchema(SCHEMA_CONTAINER_VERSION_CLASS, HAS_SCHEMA_CONTAINER_VERSION);
-		log.info("Start converting numbers in micronodes.");
+		log.info("Start converting numbers in micro-nodes.");
 		convertViaSchema(MICROSCHEMA_CONTAINER_VERSION_CLASS, HAS_MICROSCHEMA_CONTAINER);
 	}
 
 	@Override
 	public String getUuid() {
 		return "3F367427D10641FAB67427D10621FA90";
+	}
+
+	private class Schema {
+		String type;
+		String name;
+		String uuid;
+		String version;
+		Map<String, JsonObject> fieldMap;
+
+		@Override
+		public String toString() {
+			return type + "{" +
+					"name='" + name + '\'' +
+					", uuid='" + uuid + '\'' +
+					", version='" + version + '\'' +
+					'}';
+		}
 	}
 }
