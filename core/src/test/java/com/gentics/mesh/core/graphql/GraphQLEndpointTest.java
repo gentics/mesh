@@ -273,7 +273,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			Binary binary = MeshInternal.get().boot().binaryRoot().create("hashsumvalue");
+			Binary binary = MeshInternal.get().boot().binaryRoot().create("hashsumvalue", 1L);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 					.setMimeType("image/jpeg");

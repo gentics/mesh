@@ -10,6 +10,7 @@ public class TransformationResult {
 	private String sha512sum;
 	private long size;
 	private ImageInfo imageInfo;
+	private String filePath;
 
 	/**
 	 * Create a new result.
@@ -20,11 +21,14 @@ public class TransformationResult {
 	 *            New image binary size
 	 * @param imageInfo
 	 *            New image properties (width, height..)
+	 * @param filePath
+	 *            Path to the image cache file
 	 */
-	public TransformationResult(String sha512sum, long size, ImageInfo imageInfo) {
+	public TransformationResult(String sha512sum, long size, ImageInfo imageInfo, String filePath) {
 		this.sha512sum = sha512sum;
 		this.size = size;
 		this.imageInfo = imageInfo;
+		this.filePath = filePath;
 	}
 
 	/**
@@ -52,6 +56,15 @@ public class TransformationResult {
 	 */
 	public long getSize() {
 		return size;
+	}
+
+	/**
+	 * Return the image cache file path.
+	 * 
+	 * @return
+	 */
+	public String getFilePath() {
+		return filePath;
 	}
 
 }

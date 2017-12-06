@@ -17,12 +17,12 @@ public interface BinaryFieldTestHelper {
 	final static FieldFetcher FETCH = (container, name) -> container.getBinary(name);
 
 	final static DataProvider CREATE_EMPTY = (container, name) -> {
-		Binary binary = MeshInternal.get().boot().binaryRoot().create("bogus");
+		Binary binary = MeshInternal.get().boot().binaryRoot().create("bogus", 1L);
 		container.createBinary(name, binary);
 	};
 
 	final DataProvider FILL_BASIC = (container, name) -> {
-		Binary binary = MeshInternal.get().boot().binaryRoot().create("bogus");
+		Binary binary = MeshInternal.get().boot().binaryRoot().create("bogus", 1L);
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);

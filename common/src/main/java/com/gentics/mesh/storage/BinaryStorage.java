@@ -15,10 +15,11 @@ public interface BinaryStorage {
 	 * Stores the contents of the stream.
 	 * 
 	 * @param stream
-	 * @param hashsum
+	 * @param uuid
+	 *            Uuid of the binary to be stored
 	 * @return
 	 */
-	Completable store(Observable<Buffer> stream, String hashsum);
+	Completable store(Observable<Buffer> stream, String uuid);
 
 	/**
 	 * Checks whether the binary data for the given field exists
@@ -29,11 +30,11 @@ public interface BinaryStorage {
 	boolean exists(BinaryGraphField field);
 
 	/**
-	 * Read the binary data which is identified by the given hash sum.
+	 * Read the binary data which is identified by the given binary uuid.
 	 * 
-	 * @param hashsum
+	 * @param uuid
 	 * @return
 	 */
-	Observable<Buffer> read(String hashsum);
+	Observable<Buffer> read(String uuid);
 
 }

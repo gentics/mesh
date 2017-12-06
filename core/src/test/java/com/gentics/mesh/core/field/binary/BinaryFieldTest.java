@@ -72,7 +72,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			schema.addField(createFieldSchema(true));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-			Binary binary = meshRoot().getBinaryRoot().create(hash);
+			Binary binary = meshRoot().getBinaryRoot().create(hash, 0L);
 			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");
 			binary.setImageHeight(200);
@@ -101,7 +101,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Binary binary = meshRoot().getBinaryRoot().create(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
+					0L);
 			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.getBinary().setSize(220);
 			assertNotNull(field);
@@ -136,7 +137,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			Binary binary = meshRoot().getBinaryRoot().create(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
+					0L);
 			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.getBinary().setSize(220);
 			assertNotNull(field);
@@ -163,7 +165,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID());
+			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID(), 1L);
 			BinaryGraphField fieldA = container.createBinary("fieldA", binary);
 			BinaryGraphField fieldB = container.createBinary("fieldB", binary);
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -182,7 +184,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID());
+			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID(), 0L);
 			BinaryGraphField fieldA = container.createBinary(BINARY_FIELD, binary);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -194,7 +196,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			Binary binary = meshRoot().getBinaryRoot().create("hashsum");
+			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
 			BinaryGraphField fieldA = container.createBinary("fieldA", binary);
 
 			// graph empty - rest empty
@@ -289,7 +291,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		Single<String> store = localStorage.store(obs, "bogus").toSingleDefault("null");
 
 		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
-			return new TransformationResult(hashV, 0, infoV);
+			return new TransformationResult(hashV, 0, infoV, null);
 		}).toBlocking().value();
 
 		assertNotNull(result.getHash());

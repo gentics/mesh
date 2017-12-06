@@ -79,8 +79,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			Binary binary = MeshInternal.get().boot().binaryRoot().create("someHash");
-			binary.setSize(200);
+			Binary binary = MeshInternal.get().boot().binaryRoot().create("someHash", 200L);
 			binary.setImageHeight(200);
 			binary.setImageWidth(400);
 			BinaryGraphField field = nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName("somefile.jpg")

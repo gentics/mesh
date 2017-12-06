@@ -29,9 +29,12 @@ public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 	}
 
 	@Override
-	public Binary create(String sha512sum) {
+	public Binary create(String sha512sum, Long size) {
 		Binary binary = getGraph().addFramedVertex(BinaryImpl.class);
 		binary.setSHA512Sum(sha512sum);
+		binary.setSize(size);
+		//binary.setImageHeight(heigth)
+		//binary.setImageHeight(heigth)
 		return binary;
 	}
 

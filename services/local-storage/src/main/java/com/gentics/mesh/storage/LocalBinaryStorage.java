@@ -1,5 +1,8 @@
 package com.gentics.mesh.storage;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.io.File;
 
 import javax.inject.Inject;
@@ -30,25 +33,25 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable store(Observable<Buffer> stream, String sha512sum) {
+	public Completable store(Observable<Buffer> stream, String uuid) {
 		return Completable.defer(() -> {
 			FileSystem fileSystem = FileSystem.newInstance(Mesh.vertx().fileSystem());
-			String path = getFilePath(sha512sum);
+			String path = getFilePath(uuid);
 			log.debug("Saving data for field to path {" + path + "}");
 			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-			File uploadFolder = new File(uploadOptions.getDirectory(), getSegmentedPath(sha512sum));
+			File uploadFolder = new File(uploadOptions.getDirectory(), getSegmentedPath(uuid));
 
 			if (!uploadFolder.exists()) {
-				uploadFolder.mkdirs();
-
-				// log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
-				// throw error(BAD_REQUEST, "node_error_upload_failed", error);
+				if (!uploadFolder.mkdirs()) {
+					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}");
+					throw error(BAD_REQUEST, "node_error_upload_failed");
+				}
 
 				if (log.isDebugEnabled()) {
 					log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
 				}
 			}
-			File targetFile = new File(uploadFolder, sha512sum + ".bin");
+			File targetFile = new File(uploadFolder, uuid + ".bin");
 
 			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
 				ReadStream<Buffer> st = RxHelper.toReadStream(stream);
@@ -64,38 +67,46 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	/**
-	 * Return the absolute path to the binary data for the given hashsum.
+	 * Return the absolute path to the binary data for the given uuid.
 	 * 
-	 * @param sha512sum
+	 * @param binaryUuid
 	 * @return
 	 */
-	public String getFilePath(String sha512sum) {
-		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath(sha512sum));
-		File binaryFile = new File(folder, sha512sum + ".bin");
+	public String getFilePath(String binaryUuid) {
+		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath(binaryUuid));
+		File binaryFile = new File(folder, binaryUuid + ".bin");
 		return binaryFile.getAbsolutePath();
 	}
 
 	@Override
 	public boolean exists(BinaryGraphField field) {
-		String sha512sum = field.getBinary().getSHA512Sum();
-		return new File(getFilePath(sha512sum)).exists();
+		String uuid = field.getBinary().getUuid();
+		return new File(getFilePath(uuid)).exists();
 	}
 
 	@Override
-	public Observable<Buffer> read(String hashsum) {
-		String path = getFilePath(hashsum);
+	public Observable<Buffer> read(String binaryUuid) {
+		String path = getFilePath(binaryUuid);
 		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable().flatMap(
 				AsyncFile::toObservable).map(buf -> buf.getDelegate());
 		return obs;
 	}
 
-	public static String getSegmentedPath(String binaryFieldUuid) {
-		String[] parts = binaryFieldUuid.split("(?<=\\G.{12})");
+	/**
+	 * Generate the segmented path for the given binary uuid.
+	 * 
+	 * @param binaryUuid
+	 * @return
+	 */
+	public static String getSegmentedPath(String binaryUuid) {
+		String partA = binaryUuid.substring(0, 2);
+		String partB = binaryUuid.substring(2, 4);
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(File.separator);
-		for (String part : parts) {
-			buffer.append(part + File.separator);
-		}
+		buffer.append(partA);
+		buffer.append(File.separator);
+		buffer.append(partB);
+		buffer.append(File.separator);
 		return buffer.toString();
 	}
 

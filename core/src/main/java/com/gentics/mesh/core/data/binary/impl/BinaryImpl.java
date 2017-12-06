@@ -30,7 +30,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	@Override
 	public Observable<Buffer> getStream() {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
-		return storage.read(getSHA512Sum());
+		return storage.read(getUuid());
 	}
 
 }
