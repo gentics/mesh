@@ -108,7 +108,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * 
 	 * @return
 	 */
-	boolean getSsl();
+	Boolean getSsl();
 
 	/**
 	 * Set the ssl flag of the release.
