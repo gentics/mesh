@@ -4,12 +4,15 @@ import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
@@ -18,9 +21,22 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.GroupCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.MicroschemaContainerCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.NodeCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.ProjectCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.ReleaseCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.RoleCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.SchemaContainerCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.TagCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.TagFamilyCheck;
+import com.gentics.mesh.core.verticle.admin.consistency.asserter.UserCheck;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
@@ -48,6 +64,18 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;
+	}
+
+	@After
+	public void checkConsistency() {
+		try (Tx tx = tx()) {
+			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
+			for (ConsistencyCheck check : ConsistencyCheckHandler.getChecks()) {
+				check.invoke(db(), response);
+			}
+
+			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
+		}
 	}
 
 	/**
