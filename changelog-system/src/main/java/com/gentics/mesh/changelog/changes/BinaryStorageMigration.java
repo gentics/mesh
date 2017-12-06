@@ -1,5 +1,6 @@
 package com.gentics.mesh.changelog.changes;
 
+import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 
 import java.io.File;
@@ -102,10 +103,20 @@ public class BinaryStorageMigration extends AbstractChange {
 		String hash = oldBinaryField.getProperty(OLD_HASH_KEY);
 		if (hash == null && !file.exists()) {
 			try {
+				for (Edge fieldEdge : oldBinaryField.getEdges(Direction.IN, "HAS_FIELD")) {
+					Vertex container = fieldEdge.getVertex(OUT);
+					String fieldKey = fieldEdge.getProperty(FIELD_KEY_PROPERTY_KEY);
+					for (Vertex node : container.getVertices(IN, "HAS_FIELD_CONTAINER")) {
+						log.warn("Binary field {" + fieldKey + "} in node {" + node.getProperty("uuid")
+								+ "} has no binary data file. Touching the file.");
+					}
+				}
+
 				// Create an empty file and use the hash of an empty file
 				file.getParentFile().mkdirs();
 				new FileOutputStream(file).close();
 				hash = EMPTY_HASH;
+
 			} catch (IOException e) {
 				log.error("Encountered field with missing hash and data. Could not touch file {" + file + "}");
 				throw new RuntimeException(e);

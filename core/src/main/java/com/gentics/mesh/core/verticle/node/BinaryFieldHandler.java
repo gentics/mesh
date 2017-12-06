@@ -136,7 +136,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param attributes
 	 *            Additional form data attributes
 	 */
-	public void handleUpdateBinaryField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
+	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 

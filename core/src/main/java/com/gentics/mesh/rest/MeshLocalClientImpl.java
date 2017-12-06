@@ -1019,7 +1019,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 				}
 			});
 
-			fieldAPIHandler.handleUpdateBinaryField(ac, nodeUuid, fieldKey, attributes);
+			fieldAPIHandler.handleUpdateField(ac, nodeUuid, fieldKey, attributes);
 		};
 		new Thread(task).start();
 		return new MeshLocalRequestImpl<>(ac.getFuture());

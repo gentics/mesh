@@ -33,8 +33,6 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 	private BinaryFieldHandler handler;
 
-	private BinaryStorage storage;
-
 	private MeshUploadOptions uploadOptions;
 
 	final String data = "bliblablub";
@@ -45,7 +43,6 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 	public void setup() throws Exception {
 		uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		handler = meshDagger().nodeFieldAPIHandler();
-		storage = meshDagger().binaryStorage();
 	}
 
 	@Test
@@ -57,7 +54,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 		ac.put("sourceFile", fileUpload);
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
-		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
+		handler.handleUpdateField(ac, contentUuid(), "binaryField", null);
 		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertThat(uploadFolder).as("The upload folder should have been created").exists();
 		FileUtils.deleteDirectory(uploadFolder);
@@ -65,7 +62,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		fileUpload = mockUpload();
 		ac.put("sourceFile", fileUpload);
 		assertThat(uploadFolder).as("The upload folder should have been created").doesNotExist();
-		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
+		handler.handleUpdateField(ac, contentUuid(), "binaryField", null);
 		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertTrue("The upload folder should have been created.", uploadFolder.exists());
 	}
@@ -79,7 +76,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		File uploadFolder = getUploadFolder();
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
 
-		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
+		handler.handleUpdateField(ac, contentUuid(), "binaryField", null);
 		assertFalse("The upload file should have been moved.", new File(fileUpload).exists());
 		assertThat(uploadFolder).as("The upload folder should have been created").exists();
 		FileUtils.deleteDirectory(uploadFolder);
@@ -93,7 +90,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 		// Delete the file on purpose in order to invoke an error
 		new File(fileUpload).delete();
-		handler.handleUpdateBinaryField(ac, contentUuid(), "binaryField", null);
+		handler.handleUpdateField(ac, contentUuid(), "binaryField", null);
 	}
 
 	private File getUploadFolder() {
