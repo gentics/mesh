@@ -21,6 +21,7 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 			try (Tx tx = tx()) {
 				MeshRoot meshRoot = boot().meshRoot();
 				User user = meshRoot.getUserRoot().create("test", null);
+				user.setCreated(user());
 				assertNotNull(user);
 				tx.success();
 			}
