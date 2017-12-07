@@ -1101,7 +1101,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
+	}
 
+	@Test
+	public void testReadByUUIDWithNoUser() throws Exception {
+		String folderUuid = tx(() -> folder("2015").getUuid());
+		// Remove the editor and creator references to simulate that the user has been deleted.
+		try (Tx tx = tx()) {
+			folder("2015").setCreated(null);
+			folder("2015").getLatestDraftFieldContainer(english()).setEditor(null);
+			tx.success();
+		}
+
+		call(() -> client().getNodePublishStatus(PROJECT_NAME, folderUuid));
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
+		try (Tx tx = tx()) {
+			String releaseUuid = project().getLatestRelease().getUuid();
+			assertThat(folder("2015")).matches(response);
+			assertNotNull(response.getParentNode());
+			assertEquals(folder("2015").getParentNode(releaseUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals("News", response.getParentNode().getDisplayName());
+			assertEquals("en", response.getLanguage());
+		}
 	}
 
 	@Test
