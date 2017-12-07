@@ -140,31 +140,6 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		container.setSchemaContainerVersion(newVersion);
 		container.updateFieldsFromRest(ac, transformedRestModel.getFields());
 
-		// Create a map containing fieldnames (as keys) and sha512sums of the supposedly stored binary contents of all binary fields
-		Map<String, String> existingBinaryFields = newVersion.getSchema().getFields().stream().filter(f -> "binary".equals(f.getType()))
-				.map(f -> Tuple.tuple(f.getName(), transformedRestModel.getFields().getBinaryField(f.getName()))).filter(t -> t.v2() != null)
-				.filter(t -> t.v2().getSha512sum() != null).collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
-
-//		// Check for every binary field in the migrated node, whether the binary file is present, if not, copy it from the old data
-//		existingBinaryFields.entrySet().stream().forEach(entry -> {
-//			String fieldName = entry.getKey();
-//			String sha512Sum = entry.getValue();
-//
-//			BinaryGraphField binaryField = container.getBinary(fieldName);
-//			if (binaryField != null && !binaryField.getFile().exists() && filePaths.containsKey(sha512Sum)) {
-//				String pathToOldBinaryFile = filePaths.get(sha512Sum);
-//				File file = new File(pathToOldBinaryFile);
-//				if (file.exists()) {
-//					Buffer buffer = Mesh.vertx().fileSystem().readFileBlocking(pathToOldBinaryFile);
-//					binaryFieldHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid());
-//					binaryField.getBinary().setSHA512Sum(sha512Sum);
-//				} else {
-//					log.error("Could not find binary file for field {" + fieldName + "} in container {" + container.getUuid() + "}");
-//					throw new RuntimeException("Could not find binary file for field {" + fieldName + "} in container {" + container.getUuid()
-//							+ "} within path " + file.getAbsolutePath() + "} Orignal filename was {" + binaryField.getFileName() + "}");
-//				}
-//			}
-//		});
 	}
 
 	/**

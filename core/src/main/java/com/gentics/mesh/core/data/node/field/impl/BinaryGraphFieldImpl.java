@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
@@ -60,19 +61,19 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			return;
 		}
 
-		// Handle Update
-
-		// Always create a new binary field since each update must create a new field instance. The old field must be detached from the given container.
-		Binary currentBinary = graphBinaryField.getBinary();
-
-		// We can't update the graphNodeField since it is in fact an edge.
-		// We need to delete it and create a new one.
-		container.deleteFieldEdge(fieldKey);
-		BinaryGraphField newGraphBinaryField = container.createBinary(fieldKey, currentBinary);
+		// The binary field does not yet exist but the update request already contains some binary field info. We can use this info to create a new binary
+		// field. We locate the binary vertex by using the given hashsum. This case usually happens during schema migrations in which the binary graph field is
+		// in fact initially being removed from the container.
+		if (graphBinaryField == null) {
+			// TODO fail here if the hashsum is missing.
+			String hash = fieldMap.getBinaryField(fieldKey).getSha512sum();
+			Binary binary = MeshInternal.get().boot().binaryRoot().findByHash(hash);
+			graphBinaryField = container.createBinary(fieldKey, binary);
+		}
 
 		// Handle Update - Dominant Color
 		if (binaryField.getDominantColor() != null) {
-			newGraphBinaryField.setImageDominantColor(binaryField.getDominantColor());
+			graphBinaryField.setImageDominantColor(binaryField.getDominantColor());
 		}
 
 		// Handle Update - Filename
@@ -80,7 +81,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			if (isEmpty(binaryField.getFileName())) {
 				throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldKey);
 			} else {
-				newGraphBinaryField.setFileName(binaryField.getFileName());
+				graphBinaryField.setFileName(binaryField.getFileName());
 			}
 		}
 
@@ -89,7 +90,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			if (isEmpty(binaryField.getMimeType())) {
 				throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldKey);
 			}
-			newGraphBinaryField.setMimeType(binaryField.getMimeType());
+			graphBinaryField.setMimeType(binaryField.getMimeType());
 		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
@@ -189,7 +190,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	public void removeField(GraphFieldContainer container) {
 		Binary binary = getBinary();
 		remove();
-		// Only get rid of the binary as well if no other fields are using the binary. 
+		// Only get rid of the binary as well if no other fields are using the binary.
 		if (!binary.findFields().iterator().hasNext()) {
 			binary.remove();
 		}

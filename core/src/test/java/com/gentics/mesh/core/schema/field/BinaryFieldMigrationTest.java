@@ -28,6 +28,7 @@ import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.buffer.Buffer;
@@ -39,12 +40,13 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	String sha512Sum;
 
 	final DataProvider FILL = (container, name) -> {
+		Buffer buffer = Buffer.buffer(FILECONTENTS);
+		sha512Sum = FileUtils.hash(buffer).toBlocking().value();
 		Binary binary = MeshInternal.get().boot().binaryRoot().create(sha512Sum, 1L);
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		Buffer buffer = Buffer.buffer(FILECONTENTS);
-		meshDagger().binaryStorage().store(Observable.just(buffer), binary.getUuid());
+		meshDagger().binaryStorage().store(Observable.just(buffer), binary.getUuid()).await();
 	};
 
 	@Test
