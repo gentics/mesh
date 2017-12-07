@@ -7,10 +7,9 @@ import java.io.PipedOutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gentics.mesh.Mesh;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.rx.java.RxHelper;
+import io.vertx.rxjava.core.Vertx;
 import rx.Completable;
 import rx.Observable;
 import rx.Observable.Transformer;
@@ -93,10 +92,18 @@ public final class RxUtil {
 		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
 	}
 
-	public static InputStream toInputStream(Observable<Buffer> stream) throws IOException {
+	/**
+	 * Provide a blocking inputstream by reading the byte buffers from the observable.
+	 * 
+	 * @param stream
+	 * @param vertx
+	 * @return
+	 * @throws IOException
+	 */
+	public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		PipedOutputStream pos = new PipedOutputStream(pis);
-		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).doOnCompleted(() -> {
+		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnCompleted(() -> {
 			try {
 				pos.close();
 			} catch (IOException e) {

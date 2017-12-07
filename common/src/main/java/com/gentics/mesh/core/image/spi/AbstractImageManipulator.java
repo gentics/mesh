@@ -10,7 +10,6 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.RxUtil;
@@ -31,7 +30,10 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	protected ImageManipulatorOptions options;
 
-	public AbstractImageManipulator(ImageManipulatorOptions options) {
+	protected Vertx vertx;
+
+	public AbstractImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
+		this.vertx = vertx;
 		this.options = options;
 	}
 
@@ -59,8 +61,8 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	@Override
 	public Single<ImageInfo> readImageInfo(Observable<Buffer> stream) {
 		try {
-			InputStream pis = RxUtil.toInputStream(stream);
-			Single<BufferedImage> obs = new Vertx(Mesh.vertx()).rxExecuteBlocking(bc -> {
+			InputStream pis = RxUtil.toInputStream(stream, vertx);
+			Single<BufferedImage> obs = vertx.rxExecuteBlocking(bc -> {
 				try {
 					BufferedImage image = ImageIO.read(pis);
 					pis.close();

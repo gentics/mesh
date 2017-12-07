@@ -41,15 +41,12 @@ import rx.Single;
  */
 public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
-	Vertx vertx;
-
 	public ImgscalrImageManipulator() {
 		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
 	}
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
-		super(options);
-		this.vertx = vertx;
+		super(vertx, options);
 	}
 
 	/**
@@ -191,8 +188,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 */
 	private Single<BufferedImage> readImage(Observable<Buffer> stream) {
 		try {
-			InputStream ins = RxUtil.toInputStream(stream);
-			return new Vertx(Mesh.vertx()).rxExecuteBlocking(bc -> {
+			InputStream ins = RxUtil.toInputStream(stream, vertx);
+			return vertx.rxExecuteBlocking(bc -> {
 				try {
 					BufferedImage image = ImageIO.read(ins);
 					ins.close();
