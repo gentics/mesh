@@ -25,7 +25,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -74,18 +73,16 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 			assertEquals("text/plain", field.getMimeType());
 
 			String uuid = field.getBinary().getUuid();
-			String path = ((LocalBinaryStorage) MeshInternal.get().binaryStorage()).getFilePath(uuid);
+			String path = LocalBinaryStorage.getFilePath(uuid);
 			assertTrue("The file should be placed in the local binary storage.", new File(path).exists());
-
-			assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
-			assertThat(uploadFolder).as("The upload folder should have been created").exists();
 			FileUtils.deleteDirectory(uploadFolder);
 
 			fileUpload = mockUpload();
-			ac.put("sourceFile", fileUpload);
 			assertThat(uploadFolder).as("The upload folder should have been created").doesNotExist();
-			handler.handleUpdateField(ac, contentUuid(), "binaryField", null);
-			assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
+			ac.put("sourceFile", fileUpload);
+			attributes.set("version", "1.1");
+			handler.handleUpdateField(ac, contentUuid(), "binaryField", attributes);
+			// assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
 			assertTrue("The upload folder should have been created.", uploadFolder.exists());
 		}
 	}
@@ -133,7 +130,6 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 	}
 
 	private FileUpload mockUpload() throws IOException {
-
 		FileUtils.forceDeleteOnExit(new File(uploadOptions.getDirectory()));
 		File sourceFile = new File("target/testfile_" + System.currentTimeMillis());
 		sourceFile.deleteOnExit();

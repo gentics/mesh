@@ -72,7 +72,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	 * @param binaryUuid
 	 * @return
 	 */
-	public String getFilePath(String binaryUuid) {
+	public static String getFilePath(String binaryUuid) {
 		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath(binaryUuid));
 		File binaryFile = new File(folder, binaryUuid + ".bin");
 		return binaryFile.getAbsolutePath();
@@ -110,19 +110,10 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 		return buffer.toString();
 	}
 
-	/**
-	 * Move the file upload from the temporary upload directory to the given target path.
-	 * 
-	 * @param fileUpload
-	 * @param targetPath
-	 */
-	private void moveUploadIntoPlace(String fileUpload, String targetPath) {
-		FileSystem fileSystem = new FileSystem(Mesh.vertx().fileSystem());
-		fileSystem.moveBlocking(fileUpload, targetPath);
-		if (log.isDebugEnabled()) {
-			log.debug("Moved upload file from {" + fileUpload + "} to {" + targetPath + "}");
-		}
-		// log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
+	@Override
+	public Completable delete(String binaryUuid) {
+		String path = getFilePath(binaryUuid);
+		return FileSystem.newInstance(Mesh.vertx().fileSystem()).rxDelete(path).toCompletable();
 	}
 
 }

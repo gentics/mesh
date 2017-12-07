@@ -100,6 +100,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 
 	@Override
 	public void removeField(GraphFieldContainer container) {
+		//TODO remove the vertex from the graph if it is no longer be used by other containers 
 		setFieldProperty("html", null);
 		setFieldKey(null);
 	}

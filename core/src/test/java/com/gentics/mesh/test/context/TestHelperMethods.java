@@ -203,9 +203,7 @@ public interface TestHelperMethods {
 	}
 
 	default public Node folder(String key) {
-		Node node = data().getFolder(key);
-		// node.reload();
-		return node;
+		return data().getFolder(key);
 	}
 
 	default Node content(String key) {
@@ -213,21 +211,15 @@ public interface TestHelperMethods {
 	}
 
 	default TagFamily tagFamily(String key) {
-		TagFamily family = data().getTagFamily(key);
-		// family.reload();
-		return family;
+		return data().getTagFamily(key);
 	}
 
 	default Tag tag(String key) {
-		Tag tag = data().getTag(key);
-		// tag.reload();
-		return tag;
+		return data().getTag(key);
 	}
 
 	default SchemaContainer schemaContainer(String key) {
-		SchemaContainer container = data().getSchemaContainer(key);
-		// container.reload();
-		return container;
+		return data().getSchemaContainer(key);
 	}
 
 	default Map<String, SchemaContainer> schemaContainers() {
@@ -243,15 +235,11 @@ public interface TestHelperMethods {
 	}
 
 	default Language english() {
-		Language language = data().getEnglish();
-		// language.reload();
-		return language;
+		return data().getEnglish();
 	}
 
 	default Language german() {
-		Language language = data().getGerman();
-		// language.reload();
-		return language;
+		return data().getGerman();
 	}
 
 	default Map<String, Group> groups() {
@@ -263,9 +251,7 @@ public interface TestHelperMethods {
 	}
 
 	default MicroschemaContainer microschemaContainer(String key) {
-		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
-		// container.reload();
-		return container;
+		return data().getMicroschemaContainers().get(key);
 	}
 
 	default RoutingContext mockRoutingContext() {
@@ -290,9 +276,7 @@ public interface TestHelperMethods {
 	 * @return
 	 */
 	default Node content() {
-		Node content = data().getContent("news overview");
-		// content.reload();
-		return content;
+		return data().getContent("news overview");
 	}
 
 	/**
@@ -452,8 +436,8 @@ public interface TestHelperMethods {
 	 */
 	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
-		NodeResponse nodeResponse = call(
-				() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName).draft()));
+		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName)
+				.draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 

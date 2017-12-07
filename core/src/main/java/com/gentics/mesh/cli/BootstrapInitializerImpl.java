@@ -215,7 +215,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(Mesh mesh, boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(Mesh mesh, boolean forceReindex, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.mesh = (MeshImpl) mesh;
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean isClustered = options.getClusterOptions().isEnabled();
@@ -289,7 +289,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		eventManager.registerHandlers();
 		routerStorage.init();
-		handleLocalData(hasOldLock, options, verticleLoader);
+		handleLocalData(forceReindex, options, verticleLoader);
 	}
 
 	/**
@@ -381,17 +381,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Handle local data and prepare mesh API.
 	 * 
-	 * @param hasOldLock
+	 * @param forceReindex
 	 * @param configuration
 	 * @param commandLine
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
-		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
-		// the ES index in those cases in order to ensure consistency.
-		if (hasOldLock) {
+	private void handleLocalData(boolean forceReindex, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		// Invoke reindex as requested
+		if (forceReindex) {
 			reindexAll();
 		}
 

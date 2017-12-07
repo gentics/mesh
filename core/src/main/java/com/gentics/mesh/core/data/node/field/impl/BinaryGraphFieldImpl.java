@@ -181,15 +181,17 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		return this;
 	}
 
+	/**
+	 * Remove the field from the given container. The attached binary will be be removed if no other container is referencing it. The data will be deleted from
+	 * the binary storage as well.
+	 */
 	@Override
 	public void removeField(GraphFieldContainer container) {
-
-		if (!getBinary().findFields().iterator().hasNext()) {
-			// TODO delete the binary data as well
-			getBinary().remove();
-			// This will in turn also get rid of the edge. Thus it is not needed to remove the edge.
-		} else {
-			remove();
+		Binary binary = getBinary();
+		remove();
+		// Only get rid of the binary as well if no other fields are using the binary. 
+		if (!binary.findFields().iterator().hasNext()) {
+			binary.remove();
 		}
 	}
 

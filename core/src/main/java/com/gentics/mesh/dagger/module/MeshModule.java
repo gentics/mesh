@@ -137,6 +137,7 @@ public class MeshModule {
 		// TODO check for windows issues
 		handler.setUploadsDirectory(tempDirectory);
 		handler.setMergeFormAttributes(false);
+		handler.setDeleteUploadedFilesOnEnd(true);
 		return handler;
 	}
 

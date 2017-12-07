@@ -32,5 +32,12 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
 		return storage.read(getUuid());
 	}
+	
+	@Override
+	public void remove() {
+		BinaryStorage storage = MeshInternal.get().binaryStorage();
+		storage.delete(getUuid()).await();
+		super.remove();
+	}
 
 }

@@ -28,7 +28,12 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	public Completable store(Observable<Buffer> stream, String hashsum) {
 		// TODO Auto-generated method stub
 		return Completable.error(new Exception("Not implemented"));
-
+	}
+	
+	@Override
+	public Completable delete(String uuid) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

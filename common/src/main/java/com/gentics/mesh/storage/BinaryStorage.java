@@ -37,4 +37,11 @@ public interface BinaryStorage {
 	 */
 	Observable<Buffer> read(String uuid);
 
+	/**
+	 * Delete the binary with the given uuid.
+	 * 
+	 * @param uuid
+	 */
+	Completable delete(String uuid);
+
 }
