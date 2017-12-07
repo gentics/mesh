@@ -686,10 +686,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			User editor = fieldContainer.getEditor();
 			if (editor != null) {
 				restNode.setEditor(editor.transformToReference());
-			} else {
-				log.error("Node {" + getUuid() + "} - container {" + fieldContainer.getLanguage().getLanguageTag() + "} has no editor");
 			}
-
 			restNode.setEdited(fieldContainer.getLastEditedDate());
 
 			// Iterate over all fields and transform them to rest
@@ -1036,8 +1033,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			String date = DateUtils.toISO8601(c.getLastEditedTimestamp(), 0);
 
-			PublishStatusModel status = new PublishStatusModel().setPublished(true).setVersion(c.getVersion().toString()).setPublisher(c.getEditor()
-					.transformToReference()).setPublishDate(date);
+			PublishStatusModel status = new PublishStatusModel();
+			status.setPublished(true);
+			status.setVersion(c.getVersion().toString());
+			User editor = c.getEditor();
+			if (editor != null) {
+				status.setPublisher(editor.transformToReference());
+			}
+			status.setPublishDate(date);
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
@@ -1136,8 +1139,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), PUBLISHED);
 		if (container != null) {
 			String date = container.getLastEditedDate();
-			return new PublishStatusModel().setPublished(true).setVersion(container.getVersion().toString()).setPublisher(container.getEditor()
-					.transformToReference()).setPublishDate(date);
+			PublishStatusModel status = new PublishStatusModel();
+			status.setPublished(true);
+			status.setVersion(container.getVersion().toString());
+			User editor = container.getEditor();
+			if (editor != null) {
+				status.setPublisher(editor.transformToReference());
+			}
+			status.setPublishDate(date);
+			return status;
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), DRAFT);
 			if (container == null) {
