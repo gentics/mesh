@@ -168,7 +168,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();
 			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber())
 					.collect(Collectors.toList());
-			assertThat(oldValueList).containsExactly(42L, 41.1);
+			assertThat(oldValueList).containsExactly(42, 41.1);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),

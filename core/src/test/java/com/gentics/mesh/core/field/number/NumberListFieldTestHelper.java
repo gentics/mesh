@@ -6,9 +6,9 @@ import com.gentics.mesh.core.field.FieldFetcher;
 
 public interface NumberListFieldTestHelper {
 
-	static final long NUMBERVALUE = 4711L;
+	static final int NUMBERVALUE = 4711;
 
-	static final long OTHERNUMBERVALUE = 815L;
+	static final int OTHERNUMBERVALUE = 8150;
 
 	static final long ONE = 1L;
 

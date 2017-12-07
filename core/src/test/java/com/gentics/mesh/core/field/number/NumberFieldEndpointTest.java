@@ -33,23 +33,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
-public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
+public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
-	private static final String FIELD_NAME = "numberField";
-
-	@Before
-	public void updateSchema() throws IOException {
-		try (Tx tx = tx()) {
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
-			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-			numberFieldSchema.setName(FIELD_NAME);
-			// numberFieldSchema.setMin(10);
-			// numberFieldSchema.setMax(1000);
-			schema.addField(numberFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
-			tx.success();
-		}
-	}
 
 	@Test
 	@Override
@@ -134,7 +119,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getNumber(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumber(FIELD_NAME)).isNotNull();
 			Number oldValue = latest.getPreviousVersion().getNumber(FIELD_NAME).getNumber();
-			assertThat(oldValue).isEqualTo(42L);
+			assertThat(oldValue).isEqualTo(42);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
@@ -159,9 +144,9 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, new NumberFieldImpl().setNumber(1.21));
+			NodeResponse response = createNode(FIELD_NAME, new NumberFieldImpl().setNumber(1.214353));
 			NumberFieldImpl numberField = response.getFields().getNumberField(FIELD_NAME);
-			assertEquals(1.21, numberField.getNumber());
+			assertEquals(1.214353, numberField.getNumber());
 		}
 	}
 
