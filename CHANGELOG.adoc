@@ -2,11 +2,15 @@
 
 = Gentics Mesh Changelog
 
-== 0.11.4 (TBD)
+== 0.11.5 (TBD)
 
 icon:check[] Schema: The schema deletion process will now also include all schema versions, referenced changes and jobs.
 
 icon:check[] Clustering: A NPE which could occur during initial setup of a clustered instance has been fixed.
+
+== 0.11.4 (07.12.2017)
+
+icon:check[] Core: Fixed various errors which could occur when loading a node for which the editor or creator user has been previously deleted.
 
 == 0.11.3 (30.11.2017)
 
