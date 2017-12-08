@@ -6,6 +6,8 @@
 
 icon:check[] Search: The search index will now automatically be recreated if the search index folder could not be found.
 
+icon:check[] Core: The values of number-fields where stored as strings in the db which caused issues when converting numbers to and from string. This has been fixed: the values of number-fields will now be stored as numbers.
+
 icon:check[] Schema: The schema deletion process will now also include all schema versions, referenced changes and jobs.
 
 icon:check[] Clustering: A NPE which could occur during initial setup of a clustered instance has been fixed.

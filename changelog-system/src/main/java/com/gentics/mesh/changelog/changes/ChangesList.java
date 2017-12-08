@@ -32,6 +32,7 @@ public final class ChangesList {
 		list.add(new UpdateReleaseSchemaEdge());
 		list.add(new MigrateSchemaRawInfo());
 		list.add(new BinaryStorageMigration());
+		list.add(new ChangeNumberStringsToNumber());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}

@@ -5,7 +5,7 @@ import com.gentics.mesh.core.field.FieldFetcher;
 
 public interface NumberFieldTestHelper {
 
-	static final long NUMBERVALUE = 4711L;
+	static final int NUMBERVALUE = 4711;
 
 	static final DataProvider FILL = (container, name) -> container.createNumber(name).setNumber(NUMBERVALUE);
 
