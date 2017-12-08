@@ -16,7 +16,6 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -79,15 +78,15 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			Binary binary = MeshInternal.get().boot().binaryRoot().create("someHash", 200L);
-			binary.setImageHeight(200);
-			binary.setImageWidth(400);
-			BinaryGraphField field = nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName("somefile.jpg")
-					.setMimeType("image/jpeg").setImageDominantColor("#super");
+			Binary binaryA = MeshInternal.get().boot().binaryRoot().create("someHashA", 200L);
+			binaryA.setImageHeight(200);
+			binaryA.setImageWidth(400);
+			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
+					.setImageDominantColor("#super");
 
 			// file
-			BinaryGraphField fieldB = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName("somefile.dat")
-					.setMimeType("application/test");
+			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
+			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat").setMimeType("application/test");
 			recreateIndices();
 			tx.success();
 		}
