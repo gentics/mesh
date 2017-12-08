@@ -1,14 +1,19 @@
 package com.gentics.mesh.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.AsyncFile;
+import io.vertx.rx.java.RxHelper;
+import io.vertx.rxjava.core.Vertx;
 import rx.Completable;
 import rx.Observable;
-import rx.Single;
 import rx.Observable.Transformer;
+import rx.Single;
 import rx.Subscriber;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -51,7 +56,7 @@ public final class RxUtil {
 	}
 
 	public static <T> Observable<T> concatListNotEager(List<Observable<T>> input) {
-		//TODO handle empty list
+		// TODO handle empty list
 		return Observable.create(sub -> {
 			AtomicInteger index = new AtomicInteger();
 			Subscriber<T> subscriber = new Subscriber<T>() {
@@ -80,12 +85,37 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Reads the entire AsyncFile object and returns its contents as a buffer.
+	 * Reads the entire stream and returns its contents as a buffer.
 	 */
-	public static Single<Buffer> readEntireFile(AsyncFile file) {
-		return new io.vertx.rxjava.core.file.AsyncFile(file).toObservable()
-			.reduce((a, b) -> a.appendBuffer(b))
-			.toSingle()
-			.map(it -> it.getDelegate());
+	@Deprecated
+	public static Single<Buffer> readEntireData(Observable<Buffer> stream) {
+		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
+	}
+
+	/**
+	 * Provide a blocking inputstream by reading the byte buffers from the observable.
+	 * 
+	 * @param stream
+	 * @param vertx
+	 * @return
+	 * @throws IOException
+	 */
+	public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
+		PipedInputStream pis = new PipedInputStream();
+		PipedOutputStream pos = new PipedOutputStream(pis);
+		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnCompleted(() -> {
+			try {
+				pos.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}).subscribe(buf -> {
+			try {
+				pos.write(buf);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+		return pis;
 	}
 }

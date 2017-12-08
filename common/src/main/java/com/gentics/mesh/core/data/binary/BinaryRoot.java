@@ -30,12 +30,20 @@ public interface BinaryRoot extends MeshVertex {
 	 */
 	default public void addItem(Binary item) {
 		FramedGraph graph = getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-				database().createComposedIndexKey(item.getId(), getId()));
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.getId(),
+				getId()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());
 		}
 	}
+
+	/**
+	 * Find the binary with the given hashsum.
+	 * 
+	 * @param hash
+	 * @return
+	 */
+	Binary findByHash(String hash);
 
 	default public String getRootLabel() {
 		return HAS_BINARY;
@@ -55,9 +63,12 @@ public interface BinaryRoot extends MeshVertex {
 	/**
 	 * Create a new binary.
 	 * 
-	 * @param sha512sum
+	 * @param hash
+	 *            Hash sum of the binary
+	 * @param size
+	 *            Size in bytes
 	 * @return
 	 */
-	Binary create(String sha512sum);
+	Binary create(String hash, Long size);
 
 }

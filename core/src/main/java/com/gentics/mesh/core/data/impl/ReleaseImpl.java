@@ -152,7 +152,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public boolean getSsl() {
+	public Boolean getSsl() {
 		return getProperty(SSL);
 	}
 

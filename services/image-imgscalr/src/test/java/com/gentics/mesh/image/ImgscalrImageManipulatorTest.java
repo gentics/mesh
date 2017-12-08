@@ -17,8 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.util.PropReadFileStream;
-import com.gentics.mesh.util.RxUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
@@ -34,14 +32,17 @@ import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.util.PropReadFileStream;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.Vertx;
+import rx.Observable;
 import rx.Single;
 import rx.functions.Action6;
-import rx.functions.Func0;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -67,11 +68,11 @@ public class ImgscalrImageManipulatorTest {
 	@Test
 	public void testResize() throws Exception {
 
-		checkImages((imageName, width, height, color, refImage, ins) -> {
+		checkImages((imageName, width, height, color, refImage, bs) -> {
 			log.debug("Handling " + imageName);
-			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
-				.map(PropReadFileStream::getFile)
-				.flatMap(RxUtil::readEntireFile);
+
+			Single<Buffer> obs = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+					.map(PropReadFileStream::getFile).map(RxHelper::toObservable).flatMap(RxUtil::readEntireData);
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {
@@ -101,8 +102,8 @@ public class ImgscalrImageManipulatorTest {
 
 	@Test
 	public void testExtractImageInfo() throws IOException, JSONException {
-		checkImages((imageName, width, height, color, refImage, ins) -> {
-			Single<ImageInfo> obs = manipulator.readImageInfo(ins);
+		checkImages((imageName, width, height, color, refImage, stream) -> {
+			Single<ImageInfo> obs = manipulator.readImageInfo(stream);
 			ImageInfo info = obs.toBlocking().value();
 			assertEquals("The width or image {" + imageName + "} did not match.", width, info.getWidth());
 			assertEquals("The height or image {" + imageName + "} did not match.", height, info.getHeight());
@@ -110,7 +111,7 @@ public class ImgscalrImageManipulatorTest {
 		});
 	}
 
-	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Func0<InputStream>> action) throws JSONException, IOException {
+	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Observable<Buffer>> action) throws JSONException, IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
@@ -122,6 +123,8 @@ public class ImgscalrImageManipulatorTest {
 			if (ins == null) {
 				throw new RuntimeException("Could not find image {" + path + "}");
 			}
+			byte[] bytes = IOUtils.toByteArray(ins);
+			Observable<Buffer> bs = Observable.just(Buffer.buffer(bytes));
 			int width = image.getInt("w");
 			int height = image.getInt("h");
 			String color = image.getString("dominantColor");
@@ -132,7 +135,7 @@ public class ImgscalrImageManipulatorTest {
 			}
 			BufferedImage refImage = ImageIO.read(insRef);
 			insRef.close();
-			action.call(imageName, width, height, color, refImage, () -> ins);
+			action.call(imageName, width, height, color, refImage, bs);
 		}
 	}
 

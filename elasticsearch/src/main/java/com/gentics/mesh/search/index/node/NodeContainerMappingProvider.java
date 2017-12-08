@@ -165,6 +165,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			JsonObject binaryProps = new JsonObject();
 			fieldInfo.put("properties", binaryProps);
 
+			binaryProps.put("sha512sum", notAnalyzedType(STRING));
 			binaryProps.put("filename", notAnalyzedType(STRING));
 			binaryProps.put("filesize", notAnalyzedType(LONG));
 			binaryProps.put("mimeType", notAnalyzedType(STRING));

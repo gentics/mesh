@@ -136,13 +136,12 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		// Load the image from the file system
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
+		Buffer buffer = Buffer.buffer(IOUtils.toByteArray(ins));
 		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
 		Func1<String, Observable<NodeResponse>> uploadBinary = (fieldName) ->
 			client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(),
-            nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
+			nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
 			.doOnSubscribe(() -> System.out.println("Requesting " + fieldName));
 
 		Observable<String> imageFields = Observable.just("image1", "image2");
@@ -164,7 +163,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		imageFields
 			.flatMap(downloadBinary)
 			.map(NodeDownloadResponse::getBuffer)
-			.map(FileUtils::generateSha512Sum)
+			.map(FileUtils::hash)
+			.map(e -> e.toBlocking().value())
 			.doOnNext(assertSum)
 			.toCompletable().await();
 	}

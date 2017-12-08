@@ -59,7 +59,14 @@
 			<version>3.3.2</version>
 		</dependency>
 
-		<!-- Default Image Provider -->
+		<!-- Default storage provider -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-service-local-storage</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Default image provider -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>${mesh.image.provider}</artifactId>

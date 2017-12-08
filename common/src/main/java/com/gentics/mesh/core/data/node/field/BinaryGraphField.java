@@ -1,17 +1,22 @@
 package com.gentics.mesh.core.data.node.field;
 
-import java.io.File;
-
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
-import io.vertx.core.file.AsyncFile;
-import rx.Single;
-
 /**
- * The BinaryField Domain Model interface.
+ * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
  */
-public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVertex {
+public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge {
+
+	static final String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
+
+	static final String BINARY_SHA512SUM_PROPERTY_KEY = "binarySha512Sum";
+
+	static final String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
+
+	static final String BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "binaryImageDominantColor";
+
 	/**
 	 * Return the binary filename.
 	 * 
@@ -26,13 +31,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	 * @return Fluent API
 	 */
 	BinaryGraphField copyTo(BinaryGraphField target);
-
-	/**
-	 * Check whether the binary data represents an image.
-	 * 
-	 * @return
-	 */
-	boolean hasImage();
 
 	/**
 	 * Set the binary filename.
@@ -58,48 +56,11 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	BinaryGraphField setMimeType(String mimeType);
 
 	/**
-	 * Return a single that holds an AsyncFile for the binary.
+	 * Check whether the binary data represents an image.
 	 * 
 	 * @return
 	 */
-	Single<AsyncFile> getFileStream();
-
-	/**
-	 * Return the file that points to the binary file within the binary file storage.
-	 * 
-	 * @return Found file or null when no binary file could be found
-	 */
-	File getFile();
-
-	/**
-	 * Set the binary file size in bytes
-	 * 
-	 * @param sizeInBytes
-	 * @return Fluent API
-	 */
-	BinaryGraphField setFileSize(long sizeInBytes);
-
-	/**
-	 * Return the binary file size in bytes
-	 * 
-	 * @return
-	 */
-	long getFileSize();
-
-	/**
-	 * Set the binary SHA 512 checksum.
-	 * 
-	 * @param sha512HashSum
-	 * @return Fluent API
-	 */
-	BinaryGraphField setSHA512Sum(String sha512HashSum);
-
-	/**
-	 * Return the binary SHA 512 checksum.
-	 * 
-	 * @return
-	 */
-	String getSHA512Sum();
+	boolean hasImage();
 
 	/**
 	 * Set the binary image dominant color.
@@ -117,51 +78,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	String getImageDominantColor();
 
 	/**
-	 * Return the binary image height.
-	 * 
-	 * @return
-	 */
-	Integer getImageHeight();
-
-	/**
-	 * Set the image width of the binary image.
-	 * 
-	 * @param width
-	 * @return Fluent API
-	 */
-	BinaryGraphField setImageWidth(Integer width);
-
-	/**
-	 * Return the width of the binary image.
-	 * 
-	 * @return
-	 */
-	Integer getImageWidth();
-
-	/**
-	 * Set the with of the binary image. You can set this null to indicate that the binary data has no height.
-	 * 
-	 * @param heigth
-	 * @return Fluent API
-	 */
-	BinaryGraphField setImageHeight(Integer heigth);
-
-	/**
-	 * Returns the segmented path that points to the binary file within the binary file location. The segmented path is build using the uuid of the binary field
-	 * vertex.
-	 * 
-	 * @return
-	 */
-	String getSegmentedPath();
-
-	/**
-	 * Return the file path for the binary file location of the node.
-	 * 
-	 * @return
-	 */
-	String getFilePath();
-
-	/**
 	 * Return the uuid of the binary field.
 	 * 
 	 * @return
@@ -174,5 +90,12 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	 * @param uuid
 	 */
 	void setUuid(String uuid);
+
+	/**
+	 * Return the referenced binary.
+	 * 
+	 * @return
+	 */
+	Binary getBinary();
 
 }

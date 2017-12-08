@@ -70,7 +70,7 @@ public interface GraphField {
 	String getFieldKey();
 
 	/**
-	 * Remove this field from the container
+	 * Remove this field from the container.
 	 * 
 	 * @param container
 	 *            container

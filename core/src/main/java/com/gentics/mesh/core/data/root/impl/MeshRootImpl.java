@@ -202,8 +202,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public SchemaContainerRoot getSchemaContainerRoot() {
 		if (schemaContainerRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class)
-						.nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
+				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(
+						SchemaContainerRootImpl.class, null);
 				if (foundSchemaContainerRoot == null) {
 					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 					linkOut(schemaContainerRoot, HAS_SCHEMA_ROOT);
@@ -322,6 +322,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.projectRoot = null;
 		MeshRootImpl.nodeRoot = null;
 		MeshRootImpl.tagRoot = null;
+		MeshRootImpl.binaryRoot = null;
 
 		MeshRootImpl.userRoot = null;
 		MeshRootImpl.groupRoot = null;
@@ -332,6 +333,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.microschemaContainerRoot = null;
 		MeshRootImpl.languageRoot = null;
 		MeshRootImpl.jobRoot = null;
+
 	}
 
 	@Override

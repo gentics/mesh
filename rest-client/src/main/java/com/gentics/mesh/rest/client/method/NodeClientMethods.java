@@ -12,7 +12,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
 /**
- * Interface for Node specific rest API methods.
+ * Interface for Node specific REST API methods.
  */
 public interface NodeClientMethods {
 

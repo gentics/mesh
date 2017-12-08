@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.RxUtil.readEntireFile;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -12,9 +11,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +27,8 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -47,19 +45,26 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 
 import dagger.Lazy;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.rx.java.RxHelper;
+import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.file.FileSystem;
+import rx.Observable;
 import rx.Single;
 
 /**
@@ -79,14 +84,17 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private SearchQueue searchQueue;
 
+	private BinaryStorage binaryStorage;
+
 	@Inject
 	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-			BinaryFieldResponseHandler binaryFieldResponseHandler) {
+			BinaryFieldResponseHandler binaryFieldResponseHandler, BinaryStorage binaryStorage) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
+		this.binaryStorage = binaryStorage;
 	}
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
@@ -121,15 +129,15 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * Handle a request to create a new field.
 	 * 
 	 * @param ac
-	 * @param uuid
-	 *            Uuid of the node which should be updated
+	 * @param nodeUuid
+	 *            UUID of the node which should be updated
 	 * @param fieldName
 	 *            Name of the field which should be created
 	 * @param attributes
 	 *            Additional form data attributes
 	 */
-	public void handleUpdateBinaryField(InternalActionContext ac, String uuid, String fieldName, MultiMap attributes) {
-		validateParameter(uuid, "uuid");
+	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
+		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
 		String languageTag = attributes.get("language");
@@ -157,26 +165,22 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 		if (ul.size() > byteLimit) {
 			if (log.isDebugEnabled()) {
-				log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+				log.debug("Upload size of {" + ul.size() + "} exceeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
 			}
 			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
 			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
 			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
 		}
 
-		String contentType = ul.contentType();
-		String fileName = ul.fileName();
-
 		// This the name and path of the file to be moved to a new location.
 		// This will be changed because it is possible that the file has to be moved multiple times
 		// (if the transaction failed and has to be repeated).
 		ac.put("sourceFile", ul.uploadedFileName());
-		String hashSum = FileUtils.generateSha512Sum(ul.uploadedFileName());
 
 		db.tx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
@@ -236,52 +240,25 @@ public class BinaryFieldHandler extends AbstractHandler {
 			SearchQueueBatch batch = searchQueue.create();
 			// Create a new node version field container to store the upload
 			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
-			BinaryGraphField field = newDraftVersion.createBinary(fieldName);
-			String fieldUuid = field.getUuid();
 
-			Single<ImageInfo> obsImage;
-
-			// 3. Only gather image info for actual images. Otherwise return an empty image info object.
-			if (contentType.startsWith("image/")) {
-				try {
-					// Caches the image info in the action context so that it does not need to be
-					// calculated again if the transaction failed
-					ImageInfo imageInfo = ac.get("imageInfo");
-					if (imageInfo != null) {
-						obsImage = Single.just(imageInfo);
-					} else {
-						obsImage = imageManipulator.readImageInfo(() -> {
-						try {
-							return new FileInputStream(ul.uploadedFileName());
-						} catch (Exception e) {
-							log.error("Could not load schema for node {" + node.getUuid() + "}");
-							throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-						}
-						}).doOnSuccess(ii -> ac.put("imageInfo", ii));
-					}
-				} catch (Exception e) {
-					log.error("Could not load schema for node {" + node.getUuid() + "}");
-					throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-				}
-
-			} else {
-				obsImage = Single.just(new ImageInfo());
+			// Check whether the binary with the given hashsum was already stored
+			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+			String hash = FileUtils.hash(ul.uploadedFileName());
+			Binary binary = binaryRoot.findByHash(hash);
+			boolean storeBinary = binary == null;
+			if (storeBinary) {
+				binary = binaryRoot.create(hash, ul.size());
 			}
+			BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
+			if (oldField != null) {
+				oldField.remove();
+			}
+			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
-			// 4. Hash and store the file and update the field properties
-			Single<TransformationResult> resultObs = obsImage.map((imageInfo) -> {
-				moveBinaryFile(ac, fieldUuid, field.getSegmentedPath());
-				return new TransformationResult(hashSum, 0, imageInfo);
-			});
-
-			TransformationResult info = resultObs.toBlocking().value();
-			field.setFileName(fileName);
-			field.setFileSize(ul.size());
-			field.setMimeType(contentType);
-			field.setSHA512Sum(info.getHash());
-			field.setImageDominantColor(info.getImageInfo().getDominantColor());
-			field.setImageHeight(info.getImageInfo().getHeight());
-			field.setImageWidth(info.getImageInfo().getWidth());
+			// We only need to handle the binary data if it has not yet been processed.
+			if (storeBinary) {
+				processUpload(ac, ul, nodeUuid, field);
+			}
 
 			// If the binary field is the segment field, we need to update the webroot info in the node
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
@@ -293,10 +270,76 @@ public class BinaryFieldHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Handle image transformation.
+	 * Processes the upload and stored the identified data in the field. The binary data will be stored in the {@link BinaryStorage}.
+	 * 
+	 * @param ac
+	 * @param ul
+	 * @param nodeUuid
+	 * @param field
+	 */
+	private void processUpload(ActionContext ac, FileUpload ul, String nodeUuid, BinaryGraphField field) {
+		AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(ul.uploadedFileName(), new OpenOptions());
+		Binary binary = field.getBinary();
+		String hash = binary.getSHA512Sum();
+		String binaryUuid = binary.getUuid();
+		String contentType = ul.contentType();
+		String fileName = ul.fileName();
+		boolean isImage = contentType.startsWith("image/");
+		Observable<Buffer> stream = RxHelper.toObservable(asyncFile).publish().autoConnect(isImage ? 2 : 1);
+
+		// Only gather image info for actual images. Otherwise return an empty image info object.
+		Single<ImageInfo> imageInfo = Single.just(null);
+		if (isImage) {
+			imageInfo = processImageInfo(ac, stream);
+		}
+
+		// Store the data
+		Single<Long> store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size()));
+
+		// Handle the data in parallel
+		TransformationResult info = Single.zip(imageInfo, store, (imageinfo, size) -> {
+			return new TransformationResult(hash, 0, imageinfo, null);
+		}).toBlocking().value();
+
+		field.setFileName(fileName);
+		field.getBinary().setSize(ul.size());
+		field.setMimeType(contentType);
+		if (info.getImageInfo() != null) {
+			binary.setImageHeight(info.getImageInfo().getHeight());
+			binary.setImageWidth(info.getImageInfo().getWidth());
+			field.setImageDominantColor(info.getImageInfo().getDominantColor());
+		}
+	}
+
+	/**
+	 * Processes the given file and extracts the image info. The image info is cached within the action context in case the method is called again (e.g.: due to
+	 * tx retry). In that case the previously loaded image info is returned.
+	 * 
+	 * @param ac
+	 * @param stream
+	 * @return
+	 */
+	private Single<ImageInfo> processImageInfo(ActionContext ac, Observable<Buffer> stream) {
+		// Caches the image info in the action context so that it does not need to be
+		// calculated again if the transaction failed
+		ImageInfo imageInfo = ac.get("imageInfo");
+		if (imageInfo != null) {
+			return Single.just(imageInfo);
+		} else {
+			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> {
+				ac.put("imageInfo", ii);
+			});
+		}
+	}
+
+	/**
+	 * Handle image transformation. This operation will utilize the binary data of the existing field and apply the transformation options. The new binary data
+	 * will be stored and the field will be updated accordingly.
 	 * 
 	 * @param rc
 	 *            routing context
+	 * @param uuid
+	 * @param fieldName
 	 */
 	public void handleTransformImage(RoutingContext rc, String uuid, String fieldName) {
 		validateParameter(uuid, "uuid");
@@ -307,6 +350,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "image_error_language_not_set");
 		}
 
+		FileSystem fs = new Vertx(vertx).fileSystem();
 		db.asyncTx(() -> {
 			// Load needed elements
 			Project project = ac.getProject();
@@ -342,8 +386,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
-						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
+								transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
@@ -354,42 +398,59 @@ public class BinaryFieldHandler extends AbstractHandler {
 					Release release = ac.getRelease();
 
 					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
-					BinaryGraphField field = newDraftVersion.createBinary(fieldName);
-					String fieldUuid = field.getUuid();
-					String fieldSegmentedPath = field.getSegmentedPath();
-					String fieldPath = field.getFilePath();
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion,
+							true);
 
-					// 1. Resize the original image and store the result in the filesystem
-					Single<TransformationResult> obsTransformation = imageManipulator
-							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter)
+					String binaryUuid = initialField.getBinary().getUuid();
+					Observable<Buffer> stream = binaryStorage.read(binaryUuid);
+
+					// Resize the original image and store the result in the filesystem
+					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, imageManipulationParameter)
 							.flatMap(file -> {
-								// 2. Hash the resized image data and store it using the computed fieldUuid + hash
-								return readEntireFile(file.getFile()).map(buffer -> hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath))
-								.flatMap(hash -> {
-									// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
-									return imageManipulator.readImageInfo(() -> {
-										try {
-											return new FileInputStream(fieldPath);
-										} catch (IOException e) {
-											throw new RuntimeException(e);
-										}
-									}).map(info -> {
-										// Return a POJO which hold all information that is needed to update the field
-										return new TransformationResult(hash, file.getProps().size(), info);
-									});
-								});
+								Observable<Buffer> resizedImageData = RxHelper.toObservable(file.getFile()).publish().autoConnect(2);
+
+								// Hash the resized image data and store it using the computed fieldUuid + hash
+								Single<String> hash = FileUtils.hash(resizedImageData);
+
+								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
+								Single<ImageInfo> info = imageManipulator.readImageInfo(resizedImageData);
+
+								return Single.zip(hash, info, (hashV, infoV) -> {
+									// Return a POJO which hold all information that is needed to update the field
+									TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV, file.getPath());
+									return Single.just(result);
+								}).flatMap(e -> e);
 							});
 
+					// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
 					TransformationResult result = obsTransformation.toBlocking().value();
+					String hash = result.getHash();
+					BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+					Binary binary = binaryRoot.findByHash(hash);
 
-					field.setSHA512Sum(result.getHash());
-					field.setFileSize(result.getSize());
+					// Check whether the binary was already stored.
+					if (binary == null) {
+						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
+						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toObservable().flatMap(f -> f.toObservable())
+								.map(b -> b.getDelegate());
+						binary = binaryRoot.create(hash, result.getSize());
+						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().await();
+					} else {
+						log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");
+					}
+
+					// Now create the binary field in which we store the information about the file
+					BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
+					BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
+					if (oldField != null) {
+						oldField.remove();
+					}
+					field.getBinary().setSize(result.getSize());
 					// The resized image will always be a JPEG
 					field.setMimeType("image/jpeg");
 					// TODO should we rename the image, if the extension is wrong?
-					field.setImageHeight(result.getImageInfo().getHeight());
-					field.setImageWidth(result.getImageInfo().getWidth());
+					field.getBinary().setImageHeight(result.getImageInfo().getHeight());
+					field.getBinary().setImageWidth(result.getImageInfo().getWidth());
 					batch.store(newDraftVersion, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
 					return batch;
 				});
@@ -402,132 +463,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(INTERNAL_SERVER_ERROR, "error_internal");
 			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
-	}
-
-	/**
-	 * Hash the file upload data and move the temporary uploaded file to its final destination.
-	 * 
-	 * @param ac Action context
-	 * @param uuid
-	 * @param segmentedPath
-	 */
-	public void moveBinaryFile(InternalActionContext ac, String uuid, String segmentedPath) {
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
-		File targetFile = new File(uploadFolder, uuid + ".bin");
-		String targetPath = targetFile.getAbsolutePath();
-
-		checkUploadFolderExists(uploadFolder);
-		deletePotentialUpload(targetPath);
-		moveUploadIntoPlace(ac.get("sourceFile"), targetPath);
-		// Since this function can be called multiple times (if a transaction fails), we have to
-		// update the path so that moving the file works again.
-		ac.put("sourceFile", targetPath);
-	}
-
-	/**
-	 * Hash the data from the buffer and store it to its final destination.
-	 * 
-	 * @param buffer
-	 *            buffer which will be handled
-	 * @param uuid
-	 *            uuid of the binary field
-	 * @param segmentedPath
-	 *            path to store the binary data
-	 * @return The sha512 checksum
-	 */
-	public String hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
-		File targetFile = new File(uploadFolder, uuid + ".bin");
-		String targetPath = targetFile.getAbsolutePath();
-
-		String sha512sum = hashBuffer(buffer);
-		checkUploadFolderExists(uploadFolder);
-		deletePotentialUpload(targetPath);
-		storeBuffer(buffer, targetPath);
-		return sha512sum;
-	}
-
-	/**
-	 * Hash the given buffer and return a sha512 checksum.
-	 * 
-	 * @param buffer
-	 *            buffer
-	 * @return sha512 checksum
-	 */
-	protected String hashBuffer(Buffer buffer) {
-		return FileUtils.generateSha512Sum(buffer);
-	}
-
-	/**
-	 * Delete potential existing file uploads from the given path.
-	 * 
-	 * @param targetPath
-	 */
-	protected void deletePotentialUpload(String targetPath) {
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
-		if (fileSystem.existsBlocking(targetPath)) {
-			// Deleting of existing binary file
-			fileSystem.deleteBlocking(targetPath);
-		}
-		// log.error("Error while attempting to delete target file {" + targetPath + "}", error);
-		// log.error("Unable to check existence of file at location {" + targetPath + "}");
-
-	}
-
-	/**
-	 * Move the file upload from the temporary upload directory to the given target path.
-	 * 
-	 * @param fileUpload
-	 * @param targetPath
-	 */
-	protected void moveUploadIntoPlace(String fileUpload, String targetPath) {
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
-		fileSystem.moveBlocking(fileUpload, targetPath);
-		if (log.isDebugEnabled()) {
-			log.debug("Moved upload file from {" + fileUpload + "} to {" + targetPath + "}");
-		}
-		// log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
-	}
-
-	/**
-	 * Store the data in the buffer into the given place.
-	 * 
-	 * @param buffer
-	 *            buffer
-	 * @param targetPath
-	 *            target path
-	 */
-	protected void storeBuffer(Buffer buffer, String targetPath) {
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
-		fileSystem.writeFileBlocking(targetPath, buffer);
-		// log.error("Failed to save file to {" + targetPath + "}", error);
-		// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-	}
-
-	/**
-	 * Check the target upload folder and create it if needed.
-	 * 
-	 * @param uploadFolder
-	 */
-	protected void checkUploadFolderExists(File uploadFolder) {
-
-		boolean folderExists = uploadFolder.exists();
-		// log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
-		// throw error(BAD_REQUEST, "node_error_upload_failed", error);
-
-		if (!folderExists) {
-			uploadFolder.mkdirs();
-
-			// log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
-			// throw error(BAD_REQUEST, "node_error_upload_failed", error);
-
-			if (log.isDebugEnabled()) {
-				log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
-			}
-		}
-
 	}
 
 }

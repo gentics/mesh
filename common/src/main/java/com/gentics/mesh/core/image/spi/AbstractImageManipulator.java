@@ -5,7 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -13,12 +12,14 @@ import javax.imageio.ImageIO;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.util.RxUtil;
 
-import com.gentics.mesh.util.PropReadFileStream;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rxjava.core.Vertx;
+import rx.Observable;
 import rx.Single;
-import rx.functions.Func0;
 
 /**
  * Abstract image manipulator implementation.
@@ -29,24 +30,11 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	protected ImageManipulatorOptions options;
 
-	public AbstractImageManipulator(ImageManipulatorOptions options) {
-		this.options = options;
-	}
+	protected Vertx vertx;
 
-	@Override
-	public Single<PropReadFileStream> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters parameters) {
-		try {
-			parameters.validate();
-			parameters.validateLimits(options);
-		} catch (Exception e) {
-			return Single.error(e);
-		}
-		try (InputStream ins = new FileInputStream(binaryFile)) {
-			return handleResize(ins, sha512sum, parameters);
-		} catch (IOException e) {
-			log.error("Can't handle image. File can't be opened. {" + binaryFile.getAbsolutePath() + "}", e);
-			return Single.error(error(BAD_REQUEST, "image_error_reading_failed", e));
-		}
+	public AbstractImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
+		this.vertx = vertx;
+		this.options = options;
 	}
 
 	@Override
@@ -71,37 +59,47 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(Func0<InputStream> insFunc) {
-		return Single.create(sub -> {
-			// 1. Read the image
-			BufferedImage bi = null;
-			try (InputStream ins = insFunc.call()) {
-				bi = ImageIO.read(ins);
-			} catch (Exception e) {
-				throw error(BAD_REQUEST, "image_error_reading_failed", e);
-			}
-			if (bi == null) {
-				throw error(BAD_REQUEST, "image_error_reading_failed");
-			}
-			ImageInfo info = new ImageInfo();
-			info.setWidth(bi.getWidth());
-			info.setHeight(bi.getHeight());
-			int[] rgb = calculateDominantColor(bi);
+	public Single<ImageInfo> readImageInfo(Observable<Buffer> stream) {
+		try {
+			InputStream pis = RxUtil.toInputStream(stream, vertx);
+			Single<BufferedImage> obs = vertx.rxExecuteBlocking(bc -> {
+				try {
+					BufferedImage image = ImageIO.read(pis);
+					pis.close();
+					if (image == null) {
+						bc.fail(error(BAD_REQUEST, "image_error_reading_failed"));
+					} else {
+						bc.complete(image);
+					}
+				} catch (IOException e) {
+					bc.fail(e);
+				}
+			}, false);
+			return obs.map(this::toImageInfo);
+		} catch (IOException e) {
+			return Single.error(e);
+		}
 
-			// TODO The colorthief implementation which selectively samples the image is about 30% faster and will be even faster for bigger images
-			// CMap result = ColorThief.getColorMap(bi, 5);
-			// VBox vbox = result.vboxes.get(0);
-			// int[] rgb = vbox.avg(false);
+	}
 
-			// By default we assume white for the images
-			String colorHex = "#FFFFFF";
-			if (rgb.length >= 3) {
-				colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
-			}
-			info.setDominantColor(colorHex);
-			sub.onSuccess(info);
-		});
-
+	/**
+	 * Extract the image information from the given buffered image.
+	 * 
+	 * @param bi
+	 * @return
+	 */
+	private ImageInfo toImageInfo(BufferedImage bi) {
+		ImageInfo info = new ImageInfo();
+		info.setWidth(bi.getWidth());
+		info.setHeight(bi.getHeight());
+		int[] rgb = calculateDominantColor(bi);
+		// By default we assume white for the images
+		String colorHex = "#FFFFFF";
+		if (rgb.length >= 3) {
+			colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
+		}
+		info.setDominantColor(colorHex);
+		return info;
 	}
 
 }
