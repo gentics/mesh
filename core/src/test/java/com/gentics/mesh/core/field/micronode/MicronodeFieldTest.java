@@ -13,6 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -158,31 +159,25 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			micronode.createHTML("htmlfield").setHtml("<b>HTML</b> value");
 
 			BooleanGraphFieldList booleanList = micronode.createBooleanList("listfield-boolean");
-			booleanList.createBoolean(true);
-			booleanList.createBoolean(false);
+			booleanList.setList(true, false);
 
 			DateGraphFieldList dateList = micronode.createDateList("listfield-date");
-			dateList.createDate(date);
-			dateList.createDate(0L);
+			dateList.setList(date, 0L);
 
 			HtmlGraphFieldList htmlList = micronode.createHTMLList("listfield-html");
-			htmlList.createHTML("<b>first</b>");
-			htmlList.createHTML("<i>second</i>");
+			htmlList.setList("<b>first</b>", "<i>second</i>");
 
 			NodeGraphFieldList nodeList = micronode.createNodeList("listfield-node");
 			nodeList.createNode("0", node);
 			nodeList.createNode("1", newOverview);
 
 			NumberGraphFieldList numberList = micronode.createNumberList("listfield-number");
-			numberList.createNumber(47);
-			numberList.createNumber(11);
+			numberList.setList(47, 11);
 
 			// TODO create list of select fields
 
 			StringGraphFieldList stringList = micronode.createStringList("listfield-string");
-			stringList.createString("first");
-			stringList.createString("second");
-			stringList.createString("third");
+			stringList.setList(Arrays.asList("first", "second", "third"));
 
 			micronode.createNode("nodefield", newOverview);
 			micronode.createNumber("numberfield").setNumber(4711);

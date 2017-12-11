@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
@@ -50,8 +50,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			prepareNode(node, "stringList", "string");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			StringGraphFieldList stringList = container.createStringList("stringList");
-			stringList.createString("dummyString1");
-			stringList.createString("dummyString2");
+			stringList.setList("dummyString1", "dummyString2");
 			tx.success();
 		}
 
@@ -68,17 +67,17 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphFieldList list = container.createStringList("dummyList");
 
-			list.createString("1");
+			list.setList("1");
 			assertEquals("dummyList", list.getFieldKey());
 			assertNotNull(list.getList());
 
 			assertEquals(1, list.getList().size());
 			assertEquals(list.getSize(), list.getList().size());
-			list.createString("2");
+			list.setList("1", "2");
 			assertEquals(2, list.getList().size());
-			list.createString("3").setString("Some string 3");
+			list.setList("1", "Some other string", "3");
 			assertEquals(3, list.getList().size());
-			assertEquals("Some string 3", list.getList().get(2).getString());
+			assertEquals("Some other string", list.getList().get(2).getString());
 
 			StringGraphFieldList loadedList = container.getStringList("dummyList");
 			assertNotNull(loadedList);
@@ -95,9 +94,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphFieldList testField = container.createStringList("testField");
-			testField.createString("one");
-			testField.createString("two");
-			testField.createString("three");
+			testField.setList("one", "two", "three");
 
 			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
@@ -114,12 +111,12 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			StringGraphFieldList fieldA = container.createStringList("fieldA");
 			StringGraphFieldList fieldB = container.createStringList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-			fieldA.addItem(fieldA.createString("testString"));
+			fieldA.setList("testString");
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createString("testString"));
+			fieldB.setList("testString");
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}
@@ -149,7 +146,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 			// rest set - graph set - different values
-			fieldA.addItem(fieldA.createString(dummyValue));
+			fieldA.setList(dummyValue);
 			restField.add(dummyValue + 1L);
 			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 

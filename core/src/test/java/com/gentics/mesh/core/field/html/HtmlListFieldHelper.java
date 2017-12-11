@@ -14,23 +14,19 @@ public interface HtmlListFieldHelper {
 
 	public static final DataProvider FILLTEXT = (container, name) -> {
 		HtmlGraphFieldList field = container.createHTMLList(name);
-		field.createHTML(TEXT1);
-		field.createHTML(TEXT2);
-		field.createHTML(TEXT3);
+		field.setList(TEXT1, TEXT2, TEXT3);
 	};
 
 	public static final DataProvider FILLNUMBERS = (container, name) -> {
 		HtmlGraphFieldList field = container.createHTMLList(name);
-		field.createHTML("1");
-		field.createHTML("0");
+		field.setList("1", "0");
 	};
 
 	public static final DataProvider CREATE_EMPTY = (container, name) -> container.createHTMLList(name);
 
 	public static final DataProvider FILLTRUEFALSE = (container, name) -> {
 		HtmlGraphFieldList field = container.createHTMLList(name);
-		field.createHTML("true");
-		field.createHTML("false");
+		field.setList("true", "false");
 	};
 
 	public static final FieldFetcher FETCH = (container, name) -> container.getHTMLList(name);

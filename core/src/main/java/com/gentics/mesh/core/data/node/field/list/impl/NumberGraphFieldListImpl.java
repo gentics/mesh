@@ -72,8 +72,8 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphNumberFieldList.createNumber(item);
 		}
+		graphNumberFieldList.setList(numberList.getItems());
 
 	};
 
@@ -83,18 +83,6 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 
 	public static void init(Database database) {
 		database.addVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
-	}
-
-	@Override
-	public NumberGraphField createNumber(Number number) {
-		NumberGraphField field = createField();
-		field.setNumber(number);
-		return field;
-	}
-
-	@Override
-	public NumberGraphField getNumber(int index) {
-		return getField(index);
 	}
 
 	@Override

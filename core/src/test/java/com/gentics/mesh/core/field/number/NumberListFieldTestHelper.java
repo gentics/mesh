@@ -16,14 +16,12 @@ public interface NumberListFieldTestHelper {
 
 	static final DataProvider FILLNUMBERS = (container, name) -> {
 		NumberGraphFieldList field = container.createNumberList(name);
-		field.createNumber(NUMBERVALUE);
-		field.createNumber(OTHERNUMBERVALUE);
+		field.setList(NUMBERVALUE, OTHERNUMBERVALUE);
 	};
 
 	static final DataProvider FILLONEZERO = (container, name) -> {
 		NumberGraphFieldList field = container.createNumberList(name);
-		field.createNumber(ONE);
-		field.createNumber(ZERO);
+		field.setList(ONE, ZERO);
 	};
 
 	static final DataProvider CREATE_EMPTY = (container, name) -> container.createNumberList(name);

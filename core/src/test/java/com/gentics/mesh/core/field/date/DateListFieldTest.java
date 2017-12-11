@@ -12,12 +12,10 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -29,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
@@ -53,8 +52,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			DateGraphFieldList dateList = container.createDateList("dateList");
-			dateList.createDate(1L);
-			dateList.createDate(2L);
+			dateList.setList(1L, 2L);
 			tx.success();
 		}
 
@@ -71,8 +69,9 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList list = container.createDateList("dummyList");
 			assertNotNull(list);
-			DateGraphField dateField = list.createDate(1L);
-			assertNotNull(dateField);
+
+			list.setList(1L);
+			assertNotNull(list.getList().get(0));
 			assertEquals(1, list.getSize());
 			assertEquals(1, list.getList().size());
 			list.removeAll();
@@ -87,8 +86,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList testField = container.createDateList("testField");
-			testField.createDate(47L);
-			testField.createDate(11L);
+			testField.setList(47L, 11L);
 
 			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
@@ -105,12 +103,12 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			DateGraphFieldList fieldA = container.createDateList("fieldA");
 			DateGraphFieldList fieldB = container.createDateList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-			fieldA.addItem(fieldA.createDate(42L));
+			fieldA.setList(42L);
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createDate(42L));
+			fieldB.setList(42L);
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}
@@ -140,7 +138,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 			// rest set - graph set - different values
-			fieldA.addItem(fieldA.createDate(dummyValue));
+			fieldA.setList(dummyValue);
 			restField.add(toISO8601(dummyValue + 1000L));
 			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 

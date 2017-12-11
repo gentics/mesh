@@ -43,19 +43,8 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -200,9 +189,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
 		// Remove the edge between the node and the container that matches the release
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).or(e -> e.traversal().has(
-				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()), e -> e.traversal().has(
-						GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode())).removeAll();
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
+						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
+				.removeAll();
 		// remove webroot property
 		setProperty(WEBROOT_PROPERTY_KEY, null);
 	}
@@ -234,12 +224,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				if (field instanceof StringGraphFieldListImpl) {
 					StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
-					for (StringGraphField listField : stringListField.getList()) {
+					for (String listField : stringListField.getList()) {
 						if (listField != null) {
-							String value = listField.getString();
-							if (value != null) {
-								urlFieldValues.add(value);
-							}
+							urlFieldValues.add(listField);
 						}
 					}
 				}
@@ -278,9 +265,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
 
-					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-							.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
-							conflictingContainer.getLanguage().getLanguageTag());
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(),
+							conflictingContainer.getLanguage().getLanguageTag(), "node_conflicting_urlfield_update", paths,
+							conflictingContainer.getParentNode().getUuid(), conflictingContainer.getLanguage().getLanguageTag());
 				}
 			}
 			setProperty(propertyName, prefixedUrlFieldValues);
@@ -340,15 +327,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 
 			// check for uniqueness of webroot path
-			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this, webRootInfo
-					.toString());
+			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this,
+					webRootInfo.toString());
 			if (conflictingContainer != null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} using index {" + indexName + "}");
 				}
 				Node conflictingNode = conflictingContainer.getParentNode();
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-						.getLanguageTag(), conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(),
+						conflictingContainer.getLanguage().getLanguageTag(), conflictI18n, segmentFieldName, segment);
 			} else {
 				setProperty(propertyName, webRootInfo.toString());
 			}
@@ -359,8 +346,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Node getParentNode(String uuid) {
-		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-				GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
+		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**
@@ -448,23 +435,23 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isDraft(String releaseUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).has(
-				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode());
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode());
 		return traversal.hasNext();
 	}
 
 	@Override
 	public boolean isPublished(String releaseUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).has(
-				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode());
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode());
 		return traversal.hasNext();
 	}
 
 	@Override
 	public Set<Tuple<String, ContainerType>> getReleaseTypes() {
 		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
-		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getReleaseUuid(), edge
-				.getType())));
+		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)
+				.forEach(edge -> typeSet.add(Tuple.tuple(edge.getReleaseUuid(), edge.getType())));
 		return typeSet;
 	}
 
@@ -591,14 +578,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
-		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).has(
-				"uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
+		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class)
+				.has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
 	}
 
 	@Override
 	public List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
-		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(
-				MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
+		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
+				.has(MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
 	}
 
 	@Override

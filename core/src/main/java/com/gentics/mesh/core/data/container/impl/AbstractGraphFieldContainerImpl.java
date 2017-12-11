@@ -225,7 +225,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public StringGraphFieldList createStringList(String fieldKey) {
-		return createList(StringGraphFieldListImpl.class, fieldKey);
+		return new StringGraphFieldListImpl(fieldKey, this);
 	}
 
 	@Override

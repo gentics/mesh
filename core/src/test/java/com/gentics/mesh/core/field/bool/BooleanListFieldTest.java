@@ -52,9 +52,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 
 			BooleanGraphFieldList booleanList = container.createBooleanList(BOOLEAN_LIST);
-			booleanList.createBoolean(true);
-			booleanList.createBoolean(null);
-			booleanList.createBoolean(false);
+			booleanList.setList(true, null, false);
 			tx.success();
 		}
 
@@ -70,13 +68,11 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldList list = container.createBooleanList("dummyList");
-			list.createBoolean(true);
-			list.createBoolean(false);
-			list.createBoolean(null);
+			list.setList(true,false, null);
 			assertEquals("Only non-null values are persisted.", 2, list.getList().size());
 			assertEquals(2, list.getSize());
-			assertNotNull(list.getBoolean(1));
-			assertTrue(list.getBoolean(1).getBoolean());
+			assertNotNull(list.getList().get(1));
+			assertTrue(list.getList().get(1).getBoolean());
 			list.removeAll();
 			assertEquals(0, list.getSize());
 			assertEquals(0, list.getList().size());
@@ -89,8 +85,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldList testField = container.createBooleanList("testField");
-			testField.createBoolean(true);
-			testField.createBoolean(false);
+			testField.setList(true, false);
 
 			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
@@ -107,12 +102,12 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
 			BooleanGraphFieldList fieldB = container.createBooleanList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-			fieldA.addItem(fieldA.createBoolean(true));
+			fieldA.setList(true);
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createBoolean(true));
+			fieldB.setList(true);
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}
@@ -142,7 +137,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 			// rest set - graph set - different values
-			fieldA.addItem(fieldA.createBoolean(dummyValue));
+			fieldA.setList(dummyValue);
 			restField.add(false);
 			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 

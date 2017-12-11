@@ -72,8 +72,8 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphDateFieldList.createDate(fromISO8601(item));
 		}
+		graphDateFieldList.setList(dateList.getItems().stream().map(e -> fromISO8601(e)).collect(Collectors.toList()));
 
 	};
 
@@ -86,20 +86,8 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public DateGraphField createDate(Long date) {
-		DateGraphField field = createField();
-		field.setDate(date);
-		return field;
-	}
-
-	@Override
 	protected DateGraphField createField(String key) {
 		return new DateGraphFieldImpl(key, this);
-	}
-
-	@Override
-	public DateGraphField getDate(int index) {
-		return getField(index);
 	}
 
 	@Override

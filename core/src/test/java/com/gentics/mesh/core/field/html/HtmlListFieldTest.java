@@ -11,13 +11,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -29,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
@@ -63,8 +62,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			HtmlGraphFieldList htmlList = container.createHTMLList(HTML_LIST);
-			htmlList.createHTML("some<b>html</b>");
-			htmlList.createHTML("some<b>more html</b>");
+			htmlList.setList("some<b>html</b>", "some<b>more html</b>");
 			tx.success();
 		}
 
@@ -82,8 +80,8 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphFieldList list = container.createHTMLList("dummyList");
 			assertNotNull(list);
-			HtmlGraphField htmlField = list.createHTML("HTML 1");
-			assertNotNull(htmlField);
+			list.setList("HTML 1");
+			assertNotNull(list.getList().get(0));
 			assertEquals(1, list.getSize());
 			assertEquals(1, list.getList().size());
 			list.removeAll();
@@ -98,9 +96,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphFieldList testField = container.createHTMLList("testField");
-			testField.createHTML("<b>One</b>");
-			testField.createHTML("<i>Two</i>");
-			testField.createHTML("<u>Three</u>");
+			testField.setList("<b>One</b>", "<i>Two</i>", "<u>Three</u>");
 
 			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
@@ -117,12 +113,12 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HtmlGraphFieldList fieldA = container.createHTMLList("fieldA");
 			HtmlGraphFieldList fieldB = container.createHTMLList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-			fieldA.addItem(fieldA.createHTML("testHtml"));
+			fieldA.setList("testHtml");
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createHTML("testHtml"));
+			fieldB.setList("testHtml");
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}
@@ -152,7 +148,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 			// rest set - graph set - different values
-			fieldA.addItem(fieldA.createHTML(dummyValue));
+			fieldA.setList(dummyValue);
 			restField.add(dummyValue + 1L);
 			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 

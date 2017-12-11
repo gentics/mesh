@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
@@ -22,6 +21,7 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest implements FieldDiffTestcases {
@@ -57,11 +57,11 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listA = containerA.createStringList("dummy");
-			listA.addItem(listA.createString("test123"));
+			listA.setList("test123");
 
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listB = containerB.createStringList("dummy");
-			listB.addItem(listB.createString("test123"));
+			listB.setList("test123");
 
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertNoDiff(list);
@@ -73,11 +73,11 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listA = containerA.createStringList("dummy");
-			listA.addItem(listA.createString("test123"));
+			listA.setList("test123");
 
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listB = containerB.createStringList("dummy");
-			listB.addItem(listB.createString("test1234"));
+			listB.setList("test1234");
 
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertThat(list).hasSize(1);

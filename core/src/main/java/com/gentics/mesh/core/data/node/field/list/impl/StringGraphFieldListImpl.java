@@ -4,27 +4,27 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.field.AbstractBasicListField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
+import com.syncleus.ferma.AbstractVertexFrame;
 
 /**
  * @see StringGraphFieldList
  */
-public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl, String>
+public class StringGraphFieldListImpl extends AbstractBasicListField<StringField, String>
 		implements StringGraphFieldList {
 
 	public static FieldTransformer<StringFieldListImpl> STRING_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
@@ -66,15 +66,15 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		graphStringList = container.createStringList(fieldKey);
 
 		// Handle Update
-		graphStringList.removeAll();
 		for (String item : stringList.getItems()) {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphStringList.createString(item);
+//			graphStringList.createString(item);
 		}
+		//graphStringList
 	};
-
+	
 	public static FieldGetter STRING_LIST_GETTER = (container, fieldSchema) -> {
 		return container.getStringList(fieldSchema.getName());
 	};
@@ -83,21 +83,8 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		database.addVertexType(StringGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
-	@Override
-	public StringGraphField createString(String string) {
-		StringGraphField field = createField();
-		field.setString(string);
-		return field;
-	}
-
-	@Override
-	public StringGraphField getString(int index) {
-		return getField(index);
-	}
-
-	@Override
-	protected StringGraphField createField(String key) {
-		return new StringGraphFieldImpl(key, this);
+	public StringGraphFieldListImpl(String fieldKey, AbstractVertexFrame parentContainer) {
+		super(fieldKey, parentContainer);
 	}
 
 	@Override
@@ -105,23 +92,12 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		return StringGraphFieldImpl.class;
 	}
 
-	@Override
-	public void delete(SearchQueueBatch batch) {
-		getElement().remove();
-	}
 
 	@Override
 	public StringFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		StringFieldListImpl restModel = new StringFieldListImpl();
-		for (StringGraphField item : getList()) {
-			restModel.add(item.getString());
-		}
+		restModel.setItems(getList());
 		return restModel;
-	}
-
-	@Override
-	public List<String> getValues() {
-		return getList().stream().map(StringGraphField::getString).collect(Collectors.toList());
 	}
 
 	@Override
@@ -129,9 +105,8 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		if (obj instanceof StringFieldListImpl) {
 			StringFieldListImpl restField = (StringFieldListImpl) obj;
 			List<String> restList = restField.getItems();
-			List<? extends StringGraphField> graphList = getList();
-			List<String> graphStringList = graphList.stream().map(e -> e.getString()).collect(Collectors.toList());
-			return CompareUtils.equals(restList, graphStringList);
+			List<String> graphList = getList();
+			return CompareUtils.equals(restList, graphList);
 		}
 		return super.equals(obj);
 	}

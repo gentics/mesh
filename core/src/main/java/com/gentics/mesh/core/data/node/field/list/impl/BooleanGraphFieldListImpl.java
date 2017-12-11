@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
@@ -72,8 +73,8 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphBooleanFieldList.createBoolean(item);
 		}
+		graphBooleanFieldList.setList(booleanList.getItems());
 
 	};
 
@@ -83,18 +84,6 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 
 	public static void init(Database database) {
 		database.addVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
-	}
-
-	@Override
-	public BooleanGraphField getBoolean(int index) {
-		return getField(index);
-	}
-
-	@Override
-	public BooleanGraphField createBoolean(Boolean flag) {
-		BooleanGraphField field = createField();
-		field.setBoolean(flag);
-		return field;
 	}
 
 	@Override

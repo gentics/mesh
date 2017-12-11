@@ -69,8 +69,8 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphHtmlFieldList.createHTML(item);
 		}
+		graphHtmlFieldList.setList(htmlList.getItems());
 	};
 
 	public static FieldGetter HTML_LIST_GETTER = (container, fieldSchema) -> {
@@ -82,20 +82,8 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public HtmlGraphField createHTML(String html) {
-		HtmlGraphField field = createField();
-		field.setHtml(html);
-		return field;
-	}
-
-	@Override
 	protected HtmlGraphField createField(String key) {
 		return new HtmlGraphFieldImpl(key, this);
-	}
-
-	@Override
-	public HtmlGraphField getHTML(int index) {
-		return getField(index);
 	}
 
 	@Override

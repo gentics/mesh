@@ -51,8 +51,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NumberGraphFieldList numberList = container.createNumberList("numberList");
-			numberList.createNumber(1);
-			numberList.createNumber(1.11);
+			numberList.setList(1, 1.11);
 			tx.success();
 		}
 
@@ -70,10 +69,10 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldList list = container.createNumberList("dummyList");
 
-			list.createNumber(1);
+			list.setList(1);
 			assertEquals(1, list.getList().size());
 
-			list.createNumber(2);
+			list.setList(1, 2);
 			assertEquals(2, list.getList().size());
 			list.removeAll();
 			assertEquals(0, list.getSize());
@@ -87,8 +86,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldList testField = container.createNumberList("testField");
-			testField.createNumber(47);
-			testField.createNumber(11);
+			testField.setList(47, 11);
 
 			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
@@ -105,12 +103,12 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			NumberGraphFieldList fieldA = container.createNumberList("fieldA");
 			NumberGraphFieldList fieldB = container.createNumberList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-			fieldA.addItem(fieldA.createNumber(42L));
+			fieldA.setList(42L);
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createNumber(42L));
+			fieldB.setList(42L);
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}
@@ -140,7 +138,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 			// rest set - graph set - different values
-			fieldA.addItem(fieldA.createNumber(dummyValue));
+			fieldA.setList(dummyValue);
 			restField.add(dummyValue + 1L);
 			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 

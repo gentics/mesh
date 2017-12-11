@@ -7,8 +7,7 @@ import com.gentics.mesh.core.field.FieldFetcher;
 public interface BooleanListFieldHelper {
 	static final DataProvider FILL = (container, name) -> {
 		BooleanGraphFieldList field = container.createBooleanList(name);
-		field.createBoolean(true);
-		field.createBoolean(false);
+		field.setList(true, false);
 	};
 
 	static final DataProvider CREATE_EMPTY = (container, name) -> container.createBooleanList(name);

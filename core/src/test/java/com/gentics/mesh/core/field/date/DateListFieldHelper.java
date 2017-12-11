@@ -16,8 +16,7 @@ public interface DateListFieldHelper {
 
 	public static final DataProvider FILL = (container, name) -> {
 		DateGraphFieldList field = container.createDateList(name);
-		field.createDate(DATEVALUE);
-		field.createDate(OTHERDATEVALUE);
+		field.setList(DATEVALUE, OTHERDATEVALUE);
 	};
 
 	public static final DataProvider CREATE_EMPTY = (container, name) -> container.createDateList(name);

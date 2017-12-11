@@ -275,40 +275,27 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			// binary
 			Binary binary = MeshInternal.get().boot().binaryRoot().create("hashsumvalue", 1L);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
-			container.createBinary("binary", binary).setImageDominantColor("00FF00")
-					.setMimeType("image/jpeg");
+			container.createBinary("binary", binary).setImageDominantColor("00FF00").setMimeType("image/jpeg");
 
 			// stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");
-			stringList.createString("A");
-			stringList.createString("B");
-			stringList.createString("C");
-			stringList.createString("D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+			stringList.setList("A", "B", "C", "D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
 
 			// htmlList
 			HtmlGraphFieldList htmlList = container.createHTMLList("htmlList");
-			htmlList.createHTML("A");
-			htmlList.createHTML("B");
-			htmlList.createHTML("C");
-			htmlList.createHTML("D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+			htmlList.setList("A", "B", "C", "D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
 
 			// dateList
 			DateGraphFieldList dateList = container.createDateList("dateList");
-			dateList.createDate(dateToMilis("2012-07-11 10:55:21"));
-			dateList.createDate(dateToMilis("2014-07-11 10:55:30"));
-			dateList.createDate(dateToMilis("2000-07-11 10:55:00"));
+			dateList.setList(dateToMilis("2012-07-11 10:55:21"), dateToMilis("2014-07-11 10:55:30"), dateToMilis("2000-07-11 10:55:00"));
 
 			// numberList
 			NumberGraphFieldList numberList = container.createNumberList("numberList");
-			numberList.createNumber(42L);
-			numberList.createNumber(1337);
-			numberList.createNumber(0.314f);
+			numberList.setList(42L, 1337, 0.314f);
 
 			// booleanList
 			BooleanGraphFieldList booleanList = container.createBooleanList("booleanList");
-			booleanList.createBoolean(true);
-			booleanList.createBoolean(null);
-			booleanList.createBoolean(false);
+			booleanList.setList(true, null, false);
 
 			// nodeList
 			NodeGraphFieldList nodeList = container.createNodeList("nodeList");
