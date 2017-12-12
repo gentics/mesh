@@ -68,7 +68,7 @@ public interface Schema extends FieldSchemaContainer {
 			}
 
 			// TODO maybe we should also allow other field types
-			if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
+			if (!getField(getDisplayField()).isDisplayField()) {
 				throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
 			}
 		}

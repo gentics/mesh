@@ -106,6 +106,11 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
+	public String display() {
+		return getString();
+	}
+
+	@Override
 	public StringField transformToRest(ActionContext ac) {
 		StringFieldImpl stringField = new StringFieldImpl();
 		String text = getString();

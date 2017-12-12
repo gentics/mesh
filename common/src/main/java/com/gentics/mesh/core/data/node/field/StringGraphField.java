@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 /**
  * The StringField Domain Model interface.
  */
-public interface StringGraphField extends ListableGraphField, BasicGraphField<StringField> {
+public interface StringGraphField extends ListableGraphField, BasicGraphField<StringField>, DisplayField {
 
 	/**
 	 * Return the graph string value.

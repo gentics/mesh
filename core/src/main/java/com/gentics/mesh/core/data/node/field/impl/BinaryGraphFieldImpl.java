@@ -238,6 +238,11 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
+	public String display() {
+		return getFileName();
+	}
+
+	@Override
 	public String getMimeType() {
 		return getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
 	}

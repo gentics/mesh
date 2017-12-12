@@ -11,7 +11,7 @@ import rx.Single;
 /**
  * The BinaryField Domain Model interface.
  */
-public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVertex {
+public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVertex, DisplayField {
 	/**
 	 * Return the binary filename.
 	 * 
