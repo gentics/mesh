@@ -4,6 +4,12 @@
 
 == 0.11.4 (07.12.2017)
 
+icon:plus[] Core: Binary fields can now be chosen as display fields. The value of the display field is the filename of the binary.
+
+icon:plus[] REST: The display name has been added to the node response. It can be found in the key `displayName`.
+
+icon:plus[] GraphQL: The display name can now be fetched from a node via the `displayName` field.
+
 icon:check[] Core: Fixed various errors which could occur when loading a node for which the editor or creator user has been previously deleted.
 
 == 0.11.3 (30.11.2017)
