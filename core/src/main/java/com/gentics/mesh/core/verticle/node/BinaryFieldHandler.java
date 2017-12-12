@@ -354,6 +354,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 		} else {
 			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> {
 				ac.put("imageInfo", ii);
+			}).onErrorReturn(e -> {
+				// suppress error
+				return null;
 			});
 		}
 	}

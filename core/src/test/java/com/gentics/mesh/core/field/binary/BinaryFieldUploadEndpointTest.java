@@ -26,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -123,8 +124,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				String value = container.getBinary("binary") == null ? null : container.getBinary("binary").getFileName();
 				assertEquals("Version {" + container.getVersion() + "} did not contain the old value", oldFilename, value);
 				assertNotNull("Version {" + newContainer.getVersion() + "} did not contain the updated field.", newContainer.getBinary("binary"));
-				assertEquals("Version {" + newContainer.getVersion() + "} did not contain the updated value.", newFileName, newContainer.getBinary(
-						"binary").getFileName());
+				assertEquals("Version {" + newContainer.getVersion() + "} did not contain the updated value.", newFileName,
+						newContainer.getBinary("binary").getFileName());
 				container = newContainer;
 			}
 		}
@@ -148,6 +149,32 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",
 					"nonBinary");
 		}
+	}
+
+	@Test
+	public void testUploadBrokenImage() throws IOException {
+		String contentType = "image/jpeg";
+		int binaryLen = 10000;
+		String fileName = "somefile.dat";
+
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+
+			// Add a schema called nonBinary
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+
+			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
+		}
+
+		String uuid = tx(() -> folder("news").getUuid());
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
+		BinaryField binaryField = response.getFields().getBinaryField("image");
+		assertNull(binaryField.getDominantColor());
+		assertNull(binaryField.getWidth());
+		assertNull(binaryField.getHeight());
+		assertEquals("image/jpeg", binaryField.getMimeType());
 	}
 
 	@Test
@@ -316,8 +343,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)));
 		try (Tx tx = tx()) {
-			assertNull("The binary for the hash should have also been removed since only one node used the binary.", meshRoot().getBinaryRoot()
-					.findByHash(hash));
+			assertNull("The binary for the hash should have also been removed since only one node used the binary.",
+					meshRoot().getBinaryRoot().findByHash(hash));
 		}
 		assertFalse("The binary file should have been removed.", binaryFile.exists());
 
@@ -384,8 +411,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Now delete nodeA
 		call(() -> client().deleteNode(PROJECT_NAME, uuidA, new DeleteParametersImpl().setRecursive(true)));
 		try (Tx tx = tx()) {
-			assertNotNull("The binary for the hash should not have been removed since it is still in use.", meshRoot().getBinaryRoot().findByHash(
-					hashA));
+			assertNotNull("The binary for the hash should not have been removed since it is still in use.",
+					meshRoot().getBinaryRoot().findByHash(hashA));
 		}
 		assertTrue("The binary file should not have been deleted since there is still one node which uses it.", binaryFileA.exists());
 
@@ -393,8 +420,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
 
 		try (Tx tx = tx()) {
-			assertNull("The binary for the hash should have also been removed since only one node used the binary.", meshRoot().getBinaryRoot()
-					.findByHash(hashA));
+			assertNull("The binary for the hash should have also been removed since only one node used the binary.",
+					meshRoot().getBinaryRoot().findByHash(hashA));
 		}
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());
 
@@ -425,8 +452,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
 		}
 
-		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()), new NodeParametersImpl().setResolveLinks(
-				LinkType.FULL)));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()),
+				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 
 		try (Tx tx = tx()) {
 			// try to upload same file to folder 2015
@@ -481,8 +508,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		Buffer buffer = Buffer.buffer(bytes);
 		String uuid = node.getUuid();
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer,
-				filename, contentType));
+		NodeResponse response = call(
+				() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer, filename, contentType));
 		assertNotNull(response);
 		return bytes.length;
 
