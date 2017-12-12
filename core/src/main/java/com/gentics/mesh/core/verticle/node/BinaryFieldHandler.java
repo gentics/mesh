@@ -245,21 +245,26 @@ public class BinaryFieldHandler extends AbstractHandler {
 			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
 			String hash = FileUtils.hash(ul.uploadedFileName());
 			Binary binary = binaryRoot.findByHash(hash);
+
+			// Create a new binary if the data was not already stored
 			boolean storeBinary = binary == null;
 			if (storeBinary) {
 				binary = binaryRoot.create(hash, ul.size());
 			}
+
+			// Get the potential existing field
 			BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
-			if (oldField != null) {
-				oldField.remove();
-			}
+
+			// Create the new field
 			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
-			// We only need to handle the binary data if it has not yet been processed.
-			if (storeBinary) {
-				processUpload(ac, ul, nodeUuid, field);
-			}
+			// Process the upload which will update the binary field
+			processUpload(ac, ul, field, storeBinary);
 
+			// Now get rid of the old field
+			if (oldField != null) {
+				oldField.removeField(newDraftVersion);
+			}
 			// If the binary field is the segment field, we need to update the webroot info in the node
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 				newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
@@ -270,14 +275,18 @@ public class BinaryFieldHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Processes the upload and stored the identified data in the field. The binary data will be stored in the {@link BinaryStorage}.
+	 * Processes the upload and set the binary information (e.g.: image dimensions) within the provided field. The binary data will be stored in the
+	 * {@link BinaryStorage} if desired.
 	 * 
 	 * @param ac
 	 * @param ul
-	 * @param nodeUuid
+	 *            Upload to process
 	 * @param field
+	 *            Field which will be updated with the extracted information
+	 * @param storeBinary
+	 *            Whether to store the data in the binary store
 	 */
-	private void processUpload(ActionContext ac, FileUpload ul, String nodeUuid, BinaryGraphField field) {
+	private void processUpload(ActionContext ac, FileUpload ul, BinaryGraphField field, boolean storeBinary) {
 		AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(ul.uploadedFileName(), new OpenOptions());
 		Binary binary = field.getBinary();
 		String hash = binary.getSHA512Sum();
@@ -386,8 +395,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
-								transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
+						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}

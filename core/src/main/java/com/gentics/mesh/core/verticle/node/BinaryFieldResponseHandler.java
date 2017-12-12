@@ -74,8 +74,8 @@ public class BinaryFieldResponseHandler {
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
 				Observable<Buffer> data = binary.getStream();
-				Observable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).toObservable().map(
-						fileWithProps -> {
+				Observable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).toObservable()
+						.map(fileWithProps -> {
 							response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
 							response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 							response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -89,7 +89,9 @@ public class BinaryFieldResponseHandler {
 				resizedData.subscribe(response::write, rc::fail, response::end);
 			} else {
 				response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
-				response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
+				if (contentType != null) {
+					response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
+				}
 				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 				// TODO encode filename?

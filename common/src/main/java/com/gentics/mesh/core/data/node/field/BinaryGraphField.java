@@ -35,10 +35,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	/**
 	 * Set the binary filename.
 	 * 
-	 * @param filenName
+	 * @param fileName
 	 * @return Fluent API
 	 */
-	BinaryGraphField setFileName(String filenName);
+	BinaryGraphField setFileName(String fileName);
 
 	/**
 	 * Return the binary mime type of the node.
