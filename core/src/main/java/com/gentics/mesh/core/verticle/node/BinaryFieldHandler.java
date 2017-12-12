@@ -292,32 +292,49 @@ public class BinaryFieldHandler extends AbstractHandler {
 		String hash = binary.getSHA512Sum();
 		String binaryUuid = binary.getUuid();
 		String contentType = ul.contentType();
-		String fileName = ul.fileName();
 		boolean isImage = contentType.startsWith("image/");
-		Observable<Buffer> stream = RxHelper.toObservable(asyncFile).publish().autoConnect(isImage ? 2 : 1);
 
-		// Only gather image info for actual images. Otherwise return an empty image info object.
-		Single<ImageInfo> imageInfo = Single.just(null);
+		// Calculate how many streams will connect to the data stream
+		int neededDataStreams = 0;
 		if (isImage) {
-			imageInfo = processImageInfo(ac, stream);
+			neededDataStreams++;
+		}
+		if (storeBinary) {
+			neededDataStreams++;
 		}
 
-		// Store the data
-		Single<Long> store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size()));
+		if (neededDataStreams > 0) {
+			Observable<Buffer> stream = RxHelper.toObservable(asyncFile).publish().autoConnect(neededDataStreams);
 
-		// Handle the data in parallel
-		TransformationResult info = Single.zip(imageInfo, store, (imageinfo, size) -> {
-			return new TransformationResult(hash, 0, imageinfo, null);
-		}).toBlocking().value();
+			// Only gather image info for actual images. Otherwise return an empty image info object.
+			Single<ImageInfo> imageInfo = Single.just(null);
+			if (isImage) {
+				imageInfo = processImageInfo(ac, stream);
+			}
 
-		field.setFileName(fileName);
+			// Store the data
+			Single<Long> store = Single.just(ul.size());
+			if (storeBinary) {
+				store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size()));
+			}
+
+			// Handle the data in parallel
+			TransformationResult info = Single.zip(imageInfo, store, (imageinfo, size) -> {
+				return new TransformationResult(hash, 0, imageinfo, null);
+			}).toBlocking().value();
+
+			// Only add image information if image properties were found
+			if (info.getImageInfo() != null) {
+				binary.setImageHeight(info.getImageInfo().getHeight());
+				binary.setImageWidth(info.getImageInfo().getWidth());
+				field.setImageDominantColor(info.getImageInfo().getDominantColor());
+			}
+
+		}
+
+		field.setFileName(ul.fileName());
 		field.getBinary().setSize(ul.size());
 		field.setMimeType(contentType);
-		if (info.getImageInfo() != null) {
-			binary.setImageHeight(info.getImageInfo().getHeight());
-			binary.setImageWidth(info.getImageInfo().getWidth());
-			field.setImageDominantColor(info.getImageInfo().getDominantColor());
-		}
 	}
 
 	/**
