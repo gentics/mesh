@@ -71,8 +71,12 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	private boolean container;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Display field value of the node. May not be retured if the node schema has no display field value.")
+	@JsonPropertyDescription("Display field name of the node. May not be retured if the node schema has no display field.")
 	private String displayField;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Display field value of the node. May not be retured if the node schema has no display field.")
+	private String displayName;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Dynamic map with fields of the node language specific content.")
@@ -188,13 +192,29 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	}
 
 	/**
-	 * Set the display field value for the node.
+	 * Set the display field name for the node.
 	 * 
 	 * @param displayField
 	 *            Display field
 	 */
 	public void setDisplayField(String displayField) {
 		this.displayField = displayField;
+	}
+
+	/**
+	 * Return the display field value for the node.
+	 * @return Display field value
+	 */
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	/**
+	 * Set the display field value for the node.
+	 * @param displayName Display field value
+	 */
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	/**
