@@ -8,7 +8,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.InputStream;
 
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import io.vertx.core.json.JsonObject;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -189,6 +198,39 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		// 2. Set the field to empty
 		updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setFileName(""), BAD_REQUEST, "field_binary_error_emptyfilename", FIELD_NAME);
 		updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setMimeType(""), BAD_REQUEST, "field_binary_error_emptymimetype", FIELD_NAME);
+	}
+
+	@Test
+	public void testBinaryDisplayField() throws Exception {
+		String fileName = "blume.jpg";
+		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+
+		tx(() -> group().addRole(roles().get("admin")));
+
+		String parentUuid = tx(() -> folder("2015").getUuid());
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
+		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", buffer, fileName,
+			"application/binary"));
+
+		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals("binary_content")).findFirst().get();
+		SchemaUpdateRequest schemaUpdateRequest = new SchemaUpdateRequest();
+		schemaUpdateRequest.setDisplayField("binary").setName(binarySchema.getName()).getFields().addAll(binarySchema.getFields());
+		call(() -> client().updateSchema(binarySchema.getUuid(), schemaUpdateRequest));
+
+		triggerAndWaitForAllJobs(MigrationStatus.COMPLETED);
+
+		NodeResponse nodeResponse3 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse1.getUuid()));
+		assertEquals(nodeResponse3.getDisplayName(), fileName);
+
+		String query = "query($uuid: String){node(uuid: $uuid){ displayName }}";
+		JsonObject variables = new JsonObject().put("uuid", nodeResponse1.getUuid());
+		GraphQLResponse response = call(() -> client().graphql(PROJECT_NAME, new GraphQLRequest().setQuery(query).setVariables(variables)));
+		assertEquals(response.getData().getJsonObject("node").getString("displayName"), fileName);
 	}
 
 	@Override
