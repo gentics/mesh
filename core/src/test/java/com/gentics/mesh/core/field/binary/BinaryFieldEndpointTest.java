@@ -16,6 +16,8 @@ import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
+
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -206,10 +208,10 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
+		String parentUuid = tx(() -> folder("2015").getUuid());
 
 		tx(() -> group().addRole(roles().get("admin")));
 
-		String parentUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
 		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
@@ -218,8 +220,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			"application/binary"));
 
 		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals("binary_content")).findFirst().get();
-		SchemaUpdateRequest schemaUpdateRequest = new SchemaUpdateRequest();
-		schemaUpdateRequest.setDisplayField("binary").setName(binarySchema.getName()).getFields().addAll(binarySchema.getFields());
+		SchemaUpdateRequest schemaUpdateRequest = JsonUtil.readValue(binarySchema.toJson(), SchemaUpdateRequest.class);
+		schemaUpdateRequest.setDisplayField("binary");
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(binarySchema.getUuid(), schemaUpdateRequest));
 		}, MigrationStatus.COMPLETED, 1);

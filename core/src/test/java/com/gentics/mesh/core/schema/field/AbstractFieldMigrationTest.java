@@ -439,7 +439,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void changeSchemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		String fieldName = "changedfield";
-		String schemaName = UUIDUtil.randomUUID();
+		String schemaName = "schema_" + System.currentTimeMillis();
 
 		// create version 1 of the schema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
@@ -876,8 +876,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		for (FieldSchema field : fields) {
 			schema.addField(field);
 		}
-		schema.setDisplayField("name");
-		schema.setSegmentField("name");
+//		schema.setDisplayField("name");
+//		schema.setSegmentField("name");
+		schema.validate();
 
 		SchemaContainerVersion containerVersion = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		containerVersion.setName(name);

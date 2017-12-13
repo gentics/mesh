@@ -127,10 +127,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		Schema schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		FieldSchema fieldSchema = schema.getField(displayFieldName);
-		GraphField field = getField(fieldSchema);
-		if (field != null && field instanceof DisplayField) {
-			DisplayField displayField = (DisplayField) field;
-			setProperty(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
+		if (fieldSchema != null) {
+			GraphField field = getField(fieldSchema);
+			if (field != null && field instanceof DisplayField) {
+				DisplayField displayField = (DisplayField) field;
+				setProperty(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
+			}
 		}
 	}
 
