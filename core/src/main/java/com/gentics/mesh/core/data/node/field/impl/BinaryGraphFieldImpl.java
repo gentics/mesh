@@ -238,7 +238,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public String display() {
+	public String getDisplayName() {
 		return getFileName();
 	}
 

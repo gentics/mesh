@@ -106,7 +106,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
-	public String display() {
+	public String getDisplayName() {
 		return getString();
 	}
 

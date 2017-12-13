@@ -197,8 +197,9 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @param displayField
 	 *            Display field
 	 */
-	public void setDisplayField(String displayField) {
+	public NodeResponse setDisplayField(String displayField) {
 		this.displayField = displayField;
+		return this;
 	}
 
 	/**

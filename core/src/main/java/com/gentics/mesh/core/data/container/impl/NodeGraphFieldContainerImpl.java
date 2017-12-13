@@ -129,7 +129,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		GraphField field = getField(fieldSchema);
 		if (field != null && field instanceof DisplayField) {
 			DisplayField displayField = (DisplayField) field;
-			setProperty(DISPLAY_FIELD_PROPERTY_KEY, displayField.display());
+			setProperty(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
 		}
 	}
 

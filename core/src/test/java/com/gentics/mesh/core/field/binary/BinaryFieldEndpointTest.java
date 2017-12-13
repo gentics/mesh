@@ -220,9 +220,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals("binary_content")).findFirst().get();
 		SchemaUpdateRequest schemaUpdateRequest = new SchemaUpdateRequest();
 		schemaUpdateRequest.setDisplayField("binary").setName(binarySchema.getName()).getFields().addAll(binarySchema.getFields());
-		call(() -> client().updateSchema(binarySchema.getUuid(), schemaUpdateRequest));
-
-		triggerAndWaitForAllJobs(MigrationStatus.COMPLETED);
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(binarySchema.getUuid(), schemaUpdateRequest));
+		}, MigrationStatus.COMPLETED, 1);
 
 		NodeResponse nodeResponse3 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse1.getUuid()));
 		assertEquals(nodeResponse3.getDisplayName(), fileName);
