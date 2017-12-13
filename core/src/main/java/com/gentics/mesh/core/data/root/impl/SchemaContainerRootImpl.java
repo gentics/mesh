@@ -12,6 +12,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -71,7 +72,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
-		validateSchema(schema);
+		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
+		// https://github.com/gentics/mesh/issues/210
+		if (Mesh.vertx() != null) {
+			validateSchema(schema);
+		}
 
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		if (uuid != null) {
@@ -164,16 +169,16 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 		// Check whether a container was actually found
 		if (schemaContainer == null) {
-			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
-					isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
+					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 		}
 		if (schemaVersion == null) {
 			return schemaContainer.getLatestVersion();
 		} else {
 			SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
 			if (foundVersion == null) {
-				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
-						isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
+						: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 			} else {
 				return foundVersion;
 			}

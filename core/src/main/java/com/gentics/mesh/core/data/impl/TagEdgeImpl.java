@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.VertexFrame;
@@ -32,8 +31,7 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	 * @return Traversal
 	 */
 	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Release release) {
-		VertexTraversal<?, ?, ?> traversal = vertex.outE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).inV().has(TagImpl.class);
-		return traversal;
+		return vertex.outE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).inV();
 	}
 
 	/**
@@ -44,7 +42,7 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	 * @return Traversal
 	 */
 	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Release release) {
-		return tag.inE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).outV().has(NodeImpl.class);
+		return tag.inE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).outV();
 	}
 
 	@Override

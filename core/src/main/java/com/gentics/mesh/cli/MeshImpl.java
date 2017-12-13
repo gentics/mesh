@@ -89,9 +89,18 @@ public class MeshImpl implements Mesh {
 
 		registerShutdownHook();
 
-		boolean hasOldLock = hasLockFile();
-		if (!hasOldLock) {
+		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
+		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
+		// the ES index in those cases in order to ensure consistency.
+		boolean forceReindex = hasLockFile();
+		if (!forceReindex) {
 			createLockFile();
+		}
+
+		// Also trigger the reindex if the index folder could not be found.
+		String indexDir = options.getSearchOptions().getDirectory();
+		if (indexDir != null && !(new File(indexDir).exists())) {
+			forceReindex = true;
 		}
 
 		if (isFirstApril()) {
@@ -100,7 +109,7 @@ public class MeshImpl implements Mesh {
 			printProductInformation();
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
-		MeshInternal.create().boot().init(this, hasOldLock, options, verticleLoader);
+		MeshInternal.create().boot().init(this, forceReindex, options, verticleLoader);
 
 		if (options.isUpdateCheckEnabled()) {
 			invokeUpdateCheck();

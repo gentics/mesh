@@ -93,7 +93,9 @@ public interface Database extends TxFactory {
 						}
 					}
 				} catch (Exception e) {
-					log.error("Error while handling no-transaction.", e);
+					if (log.isTraceEnabled()) {
+						log.trace("Error while handling no-transaction.", e);
+					}
 					bc.fail(e);
 				}
 			}, false, (AsyncResult<T> done) -> {

@@ -77,7 +77,7 @@ public final class Events {
 
 	public static final String EVENT_TAG_DELETED = "mesh.tag.deleted";
 
-	/* Tag */
+	/* Tag Family */
 
 	public static final String EVENT_TAG_FAMILY_CREATED = "mesh.tagfamily.created";
 
@@ -126,7 +126,7 @@ public final class Events {
 	public static final String EVENT_RELEASE_DELETED = "mesh.release.deleted";
 
 	/**
-	 * Returns a list of all events which are publically exposed via the eventbus websocket bridge.
+	 * Returns a list of all events which are publicly exposed via the eventbus websocket bridge.
 	 * 
 	 * @return
 	 */

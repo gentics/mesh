@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.IndexableElement;
@@ -46,11 +45,11 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE ex
 	VV findVersionByRev(String version);
 
 	/**
-	 * Return a list with all found schema versions.
+	 * Return an iterable with all found schema versions.
 	 * 
 	 * @return
 	 */
-	List<? extends VV> findAll();
+	Iterable<? extends VV> findAll();
 
 	/**
 	 * Return the latest container version.

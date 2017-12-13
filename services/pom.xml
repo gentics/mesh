@@ -19,6 +19,8 @@
 
 	<modules>
 		<module>image-imgscalr</module>
+		<module>aws-s3-storage</module>
+		<module>local-storage</module>
 	</modules>
 
 	<dependencies>

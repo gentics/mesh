@@ -27,8 +27,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -426,8 +428,19 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
 		call(() -> client().deleteSchema(uuid), BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
+			SchemaResponse schemaResponse = call(() -> client().findSchemaByUuid(uuid));
+			SchemaUpdateRequest request = JsonUtil.readValue(schemaResponse.toJson(), SchemaUpdateRequest.class);
+			request.setDescription("SomeOtherDescription");
+			call(() -> client().updateSchema(uuid, request));
+		}, COMPLETED, 1);
+
+		String jobUuid = tx(() -> schemaContainer("content").getLatestVersion().referencedJobsViaTo().iterator().next().getUuid());
+
 		try (Tx tx = tx()) {
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
+
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(reloaded.getNodes()).isNotEmpty();
@@ -439,10 +452,19 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			tx.success();
 		}
 
+		String versionUuid = tx(() -> schemaContainer("content").getLatestVersion().getUuid());
+		assertTrue("The version should exist.", tx(tx -> {
+			return tx.getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
+		}));
+
+		// We should be able to execute the deletion now that all nodes are gone. 
 		call(() -> client().deleteSchema(uuid));
 
 		try (Tx tx = tx()) {
+			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
+			assertFalse("The version of the schema container should have been deleted as well.", tx.getGraph().getVertices("uuid", versionUuid)
+					.iterator().hasNext());
 			assertNull("The schema should have been deleted.", reloaded);
 		}
 	}

@@ -9,18 +9,24 @@ import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -31,16 +37,18 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.test.core.TestUtils;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
@@ -144,6 +152,32 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testUploadBrokenImage() throws IOException {
+		String contentType = "image/jpeg";
+		int binaryLen = 10000;
+		String fileName = "somefile.dat";
+
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+
+			// Add a schema called nonBinary
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+
+			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
+		}
+
+		String uuid = tx(() -> folder("news").getUuid());
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
+		BinaryField binaryField = response.getFields().getBinaryField("image");
+		assertNull(binaryField.getDominantColor());
+		assertNull(binaryField.getWidth());
+		assertNull(binaryField.getHeight());
+		assertEquals("image/jpeg", binaryField.getMimeType());
+	}
+
+	@Test
 	public void testUploadToNodeWithoutBinaryField() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
@@ -227,63 +261,170 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testPathSegmentation() throws IOException {
-		Node node = folder("news");
-		try (Tx tx = tx()) {
-			node.setUuid(UUIDUtil.randomUUID());
-			// Add some test data
-			prepareSchema(node, "", "binary");
-			tx.success();
-		}
-		String contentType = "application/octet-stream";
-		String fileName = "somefile.dat";
-		int binaryLen = 10000;
-		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
-		try (Tx tx = tx()) {
-			// Load the uploaded binary field and return the segment path to the field
-			BinaryGraphField binaryField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
-			String uuid = "b677504736ed47a1b7504736ed07a14a";
-			binaryField.setUuid(uuid);
-			String path = binaryField.getSegmentedPath();
-			assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
-		}
-	}
-
-	@Test
 	public void testUpload() throws Exception {
 
 		String contentType = "application/blub";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-
+		String uuid = tx(() -> node.getUuid());
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
 			tx.success();
 		}
+		File uploadFolder = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
+		FileUtils.deleteDirectory(uploadFolder);
+
+		NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		assertTrue("The upload should have created the tmp folder", uploadFolder.exists());
+		assertThat(uploadFolder.list()).as("Folder should not contain any remaining tmp upload file").isEmpty();
+
+		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
+		BinaryField binaryField = response.getFields().getBinaryField("binary");
+
+		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
+		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
+		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
+		assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
+		assertNull("The data did contain image information.", binaryField.getDominantColor());
+		assertNull("The data did contain image information.", binaryField.getWidth());
+		assertNull("The data did contain image information.", binaryField.getHeight());
+
+		NodeDownloadResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary"));
+		assertNotNull(downloadResponse);
+		assertNotNull(downloadResponse.getBuffer().getByte(1));
+		assertNotNull(downloadResponse.getBuffer().getByte(binaryLen));
+		assertEquals(binaryLen, downloadResponse.getBuffer().length());
+		assertEquals(contentType, downloadResponse.getContentType());
+		assertEquals(fileName, downloadResponse.getFilename());
 
 		try (Tx tx = tx()) {
-			NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
-
-			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
-			BinaryField binaryField = response.getFields().getBinaryField("binary");
-
-			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
-			assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
-			assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
-			assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
-			assertNull("The data did contain image information.", binaryField.getDominantColor());
-			assertNull("The data did contain image information.", binaryField.getWidth());
-			assertNull("The data did contain image information.", binaryField.getHeight());
-
-			NodeDownloadResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
-			assertNotNull(downloadResponse);
-			assertNotNull(downloadResponse.getBuffer().getByte(1));
-			assertNotNull(downloadResponse.getBuffer().getByte(binaryLen));
-			assertEquals(binaryLen, downloadResponse.getBuffer().length());
-			assertEquals(contentType, downloadResponse.getContentType());
-			assertEquals(fileName, downloadResponse.getFilename());
+			BinaryGraphField binaryGraphField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
+			String binaryUuid = binaryGraphField.getBinary().getUuid();
+			String path = LocalBinaryStorage.getFilePath(binaryUuid);
+			File binaryFile = new File(path);
+			assertTrue("The binary file could not be found.", binaryFile.exists());
+			assertEquals("The expected length of the file did not match.", binaryLen, binaryFile.length());
 		}
+
+	}
+
+	/**
+	 * Assert that deleting a binary node will also remove the stored binary file.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testDeleteBinaryNode() throws IOException {
+
+		String contentType = "application/blub";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+		Node node = folder("news");
+		String uuid = tx(() -> node.getUuid());
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", "binary");
+			tx.success();
+		}
+		File uploadFolder = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
+		FileUtils.deleteDirectory(uploadFolder);
+
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+
+		File binaryFile;
+		String hash;
+		try (Tx tx = tx()) {
+			BinaryGraphField binaryGraphField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
+			String binaryUuid = binaryGraphField.getBinary().getUuid();
+			binaryFile = new File(LocalBinaryStorage.getFilePath(binaryUuid));
+			assertTrue("The binary file could not be found.", binaryFile.exists());
+			hash = binaryGraphField.getBinary().getSHA512Sum();
+		}
+
+		call(() -> client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)));
+		try (Tx tx = tx()) {
+			assertNull("The binary for the hash should have also been removed since only one node used the binary.",
+					meshRoot().getBinaryRoot().findByHash(hash));
+		}
+		assertFalse("The binary file should have been removed.", binaryFile.exists());
+
+	}
+
+	/**
+	 * Assert that deleting one node will not affect the binary of another node which uses the same binary (binary of the binaryfield).
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testDeleteBinaryNodeDeuplication() throws IOException {
+		// The data
+		String contentType = "application/blub";
+		int binaryLen = 8000;
+		Buffer buffer = TestUtils.randomBuffer(binaryLen);
+		String fileName = "somefile.dat";
+
+		// The test nodes
+		Node nodeA = folder("news");
+		String uuidA = tx(() -> nodeA.getUuid());
+		String versionA = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
+
+		Node nodeB = folder("products");
+		String uuidB = tx(() -> nodeB.getUuid());
+		String versionB = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
+
+		// Setup the schemas
+		try (Tx tx = tx()) {
+			prepareSchema(nodeA, "", "binary");
+			prepareSchema(nodeB, "", "binary");
+			tx.success();
+		}
+		// Clear the upload folder
+		File uploadFolder = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
+		FileUtils.deleteDirectory(uploadFolder);
+
+		// Upload the binary in both nodes
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidA, "en", versionA, "binary", buffer, fileName, contentType));
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidB, "en", versionB, "binary", buffer, fileName, contentType));
+
+		File binaryFileA;
+		String hashA;
+		try (Tx tx = tx()) {
+			BinaryGraphField binaryGraphField = nodeA.getLatestDraftFieldContainer(english()).getBinary("binary");
+			String binaryUuid = binaryGraphField.getBinary().getUuid();
+			binaryFileA = new File(LocalBinaryStorage.getFilePath(binaryUuid));
+			assertTrue("The binary file could not be found.", binaryFileA.exists());
+			hashA = binaryGraphField.getBinary().getSHA512Sum();
+		}
+
+		File binaryFileB;
+		String hashB;
+		try (Tx tx = tx()) {
+			BinaryGraphField binaryGraphField = nodeB.getLatestDraftFieldContainer(english()).getBinary("binary");
+			String binaryUuid = binaryGraphField.getBinary().getUuid();
+			binaryFileB = new File(LocalBinaryStorage.getFilePath(binaryUuid));
+			assertTrue("The binary file could not be found.", binaryFileB.exists());
+			hashB = binaryGraphField.getBinary().getSHA512Sum();
+		}
+		assertEquals(hashA, hashB);
+		assertEquals(binaryFileA.getAbsolutePath(), binaryFileB.getAbsolutePath());
+
+		// Now delete nodeA
+		call(() -> client().deleteNode(PROJECT_NAME, uuidA, new DeleteParametersImpl().setRecursive(true)));
+		try (Tx tx = tx()) {
+			assertNotNull("The binary for the hash should not have been removed since it is still in use.",
+					meshRoot().getBinaryRoot().findByHash(hashA));
+		}
+		assertTrue("The binary file should not have been deleted since there is still one node which uses it.", binaryFileA.exists());
+
+		// Now delete nodeB
+		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
+
+		try (Tx tx = tx()) {
+			assertNull("The binary for the hash should have also been removed since only one node used the binary.",
+					meshRoot().getBinaryRoot().findByHash(hashA));
+		}
+		assertFalse("The binary file should have been removed.", binaryFileA.exists());
+
 	}
 
 	@Test

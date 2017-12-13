@@ -143,7 +143,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1L);
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
 		});
 	}
 
@@ -152,7 +152,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L, 0L);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1, 0);
 		});
 	}
 

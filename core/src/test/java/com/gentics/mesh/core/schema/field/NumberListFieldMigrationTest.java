@@ -95,7 +95,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
 			// Internally timestamps are stored in miliseconds
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE * 1000, OTHERNUMBERVALUE * 1000);
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly((long) NUMBERVALUE * 1000, (long) OTHERNUMBERVALUE * 1000);
 		});
 	}
 

@@ -9,13 +9,13 @@ import java.awt.Graphics2D;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.util.PropReadFileStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -28,8 +28,12 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.util.PropReadFileStream;
+import com.gentics.mesh.util.RxUtil;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.rxjava.core.Vertx;
+import rx.Observable;
 import rx.Single;
 
 /**
@@ -37,15 +41,12 @@ import rx.Single;
  */
 public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
-	Vertx vertx;
-
 	public ImgscalrImageManipulator() {
 		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
 	}
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
-		super(options);
-		this.vertx = vertx;
+		super(vertx, options);
 	}
 
 	/**
@@ -67,7 +68,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			} catch (IllegalArgumentException e) {
 				throw error(BAD_REQUEST, "image_error_cropping_failed", e);
 			}
-
 		}
 		return originalImage;
 	}
@@ -121,18 +121,22 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<PropReadFileStream> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters) {
-		File cacheFile = getCacheFile(sha512sum, parameters);
+	public Single<PropReadFileStream> handleResize(Observable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
+		// Validate the resize parameters
+		try {
+			parameters.validate();
+			parameters.validateLimits(options);
+		} catch (Exception e) {
+			return Single.error(e);
+		}
+		File cacheFile = getCacheFile(cacheKey, parameters);
 
-		// 1. Check the cache file directory
+		// Check the cache file directory
 		if (cacheFile.exists()) {
 			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
 		}
 
-		// 2. Read the image
-		BufferedImage bi = null;
-		try {
-			bi = ImageIO.read(ins);
+		return readImage(stream).flatMap(bi -> {
 			if (bi == null) {
 				throw error(BAD_REQUEST, "image_error_reading_failed");
 			}
@@ -151,32 +155,52 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					graphics.dispose();
 				}
 			}
-		} catch (Exception e) {
-			throw error(BAD_REQUEST, "image_error_reading_failed", e);
-		}
+			// Convert the image to RGB for images with transparency (gif, png)
+			BufferedImage rgbCopy = bi;
+			if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
+				rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+				Graphics2D graphics = rgbCopy.createGraphics();
+				graphics.drawImage(bi, 0, 0, Color.WHITE, null);
+				graphics.dispose();
+			}
 
-		// Convert the image to RGB for images with transparency (gif, png)
-		BufferedImage rgbCopy = bi;
-		if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
-			rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-			Graphics2D graphics = rgbCopy.createGraphics();
-			graphics.drawImage(bi, 0, 0, Color.WHITE, null);
-			graphics.dispose();
-		}
+			// Manipulate image
+			rgbCopy = cropIfRequested(rgbCopy, parameters);
+			rgbCopy = resizeIfRequested(rgbCopy, parameters);
 
-		// 3. Manipulate image
-		rgbCopy = cropIfRequested(rgbCopy, parameters);
-		rgbCopy = resizeIfRequested(rgbCopy, parameters);
+			// Write image
+			try {
+				ImageIO.write(rgbCopy, "jpg", cacheFile);
+			} catch (Exception e) {
+				throw error(BAD_REQUEST, "image_error_writing_failed", e);
+			}
+			// Return buffer to written cache file
+			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
+		});
 
-		// 4. Write image
+	}
+
+	/**
+	 * Read the image data stream and return the decoded image.
+	 * 
+	 * @param stream
+	 * @return
+	 */
+	private Single<BufferedImage> readImage(Observable<Buffer> stream) {
 		try {
-			ImageIO.write(rgbCopy, "jpg", cacheFile);
-		} catch (Exception e) {
-			throw error(BAD_REQUEST, "image_error_writing_failed", e);
+			InputStream ins = RxUtil.toInputStream(stream, vertx);
+			return vertx.rxExecuteBlocking(bc -> {
+				try {
+					BufferedImage image = ImageIO.read(ins);
+					ins.close();
+					bc.complete(image);
+				} catch (IOException e) {
+					bc.fail(e);
+				}
+			}, false);
+		} catch (IOException e1) {
+			return Single.error(e1);
 		}
-
-		// 5. Return buffer to written cache file
-		return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
 	}
 
 	@Override

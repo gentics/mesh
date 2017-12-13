@@ -61,6 +61,8 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
@@ -111,8 +113,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().createProject(request));
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
-		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
-				.setVersion("draft")));
+		NodeResponse response = call(
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
@@ -149,8 +151,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
 		// Verify that the new routes have been created
-		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
-				.setVersion("draft")));
+		NodeResponse response = call(
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		JsonObject eventInfo = fut.get(10, TimeUnit.SECONDS);
@@ -224,6 +226,28 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
+	public void testCreateWithHostname() throws Exception {
+		final String name = "test12345";
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(name);
+		request.setHostname("dummy.host");
+		request.setSsl(true);
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
+		call(() -> client().createProject(request));
+
+		ReleaseResponse release = call(() -> client().findReleases(name)).getData().get(0);
+		assertEquals("dummy.host", release.getHostname());
+		assertTrue(release.getSsl());
+
+		ReleaseUpdateRequest updateRequest = new ReleaseUpdateRequest();
+		updateRequest.setHostname("different.host");
+		updateRequest.setSsl(null);
+		ReleaseResponse response = call(() -> client().updateRelease(name, release.getUuid(), updateRequest));
+		assertEquals("different.host", response.getHostname());
+		assertTrue(response.getSsl());
+	}
+
+	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
 		try (Tx tx = tx()) {
@@ -266,11 +290,12 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		try (Tx tx = tx()) {
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user(), schemaContainer("folder").getLatestVersion());
+				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, user(),
+						schemaContainer("folder").getLatestVersion());
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
-			meshRoot().getProjectRoot().create(noPermProjectName, user(), schemaContainer("folder").getLatestVersion());
+			meshRoot().getProjectRoot().create(noPermProjectName, null, null, user(), schemaContainer("folder").getLatestVersion());
 
 			// Don't grant permissions to no perm project
 			tx.success();
@@ -309,8 +334,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
 
 		// Verify that the no perm project is not part of the response
-		List<ProjectResponse> filteredProjectList = allProjects.parallelStream().filter(restProject -> restProject.getName().equals(
-				noPermProjectName)).collect(Collectors.toList());
+		List<ProjectResponse> filteredProjectList = allProjects.parallelStream()
+				.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
 		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
 		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -418,7 +443,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 
 		try (Tx tx = tx()) {
-			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
+			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", null, null, user(), schemaContainer("folder").getLatestVersion());
 			tx.success();
 		}
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
@@ -645,8 +670,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		validateCreation(set, null);
 
 		try (Tx tx = tx()) {
-			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
-					.spliterator(), true).count();
+			long n = StreamSupport
+					.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(), true)
+					.count();
 			long nProjectsAfter = meshRoot().getProjectRoot().computeCount();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);

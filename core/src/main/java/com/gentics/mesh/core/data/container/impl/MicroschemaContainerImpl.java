@@ -58,6 +58,7 @@ public class MicroschemaContainerImpl extends
 			if (version.findMicronodes().hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
 			}
+			version.delete(batch);
 		}
 		super.delete(batch);
 	}

@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -214,7 +215,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(Mesh mesh, boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(Mesh mesh, boolean forceReindex, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.mesh = (MeshImpl) mesh;
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean isClustered = options.getClusterOptions().isEnabled();
@@ -288,7 +289,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		eventManager.registerHandlers();
 		routerStorage.init();
-		handleLocalData(hasOldLock, options, verticleLoader);
+		handleLocalData(forceReindex, options, verticleLoader);
 	}
 
 	/**
@@ -380,17 +381,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Handle local data and prepare mesh API.
 	 * 
-	 * @param hasOldLock
+	 * @param forceReindex
 	 * @param configuration
 	 * @param commandLine
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
-		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
-		// the ES index in those cases in order to ensure consistency.
-		if (hasOldLock) {
+	private void handleLocalData(boolean forceReindex, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		// Invoke reindex as requested
+		if (forceReindex) {
 			reindexAll();
 		}
 
@@ -582,6 +581,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public BinaryRoot binaryRoot() {
+		return meshRoot().getBinaryRoot();
+	}
+
+	@Override
 	public UserRoot userRoot() {
 		return meshRoot().getUserRoot();
 	}
@@ -628,6 +632,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getProjectRoot();
 			meshRoot.getLanguageRoot();
 			meshRoot.getJobRoot();
+			meshRoot.getBinaryRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
 			UserRoot userRoot = meshRoot.getUserRoot();

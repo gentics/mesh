@@ -79,8 +79,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 2. Download the data using the REST API
-			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary",
-					new VersioningParametersImpl().setVersion("draft")), FORBIDDEN, "error_missing_perm", node.getUuid());
+			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", new VersioningParametersImpl().setVersion("draft")),
+					FORBIDDEN, "error_missing_perm", node.getUuid());
 
 		}
 	}
@@ -113,60 +113,47 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		}
 
 		// Create schema with 2 binary fields
-		SchemaCreateRequest schemaRequest = new SchemaCreateRequest()
-			.setName("imageSchema")
-			.setFields(Arrays.asList(
-				new BinaryFieldSchemaImpl()
-					.setName("image1"),
-				new BinaryFieldSchemaImpl()
-					.setName("image2")
-					.setRequired(true)
-			));
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("imageSchema").setFields(
+				Arrays.asList(new BinaryFieldSchemaImpl().setName("image1"), new BinaryFieldSchemaImpl().setName("image2").setRequired(true)));
 
 		SchemaResponse schema = call(() -> client().createSchema(schemaRequest));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
 
 		// Create node of that new schema
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest()
-			.setSchema(schema.toReference())
-			.setParentNodeUuid(parentUuid)
-			.setLanguage("en");
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest().setSchema(schema.toReference()).setParentNodeUuid(parentUuid).setLanguage("en");
 
 		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
 		// Load the image from the file system
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
+		Buffer buffer = Buffer.buffer(IOUtils.toByteArray(ins));
 		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
-		Func1<String, Observable<NodeResponse>> uploadBinary = (fieldName) ->
-			client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(),
-            nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
-			.doOnSubscribe(() -> System.out.println("Requesting " + fieldName));
+		Func1<String, Observable<NodeResponse>> uploadBinary = (fieldName) -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(),
+				nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
+				.doOnSubscribe(() -> System.out.println("Requesting " + fieldName));
 
 		Observable<String> imageFields = Observable.just("image1", "image2");
 
 		// Upload 2 images at once
 		// This should work since we can update the same node at the same time if it affects different fields
-		imageFields
-			.flatMap(uploadBinary)
-			.toCompletable().await();
+		imageFields.flatMap(uploadBinary).toCompletable().await();
 
 		// Download them again and make sure they are the same image
-		Func1<String, Observable<NodeDownloadResponse>> downloadBinary = (fieldName) ->
-			client().downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(),
-				fieldName).toObservable();
+		Func1<String, Observable<NodeDownloadResponse>> downloadBinary = (fieldName) -> client()
+				.downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), fieldName).toObservable();
 
 		Action1<String> assertSum = (sum) -> assertEquals("Checksum did not match", blumeSum, sum);
 
-		System.out.println(client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()).toSingle().toBlocking().value().toJson());
-		imageFields
-			.flatMap(downloadBinary)
-			.map(NodeDownloadResponse::getBuffer)
-			.map(FileUtils::generateSha512Sum)
-			.doOnNext(assertSum)
-			.toCompletable().await();
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
+		System.out.println(response.toJson());
+		assertEquals("image/jpeg", response.getFields().getBinaryField("image1").getMimeType());
+		assertEquals("image/jpeg", response.getFields().getBinaryField("image2").getMimeType());
+		assertEquals("#737042", response.getFields().getBinaryField("image1").getDominantColor());
+		assertEquals("#737042", response.getFields().getBinaryField("image2").getDominantColor());
+
+		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.toBlocking().value())
+				.doOnNext(assertSum).toCompletable().await();
 	}
 
 	private Node prepareSchema() throws IOException {

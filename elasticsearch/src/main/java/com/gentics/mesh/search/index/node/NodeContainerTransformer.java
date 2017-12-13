@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -176,11 +177,16 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 					JsonObject binaryFieldInfo = new JsonObject();
 					fieldsMap.put(name, binaryFieldInfo);
 					binaryFieldInfo.put("filename", binaryField.getFileName());
-					binaryFieldInfo.put("filesize", binaryField.getFileSize());
-					binaryFieldInfo.put("width", binaryField.getImageWidth());
-					binaryFieldInfo.put("height", binaryField.getImageHeight());
 					binaryFieldInfo.put("mimeType", binaryField.getMimeType());
 					binaryFieldInfo.put("dominantColor", binaryField.getImageDominantColor());
+
+					Binary binary = binaryField.getBinary();
+					if (binary != null) {
+						binaryFieldInfo.put("filesize", binary.getSize());
+						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
+						binaryFieldInfo.put("width", binary.getImageWidth());
+						binaryFieldInfo.put("height", binary.getImageHeight());
+					}
 				}
 				break;
 			case BOOLEAN:
@@ -265,8 +271,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								Micronode micronode = item.getMicronode();
 								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
 								addMicroschema(itemMap, microschameContainerVersion);
-								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode, microschameContainerVersion
-										.getSchema().getFields());
+								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
+										microschameContainerVersion.getSchema().getFields());
 								return itemMap;
 							}).toList().toBlocking().single());
 						}
@@ -316,8 +322,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						JsonObject micronodeMap = new JsonObject();
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
 						// Micronode field can't be stored. The datastructure is dynamic
-						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode, micronode
-								.getSchemaContainerVersion().getSchema().getFields());
+						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
+								micronode.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}
@@ -331,8 +337,6 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put(fieldKey, fieldsMap);
 
 	}
-
-	
 
 	/**
 	 * Transform the given microschema container and add it to the source map.
@@ -441,8 +445,5 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("displayField", displayField);
 		return document;
 	}
-
-
-	
 
 }
