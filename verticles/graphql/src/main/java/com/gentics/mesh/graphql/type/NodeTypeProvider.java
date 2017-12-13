@@ -413,6 +413,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return container.getLanguage().getLanguageTag();
 		}));
 
+		nodeType.field(newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
+			NodeContent content = env.getSource();
+			NodeGraphFieldContainer container = content.getContainer();
+			if (container == null) {
+				return null;
+			}
+			return container.getDisplayFieldValue();
+		}));
+
 		return nodeType.build();
 	}
 

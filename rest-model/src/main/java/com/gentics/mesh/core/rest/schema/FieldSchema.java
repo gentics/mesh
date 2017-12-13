@@ -118,4 +118,12 @@ public interface FieldSchema {
 	 */
 	FieldSchema setElasticsearch(JsonObject elasticsearch);
 
+
+	/**
+	 * Checks if the field can be used as a display field.
+	 * @return
+	 */
+	default boolean isDisplayField() {
+		return false;
+	}
 }

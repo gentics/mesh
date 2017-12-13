@@ -665,6 +665,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
 			restNode.setContainer(schema.isContainer());
 			restNode.setDisplayField(schema.getDisplayField());
+			restNode.setDisplayName(getDisplayName(ac));
 
 			restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 			// List<String> fieldsToExpand = ac.getExpandedFieldnames();

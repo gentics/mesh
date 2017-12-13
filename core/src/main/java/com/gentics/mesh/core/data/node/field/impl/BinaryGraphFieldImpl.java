@@ -172,6 +172,11 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
+	public String getDisplayName() {
+		return getFileName();
+	}
+
+	@Override
 	public String getMimeType() {
 		return getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
 	}
