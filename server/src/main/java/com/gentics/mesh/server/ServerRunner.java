@@ -34,6 +34,7 @@ public class ServerRunner {
 		options.getHttpServerOptions().setCorsAllowCredentials(true);
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
+		options.getStorageOptions().setStartServer(true);
 		*/
 		MissingOrientCredentialFixer.fix(options);
 

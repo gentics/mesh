@@ -91,7 +91,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
 			).spliterator(), false)
 			.map(node -> {
-				NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 				return new NodeContent(node, container);
 			});
 

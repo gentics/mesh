@@ -108,7 +108,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// }
 
 			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
 					ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
@@ -201,8 +201,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Load the base version field container in order to create the diff
-			NodeGraphFieldContainer baseVersionContainer = node.findNextMatchingFieldContainer(Arrays.asList(languageTag), release.getUuid(),
-					nodeVersion);
+			NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, release.getUuid(), nodeVersion);
 			if (baseVersionContainer == null) {
 				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 			}
@@ -415,8 +414,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
-						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
+								transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}

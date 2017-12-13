@@ -52,7 +52,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		Project project = env.getSource();
 		Node node = project.getBaseNode();
 		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-		NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, getLanguageArgument(env));
+		NodeGraphFieldContainer container = node.findVersion(gc, getLanguageArgument(env));
 		return new NodeContent(node, container);
 	}
 

@@ -229,7 +229,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		String releaseUuid = release.getUuid();
 		// Check whether the node got a published version and thus is published
-		boolean isPublished = findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid, "published") != null;
+		boolean isPublished = findVersion(parameters.getLanguageList(), releaseUuid, "published") != null;
 
 		// A published node must have also a published parent node.
 		if (isPublished) {
@@ -241,8 +241,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Check whether the parent node has a published field container
 				// for the given release and language
-				NodeGraphFieldContainer fieldContainer = parentNode.findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid,
-						"published");
+				NodeGraphFieldContainer fieldContainer = parentNode.findVersion(parameters.getLanguageList(), releaseUuid, "published");
 				if (fieldContainer == null) {
 					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in release {" + releaseUuid + "}");
 					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
@@ -255,7 +254,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// TODO handle release
 			for (Node node : getChildren()) {
-				NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid, "published");
+				NodeGraphFieldContainer fieldContainer = node.findVersion(parameters.getLanguageList(), releaseUuid, "published");
 				if (fieldContainer != null) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in release {" + releaseUuid + "}. Node is child of {"
 							+ getUuid() + "}");
@@ -630,8 +629,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// First check whether the NGFC for the requested language,release and version could be found.
-		NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), versioiningParameters
-				.getVersion());
+		NodeGraphFieldContainer fieldContainer = findVersion(requestedLanguageTags, release.getUuid(), versioiningParameters.getVersion());
 		if (fieldContainer == null) {
 			// If a published version was requested, we check whether any
 			// published language variant exists for the node, if not, response
@@ -1238,17 +1236,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version) {
+	public NodeGraphFieldContainer findVersion(List<String> languageTags, String releaseUuid, String version) {
 		NodeGraphFieldContainer fieldContainer = null;
 
+		// TODO refactor the type handling and don't return INITIAL.
 		ContainerType type = forVersion(version);
 
 		for (String languageTag : languageTags) {
-			fieldContainer = getGraphFieldContainer(languageTag, releaseUuid, type);
 
+			// Don't start the version lookup using the initial version. Instead start at the end of the chain and use the DRAFT version instead.
+			fieldContainer = getGraphFieldContainer(languageTag, releaseUuid, type == INITIAL ? DRAFT : type);
+
+			// Traverse the chain downwards and stop once we found our target version or we reached the end.
 			if (fieldContainer != null && type == INITIAL) {
 				while (fieldContainer != null && !version.equals(fieldContainer.getVersion().toString())) {
-					fieldContainer = fieldContainer.getNextVersion();
+					fieldContainer = fieldContainer.getPreviousVersion();
 				}
 			}
 
@@ -1444,8 +1446,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(nodeParameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
-				versioningParameters.getVersion());
+		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(), ac.getRelease(getProject()).getUuid(), versioningParameters
+				.getVersion());
 		if (container == null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
@@ -1536,8 +1538,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Load the base version field container in order to create the diff
-			NodeGraphFieldContainer baseVersionContainer = findNextMatchingFieldContainer(Arrays.asList(requestModel.getLanguage()), release
-					.getUuid(), requestModel.getVersion());
+			NodeGraphFieldContainer baseVersionContainer = findVersion(requestModel.getLanguage(), release.getUuid(), requestModel.getVersion());
 			if (baseVersionContainer == null) {
 				throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion(), requestModel.getLanguage());
 			}
@@ -1804,8 +1805,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(release.getUuid());
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(), ac
-				.getVersioningParameters().getVersion());
+		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(), ac.getVersioningParameters()
+				.getVersion());
 
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(superkey);

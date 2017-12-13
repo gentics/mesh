@@ -1813,6 +1813,81 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 	}
 
+	/**
+	 * Assert that the version history is not interrupted when invoking publish, unpublish and update end
+	 */
+	@Test
+	public void testPublishUnPublishUpdateVersionConsistency() {
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+
+		// 1. Create node (en)
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.en.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+		String uuid = response.getUuid();
+
+		// 2. Update (de)
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		// 3. Delete (de)
+		call(() -> client().deleteNode(PROJECT_NAME, uuid, "de"));
+
+		// 4. Update (de) again
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.setVersion(null);
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de1.html"));
+		response = call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+		System.out.println(response.getVersion());
+		System.out.println("After update de");
+		printHistory(uuid);
+
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de2.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+		System.out.println("After update de2");
+		printHistory(uuid);
+
+		nodeUpdateRequest.setVersion("0.2");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de3.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+		System.out.println("After update de2");
+		printHistory(uuid);
+	}
+
+	private void printHistory(String uuid) {
+		try (Tx tx = tx()) {
+			System.out.println("----------------------");
+			Node node = boot().nodeRoot().findByUuid(uuid);
+			NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("de", initialReleaseUuid(), ContainerType.INITIAL);
+			while (fieldContainer != null) {
+				if (fieldContainer.getVersion().toString().equals("0.1")) {
+					System.out.println("Initial: " + fieldContainer.getUuid().substring(0, 5) + "@" + fieldContainer.getVersion());
+				}
+				fieldContainer = fieldContainer.getNextVersion();
+			}
+			NodeGraphFieldContainer draft = node.getGraphFieldContainer("de", initialReleaseUuid(), ContainerType.DRAFT);
+			while (draft != null) {
+				if (draft.getVersion().toString().equals("0.1")) {
+					System.out.println("Draft:   " + draft.getUuid().substring(0, 5) + "@" + draft.getVersion());
+				}
+				draft = draft.getPreviousVersion();
+			}
+			System.out.println("----------------------");
+		}
+
+	}
+
 	@Test
 	public void testDeleteForRelease() throws Exception {
 		try (Tx tx = tx()) {
