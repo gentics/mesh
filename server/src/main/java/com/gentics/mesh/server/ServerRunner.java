@@ -28,6 +28,13 @@ public class ServerRunner {
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+		/*
+		options.setAdminPassword("admin");
+		options.getStorageOptions().setStartServer(true);
+		options.getHttpServerOptions().setCorsAllowCredentials(true);
+		options.getHttpServerOptions().setEnableCors(true);
+		options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
+		*/
 		MissingOrientCredentialFixer.fix(options);
 
 		Mesh mesh = Mesh.mesh(options);

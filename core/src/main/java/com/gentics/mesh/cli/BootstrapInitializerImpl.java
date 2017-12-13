@@ -626,6 +626,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		try (Tx tx = db.tx()) {
 			meshRoot = meshRoot();
 
+			// Create the initial root vertices
 			meshRoot.getNodeRoot();
 			meshRoot.getTagRoot();
 			meshRoot.getTagFamilyRoot();

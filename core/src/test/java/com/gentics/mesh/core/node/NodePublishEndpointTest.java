@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -19,6 +20,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -30,6 +32,8 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -84,6 +88,88 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		// 5. Verify that publishing now works
 		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()));
+
+	}
+
+	/**
+	 * Assert that the version history is not interrupted when invoking publish, unpublish and update end
+	 */
+	@Test
+	public void testPublishUnPublishUpdateVersionConsistency() {
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		// 1. Create node (en)
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.en.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+		String uuid = response.getUuid();
+
+		// 2. Update (de)
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		// 3. Publish (de)
+		call(() -> client().publishNode(PROJECT_NAME, uuid));
+		System.out.println("After pub");
+		printHistory(uuid);
+
+//		// 4. Take (de) offline
+//		System.out.println("After offline de");
+//		call(() -> client().takeNodeLanguage(PROJECT_NAME, uuid, "de"));
+//		printHistory(uuid);
+
+		// Grant admin perm (needed to inspect jobs)
+		tx(() -> group().addRole(roles().get("admin")));
+		// 5. invoke schema migration
+		waitForJobs(() -> {
+			SchemaUpdateRequest schemaUpdate = JsonUtil.readValue(tx(() -> schemaContainer("content").getLatestVersion().getJson()),
+					SchemaUpdateRequest.class);
+			schemaUpdate.setDescription("otherdesc");
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, COMPLETED, 1);
+		System.out.println("After migration");
+		printHistory(uuid);
+
+		// 6. Update (de) again
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.setVersion("1.0");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de1.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+		System.out.println("After update de");
+		printHistory(uuid);
+	}
+
+	private void printHistory(String uuid) {
+		try (Tx tx = tx()) {
+			System.out.println("----------------------");
+			Node node = boot().nodeRoot().findByUuid(uuid);
+			NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("de", initialReleaseUuid(), ContainerType.INITIAL);
+			while (fieldContainer != null) {
+				if (fieldContainer.getVersion().toString().equals("0.1")) {
+					System.out.println("Initial: " + fieldContainer.getUuid().substring(0, 5) + "@" + fieldContainer.getVersion());
+				}
+				fieldContainer = fieldContainer.getNextVersion();
+			}
+			NodeGraphFieldContainer draft = node.getGraphFieldContainer("de", initialReleaseUuid(), ContainerType.DRAFT);
+			while (draft != null) {
+				if (draft.getVersion().toString().equals("0.1")) {
+					System.out.println("Draft:   " + draft.getUuid().substring(0, 5) + "@" + draft.getVersion());
+				}
+				draft = draft.getPreviousVersion();
+			}
+			System.out.println("----------------------");
+		}
 
 	}
 

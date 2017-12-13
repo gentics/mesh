@@ -96,6 +96,16 @@ public class BinaryStorageMigration extends AbstractChange {
 	 */
 	private void migrateField(Vertex oldBinaryField, Vertex binaryRoot) {
 		String uuid = oldBinaryField.getProperty("uuid");
+		String fileName = oldBinaryField.getProperty(BINARY_FILENAME_PROPERTY_KEY);
+		if (fileName == null) {
+			log.info("Removing stale binary vertex.");
+			for (String key : oldBinaryField.getPropertyKeys()) {
+				System.out.println("key: " + key + " : " + oldBinaryField.getProperty(key));
+			}
+			oldBinaryField.remove();
+			return;
+		}
+
 		File file = getOldFile(uuid);
 
 		log.info("Migrating binary field {" + uuid + "}");
@@ -143,7 +153,6 @@ public class BinaryStorageMigration extends AbstractChange {
 		}
 		migrateBinaryData(uuid, binary.getProperty("uuid"));
 
-		String fileName = oldBinaryField.getProperty(BINARY_FILENAME_PROPERTY_KEY);
 		String contentType = oldBinaryField.getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
 		String dominantColor = oldBinaryField.getProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
 		Set<Edge> oldEdges = new HashSet<>();
