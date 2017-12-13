@@ -268,12 +268,12 @@ public class SchemaTest {
 	 * The display field must always point to a string field.
 	 */
 	@Test
-	public void testDisplayFieldToNoStringFieldInvalid() {
+	public void testDisplayFieldInvalidType() {
 		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
-		schema.addField(FieldUtil.createBinaryFieldSchema("name"));
+		schema.addField(FieldUtil.createNumberFieldSchema("name"));
 		expectErrorOnValidate(schema, "schema_error_displayfield_type_invalid", "name");
 	}
 

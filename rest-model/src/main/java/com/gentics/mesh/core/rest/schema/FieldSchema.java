@@ -123,6 +123,7 @@ public interface FieldSchema {
 	 * Checks if the field can be used as a display field.
 	 * @return
 	 */
+	@JsonIgnore
 	default boolean isDisplayField() {
 		return false;
 	}
