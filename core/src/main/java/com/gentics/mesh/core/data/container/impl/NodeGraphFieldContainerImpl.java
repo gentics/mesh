@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.node.field.DisplayField;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -125,9 +126,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// TODO use schema storage instead
 		Schema schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
-		StringGraphField field = getString(displayFieldName);
-		if (field != null) {
-			setProperty(DISPLAY_FIELD_PROPERTY_KEY, field.getString());
+		FieldSchema fieldSchema = schema.getField(displayFieldName);
+		GraphField field = getField(fieldSchema);
+		if (field != null && field instanceof DisplayField) {
+			DisplayField displayField = (DisplayField) field;
+			setProperty(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
 		}
 	}
 

@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
  */
-public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge {
+public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge, DisplayField {
 
 	static final String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
 
