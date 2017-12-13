@@ -6,6 +6,7 @@ import java.util.Collection;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -71,6 +72,13 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	NodeRoot nodeRoot();
+
+	/**
+	 * Return the binary root element.
+	 * 
+	 * @return
+	 */
+	BinaryRoot binaryRoot();
 
 	/**
 	 * Return the global tagfamily root element. Note that each project has their own tag family root element.

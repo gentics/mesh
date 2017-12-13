@@ -91,9 +91,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			if (graphNodeField == null) {
 				container.createNode(fieldKey, node);
 			} else {
-				// We can't update the graphNodeField since it is in
-				// fact an edge. We need to delete it and create a new
-				// one.
+				// We can't update the graphNodeField since it is in fact an edge. 
+				// We need to delete it and create a new one.
 				container.deleteFieldEdge(fieldKey);
 				container.createNode(fieldKey, node);
 			}
@@ -146,8 +145,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language
-				nodeField.setPath(
-						linkReplacer.resolve(ac, release.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags.size()])));
+				nodeField.setPath(linkReplacer.resolve(ac, release.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags
+						.size()])));
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();

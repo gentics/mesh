@@ -308,7 +308,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public ReleaseRoot getReleaseRoot() {
-		ReleaseRoot root = out(HAS_RELEASE_ROOT).has(ReleaseRootImpl.class).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
+		ReleaseRoot root = out(HAS_RELEASE_ROOT).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(ReleaseRootImpl.class);
 			linkOut(root, HAS_RELEASE_ROOT);

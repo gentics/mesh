@@ -2,10 +2,12 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 
 import java.util.Iterator;
 import java.util.List;
@@ -17,11 +19,14 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -31,8 +36,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
-
 import com.syncleus.ferma.VertexFrame;
+
 import rx.Single;
 
 public class MicroschemaContainerVersionImpl extends
@@ -56,22 +61,16 @@ public class MicroschemaContainerVersionImpl extends
 	@Override
 	@SuppressWarnings("unchecked")
 	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid) {
-		Iterator<? extends NodeGraphFieldContainer> it = in(HAS_MICROSCHEMA_CONTAINER)
-				.copySplit(
-						(a) -> a.in(HAS_FIELD).mark().inE(HAS_FIELD_CONTAINER)
-								.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-								.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back(),
-						(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(HAS_FIELD_CONTAINER)
-								.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-								.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back())
-				.fairMerge()
+		Iterator<? extends NodeGraphFieldContainer> it = in(HAS_MICROSCHEMA_CONTAINER).copySplit((a) -> a.in(HAS_FIELD).mark().inE(
+				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
+						GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back(), (a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(
+								HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
+										GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back()).fairMerge()
 				// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
 				// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
 				.transform(v -> v)
 				// when calling dedup we use the the id of the vertex instead of the whole object to save memory
-				.dedup(VertexFrame::getId)
-				.transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class))
-				.iterator();
+				.dedup(VertexFrame::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
 		return it;
 	}
 
@@ -137,10 +136,39 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
+	public Iterable<Job> referencedJobsViaTo() {
+		return in(HAS_TO_VERSION).frame(Job.class);
+	}
+
+	@Override
+	public Iterable<Job> referencedJobsViaFrom() {
+		return in(HAS_FROM_VERSION).frame(Job.class);
+	}
+
+	@Override
 	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		return MeshInternal.get().database().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public void delete(SearchQueueBatch batch) {
+		// Delete change
+		SchemaChange<?> change = getNextChange();
+		if (change != null) {
+			change.delete(batch);
+		}
+		// Delete referenced jobs
+		for (Job job : referencedJobsViaFrom()) {
+			job.remove();
+		}
+		for (Job job : referencedJobsViaTo()) {
+			job.remove();
+		}
+		// Delete version
+		remove();
+
 	}
 
 	@Override

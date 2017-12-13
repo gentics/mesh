@@ -6,6 +6,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -193,4 +194,18 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	default int compareTo(SCV version) {
 		return VersionUtil.compareVersions(getVersion(), version.getVersion());
 	}
+
+	/**
+	 * Return an iterable of all jobs which reference the version via the _to_ reference.
+	 * 
+	 * @return
+	 */
+	Iterable<Job> referencedJobsViaTo();
+
+	/**
+	 * Return an iterable of all jobs which reference the version via the _from_ reference.
+	 * 
+	 * @return
+	 */
+	Iterable<Job> referencedJobsViaFrom();
 }

@@ -72,7 +72,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Project create(String name, User creator, SchemaContainerVersion schemaContainerVersion, String uuid) {
+	public Project create(String name, String hostname, Boolean ssl, User creator, SchemaContainerVersion schemaContainerVersion, String uuid) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		if (uuid != null) {
 			project.setUuid(uuid);
@@ -82,12 +82,19 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 		// Create the initial release for the project and add the used schema
 		// version to it
-		Release release = project.getReleaseRoot().create(name, creator).setMigrated(true);
+		Release release = project.getReleaseRoot().create(name, creator);
+		release.setMigrated(true);
+		if (hostname != null) {
+			release.setHostname(hostname);
+		}
+		if (ssl != null) {
+			release.setSsl(ssl);
+		}
 		release.assignSchemaVersion(creator, schemaContainerVersion);
 
 		// Assign the provided schema container to the project
 		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
-//		project.getLatestRelease().assignSchemaVersion(creator, schemaContainerVersion);
+		// project.getLatestRelease().assignSchemaVersion(creator, schemaContainerVersion);
 		project.createBaseNode(creator, schemaContainerVersion);
 
 		project.setCreated(creator);
@@ -181,7 +188,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		}
 		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot().fromReference(requestModel.getSchema());
 
-		Project project = create(projectName, creator, schemaContainerVersion, uuid);
+		String hostname = requestModel.getHostname();
+		Boolean ssl = requestModel.getSsl();
+		Project project = create(projectName, hostname, ssl, creator, schemaContainerVersion, uuid);
 		Release initialRelease = project.getInitialRelease();
 
 		// Add project permissions

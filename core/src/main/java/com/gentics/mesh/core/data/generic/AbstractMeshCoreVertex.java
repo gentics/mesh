@@ -85,10 +85,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			User creator = created.getCreator();
 			if (creator != null) {
 				model.setCreator(creator.transformToReference());
-			} else {
-				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
 			}
-
 			String date = created.getCreationDate();
 			model.setCreated(date);
 		}

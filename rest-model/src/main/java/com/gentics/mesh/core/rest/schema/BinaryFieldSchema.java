@@ -17,4 +17,8 @@ public interface BinaryFieldSchema extends FieldSchema {
 	 */
 	BinaryFieldSchema setAllowedMimeTypes(String... allowedMimeTypes);
 
+	@Override
+	default boolean isDisplayField() {
+		return true;
+	}
 }

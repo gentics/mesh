@@ -85,6 +85,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 			int code = getResponseStatusCode(failure);
 			switch (code) {
+			case 401:
+				log.error("Unauthorized - Request for path {" + rc.normalisedPath() + "?" + rc.request().query() + "} was not authorized.");
+				break;
 			case 404:
 				log.error("Could not find resource for path {" + rc.normalisedPath() + "?" + rc.request().query() + "}");
 				break;

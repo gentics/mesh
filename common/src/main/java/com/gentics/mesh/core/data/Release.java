@@ -50,6 +50,12 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 		return TYPE_INFO;
 	}
 
+	static final String NAME = "name";
+
+	static final String HOSTNAME = "hostname";
+
+	static final String SSL = "ssl";
+
 	/**
 	 * Get whether the release is active.
 	 * 
@@ -81,6 +87,36 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @return Fluent API
 	 */
 	Release setMigrated(boolean migrated);
+
+	/**
+	 * Return the configured hostname of the release.
+	 * 
+	 * @return
+	 */
+	String getHostname();
+
+	/**
+	 * Set the hostname of the release.
+	 * 
+	 * @param hostname
+	 * @return
+	 */
+	Release setHostname(String hostname);
+
+	/**
+	 * Return the ssl flag of the release.
+	 * 
+	 * @return
+	 */
+	Boolean getSsl();
+
+	/**
+	 * Set the ssl flag of the release.
+	 * 
+	 * @param ssl
+	 * @return
+	 */
+	Release setSsl(boolean ssl);
 
 	/**
 	 * Get the next Release.
@@ -156,7 +192,8 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 
 	/**
 	 * Assign the given microschema version to the release and queue a job which executes the migration.
-	 * @param user 
+	 * 
+	 * @param user
 	 * 
 	 * @param microschemaContainerVersion
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.

@@ -78,8 +78,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	public NodeAssert hasChildren(Release release, Node... nodes) {
 		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
-		assertThat(list).as(descriptionText() + " children")
-				.usingElementComparatorOnFields("uuid").contains(nodes);
+		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").contains(nodes);
 		return this;
 	}
 
@@ -109,8 +108,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	public NodeAssert hasOnlyChildren(Release release, Node... nodes) {
 		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
-		assertThat(list).as(descriptionText() + " children")
-				.usingElementComparatorOnFields("uuid").containsOnly(nodes);
+		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").containsOnly(nodes);
 		return this;
 	}
 
@@ -124,8 +122,8 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasNotChildren(Release release, Node... nodes) {
-		assertThat(actual.getChildren(release.getUuid())).as(descriptionText() + " children")
-				.usingElementComparatorOnFields("uuid").doesNotContain(nodes);
+		assertThat(actual.getChildren(release.getUuid())).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").doesNotContain(
+				nodes);
 		return this;
 	}
 
@@ -154,7 +152,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 		// TODO match fields
 		return this;
 	}
-	
+
 	public void assertGenericNode(MeshCoreVertex<?, ?> node, AbstractGenericRestResponse model) {
 		assertNotNull(node);
 		assertNotNull(model);
@@ -163,15 +161,15 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 		assertNotNull("Permissions field was not set in the rest response.", model.getPermissions());
 		if (node instanceof EditorTrackingVertex) {
 			assertNotNull("Editor field was not set in the rest response.", model.getEditor());
-			EditorTrackingVertex editedNode = (EditorTrackingVertex)node;
+			EditorTrackingVertex editedNode = (EditorTrackingVertex) node;
 			assertNotNull("The editor of the graph node was not set.", editedNode.getEditor());
 			assertEquals(editedNode.getEditor().getFirstname(), model.getEditor());
 			assertEquals(editedNode.getEditor().getLastname(), model.getEditor().getLastName());
 			assertEquals(editedNode.getEditor().getUuid(), model.getEditor().getUuid());
 		}
-		if (node instanceof CreatorTrackingVertex) {
+		if (node instanceof CreatorTrackingVertex && ((CreatorTrackingVertex) node).getCreator() != null) {
 			assertNotNull("Creator field was not set in the rest response.", model.getCreator());
-			CreatorTrackingVertex createdNode = (CreatorTrackingVertex)node;
+			CreatorTrackingVertex createdNode = (CreatorTrackingVertex) node;
 			assertEquals(createdNode.getCreator().getFirstname(), model.getCreator().getFirstName());
 			assertEquals(createdNode.getCreator().getLastname(), model.getCreator().getLastName());
 			assertEquals(createdNode.getCreator().getUuid(), model.getCreator().getUuid());

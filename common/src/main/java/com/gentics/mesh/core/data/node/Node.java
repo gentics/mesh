@@ -4,6 +4,7 @@ import static com.gentics.mesh.Events.EVENT_NODE_CREATED;
 import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
 import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
 
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -363,7 +364,19 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matches
 	 */
-	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version);
+	NodeGraphFieldContainer findVersion(List<String> languageTags, String releaseUuid, String version);
+
+	/**
+	 * Iterate the version chain from the back in order to find the given version.
+	 * 
+	 * @param languageTag
+	 * @param releaseUuid
+	 * @param version
+	 * @return Found version or null when no version could be found.
+	 */
+	default NodeGraphFieldContainer findVersion(String languageTag, String releaseUuid, String version) {
+		return findVersion(Arrays.asList(languageTag), releaseUuid, version);
+	}
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter.
@@ -372,8 +385,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTags
 	 * @return Next matching field container or null when no language matches
 	 */
-	default NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac, List<String> languageTags) {
-		return findNextMatchingFieldContainer(languageTags, ac.getRelease().getUuid(), ac.getVersioningParameters().getVersion());
+	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags) {
+		return findVersion(languageTags, ac.getRelease().getUuid(), ac.getVersioningParameters().getVersion());
 	}
 
 	/**

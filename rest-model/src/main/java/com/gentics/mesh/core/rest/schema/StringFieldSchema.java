@@ -17,4 +17,9 @@ public interface StringFieldSchema extends FieldSchema {
 	 * @return Fluent API
 	 */
 	StringFieldSchema setAllowedValues(String... allowedValues);
+
+	@Override
+	default boolean isDisplayField() {
+		return true;
+	}
 }

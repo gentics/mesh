@@ -24,6 +24,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -80,24 +81,29 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .width
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			return field.getImageWidth();
+			Binary binary = field.getBinary();
+			return binary == null ? 0: binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			return field.getImageHeight();
+			Binary binary = field.getBinary();
+			return binary == null ? 0: binary.getImageHeight();
 		}));
 
 		// .sha512sum
 		type.field(
 				newFieldDefinition().name("sha512sum").description("SHA512 checksum of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
 					BinaryGraphField field = fetcher.getSource();
-					return field.getSHA512Sum();
+					return field.getBinary().getSHA512Sum();
 				}));
 
 		// .fileSize
-		type.field(newFieldDefinition().name("fileSize").description("Size of the binary data in bytes").type(GraphQLLong));
+		type.field(newFieldDefinition().name("fileSize").description("Size of the binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
+			BinaryGraphField field = fetcher.getSource();
+			return field.getBinary().getSize();
+		}));
 
 		// .mimeType
 		type.field(newFieldDefinition().name("mimeType").description("Mimetype of the binary data").type(GraphQLString));
@@ -264,7 +270,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						languageTags = Arrays.asList(defaultLanguage);
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
-					NodeGraphFieldContainer itemContainer = node.findNextMatchingFieldContainer(gc, languageTags);
+					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags);
 					return new NodeContent(node, itemContainer);
 				}).collect(Collectors.toList());
 			case "micronode":
@@ -340,7 +346,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 							List<String> languageTags = getLanguageArgument(env);
 							// Check permissions for the linked node
 							gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+							NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 							return new NodeContent(node, container);
 						}
 					}

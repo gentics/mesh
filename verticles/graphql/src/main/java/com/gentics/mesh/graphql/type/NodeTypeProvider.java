@@ -109,7 +109,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		Node node = content.getNode();
 		Release release = gc.getRelease();
-		NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+		NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 		// There might not be a container for the selected language (incl. fallback language)
 		if (container == null) {
 			return null;
@@ -174,7 +174,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		} else {
 			languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
 		}
-		return new NodeContent(node, node.findNextMatchingFieldContainer(gc, languageTags));
+		return new NodeContent(node, node.findVersion(gc, languageTags));
 	}
 
 	public GraphQLObjectType createType(Project project) {
@@ -273,7 +273,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// Transform the found nodes into contents
 			List<NodeContent> contents = page.getWrappedList().stream().map(item -> {
-				NodeGraphFieldContainer container = item.findNextMatchingFieldContainer(gc, languageTags);
+				NodeGraphFieldContainer container = item.findVersion(gc, languageTags);
 				return new NodeContent(item, container);
 			}).collect(Collectors.toList());
 			return new WrappedPageImpl<NodeContent>(contents, page);
@@ -411,6 +411,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 			return container.getLanguage().getLanguageTag();
+		}));
+
+		nodeType.field(newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
+			NodeContent content = env.getSource();
+			NodeGraphFieldContainer container = content.getContainer();
+			if (container == null) {
+				return null;
+			}
+			return container.getDisplayFieldValue();
 		}));
 
 		return nodeType.build();

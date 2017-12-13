@@ -16,8 +16,8 @@ import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationHand
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
-import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.BindModule;
+import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -35,6 +35,7 @@ import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.storage.BinaryStorage;
 
 import dagger.Component;
 
@@ -56,6 +57,8 @@ public interface MeshComponent {
 	BCryptPasswordEncoder passwordEncoder();
 
 	RouterStorage routerStorage();
+
+	BinaryStorage binaryStorage();
 
 	default DummySearchProvider dummySearchProvider() {
 		return (DummySearchProvider) searchProvider();

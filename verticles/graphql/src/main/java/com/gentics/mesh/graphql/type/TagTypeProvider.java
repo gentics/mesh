@@ -74,7 +74,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 					// Transform the found nodes into contents
 					List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
-						NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 						return new NodeContent(node, container);
 					}).collect(Collectors.toList());
 					return new WrappedPageImpl<NodeContent>(contents, nodes);

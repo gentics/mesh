@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.node.field.DisplayField;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -124,15 +126,48 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// TODO use schema storage instead
 		Schema schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
-		StringGraphField field = getString(displayFieldName);
-		if (field != null) {
-			setProperty(DISPLAY_FIELD_PROPERTY_KEY, field.getString());
+		FieldSchema fieldSchema = schema.getField(displayFieldName);
+		// Only update the display field value if the field can be located
+		if (fieldSchema != null) {
+			GraphField field = getField(fieldSchema);
+			if (field != null && field instanceof DisplayField) {
+				DisplayField displayField = (DisplayField) field;
+				setProperty(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
+				return;
+			}
 		}
+		// Otherwise reset the value to null
+		setProperty(DISPLAY_FIELD_PROPERTY_KEY, null);
 	}
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO delete linked aggregation nodes for node lists etc
+		for (BinaryGraphField binaryField : outE(HAS_FIELD).frame(BinaryGraphFieldImpl.class)) {
+			binaryField.removeField(this);
+		}
+
+		// Lists
+		// for (NumberGraphFieldList list : out(HAS_FIELD).frame(NumberGraphFieldListImpl.class)) {
+		// list.removeField(this);
+		// }
+		// for (DateGraphFieldList list : out(HAS_FIELD).frame(DateGraphFieldListImpl.class)) {
+		// list.removeField(this);
+		// }
+		// for (BooleanGraphFieldList list : out(HAS_FIELD).frame(BooleanGraphFieldListImpl.class)) {
+		// list.removeField(this);
+		// }
+		// for (HtmlGraphFieldList list : out(HAS_FIELD).frame(HtmlGraphFieldListImpl.class)) {
+		// list.removeField(this);
+		// }
+		// for (StringGraphFieldList list : out(HAS_FIELD).frame(StringGraphFieldListImpl.class)) {
+		// list.removeField(this);
+		// }
+		// for (NodeGraphFieldList list : out(HAS_FIELD).frame(NodeGraphFieldListImpl.class)) {
+		// list.removeField(this);
+		// }
+
+		// We don't need to handle node fields since those are only edges and will automatically be removed
 
 		// Recursively delete all versions of the container
 		NodeGraphFieldContainer next = getNextVersion();

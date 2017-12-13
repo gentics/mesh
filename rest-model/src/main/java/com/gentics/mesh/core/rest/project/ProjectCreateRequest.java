@@ -18,6 +18,14 @@ public class ProjectCreateRequest implements RestModel {
 	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The hostname of the project can be used to generate links across multiple projects. The hostname will be stored along the initial release of the project.")
+	private String hostname;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("SSL flag of the project which will be used to generate links across multiple projects. The flag will be stored along the intial release of the project.")
+	private Boolean ssl;
+
 	/**
 	 * Return the project name.
 	 * 
@@ -58,6 +66,42 @@ public class ProjectCreateRequest implements RestModel {
 	public ProjectCreateRequest setSchema(SchemaReference schemaReference) {
 		this.schema = schemaReference;
 		return this;
+	}
+
+	/**
+	 * Return the configured hostname.
+	 * 
+	 * @return
+	 */
+	public String getHostname() {
+		return hostname;
+	}
+
+	/**
+	 * Set the hostname for the project.
+	 * 
+	 * @param hostname
+	 */
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
+
+	/**
+	 * Return the ssl flag for the project.
+	 * 
+	 * @return
+	 */
+	public Boolean getSsl() {
+		return ssl;
+	}
+
+	/**
+	 * Set the ssl flag for the project.
+	 * 
+	 * @param ssl
+	 */
+	public void setSsl(boolean ssl) {
+		this.ssl = ssl;
 	}
 
 	/**

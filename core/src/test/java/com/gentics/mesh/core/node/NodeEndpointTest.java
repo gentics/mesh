@@ -1101,7 +1101,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
+	}
 
+	@Test
+	public void testReadByUUIDWithNoUser() throws Exception {
+		String folderUuid = tx(() -> folder("2015").getUuid());
+		// Remove the editor and creator references to simulate that the user has been deleted.
+		try (Tx tx = tx()) {
+			folder("2015").setCreated(null);
+			folder("2015").getLatestDraftFieldContainer(english()).setEditor(null);
+			tx.success();
+		}
+
+		call(() -> client().getNodePublishStatus(PROJECT_NAME, folderUuid));
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
+		try (Tx tx = tx()) {
+			String releaseUuid = project().getLatestRelease().getUuid();
+			assertThat(folder("2015")).matches(response);
+			assertNotNull(response.getParentNode());
+			assertEquals(folder("2015").getParentNode(releaseUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals("News", response.getParentNode().getDisplayName());
+			assertEquals("en", response.getLanguage());
+		}
 	}
 
 	@Test
@@ -1789,6 +1811,51 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
 			assertThat(dummySearchProvider()).hasEvents(0, 4, 0, 0);
 		}
+	}
+
+	/**
+	 * Assert that the version history is not interrupted when invoking publish, unpublish and update end
+	 */
+	@Test
+	public void testPublishUnPublishUpdateVersionConsistency() {
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+
+		// 1. Create node (en)
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.en.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+		String uuid = response.getUuid();
+
+		// 2. Update (de)
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		// 3. Delete (de)
+		call(() -> client().deleteNode(PROJECT_NAME, uuid, "de"));
+
+		// 4. Update (de) again
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.setVersion(null);
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de1.html"));
+		response = call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de2.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		nodeUpdateRequest.setVersion("0.2");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de3.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
 	}
 
 	@Test

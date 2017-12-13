@@ -194,12 +194,12 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implem
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATEBOOLEAN, FILLTRUE, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1L);
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
 		});
 
 		changeType(CREATEBOOLEAN, FILLFALSE, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(0L);
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(0);
 		});
 	}
 
@@ -208,12 +208,12 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implem
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEBOOLEAN, FILLTRUE, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1);
 		});
 
 		changeType(CREATEBOOLEAN, FILLFALSE, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(0L);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(0);
 		});
 	}
 

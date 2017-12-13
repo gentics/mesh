@@ -175,7 +175,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			}
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
-			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 			return new NodeContent(node, container);
 		}
 		String path = env.getArgument("path");
@@ -238,7 +238,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		if (project != null) {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, getLanguageArgument(env));
+			NodeGraphFieldContainer container = node.findVersion(gc, getLanguageArgument(env));
 			return new NodeContent(node, container);
 		}
 		return null;
@@ -289,7 +289,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 						// Now lets try to load the containers for those found nodes - apply the language fallback
 						List<String> languageTags = getLanguageArgument(env);
 						List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
-							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+							NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 							return new NodeContent(node, container);
 						}).collect(Collectors.toList());
 						return new WrappedPageImpl<NodeContent>(contents, nodes);

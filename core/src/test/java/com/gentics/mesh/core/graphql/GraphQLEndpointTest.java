@@ -20,6 +20,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
@@ -56,6 +57,7 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -271,8 +273,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			container.createBinary("binary").setSHA512Sum("hashsumvalue").setImageHeight(10).setImageWidth(20).setImageDominantColor("00FF00")
-					.setMimeType("image/jpeg").setFileSize(2048);
+			Binary binary = MeshInternal.get().boot().binaryRoot().create("hashsumvalue", 1L);
+			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
+			container.createBinary("binary", binary).setImageDominantColor("00FF00")
+					.setMimeType("image/jpeg");
 
 			// stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");

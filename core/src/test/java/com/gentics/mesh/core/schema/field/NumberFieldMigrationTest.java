@@ -102,7 +102,7 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATENUMBER, FILL, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE * 1000);
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly((long) NUMBERVALUE * 1000);
 		});
 	}
 
@@ -198,7 +198,7 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		customMigrationScript(CREATENUMBER, FILL, FETCH,
 				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[fieldname] * 12; return node;}", (container, name) -> {
 					assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE * 12L);
+					assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo((int) (NUMBERVALUE * 12));
 				});
 	}
 
