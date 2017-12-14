@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 
@@ -14,14 +15,19 @@ import java.util.Arrays;
 
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.FileUtils;
 import io.vertx.core.buffer.Buffer;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -85,6 +91,40 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		}
 	}
 
+	/**
+	 * Assert that a node can not be created if the binary field has not yet been created.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testCreateNodeWithBinaryField() throws IOException {
+
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		SchemaUpdateRequest schemaRequest = JsonUtil.readValue(tx(() -> schemaContainer("content").getLatestVersion().getJson()),
+				SchemaUpdateRequest.class);
+		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
+		call(() -> client().updateSchema(schemaUuid, schemaRequest));
+
+		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
+		schemaReference.setName("content");
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.getFields().put("binary", new BinaryFieldImpl());
+		request.setSchema(schemaReference);
+		request.setParentNodeUuid(tx(() -> folder("news").getUuid()));
+		call(() -> client().createNode(PROJECT_NAME, request));
+
+		// Assert that the request fails when field has been specified.
+		request.getFields().put("slug", FieldUtil.createStringField("new-page2.html"));
+		request.getFields().put("binary", new BinaryFieldImpl().setDominantColor("#2E2EFE"));
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", "binary");
+
+	}
+
 	@Test
 	public void testDownloadBinaryField() throws IOException {
 
@@ -113,8 +153,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		}
 
 		// Create schema with 2 binary fields
-		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("imageSchema").setFields(
-				Arrays.asList(new BinaryFieldSchemaImpl().setName("image1"), new BinaryFieldSchemaImpl().setName("image2").setRequired(true)));
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("imageSchema").setFields(Arrays.asList(new BinaryFieldSchemaImpl()
+				.setName("image1"), new BinaryFieldSchemaImpl().setName("image2").setRequired(true)));
 
 		SchemaResponse schema = call(() -> client().createSchema(schemaRequest));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
@@ -130,8 +170,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
 		Func1<String, Observable<NodeResponse>> uploadBinary = (fieldName) -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(),
-				nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
-				.doOnSubscribe(() -> System.out.println("Requesting " + fieldName));
+				nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable().doOnSubscribe(
+						() -> System.out.println("Requesting " + fieldName));
 
 		Observable<String> imageFields = Observable.just("image1", "image2");
 
@@ -140,8 +180,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		imageFields.flatMap(uploadBinary).toCompletable().await();
 
 		// Download them again and make sure they are the same image
-		Func1<String, Observable<NodeDownloadResponse>> downloadBinary = (fieldName) -> client()
-				.downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), fieldName).toObservable();
+		Func1<String, Observable<NodeDownloadResponse>> downloadBinary = (fieldName) -> client().downloadBinaryField(PROJECT_NAME, nodeResponse
+				.getUuid(), nodeResponse.getLanguage(), fieldName).toObservable();
 
 		Action1<String> assertSum = (sum) -> assertEquals("Checksum did not match", blumeSum, sum);
 
@@ -152,8 +192,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		assertEquals("#737042", response.getFields().getBinaryField("image1").getDominantColor());
 		assertEquals("#737042", response.getFields().getBinaryField("image2").getDominantColor());
 
-		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.toBlocking().value())
-				.doOnNext(assertSum).toCompletable().await();
+		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.toBlocking().value()).doOnNext(
+				assertSum).toCompletable().await();
 	}
 
 	private Node prepareSchema() throws IOException {

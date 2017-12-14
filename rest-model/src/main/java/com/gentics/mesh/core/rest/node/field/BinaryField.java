@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.node.field;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * A binary field is a field which can store binary and image related meta data.
  */
@@ -115,5 +117,13 @@ public interface BinaryField extends Field {
 	 * @return
 	 */
 	BinaryField setDominantColor(String dominantColor);
+
+	/**
+	 * Check whether contains any values.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	boolean hasValues();
 
 }

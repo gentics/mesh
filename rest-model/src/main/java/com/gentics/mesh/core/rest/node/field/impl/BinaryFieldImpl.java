@@ -118,4 +118,10 @@ public class BinaryFieldImpl implements BinaryField {
 		this.dominantColor = dominantColor;
 		return this;
 	}
+
+	@Override
+	@JsonIgnore
+	public boolean hasValues() {
+		return getDominantColor() != null || getFileName() != null && getMimeType() != null;
+	}
 }
