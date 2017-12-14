@@ -129,7 +129,9 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 			count++;
 			updateFields(vertex, fieldMap);
 			updateLists(vertex, fieldMap);
-			if (count % 200 == 0) {
+			if (count % 10000 == 0) {
+				log.debug("Commit the changes for the last 10.000 vertices to database...");
+				getGraph().commit();
 				log.info("Updated vertices {}", count);
 			}
 		}
@@ -141,7 +143,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 			if (!schema.fieldMap.isEmpty()) {
 				log.info("Update vertices for {}", schema);
 				updateVerticesForSchema(schemaVertex, schema.fieldMap, label);
-				log.info("Commit changes to database...");
+				log.debug("Commit the changes for the remaining vertices of schema {} to database...", schema);
 				getGraph().commit();
 			}
 		}

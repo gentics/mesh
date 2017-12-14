@@ -4,6 +4,8 @@
 
 == 0.11.6 (TBD)
 
+icon:check[] Core: Reduce the memory load of the ChangeNumberStringsToNumber-changelog by reducing the size of a single transactions.
+
 icon:check[] Image: Image handling has been optimized. Previously resizing larger images could temporarily lock up the http server.
 
 == 0.11.5 (14.12.2017)
