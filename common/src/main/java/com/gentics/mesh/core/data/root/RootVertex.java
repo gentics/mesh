@@ -153,7 +153,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	default public T findByUuid(String uuid) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		// 1. Find the element with given uuid within the whole graph
-		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { "uuid" }, new String[] { uuid });
+		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { MeshVertex.UUID_KEY }, new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
