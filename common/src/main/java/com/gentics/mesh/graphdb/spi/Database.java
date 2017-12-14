@@ -14,6 +14,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
 import com.syncleus.ferma.tx.TxFactory;
 import com.tinkerpop.blueprints.Element;
@@ -23,6 +24,7 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
 import rx.Single;
 
 /**
@@ -60,6 +62,42 @@ public interface Database extends TxFactory {
 	 * Remove all edges and all vertices from the graph.
 	 */
 	void clear();
+
+	/**
+	 * Asynchronously execute the given handler within a transaction and return the completable.
+	 * 
+	 * @param txHandler
+	 * @return
+	 */
+	default Completable asyncTx(TxAction0 txHandler) {
+		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
+		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
+		try {
+			throw new Exception("Transaction timeout exception");
+		} catch (Exception e1) {
+			reference.set(e1);
+		}
+
+		return Completable.create(sub -> {
+			Mesh.vertx().executeBlocking(bc -> {
+				try (Tx tx = tx()) {
+					txHandler.handle();
+					bc.complete();
+				} catch (Exception e) {
+					if (log.isTraceEnabled()) {
+						log.trace("Error while handling no-transaction.", e);
+					}
+					bc.fail(e);
+				}
+			}, false, done -> {
+				if (done.failed()) {
+					sub.onError(done.cause());
+				} else {
+					sub.onCompleted();
+				}
+			});
+		});
+	}
 
 	/**
 	 * Executes the given action in a worker pool thread and returns a single which can be subscribed to get the result.
@@ -114,7 +152,7 @@ public interface Database extends TxFactory {
 	 * @param trxHandler
 	 * @return
 	 */
-	default <T> Single<T> operateTx(TxAction<Single<T>> trxHandler) {
+	default <T> Single<T> asyncTx(TxAction<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {
