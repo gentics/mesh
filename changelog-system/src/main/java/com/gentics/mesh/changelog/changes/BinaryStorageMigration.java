@@ -162,6 +162,15 @@ public class BinaryStorageMigration extends AbstractChange {
 			oldEdges.add(fieldEdge);
 			Vertex container = fieldEdge.getVertex(OUT);
 			String fieldKey = fieldEdge.getProperty(FIELD_KEY_PROPERTY_KEY);
+
+			// Correct the missing fieldkey info
+			if (fieldKey == null) {
+				log.info("Found field edge without fieldkey. Correcting this..");
+				Vertex field = fieldEdge.getVertex(IN);
+				fieldKey = field.getProperty(FIELD_KEY_PROPERTY_KEY);
+				fieldEdge.setProperty(FIELD_KEY_PROPERTY_KEY, fieldKey);
+			}
+
 			log.info("Creating new edge for binary field between container {" + container + "} and binary with hash {" + hash + "}");
 			createNewFieldEdge(container, binary, fileName, contentType, dominantColor, fieldKey);
 		}
