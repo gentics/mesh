@@ -142,6 +142,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private final ReindexAction REINDEX_ACTION = (() -> {
 
+		// Init the classes / indices
+		DatabaseHelper.init(db);
+
 		// 1. Drop all indices
 		log.info("Clearing all indices..");
 		searchProvider.clear();

@@ -14,6 +14,8 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public interface MeshVertex extends MeshElement, VertexFrame {
 
+	static final String UUID_KEY = "uuid";
+
 	/**
 	 * Return the tinkerpop blueprint vertex of this mesh vertex.
 	 * 
@@ -38,7 +40,8 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
-	void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke);
+	void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			Set<GraphPermission> permissionsToRevoke);
 
 	/**
 	 * Add a unique <b>out-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one

@@ -64,11 +64,15 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// The binary field does not yet exist but the update request already contains some binary field info. We can use this info to create a new binary
 		// field. We locate the binary vertex by using the given hashsum. This case usually happens during schema migrations in which the binary graph field is
 		// in fact initially being removed from the container.
-		if (graphBinaryField == null) {
-			// TODO fail here if the hashsum is missing.
-			String hash = fieldMap.getBinaryField(fieldKey).getSha512sum();
+		String hash = binaryField.getSha512sum();
+		if (graphBinaryField == null && hash != null) {
 			Binary binary = MeshInternal.get().boot().binaryRoot().findByHash(hash);
 			graphBinaryField = container.createBinary(fieldKey, binary);
+		}
+
+		// Otherwise we can't update the binaryfield 
+		if (graphBinaryField == null && binaryField.hasValues()) {
+			throw error(BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", fieldKey);
 		}
 
 		// Handle Update - Dominant Color

@@ -7,6 +7,7 @@ import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -91,9 +92,8 @@ public abstract class AbstractChange implements Change {
 	 */
 	public String randomUUID() {
 		final UUID uuid = UUID_GENERATOR.generate();
-		String randomUuid = (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
-				+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
-				+ digits(uuid.getLeastSignificantBits(), 12));
+		String randomUuid = (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4) + digits(uuid
+				.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4) + digits(uuid.getLeastSignificantBits(), 12));
 		return randomUuid;
 	}
 
@@ -141,6 +141,14 @@ public abstract class AbstractChange implements Change {
 	@Override
 	public void setDb(Database db) {
 		this.db = db;
+	}
+
+	public void debug(Element element) {
+		System.out.println("---");
+		for (String key : element.getPropertyKeys()) {
+			System.out.println(key + " : " + element.getProperty(key));
+		}
+		System.out.println("---");
 	}
 
 }

@@ -64,11 +64,29 @@ The Gentics Mesh user interface can be configured using the mesh-ui-config.js fi
         // in the node editor pane. Click it will POST the node data to the specified URL. The node will be
         // encoded as form data under the key "node", and its value will need to be de-serialized back into JSON
         // (e.g. using JSON.parse()). The "default" key will make the URls available to all projects.
-        previewUrls: {
-            default: [
-                { default: 'https://httpbin.org/post' }
-            ]
-        },
+
+        // previewUrls: {
+        //     default: [
+        //         { default: 'https://httpbin.org/post' }
+        //     ]
+        // },
+
+        // Provide a function for displaying an URL to the node in the frontend system.
+        // urlResolver is a function that returns a string or a promise that resolves to a string.
+        // Parameters:
+        // * node: The node response currently displayed in the editor pane.
+        // * path?: The path of the node if providePath is truthy. undefined otherwise.
+        //
+        // If providePath is true, the path parameter will be filled with the path of the node.
+        // This has to be set manually because an additional request has to be made in the Mesh UI to fetch
+        // the path of the node.
+
+        // liveUrl: {
+        //    providePath: true,
+        //    urlResolver: function(node, path) {
+        //        return 'http://example.com' + path;
+        //    },
+        // },
 
         // A microschema control is a custom form component which can be used to render a
         // specific microschema, in place of the default form generator. For full documentation, please
@@ -99,7 +117,12 @@ The Gentics Mesh user interface can be configured using the mesh-ui-config.js fi
 
         // Custom settings object for the Aloha editor. If left empty, the default configuration
         // will be used.
-        alohaSettings: {}
+        alohaSettings: {},
+
+        // Sets the maximum number of tags which will be displayed in the contents list. If a node has
+        // more tags than the limit, the rest will be hidden by default, but may be viewed by clicking
+        // the "more" icon. To always show all tags, set this to Infinity.
+        tagDisplayLimit: 3
     };
 
 

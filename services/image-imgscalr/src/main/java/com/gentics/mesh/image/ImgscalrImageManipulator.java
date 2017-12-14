@@ -32,6 +32,7 @@ import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.Vertx;
 import rx.Observable;
 import rx.Single;
@@ -61,8 +62,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (parameters.hasAllCropParameters()) {
 			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
-						parameters.getCroph());
+				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(), parameters
+						.getCroph());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -136,7 +137,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
 		}
 
-		return readImage(stream).flatMap(bi -> {
+		// Read the image and apply the changes - Make sure to run that code in a blocking scheduler since it may be CPU intensive for larger images.
+		return readImage(stream).observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).flatMap(bi -> {
 			if (bi == null) {
 				throw error(BAD_REQUEST, "image_error_reading_failed");
 			}
@@ -144,7 +146,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				// NOTE: For BITMASK images, the color model is likely IndexColorModel,
 				// and this model will contain the "real" color of the transparent parts
 				// which is likely a better fit than unconditionally setting it to white.
-
 				// Fill background with white
 				Graphics2D graphics = bi.createGraphics();
 				try {
