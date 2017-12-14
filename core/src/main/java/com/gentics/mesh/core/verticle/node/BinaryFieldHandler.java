@@ -108,8 +108,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// }
 
 			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
-					ac.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(), ac
+					.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -117,12 +117,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			if (binaryField == null) {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
-			return Single.just(binaryField);
-		}).subscribe(binaryField -> {
-			db.tx(() -> {
-				binaryFieldResponseHandler.handle(rc, binaryField);
-			});
-		}, ac::fail);
+			binaryFieldResponseHandler.handle(rc, binaryField);
+		}).doOnError(ac::fail).subscribe();
 	}
 
 	/**

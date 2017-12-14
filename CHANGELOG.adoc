@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.11.6 (TBD)
+
+icon:check[] Image: Image handling has been optimized. Previously resizing larger images could temporarily lock up the http server.
+
 == 0.11.5 (14.12.2017)
 
 icon:plus[] UI: Add multi binary upload dialog. Users can now upload multiple files at once by clicking the button next to the create node button.

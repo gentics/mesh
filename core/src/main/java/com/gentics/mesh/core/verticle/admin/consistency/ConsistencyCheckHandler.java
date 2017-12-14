@@ -43,7 +43,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	}
 
 	public void invokeCheck(InternalActionContext ac) {
-		db.operateTx((tx) -> {
+		db.asyncTx((tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
