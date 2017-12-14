@@ -2,11 +2,18 @@
 
 = Gentics Mesh Changelog
 
-== 0.11.5 (TBD)
+== 0.11.5 (14.12.2017)
+
+icon:plus[] UI: Add multi binary upload dialog. Users can now upload multiple files at once by clicking the button next to the create node button.
+
+icon:plus[] UI: Binary fields can now be used as display fields. The filename is used as the display name for the node. link:https://github.com/gentics/mesh-ui/issues/11[#11]
+
+icon:plus[] UI: It is now possible to specify the URL to the frontend of a system. This allows users to quickly go to the page that represents the node in the system.
+  See the default `mesh-ui-config.js` or the [online documentation](https://getmesh.io/docs/beta/user-interface.html#_configuration) for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
 
 icon:plus[] Upload: The upload handling code has been refactored in order to process the uploaded data in-parallel.
 
-icon:plus[] Storage: The binary storage mechanism has been overhauled in preparation for S3 / Minio support.
+icon:plus[] Storage: The binary storage mechanism has been overhauled in preparation for Amazon S3 / link:https://minio.io/[Minio] support.
                      The data within the local binary storage folder and all binary fields will automatically be migrated.
                      The created `binaryFilesMigrationBackup` folder must be manually removed once the migration has finished.
 
@@ -17,6 +24,14 @@ icon:plus[] Core: Binary fields can now be chosen as display fields. The value o
 icon:plus[] REST: The display name has been added to the node response. It can be found in the key `displayName`.
 
 icon:plus[] GraphQL: The display name can now be fetched from a node via the `displayName` field.
+
+icon:check[] UI: Nodes in the "Select Node..." dialog are now sorted by their display name. link:https://github.com/gentics/mesh-ui/issues/15[#15]
+
+icon:check[] UI: The "Select Node..." dialog now remembers the last position it was opened. link:https://github.com/gentics/mesh-ui/issues/12[#12]
+
+icon:check[] UI: The dropdown for list types in the schema editor now only shows valid list types.
+
+icon:check[] UI: Fixed a bug that causes image preview to disappear after saving a node. link:https://github.com/gentics/mesh-ui/issues/18[#18]
 
 icon:check[] Core: A bug has been fixed which prevented node updates. The issue occurred once a node was updated from which a language variant was previously deleted.
 
