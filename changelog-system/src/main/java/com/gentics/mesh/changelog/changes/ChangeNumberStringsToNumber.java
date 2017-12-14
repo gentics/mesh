@@ -133,7 +133,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 				log.info("Updated vertices {}", count);
 			}
 			if (count % 10000 == 0) {
-				log.info("Commit teh changes for the last 10.000 vertices to database...");
+				log.info("Commit the changes for the last 10.000 vertices to database...");
 				getGraph().commit();
 			}
 		}
