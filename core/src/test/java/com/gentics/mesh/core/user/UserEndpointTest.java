@@ -347,16 +347,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		try (Tx tx = tx()) {
-			int nJobs = 200;
-			Set<MeshResponse<UserResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findUserByUuid(user().getUuid()).invoke());
-			}
-			for (MeshResponse<UserResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+		int nJobs = 200;
+		Set<MeshResponse<UserResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(client().findUserByUuid(userUuid()).invoke());
+		}
+		for (MeshResponse<UserResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 
