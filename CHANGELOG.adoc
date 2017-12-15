@@ -2,7 +2,9 @@
 
 = Gentics Mesh Changelog
 
-== 0.11.6 (TBD)
+== 0.11.6 (15.12.2017)
+
+icon:plus[] Search: The automatic recreation of the search index will now also occur if an empty search index folder was found.
 
 icon:check[] UI: Nodes are now always reloaded when the edit button is clicked in the explorer content list. link:https://github.com/gentics/mesh-ui/issues/16[#16]
 
