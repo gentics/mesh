@@ -4,6 +4,8 @@
 
 == 0.11.7 (TBD)
 
+icon:check[] Storage: Binary field deletion has been made more resilient and will no longer fail if the referenced binary data is not stored within used binary storage. link:https://github.com/gentics/mesh/issues/235[#235]
+
 icon:plus[] REST: The `hostname` and `ssl` properties have been added to the project create request. This information will be directly added to the initial release of the project. The properties can thus be changed by updating the project.
 
 icon:plus[] REST: The link resolver mechanism was enhanced to also consider the `hostname` and `ssl` flag of the release of the node which is linked. 
