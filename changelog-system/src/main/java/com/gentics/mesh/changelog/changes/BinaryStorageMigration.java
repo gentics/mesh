@@ -301,4 +301,9 @@ public class BinaryStorageMigration extends AbstractChange {
 		return "4277C9B6BF724621B7C9B6BF7246217A";
 	}
 
+	@Override
+	public boolean requiresReindex() {
+		return true;
+	}
+
 }

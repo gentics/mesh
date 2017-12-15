@@ -2,6 +2,13 @@
 
 = Gentics Mesh Changelog
 
+== 0.11.7 (TBD)
+
+icon:plus[] REST: The `hostname` and `ssl` properties have been added to the project create request. This information will be directly added to the initial release of the project. The properties can thus be changed by updating the project.
+
+icon:plus[] REST: The link resolver mechanism was enhanced to also consider the `hostname` and `ssl` flag of the release of the node which is linked. 
+                  The link resolver will make use of these properties as soon as mesh links point to nodes of foreign projects. 
+
 == 0.11.6 (15.12.2017)
 
 icon:plus[] Search: The automatic recreation of the search index will now also occur if an empty search index folder was found.
