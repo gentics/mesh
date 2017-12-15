@@ -1,4 +1,4 @@
-:icons: font
+g:icons: font
 
 = Gentics Mesh Changelog
 
@@ -9,7 +9,8 @@ icon:check[] Storage: Binary field deletion has been made more resilient and wil
 icon:plus[] REST: The `hostname` and `ssl` properties have been added to the project create request. This information will be directly added to the initial release of the project. The properties can thus be changed by updating the project.
 
 icon:plus[] REST: The link resolver mechanism was enhanced to also consider the `hostname` and `ssl` flag of the release of the node which is linked. 
-                  The link resolver will make use of these properties as soon as mesh links point to nodes of foreign projects. 
+                  The link resolver will make use of these properties as soon as mesh links point to nodes of foreign projects.
+                  You can read more about this topic in the link:https://getmesh.io/docs/beta/features.html#_crossdomainlinks[cross domain link section] of our documentation.
 
 == 0.11.6 (15.12.2017)
 
