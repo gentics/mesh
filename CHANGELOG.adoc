@@ -4,6 +4,14 @@
 
 == 0.11.6 (TBD)
 
+icon:check[] UI: Nodes are now always reloaded when the edit button is clicked in the explorer content list. link:https://github.com/gentics/mesh-ui/issues/16[#16]
+
+icon:check[] UI: Fixed an issue that was causing a click on a node in the explorer list to open it like a container, even if it is not a container.
+
+icon:check[] UI: Dropdowns for required string fields with the allowed attribute now properly require a value to be set in order to save the node.
+
+icon:check[] UI: Fixed a issue where contents of a micronode were not validated before saving a node.
+
 icon:check[] Core: Reduce the memory load of the ChangeNumberStringsToNumber-changelog by reducing the size of a single transactions.
 
 icon:check[] Image: Image handling has been optimized. Previously resizing larger images could temporarily lock up the http server.
