@@ -134,7 +134,7 @@ public class NodeCreateRequest implements FieldContainer {
 	 * @return
 	 */
 	public NodeCreateRequest setSchemaName(String schemaName) {
-		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
+		SchemaReference schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName(schemaName);
 		setSchema(schemaReference);
 		return this;

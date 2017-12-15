@@ -23,6 +23,11 @@ public enum LinkType {
 	/**
 	 * Link replacing with API prefix and project name
 	 */
-	FULL
+	FULL,
+
+	/**
+	 * Link replacing with specified hostname and protocol.
+	 */
+	EXTERNAL
 
 }

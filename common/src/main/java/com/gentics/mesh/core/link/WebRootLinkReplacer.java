@@ -11,12 +11,17 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
 
 import io.vertx.core.logging.Logger;
@@ -58,7 +63,8 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(ActionContext ac, String releaseUuid, ContainerType edgeType, String content, LinkType type, String projectName, List<String> languageTags) {
+	public String replace(InternalActionContext ac, String releaseUuid, ContainerType edgeType, String content, LinkType type, String projectName,
+			List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
 		}
@@ -137,7 +143,7 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return observable of the rendered link
 	 */
-	public String resolve(ActionContext ac, String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
+	public String resolve(InternalActionContext ac, String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
 			String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
@@ -155,6 +161,8 @@ public class WebRootLinkReplacer {
 				return "/" + projectName + "/error/404";
 			case FULL:
 				return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404";
+			case EXTERNAL:
+				return generateSchemeAuthorityForNode(node);
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -178,7 +186,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public String resolve(ActionContext ac, String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
+	public String resolve(InternalActionContext ac, String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
 			languageTags = new String[] { defaultLanguage };
@@ -192,9 +200,17 @@ public class WebRootLinkReplacer {
 			languageTagList.add(defaultLanguage);
 			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
 		}
+
+		// We need to reset the given releaseUuid if the node is not part of the currently active project.
+		// In that case the latest release of the foreign node project will be used.
+		Project ourProject = ac.getProject();
+		Project theirProject = node.getProject();
+		if (!ourProject.equals(theirProject)) {
+			releaseUuid = null;
+		}
 		// if no release given, take the latest release of the project
 		if (releaseUuid == null) {
-			releaseUuid = node.getProject().getLatestRelease().getUuid();
+			releaseUuid = theirProject.getLatestRelease().getUuid();
 		}
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
@@ -214,9 +230,35 @@ public class WebRootLinkReplacer {
 			return "/" + node.getProject().getName() + path;
 		case FULL:
 			return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path;
+		case EXTERNAL:
+			return generateSchemeAuthorityForNode(node) + path;
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}
+	}
+
+	/**
+	 * Return the URL prefix for the given node. The latest release of the node's project will be used to fetch the needed information.
+	 * 
+	 * @param node
+	 * @return scheme and authority or empty string if the release of the node does not supply the needed information
+	 */
+	private String generateSchemeAuthorityForNode(Node node) {
+		Release release = node.getProject().getLatestRelease();
+		String hostname = release.getHostname();
+		if (StringUtils.isEmpty(hostname)) {
+			// Fallback to urls without authority/scheme
+			return "";
+		}
+		boolean isSSL = BooleanUtils.toBoolean(release.getSsl());
+		StringBuffer buffer = new StringBuffer();
+		if (isSSL) {
+			buffer.append("https://");
+		} else {
+			buffer.append("http://");
+		}
+		buffer.append(release.getHostname());
+		return buffer.toString();
 	}
 
 }
