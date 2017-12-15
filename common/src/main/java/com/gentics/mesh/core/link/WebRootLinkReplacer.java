@@ -109,8 +109,8 @@ public class WebRootLinkReplacer {
 			if (linkArguments.length == 2) {
 				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
-				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags
-						.size()])));
+				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName,
+						languageTags.toArray(new String[languageTags.size()])));
 			} else {
 				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName));
 			}
@@ -204,7 +204,7 @@ public class WebRootLinkReplacer {
 		// In that case the latest release of the foreign node project will be used.
 		Project ourProject = ac.getProject();
 		Project theirProject = node.getProject();
-		if (!ourProject.equals(theirProject)) {
+		if (ourProject != null && !ourProject.equals(theirProject)) {
 			releaseUuid = null;
 		}
 		// if no release given, take the latest release of the project
