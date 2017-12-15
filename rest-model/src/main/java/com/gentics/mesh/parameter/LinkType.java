@@ -6,28 +6,23 @@ package com.gentics.mesh.parameter;
 public enum LinkType {
 
 	/**
-	 * No link replacing
+	 * No link replacing.
 	 */
 	OFF,
 
 	/**
-	 * Link replacing without the API prefix and without the project name
+	 * Link replacing without the API prefix and without the project name.
 	 */
 	SHORT,
 
 	/**
-	 * Link replacing without the API prefix, but with the project name
+	 * Link replacing without the API prefix, but with the project name.
 	 */
 	MEDIUM,
 
 	/**
-	 * Link replacing with API prefix and project name
+	 * Link replacing with API prefix and project name.
 	 */
-	FULL,
-
-	/**
-	 * Link replacing with specified hostname and protocol.
-	 */
-	EXTERNAL
+	FULL
 
 }

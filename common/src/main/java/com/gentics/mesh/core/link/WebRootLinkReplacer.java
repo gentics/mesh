@@ -161,8 +161,6 @@ public class WebRootLinkReplacer {
 				return "/" + projectName + "/error/404";
 			case FULL:
 				return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404";
-			case EXTERNAL:
-				return generateSchemeAuthorityForNode(node);
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -175,7 +173,8 @@ public class WebRootLinkReplacer {
 	 * 
 	 * @param ac
 	 * @param releaseUuid
-	 *            release Uuid
+	 *            release UUID which will be used to render the path to the linked node. This uuid will only be used when rendering nodes of the same project.
+	 *            Otherwise the latest release of the node's project will be used.
 	 * @param edgeType
 	 *            edge type
 	 * @param node
@@ -225,13 +224,13 @@ public class WebRootLinkReplacer {
 		}
 		switch (type) {
 		case SHORT:
-			return path;
+			// We also try to append the scheme and authority part of the uri for foreign nodes.
+			// Otherwise that part will be empty and thus the link relative.
+			return generateSchemeAuthorityForNode(node) + path;
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
 			return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path;
-		case EXTERNAL:
-			return generateSchemeAuthorityForNode(node) + path;
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}
