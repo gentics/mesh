@@ -99,8 +99,11 @@ public class MeshImpl implements Mesh {
 
 		// Also trigger the reindex if the index folder could not be found.
 		String indexDir = options.getSearchOptions().getDirectory();
-		if (indexDir != null && !(new File(indexDir).exists())) {
-			forceReindex = true;
+		if (indexDir != null) {
+			File folder = new File(indexDir);
+			if (!folder.exists() || folder.listFiles().length == 0) {
+				forceReindex = true;
+			}
 		}
 
 		if (isFirstApril()) {
