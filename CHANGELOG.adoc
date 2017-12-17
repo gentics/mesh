@@ -1,4 +1,4 @@
-g:icons: font
+:icons: font
 
 = Gentics Mesh Changelog
 
