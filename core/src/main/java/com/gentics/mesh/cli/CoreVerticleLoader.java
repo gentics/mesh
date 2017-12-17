@@ -24,7 +24,7 @@ public class CoreVerticleLoader {
 	/**
 	 * Default amount of verticle instances which should be deployed.
 	 */
-	private static final int DEFAULT_VERTICLE_DEPLOYMENTS = 4;
+	private static final int DEFAULT_VERTICLE_DEPLOYMENTS = 1;
 
 	private static Logger log = LoggerFactory.getLogger(CoreVerticleLoader.class);
 
