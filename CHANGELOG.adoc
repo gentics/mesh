@@ -12,7 +12,7 @@ icon:plus[] REST: The `hostname` and `ssl` properties have been added to the pro
 
 icon:plus[] REST: The link resolver mechanism was enhanced to also consider the `hostname` and `ssl` flag of the release of the node which is linked. 
                   The link resolver will make use of these properties as soon as mesh links point to nodes of foreign projects.
-                  You can read more on this topic in the link:https://getmesh.io/docs/beta/features.html#_crossdomainlinks[cross domain link section] of our documentation.
+                  You can read more on this topic in the link:https://getmesh.io/docs/beta/features.html#crossdomainlinks[cross domain link section] of our documentation.
 
 == 0.11.6 (15.12.2017)
 
