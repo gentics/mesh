@@ -4,7 +4,7 @@
 
 == 0.11.7 (17.12.2017)
 
-icon:check[] UI: Fixed an issue that always showed the name in the explorer content list in english. link:https://github.com/gentics/mesh/issues/23[#23]
+icon:check[] UI: Fixed an issue where the name in the explorer content list in always shown in english. link:https://github.com/gentics/mesh/issues/23[#23]
 
 icon:check[] Storage: Binary field deletion has been made more resilient and will no longer fail if the referenced binary data is not stored within used binary storage. link:https://github.com/gentics/mesh/issues/235[#235]
 
