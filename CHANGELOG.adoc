@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.11.8 (18.12.2017)
+
+icon:check[] Image: Fixed a bug which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
+
 == 0.11.7 (17.12.2017)
 
 icon:check[] UI: Fixed an issue where the name in the explorer content list in always shown in english. link:https://github.com/gentics/mesh/issues/23[#23]

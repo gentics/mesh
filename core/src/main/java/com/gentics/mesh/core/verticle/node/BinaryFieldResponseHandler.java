@@ -84,7 +84,7 @@ public class BinaryFieldResponseHandler {
 							response.putHeader("content-disposition", "inline; filename=" + fileName);
 							return fileWithProps.getFile();
 						}).flatMap(file -> {
-							return RxHelper.toObservable(file);
+							return RxHelper.toObservable(file).doOnTerminate(file::close);
 						});
 				resizedData.subscribe(response::write, rc::fail, response::end);
 			} else {
