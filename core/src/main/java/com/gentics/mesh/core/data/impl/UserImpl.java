@@ -281,12 +281,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			FramedGraph graph = getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
-			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.getId());
+			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE.toLowerCase() + "_out", this.getId());
 			for (Edge roleEdge : roleEdges) {
 				Vertex role = roleEdge.getVertex(Direction.IN);
 				// Find all permission edges between the found role and target
 				// vertex with the specified label
-				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
+				Iterable<Edge> edges = graph.getEdges("e." + permission.label().toLowerCase() + "_inout",
 					MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
