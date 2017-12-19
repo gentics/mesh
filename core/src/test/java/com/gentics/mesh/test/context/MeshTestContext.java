@@ -51,7 +51,6 @@ public class MeshTestContext extends TestWatcher {
 	private MeshRestClient client;
 
 	private List<String> deploymentIds = new ArrayList<>();
-	private RouterStorage routerStorage;
 
 	@Override
 	protected void starting(Description description) {
@@ -140,7 +139,7 @@ public class MeshTestContext extends TestWatcher {
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
 		log.info("Using port:  " + port);
-		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
+		RouterStorage.addProject(TestDataProvider.PROJECT_NAME);
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
@@ -331,7 +330,6 @@ public class MeshTestContext extends TestWatcher {
 		meshDagger = DaggerTestMeshComponent.create();
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
-		routerStorage = meshDagger.routerStorageProvider().get();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
 		}
