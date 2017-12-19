@@ -24,7 +24,7 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 
 You need to have at least JRE 8 of Java installed. See the [Getting Started page](https://getmesh.io/docs/beta/getting-started.html) for more information.
 
-You can either download the all-in-one jar or fire-up one of the Docker images.
+You can either download the all-in-one jar or fire up one of the Docker images.
 
 * [Download from getmesh.io](https://getmesh.io/Download)
 * [Docker Hub](https://hub.docker.com/r/gentics/mesh/)
@@ -39,35 +39,35 @@ You can either download the all-in-one jar or fire-up one of the Docker images.
 
 ### UI
 
-Gentics Mesh automatically ships with a UI which allows you to brows your contents.
+Gentics Mesh automatically ships with a UI which allows you to browse your contents.
 
-The UI is can be accessed via http://localhost:8080/mesh-ui
+The UI can be accessed via http://localhost:8080/mesh-ui
 
 ### Typical usage
 
-You can retrieved stored contents via the REST or GraphQL API.
+You can retrieve stored contents via the REST or GraphQL API.
 
-First things first - You need to authenticate. Otherwise you will not be able to access your data.
+First things first: you need to authenticate, otherwise you will not be able to access your data.
 
 * http://localhost:8080/api/v1/auth/login
 
-You can post your credentials via JSON, use basic auth or send a JWT header - The choice is yours. If you open that URL in a browser you will most likly authenticate using basic auth.
+You can post your credentials via JSON, use basic auth or send a JWT header - the choice is yours. If you open that URL in a browser, you will most likely authenticate using basic auth.
 
 #### REST API
 
-Now that your are authenticated you can load content via the REST API.
+Now that you are authenticated, you can load content via the REST API.
 
 Load a list of projects:
 
 * http://localhost:8080/api/v1/projects
 
-Or a list of contents
+Or a list of contents:
 
 * http://localhost:8080/api/v1/demo/nodes
 
 #### GraphQL
 
-If you want to retrieve deeply nested data you may use the GraphiQL browser
+If you want to retrieve deeply nested data you may use the GraphiQL browser:
 
 * http://localhost:8080/api/v1/demo/graphql/browser/
 
@@ -165,7 +165,7 @@ Install the following maven m2e workshop plugins:
   * m2e-apt-plugin
 
 Note: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". 
-If you don't find this option you most likely need to install the M2E APT Plugin for eclipse.
+If you don't find this option, you most likely need to install the M2E APT Plugin for eclipse.
 
 Import all maven modules in your IDE.
 
