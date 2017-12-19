@@ -138,7 +138,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		}
 
 		// Read the image and apply the changes - Make sure to run that code in a blocking scheduler since it may be CPU intensive for larger images.
-		return readImage(stream).observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).flatMap(bi -> {
+		return readImage(stream).observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).flatMap(bi -> {
 			if (bi == null) {
 				throw error(BAD_REQUEST, "image_error_reading_failed");
 			}

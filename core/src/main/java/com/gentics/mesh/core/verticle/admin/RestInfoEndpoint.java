@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -33,6 +32,8 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 
 	private Database db;
 
+	private RouterStorage routerStorage;
+
 	@Inject
 	public RestInfoEndpoint(Database db, SearchProvider searchProvider) {
 		super(null);
@@ -46,6 +47,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void init(RouterStorage rs) {
+		this.routerStorage = rs;
 		localRouter = Router.router(Mesh.vertx());
 	}
 
@@ -92,9 +94,9 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		}, false);
 	}
 
-//	@Override
-//	public Router getRouter() {
-//		return routerStorage.getAPIRouter();
-//	}
+	@Override
+	public Router getRouter() {
+		return routerStorage.getAPIRouter();
+	}
 
 }
