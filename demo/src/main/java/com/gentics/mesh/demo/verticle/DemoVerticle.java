@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import java.io.File;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.AbstractCustomVerticle;
@@ -27,7 +28,7 @@ public class DemoVerticle extends AbstractCustomVerticle {
 	private DemoDataProvider demoDataProvider;
 
 	@Inject
-	public DemoVerticle(DemoDataProvider demoDataProvider, RouterStorage routerStorage) {
+	public DemoVerticle(DemoDataProvider demoDataProvider, Provider<RouterStorage> routerStorage) {
 		super("demo", routerStorage);
 		this.demoDataProvider = demoDataProvider;
 	}

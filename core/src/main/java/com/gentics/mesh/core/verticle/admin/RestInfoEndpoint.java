@@ -25,7 +25,6 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.ext.web.Router;
 
-@Singleton
 public class RestInfoEndpoint extends AbstractEndpoint {
 
 	private SearchProvider searchProvider;
@@ -35,14 +34,19 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 	private Database db;
 
 	@Inject
-	public RestInfoEndpoint(Database db, RouterStorage routerStorage, SearchProvider searchProvider) {
-		super(null, routerStorage);
+	public RestInfoEndpoint(Database db, SearchProvider searchProvider) {
+		super(null);
 		this.searchProvider = searchProvider;
 		this.db = db;
 	}
 
-	public RestInfoEndpoint(String path, RouterStorage storage) {
-		super(path, storage);
+	public RestInfoEndpoint(String path) {
+		super(path);
+	}
+
+	@Override
+	public void init(RouterStorage rs) {
+		localRouter = Router.router(Mesh.vertx());
 	}
 
 	@Override
@@ -88,14 +92,9 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		}, false);
 	}
 
-	@Override
-	public Router setupLocalRouter() {
-		return Router.router(Mesh.vertx());
-	}
-
-	@Override
-	public Router getRouter() {
-		return routerStorage.getAPIRouter();
-	}
+//	@Override
+//	public Router getRouter() {
+//		return routerStorage.getAPIRouter();
+//	}
 
 }

@@ -331,7 +331,7 @@ public class MeshTestContext extends TestWatcher {
 		meshDagger = DaggerTestMeshComponent.create();
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
-		routerStorage = meshDagger.routerStorage();
+		routerStorage = meshDagger.routerStorageProvider().get();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
 		}

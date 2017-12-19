@@ -2,12 +2,15 @@ package com.gentics.mesh.demo;
 
 import java.io.File;
 
+import javax.inject.Provider;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
 import com.gentics.mesh.util.DeploymentUtil;
@@ -51,17 +54,16 @@ public class RunnerNodeA {
 			// Add demo content provider
 			MeshComponent meshInternal = MeshInternal.get();
 			DemoVerticle demoVerticle = new DemoVerticle(
-					new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot()),
-					MeshInternal.get().routerStorage());
+					new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot()), meshInternal.routerStorageProvider());
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
 			// Add admin ui
-			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
+			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorageProvider());
 			DeploymentUtil.deployAndWait(vertx, config, adminVerticle, false);
 
 			// Add elastichead
 			if (options.getSearchOptions().isHttpEnabled()) {
-				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(MeshInternal.get().routerStorage());
+				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(meshInternal.routerStorageProvider());
 				DeploymentUtil.deployAndWait(vertx, config, headVerticle, false);
 			}
 		});

@@ -65,6 +65,7 @@ import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -490,8 +491,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 
 		// Assert that the routerstorage was updates
-		assertTrue("The new project router should have been added", meshDagger().routerStorage().hasProjectRouter(newName));
-		assertFalse("The old project router should have been removed", meshDagger().routerStorage().hasProjectRouter(oldName));
+		assertTrue("The new project router should have been added", RouterStorage.hasProject(newName));
+		assertFalse("The old project router should have been removed", RouterStorage.hasProject(oldName));
 		call(() -> client().findNodes(newName));
 
 		try (Tx tx = tx()) {

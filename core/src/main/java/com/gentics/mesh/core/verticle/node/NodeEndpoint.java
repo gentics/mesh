@@ -10,7 +10,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
@@ -20,7 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
@@ -37,7 +35,6 @@ import io.vertx.core.MultiMap;
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
-@Singleton
 public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private NodeCrudHandler crudHandler;
@@ -47,12 +44,12 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private BinaryFieldHandler binaryFieldHandler;
 
 	public NodeEndpoint() {
-		super("nodes", null, null);
+		super("nodes", null);
 	}
 
 	@Inject
-	public NodeEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, BinaryFieldHandler fieldAPIHandler) {
-		super("nodes", boot, routerStorage);
+	public NodeEndpoint(BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryFieldHandler fieldAPIHandler) {
+		super("nodes", boot);
 		this.crudHandler = crudHandler;
 		this.binaryFieldHandler = fieldAPIHandler;
 	}

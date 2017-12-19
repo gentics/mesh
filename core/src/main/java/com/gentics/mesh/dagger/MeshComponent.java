@@ -1,5 +1,6 @@
 package com.gentics.mesh.dagger;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -56,7 +57,7 @@ public interface MeshComponent {
 
 	BCryptPasswordEncoder passwordEncoder();
 
-	RouterStorage routerStorage();
+	Provider<RouterStorage> routerStorageProvider();
 
 	BinaryStorage binaryStorage();
 

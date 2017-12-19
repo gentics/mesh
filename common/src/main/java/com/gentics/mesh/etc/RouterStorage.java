@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
@@ -49,7 +48,6 @@ import io.vertx.ext.web.handler.LoggerHandler;
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
-@Singleton
 public class RouterStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
@@ -62,7 +60,10 @@ public class RouterStorage {
 	public static final String DEFAULT_CUSTOM_MOUNTPOINT = "/custom";
 	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
 
-	private static RouterStorage instance;
+	/**
+	 * Set of creates storages
+	 */
+	private static Set<RouterStorage> instances = new HashSet<>();
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -75,11 +76,17 @@ public class RouterStorage {
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
-		RouterStorage.instance = this;
+		/**
+		 * Initialize the router storage. This will setup the basic route handlers for /api/v1 and cookie/cors handling.
+		 */
+		initAPIRouter();
+		RouterStorage.instances.add(this);
 	}
 
-	public static RouterStorage getIntance() {
-		return instance;
+	public static void registerEventbus() {
+		for (RouterStorage rs : instances) {
+			rs.registerEventbusHandlers();
+		}
 	}
 
 	public void registerEventbusHandlers() {
@@ -88,7 +95,7 @@ public class RouterStorage {
 			JsonObject json = rh.body();
 			String name = json.getString("name");
 			try {
-				RouterStorage.getIntance().addProjectRouter(name);
+				RouterStorage.addProject(name);
 				if (log.isInfoEnabled()) {
 					log.info("Registered project {" + name + "}");
 				}
@@ -99,25 +106,24 @@ public class RouterStorage {
 		});
 
 		eb.consumer(EVENT_PROJECT_UPDATED, (Message<JsonObject> rh) -> {
-			RouterStorage routerStorage = RouterStorage.getIntance();
 			Database database = db.get();
 
 			try (Tx tx = database.tx()) {
 				Set<String> projectNames = new HashSet<>();
 				// Check whether there are any projects which do not have an active project router
 				for (Project project : boot.get().projectRoot().findAllIt()) {
-					if (!routerStorage.hasProjectRouter(project.getName())) {
+					if (!hasProjectRouter(project.getName())) {
 						log.info("Mounting project {" + project.getName() + "}");
-						routerStorage.addProjectRouter(project.getName());
+						addProjectRouter(project.getName());
 					}
 					projectNames.add(project.getName());
 				}
 
 				// Check whether there are any project routers which are no longer valid / in-sync with the projects.
-				for (String projectName : routerStorage.getProjectRouters().keySet()) {
+				for (String projectName : getProjectRouters().keySet()) {
 					if (!projectNames.contains(projectName)) {
 						log.info("Removing invalid mount {" + projectName + "}");
-						routerStorage.removeProjectRouter(projectName);
+						removeProjectRouter(projectName);
 					}
 				}
 			} catch (InvalidNameException e) {
@@ -127,13 +133,6 @@ public class RouterStorage {
 
 		});
 
-	}
-
-	/**
-	 * Initialize the router storage. This will setup the basic route handlers for /api/v1 and cookie/cors handling.
-	 */
-	public void init() {
-		initAPIRouter();
 	}
 
 	/**
@@ -283,6 +282,15 @@ public class RouterStorage {
 		return projectRouters.containsKey(projectName);
 	}
 
+	public static boolean hasProject(String projectName) {
+		for (RouterStorage rs : instances) {
+			if (rs.projectRouters.containsKey(projectName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Add a new project router with the given name to the api router. This method will return an existing router when one already has been setup.
 	 * 
@@ -400,6 +408,39 @@ public class RouterStorage {
 		if (coreRouters.containsKey(name) || coreRouters.containsKey(encodedName)) {
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", name);
 		}
+	}
+
+	/**
+	 * Iterate over all created router storages and remove the project with the given name.
+	 * 
+	 * @param name
+	 */
+	public static void removeProjectRouters(String name) {
+		for (RouterStorage rs : instances) {
+			rs.removeProjectRouter(name);
+		}
+	}
+
+	/**
+	 * Iterate over all created router storages and assert that no project/api route causes a conflict with the given name
+	 * 
+	 * @param name
+	 */
+	public static void assertProjectName(String name) {
+		for (RouterStorage rs : instances) {
+			rs.assertProjectNameValid(name);
+		}
+	}
+
+	public static Set<RouterStorage> getInstances() {
+		return instances;
+	}
+
+	public static void addProject(String name) throws InvalidNameException {
+		for (RouterStorage rs : instances) {
+			rs.addProjectRouter(name);
+		}
+
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core;
 
+import javax.inject.Provider;
+
 import com.gentics.mesh.etc.RouterStorage;
 
 import io.vertx.ext.web.Router;
@@ -9,7 +11,7 @@ import io.vertx.ext.web.Router;
  */
 public abstract class AbstractCustomVerticle extends AbstractWebVerticle {
 
-	protected AbstractCustomVerticle(String basePath, RouterStorage routerStorage) {
+	protected AbstractCustomVerticle(String basePath, Provider<RouterStorage> routerStorage) {
 		super(basePath, routerStorage);
 	}
 

@@ -7,21 +7,18 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The admin verticle provides core administration rest endpoints.
  */
-@Singleton
 public class AdminEndpoint extends AbstractEndpoint {
 
 	private AdminHandler adminHandler;
@@ -31,15 +28,15 @@ public class AdminEndpoint extends AbstractEndpoint {
 	private ConsistencyCheckHandler consistencyHandler;
 
 	@Inject
-	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler) {
-		super("admin", routerStorage);
+	public AdminEndpoint(AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler) {
+		super("admin");
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
 	}
 
 	public AdminEndpoint() {
-		super("admin", null);
+		super("admin");
 	}
 
 	@Override

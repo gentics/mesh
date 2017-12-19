@@ -5,31 +5,28 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
 
 /**
  * Endpoint which returns navigation responses for a given webroot path.
  */	
-@Singleton
 public class NavRootEndpoint extends AbstractProjectEndpoint {
 
 	private NavRootHandler handler;
 
 	public NavRootEndpoint() {
-		super("navroot", null, null);
+		super("navroot", null);
 	}
 
 	@Inject
-	public NavRootEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NavRootHandler handler) {
-		super("navroot", boot, routerStorage);
+	public NavRootEndpoint(BootstrapInitializer boot, NavRootHandler handler) {
+		super("navroot", boot);
 		this.handler = handler;
 	}
 

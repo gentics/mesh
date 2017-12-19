@@ -23,9 +23,8 @@ public abstract class AbstractEndpoint implements Endpoint {
 	protected List<EndpointRoute> endpoints = new ArrayList<>();
 
 	protected Router localRouter = null;
-	protected String basePath;
 
-	protected RouterStorage routerStorage;
+	protected String basePath;
 
 	@Inject
 	public MeshAuthHandler authHandler;
@@ -41,12 +40,12 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 * @param routerStorage
 	 *            Router storage
 	 */
-	protected AbstractEndpoint(String basePath, RouterStorage routerStorage) {
+	protected AbstractEndpoint(String basePath) {
 		this.basePath = basePath;
-		this.routerStorage = routerStorage;
-		if (routerStorage != null) {
-			this.localRouter = setupLocalRouter();
-		}
+	}
+
+	public void init(RouterStorage rs) {
+		this.localRouter = rs.getAPISubRouter(basePath);
 	}
 
 	/**
@@ -71,15 +70,6 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 * @return Description of the endpoint
 	 */
 	public abstract String getDescription();
-
-	/**
-	 * Setup the router for this endpoint using the endpoint basepath.
-	 * 
-	 * @return Router
-	 */
-	public Router setupLocalRouter() {
-		return routerStorage.getAPISubRouter(basePath);
-	}
 
 	/**
 	 * Return the created local router.

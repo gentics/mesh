@@ -9,12 +9,10 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -23,7 +21,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
-@Singleton
 public class UserEndpoint extends AbstractEndpoint {
 
 	private UserCrudHandler crudHandler;
@@ -31,12 +28,12 @@ public class UserEndpoint extends AbstractEndpoint {
 	private UserTokenAuthHandler userTokenHandler;
 
 	public UserEndpoint() {
-		super("users", null);
+		super("users");
 	}
 
 	@Inject
-	public UserEndpoint(RouterStorage routerStorage, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
-		super("users", routerStorage);
+	public UserEndpoint(UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
+		super("users");
 		this.crudHandler = userCrudHandler;
 		this.userTokenHandler = userTokenHandler;
 	}

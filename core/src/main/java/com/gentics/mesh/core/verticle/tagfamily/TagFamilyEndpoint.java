@@ -9,14 +9,12 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
@@ -24,7 +22,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Singleton
 public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyEndpoint.class);
@@ -39,13 +36,12 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private TagCrudHandler tagCrudHandler;
 
 	public TagFamilyEndpoint() {
-		super("tagFamilies", null, null);
+		super("tagFamilies", null);
 	}
 
 	@Inject
-	public TagFamilyEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, TagCrudHandler tagCrudHandler,
-			TagFamilyCrudHandler tagFamilyCrudHandler) {
-		super("tagFamilies", boot, routerStorage);
+	public TagFamilyEndpoint(BootstrapInitializer boot, TagCrudHandler tagCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler) {
+		super("tagFamilies", boot);
 		this.tagCrudHandler = tagCrudHandler;
 		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
 	}

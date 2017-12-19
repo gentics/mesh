@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.Router;
 
 /**
  * Central REST API Verticle which will provide all core REST API Endpoints
@@ -52,79 +54,79 @@ public class RestAPIVerticle extends AbstractVerticle {
 	protected HttpServer server;
 
 	@Inject
-	public RouterStorage routerStorage;
+	public Provider<RouterStorage> routerStorage;
 
 	@Inject
-	public UserEndpoint userEndpoint;
+	public Provider<UserEndpoint> userEndpoint;
 
 	@Inject
-	public RoleEndpoint roleEndpoint;
+	public Provider<RoleEndpoint> roleEndpoint;
 
 	@Inject
-	public GroupEndpoint groupEndpoint;
+	public Provider<GroupEndpoint> groupEndpoint;
 
 	@Inject
-	public ProjectEndpoint projectEndpoint;
+	public Provider<ProjectEndpoint> projectEndpoint;
 
 	@Inject
-	public NodeEndpoint nodeEndpoint;
+	public Provider<NodeEndpoint> nodeEndpoint;
 
 	@Inject
-	public TagFamilyEndpoint tagFamilyEndpoint;
+	public Provider<TagFamilyEndpoint> tagFamilyEndpoint;
 
 	@Inject
-	public ReleaseEndpoint releaseEndpoint;
+	public Provider<ReleaseEndpoint> releaseEndpoint;
 
 	@Inject
-	public SchemaEndpoint schemaEndpoint;
+	public Provider<SchemaEndpoint> schemaEndpoint;
 
 	@Inject
-	public ProjectSearchEndpointImpl projectSearchEndpoint;
+	public Provider<ProjectSearchEndpointImpl> projectSearchEndpoint;
 
 	@Inject
-	public ProjectRawSearchEndpointImpl projectRawSearchEndpoint;
+	public Provider<ProjectRawSearchEndpointImpl> projectRawSearchEndpoint;
 
 	@Inject
-	public ProjectSchemaEndpoint projectSchemaEndpoint;
+	public Provider<ProjectSchemaEndpoint> projectSchemaEndpoint;
 
 	@Inject
-	public ProjectInfoEndpoint projectInfoEndpoint;
+	public Provider<ProjectInfoEndpoint> projectInfoEndpoint;
 
 	@Inject
-	public ProjectMicroschemaEndpoint projectMicroschemaEndpoint;
+	public Provider<ProjectMicroschemaEndpoint> projectMicroschemaEndpoint;
 
 	@Inject
-	public WebRootEndpoint webrootEndpoint;
+	public Provider<WebRootEndpoint> webrootEndpoint;
 
 	@Inject
-	public RestInfoEndpoint restInfoEndpoint;
+	public Provider<RestInfoEndpoint> restInfoEndpoint;
 
 	@Inject
-	public UtilityEndpoint utilityEndpoint;
+	public Provider<UtilityEndpoint> utilityEndpoint;
 
 	@Inject
-	public MicroschemaEndpoint microschemaEndpoint;
+	public Provider<MicroschemaEndpoint> microschemaEndpoint;
 
 	@Inject
-	public EventbusEndpoint eventbusEndpoint;
+	public Provider<EventbusEndpoint> eventbusEndpoint;
 
 	@Inject
-	public NavRootEndpoint navrootEndpoint;
+	public Provider<NavRootEndpoint> navrootEndpoint;
 
 	@Inject
-	public AuthenticationEndpoint authenticationEndpoint;
+	public Provider<AuthenticationEndpoint> authenticationEndpoint;
 
 	@Inject
-	public SearchEndpointImpl searchEndpoint;
+	public Provider<SearchEndpointImpl> searchEndpoint;
 
 	@Inject
-	public RawSearchEndpointImpl rawSearchEndpoint;
+	public Provider<RawSearchEndpointImpl> rawSearchEndpoint;
 
 	@Inject
-	public GraphQLEndpoint graphqlEndpoint;
+	public Provider<GraphQLEndpoint> graphqlEndpoint;
 
 	@Inject
-	public AdminEndpoint adminEndpoint;
+	public Provider<AdminEndpoint> adminEndpoint;
 
 	@Inject
 	public RestAPIVerticle() {
@@ -145,7 +147,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setPort(port);
 		options.setHost(host);
 		options.setCompressionSupported(true);
-		//options.setLogActivity(true);
+		// options.setLogActivity(true);
 		// MeshOptions meshOptions = Mesh.mesh().getOptions();
 		// HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
 		// if (httpServerOptions.isSsl()) {
@@ -164,7 +166,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
-		server.requestHandler(routerStorage.getRootRouter()::accept);
+		RouterStorage storage = routerStorage.get();
+		Router router = storage.getRootRouter();
+		server.requestHandler(router::accept);
 
 		server.listen(rh -> {
 			if (rh.failed()) {
@@ -174,7 +178,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 					log.info("Started http server.. Port: " + config().getInteger("port"));
 				}
 				try {
-					registerEndPoints();
+					registerEndPoints(storage);
 					startFuture.complete();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -196,42 +200,49 @@ public class RestAPIVerticle extends AbstractVerticle {
 		});
 	}
 
-	private void registerEndPoints() throws Exception {
+	/**
+	 * Register the API endpoints and bind them to the given router.
+	 * 
+	 * @param router
+	 * @throws Exception
+	 */
+	private void registerEndPoints(RouterStorage storage) throws Exception {
 
 		List<AbstractEndpoint> endpoints = new ArrayList<>();
-		endpoints.add(restInfoEndpoint);
+		endpoints.add(restInfoEndpoint.get());
 		// verticles.add(projectInfoVerticle());
 
 		// User Group Role verticles
-		endpoints.add(userEndpoint);
-		endpoints.add(groupEndpoint);
-		endpoints.add(roleEndpoint);
+		endpoints.add(userEndpoint.get());
+		endpoints.add(groupEndpoint.get());
+		endpoints.add(roleEndpoint.get());
 
 		// Project specific verticles
-		endpoints.add(nodeEndpoint);
-		endpoints.add(tagFamilyEndpoint);
-		endpoints.add(projectSchemaEndpoint);
-		endpoints.add(projectMicroschemaEndpoint);
-		endpoints.add(projectSearchEndpoint);
-		endpoints.add(projectRawSearchEndpoint);
-		endpoints.add(releaseEndpoint);
-		endpoints.add(graphqlEndpoint);
+		endpoints.add(nodeEndpoint.get());
+		endpoints.add(tagFamilyEndpoint.get());
+		endpoints.add(projectSchemaEndpoint.get());
+		endpoints.add(projectMicroschemaEndpoint.get());
+		endpoints.add(projectSearchEndpoint.get());
+		endpoints.add(projectRawSearchEndpoint.get());
+		endpoints.add(releaseEndpoint.get());
+		endpoints.add(graphqlEndpoint.get());
 
 		// Global verticles
-		endpoints.add(webrootEndpoint);
-		endpoints.add(navrootEndpoint);
-		endpoints.add(projectEndpoint);
-		endpoints.add(schemaEndpoint);
-		endpoints.add(microschemaEndpoint);
-		endpoints.add(searchEndpoint);
-		endpoints.add(rawSearchEndpoint);
-		endpoints.add(authenticationEndpoint);
-		endpoints.add(adminEndpoint);
-		endpoints.add(eventbusEndpoint);
-		endpoints.add(utilityEndpoint);
-		endpoints.add(projectInfoEndpoint);
+		endpoints.add(webrootEndpoint.get());
+		endpoints.add(navrootEndpoint.get());
+		endpoints.add(projectEndpoint.get());
+		endpoints.add(schemaEndpoint.get());
+		endpoints.add(microschemaEndpoint.get());
+		endpoints.add(searchEndpoint.get());
+		endpoints.add(rawSearchEndpoint.get());
+		endpoints.add(authenticationEndpoint.get());
+		endpoints.add(adminEndpoint.get());
+		endpoints.add(eventbusEndpoint.get());
+		endpoints.add(utilityEndpoint.get());
+		endpoints.add(projectInfoEndpoint.get());
 
 		for (AbstractEndpoint endpoint : endpoints) {
+			endpoint.init(storage);
 			endpoint.registerEndPoints();
 		}
 	}

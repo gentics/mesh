@@ -159,7 +159,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
-		RouterStorage routerStorage = RouterStorage.getIntance();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		// TODO also create a default object schema for the project. Move this
@@ -181,7 +180,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		routerStorage.assertProjectNameValid(requestModel.getName());
+		RouterStorage.assertProjectName(requestModel.getName());
 
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");

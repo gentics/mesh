@@ -191,7 +191,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + getName() + "}");
 		}
-		RouterStorage.getIntance().removeProjectRouter(getName());
+		RouterStorage.removeProjectRouters(getName());
 
 		// Remove the project from the index
 		batch.delete(this, false);
@@ -238,11 +238,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
-		RouterStorage routerStorage = MeshInternal.get().routerStorage();
 
 		String oldName = getName();
 		String newName = requestModel.getName();
-		routerStorage.assertProjectNameValid(newName);
+		RouterStorage.assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
 			Project projectWithSameName = MeshInternal.get().boot().meshRoot().getProjectRoot().findByName(newName);

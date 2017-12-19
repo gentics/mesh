@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
@@ -15,7 +16,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 public class ElasticsearchHeadVerticle extends AbstractWebVerticle {
 
 	@Inject
-	public ElasticsearchHeadVerticle(RouterStorage routerStorage) {
+	public ElasticsearchHeadVerticle(Provider<RouterStorage> routerStorage) {
 		super("elastichead", routerStorage);
 	}
 

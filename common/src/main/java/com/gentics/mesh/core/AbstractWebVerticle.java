@@ -1,6 +1,7 @@
 package com.gentics.mesh.core;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.error.MeshConfigurationException;
@@ -27,14 +28,14 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 	protected String basePath;
 	protected HttpServer server;
 
-	protected RouterStorage routerStorage;
-
 	@Inject
 	public MeshAuthHandler authHandler;
 
-	protected AbstractWebVerticle(String basePath, RouterStorage routerStorage) {
+	public RouterStorage routerStorage;
+
+	protected AbstractWebVerticle(String basePath, Provider<RouterStorage> routerStorageProvider) {
 		this.basePath = basePath;
-		this.routerStorage = routerStorage;
+		this.routerStorage = routerStorageProvider.get();
 	}
 
 	@Override

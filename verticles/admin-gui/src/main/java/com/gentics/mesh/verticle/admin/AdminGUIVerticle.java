@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
@@ -40,7 +41,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
 	@Inject
-	public AdminGUIVerticle(RouterStorage routerStorage) {
+	public AdminGUIVerticle(Provider<RouterStorage> routerStorage) {
 		super("mesh-ui", routerStorage);
 	}
 

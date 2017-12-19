@@ -4,12 +4,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
@@ -17,19 +15,18 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Verticle providing endpoints for various utilities.
  */
-@Singleton
 public class UtilityEndpoint extends AbstractEndpoint {
 
 	private UtilityHandler utilityHandler;
 
 	@Inject
-	public UtilityEndpoint(RouterStorage routerStorage, UtilityHandler utilityHandler) {
-		super("utilities", routerStorage);
+	public UtilityEndpoint(UtilityHandler utilityHandler) {
+		super("utilities");
 		this.utilityHandler = utilityHandler;
 	}
 
 	public UtilityEndpoint() {
-		super("utilities", null);
+		super("utilities");
 	}
 
 	@Override

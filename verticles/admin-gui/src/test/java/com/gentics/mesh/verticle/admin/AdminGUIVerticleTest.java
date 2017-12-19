@@ -35,7 +35,7 @@ public class AdminGUIVerticleTest extends AbstractMeshTest {
 
 	@Before
 	public void setupVerticle() throws Exception {
-		adminGuiVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
+		adminGuiVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorageProvider());
 		JsonObject config = new JsonObject();
 		config.put("port", port());
 		CountDownLatch latch = new CountDownLatch(1);

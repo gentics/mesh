@@ -6,7 +6,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -25,7 +24,6 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
@@ -41,7 +39,6 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
 import dagger.Lazy;
 import rx.functions.Func0;
 
-@Singleton
 public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoint {
 
 	private Lazy<BootstrapInitializer> boot;
@@ -77,13 +74,13 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	public SearchEndpointImpl(RouterStorage routerStorage, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
-		super("search", routerStorage);
+	public SearchEndpointImpl(NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
+		super("search");
 		this.boot = boot;
 	}
 
 	public SearchEndpointImpl() {
-		super("search", null);
+		super("search");
 	}
 
 	@Override
@@ -103,22 +100,22 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userSearchHandler,
-				userExamples.getUserListResponse());
-		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupSearchHandler,
-				groupExamples.getGroupListResponse());
-		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleSearchHandler,
-				roleExamples.getRoleListResponse());
+		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userSearchHandler, userExamples
+				.getUserListResponse());
+		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupSearchHandler, groupExamples
+				.getGroupListResponse());
+		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleSearchHandler, roleExamples
+				.getRoleListResponse());
 
-		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler,
-				nodeExamples.getNodeListResponse());
-		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler,
-				tagExamples.createTagListResponse());
+		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
+				.getNodeListResponse());
+		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
+				.createTagListResponse());
 		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
 
-		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectSearchHandler,
-				projectExamples.getProjectListResponse());
+		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectSearchHandler, projectExamples
+				.getProjectListResponse());
 		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, schemaContainerSearchHandler,
 				schemaExamples.getSchemaListResponse());
 		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,

@@ -9,32 +9,29 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
-@Singleton
 public class ProjectEndpoint extends AbstractEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectEndpoint(RouterStorage routerStorage, ProjectCrudHandler crudHandler) {
-		super("projects", routerStorage);
+	public ProjectEndpoint(ProjectCrudHandler crudHandler) {
+		super("projects");
 		this.crudHandler = crudHandler;
 	}
 
 	public ProjectEndpoint() {
-		super("projects", null);
+		super("projects");
 	}
 
 	@Override

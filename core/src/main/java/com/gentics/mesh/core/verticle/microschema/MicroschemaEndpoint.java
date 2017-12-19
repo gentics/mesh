@@ -9,7 +9,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,24 +16,22 @@ import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
-@Singleton
 public class MicroschemaEndpoint extends AbstractEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;
 
 	public MicroschemaEndpoint() {
-		super("microschemas", null);
+		super("microschemas");
 	}
 
 	@Inject
-	public MicroschemaEndpoint(RouterStorage routerStorage, MicroschemaCrudHandler crudHandler, MeshAuthHandler authHandler) {
-		super("microschemas", routerStorage);
+	public MicroschemaEndpoint(MicroschemaCrudHandler crudHandler, MeshAuthHandler authHandler) {
+		super("microschemas");
 		this.crudHandler = crudHandler;
 	}
 

@@ -65,16 +65,16 @@ public class DemoRunner {
 			MeshComponent meshInternal = MeshInternal.get();
 			DemoVerticle demoVerticle = new DemoVerticle(
 					new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot()),
-					MeshInternal.get().routerStorage());
+					MeshInternal.get().routerStorageProvider());
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
 			// Add admin ui
-			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
+			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorageProvider());
 			DeploymentUtil.deployAndWait(vertx, config, adminVerticle, false);
 
 			// Add elastichead
 			if (options.getSearchOptions().isHttpEnabled()) {
-				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(MeshInternal.get().routerStorage());
+				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(MeshInternal.get().routerStorageProvider());
 				DeploymentUtil.deployAndWait(vertx, config, headVerticle, false);
 			}
 		});

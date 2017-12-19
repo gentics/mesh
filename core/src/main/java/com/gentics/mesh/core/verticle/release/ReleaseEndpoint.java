@@ -7,7 +7,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,7 +14,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
@@ -23,18 +21,17 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Verticle for REST endpoints to manage Releases.
  */
-@Singleton
 public class ReleaseEndpoint extends AbstractProjectEndpoint {
 
 	private ReleaseCrudHandler crudHandler;
 
 	public ReleaseEndpoint() {
-		super("releases", null, null);
+		super("releases", null);
 	}
 
 	@Inject
-	public ReleaseEndpoint(RouterStorage routerStorage, BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
-		super("releases", boot, routerStorage);
+	public ReleaseEndpoint(BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
+		super("releases", boot);
 		this.crudHandler = crudHandler;
 	}
 
