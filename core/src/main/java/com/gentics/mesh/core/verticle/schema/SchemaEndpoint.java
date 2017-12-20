@@ -8,6 +8,11 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -114,6 +119,8 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		});
 	}
 
+	private static Object mutex = new Object();
+
 	private void addUpdateHandler() {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid");
@@ -127,9 +134,12 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
 
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String uuid = ac.getParameter("schemaUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			//Update operations should always be executed sequentially - never in parallel
+			synchronized (mutex) {
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				String uuid = ac.getParameter("schemaUuid");
+				crudHandler.handleUpdate(ac, uuid);
+			}
 		});
 	}
 
