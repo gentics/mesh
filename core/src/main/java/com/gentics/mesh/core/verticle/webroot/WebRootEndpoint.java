@@ -6,10 +6,10 @@ import static io.vertx.core.http.HttpMethod.GET;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 public class WebRootEndpoint extends AbstractProjectEndpoint {
 
@@ -33,7 +33,6 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		withBodyHandler();
 
 		addErrorHandlers();
 		addPathHandler();

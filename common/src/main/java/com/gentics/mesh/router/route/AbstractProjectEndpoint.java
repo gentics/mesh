@@ -1,7 +1,7 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.router.route;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.router.RouterStorage;
 
 /**
  * A endpoint which provides more REST endpoints for all registered projects. The router for this endpoint will automatically be mounted for all registered

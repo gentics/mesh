@@ -11,12 +11,14 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.MissingOrientCredentialFixer;
-import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
+import com.gentics.mesh.router.EndpointRegistry;
+import com.gentics.mesh.search.verticle.ElasticsearchHeadEndpoint;
 import com.gentics.mesh.util.DeploymentUtil;
-import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
+import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -44,10 +46,8 @@ public class DemoRunner {
 
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
-		MissingOrientCredentialFixer.fix(options);
-		
 		// For Mesh UI Dev
-		//options.getHttpServerOptions().setEnableCors(true);
+		// options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		// options.getSearchOptions().setHttpEnabled(true);
@@ -60,22 +60,21 @@ public class DemoRunner {
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
+			MeshComponent meshInternal = MeshInternal.get();
+			EndpointRegistry registry = meshInternal.endpointRegistry();
 
 			// Add demo content provider
-			MeshComponent meshInternal = MeshInternal.get();
-			DemoVerticle demoVerticle = new DemoVerticle(
-					new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot()),
-					MeshInternal.get().routerStorageProvider());
+			registry.register(DemoAppEndpoint.class);
+			DemoDataProvider data = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot());
+			DemoVerticle demoVerticle = new DemoVerticle(data);
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
 			// Add admin ui
-			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorageProvider());
-			DeploymentUtil.deployAndWait(vertx, config, adminVerticle, false);
+			registry.register(AdminGUIEndpoint.class);
 
 			// Add elastichead
 			if (options.getSearchOptions().isHttpEnabled()) {
-				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(MeshInternal.get().routerStorageProvider());
-				DeploymentUtil.deployAndWait(vertx, config, headVerticle, false);
+				registry.register(ElasticsearchHeadEndpoint.class);
 			}
 		});
 		mesh.run();

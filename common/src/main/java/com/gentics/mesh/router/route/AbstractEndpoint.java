@@ -1,4 +1,4 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.router.route;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,10 +6,10 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.rest.impl.EndpointImpl;
+import com.gentics.mesh.router.RouterStorage;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
@@ -29,8 +29,7 @@ public abstract class AbstractEndpoint implements Endpoint {
 	@Inject
 	public MeshAuthHandler authHandler;
 
-	@Inject
-	public BodyHandlerImpl bodyHandler;
+	protected RouterStorage routerStorage;
 
 	/**
 	 * Constructor to be invoked from implementation.
@@ -45,6 +44,7 @@ public abstract class AbstractEndpoint implements Endpoint {
 	}
 
 	public void init(RouterStorage rs) {
+		this.routerStorage = rs;
 		this.localRouter = rs.getAPISubRouter(basePath);
 	}
 
@@ -53,10 +53,6 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 */
 	protected void secureAll() {
 		getRouter().route("/*").handler(authHandler);
-	}
-
-	protected void withBodyHandler() {
-		getRouter().route("/*").handler(bodyHandler);
 	}
 
 	/**

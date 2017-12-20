@@ -13,10 +13,10 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -49,7 +49,6 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		withBodyHandler();
 
 		if (tagFamilyCrudHandler != null) {
 			getRouter().routeWithRegex("\\/([^\\/]{32})\\/.*").handler(tagFamilyCrudHandler.getUuidHandler("tagfamily_not_found"));

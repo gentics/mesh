@@ -7,9 +7,9 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -37,7 +37,6 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		withBodyHandler();
 
 		addResolveLinkHandler();
 		addSchemaValidationHandler();

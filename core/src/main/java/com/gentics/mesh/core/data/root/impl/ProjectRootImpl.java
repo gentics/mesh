@@ -37,8 +37,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.router.RouterStorage;
 
 /**
  * @see ProjectRoot

@@ -10,7 +10,6 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
@@ -91,7 +91,6 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		withBodyHandler();
 
 		addSearchEndpoints();
 	}

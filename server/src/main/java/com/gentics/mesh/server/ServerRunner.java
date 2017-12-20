@@ -7,10 +7,9 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.MissingOrientCredentialFixer;
-import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
-import com.gentics.mesh.util.DeploymentUtil;
-import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
+import com.gentics.mesh.router.EndpointRegistry;
+import com.gentics.mesh.search.verticle.ElasticsearchHeadEndpoint;
+import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
 
@@ -28,15 +27,13 @@ public class ServerRunner {
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
-		/*
-		options.setAdminPassword("admin");
-		options.getStorageOptions().setStartServer(true);
-		options.getHttpServerOptions().setCorsAllowCredentials(true);
-		options.getHttpServerOptions().setEnableCors(true);
-		options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
-		options.getStorageOptions().setStartServer(true);
-		*/
-		MissingOrientCredentialFixer.fix(options);
+
+		// options.setAdminPassword("admin");
+		// options.getStorageOptions().setStartServer(true);
+		// options.getHttpServerOptions().setCorsAllowCredentials(true);
+		// options.getHttpServerOptions().setEnableCors(true);
+		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
+		// options.getStorageOptions().setStartServer(true);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
@@ -44,13 +41,12 @@ public class ServerRunner {
 			config.put("port", options.getHttpServerOptions().getPort());
 
 			// Add admin ui
-			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorageProvider());
-			DeploymentUtil.deployAndWait(vertx, config, adminVerticle, false);
+			EndpointRegistry registry = MeshInternal.get().endpointRegistry();
+			registry.register(AdminGUIEndpoint.class);
 
 			// Add elastichead
 			if (options.getSearchOptions().isHttpEnabled()) {
-				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(MeshInternal.get().routerStorageProvider());
-				DeploymentUtil.deployAndWait(vertx, config, headVerticle, false);
+				registry.register(ElasticsearchHeadEndpoint.class);
 			}
 		});
 		mesh.run();

@@ -9,8 +9,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 
 public class AuthenticationEndpoint extends AbstractEndpoint {
 
@@ -50,7 +50,6 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 			authRestHandler.handleMe(new InternalRoutingActionContextImpl(rc));
 		});
 
-		withBodyHandler();
 		EndpointRoute basicAuthLoginEndpoint = createEndpoint();
 		basicAuthLoginEndpoint.path("/login");
 		basicAuthLoginEndpoint.method(GET);

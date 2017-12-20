@@ -5,6 +5,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
+import com.gentics.mesh.router.RouterStorage;
+
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
@@ -15,7 +17,7 @@ import io.vertx.ext.web.impl.RouteImpl;
 
 public class RouterStorageTest {
 
-	private RouterStorage storage = new RouterStorage(null, null, null);
+	private RouterStorage storage = new RouterStorage(null, null, null, null);
 
 	@Test
 	public void testFailureHandler() throws Exception {

@@ -22,9 +22,9 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.syncleus.ferma.tx.Tx;
 

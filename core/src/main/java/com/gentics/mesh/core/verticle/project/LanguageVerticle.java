@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.ext.web.Route;
 

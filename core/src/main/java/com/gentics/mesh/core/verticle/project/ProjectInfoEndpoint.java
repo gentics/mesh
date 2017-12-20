@@ -7,9 +7,9 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 
 import io.vertx.core.http.HttpMethod;
 

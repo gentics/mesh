@@ -2,7 +2,7 @@ package com.gentics.mesh.search;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.AbstractEndpoint;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
@@ -63,7 +63,6 @@ public class RawSearchEndpointImpl extends AbstractEndpoint implements SearchEnd
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		withBodyHandler();
 
 		addSearchEndpoints();
 	}

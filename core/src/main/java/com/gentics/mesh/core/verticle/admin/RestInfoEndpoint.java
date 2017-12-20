@@ -11,13 +11,13 @@ import javax.inject.Inject;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.http.HttpHeaders;

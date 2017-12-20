@@ -4,8 +4,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

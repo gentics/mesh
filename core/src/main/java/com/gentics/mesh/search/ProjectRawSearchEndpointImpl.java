@@ -3,7 +3,7 @@ package com.gentics.mesh.search;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
@@ -36,7 +36,6 @@ public class ProjectRawSearchEndpointImpl extends AbstractProjectEndpoint implem
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		withBodyHandler();
 
 		registerRawSearchHandler("nodes", nodeSearchHandler);
 		registerRawSearchHandler("tags", tagSearchHandler);

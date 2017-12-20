@@ -1,4 +1,4 @@
-package com.gentics.mesh.etc;
+package com.gentics.mesh.router;
 
 import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
@@ -19,6 +19,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.router.route.DefaultNotFoundHandler;
+import com.gentics.mesh.router.route.FailureHandler;
 import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
@@ -28,9 +30,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
+import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
 /**
  * Central storage for all vertx web request routers.
@@ -71,11 +75,15 @@ public class RouterStorage {
 
 	private CorsHandler corsHandler;
 
+	private BodyHandler bodyHandler;
+
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, Lazy<BootstrapInitializer> boot, Lazy<Database> db) {
+	public RouterStorage(CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot, Lazy<Database> db) {
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
+		this.bodyHandler = bodyHandler;
+
 		/**
 		 * Initialize the router storage. This will setup the basic route handlers for /api/v1 and cookie/cors handling.
 		 */
@@ -89,7 +97,40 @@ public class RouterStorage {
 		}
 	}
 
-	public void registerEventbusHandlers() {
+	/**
+	 * Iterate over all created router storages and remove the project with the given name.
+	 * 
+	 * @param name
+	 */
+	public static void removeProjectRouters(String name) {
+		for (RouterStorage rs : instances) {
+			rs.removeProjectRouter(name);
+		}
+	}
+
+	/**
+	 * Iterate over all created router storages and assert that no project/api route causes a conflict with the given name
+	 * 
+	 * @param name
+	 */
+	public static void assertProjectName(String name) {
+		for (RouterStorage rs : instances) {
+			rs.assertProjectNameValid(name);
+		}
+	}
+
+	public static Set<RouterStorage> getInstances() {
+		return instances;
+	}
+
+	public static void addProject(String name) throws InvalidNameException {
+		for (RouterStorage rs : instances) {
+			rs.addProjectRouter(name);
+		}
+
+	}
+
+	private void registerEventbusHandlers() {
 		EventBus eb = Mesh.vertx().eventBus();
 		eb.consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
@@ -185,7 +226,18 @@ public class RouterStorage {
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(corsHandler);
 		}
+
+		router.route().handler(rh -> {
+			// Connection upgrade requests never end and therefore the body handler will never
+			// pass through to the subsequent route handlers.
+			if ("websocket".equalsIgnoreCase(rh.request().getHeader("Upgrade"))) {
+				rh.next();
+			} else {
+				bodyHandler.handle(rh);
+			}
+		});
 		router.route().handler(CookieHandler.create());
+
 	}
 
 	/**
@@ -278,7 +330,7 @@ public class RouterStorage {
 	 * @param projectName
 	 * @return
 	 */
-	public boolean hasProjectRouter(String projectName) {
+	private boolean hasProjectRouter(String projectName) {
 		return projectRouters.containsKey(projectName);
 	}
 
@@ -403,44 +455,11 @@ public class RouterStorage {
 	 * @param name
 	 *            Project name to be checked
 	 */
-	public void assertProjectNameValid(String name) {
+	private void assertProjectNameValid(String name) {
 		String encodedName = encodeFragment(name);
 		if (coreRouters.containsKey(name) || coreRouters.containsKey(encodedName)) {
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", name);
 		}
-	}
-
-	/**
-	 * Iterate over all created router storages and remove the project with the given name.
-	 * 
-	 * @param name
-	 */
-	public static void removeProjectRouters(String name) {
-		for (RouterStorage rs : instances) {
-			rs.removeProjectRouter(name);
-		}
-	}
-
-	/**
-	 * Iterate over all created router storages and assert that no project/api route causes a conflict with the given name
-	 * 
-	 * @param name
-	 */
-	public static void assertProjectName(String name) {
-		for (RouterStorage rs : instances) {
-			rs.assertProjectNameValid(name);
-		}
-	}
-
-	public static Set<RouterStorage> getInstances() {
-		return instances;
-	}
-
-	public static void addProject(String name) throws InvalidNameException {
-		for (RouterStorage rs : instances) {
-			rs.addProjectRouter(name);
-		}
-
 	}
 
 }
