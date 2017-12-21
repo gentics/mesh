@@ -8,7 +8,6 @@ import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.search.verticle.ElasticsearchHeadEndpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;

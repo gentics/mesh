@@ -15,6 +15,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.gentics.mesh.cli.MeshCLI;
@@ -160,6 +161,7 @@ public final class OptionsLoader {
 	public static ObjectMapper getYAMLMapper() {
 		YAMLFactory factory = new YAMLFactory();
 		ObjectMapper mapper = new ObjectMapper(factory);
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		return mapper;
 	}
