@@ -31,11 +31,11 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.rx.java.RxHelper;
-import io.vertx.rxjava.core.Vertx;
-import rx.Observable;
-import rx.Single;
+import io.vertx.reactivex.RxHelper;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.

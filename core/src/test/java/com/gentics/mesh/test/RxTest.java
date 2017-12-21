@@ -1,6 +1,5 @@
 package com.gentics.mesh.test;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
@@ -9,13 +8,13 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.core.rest.error.Errors;
 
-import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.file.FileSystem;
-import rx.Observable;
-import rx.Single;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.FileSystem;
 
 public class RxTest {
 
@@ -28,7 +27,7 @@ public class RxTest {
 		}
 
 		long start = System.currentTimeMillis();
-		List<String> finalList = Observable.from(list).concatMapEager(s -> s.toObservable()).toList().toSingle().toBlocking().value();
+		List<String> finalList = Observable.fromIterable(list).concatMapEager(s -> s.toObservable()).toList().blockingGet();
 		for (String value : finalList) {
 			System.out.println(value);
 		}
@@ -73,7 +72,7 @@ public class RxTest {
 		FileSystem fileSystem = rxVertx.fileSystem();
 		fileSystem.rxExists("/tmp").doOnError(error -> {
 			System.out.println("errör");
-			throw error(BAD_REQUEST, "node_error_upload_failed", error);
+			throw Errors.error(BAD_REQUEST, "node_error_upload_failed", error);
 		}).flatMap(e -> {
 			System.out.println("blar");
 			return Single.just(false);
@@ -92,38 +91,4 @@ public class RxTest {
 			return text;
 		});
 	}
-
-	@Test
-	public void testFlatMap() throws Exception {
-
-		Observable<String> obs = Observable.just("hallo").flatMap(item -> {
-			System.out.println("FLATMAP");
-			return Observable.create(sub -> {
-				sub.onNext("Tüte");
-				sub.onCompleted();
-			});
-		});
-
-		List<Observable<String>> obsAll = new ArrayList<>();
-		obsAll.add(obs);
-
-		RxUtil.concatListNotEager(obsAll).subscribe(next -> {
-			System.out.println(next);
-		});
-	}
-
-	// @Test
-	// public void testRxError() {
-	//
-	// Observable.just("test12").flatMap(bla -> {
-	// return Observable.just("test23").map(bla2 -> {
-	// throw error(BAD_GATEWAY, "adsgsd");
-	// });
-	// }).subscribe(done -> {
-	// System.out.println("test");
-	// } , error -> {
-	// System.out.println("ERROR");
-	// error.printStackTrace();
-	// });
-	// }
 }

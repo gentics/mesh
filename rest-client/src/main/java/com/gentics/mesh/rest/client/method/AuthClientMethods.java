@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
-import rx.Single;
+import io.reactivex.Single;
 
 public interface AuthClientMethods {
 

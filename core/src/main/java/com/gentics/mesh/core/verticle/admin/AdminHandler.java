@@ -26,7 +26,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Handler for admin request methods.

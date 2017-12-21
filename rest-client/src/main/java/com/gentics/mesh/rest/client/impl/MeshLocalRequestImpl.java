@@ -1,13 +1,15 @@
 package com.gentics.mesh.rest.client.impl;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClientRequest;
-import org.apache.commons.lang.NotImplementedException;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 

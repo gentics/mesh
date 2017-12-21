@@ -10,8 +10,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.json.JsonObject;
-import rx.Completable;
-import rx.Single;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * Dummy search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.

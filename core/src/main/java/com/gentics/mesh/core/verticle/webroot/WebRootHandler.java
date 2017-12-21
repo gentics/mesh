@@ -31,7 +31,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
-import rx.Single;
+import io.reactivex.Single;
 
 @Singleton
 public class WebRootHandler {

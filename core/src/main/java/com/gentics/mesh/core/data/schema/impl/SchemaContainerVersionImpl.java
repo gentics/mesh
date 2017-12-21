@@ -44,7 +44,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.VertexFrame;
 
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * @see SchemaContainerVersion

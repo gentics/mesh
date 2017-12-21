@@ -4,6 +4,8 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -21,8 +23,6 @@ import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
-
-import rx.functions.Func0;
 
 /**
  * Verticle that adds REST endpoints for project specific search (for nodes, tags and tagFamilies)
@@ -87,7 +87,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 *            Example list response used for RAML generation
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse) {
+			Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse) {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);

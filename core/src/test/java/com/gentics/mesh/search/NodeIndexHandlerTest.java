@@ -22,7 +22,7 @@ public class NodeIndexHandlerTest extends AbstractMeshTest {
 			searchProvider().reset();
 			assertEquals("Initially no store event should have been recorded.", 0,
 					dummySearchProvider().getStoreEvents().size());
-			meshDagger().nodeContainerIndexHandler().reindexAll().await();
+			meshDagger().nodeContainerIndexHandler().reindexAll().blockingAwait();
 			assertTrue("We expected to see more than one store event.",
 					dummySearchProvider().getStoreEvents().size() > 1);
 		}

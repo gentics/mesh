@@ -45,7 +45,7 @@ import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.TxAction1;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Main CRUD handler for the Node Endpoint.
@@ -191,7 +191,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
 			} else {
-				return page.transformToRest(ac, 0).toBlocking().value();
+				return page.transformToRest(ac, 0).blockingGet();
 			}
 		}, model -> ac.send(model, OK));
 

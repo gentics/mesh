@@ -12,17 +12,16 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.ReadStream;
-import io.vertx.rx.java.RxHelper;
-import io.vertx.rxjava.core.file.AsyncFile;
-import io.vertx.rxjava.core.file.FileSystem;
-import rx.Completable;
-import rx.Observable;
+import io.vertx.reactivex.core.file.FileSystem;
+import io.vertx.reactivex.core.streams.Pump;
 
 @Singleton
 public class LocalBinaryStorage extends AbstractBinaryStorage {
@@ -55,12 +54,13 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			File targetFile = new File(uploadFolder, uuid + ".bin");
 
 			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
-				ReadStream<Buffer> st = RxHelper.toReadStream(stream);
-				io.vertx.core.streams.Pump pump = io.vertx.core.streams.Pump.pump(st, file.getDelegate());
+				Observable<io.vertx.reactivex.core.buffer.Buffer> st = stream.map(buf -> io.vertx.reactivex.core.buffer.Buffer.newInstance(buf));
+				Pump pump = Pump.pump(st, file);
 				pump.start();
 				return file;
 			}).doOnSuccess(file -> {
 				file.flush();
+				file.close();
 			}).toCompletable();
 			// log.error("Failed to save file to {" + targetPath + "}", error);
 			// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
@@ -88,8 +88,8 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Observable<Buffer> read(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
-		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable().flatMap(
-				AsyncFile::toObservable).map(buf -> buf.getDelegate());
+		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable()
+				.map(file -> file.getDelegate()).flatMap(RxUtil::toBufferObs);
 		return obs;
 	}
 
@@ -116,7 +116,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 		String path = getFilePath(binaryUuid);
 		return FileSystem.newInstance(Mesh.vertx().fileSystem())
 
-				.rxDelete(path).toCompletable()
+				.rxDelete(path)
 				// Dont fail if the file is not even in the local storage
 				.onErrorComplete(e -> {
 					Throwable cause = e.getCause();

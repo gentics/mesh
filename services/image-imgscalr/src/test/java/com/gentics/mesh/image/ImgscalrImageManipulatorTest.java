@@ -35,14 +35,12 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.RxHelper;
-import io.vertx.rxjava.core.Vertx;
-import rx.Observable;
-import rx.Single;
-import rx.functions.Action6;
+import io.vertx.reactivex.core.Vertx;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -71,8 +69,8 @@ public class ImgscalrImageManipulatorTest {
 		checkImages((imageName, width, height, color, refImage, bs) -> {
 			log.debug("Handling " + imageName);
 
-			Single<Buffer> obs = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
-					.map(PropReadFileStream::getFile).map(RxHelper::toObservable).flatMap(RxUtil::readEntireData);
+			Single<Buffer> obs = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180)).map(
+					PropReadFileStream::getFile).map(RxUtil::toBufferObs).flatMap(RxUtil::readEntireData);
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {
@@ -104,14 +102,15 @@ public class ImgscalrImageManipulatorTest {
 	public void testExtractImageInfo() throws IOException, JSONException {
 		checkImages((imageName, width, height, color, refImage, stream) -> {
 			Single<ImageInfo> obs = manipulator.readImageInfo(stream);
-			ImageInfo info = obs.toBlocking().value();
+			ImageInfo info = obs.blockingGet();
 			assertEquals("The width or image {" + imageName + "} did not match.", width, info.getWidth());
 			assertEquals("The height or image {" + imageName + "} did not match.", height, info.getHeight());
 			assertEquals("The dominant color of the image did not match {" + imageName + "}", color, info.getDominantColor());
 		});
 	}
 
-	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Observable<Buffer>> action) throws JSONException, IOException {
+	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Observable<Buffer>> action) throws JSONException,
+			IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
@@ -152,8 +151,8 @@ public class ImgscalrImageManipulatorTest {
 		BufferedImage outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
-		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
-				outputImage.hashCode());
+		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
+				.hashCode());
 
 		// Height only
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
@@ -166,8 +165,8 @@ public class ImgscalrImageManipulatorTest {
 		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
-		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
-				outputImage.hashCode());
+		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
+				.hashCode());
 
 		// Height and Width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
@@ -187,8 +186,8 @@ public class ImgscalrImageManipulatorTest {
 		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100).setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
-		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
-				outputImage.hashCode());
+		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
+				.hashCode());
 
 	}
 
@@ -232,7 +231,7 @@ public class ImgscalrImageManipulatorTest {
 	@Test
 	public void testTikaMetadata() throws IOException, SAXException, TikaException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/12382975864_09e6e069e7_o.jpg");
-		Map<String, String> metadata = manipulator.getMetadata(ins).toBlocking().value();
+		Map<String, String> metadata = manipulator.getMetadata(ins).blockingGet();
 		assertTrue(!metadata.isEmpty());
 		for (String key : metadata.keySet()) {
 			System.out.println(key + "=" + metadata.get(key));

@@ -124,11 +124,11 @@ import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
-import rx.Single;
 
 /**
  * @see Node
@@ -955,7 +955,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
 			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-			return Observable.merge(obsList).last().toSingle();
+			return Observable.merge(obsList).lastOrError();
 		}
 		NavigationParameters parameters = new NavigationParametersImpl(ac);
 		// Add children
@@ -981,7 +981,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-		return Observable.merge(obsList).last().toSingle();
+		return Observable.merge(obsList).lastOrError();
 	}
 
 	@Override

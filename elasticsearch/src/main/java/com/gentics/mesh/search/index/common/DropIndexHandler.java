@@ -2,7 +2,7 @@ package com.gentics.mesh.search.index.common;
 
 import com.gentics.mesh.core.data.search.DropIndexEntry;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * The drop index handler is used to handle {@link DropIndexEntry} batch entries.

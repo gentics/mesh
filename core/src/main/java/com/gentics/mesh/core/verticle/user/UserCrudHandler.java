@@ -33,7 +33,7 @@ import com.gentics.mesh.util.TokenUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Handler which contains methods for user related requests.

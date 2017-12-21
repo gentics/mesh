@@ -31,8 +31,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
-import rx.Observable;
-import rx.Single;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 /**
  * @see MicronodeGraphFieldList
@@ -80,7 +80,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		// Handle Update
 		// TODO instead this method should also return an observable
-		micronodeGraphFieldList.update(ac, micronodeList).toBlocking().value();
+		micronodeGraphFieldList.update(ac, micronodeList).blockingGet();
 	};
 
 	public static FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
@@ -127,7 +127,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		}));
 
 		return Observable.<Boolean>create(subscriber -> {
-			Observable.from(list.getItems()).flatMap(item -> {
+			Observable.fromIterable(list.getItems()).flatMap(item -> {
 				if (item == null) {
 					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
 				}
@@ -183,13 +183,12 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				existing.values().stream().forEach(micronode -> {
 					micronode.delete(null);
 				});
+				subscriber.onNext(true);
+				subscriber.onComplete();
 			}, e -> {
 				subscriber.onError(e);
-			}, () -> {
-				subscriber.onNext(true);
-				subscriber.onCompleted();
 			});
-		}).toSingle();
+		}).singleOrError();
 	}
 
 	@Override

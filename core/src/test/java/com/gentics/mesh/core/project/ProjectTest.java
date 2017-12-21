@@ -165,7 +165,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			Project project = project();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			ProjectResponse response = project.transformToRest(ac, 0).toBlocking().value();
+			ProjectResponse response = project.transformToRest(ac, 0).blockingGet();
 
 			assertEquals(project.getName(), response.getName());
 			assertEquals(project.getUuid(), response.getUuid());

@@ -8,9 +8,9 @@ import java.util.Map;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.PropReadFileStream;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import rx.Observable;
-import rx.Single;
 
 /**
  * SPI provider interface for image manipulators.

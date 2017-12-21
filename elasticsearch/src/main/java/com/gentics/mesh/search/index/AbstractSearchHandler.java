@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.elasticsearch.ElasticsearchException;
@@ -48,16 +49,12 @@ import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Future;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
-import rx.Single;
-import rx.functions.Func0;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -168,7 +165,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	}
 
 	@Override
-	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL)
+	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
@@ -203,7 +200,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			@Override
 			public void onResponse(SearchResponse response) {
 				db.tx(() -> {
-					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
+					List<Single<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
 					for (SearchHit hit : response.getHits()) {
@@ -214,21 +211,17 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						String language = pos > 0 ? id.substring(pos + 1) : null;
 						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
-						obs.add(obsResult);
-
 						// Locate the node
-						T element = rootVertex.call().findByUuid(uuid);
+						T element = rootVertex.get().findByUuid(uuid);
 						if (element == null) {
-							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.call().getRootLabel() + "}");
-							obsResult.toHandler().handle(Future.succeededFuture());
+							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel() + "}");
 						} else {
-							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
+							obs.add(Single.just(Tuple.tuple(element, language)));
 						}
 
 					}
 
-					Observable.merge(obs).collect(() -> {
+					Single.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
 					}, (x, y) -> {
 						if (y == null) {
@@ -275,7 +268,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 						List<Observable<RM>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 						// Populate the response data with the transformed elements and send the response
-						Observable.concat(Observable.from(obsList)).collect(() -> {
+						Observable.concat(Observable.fromIterable(obsList)).collect(() -> {
 							return listResponse.getData();
 						}, (x, y) -> {
 							x.add(y);

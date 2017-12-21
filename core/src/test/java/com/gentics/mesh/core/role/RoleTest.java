@@ -308,7 +308,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Role role = role();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().value();
+			RoleResponse restModel = role.transformToRest(ac, 0).blockingGet();
 
 			assertNotNull(restModel);
 			assertEquals(role.getName(), restModel.getName());

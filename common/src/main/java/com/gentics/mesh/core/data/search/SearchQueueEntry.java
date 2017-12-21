@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.search;
 
 import com.gentics.mesh.core.data.search.context.EntryContext;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * A search queue entry is contains the information that is needed to update the search index for the element that is specified in this entry. In order to

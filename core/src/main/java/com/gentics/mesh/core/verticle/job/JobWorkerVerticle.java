@@ -2,6 +2,8 @@ package com.gentics.mesh.core.verticle.job;
 
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 
+import java.util.function.Consumer;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -15,8 +17,6 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.Lock;
-import rx.functions.Action0;
-import rx.functions.Action1;
 
 /**
  * Dedicated verticle which will process jobs.
@@ -116,20 +116,20 @@ public class JobWorkerVerticle extends AbstractVerticle {
 	 * @param errorAction
 	 *            Action which will be invoked when the lock could not be obtained or the action failed.
 	 */
-	protected void executeLocked(Action0 action, Action1<Throwable> errorAction) {
+	protected void executeLocked(Runnable action, Consumer<Throwable> errorAction) {
 		try {
 			vertx.sharedData().getLock(GLOBAL_JOB_LOCK_NAME, rh -> {
 				if (rh.failed()) {
 					Throwable cause = rh.cause();
 					log.error("Error while acquiring global migration lock {" + GLOBAL_JOB_LOCK_NAME + "}", cause);
-					errorAction.call(cause);
+					errorAction.accept(cause);
 				} else {
 					Lock lock = rh.result();
 					try {
-						action.call();
+						action.run();
 					} catch (Exception e) {
 						log.error("Error while executing locked action", e);
-						errorAction.call(e);
+						errorAction.accept(e);
 					} finally {
 						lock.release();
 					}
@@ -137,7 +137,7 @@ public class JobWorkerVerticle extends AbstractVerticle {
 			});
 		} catch (Exception e) {
 			log.error("Error while waiting for global lock {" + GLOBAL_JOB_LOCK_NAME + "}", e);
-			errorAction.call(e);
+			errorAction.accept(e);
 		}
 	}
 

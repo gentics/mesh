@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.index.entry.AbstractEntry;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * @see CreateIndexEntry

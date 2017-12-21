@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * A batch of search queue entries. Usually a batch groups those elements that need to be updated in order to sync the search index with the graph database

@@ -112,7 +112,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very

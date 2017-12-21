@@ -39,7 +39,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * @see Group

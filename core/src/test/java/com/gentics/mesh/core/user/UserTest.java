@@ -44,6 +44,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.google.common.collect.Iterables;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -86,9 +87,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			UserRoot root = meshRoot().getUserRoot();
-			int nUserBefore = root.findAll().size();
+			int nUserBefore = Iterables.size(root.findAllIt());
 			assertNotNull(root.create("dummy12345", user()));
-			int nUserAfter = root.findAll().size();
+			int nUserAfter = Iterables.size(root.findAllIt());
 			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 		}
 	}
@@ -230,7 +231,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().value();
+			UserResponse restUser = user().transformToRest(ac, 0).blockingGet();
 
 			assertNotNull(restUser);
 			assertEquals(user().getUsername(), restUser.getUsername());
