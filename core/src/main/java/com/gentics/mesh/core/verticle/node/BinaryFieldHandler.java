@@ -108,8 +108,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// }
 
 			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(), ac
-					.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+					ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -302,7 +302,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			Observable<Buffer> stream = RxUtil.toBufferObs(asyncFile).publish().autoConnect(neededDataStreams);
 
 			// Only gather image info for actual images. Otherwise return an empty image info object.
-			Single<ImageInfo> imageInfo = Single.just(null);
+			Single<ImageInfo> imageInfo = null;
 			if (isImage) {
 				imageInfo = processImageInfo(ac, stream);
 			}
@@ -314,10 +314,16 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Handle the data in parallel
-			TransformationResult info = Single.zip(imageInfo, store, (imageinfo, size) -> {
-				return new TransformationResult(hash, 0, imageinfo, null);
-			}).blockingGet();
-
+			TransformationResult info = null;
+			if (imageInfo == null) {
+				info = store.map(size -> {
+					return new TransformationResult(hash, 0, null, null);
+				}).blockingGet();
+			} else {
+				info = Single.zip(imageInfo, store, (imageinfo, size) -> {
+					return new TransformationResult(hash, 0, imageinfo, null);
+				}).blockingGet();
+			}
 			// Only add image information if image properties were found
 			if (info.getImageInfo() != null) {
 				binary.setImageHeight(info.getImageInfo().getHeight());
@@ -410,8 +416,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
-								transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
+						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
@@ -431,9 +437,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, imageManipulationParameter)
 							.flatMap(file -> {
-								Observable<Buffer>  obs = RxUtil.toBufferObs(file.getFile());
-								Observable<Buffer> resizedImageData = obs.doOnTerminate(file.getFile()::close)
-										.publish().autoConnect(2);
+								Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
+								Observable<Buffer> resizedImageData = obs.doOnTerminate(file.getFile()::close).publish().autoConnect(2);
 
 								// Hash the resized image data and store it using the computed fieldUuid + hash
 								Single<String> hash = FileUtils.hash(resizedImageData);

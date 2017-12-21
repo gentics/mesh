@@ -11,8 +11,11 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
+import io.vertx.core.streams.Pump;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.reactivex.RxHelper;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.impl.ReadStreamSubscriber;
 
 public final class RxUtil {
 
@@ -64,5 +67,24 @@ public final class RxUtil {
 
 	public static Observable<Buffer> toBufferObs(AsyncFile file) {
 		return new io.vertx.reactivex.core.file.AsyncFile(file).toObservable().map(io.vertx.reactivex.core.buffer.Buffer::getDelegate);
+	}
+
+	public static io.vertx.reactivex.core.streams.Pump pump1(Observable<Buffer> stream, io.vertx.reactivex.core.file.AsyncFile file) {
+		ReadStream<io.vertx.core.buffer.Buffer> rss = ReadStreamSubscriber.asReadStream(stream, Function.identity());
+		Pump pump = Pump.pump(rss, file.getDelegate());
+		return io.vertx.reactivex.core.streams.Pump.newInstance(pump);
+	}
+
+	/**
+	 * Creates a pump which applies a workaround for vertx-rxjava#123.
+	 * 
+	 * @param stream
+	 * @param file
+	 * @return
+	 */
+	public static io.vertx.reactivex.core.streams.Pump pump(Observable<io.vertx.reactivex.core.buffer.Buffer> stream,
+			io.vertx.reactivex.core.file.AsyncFile file) {
+		return pump1(stream.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate), file);
+
 	}
 }

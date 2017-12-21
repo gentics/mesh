@@ -51,11 +51,10 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 					log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
 				}
 			}
-			File targetFile = new File(uploadFolder, uuid + ".bin");
 
+			File targetFile = new File(uploadFolder, uuid + ".bin");
 			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
-				Observable<io.vertx.reactivex.core.buffer.Buffer> st = stream.map(buf -> io.vertx.reactivex.core.buffer.Buffer.newInstance(buf));
-				Pump pump = Pump.pump(st, file);
+				Pump pump = RxUtil.pump1(stream, file);
 				pump.start();
 				return file;
 			}).doOnSuccess(file -> {

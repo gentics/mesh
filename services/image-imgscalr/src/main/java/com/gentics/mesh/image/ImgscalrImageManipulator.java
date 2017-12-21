@@ -62,8 +62,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (parameters.hasAllCropParameters()) {
 			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(), parameters
-						.getCroph());
+				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
+						parameters.getCroph());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -209,8 +209,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// Resize the image to 1x1 and sample the pixel
 		BufferedImage pixel = Scalr.resize(image, Mode.FIT_EXACT, 1, 1);
 		image.flush();
-		int[] color = pixel.getData().getPixel(0, 0, (int[]) null);
-		return color;
+		return pixel.getData().getPixel(0, 0, (int[]) null);
 	}
 
 	@Override
