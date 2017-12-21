@@ -12,7 +12,7 @@ icon:plus[] Core: The OrientDB graph database was updated to version 3.0
 [[v0.12.0]]
 == 0.12.0 (21.12.2017)
 
-CAUTION: The `search.httpEnabled` option within the `mesh.yml` has been removed. The embedded elasticsearch API can no longer be directly accessed via HTTP.
+CAUTION: The `search.httpEnabled` option within the `mesh.yml` has been removed. The embedded elasticsearch API can no longer be directly accessed via HTTP. The existing endpoint `/api/v1/:projectName/search` is unaffected by this change.
 
 icon:plus[] Core: The core Vert.x library was updated to version 3.5.0
 
