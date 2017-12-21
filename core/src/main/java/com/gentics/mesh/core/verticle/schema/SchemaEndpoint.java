@@ -128,14 +128,14 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
 
-		endpoint.handler(rc -> {
-			//Update operations should always be executed sequentially - never in parallel
+		endpoint.blockingHandler(rc -> {
+			// Update operations should always be executed sequentially - never in parallel
 			synchronized (mutex) {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				String uuid = ac.getParameter("schemaUuid");
 				crudHandler.handleUpdate(ac, uuid);
 			}
-		});
+		}, true);
 	}
 
 	private void addDeleteHandler() {
