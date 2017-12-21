@@ -783,6 +783,20 @@ The ```?resolveLinks``` query parameter defines if and how links are resolved:
 
 The ```?resolveLinks``` query parameter can be applied to all API endpoints returning nodes.
 
+[[crossdomainlinks]]
+=== Cross Domain/Project Links
+
+In some cases it may be desireable to be able to create links which point to nodes within different projects. 
+In these situations the link should no longer be relative but instead contain the domain and protocol which is used by the project of the referenced node.
+
+You can specifiy the `hostname` and `ssl` flag when creating a project. This will in turn store this information within the created release of the project. Gentics Mesh will make use of this information once you render a foreign node's link using the *short* type.
+The links will automatically start with `https://` if the ssl flag of the release has been set to true. You can update the hostname/ssl flag at any time by updating the release of the project.
+
+NOTE: Foreign links can only be rendered using the *?resolveLinks=short* type. Other resolver types do not support this mechanism.
+
+NOTE: Foreign links currently don't contain any release reference thus it is not possible to render links to a foreign node within a specific release. 
+      Instead the foreign link resolving mechanism will automatically use the latest release of the node's project to render the links.
+
 === API endpoints
 
 [options="header",cols="2*"]

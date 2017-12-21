@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
+import java.nio.file.NoSuchFileException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -113,7 +114,18 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Completable delete(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
-		return FileSystem.newInstance(Mesh.vertx().fileSystem()).rxDelete(path).toCompletable();
+		return FileSystem.newInstance(Mesh.vertx().fileSystem())
+
+				.rxDelete(path).toCompletable()
+				// Dont fail if the file is not even in the local storage
+				.onErrorComplete(e -> {
+					Throwable cause = e.getCause();
+					if (cause != null) {
+						return cause instanceof NoSuchFileException;
+					} else {
+						return e instanceof NoSuchFileException;
+					}
+				});
 	}
 
 }

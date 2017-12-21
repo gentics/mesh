@@ -16,7 +16,9 @@ public @interface MeshTestSetting {
 	 * Flag which indicates whether the ES http server should be started.
 	 * 
 	 * @return
+	 * @deprecated Currently not supported since Netty of Vert.x 3.5.0 is not compatible with ES 
 	 */
+	@Deprecated
 	boolean startESServer() default false;
 
 	/**

@@ -265,6 +265,33 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	public void testCreateDeleteCreateWithUuid() throws Exception {
+		String nodeUuid = UUIDUtil.randomUUID();
+		String nodeUuid2 = UUIDUtil.randomUUID();
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some name"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		for (int i = 0; i < 10; i++) {
+			// 1. Create
+			request.setParentNodeUuid(parentNodeUuid);
+			call(() -> client().createNode(nodeUuid, PROJECT_NAME, request));
+			request.setParentNodeUuid(nodeUuid);
+			call(() -> client().createNode(nodeUuid2, PROJECT_NAME, request));
+
+			// 2. Delete
+			call(() -> client().deleteNode(PROJECT_NAME, nodeUuid, new DeleteParametersImpl().setRecursive(true)));
+		}
+
+	}
+
+	@Test
 	@Override
 	public void testCreateWithDuplicateUuid() throws Exception {
 		String nodeUuid = tx(() -> project().getUuid());

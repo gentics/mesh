@@ -61,10 +61,10 @@ public class RunnerNodeA {
 			// Add admin ui
 			registry.register(AdminGUIEndpoint.class);
 
-			// Add elastichead
-			if (options.getSearchOptions().isHttpEnabled()) {
-				registry.register(ElasticsearchHeadEndpoint.class);
-			}
+			// // Add elastichead
+			// if (options.getSearchOptions().isHttpEnabled()) {
+			// registry.register(ElasticsearchHeadEndpoint.class);
+			// }
 		});
 		mesh.run();
 	}

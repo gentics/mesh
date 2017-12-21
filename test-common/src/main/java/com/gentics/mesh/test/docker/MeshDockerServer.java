@@ -124,7 +124,6 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		MeshOptions options = new MeshOptions();
 		options.getClusterOptions().setEnabled(enableClustering);
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
-		options.getSearchOptions().setHttpEnabled(true);
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
 	}
 

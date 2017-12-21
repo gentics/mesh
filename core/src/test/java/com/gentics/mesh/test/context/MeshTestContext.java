@@ -295,7 +295,6 @@ public class MeshTestContext extends TestWatcher {
 		} else {
 			searchOptions.setDirectory(null);
 		}
-		searchOptions.setHttpEnabled(settings.startESServer());
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
 		return options;

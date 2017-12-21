@@ -60,10 +60,9 @@ public class RunnerNodeB {
 			registry.register(AdminGUIEndpoint.class);
 
 			// Add elastichead
-
-			if (options.getSearchOptions().isHttpEnabled()) {
-				registry.register(ElasticsearchHeadEndpoint.class);
-			}
+			// if (options.getSearchOptions().isHttpEnabled()) {
+			// registry.register(ElasticsearchHeadEndpoint.class);
+			// }
 		});
 		mesh.run();
 	}

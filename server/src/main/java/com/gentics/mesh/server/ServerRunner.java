@@ -44,10 +44,10 @@ public class ServerRunner {
 			EndpointRegistry registry = MeshInternal.get().endpointRegistry();
 			registry.register(AdminGUIEndpoint.class);
 
-			// Add elastichead
-			if (options.getSearchOptions().isHttpEnabled()) {
-				registry.register(ElasticsearchHeadEndpoint.class);
-			}
+			// // Add elastichead
+			// if (options.getSearchOptions().isHttpEnabled()) {
+			// registry.register(ElasticsearchHeadEndpoint.class);
+			// }
 		});
 		mesh.run();
 	}

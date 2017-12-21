@@ -93,7 +93,7 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Provide a blocking inputstream by reading the byte buffers from the observable.
+	 * Provide a blocking {@link InputStream} by reading the byte buffers from the observable.
 	 * 
 	 * @param stream
 	 * @param vertx

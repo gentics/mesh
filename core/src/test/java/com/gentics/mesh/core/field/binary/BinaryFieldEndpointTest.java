@@ -1,44 +1,46 @@
 package com.gentics.mesh.core.field.binary;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
-import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.json.JsonUtil;
-
-import io.vertx.core.json.JsonObject;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
@@ -85,9 +87,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testVersionConflictUpload() {
 		// 1. Upload a binary field
-		String uuid = db().tx(() -> folder("2015").getUuid());
+		String uuid = tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer,
 				"filename.txt", "application/binary"));
 
@@ -108,9 +110,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
 			// 1. Upload a binary field
-			String uuid = db().tx(() -> folder("2015").getUuid());
+			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
@@ -134,8 +136,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		Node node = folder("2015");
 
 		// 1. Upload a binary field
-		String uuid = db().tx(() -> folder("2015").getUuid());
-		VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		String uuid = tx(() -> folder("2015").getUuid());
+		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, filename, "application/binary"));
 
@@ -158,9 +160,26 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// 3. Set the field to null one more time and assert that no new version was created
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse
+					.getVersion());
 		}
+	}
+
+	@Test
+	public void testUpdateDelete() throws IOException {
+		// 1. Upload a binary field
+		String uuid = tx(() -> folder("2015").getUuid());
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
+				"application/binary"));
+
+		// Clear the local binary storage directory to simulate a storage inconsistency
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+
+		// 2. Delete the node
+		call(() -> client().deleteNode(PROJECT_NAME, uuid));
+
 	}
 
 	@Test
@@ -168,9 +187,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetEmpty() {
 		try (Tx tx = tx()) {
 			// 1. Upload a binary field
-			String uuid = db().tx(() -> folder("2015").getUuid());
+			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
@@ -190,7 +209,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		String uuid = tx(() -> folder("2015").getUuid());
 		// 1. Upload a binary field
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 				"application/binary"));
 
@@ -217,9 +236,10 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", buffer, fileName,
-			"application/binary"));
+				"application/binary"));
 
-		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals("binary_content")).findFirst().get();
+		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals(
+				"binary_content")).findFirst().get();
 		SchemaUpdateRequest schemaUpdateRequest = JsonUtil.readValue(binarySchema.toJson(), SchemaUpdateRequest.class);
 		schemaUpdateRequest.setDisplayField("binary");
 		waitForJobs(() -> {
