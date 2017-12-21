@@ -59,7 +59,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 				return file;
 			}).doOnSuccess(file -> {
 				file.flush();
-				file.close();
+//				file.close();
 			}).toCompletable();
 			// log.error("Failed to save file to {" + targetPath + "}", error);
 			// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
