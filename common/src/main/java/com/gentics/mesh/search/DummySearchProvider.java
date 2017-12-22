@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class DummySearchProvider implements SearchProvider {
 	@Override
 	public Single<Map<String, Object>> getDocument(String index, String uuid) {
 		getEvents.add(index + "-" + uuid);
-		return Single.just(null);
+		return Single.just(Collections.emptyMap());
 	}
 
 	@Override

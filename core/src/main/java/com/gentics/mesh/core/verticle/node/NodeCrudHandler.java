@@ -14,6 +14,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -291,7 +293,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				batch.store(node, release.getUuid(), DRAFT, false);
 				node.removeTag(tag, release);
 				return batch;
-			}).processAsync().andThen(Single.just(null));
+			}).processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -349,7 +351,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch batch = searchQueue.create();
 			node.takeOffline(ac, batch);
-			return batch.processAsync().andThen(Single.just(null));
+			return batch.processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -416,7 +418,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				Release release = ac.getRelease(ac.getProject());
 				node.takeOffline(ac, batch, release, languageTag);
 				return batch;
-			}).processAsync().andThen(Single.just(null));
+			}).processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
