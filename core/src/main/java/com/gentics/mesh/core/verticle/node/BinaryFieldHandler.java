@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -302,7 +303,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			Observable<Buffer> stream = RxUtil.toBufferObs(asyncFile).publish().autoConnect(neededDataStreams);
 
 			// Only gather image info for actual images. Otherwise return an empty image info object.
-			Single<ImageInfo> imageInfo = null;
+			Single<Optional<ImageInfo>> imageInfo = Single.just(Optional.empty());
 			if (isImage) {
 				imageInfo = processImageInfo(ac, stream);
 			}
@@ -314,16 +315,14 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Handle the data in parallel
-			TransformationResult info = null;
-			if (imageInfo == null) {
-				info = store.map(size -> {
-					return new TransformationResult(hash, 0, null, null);
-				}).blockingGet();
-			} else {
-				info = Single.zip(imageInfo, store, (imageinfo, size) -> {
-					return new TransformationResult(hash, 0, imageinfo, null);
-				}).blockingGet();
-			}
+
+			TransformationResult info = Single.zip(imageInfo, store, (imageinfoOpt, size) -> {
+				ImageInfo iinfo = null;
+				if (imageinfoOpt.isPresent()) {
+					iinfo = imageinfoOpt.get();
+				}
+				return new TransformationResult(hash, 0, iinfo, null);
+			}).blockingGet();
 			// Only add image information if image properties were found
 			if (info.getImageInfo() != null) {
 				binary.setImageHeight(info.getImageInfo().getHeight());
@@ -346,18 +345,18 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param stream
 	 * @return
 	 */
-	private Single<ImageInfo> processImageInfo(ActionContext ac, Observable<Buffer> stream) {
+	private Single<Optional<ImageInfo>> processImageInfo(ActionContext ac, Observable<Buffer> stream) {
 		// Caches the image info in the action context so that it does not need to be
 		// calculated again if the transaction failed
 		ImageInfo imageInfo = ac.get("imageInfo");
 		if (imageInfo != null) {
-			return Single.just(imageInfo);
+			return Single.just(Optional.of(imageInfo));
 		} else {
 			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> {
 				ac.put("imageInfo", ii);
-			}).onErrorReturn(e -> {
+			}).map(Optional::of).onErrorReturn(e -> {
 				// suppress error
-				return null;
+				return Optional.empty();
 			});
 		}
 	}
