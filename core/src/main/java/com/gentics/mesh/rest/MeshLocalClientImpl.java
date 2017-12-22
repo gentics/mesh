@@ -103,6 +103,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.reactivex.Single;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -112,7 +113,6 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
-import rx.Single;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
@@ -767,7 +767,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public Single<GenericMessageResponse> login() {
-		return Single.just(null);
+		return Single.error(new Exception("Not implemented"));
 	}
 
 	@Override

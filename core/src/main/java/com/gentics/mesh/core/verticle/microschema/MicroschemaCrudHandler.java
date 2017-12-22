@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -38,7 +39,7 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import rx.Single;
+import io.reactivex.Single;
 
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, MicroschemaResponse> {
 
@@ -209,7 +210,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			return db.tx(() -> {
 				project.getMicroschemaContainerRoot().removeMicroschema(microschema);
-				return Single.just(null);
+				return Single.just(Optional.empty());
 			});
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}

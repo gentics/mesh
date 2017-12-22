@@ -26,7 +26,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAnonymousAccess() {
-		client().logout().toCompletable().await();
+		client().logout().toCompletable().blockingAwait();
 		UserResponse response = call(() -> client().me());
 		assertEquals(MeshAuthHandler.ANONYMOUS_USERNAME, response.getUsername());
 
@@ -64,7 +64,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		client().logout().toCompletable().await();
+		client().logout().toCompletable().blockingAwait();
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().setVersion("published")));
 	}
 

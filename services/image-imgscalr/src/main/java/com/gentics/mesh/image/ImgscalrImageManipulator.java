@@ -31,11 +31,11 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.rx.java.RxHelper;
-import io.vertx.rxjava.core.Vertx;
-import rx.Observable;
-import rx.Single;
+import io.vertx.reactivex.RxHelper;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -62,8 +62,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (parameters.hasAllCropParameters()) {
 			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(), parameters
-						.getCroph());
+				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
+						parameters.getCroph());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -209,8 +209,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// Resize the image to 1x1 and sample the pixel
 		BufferedImage pixel = Scalr.resize(image, Mode.FIT_EXACT, 1, 1);
 		image.flush();
-		int[] color = pixel.getData().getPixel(0, 0, (int[]) null);
-		return color;
+		return pixel.getData().getPixel(0, 0, (int[]) null);
 	}
 
 	@Override

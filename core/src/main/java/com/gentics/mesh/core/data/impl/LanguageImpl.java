@@ -14,7 +14,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * @see Language

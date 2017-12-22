@@ -33,7 +33,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 
-import rx.Single;
+import io.reactivex.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TxTest extends AbstractMeshTest {
@@ -120,7 +120,7 @@ public class TxTest extends AbstractMeshTest {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
 		db().asyncTx(() -> {
 			throw new RuntimeException("error");
-		}).toBlocking().value();
+		}).blockingGet();
 		assertEquals("error", cf.get().getMessage());
 		throw cf.get();
 	}
@@ -132,7 +132,7 @@ public class TxTest extends AbstractMeshTest {
 				TestUtils.sleep(1000);
 			});
 			return Single.just("OK");
-		}).toBlocking().value();
+		}).blockingGet();
 		assertEquals("OK", result);
 	}
 
@@ -140,7 +140,7 @@ public class TxTest extends AbstractMeshTest {
 	public void testAsyncNoTrxSuccess() throws Throwable {
 		String result = db().asyncTx(() -> {
 			return Single.just("OK");
-		}).toBlocking().value();
+		}).blockingGet();
 		assertEquals("OK", result);
 	}
 
@@ -217,7 +217,7 @@ public class TxTest extends AbstractMeshTest {
 				threads.add(t);
 			}
 			System.out.println("Waiting on lock");
-			// barrier.await(2, TimeUnit.SECONDS);
+			// barrier.blockingAwait()(2, TimeUnit.SECONDS);
 			for (Thread currentThread : threads) {
 				currentThread.join();
 			}

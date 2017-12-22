@@ -11,8 +11,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
 
+import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
-import rx.Observable;
 
 /**
  * @see Binary
@@ -38,7 +38,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	@Override
 	public void remove() {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
-		storage.delete(getUuid()).await();
+		storage.delete(getUuid()).blockingAwait();
 		super.remove();
 	}
 

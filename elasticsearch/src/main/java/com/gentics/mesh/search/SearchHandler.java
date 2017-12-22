@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -14,8 +15,6 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
-
-import rx.functions.Func0;
 
 /**
  * 
@@ -61,7 +60,7 @@ public interface SearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestM
 	 * @throws MeshJsonException
 	 * @throws MeshConfigurationException
 	 */
-	<RL extends ListResponse<RM>> void query(InternalActionContext ac, Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL)
+	<RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException;
 
 	/**

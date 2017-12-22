@@ -16,13 +16,13 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
 
 /**
  * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
@@ -84,7 +84,7 @@ public class BinaryFieldResponseHandler {
 							response.putHeader("content-disposition", "inline; filename=" + fileName);
 							return fileWithProps.getFile();
 						}).flatMap(file -> {
-							return RxHelper.toObservable(file).doOnTerminate(file::close);
+							return RxUtil.toBufferObs(file).doOnTerminate(file::close);
 						});
 				resizedData.subscribe(response::write, rc::fail, response::end);
 			} else {

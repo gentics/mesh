@@ -9,13 +9,11 @@ import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.ReadStream;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
-import rx.Single;
 
 public final class FileUtils {
 
@@ -53,20 +51,7 @@ public final class FileUtils {
 			return stream.reduce(md, (digest, buffer) -> {
 				digest.update(buffer.getBytes());
 				return digest;
-			}).map(digest -> digest.digest()).map(FileUtils::bytesToHex).toSingle();
-		} catch (Exception e) {
-			log.error("Error while hashing data", e);
-			return Single.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e));
-		}
-	}
-
-	public static Single<String> hash(ReadStream<Buffer> stream) {
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-512");
-			return RxHelper.toObservable(stream).reduce(md, (digest, buffer) -> {
-				digest.update(buffer.getBytes());
-				return digest;
-			}).map(digest -> digest.digest()).map(FileUtils::bytesToHex).toSingle();
+			}).map(digest -> digest.digest()).map(FileUtils::bytesToHex);
 		} catch (Exception e) {
 			log.error("Error while hashing data", e);
 			return Single.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e));

@@ -35,7 +35,7 @@ import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
+import io.reactivex.Single;
 
 public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 

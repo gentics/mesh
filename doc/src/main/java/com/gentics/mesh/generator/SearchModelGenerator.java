@@ -137,7 +137,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), randomUUID(), ContainerType.PUBLISHED).toCompletable().await();
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), randomUUID(), ContainerType.PUBLISHED).toCompletable().blockingAwait();
 		writeStoreEvent("node.search");
 	}
 
@@ -146,7 +146,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
 		ProjectIndexHandler projectIndexHandler = meshDagger.projectIndexHandler();
-		projectIndexHandler.store(project, mockUpdateDocumentEntry()).await();
+		projectIndexHandler.store(project, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("project.search");
 	}
 
@@ -154,7 +154,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Group group = mockGroup("adminGroup", user);
 		GroupIndexHandler groupIndexHandler = meshDagger.groupIndexHandler();
-		groupIndexHandler.store(group, mockUpdateDocumentEntry()).await();
+		groupIndexHandler.store(group, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("group.search");
 	}
 
@@ -162,7 +162,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Role role = mockRole("adminRole", user);
 		RoleIndexHandler roleIndexHandler = meshDagger.roleIndexHandler();
-		roleIndexHandler.store(role, mockUpdateDocumentEntry()).await();
+		roleIndexHandler.store(role, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("role.search");
 	}
 
@@ -173,7 +173,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Group groupB = mockGroup("superEditors", user);
 		Mockito.<List<? extends Group>>when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
-		userIndexHandler.store(user, mockUpdateDocumentEntry()).await();
+		userIndexHandler.store(user, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("user.search");
 	}
 
@@ -195,7 +195,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
 		UpdateDocumentEntry entry = mockUpdateDocumentEntry();
 
-		tagFamilyIndexHandler.store(tagFamily, entry).await();
+		tagFamilyIndexHandler.store(tagFamily, entry).blockingAwait();
 		writeStoreEvent("tagFamily.search");
 	}
 
@@ -204,7 +204,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 
 		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
-		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).await();
+		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("schema.search");
 	}
 
@@ -213,7 +213,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
 
 		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
-		searchIndexHandler.store(microschemaContainer, mockUpdateDocumentEntry()).await();
+		searchIndexHandler.store(microschemaContainer, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("microschema.search");
 	}
 
@@ -224,7 +224,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = meshDagger.tagIndexHandler();
 		UpdateDocumentEntry entry = mockUpdateDocumentEntry();
-		tagIndexHandler.store(tag, entry).await();
+		tagIndexHandler.store(tag, entry).blockingAwait();
 		writeStoreEvent("tag.search");
 	}
 

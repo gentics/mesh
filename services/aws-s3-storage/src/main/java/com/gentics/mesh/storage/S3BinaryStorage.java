@@ -2,11 +2,11 @@ package com.gentics.mesh.storage;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
-import rx.Observable;
 
 public class S3BinaryStorage extends AbstractBinaryStorage {
 

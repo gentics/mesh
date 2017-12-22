@@ -24,8 +24,8 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
-import rx.Single;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * Main description of a graph database.
@@ -93,7 +93,7 @@ public interface Database extends TxFactory {
 				if (done.failed()) {
 					sub.onError(done.cause());
 				} else {
-					sub.onCompleted();
+					sub.onComplete();
 				}
 			});
 		});
@@ -122,12 +122,16 @@ public interface Database extends TxFactory {
 						bc.complete();
 					} else {
 						try {
-							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
+							T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
 							bc.complete(ele);
-						} catch (TimeoutException e2) {
-							log.error("Timeout while processing result of transaction handler.", e2);
-							log.error("Calling transaction stacktrace.", reference.get());
-							bc.fail(reference.get());
+						} catch (Exception e2) {
+							if (e2 instanceof TimeoutException) {
+								log.error("Timeout while processing result of transaction handler.", e2);
+								log.error("Calling transaction stacktrace.", reference.get());
+								bc.fail(reference.get());
+							} else {
+								throw e2;
+							}
 						}
 					}
 				} catch (Exception e) {
@@ -169,12 +173,16 @@ public interface Database extends TxFactory {
 						bc.complete();
 					} else {
 						try {
-							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
+							T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
 							bc.complete(ele);
-						} catch (TimeoutException e2) {
-							log.error("Timeout while processing result of transaction handler.", e2);
-							log.error("Calling transaction stacktrace.", reference.get());
-							bc.fail(reference.get());
+						} catch (Exception e2) {
+							if (e2 instanceof TimeoutException) {
+								log.error("Timeout while processing result of transaction handler.", e2);
+								log.error("Calling transaction stacktrace.", reference.get());
+								bc.fail(reference.get());
+							} else {
+								throw e2;
+							}
 						}
 					}
 				} catch (Exception e) {

@@ -8,8 +8,8 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.json.JsonObject;
-import rx.Completable;
-import rx.Single;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.

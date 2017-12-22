@@ -4,7 +4,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.model.MeshElement;
 
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * A {@link TransformableElement} is a node that can be transformed into a rest model response.

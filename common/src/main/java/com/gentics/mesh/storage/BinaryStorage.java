@@ -2,9 +2,9 @@ package com.gentics.mesh.storage;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
-import rx.Completable;
-import rx.Observable;
 
 /**
  * A binary storage provides means to store and retrieve binary data.

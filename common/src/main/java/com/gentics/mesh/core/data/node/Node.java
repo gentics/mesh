@@ -40,7 +40,7 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * The Node Domain Model interface.

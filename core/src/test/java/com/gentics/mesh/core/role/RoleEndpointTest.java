@@ -56,7 +56,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 
-import rx.Single;
+import io.reactivex.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -477,7 +477,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidMultithreaded() throws Exception {
 
 		Single<GenericMessageResponse> future = client().login();
-		future.toBlocking().value();
+		future.blockingGet();
 
 		int nJobs = 10;
 		String uuid = role().getUuid();
@@ -509,7 +509,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateMultithreaded() throws Exception {
 
 		Single<GenericMessageResponse> future = client().login();
-		future.toBlocking().value();
+		future.blockingGet();
 
 		int nJobs = 20;
 		// CyclicBarrier barrier = prepareBarrier(1);
@@ -528,7 +528,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (Tx tx = tx()) {
 			Single<GenericMessageResponse> observable = client().login();
-			observable.toBlocking().value();
+			observable.blockingGet();
 
 			int nJobs = 400;
 			Set<MeshResponse<RoleResponse>> set = new HashSet<>();

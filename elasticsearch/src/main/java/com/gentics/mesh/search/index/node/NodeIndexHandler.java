@@ -39,12 +39,12 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 /**
  * Handler for the node specific search index.
@@ -177,8 +177,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.from(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
-					.doOnNext(indexName -> searchProvider.refreshIndex(indexName)).toCompletable();
+			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
+					.doOnNext(indexName -> searchProvider.refreshIndex(indexName)).ignoreElements();
 		});
 	}
 
@@ -335,11 +335,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					}
 				}
 			}
-			return Observable.merge(obs).toList().doOnNext(list -> {
+			return Observable.merge(obs).toList().map(list -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Updated object in index.");
 				}
 				searchProvider.refreshIndex(list.stream().toArray(String[]::new));
+				return list;
 			}).toCompletable();
 		}
 	}
@@ -357,7 +358,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Completable.create(sub -> {
 			try {
 				schema.validate();
-				sub.onCompleted();
+				sub.onComplete();
 			} catch (Exception e) {
 				sub.onError(e);
 			}

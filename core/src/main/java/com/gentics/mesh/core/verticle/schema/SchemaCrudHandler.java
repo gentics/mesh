@@ -14,6 +14,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -47,7 +48,7 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import rx.Single;
+import io.reactivex.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
 
@@ -263,8 +264,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			db.tx(() -> {
 				project.getSchemaContainerRoot().removeSchemaContainer(schema);
 			});
-			return Single.just(null);
-
+			return Single.just(Optional.empty());
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 

@@ -187,7 +187,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext("lang=en&version=draft");
 			Node newsNode = content("concorde");
 
-			NodeResponse response = newsNode.transformToRest(ac, 0).toBlocking().value();
+			NodeResponse response = newsNode.transformToRest(ac, 0).blockingGet();
 			String json = JsonUtil.toJson(response);
 			assertNotNull(json);
 
@@ -401,7 +401,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. assert for initial release
 			List<String> nodeUuids = new ArrayList<>();
-			project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
+			project.getNodeRoot().findAllIt().forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 
 			// 5. assert searchqueuebatch

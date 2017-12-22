@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,8 +32,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
-import rx.Observable;
-import rx.Single;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 /**
  * @see MicronodeGraphFieldList
@@ -80,7 +81,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		// Handle Update
 		// TODO instead this method should also return an observable
-		micronodeGraphFieldList.update(ac, micronodeList).toBlocking().value();
+		micronodeGraphFieldList.update(ac, micronodeList).blockingGet();
 	};
 
 	public static FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
@@ -127,10 +128,14 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		}));
 
 		return Observable.<Boolean>create(subscriber -> {
-			Observable.from(list.getItems()).flatMap(item -> {
+
+			Iterator<MicronodeField> it = list.getItems().stream().map(item -> {
 				if (item == null) {
 					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
 				}
+				return item;
+			}).iterator();
+			Observable.fromIterable(() -> it).flatMap(item -> {
 
 				// Resolve the microschema reference from the rest model
 				MicroschemaReference microschemaReference = item.getMicroschema();
@@ -139,7 +144,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
-				return Observable.just(ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference, ac.getRelease()));
+				MicroschemaContainerVersion container = ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference,
+						ac.getRelease());
+				return Observable.just(container);
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field
@@ -172,6 +179,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				}
 				return micronode;
 			}).toList().subscribe(micronodeList -> {
+
 				// Clear the list and add new items
 				removeAll();
 				int counter = 1;
@@ -183,13 +191,12 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				existing.values().stream().forEach(micronode -> {
 					micronode.delete(null);
 				});
+				subscriber.onNext(true);
+				subscriber.onComplete();
 			}, e -> {
 				subscriber.onError(e);
-			}, () -> {
-				subscriber.onNext(true);
-				subscriber.onCompleted();
 			});
-		}).toSingle();
+		}).singleOrError();
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,8 +52,11 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
@@ -61,11 +65,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.rx.java.RxHelper;
-import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.file.FileSystem;
-import rx.Observable;
-import rx.Single;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.FileSystem;
 
 /**
  * Handler which contains field API specific request handlers.
@@ -108,8 +109,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// }
 
 			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(), ac
-					.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+					ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -299,10 +300,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}
 
 		if (neededDataStreams > 0) {
-			Observable<Buffer> stream = RxHelper.toObservable(asyncFile).publish().autoConnect(neededDataStreams);
+			Observable<Buffer> stream = RxUtil.toBufferObs(asyncFile).publish().autoConnect(neededDataStreams);
 
 			// Only gather image info for actual images. Otherwise return an empty image info object.
-			Single<ImageInfo> imageInfo = Single.just(null);
+			Single<Optional<ImageInfo>> imageInfo = Single.just(Optional.empty());
 			if (isImage) {
 				imageInfo = processImageInfo(ac, stream);
 			}
@@ -314,10 +315,14 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Handle the data in parallel
-			TransformationResult info = Single.zip(imageInfo, store, (imageinfo, size) -> {
-				return new TransformationResult(hash, 0, imageinfo, null);
-			}).toBlocking().value();
 
+			TransformationResult info = Single.zip(imageInfo, store, (imageinfoOpt, size) -> {
+				ImageInfo iinfo = null;
+				if (imageinfoOpt.isPresent()) {
+					iinfo = imageinfoOpt.get();
+				}
+				return new TransformationResult(hash, 0, iinfo, null);
+			}).blockingGet();
 			// Only add image information if image properties were found
 			if (info.getImageInfo() != null) {
 				binary.setImageHeight(info.getImageInfo().getHeight());
@@ -340,18 +345,18 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param stream
 	 * @return
 	 */
-	private Single<ImageInfo> processImageInfo(ActionContext ac, Observable<Buffer> stream) {
+	private Single<Optional<ImageInfo>> processImageInfo(ActionContext ac, Observable<Buffer> stream) {
 		// Caches the image info in the action context so that it does not need to be
 		// calculated again if the transaction failed
 		ImageInfo imageInfo = ac.get("imageInfo");
 		if (imageInfo != null) {
-			return Single.just(imageInfo);
+			return Single.just(Optional.of(imageInfo));
 		} else {
 			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> {
 				ac.put("imageInfo", ii);
-			}).onErrorReturn(e -> {
+			}).map(Optional::of).onErrorReturn(e -> {
 				// suppress error
-				return null;
+				return Optional.empty();
 			});
 		}
 	}
@@ -410,8 +415,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy()).setCropw(
-								transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
+						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
@@ -431,7 +436,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, imageManipulationParameter)
 							.flatMap(file -> {
-								Observable<Buffer> resizedImageData = RxHelper.toObservable(file.getFile()).doOnTerminate(file.getFile()::close).publish().autoConnect(2);
+								Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
+								Observable<Buffer> resizedImageData = obs.doOnTerminate(file.getFile()::close).publish().autoConnect(2);
 
 								// Hash the resized image data and store it using the computed fieldUuid + hash
 								Single<String> hash = FileUtils.hash(resizedImageData);
@@ -447,7 +453,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 							});
 
 					// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
-					TransformationResult result = obsTransformation.toBlocking().value();
+					TransformationResult result = obsTransformation.blockingGet();
 					String hash = result.getHash();
 					BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
 					Binary binary = binaryRoot.findByHash(hash);
@@ -458,7 +464,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toObservable().flatMap(f -> f.toObservable())
 								.map(b -> b.getDelegate());
 						binary = binaryRoot.create(hash, result.getSize());
-						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().await();
+						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
 					} else {
 						log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");
 					}

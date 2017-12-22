@@ -15,8 +15,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 
-import rx.Observable;
-import rx.Single;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 @Singleton
 public class AdminIndexHandler {
@@ -49,9 +49,9 @@ public class AdminIndexHandler {
 				// Iterate over all index handlers update the index
 				for (IndexHandler<?> handler : registry.getHandlers()) {
 					// Create all indices and mappings
-					handler.init().await();
+					handler.init().blockingAwait();
 					searchProvider.refreshIndex();
-					handler.reindexAll().await();
+					handler.reindexAll().blockingAwait();
 				}
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
