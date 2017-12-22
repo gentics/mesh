@@ -63,6 +63,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -125,9 +126,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * 2. Stop the job worker and update the schema again. The new version should be assigned to the release and a migration job should be queued. Make sure
 		 * both indices exist.
 		 */
-
 		// Stop the job worker so that we can inspect the job in detail
-		getTestContext().getJobWorkerVerticle().stop();
+		MeshInternal.get().jobWorkerVerticle().stop();
 		// Update the schema again.
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
 		updateRequest.setName("dummy");
@@ -161,7 +161,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * 3. Start the job worker and verify that the job has been completed. Make sure that initial index was removed since the new index now takes its place.
 		 */
 		// Now start the worker again
-		getTestContext().getJobWorkerVerticle().start();
+		MeshInternal.get().jobWorkerVerticle().start();
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {
@@ -181,7 +181,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * must be recorded for the new index.
 		 */
 		dummySearchProvider().clear();
-		getTestContext().getJobWorkerVerticle().stop();
+		MeshInternal.get().jobWorkerVerticle().stop();
 
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
@@ -221,7 +221,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		// Now start the worker again
-		getTestContext().getJobWorkerVerticle().start();
+		MeshInternal.get().jobWorkerVerticle().start();
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {

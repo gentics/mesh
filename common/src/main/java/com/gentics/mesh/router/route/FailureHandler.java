@@ -1,4 +1,4 @@
-package com.gentics.mesh.etc;
+package com.gentics.mesh.router.route;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 

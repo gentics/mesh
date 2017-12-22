@@ -16,8 +16,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.router.RouterStorage;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 import com.syncleus.ferma.tx.Tx;
 
@@ -36,9 +36,6 @@ import io.vertx.ext.web.Router;
 public class DistributedEventManager {
 
 	private static Logger log = LoggerFactory.getLogger(DistributedEventManager.class);
-
-	@Inject
-	public Lazy<RouterStorage> routerStorage;
 
 	@Inject
 	public Lazy<BootstrapInitializer> boot;
@@ -108,27 +105,28 @@ public class DistributedEventManager {
 	}
 
 	private void synchronizeProjectRoutes() throws InvalidNameException {
-		RouterStorage storage = routerStorage.get();
 		BootstrapInitializer cboot = boot.get();
 		Database cdb = db.get();
 
 		try (Tx tx = cdb.tx()) {
-			Map<String, Router> registeredProjectRouters = storage.getProjectRouters();
-			// Load all projects and check whether they are already registered
-			for (Project project : cboot.meshRoot().getProjectRoot().findAllIt()) {
-				if (registeredProjectRouters.containsKey(project.getName())) {
-					continue;
-				} else {
-					storage.addProjectRouter(project.getName());
+			for (RouterStorage rs : RouterStorage.getInstances()) {
+				Map<String, Router> registeredProjectRouters = rs.getProjectRouters();
+				// Load all projects and check whether they are already registered
+				for (Project project : cboot.meshRoot().getProjectRoot().findAllIt()) {
+					if (registeredProjectRouters.containsKey(project.getName())) {
+						continue;
+					} else {
+						rs.addProjectRouter(project.getName());
+					}
 				}
-			}
 
-			// Check whether all registered projects are still existing
-			for (String registeredProjectName : registeredProjectRouters.keySet()) {
-				Project foundProject = cboot.meshRoot().getProjectRoot().findByName(registeredProjectName);
-				// The project was not found. The project router must be removed.
-				if (foundProject == null) {
-					storage.removeProjectRouter(registeredProjectName);
+				// Check whether all registered projects are still existing
+				for (String registeredProjectName : registeredProjectRouters.keySet()) {
+					Project foundProject = cboot.meshRoot().getProjectRoot().findByName(registeredProjectName);
+					// The project was not found. The project router must be removed.
+					if (foundProject == null) {
+						rs.removeProjectRouter(registeredProjectName);
+					}
 				}
 			}
 		}

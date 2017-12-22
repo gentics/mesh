@@ -9,29 +9,26 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-@Singleton
 public class GroupEndpoint extends AbstractEndpoint {
 
 	private GroupCrudHandler crudHandler;
 
 	public GroupEndpoint() {
-		super("groups", null);
+		super("groups");
 	}
 
 	@Inject
-	public GroupEndpoint(RouterStorage routerStorage, GroupCrudHandler crudHandler) {
-		super("groups", routerStorage);
+	public GroupEndpoint(GroupCrudHandler crudHandler) {
+		super("groups");
 		this.crudHandler = crudHandler;
 	}
 

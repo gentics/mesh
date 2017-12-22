@@ -4,31 +4,32 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 
 import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.web.Router;
 
-
-@Singleton
 public class ProjectInfoEndpoint extends AbstractEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectInfoEndpoint(RouterStorage routerStorage, ProjectCrudHandler crudHandler) {
-		super(null, routerStorage);
+	public ProjectInfoEndpoint(ProjectCrudHandler crudHandler) {
+		super(null);
 		this.crudHandler = crudHandler;
 	}
 
 	public ProjectInfoEndpoint() {
-		super("", null);
+		super("");
+	}
+
+	@Override
+	public void init(RouterStorage rs) {
+		localRouter = rs.getAPIRouter();
 	}
 
 	@Override
@@ -51,11 +52,6 @@ public class ProjectInfoEndpoint extends AbstractEndpoint {
 	@Override
 	public String getDescription() {
 		return "Project specific endpoints.";
-	}
-
-	@Override
-	public Router setupLocalRouter() {
-		return routerStorage.getAPIRouter();
 	}
 
 }

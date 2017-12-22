@@ -194,10 +194,20 @@ public interface TestHelperMethods {
 		return getTestContext().getDummySearchProvider();
 	}
 
+	/**
+	 * Return the test project.
+	 * 
+	 * @return
+	 */
 	default Project project() {
 		return data().getProject();
 	}
 
+	/**
+	 * Return the http port used by the mesh http server.
+	 * 
+	 * @return
+	 */
 	default int port() {
 		return getTestContext().getPort();
 	}

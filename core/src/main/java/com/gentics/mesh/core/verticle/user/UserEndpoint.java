@@ -9,21 +9,18 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-@Singleton
 public class UserEndpoint extends AbstractEndpoint {
 
 	private UserCrudHandler crudHandler;
@@ -31,12 +28,12 @@ public class UserEndpoint extends AbstractEndpoint {
 	private UserTokenAuthHandler userTokenHandler;
 
 	public UserEndpoint() {
-		super("users", null);
+		super("users");
 	}
 
 	@Inject
-	public UserEndpoint(RouterStorage routerStorage, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
-		super("users", routerStorage);
+	public UserEndpoint(UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
+		super("users");
 		this.crudHandler = userCrudHandler;
 		this.userTokenHandler = userTokenHandler;
 	}
@@ -50,6 +47,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	public void registerEndPoints() {
 		addUpdateHandler();
 		secureAll();
+
 		addCreateHandler();
 		addReadHandler();
 		addDeleteHandler();
@@ -63,7 +61,8 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
-		endpoint.description("Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
+		endpoint.description(
+				"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
@@ -176,7 +175,7 @@ public class UserEndpoint extends AbstractEndpoint {
 
 	private void addUpdateHandler() {
 
-		// Add the user token handler first in order to allow for recovery token handling 
+		// Add the user token handler first in order to allow for recovery token handling
 		getRouter().route("/:userUuid").method(POST).handler(userTokenHandler);
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
 		getRouter().route("/:userUuid").method(POST).handler(authHandler);

@@ -9,35 +9,32 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle for /api/v1/schemas endpoint
  */
-@Singleton
 public class SchemaEndpoint extends AbstractEndpoint {
 
 	private SchemaCrudHandler crudHandler;
 
 	public SchemaEndpoint() {
-		super("schemas", null);
+		super("schemas");
 	}
 
 	@Inject
-	public SchemaEndpoint(RouterStorage routerStorage, SchemaCrudHandler crudHandler) {
-		super("schemas", routerStorage);
+	public SchemaEndpoint(SchemaCrudHandler crudHandler) {
+		super("schemas");
 		this.crudHandler = crudHandler;
 	}
 
@@ -49,8 +46,8 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		addReadHandlers();
 
+		addReadHandlers();
 		addDiffHandler();
 		addChangesHandler();
 		addCreateHandler();
@@ -117,6 +114,8 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		});
 	}
 
+	private static Object mutex = new Object();
+
 	private void addUpdateHandler() {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid");
@@ -129,11 +128,14 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
 
-		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String uuid = ac.getParameter("schemaUuid");
-			crudHandler.handleUpdate(ac, uuid);
-		});
+		endpoint.blockingHandler(rc -> {
+			// Update operations should always be executed sequentially - never in parallel
+			synchronized (mutex) {
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				String uuid = ac.getParameter("schemaUuid");
+				crudHandler.handleUpdate(ac, uuid);
+			}
+		}, true);
 	}
 
 	private void addDeleteHandler() {

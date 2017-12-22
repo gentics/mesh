@@ -5,20 +5,17 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.StaticHandler;
 
-@Singleton
 public class GraphQLEndpoint extends AbstractProjectEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(GraphQLEndpoint.class);
@@ -26,18 +23,19 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	private GraphQLHandler queryHandler;
 
 	public GraphQLEndpoint() {
-		super("graphql", null, null);
+		super("graphql", null);
 	}
 
 	@Inject
-	public GraphQLEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, GraphQLHandler queryHandler) {
-		super("graphql", boot, routerStorage);
+	public GraphQLEndpoint(BootstrapInitializer boot, GraphQLHandler queryHandler) {
+		super("graphql", boot);
 		this.queryHandler = queryHandler;
 	}
 
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+
 		EndpointRoute queryEndpoint = createEndpoint();
 		queryEndpoint.method(POST);
 		queryEndpoint.exampleRequest(graphqlExamples.createQueryRequest());

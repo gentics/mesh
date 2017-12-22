@@ -75,11 +75,11 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
@@ -114,9 +114,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public BCryptPasswordEncoder encoder;
-
-	@Inject
-	public RouterStorage routerStorage;
 
 	@Inject
 	public DistributedEventManager eventManager;
@@ -175,7 +172,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 */
 	private void initProjects() throws InvalidNameException {
 		for (Project project : meshRoot().getProjectRoot().findAllIt()) {
-			routerStorage.addProjectRouter(project.getName());
+			RouterStorage.addProject(project.getName());
 			if (log.isDebugEnabled()) {
 				log.debug("Initalized project {" + project.getName() + "}");
 			}
@@ -291,7 +288,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		eventManager.registerHandlers();
-		routerStorage.init();
 		handleLocalData(forceReindex, options, verticleLoader);
 	}
 
@@ -427,7 +423,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void registerEventHandlers() {
-		routerStorage.registerEventbusHandlers();
+		RouterStorage.registerEventbus();
 		PermissionStore.registerEventHandler();
 	}
 

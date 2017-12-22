@@ -2,6 +2,22 @@
 
 = Gentics Mesh Changelog
 
+[[v0.13.0]]
+== 0.13.0 (Not yet released)
+
+CAUTION: The ElasticSearch server will no longer be embedded. Instead an external ElasticSearch 6.0 server can be used.
+
+icon:plus[] Core: The OrientDB graph database was updated to version 3.0
+
+[[v0.12.0]]
+== 0.12.0 (21.12.2017)
+
+CAUTION: The `search.httpEnabled` option within the `mesh.yml` has been removed. The embedded elasticsearch API can no longer be directly accessed via HTTP. The existing endpoint `/api/v1/:projectName/search` is unaffected by this change.
+
+icon:plus[] Core: The core Vert.x library was updated to version 3.5.0
+
+icon:plus[] Core: The internal server routing system has been overhauled.
+
 == 0.11.8 (18.12.2017)
 
 icon:check[] Image: Fixed a bug which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
@@ -49,7 +65,7 @@ icon:plus[] Storage: The binary storage mechanism has been overhauled in prepara
                      The data within the local binary storage folder and all binary fields will automatically be migrated.
                      The created `binaryFilesMigrationBackup` folder must be manually removed once the migration has finished.
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.31
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.31
 
 icon:plus[] Core: Binary fields can now be chosen as display fields. The value of the display field is the filename of the binary.
 
@@ -105,7 +121,7 @@ icon:check[] Memory: The memory usage for micronode migrations has been improved
 
 == 0.11.2 (21.11.2017)
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.30
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.30
 
 icon:check[] Core: Fixed a bug which caused unusual high CPU usage. link:https://github.com/gentics/mesh/issues/201[#201]
 
@@ -242,7 +258,7 @@ icon:plus[] CLI: It is now possible to reset the admin password using the `-rese
 
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 5.0
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.29
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.29
 
 == 0.10.3 (18.09.2017)
 
@@ -250,7 +266,7 @@ icon:plus[] Logging: The `logback.xml` default logging configuration file will n
 
 icon:plus[] Configuration: It is now possible to set custom properties within the elasticsearch setting.
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.27
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.27
 
 icon:plus[] REST: It is now possible to set and read permissions using paths which contain the project name. Example:  `GET /api/v1/roles/:roleUuid/permissions/:projectName/...`
 
@@ -342,7 +358,7 @@ mv data/graphdb/* data/graphdb/storage/
 
 icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.26
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.26
 
 icon:plus[] REST: The `/api/v1/admin/consistency/check` endpoint has been added. The endpoint can be used to verify the database integrity.
 
@@ -422,7 +438,7 @@ icon:check[] Versioning: A publish error which was caused due to a bug in the no
 
 == 0.9.21 (26.07.2017)
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.24
 
 icon:check[] Core: Fixed handling of ISO8601 dates which did not contain UTC flag or time offset value. Such dates could previously not be stored. Note that ISO8601 UTC dates will always be returned.
 
@@ -454,7 +470,7 @@ icon:check[] Docs: Various endpoints were not included in the generated RAML. Th
 
 icon:plus[] Demo: Fixed demo data uuids.
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.22
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.22
 
 icon:plus[] Core: The Ferma OGM library was updated to version 2.2.2
 
@@ -520,7 +536,7 @@ icon:check[] GraphQL: The `path` handling for nodes within node lists has been f
 
 == 0.9.9 (19.05.2017)
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.20.
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.20.
 
 icon:plus[] API: The following endpoints were moved:
 
@@ -567,7 +583,7 @@ icon:plus[] Core: The allow property for micronode schema fields will now correc
 
 icon:plus[] Core: Microschemas will now be assigned to projects during a schema update. This only applies for microschemas which are referenced by the schema (e.g.: via a micronode field).
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.19.
+icon:plus[] Core: The OrientDB graph database was updated to version 2.2.19.
 
 == 0.9.7 (28.04.2017)
 

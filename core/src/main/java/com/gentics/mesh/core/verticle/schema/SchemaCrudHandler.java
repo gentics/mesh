@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -70,10 +71,14 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		return boot.get().schemaContainerRoot();
 	}
 
+	/**
+	 * Update the schema in a blocking manner in order to keep the execution sequential.
+	 */
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.asyncTx(ac, tx1 -> {
+
+		GenericMessageResponse message = db.tx(tx1 -> {
 
 			// 1. Load the schema container with update permissions
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
@@ -162,8 +167,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			} else {
 				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());
 			}
-
-		}, model -> ac.send(model, OK), true);
+		});
+		ac.send(message, OK);
 	}
 
 	/**

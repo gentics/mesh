@@ -120,7 +120,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("threadpool.index.queue_size", -1)
 
-				.put("http.enabled", searchOptions.isHttpEnabled())
+				.put("http.enabled", false)
 
 				.put("http.cors.enabled", "true").put("http.cors.allow-origin", "*")
 

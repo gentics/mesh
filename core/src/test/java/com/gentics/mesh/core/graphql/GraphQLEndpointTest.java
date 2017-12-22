@@ -361,9 +361,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		GraphQLResponse response = call(
 				() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
-		JsonObject json = new JsonObject(JsonUtil.toJson(response));
-		System.out.println(json.encodePrettily());
-		assertThat(json).compliesToAssertions(queryName);
+		System.out.println(response.toJson());
+		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
 	}
 
 	private long dateToMilis(String date) throws ParseException {

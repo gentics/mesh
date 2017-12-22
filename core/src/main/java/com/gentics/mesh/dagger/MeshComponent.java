@@ -1,5 +1,6 @@
 package com.gentics.mesh.dagger;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,10 +20,11 @@ import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
+import com.gentics.mesh.router.EndpointRegistry;
+import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -50,13 +52,15 @@ public interface MeshComponent {
 
 	Database database();
 
+	EndpointRegistry endpointRegistry();
+
 	SearchQueue searchQueue();
 
 	SearchProvider searchProvider();
 
 	BCryptPasswordEncoder passwordEncoder();
 
-	RouterStorage routerStorage();
+	Provider<RouterStorage> routerStorageProvider();
 
 	BinaryStorage binaryStorage();
 
@@ -107,7 +111,5 @@ public interface MeshComponent {
 	SchemaComparator schemaComparator();
 
 	RestAPIVerticle restApiVerticle();
-
-
 
 }

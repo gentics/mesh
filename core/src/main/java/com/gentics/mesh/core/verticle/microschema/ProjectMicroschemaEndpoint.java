@@ -8,31 +8,28 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Endpoint for /api/v1/PROJECTNAME/microschemas
  */
-@Singleton
 public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;
 
 	public ProjectMicroschemaEndpoint() {
-		super("microschemas", null, null);
+		super("microschemas", null);
 	}
 
 	@Inject
-	public ProjectMicroschemaEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, MicroschemaCrudHandler crudHandler) {
-		super("microschemas", boot, routerStorage);
+	public ProjectMicroschemaEndpoint(BootstrapInitializer boot, MicroschemaCrudHandler crudHandler) {
+		super("microschemas", boot);
 		this.crudHandler = crudHandler;
 	}
 

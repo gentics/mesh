@@ -56,7 +56,6 @@ public class ModelResponseHandler<T> extends AbstractResponseHandler<T> implemen
 					log.debug(json);
 				}
 				try {
-					future.setBodyJson(json);
 					T restObj = JsonUtil.readValue(json, classOfT);
 					future.complete(restObj);
 				} catch (Exception e) {

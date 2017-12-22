@@ -12,15 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
@@ -29,25 +27,36 @@ import com.github.jknack.handlebars.context.MapValueResolver;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-@Singleton
-public class AdminGUIVerticle extends AbstractWebVerticle {
+public class AdminGUIEndpoint extends AbstractEndpoint {
 
-	private static final Logger log = LoggerFactory.getLogger(AdminGUIVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(AdminGUIEndpoint.class);
 
 	public static final String CONF_FILE = "mesh-ui-config.js";
 
 	// TODO handle NPEs
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
-	@Inject
-	public AdminGUIVerticle(RouterStorage routerStorage) {
-		super("mesh-ui", routerStorage);
+	public AdminGUIEndpoint() {
+		super("mesh-ui");
+	}
+
+	@Override
+	public String getDescription() {
+		return "Endpoint which provides the mesh-ui webapp";
+	}
+
+	@Override
+	public void init(RouterStorage rs) {
+		Router router = Router.router(Mesh.vertx());
+		rs.getRootRouter().mountSubRouter("/" + basePath, router);
+		this.routerStorage = rs;
+		this.localRouter = router;
 	}
 
 	private static Properties readBuildProperties() {
 		try {
 			Properties buildProperties = new Properties();
-			buildProperties.load(AdminGUIVerticle.class.getResourceAsStream("/mesh-admin-gui.properties"));
+			buildProperties.load(AdminGUIEndpoint.class.getResourceAsStream("/mesh-admin-gui.properties"));
 			return buildProperties;
 		} catch (Exception e) {
 			log.error("Error while loading build properties", e);
@@ -84,7 +93,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		addMeshConfigHandler();
 		addRedirectionHandler();
 		saveMeshUiConfig();
@@ -107,7 +116,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 				Template template = handlebars.compileInline(IOUtils.toString(ins));
 
 				Map<String, Object> model = new HashMap<>();
-				int httpPort = config().getInteger("port");
+				int httpPort = Mesh.mesh().getOptions().getHttpServerOptions().getPort();
 				model.put("mesh_http_port", httpPort);
 
 				// Prepare render context
@@ -119,13 +128,6 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 				log.error("Could not save configuration file {" + outputFile.getAbsolutePath() + "}");
 			}
 		}
-	}
-
-	@Override
-	public Router setupLocalRouter() {
-		Router router = Router.router(vertx);
-		routerStorage.getRootRouter().mountSubRouter("/" + basePath, router);
-		return router;
 	}
 
 }

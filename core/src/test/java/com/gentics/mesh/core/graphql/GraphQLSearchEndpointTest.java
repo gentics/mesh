@@ -21,7 +21,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true, startESServer =true)
+@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true, startESServer = false)
 @RunWith(Parameterized.class)
 public class GraphQLSearchEndpointTest extends AbstractMeshTest {
 

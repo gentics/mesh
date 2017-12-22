@@ -6,12 +6,10 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -25,8 +23,8 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
@@ -41,7 +39,6 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
 import dagger.Lazy;
 import rx.functions.Func0;
 
-@Singleton
 public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoint {
 
 	private Lazy<BootstrapInitializer> boot;
@@ -77,13 +74,13 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	public SearchEndpointImpl(RouterStorage routerStorage, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
-		super("search", routerStorage);
+	public SearchEndpointImpl(NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
+		super("search");
 		this.boot = boot;
 	}
 
 	public SearchEndpointImpl() {
-		super("search", null);
+		super("search");
 	}
 
 	@Override
@@ -94,6 +91,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+
 		addSearchEndpoints();
 	}
 

@@ -5,12 +5,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -18,8 +16,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
@@ -29,7 +27,6 @@ import rx.functions.Func0;
 /**
  * Verticle that adds REST endpoints for project specific search (for nodes, tags and tagFamilies)
  */
-@Singleton
 public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implements SearchEndpoint {
 
 	@Inject
@@ -42,12 +39,12 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	public TagFamilySearchHandler tagFamilySearchHandler;
 
 	public ProjectSearchEndpointImpl() {
-		super("search", null, null);
+		super("search", null);
 	}
 
 	@Inject
-	public ProjectSearchEndpointImpl(BootstrapInitializer boot, RouterStorage routerStorage) {
-		super("search", boot, routerStorage);
+	public ProjectSearchEndpointImpl(BootstrapInitializer boot) {
+		super("search", boot);
 	}
 
 	@Override
@@ -58,6 +55,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+
 		addSearchEndpoints();
 	}
 

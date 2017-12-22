@@ -1,4 +1,4 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.router.route;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,13 +6,14 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.rest.impl.EndpointImpl;
+import com.gentics.mesh.router.RouterStorage;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
 /**
  * An abstract class that should be used when creating new endpoints.
@@ -22,12 +23,13 @@ public abstract class AbstractEndpoint implements Endpoint {
 	protected List<EndpointRoute> endpoints = new ArrayList<>();
 
 	protected Router localRouter = null;
-	protected String basePath;
 
-	protected RouterStorage routerStorage;
+	protected String basePath;
 
 	@Inject
 	public MeshAuthHandler authHandler;
+
+	protected RouterStorage routerStorage;
 
 	/**
 	 * Constructor to be invoked from implementation.
@@ -37,12 +39,13 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 * @param routerStorage
 	 *            Router storage
 	 */
-	protected AbstractEndpoint(String basePath, RouterStorage routerStorage) {
+	protected AbstractEndpoint(String basePath) {
 		this.basePath = basePath;
-		this.routerStorage = routerStorage;
-		if (routerStorage != null) {
-			this.localRouter = setupLocalRouter();
-		}
+	}
+
+	public void init(RouterStorage rs) {
+		this.routerStorage = rs;
+		this.localRouter = rs.getAPISubRouter(basePath);
 	}
 
 	/**
@@ -63,15 +66,6 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 * @return Description of the endpoint
 	 */
 	public abstract String getDescription();
-
-	/**
-	 * Setup the router for this endpoint using the endpoint basepath.
-	 * 
-	 * @return Router
-	 */
-	public Router setupLocalRouter() {
-		return routerStorage.getAPISubRouter(basePath);
-	}
 
 	/**
 	 * Return the created local router.

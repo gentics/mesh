@@ -1,10 +1,8 @@
 package com.gentics.mesh.search;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
@@ -16,7 +14,6 @@ import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
 
-@Singleton
 public class RawSearchEndpointImpl extends AbstractEndpoint implements SearchEndpoint {
 
 	@Inject
@@ -50,12 +47,12 @@ public class RawSearchEndpointImpl extends AbstractEndpoint implements SearchEnd
 	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	public RawSearchEndpointImpl(RouterStorage routerStorage, NodeSearchHandler searchHandler) {
-		super("rawSearch", routerStorage);
+	public RawSearchEndpointImpl(NodeSearchHandler searchHandler) {
+		super("rawSearch");
 	}
 
 	public RawSearchEndpointImpl() {
-		super("rawSearch", null);
+		super("rawSearch");
 	}
 
 	@Override
@@ -66,6 +63,7 @@ public class RawSearchEndpointImpl extends AbstractEndpoint implements SearchEnd
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+
 		addSearchEndpoints();
 	}
 

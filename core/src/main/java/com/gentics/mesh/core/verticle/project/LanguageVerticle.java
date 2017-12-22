@@ -10,16 +10,15 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.ext.web.Route;
 
 public class LanguageVerticle extends AbstractProjectEndpoint {
 
 	@Inject
-	public LanguageVerticle(BootstrapInitializer boot, RouterStorage routerStorage) {
-		super("languages", boot, routerStorage);
+	public LanguageVerticle(BootstrapInitializer boot) {
+		super("languages", boot);
 	}
 
 	@Override

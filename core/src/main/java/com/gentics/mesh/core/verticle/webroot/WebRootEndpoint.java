@@ -4,27 +4,24 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
-@Singleton
 public class WebRootEndpoint extends AbstractProjectEndpoint {
 
 	private WebRootHandler handler;
 
 	public WebRootEndpoint() {
-		super("webroot", null, null);
+		super("webroot", null);
 	}
 
 	@Inject
-	public WebRootEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, WebRootHandler handler) {
-		super("webroot", boot, routerStorage);
+	public WebRootEndpoint(BootstrapInitializer boot, WebRootHandler handler) {
+		super("webroot", boot);
 		this.handler = handler;
 	}
 
@@ -36,6 +33,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+
 		addErrorHandlers();
 		addPathHandler();
 	}

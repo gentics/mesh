@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -75,7 +76,7 @@ public final class JsonUtil {
 	 */
 	private static void initDefaultMapper() {
 		defaultMapper = new ObjectMapper();
-		defaultMapper.setSerializationInclusion(Include.NON_NULL);
+		defaultMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_NULL, Include.ALWAYS));
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		SimpleModule module = new SimpleModule();

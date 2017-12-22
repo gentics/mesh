@@ -12,8 +12,8 @@ import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.http.MeshHeaders;
+import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;

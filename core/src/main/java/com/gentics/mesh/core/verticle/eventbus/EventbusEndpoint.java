@@ -1,38 +1,31 @@
 package com.gentics.mesh.core.verticle.eventbus;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.web.handler.sockjs.BridgeEventType;
+import io.vertx.ext.bridge.BridgeEventType;
+import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
-import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 /**
  * The eventbus endpoint provides a SockJS compliant websocket eventbus bridge.
  */
-@Singleton
 public class EventbusEndpoint extends AbstractEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusEndpoint.class);
 
 	@Inject
-	public EventbusEndpoint(RouterStorage routerStorage) {
-		super("eventbus", routerStorage);
-	}
-
 	public EventbusEndpoint() {
-		super("eventbus", null);
+		super("eventbus");
 	}
 
 	public String getDescription() {

@@ -20,10 +20,6 @@ public class ElasticSearchOptions {
 	@JsonPropertyDescription("Path to the elasticsearch data directory.")
 	private String directory = DEFAULT_DIRECTORY;
 
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Flag which indicates whether to enable or disable the elasticsearch http server. Please note that the HTTP server is not secured and thus this option should only be enabled if the server has been protected properly.")
-	private boolean httpEnabled = false;
-
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configures the elasticsarch transport.tcp.port setting.")
 	private String transportPort = "9300-9400";
@@ -31,27 +27,6 @@ public class ElasticSearchOptions {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional set of search parameters.")
 	private Map<String, Object> parameters = new HashMap<>();
-
-	/**
-	 * Check whether the http server should be enabled.
-	 * 
-	 * @return
-	 */
-	public boolean isHttpEnabled() {
-		return httpEnabled;
-	}
-
-	/**
-	 * Set http server flag
-	 * 
-	 * @param httpEnabled
-	 *            Server flag
-	 * @return Fluent API
-	 */
-	public ElasticSearchOptions setHttpEnabled(boolean httpEnabled) {
-		this.httpEnabled = httpEnabled;
-		return this;
-	}
 
 	/**
 	 * 

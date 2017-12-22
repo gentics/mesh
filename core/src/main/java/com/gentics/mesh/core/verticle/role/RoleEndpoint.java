@@ -9,28 +9,25 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-@Singleton
 public class RoleEndpoint extends AbstractEndpoint {
 
 	private RoleCrudHandler crudHandler;
 
 	public RoleEndpoint() {
-		super("roles", null);
+		super("roles");
 	}
 
 	@Inject
-	public RoleEndpoint(RouterStorage routerStorage, RoleCrudHandler crudHandler) {
-		super("roles", routerStorage);
+	public RoleEndpoint(RoleCrudHandler crudHandler) {
+		super("roles");
 		this.crudHandler = crudHandler;
 	}
 
@@ -42,6 +39,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();

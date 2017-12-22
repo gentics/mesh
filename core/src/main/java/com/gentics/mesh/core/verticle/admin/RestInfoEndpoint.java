@@ -7,25 +7,23 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.route.AbstractEndpoint;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.ext.web.Router;
 
-@Singleton
 public class RestInfoEndpoint extends AbstractEndpoint {
 
 	private SearchProvider searchProvider;
@@ -34,15 +32,23 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 
 	private Database db;
 
+	private RouterStorage routerStorage;
+
 	@Inject
-	public RestInfoEndpoint(Database db, RouterStorage routerStorage, SearchProvider searchProvider) {
-		super(null, routerStorage);
+	public RestInfoEndpoint(Database db, SearchProvider searchProvider) {
+		super(null);
 		this.searchProvider = searchProvider;
 		this.db = db;
 	}
 
-	public RestInfoEndpoint(String path, RouterStorage storage) {
-		super(path, storage);
+	public RestInfoEndpoint(String path) {
+		super(path);
+	}
+
+	@Override
+	public void init(RouterStorage rs) {
+		this.routerStorage = rs;
+		localRouter = Router.router(Mesh.vertx());
 	}
 
 	@Override
@@ -86,11 +92,6 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			info.setVertxVersion(VersionCommand.getVersion());
 			ac.send(info, OK);
 		}, false);
-	}
-
-	@Override
-	public Router setupLocalRouter() {
-		return Router.router(Mesh.vertx());
 	}
 
 	@Override

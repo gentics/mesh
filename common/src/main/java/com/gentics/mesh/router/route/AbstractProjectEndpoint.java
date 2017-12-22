@@ -1,9 +1,7 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.router.route;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.etc.RouterStorage;
-
-import io.vertx.ext.web.Router;
+import com.gentics.mesh.router.RouterStorage;
 
 /**
  * A endpoint which provides more REST endpoints for all registered projects. The router for this endpoint will automatically be mounted for all registered
@@ -13,15 +11,14 @@ public abstract class AbstractProjectEndpoint extends AbstractEndpoint {
 
 	protected BootstrapInitializer boot;
 
-	protected AbstractProjectEndpoint(String basePath, BootstrapInitializer boot, RouterStorage routerStorage) {
-		super(basePath, routerStorage);
+	protected AbstractProjectEndpoint(String basePath, BootstrapInitializer boot) {
+		super(basePath);
 		this.boot = boot;
 	}
 
 	@Override
-	public Router setupLocalRouter() {
-		Router localRouter = routerStorage.getProjectSubRouter(basePath);
-		return localRouter;
+	public void init(RouterStorage rs) {
+		localRouter = rs.getProjectSubRouter(basePath);
 	}
 
 }
