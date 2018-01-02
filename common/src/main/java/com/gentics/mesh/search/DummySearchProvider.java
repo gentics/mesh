@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +11,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.json.JsonObject;
-import rx.Completable;
-import rx.Single;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * Dummy search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
@@ -69,7 +70,7 @@ public class DummySearchProvider implements SearchProvider {
 	@Override
 	public Single<Map<String, Object>> getDocument(String index, String uuid) {
 		getEvents.add(index + "-" + uuid);
-		return Single.just(null);
+		return Single.just(Collections.emptyMap());
 	}
 
 	@Override

@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.12.1-SNAPSHOT</version>
+		<version>0.13.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -46,14 +46,8 @@
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-rx-java</artifactId>
+			<artifactId>vertx-rx-java2</artifactId>
 			<version>${vertx.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>io.reactivex</groupId>
-					<artifactId>rxjava</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -73,24 +67,6 @@
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
 			<version>2.8.3</version>
-		</dependency>
-
-		<!-- RX Java -->
-		<dependency>
-			<groupId>io.reactivex</groupId>
-			<artifactId>rxjava-debug</artifactId>
-			<version>1.0.3</version>
-			<exclusions>
-				<exclusion>
-					<groupId>io.reactivex</groupId>
-					<artifactId>rxjava</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>io.reactivex</groupId>
-			<artifactId>rxjava</artifactId>
-			<version>${rx.version}</version>
 		</dependency>
 
 		<!-- Logging -->

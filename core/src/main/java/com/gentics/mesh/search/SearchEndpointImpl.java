@@ -5,6 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -37,7 +39,6 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import dagger.Lazy;
-import rx.functions.Func0;
 
 public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoint {
 
@@ -170,7 +171,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	 *            key of the index handlers
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse) {
+			Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse) {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);

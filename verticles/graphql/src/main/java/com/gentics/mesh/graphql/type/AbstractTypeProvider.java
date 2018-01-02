@@ -40,7 +40,6 @@ import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
-import rx.functions.Func1;
 
 public abstract class AbstractTypeProvider {
 
@@ -245,7 +244,7 @@ public abstract class AbstractTypeProvider {
 	 *            Handler which will be used to invoke the query
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
 			String pageTypeName, SearchHandler searchHandler) {
 		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg()).type(
 				new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
@@ -258,7 +257,7 @@ public abstract class AbstractTypeProvider {
 							throw new RuntimeException(e);
 						}
 					} else {
-						return rootProvider.call(gc).findAll(gc, getPagingInfo(env));
+						return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
 					}
 				}).build();
 	}
@@ -287,11 +286,11 @@ public abstract class AbstractTypeProvider {
 				.dataFetcher(dataFetcher);
 	}
 
-	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newPagingField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
 			String referenceTypeName) {
 		return newPagingFieldWithFetcher(name, description, (env) -> {
 			GraphQLContext gc = env.getContext();
-			return rootProvider.call(gc).findAll(gc, getPagingInfo(env));
+			return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
 		}, referenceTypeName);
 	}
 
@@ -308,12 +307,12 @@ public abstract class AbstractTypeProvider {
 	 *            Type name of the element which can be loaded
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
 			String elementType) {
 		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + ".")).argument(createNameArg(
 				"Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
-					return handleUuidNameArgs(env, rootProvider.call(gc));
+					return handleUuidNameArgs(env, rootProvider.apply(gc));
 				}).build();
 	}
 

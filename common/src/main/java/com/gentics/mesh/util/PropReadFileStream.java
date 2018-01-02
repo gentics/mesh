@@ -1,11 +1,11 @@
 package com.gentics.mesh.util;
 
+import io.reactivex.Single;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.file.FileSystem;
-import rx.Single;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.FileSystem;
 
 /**
  * An open file in read mode with its filesystem properties.

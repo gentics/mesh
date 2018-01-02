@@ -2,12 +2,19 @@
 
 = Gentics Mesh Changelog
 
-[[v0.13.0]]
-== 0.13.0 (Not yet released)
+[[v0.14.0]]
+== 0.14.0 (Not yet released)
 
 CAUTION: The ElasticSearch server will no longer be embedded. Instead an external ElasticSearch 6.0 server can be used.
 
-icon:plus[] Core: The OrientDB graph database was updated to version 3.0
+icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
+
+[[v0.13.0]]
+== 0.13.0 (02.01.2018)
+
+CAUTION: The Java REST client was updated to use RxJava 2.
+
+icon:plus[] Core: The internal RxJava code has been migrated to version 2.
 
 [[v0.12.0]]
 == 0.12.0 (21.12.2017)

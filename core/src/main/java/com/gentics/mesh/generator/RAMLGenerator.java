@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -53,7 +54,6 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import rx.functions.Action2;
 
 /**
  * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
@@ -67,7 +67,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	/**
 	 * Handler which can be invoked to replace the stored schema.
 	 */
-	private Action2<MimeType, Class<?>> schemaHandler;
+	private BiConsumer<MimeType, Class<?>> schemaHandler;
 
 	private String fileName;
 
@@ -82,7 +82,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	 *            Output filename
 	 * @throws IOException
 	 */
-	public RAMLGenerator(File outputFolder, String fileName, Action2<MimeType, Class<?>> schemaHandler, boolean writeExtraFiles) throws IOException {
+	public RAMLGenerator(File outputFolder, String fileName, BiConsumer<MimeType, Class<?>> schemaHandler, boolean writeExtraFiles) throws IOException {
 		super(new File(outputFolder, "api"), false);
 		this.fileName = fileName;
 		this.schemaHandler = schemaHandler;
@@ -173,7 +173,7 @@ public class RAMLGenerator extends AbstractGenerator {
 					if (schemaHandler != null) {
 						Class<?> clazz = endpoint.getExampleResponseClasses().get(entry.getKey());
 						if (clazz != null) {
-							schemaHandler.call(responseMimeType, clazz);
+							schemaHandler.accept(responseMimeType, clazz);
 						}
 					}
 				}
@@ -204,7 +204,7 @@ public class RAMLGenerator extends AbstractGenerator {
 						if (schemaHandler != null) {
 							Class<?> clazz = endpoint.getExampleRequestClass();
 							if (clazz != null) {
-								schemaHandler.call(request, clazz);
+								schemaHandler.accept(request, clazz);
 							}
 						}
 

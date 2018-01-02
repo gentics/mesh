@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * Basic implementation for most indexable elements.

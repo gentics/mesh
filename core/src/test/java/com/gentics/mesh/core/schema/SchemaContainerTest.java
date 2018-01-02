@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -32,6 +31,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.google.common.collect.Iterables;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
@@ -115,9 +115,8 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			List<? extends SchemaContainer> schemaContainers = meshRoot().getSchemaContainerRoot().findAll();
-			assertNotNull(schemaContainers);
-			assertEquals(schemaContainers().size(), schemaContainers.size());
+			int size = Iterables.size(meshRoot().getSchemaContainerRoot().findAllIt());
+			assertEquals(schemaContainers().size(), size);
 		}
 	}
 

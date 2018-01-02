@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,11 +28,10 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.tx.Tx;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Single;
 import io.vertx.ext.web.RoutingContext;
-import rx.Single;
 
 @Singleton
 public class WebRootHandler {
@@ -43,8 +43,7 @@ public class WebRootHandler {
 	private Database db;
 
 	@Inject
-	public WebRootHandler(Database database, WebRootServiceImpl webrootService,
-			BinaryFieldResponseHandler binaryFieldResponseHandler) {
+	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.db = database;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
@@ -94,10 +93,8 @@ public class WebRootHandler {
 				if (ac.matches(etag, false)) {
 					return Single.error(new NotModifiedException());
 				} else {
-					try (Tx tx = db.tx()) {
-						binaryFieldResponseHandler.handle(rc, binaryField);
-						return null;
-					}
+					binaryFieldResponseHandler.handle(rc, binaryField);
+					return Single.just(Optional.empty());
 				}
 			} else {
 				Node node = container.getParentNode();
@@ -111,13 +108,13 @@ public class WebRootHandler {
 					languageTags.add(lastSegment.getLanguageTag());
 					languageTags.addAll(ac.getNodeParameters().getLanguageList());
 					ac.setWebrootResponseType("node");
-					return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
+					return node.transformToRest(ac, 0, languageTags.toArray(new String[0])).map(model -> Optional.of(model));
 				}
 			}
 
-		}).subscribe(model -> {
-			if (model != null) {
-				ac.send(JsonUtil.toJson(model),
+		}).subscribe(result -> {
+			if (result.isPresent()) {
+				ac.send(JsonUtil.toJson(result.get()),
 						HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
 			}
 		}, ac::fail);

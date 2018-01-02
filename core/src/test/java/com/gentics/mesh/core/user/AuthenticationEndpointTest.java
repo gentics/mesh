@@ -22,7 +22,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-import rx.Single;
+import io.reactivex.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class AuthenticationEndpointTest extends AbstractMeshTest {
@@ -38,7 +38,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
-			GenericMessageResponse loginResponse = future.toBlocking().value();
+			GenericMessageResponse loginResponse = future.blockingGet();
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
@@ -53,7 +53,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			disableAnonymousAccess();
 
 			Single<GenericMessageResponse> logoutFuture = client.logout();
-			logoutFuture.toBlocking().value();
+			logoutFuture.blockingGet();
 
 			meResponse = client.me().invoke();
 			latchFor(meResponse);
@@ -64,7 +64,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDisableAnonymousAccess() {
 		client().logout();
-		UserResponse response = client().me().toSingle().toBlocking().value();
+		UserResponse response = client().me().toSingle().blockingGet();
 		assertEquals("anonymous", response.getUsername());
 		client().disableAnonymousAccess();
 		call(() -> client().me(), UNAUTHORIZED, "error_not_authorized");
@@ -78,7 +78,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 		client.setLogin(username, data().getUserInfo().getPassword());
 		Single<GenericMessageResponse> future = client.login();
 
-		GenericMessageResponse loginResponse = future.toBlocking().value();
+		GenericMessageResponse loginResponse = future.blockingGet();
 		assertNotNull(loginResponse);
 		assertEquals("OK", loginResponse.getMessage());
 
@@ -101,7 +101,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
-			GenericMessageResponse loginResponse = future.toBlocking().value();
+			GenericMessageResponse loginResponse = future.blockingGet();
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 

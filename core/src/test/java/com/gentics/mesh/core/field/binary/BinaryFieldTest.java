@@ -42,9 +42,9 @@ import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import rx.Observable;
-import rx.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
@@ -292,7 +292,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
 			return new TransformationResult(hashV, 0, infoV, null);
-		}).toBlocking().value();
+		}).blockingGet();
 
 		assertNotNull(result.getHash());
 		assertEquals(1376, result.getImageInfo().getHeight().intValue());

@@ -91,7 +91,7 @@ public class DemoDumpGeneratorTest {
 				ContainerType type = PUBLISHED;
 				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
 				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
-				if (searchProvider.getDocument(indexName, documentId).toBlocking() == null) {
+				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
 							+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";
 					fail(msg);

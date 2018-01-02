@@ -49,7 +49,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * @see TagFamily

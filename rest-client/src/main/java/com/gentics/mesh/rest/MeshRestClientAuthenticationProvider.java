@@ -4,8 +4,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 
 import com.gentics.mesh.rest.client.MeshRestClient;
 import io.vertx.core.http.HttpClientRequest;
-import rx.Completable;
-import rx.Single;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public interface MeshRestClientAuthenticationProvider {
 	

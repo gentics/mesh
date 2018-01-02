@@ -12,8 +12,15 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -22,21 +29,15 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.FileUtils;
-import io.vertx.core.buffer.Buffer;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.FileUtils;
 import com.syncleus.ferma.tx.Tx;
-import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func1;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.vertx.core.buffer.Buffer;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
@@ -153,8 +154,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		}
 
 		// Create schema with 2 binary fields
-		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("imageSchema").setFields(Arrays.asList(new BinaryFieldSchemaImpl()
-				.setName("image1"), new BinaryFieldSchemaImpl().setName("image2").setRequired(true)));
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("imageSchema").setFields(
+				Arrays.asList(new BinaryFieldSchemaImpl().setName("image1"), new BinaryFieldSchemaImpl().setName("image2").setRequired(true)));
 
 		SchemaResponse schema = call(() -> client().createSchema(schemaRequest));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
@@ -169,21 +170,22 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		Buffer buffer = Buffer.buffer(IOUtils.toByteArray(ins));
 		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
-		Func1<String, Observable<NodeResponse>> uploadBinary = (fieldName) -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(),
-				nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable().doOnSubscribe(
-						() -> System.out.println("Requesting " + fieldName));
+		io.reactivex.functions.Function<String, ObservableSource<NodeResponse>> uploadBinary = (fieldName) -> client()
+				.updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer,
+						"blume.jpg", "image/jpeg")
+				.toObservable().doOnSubscribe((e) -> System.out.println("Requesting " + fieldName));
 
 		Observable<String> imageFields = Observable.just("image1", "image2");
 
 		// Upload 2 images at once
 		// This should work since we can update the same node at the same time if it affects different fields
-		imageFields.flatMap(uploadBinary).toCompletable().await();
+		imageFields.flatMap(uploadBinary).ignoreElements().blockingAwait();
 
 		// Download them again and make sure they are the same image
-		Func1<String, Observable<NodeDownloadResponse>> downloadBinary = (fieldName) -> client().downloadBinaryField(PROJECT_NAME, nodeResponse
-				.getUuid(), nodeResponse.getLanguage(), fieldName).toObservable();
+		io.reactivex.functions.Function<String, ObservableSource<NodeDownloadResponse>> downloadBinary = (fieldName) -> client()
+				.downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), fieldName).toObservable();
 
-		Action1<String> assertSum = (sum) -> assertEquals("Checksum did not match", blumeSum, sum);
+		Consumer<String> assertSum = (sum) -> assertEquals("Checksum did not match", blumeSum, sum);
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
 		System.out.println(response.toJson());
@@ -192,8 +194,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		assertEquals("#737042", response.getFields().getBinaryField("image1").getDominantColor());
 		assertEquals("#737042", response.getFields().getBinaryField("image2").getDominantColor());
 
-		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.toBlocking().value()).doOnNext(
-				assertSum).toCompletable().await();
+		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.blockingGet()).map(e -> assertSum)
+				.ignoreElements().blockingAwait();
 	}
 
 	private Node prepareSchema() throws IOException {

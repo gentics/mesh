@@ -59,14 +59,14 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.reactivex.Completable;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.RxHelper;
-import rx.Completable;
-import rx.Scheduler;
-import rx.Single;
+import io.vertx.reactivex.RxHelper;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -276,13 +276,13 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
 					}
-					sub.onCompleted();
+					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
 					if (e instanceof IndexAlreadyExistsException) {
-						sub.onCompleted();
+						sub.onComplete();
 					} else {
 						sub.onError(e);
 						log.error("Error while creating index {" + indexName + "}", e);
@@ -327,13 +327,13 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
 					}
-					sub.onCompleted();
+					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
 					if (e instanceof DocumentMissingException) {
-						sub.onCompleted();
+						sub.onComplete();
 					} else {
 						log.error("Could not delete object {" + uuid + "} from index {" + index + "}");
 						sub.onError(e);
@@ -361,13 +361,13 @@ public class ElasticSearchProvider implements SearchProvider {
 						log.debug("Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start)
 								+ "[ms]");
 					}
-					sub.onCompleted();
+					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
 					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
-						sub.onCompleted();
+						sub.onComplete();
 					} else {
 						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
 								- start) + "[ms]", e);
@@ -404,7 +404,7 @@ public class ElasticSearchProvider implements SearchProvider {
 						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System
 								.currentTimeMillis() - start) + "[ms]");
 					}
-					sub.onCompleted();
+					sub.onComplete();
 				}
 
 				@Override
@@ -436,7 +436,7 @@ public class ElasticSearchProvider implements SearchProvider {
 						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start)
 								+ "[ms]");
 					}
-					sub.onCompleted();
+					sub.onComplete();
 				}
 
 				@Override
@@ -462,13 +462,13 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}
-					sub.onCompleted();
+					sub.onComplete();
 				};
 
 				@Override
 				public void onFailure(Throwable e) {
 					if (e instanceof IndexNotFoundException && !failOnMissingIndex) {
-						sub.onCompleted();
+						sub.onComplete();
 					} else {
 						log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
 						sub.onError(e);
@@ -492,7 +492,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Clearing index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}
-					sub.onCompleted();
+					sub.onComplete();
 				};
 
 				@Override
@@ -501,7 +501,7 @@ public class ElasticSearchProvider implements SearchProvider {
 						if (log.isDebugEnabled()) {
 							log.debug("Clearing index failed since the index does not exists. We ignore this error", e);
 						}
-						sub.onCompleted();
+						sub.onComplete();
 					} else {
 						log.error("Clearing index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
 						sub.onError(e);
@@ -534,7 +534,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					for (SearchHit hit : response.getHits()) {
 						obs.add(deleteDocument(hit.getIndex(), hit.getId()));
 					}
-					Completable.merge(obs).await();
+					Completable.merge(obs).blockingAwait();
 
 					if (log.isDebugEnabled()) {
 						log.debug("Deleted {" + obs.size() + "} documents from indices {" + Arrays.toString(indices) + "}");
@@ -581,7 +581,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 									@Override
 									public void onResponse(DeleteIndexTemplateResponse response) {
-										sub.onCompleted();
+										sub.onComplete();
 									}
 
 									@Override

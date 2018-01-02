@@ -47,7 +47,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Action context implementation which will be used within the node migration.

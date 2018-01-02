@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.binary;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
+import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
-import rx.Observable;
 
 /**
  * Vertex which contains the actual information about the binary content that is referenced by an {@link BinaryGraphField}.

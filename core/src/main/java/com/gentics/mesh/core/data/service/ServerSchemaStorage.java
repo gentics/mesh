@@ -9,7 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -45,20 +47,20 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	public void init() {
 		// Iterate over all schemas and load them into the storage
-		boot.get().schemaContainerRoot().findAll().stream().forEach(container -> {
+		for (SchemaContainer container : boot.get().schemaContainerRoot().findAllIt()) {
 			for (SchemaContainerVersion version : container.findAll()) {
 				SchemaModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
 			}
-		});
+		}
 
 		// load all microschemas and add to storage
-		boot.get().microschemaContainerRoot().findAll().stream().forEach(container -> {
+		for (MicroschemaContainer container : boot.get().microschemaContainerRoot().findAllIt()) {
 			for (MicroschemaContainerVersion version : container.findAll()) {
 				MicroschemaModel restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
 			}
-		});
+		}
 	}
 
 	@Override

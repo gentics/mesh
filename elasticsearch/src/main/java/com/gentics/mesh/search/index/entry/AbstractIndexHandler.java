@@ -25,7 +25,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * Abstract class for index handlers.
@@ -94,7 +94,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable store(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
-		return searchProvider.storeDocument(indexName, documentId, getTransformer().toDocument(element)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(indexName, documentId, getTransformer().toDocument(element)).doOnComplete(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -111,7 +111,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		} else {
 			String indexName = composeIndexNameFromEntry(entry);
 			String documentId = composeDocumentIdFromEntry(entry);
-			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).doOnCompleted(() -> {
+			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).doOnComplete(() -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Updated object in index.");
 				}

@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -28,7 +30,7 @@ import com.gentics.mesh.util.Tuple;
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Handler for group specific request methods.
@@ -132,7 +134,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				// No need to update users as well. Those documents are not affected by this modification
 				batch.store(group, false);
 				return batch;
-			}).processAsync().andThen(Single.just(null));
+			}).processAsync().andThen(Single.just(Optional.empty()));
 
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
@@ -207,7 +209,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				batch.store(user, false);
 				group.removeUser(user);
 				return batch;
-			}).processAsync().andThen(Single.just(null));
+			}).processAsync().toSingleDefault(Optional.empty());
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 

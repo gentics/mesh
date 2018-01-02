@@ -98,7 +98,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	public static void validateSchema(SchemaModel schema) {
-		Throwable error = MeshInternal.get().nodeContainerIndexHandler().validate(schema).get(10, TimeUnit.SECONDS);
+		Throwable error = MeshInternal.get().nodeContainerIndexHandler().validate(schema).blockingGet(10, TimeUnit.SECONDS);
 		if (error != null) {
 			if (error instanceof GenericRestException) {
 				throw (GenericRestException) error;

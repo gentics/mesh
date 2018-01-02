@@ -8,8 +8,8 @@ import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
-import rx.Completable;
-import rx.Single;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public class JWTAuthentication extends AbstractAuthenticationProvider {
 

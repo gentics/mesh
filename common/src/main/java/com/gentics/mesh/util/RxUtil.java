@@ -4,84 +4,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.rx.java.RxHelper;
-import io.vertx.rxjava.core.Vertx;
-import rx.Completable;
-import rx.Observable;
-import rx.Observable.Transformer;
-import rx.Single;
-import rx.Subscriber;
-import rx.functions.Func0;
-import rx.functions.Func1;
-import rx.functions.Func2;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.streams.Pump;
+import io.vertx.core.streams.ReadStream;
+import io.vertx.reactivex.RxHelper;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.impl.ReadStreamSubscriber;
 
 public final class RxUtil {
 
 	private RxUtil() {
 	}
 
-	public static <T> Completable andThenCompletable(Single<T> source, Func1<T, Completable> mappingFunction) {
-		return Observable.merge(source.toObservable().map(v -> mappingFunction.call(v).toObservable())).toCompletable();
+	public static <T> Completable andThenCompletable(Single<T> source, Function<T, Completable> mappingFunction) {
+		return Observable.merge(source.toObservable().map(v -> mappingFunction.apply(v).toObservable())).ignoreElements();
 	}
 
 	public static <T> void noopAction(T nix) {
 
-	}
-
-	public final static <T1, T2, R extends Observable<R2>, R2> Observable<R> flatZip(Observable<? extends T1> o1, Observable<? extends T2> o2,
-			final Func2<? super T1, ? super T2, Observable<R>> zipFunction) {
-		return Observable.zip(o1, o2, zipFunction).flatMap(x -> x);
-	}
-
-	/**
-	 * Wait for the given observable to complete before emitting any items from the source observable.
-	 *
-	 * @param o1
-	 * @return
-	 */
-	public static <T> Transformer<T, T> delay(Observable<?> o1) {
-		return source -> {
-			return source.delaySubscription(() -> o1.ignoreElements());
-		};
-	}
-
-	public static <T, U> Transformer<T, U> then(Func0<Observable<U>> o1) {
-		return source -> {
-			return Observable.defer(o1).delaySubscription(() -> source.ignoreElements());
-		};
-	}
-
-	public static <T> Observable<T> concatListNotEager(List<Observable<T>> input) {
-		// TODO handle empty list
-		return Observable.create(sub -> {
-			AtomicInteger index = new AtomicInteger();
-			Subscriber<T> subscriber = new Subscriber<T>() {
-				@Override
-				public void onCompleted() {
-					int current = index.incrementAndGet();
-					if (current == input.size()) {
-						sub.onCompleted();
-					} else {
-						input.get(current).subscribe(this);
-					}
-				}
-
-				@Override
-				public void onError(Throwable e) {
-					sub.onError(e);
-				}
-
-				@Override
-				public void onNext(T o) {
-					sub.onNext(o);
-				}
-			};
-			input.get(0).subscribe(subscriber);
-		});
 	}
 
 	/**
@@ -103,7 +49,7 @@ public final class RxUtil {
 	public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		PipedOutputStream pos = new PipedOutputStream(pis);
-		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnCompleted(() -> {
+		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnComplete(() -> {
 			try {
 				pos.close();
 			} catch (IOException e) {
@@ -117,5 +63,28 @@ public final class RxUtil {
 			}
 		});
 		return pis;
+	}
+
+	public static Observable<Buffer> toBufferObs(AsyncFile file) {
+		return new io.vertx.reactivex.core.file.AsyncFile(file).toObservable().map(io.vertx.reactivex.core.buffer.Buffer::getDelegate);
+	}
+
+	public static io.vertx.reactivex.core.streams.Pump pump1(Observable<Buffer> stream, io.vertx.reactivex.core.file.AsyncFile file) {
+		ReadStream<io.vertx.core.buffer.Buffer> rss = ReadStreamSubscriber.asReadStream(stream, Function.identity());
+		Pump pump = Pump.pump(rss, file.getDelegate());
+		return io.vertx.reactivex.core.streams.Pump.newInstance(pump);
+	}
+
+	/**
+	 * Creates a pump which applies a workaround for vertx-rxjava#123.
+	 * 
+	 * @param stream
+	 * @param file
+	 * @return
+	 */
+	public static io.vertx.reactivex.core.streams.Pump pump(Observable<io.vertx.reactivex.core.buffer.Buffer> stream,
+			io.vertx.reactivex.core.file.AsyncFile file) {
+		return pump1(stream.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate), file);
+
 	}
 }

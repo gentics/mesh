@@ -10,7 +10,6 @@ import com.gentics.mesh.Events;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.functions.Action0;
 
 /**
  * Latching consumer of log messages which will release the latch once the startup completed message has been seen in the log.
@@ -19,7 +18,7 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 
 	private static Logger log = LoggerFactory.getLogger(StartupLatchingConsumer.class);
 
-	private Action0 startupAction;
+	private Runnable startupAction;
 
 	public StartupLatchingConsumer() {
 	}
@@ -29,7 +28,7 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 	 * 
 	 * @param startupAction
 	 */
-	public StartupLatchingConsumer(Action0 startupAction) {
+	public StartupLatchingConsumer(Runnable startupAction) {
 		this.startupAction = startupAction;
 	}
 
@@ -42,7 +41,7 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 			if (utf8String.contains(Events.STARTUP_EVENT_ADDRESS)) {
 				log.info("Startup message seen. Releasing lock");
 				if (startupAction != null) {
-					startupAction.call();
+					startupAction.run();
 				}
 				latch.countDown();
 			}

@@ -15,7 +15,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Abstract class for mesh REST clients.

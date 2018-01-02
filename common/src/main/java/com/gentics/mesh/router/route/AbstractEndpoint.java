@@ -13,7 +13,6 @@ import com.gentics.mesh.router.RouterStorage;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
 /**
  * An abstract class that should be used when creating new endpoints.

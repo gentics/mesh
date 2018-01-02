@@ -1,9 +1,9 @@
 package com.gentics.mesh.rest.client;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.http.HttpClientRequest;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 public interface MeshRequest<T> {
 
