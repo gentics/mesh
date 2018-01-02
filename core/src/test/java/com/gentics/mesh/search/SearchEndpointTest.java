@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -84,7 +85,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");
 
 			searchProvider().deleteDocument(Node.TYPE, documentId).blockingAwait();
-			assertNull("The document with uuid {" + uuid + "} could still be found within the search index. Used document id {" + documentId + "}", searchProvider().getDocument(Node.TYPE, documentId).blockingGet());
+			assertTrue("The document with uuid {" + uuid + "} could still be found within the search index. Used document id {" + documentId + "}", searchProvider().getDocument(Node.TYPE, documentId).blockingGet().isEmpty());
 		}
 	}
 
