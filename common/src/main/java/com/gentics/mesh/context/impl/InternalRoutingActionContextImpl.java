@@ -2,6 +2,7 @@ package com.gentics.mesh.context.impl;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	private Project project;
 
-	private Map<String, Object> data = new ConcurrentHashMap<>();
+	private Map<String, Object> data;
 
 	public static final String LOCALE_MAP_DATA_KEY = "locale";
 
@@ -51,7 +52,9 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	public InternalRoutingActionContextImpl(RoutingContext rc) {
 		this.rc = rc;
 		if (rc.data() != null) {
-			this.data.putAll(rc.data());
+			this.data = Collections.synchronizedMap(rc.data());
+		} else {
+			this.data = new ConcurrentHashMap<>();
 		}
 	}
 
