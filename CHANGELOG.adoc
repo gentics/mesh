@@ -15,6 +15,8 @@ icon:check[] Core: patched Vert.x bug which caused HTTP requests to fail which h
 
 icon:check[] REST: A concurrency issue has been addressed which only happens when deleting and creating projects in fast succession.
 
+icon:check[] Core: A potential concurrency issue has been fixed when handling request parameters.
+
 [[v0.13.0]]
 == 0.13.0 (02.01.2018)
 
