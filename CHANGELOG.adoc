@@ -9,6 +9,10 @@ CAUTION: The ElasticSearch server will no longer be embedded. Instead an externa
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+[[v0.13.1]]
+
+icon:check[] Core: patched Vert.x bug which caused HTTP requests to fail which had the "Connection: close" header set
+
 [[v0.13.0]]
 == 0.13.0 (02.01.2018)
 
