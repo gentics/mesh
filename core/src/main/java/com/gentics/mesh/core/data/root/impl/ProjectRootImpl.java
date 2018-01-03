@@ -94,7 +94,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 		// Assign the provided schema container to the project
 		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
-		// project.getLatestRelease().assignSchemaVersion(creator, schemaContainerVersion);
+		// project.getLatestRelease().assignSchemaVersion(creator,
+		// schemaContainerVersion);
 		project.createBaseNode(creator, schemaContainerVersion);
 
 		project.setCreated(creator);
@@ -215,7 +216,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		batch.createTagFamilyIndex(projectUuid);
 
 		// 3. Add created basenode to SQB
-		// NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
+		// NodeGraphFieldContainer baseNodeFieldContainer =
+		// project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
 		batch.store(project.getBaseNode(), releaseUuid, ContainerType.DRAFT, false);
 
 		return project;

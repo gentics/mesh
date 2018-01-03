@@ -127,21 +127,30 @@ public class RouterStorage {
 		for (RouterStorage rs : instances) {
 			rs.addProjectRouter(name);
 		}
-
 	}
 
 	private void registerEventbusHandlers() {
 		EventBus eb = Mesh.vertx().eventBus();
 		eb.consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
+
+			// Check whether this is a local message. We only need to react on foreign messages.
+			// Local updates for project creation / deletion is already handled locally
+			String origin = json.getString("origin");
+			String nodeName = Mesh.mesh().getOptions().getNodeName();
+			if (nodeName.equals(origin)) {
+				rh.reply(true);
+				return;
+			}
 			String name = json.getString("name");
 			try {
 				RouterStorage.addProject(name);
+				rh.reply(true);
 				if (log.isInfoEnabled()) {
 					log.info("Registered project {" + name + "}");
 				}
 			} catch (InvalidNameException e) {
-				// TODO should we really fail here?
+				rh.fail(400, e.getMessage());
 				throw error(BAD_REQUEST, "Error while adding project to router storage", e);
 			}
 		});
@@ -151,7 +160,8 @@ public class RouterStorage {
 
 			try (Tx tx = database.tx()) {
 				Set<String> projectNames = new HashSet<>();
-				// Check whether there are any projects which do not have an active project router
+				// Check whether there are any projects which do not have an
+				// active project router
 				for (Project project : boot.get().projectRoot().findAllIt()) {
 					if (!hasProjectRouter(project.getName())) {
 						log.info("Mounting project {" + project.getName() + "}");
@@ -160,7 +170,8 @@ public class RouterStorage {
 					projectNames.add(project.getName());
 				}
 
-				// Check whether there are any project routers which are no longer valid / in-sync with the projects.
+				// Check whether there are any project routers which are no
+				// longer valid / in-sync with the projects.
 				for (String projectName : getProjectRouters().keySet()) {
 					if (!projectNames.contains(projectName)) {
 						log.info("Removing invalid mount {" + projectName + "}");
@@ -208,7 +219,9 @@ public class RouterStorage {
 
 			// Root handlers
 			rootRouter.route().handler(LoggerHandler.create());
-			// TODO add a dedicated error for api router that informs about APPLICATION_JSON requirements. This may not be true for other routes (eg. custom
+			// TODO add a dedicated error for api router that informs about
+			// APPLICATION_JSON requirements. This may not be true for other
+			// routes (eg. custom
 			// routes)
 			rootRouter.route().last().handler(DefaultNotFoundHandler.create());
 			rootRouter.route().failureHandler(FailureHandler.create());
@@ -228,7 +241,8 @@ public class RouterStorage {
 		}
 
 		router.route().handler(rh -> {
-			// Connection upgrade requests never end and therefore the body handler will never
+			// Connection upgrade requests never end and therefore the body
+			// handler will never
 			// pass through to the subsequent route handlers.
 			if ("websocket".equalsIgnoreCase(rh.request().getHeader("Upgrade"))) {
 				rh.next();
@@ -317,7 +331,6 @@ public class RouterStorage {
 			// TODO umount router from api router?
 			projectRouter.clear();
 			projectRouters.remove(name);
-			// TODO remove from all routers?
 			return true;
 		}
 		return false;

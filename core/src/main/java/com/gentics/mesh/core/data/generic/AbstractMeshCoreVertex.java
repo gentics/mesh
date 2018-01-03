@@ -118,6 +118,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			if (this instanceof NamedElement) {
 				json.put("name", ((NamedElement) this).getName());
 			}
+			json.put("origin", Mesh.mesh().getOptions().getNodeName());
 			json.put("uuid", getUuid());
 			Mesh.vertx().eventBus().publish(address, json);
 			if (log.isDebugEnabled()) {
@@ -134,6 +135,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			if (this instanceof NamedElement) {
 				json.put("name", ((NamedElement) this).getName());
 			}
+			json.put("origin", Mesh.mesh().getOptions().getNodeName());
 			json.put("uuid", getUuid());
 			Mesh.vertx().eventBus().publish(address, json);
 			if (log.isDebugEnabled()) {

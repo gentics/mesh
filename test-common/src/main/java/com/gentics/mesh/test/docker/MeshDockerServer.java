@@ -16,16 +16,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshTestServer;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
 
 /**
- * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
+ * Test container for a mesh instance which uses local class files. The image
+ * for the container will automatically be rebuild during each startup.
  * 
  * @param <SELF>
  */
-public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends GenericContainer<SELF> {
+public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends GenericContainer<SELF> implements MeshTestServer {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshDockerServer.class);
 
@@ -127,7 +129,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	}
 
 	private static String generateRunScript(String classpath) {
-		// TODO Add an automatic shutdown timer to prevent dangling docker containers
+		// TODO Add an automatic shutdown timer to prevent dangling docker
+		// containers
 		StringBuilder builder = new StringBuilder();
 		builder.append("#!/bin/sh\n");
 		builder.append("java $JAVAOPTS -cp " + classpath + " com.gentics.mesh.server.ServerRunner");
@@ -136,7 +139,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	}
 
 	/**
-	 * Block until the startup message has been seen in the container log output.
+	 * Block until the startup message has been seen in the container log
+	 * output.
 	 * 
 	 * @param timeoutInSeconds
 	 * @throws InterruptedException
@@ -147,6 +151,16 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	public MeshRestClient getMeshClient() {
 		return client;
+	}
+
+	@Override
+	public String getHostname() {
+		return getContainerIpAddress();
+	}
+
+	@Override
+	public int getPort() {
+		return getMappedPort(8080);
 	}
 
 }

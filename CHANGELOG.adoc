@@ -11,7 +11,9 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 [[v0.13.1]]
 
-icon:check[] Core: patched Vert.x bug which caused HTTP requests to fail which had the "Connection: close" header set
+icon:check[] Core: patched Vert.x bug which caused HTTP requests to fail which had the "Connection: close" header set.
+
+icon:check[] REST: A concurrency issue has been addressed which only happens when deleting and creating projects in fast succession.
 
 [[v0.13.0]]
 == 0.13.0 (02.01.2018)

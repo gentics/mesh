@@ -1,4 +1,4 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.test.local;
 
 import static com.gentics.mesh.Events.STARTUP_EVENT_ADDRESS;
 
@@ -16,8 +16,9 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshTestServer;
 
-public class MeshLocalServer extends TestWatcher {
+public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private static boolean inUse = false;
 	/**
@@ -84,7 +85,6 @@ public class MeshLocalServer extends TestWatcher {
 		options.getClusterOptions().setClusterName(clusterName);
 
 		Mesh mesh = Mesh.mesh(options);
-	
 
 		new Thread(() -> {
 			try {
@@ -94,8 +94,8 @@ public class MeshLocalServer extends TestWatcher {
 				e.printStackTrace();
 			}
 		}).start();
-		
-		while(mesh.getVertx() ==null) {
+
+		while (mesh.getVertx() == null) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -106,7 +106,7 @@ public class MeshLocalServer extends TestWatcher {
 		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {
 			waitingLatch.countDown();
 		});
-		
+
 		if (waitForStartup) {
 			try {
 				awaitStartup(200);
@@ -139,7 +139,8 @@ public class MeshLocalServer extends TestWatcher {
 	}
 
 	/**
-	 * Block until the startup message has been seen in the container log output.
+	 * Block until the startup message has been seen in the container log
+	 * output.
 	 * 
 	 * @param timeoutInSeconds
 	 * @throws InterruptedException
@@ -155,6 +156,16 @@ public class MeshLocalServer extends TestWatcher {
 			client.login().blockingGet();
 		}
 		return client;
+	}
+
+	@Override
+	public String getHostname() {
+		return "localhost";
+	}
+
+	@Override
+	public int getPort() {
+		return httpPort;
 	}
 
 }

@@ -1,6 +1,0 @@
-demo:
-  build: demo/Dockerfile
-  image: gentics/mesh-demo
-server:
-  build: server/Dockerfile
-  image: gentics/mesh

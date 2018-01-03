@@ -8,7 +8,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.test.MeshLocalServer;
+import com.gentics.mesh.test.local.MeshLocalServer;
 
 public class LocalServerTest {
 

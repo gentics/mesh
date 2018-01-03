@@ -12,10 +12,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -59,9 +63,9 @@ import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * @see Project
@@ -213,7 +217,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 		}
 
-		// Create a dummy batch which we will use to handle deletion for elements which must not update the batch since the documents are deleted by dedicated
+		// Create a dummy batch which we will use to handle deletion for
+		// elements which must not update the batch since the documents are
+		// deleted by dedicated
 		// index deletion entries.
 		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
 
@@ -275,11 +281,13 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		// Check whether a base node exits. The base node may have been deleted. In that case we can't handle related entries
+		// Check whether a base node exits. The base node may have been deleted.
+		// In that case we can't handle related entries
 		if (getBaseNode() == null) {
 			return;
 		}
-		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes.
+		// All nodes of all releases are related to this project. All
+		// nodes/containers must be updated if the project name changes.
 		for (Node node : getNodeRoot().findAllIt()) {
 			action.call(node, new GenericEntryContextImpl());
 		}
@@ -340,6 +348,17 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public void onCreated() {
+		super.onCreated();
+		try {
+			RouterStorage.addProject(getName());
+		} catch (InvalidNameException e) {
+			log.error("Failed to register project {" + getName() + "}");
+			throw error(BAD_REQUEST, "project_error_name_already_reserved", getName());
+		}
 	}
 
 }

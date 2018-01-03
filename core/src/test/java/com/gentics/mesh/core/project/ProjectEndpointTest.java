@@ -25,6 +25,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -114,8 +115,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().createProject(request));
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
-		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
+		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
+				.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
@@ -152,8 +153,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
 		// Verify that the new routes have been created
-		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
+		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
+				.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		JsonObject eventInfo = fut.get(10, TimeUnit.SECONDS);
@@ -249,6 +250,24 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
+	public void testCreateDeleteMultiple() {
+		final String NAME = "dummy123";
+		for (int i = 0; i < 10; i++) {
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(NAME);
+			request.setHostname("dummy.host");
+			request.setSsl(true);
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
+			ProjectResponse response = call(() -> client().createProject(request));
+			String baseUuid = response.getRootNode().getUuid();
+
+			call(() -> client().deleteProject(response.getUuid()));
+
+			call(() -> client().findNodeByUuid(NAME, baseUuid), NOT_FOUND, "error_not_found");
+		}
+	}
+
+	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
 		try (Tx tx = tx()) {
@@ -291,8 +310,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		try (Tx tx = tx()) {
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, user(),
-						schemaContainer("folder").getLatestVersion());
+				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, user(), schemaContainer("folder")
+						.getLatestVersion());
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
@@ -335,8 +354,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
 
 		// Verify that the no perm project is not part of the response
-		List<ProjectResponse> filteredProjectList = allProjects.parallelStream()
-				.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
+		List<ProjectResponse> filteredProjectList = allProjects.parallelStream().filter(restProject -> restProject.getName().equals(
+				noPermProjectName)).collect(Collectors.toList());
 		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
 		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -498,7 +517,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			Project project = project();
 			assertThat(restProject).matches(project);
-			// All nodes + project + tags and tag families need to be reindex since the project name is part of the search document.
+			// All nodes + project + tags and tag families need to be reindex
+			// since the project name is part of the search document.
 			int expectedCount = 1;
 			for (Node node : project().getNodeRoot().findAllIt()) {
 				expectedCount += node.getGraphFieldContainerCount();
@@ -572,7 +592,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// 2. Delete the project
 		call(() -> client().deleteProject(uuid));
 
-		// 3. Assert that the indices have been dropped and the project has been deleted from the project index
+		// 3. Assert that the indices have been dropped and the project has been
+		// deleted from the project index
 		assertThat(dummySearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
 		assertThat(dummySearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
 		assertThat(dummySearchProvider()).hasDrop(Tag.composeIndexName(uuid));
@@ -671,9 +692,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		validateCreation(set, null);
 
 		try (Tx tx = tx()) {
-			long n = StreamSupport
-					.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(), true)
-					.count();
+			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
+					.spliterator(), true).count();
 			long nProjectsAfter = meshRoot().getProjectRoot().computeCount();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);
