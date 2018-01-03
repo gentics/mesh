@@ -31,6 +31,7 @@
 		<skip.cluster.tests>false</skip.cluster.tests>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
+		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>
 
 	<scm>
