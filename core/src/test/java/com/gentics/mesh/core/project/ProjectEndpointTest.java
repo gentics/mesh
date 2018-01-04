@@ -250,9 +250,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
-	public void testCreateDeleteMultiple() {
+	public void testCreateDeleteMultiple() throws InterruptedException {
 		final String NAME = "dummy123";
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 500; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(NAME);
 			request.setHostname("dummy.host");

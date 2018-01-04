@@ -6,11 +6,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
@@ -91,7 +91,7 @@ public class RouterStorage {
 		RouterStorage.instances.add(this);
 	}
 
-	public static void registerEventbus() {
+	public synchronized static void registerEventbus() {
 		for (RouterStorage rs : instances) {
 			rs.registerEventbusHandlers();
 		}
@@ -102,7 +102,7 @@ public class RouterStorage {
 	 * 
 	 * @param name
 	 */
-	public static void removeProjectRouters(String name) {
+	public synchronized static void removeProjectRouters(String name) {
 		for (RouterStorage rs : instances) {
 			rs.removeProjectRouter(name);
 		}
@@ -113,7 +113,7 @@ public class RouterStorage {
 	 * 
 	 * @param name
 	 */
-	public static void assertProjectName(String name) {
+	public synchronized static void assertProjectName(String name) {
 		for (RouterStorage rs : instances) {
 			rs.assertProjectNameValid(name);
 		}
@@ -123,7 +123,7 @@ public class RouterStorage {
 		return instances;
 	}
 
-	public static void addProject(String name) throws InvalidNameException {
+	public synchronized static void addProject(String name) throws InvalidNameException {
 		for (RouterStorage rs : instances) {
 			rs.addProjectRouter(name);
 		}
@@ -144,7 +144,7 @@ public class RouterStorage {
 			}
 			String name = json.getString("name");
 			try {
-				RouterStorage.addProject(name);
+				addProject(name);
 				rh.reply(true);
 				if (log.isInfoEnabled()) {
 					log.info("Registered project {" + name + "}");
@@ -190,22 +190,22 @@ public class RouterStorage {
 	/**
 	 * Core routers are routers that are responsible for dealing with routes that are no project routes. E.g: /api/v1/admin, /api/v1
 	 */
-	private Map<String, Router> coreRouters = new ConcurrentHashMap<>();
+	private Map<String, Router> coreRouters = new HashMap<>();
 
 	/**
 	 * Custom routers. (E.g.: /demo)
 	 */
-	private Map<String, Router> customRouters = new ConcurrentHashMap<>();
+	private Map<String, Router> customRouters = new HashMap<>();
 
 	/**
 	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/dummy, /api/v1/yourprojectname
 	 */
-	private Map<String, Router> projectRouters = new ConcurrentHashMap<>();
+	private Map<String, Router> projectRouters = new HashMap<>();
 
 	/**
 	 * Project sub routers are routers that are mounted by project routers. E.g: /api/v1/dummy/nodes, /api/v1/yourprojectname/tagFamilies
 	 */
-	private Map<String, Router> projectSubRouters = new ConcurrentHashMap<>();
+	private Map<String, Router> projectSubRouters = new HashMap<>();
 
 	/**
 	 * The root {@link Router} is a core router that is used as a parent for all other routers. This method will create the root router if non is existing.
@@ -347,7 +347,7 @@ public class RouterStorage {
 		return projectRouters.containsKey(projectName);
 	}
 
-	public static boolean hasProject(String projectName) {
+	public synchronized static boolean hasProject(String projectName) {
 		for (RouterStorage rs : instances) {
 			if (rs.projectRouters.containsKey(projectName)) {
 				return true;
