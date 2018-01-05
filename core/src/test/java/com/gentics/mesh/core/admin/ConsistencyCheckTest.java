@@ -32,6 +32,11 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 		assertThat(response.getInconsistencies()).hasSize(1);
 		assertEquals(userUuid(), response.getInconsistencies().get(0).getElementUuid());
 		assertEquals(ConsistencyRating.INCONSISTENT, response.getResult());
+
+		// Now fix the inconsistency. Otherwise the asserter of the test (within @After) would fail.
+		tx(() -> {
+			user().getVertex().setProperty(UserImpl.USERNAME_PROPERTY_KEY, "blub");
+		});
 	}
 
 }

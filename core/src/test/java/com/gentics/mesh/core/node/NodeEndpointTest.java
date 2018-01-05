@@ -568,6 +568,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
 				Node node = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
+				node.createGraphFieldContainer(english(), initialRelease(), user());
 				assertNotNull(node);
 				role().grantPermissions(node, READ_PERM);
 			}

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
@@ -14,7 +13,6 @@ import java.util.List;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -40,7 +38,7 @@ public class NodeCheck implements ConsistencyCheck {
 
 		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, response, HIGH);
 		checkOut(node, HAS_SCHEMA_CONTAINER, SchemaContainerImpl.class, response, HIGH);
-		checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		//checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 
 		boolean isBaseNode = false;
 		Project project = node.out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
