@@ -27,7 +27,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -502,7 +501,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		String oldName = PROJECT_NAME;
 		String newName = "New Name";
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName(newName);
@@ -511,7 +509,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// Assert that the routerstorage was updates
 		assertTrue("The new project router should have been added", RouterStorage.hasProject(newName));
-		assertFalse("The old project router should have been removed", RouterStorage.hasProject(oldName));
 		call(() -> client().findNodes(newName));
 
 		try (Tx tx = tx()) {
