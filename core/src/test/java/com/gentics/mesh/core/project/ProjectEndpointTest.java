@@ -263,7 +263,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			call(() -> client().deleteProject(response.getUuid()));
 
-			call(() -> client().findNodeByUuid(NAME, baseUuid), NOT_FOUND, "error_not_found");
+			call(() -> client().findNodeByUuid(NAME, baseUuid), NOT_FOUND, "project_not_found", NAME);
 		}
 	}
 

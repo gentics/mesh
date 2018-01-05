@@ -119,15 +119,6 @@ public class DistributedEventManager {
 						rs.addProjectRouter(project.getName());
 					}
 				}
-
-				// Check whether all registered projects are still existing
-				for (String registeredProjectName : registeredProjectRouters.keySet()) {
-					Project foundProject = cboot.meshRoot().getProjectRoot().findByName(registeredProjectName);
-					// The project was not found. The project router must be removed.
-					if (foundProject == null) {
-						rs.removeProjectRouter(registeredProjectName);
-					}
-				}
 			}
 		}
 	}

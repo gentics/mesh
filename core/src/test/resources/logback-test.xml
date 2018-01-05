@@ -26,7 +26,7 @@
 		level="TRACE"/> -->
 	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
 <!-- 
-
+	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
 	<logger name="com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler" level="DEBUG"/>
 	<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
 	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>

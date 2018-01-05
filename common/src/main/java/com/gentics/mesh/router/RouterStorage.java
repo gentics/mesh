@@ -5,6 +5,7 @@ import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,17 +99,6 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Iterate over all created router storages and remove the project with the given name.
-	 * 
-	 * @param name
-	 */
-	public synchronized static void removeProjectRouters(String name) {
-		for (RouterStorage rs : instances) {
-			rs.removeProjectRouter(name);
-		}
-	}
-
-	/**
 	 * Iterate over all created router storages and assert that no project/api route causes a conflict with the given name
 	 * 
 	 * @param name
@@ -168,15 +158,6 @@ public class RouterStorage {
 						addProjectRouter(project.getName());
 					}
 					projectNames.add(project.getName());
-				}
-
-				// Check whether there are any project routers which are no
-				// longer valid / in-sync with the projects.
-				for (String projectName : getProjectRouters().keySet()) {
-					if (!projectNames.contains(projectName)) {
-						log.info("Removing invalid mount {" + projectName + "}");
-						removeProjectRouter(projectName);
-					}
 				}
 			} catch (InvalidNameException e) {
 				log.error("Could not update project routers", e);
@@ -319,25 +300,6 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Remove the project router with the given name from the list of project router.
-	 * 
-	 * @param name
-	 *            Name of the project router
-	 * @return true if the project router could be removed. Otherwise false
-	 */
-	public boolean removeProjectRouter(String name) {
-		Router projectRouter = projectRouters.get(name);
-		if (projectRouter != null) {
-			// TODO umount router from api router?
-			projectRouter.clear();
-			projectRouters.remove(name);
-			return true;
-		}
-		return false;
-
-	}
-
-	/**
 	 * Check whether the project router for the given project name is already registered.
 	 * 
 	 * @param projectName
@@ -368,7 +330,6 @@ public class RouterStorage {
 		String encodedName = encodeFragment(name);
 		assertProjectNameValid(name);
 		Router projectRouter = projectRouters.get(name);
-		// TODO synchronise access to projectRouters
 		if (projectRouter == null) {
 			projectRouter = Router.router(Mesh.vertx());
 			projectRouters.put(name, projectRouter);
@@ -376,10 +337,10 @@ public class RouterStorage {
 
 			projectRouter.route().handler(ctx -> {
 				Project project = db.get().tx(() -> boot.get().projectRoot().findByName(name));
-				if (log.isDebugEnabled()) {
-					if (project == null) {
-						log.debug("Project for name {" + name + "} could not be found.");
-					}
+				if (project == null) {
+					log.warn("Project for name {" + name + "} could not be found.");
+					ctx.fail(error(NOT_FOUND, "project_not_found", name));
+					return;
 				}
 				ctx.data().put(PROJECT_CONTEXT_KEY, project);
 				ctx.next();
