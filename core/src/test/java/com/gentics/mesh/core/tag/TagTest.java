@@ -222,7 +222,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 
 			// 2. Create and Tag a node
-			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
+			Node node = folder("2015");
+			node.removeAllTags(initialRelease);
 			node.addTag(tag, initialRelease);
 
 			// 3. Create new Release
@@ -249,19 +250,18 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Release initialRelease = null;
 			Release newRelease = null;
-			Node node = null;
-			Tag tag = null;
 
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
 			initialRelease = project.getInitialRelease();
-			tag = root.create(ENGLISH_NAME, project, user());
+			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
 			// 2. Create and Tag a node
-			node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
+			Node node = folder("2015");
+			node.removeAllTags(initialRelease);
 			node.addTag(tag, initialRelease);
 
 			// 3. Create new Release
