@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -741,6 +742,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			User user = user();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container.setCreated(user());
 			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
@@ -840,6 +842,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container.setCreated(user());
 			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
@@ -954,6 +957,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container.setCreated(user());
 			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
@@ -1044,6 +1048,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	private SchemaContainer createDummySchemaWithChanges(String fieldName, boolean setAddRaw) {
 
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.setName(UUID.randomUUID().toString());
+		container.setCreated(user());
 		boot().schemaContainerRoot().addSchemaContainer(user(), container);
 
 		// create version 1 of the schema
