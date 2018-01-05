@@ -121,8 +121,8 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		}
 
 		// Check for uniqueness of release name (per project)
-		Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,
-				getUniqueNameKey(createRequest.getName()));
+		Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class, getUniqueNameKey(createRequest
+				.getName()));
 		if (conflictingRelease != null) {
 			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", createRequest.getName());
 		}
@@ -151,5 +151,20 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	@Override
 	public String getUniqueNameKey(String name) {
 		return getUuid() + "-" + name;
+	}
+
+	@Override
+	public void delete(SearchQueueBatch batch) {
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting release root {" + getUuid() + "}");
+		}
+
+		// Delete all releases
+		for (Release release : findAllIt()) {
+			release.delete(batch);
+		}
+
+		// All releases are gone. Now delete the root.
+		getElement().remove();
 	}
 }

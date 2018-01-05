@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
@@ -33,8 +31,8 @@ public class UserCheck implements ConsistencyCheck {
 		String uuid = user.getUuid();
 
 		checkIn(user, HAS_USER, UserRootImpl.class, response, HIGH);
-		checkOut(user, HAS_CREATOR, UserImpl.class, response, MEDIUM);
-		checkOut(user, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+		//checkOut(user, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		//checkOut(user, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(user.getUsername())) {
 			response.addInconsistency("Username is empty or not set", uuid, HIGH);

@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
@@ -9,7 +7,6 @@ import java.util.Iterator;
 
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -30,8 +27,8 @@ public class TagFamilyCheck implements ConsistencyCheck {
 	private void checkTagFamily(TagFamily tagFamily, ConsistencyCheckResponse response) {
 		String uuid = tagFamily.getUuid();
 
-		checkOut(tagFamily, HAS_CREATOR, UserImpl.class, response, MEDIUM);
-		checkOut(tagFamily, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+		// checkOut(tagFamily, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		// checkOut(tagFamily, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (tagFamily.getTagFamilyRoot() == null) {
 			response.addInconsistency("The tag family root for tag family could not be located", tagFamily.getUuid(), HIGH);

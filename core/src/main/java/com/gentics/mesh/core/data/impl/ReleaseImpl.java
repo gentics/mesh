@@ -428,4 +428,11 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 				ReleaseMicroschemaEdgeImpl.class, null);
 	}
 
+	@Override
+	public void delete(SearchQueueBatch batch) {
+		// TODO Do we need to delete affected nodes as well? Currently only deletion of projects is possible. Release can't be deleted without deleting the
+		// project.
+		getVertex().remove();
+	}
+
 }

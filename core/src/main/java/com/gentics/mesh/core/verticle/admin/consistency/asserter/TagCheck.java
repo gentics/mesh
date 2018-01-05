@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -10,7 +8,6 @@ import java.util.Iterator;
 
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.impl.TagImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -31,8 +28,8 @@ public class TagCheck implements ConsistencyCheck {
 	private void checkTag(Tag tag, ConsistencyCheckResponse response) {
 		String uuid = tag.getUuid();
 
-		checkOut(tag, HAS_CREATOR, UserImpl.class, response, MEDIUM);
-		checkOut(tag, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+		// checkOut(tag, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		// checkOut(tag, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(tag.getName())) {
 			response.addInconsistency("Tag has no name", uuid, HIGH);

@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
@@ -17,7 +15,6 @@ import java.util.Iterator;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
@@ -54,8 +51,8 @@ public class ProjectCheck implements ConsistencyCheck {
 		checkOut(project, HAS_SCHEMA_ROOT, ProjectSchemaContainerRootImpl.class, response, HIGH);
 		checkOut(project, HAS_MICROSCHEMA_ROOT, ProjectMicroschemaContainerRootImpl.class, response, HIGH);
 
-		checkOut(project, HAS_CREATOR, UserImpl.class, response, MEDIUM);
-		checkOut(project, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+		// checkOut(project, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		// checkOut(project, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(project.getName())) {
 			response.addInconsistency("Project name is empty or not set", uuid, HIGH);

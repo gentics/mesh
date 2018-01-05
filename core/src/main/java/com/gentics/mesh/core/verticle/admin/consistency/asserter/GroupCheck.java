@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
@@ -11,7 +9,6 @@ import java.util.Iterator;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.impl.GroupImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
@@ -35,8 +32,8 @@ public class GroupCheck implements ConsistencyCheck {
 
 		checkIn(group, HAS_GROUP, GroupRootImpl.class, response, HIGH);
 
-		checkOut(group, HAS_CREATOR, UserImpl.class, response, MEDIUM);
-		checkOut(group, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+		// checkOut(group, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		// checkOut(group, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(group.getName())) {
 			response.addInconsistency("Group has no valid name", uuid, MEDIUM);

@@ -236,6 +236,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		// Remove the project schema root from the index
 		getSchemaContainerRoot().delete(batch);
 
+		// Remove the release root and all releases
+		getReleaseRoot().delete(batch);
+
 		// Finally remove the project node
 		getVertex().remove();
 	}

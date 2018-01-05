@@ -9,6 +9,11 @@ CAUTION: The ElasticSearch server will no longer be embedded. Instead an externa
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+[[v0.13.2]]
+== 0.13.2 (TBD)
+
+icon:check[] Core: The consistency checks have been enhanced.
+
 [[v0.13.1]]
 == 0.13.1 (05.01.2018)
 

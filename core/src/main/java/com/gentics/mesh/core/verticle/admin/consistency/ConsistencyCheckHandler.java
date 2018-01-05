@@ -10,7 +10,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.asserter.GroupCheck;
@@ -26,10 +25,13 @@ import com.gentics.mesh.core.verticle.admin.consistency.asserter.UserCheck;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
+/**
+ * Handler which is used to process actions for the consistency check.
+ */
 @Singleton
 public class ConsistencyCheckHandler extends AbstractHandler {
 
@@ -37,34 +39,28 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	private Database db;
 
-	private static List<ConsistencyCheck> checks = Arrays.asList(
-			new GroupCheck(),
-			new MicroschemaContainerCheck(),
-			new NodeCheck(),
-			new ProjectCheck(),
-			new ReleaseCheck(),
-			new RoleCheck(),
-			new SchemaContainerCheck(),
-			new TagCheck(),
-			new TagFamilyCheck(),
+	private static List<ConsistencyCheck> checks = Arrays.asList(new GroupCheck(), new MicroschemaContainerCheck(), new NodeCheck(),
+			new ProjectCheck(), new ReleaseCheck(), new RoleCheck(), new SchemaContainerCheck(), new TagCheck(), new TagFamilyCheck(),
 			new UserCheck());
 
 	/**
 	 * Get the list of checks
+	 * 
 	 * @return list of checks
 	 */
 	public static List<ConsistencyCheck> getChecks() {
 		return checks;
 	}
 
-	private BootstrapInitializer boot;
-
 	@Inject
-	public ConsistencyCheckHandler(Database db, BootstrapInitializer boot) {
+	public ConsistencyCheckHandler(Database db) {
 		this.db = db;
-		this.boot = boot;
 	}
 
+	/**
+	 * Invoke the consistency check. 
+	 * @param ac
+	 */
 	public void invokeCheck(InternalActionContext ac) {
 		db.asyncTx((tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
@@ -78,7 +74,6 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 			}
 			return Single.just(response);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
-
 	}
 
 }

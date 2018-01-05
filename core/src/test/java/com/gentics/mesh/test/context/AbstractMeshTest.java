@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -27,16 +26,6 @@ import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.GroupCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.MicroschemaContainerCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.NodeCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.ProjectCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.ReleaseCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.RoleCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.SchemaContainerCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.TagCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.TagFamilyCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.asserter.UserCheck;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;

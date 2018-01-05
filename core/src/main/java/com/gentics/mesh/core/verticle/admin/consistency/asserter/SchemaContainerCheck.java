@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
@@ -12,7 +10,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Iterator;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -45,8 +42,9 @@ public class SchemaContainerCheck implements ConsistencyCheck {
 
 		checkIn(schemaContainer, HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class, response, HIGH);
 		checkOut(schemaContainer, HAS_LATEST_VERSION, SchemaContainerVersionImpl.class, response, HIGH);
-		checkOut(schemaContainer, HAS_CREATOR, UserImpl.class, response, MEDIUM);
-		checkOut(schemaContainer, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+
+		// checkOut(schemaContainer, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		// checkOut(schemaContainer, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(schemaContainer.getName())) {
 			response.addInconsistency("Schema container name is empty or null", uuid, HIGH);
@@ -75,13 +73,13 @@ public class SchemaContainerCheck implements ConsistencyCheck {
 				if (version > 1) {
 					SchemaContainerVersion previousVersion = schemaContainerVersion.getPreviousVersion();
 					if (previousVersion == null) {
-						response.addInconsistency(
-								String.format("Schema container version %s must have a previous version", schemaContainerVersion.getVersion()), uuid, MEDIUM);
+						response.addInconsistency(String.format("Schema container version %s must have a previous version", schemaContainerVersion
+								.getVersion()), uuid, MEDIUM);
 					} else {
 						String expectedPrevious = String.valueOf(version - 1);
 						if (!expectedPrevious.equals(previousVersion.getVersion())) {
-							response.addInconsistency(String.format("Previous schema container version must have number %s but has %s", expectedPrevious,
-									previousVersion.getVersion()), uuid, MEDIUM);
+							response.addInconsistency(String.format("Previous schema container version must have number %s but has %s",
+									expectedPrevious, previousVersion.getVersion()), uuid, MEDIUM);
 						}
 
 						MeshVertex parent = in(HAS_PARENT_CONTAINER, SchemaContainerImpl.class).follow(schemaContainerVersion);
@@ -94,7 +92,8 @@ public class SchemaContainerCheck implements ConsistencyCheck {
 					}
 				}
 			} catch (NumberFormatException e) {
-				response.addInconsistency(String.format("Schema container version number %s is empty or null", schemaContainerVersion.getVersion()), uuid, MEDIUM);
+				response.addInconsistency(String.format("Schema container version number %s is empty or null", schemaContainerVersion.getVersion()),
+						uuid, MEDIUM);
 			}
 		}
 	}

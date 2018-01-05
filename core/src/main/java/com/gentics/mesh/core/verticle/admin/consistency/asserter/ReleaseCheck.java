@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.verticle.admin.consistency.asserter;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
@@ -16,7 +14,6 @@ import java.util.Iterator;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
@@ -52,11 +49,11 @@ public class ReleaseCheck implements ConsistencyCheck {
 
 		checkIn(release, HAS_RELEASE, ReleaseRootImpl.class, response, HIGH);
 
-		checkOut(release, HAS_CREATOR, UserImpl.class, response, MEDIUM);
-		checkOut(release, HAS_EDITOR, UserImpl.class, response, MEDIUM);
-		checkOut(release, ASSIGNED_TO_PROJECT, ProjectImpl.class, response, HIGH,
-				in(HAS_RELEASE, ReleaseRootImpl.class),
-				in(HAS_RELEASE_ROOT, ProjectImpl.class));
+		// checkOut(release, HAS_CREATOR, UserImpl.class, response, MEDIUM);
+		// checkOut(release, HAS_EDITOR, UserImpl.class, response, MEDIUM);
+
+		checkOut(release, ASSIGNED_TO_PROJECT, ProjectImpl.class, response, HIGH, in(HAS_RELEASE, ReleaseRootImpl.class), in(HAS_RELEASE_ROOT,
+				ProjectImpl.class));
 
 		if (isEmpty(release.getName())) {
 			response.addInconsistency("Release name is empty or not set", uuid, HIGH);
