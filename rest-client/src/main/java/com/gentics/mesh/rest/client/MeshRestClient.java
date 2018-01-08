@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client;
 
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
@@ -128,7 +129,17 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 
 	/**
 	 * Returns the used vertx instance.
+	 * 
 	 * @return
 	 */
 	Vertx vertx();
+
+	/**
+	 * Return the mesh version.
+	 * 
+	 * @return
+	 */
+	public static String getPlainVersion() {
+		return MeshVersion.getPlainVersion();
+	}
 }

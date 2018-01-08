@@ -12,6 +12,8 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 [[v0.13.2]]
 == 0.13.2 (TBD)
 
+icon:plus[] Java Rest Client: It is now possible to retrieve the client version via `MeshRestClient.getPlainVersion()`.
+
 icon:check[] Core: The consistency checks have been enhanced.
 
 [[v0.13.1]]
