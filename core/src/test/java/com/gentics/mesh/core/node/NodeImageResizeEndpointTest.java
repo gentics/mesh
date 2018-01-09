@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -27,6 +28,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -104,8 +107,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 2. Transform the image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
-		NodeResponse transformResponse = call(
-				() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
+		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
 		assertEquals("The image should have been resized", 100, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
 
 		// 3. Validate that a new version was created
@@ -129,8 +131,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 			// 2. Transform the image
 			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl();
-			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion(), "image", params),
-					BAD_REQUEST, "error_no_image_transformation", "image");
+			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion(), "image", params), BAD_REQUEST,
+					"error_no_image_transformation", "image");
 		}
 	}
 
@@ -160,12 +162,59 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			version = node.getGraphFieldContainer("en").getVersion();
 			tx.success();
 		}
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image",
-				Buffer.buffer("I am not an image"), "test.txt", "text/plain"));
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image", Buffer.buffer(
+				"I am not an image"), "test.txt", "text/plain"));
 
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,
 				"error_transformation_non_image", "image");
+	}
+
+	@Test
+	public void testResizeWithFocalPoint() throws IOException {
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+			// 1. Upload image
+			NodeResponse response = uploadImage(node, "en", "image");
+
+			// 2. Update the binary field and set the focal point
+			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+			BinaryField imageField = response.getFields().getBinaryField("image");
+			imageField.setFocalPoint(20, 21);
+			updateRequest.setLanguage("en");
+			updateRequest.setVersion(response.getVersion());
+			updateRequest.getFields().put("image", imageField);
+			NodeResponse response2 = call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest));
+			assertEquals(20, response2.getFields().getBinaryField("image").getFocalPoint().x);
+			assertEquals(21, response2.getFields().getBinaryField("image").getFocalPoint().y);
+
+			// 2. Resize image
+			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(600).setHeight(102);
+			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
+		}
+	}
+
+	@Test
+	public void testResizeWithFocalPointOutOfBounds() throws IOException {
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+			// 1. Upload image
+			NodeResponse response = uploadImage(node, "en", "image");
+
+			// 2. Update the binary field and set the focal point
+			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+			BinaryField imageField = response.getFields().getBinaryField("image");
+			imageField.setFocalPoint(1377, 21);
+			updateRequest.setLanguage("en");
+			updateRequest.setVersion(response.getVersion());
+			updateRequest.getFields().put("image", imageField);
+			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest), BAD_REQUEST,
+					"field_binary_error_image_focalpoint_out_of_bounds", "image", "1377:21", "1376:1160");
+			
+			// No try the exact x bounds
+			imageField.setFocalPoint(1376, 21);
+			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest));
+		}
 	}
 
 	@Test

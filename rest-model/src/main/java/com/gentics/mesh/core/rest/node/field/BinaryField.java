@@ -119,6 +119,33 @@ public interface BinaryField extends Field {
 	BinaryField setDominantColor(String dominantColor);
 
 	/**
+	 * Return the currently configured focal point.
+	 * 
+	 * @return
+	 */
+	Point getFocalPoint();
+
+	/**
+	 * Set the focal point.
+	 * 
+	 * @param point
+	 * @return
+	 */
+	BinaryField setFocalPoint(Point point);
+
+	/**
+	 * Set the focal point.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	default BinaryField setFocalPoint(int x, int y) {
+		setFocalPoint(new Point(x, y));
+		return this;
+	}
+
+	/**
 	 * Check whether contains any values.
 	 * 
 	 * @return

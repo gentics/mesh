@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.node.field.Point;
 
 import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
@@ -105,6 +106,21 @@ public interface Binary extends MeshVertex {
 	default Binary setImageWidth(Integer width) {
 		setProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
 		return this;
+	}
+
+	/**
+	 * Return the image size.
+	 * 
+	 * @return
+	 */
+	default Point getImageSize() {
+		Integer x = getImageHeight();
+		Integer y = getImageWidth();
+		if (x == null || y == null) {
+			return null;
+		} else {
+			return new Point(x, y);
+		}
 	}
 
 	/**

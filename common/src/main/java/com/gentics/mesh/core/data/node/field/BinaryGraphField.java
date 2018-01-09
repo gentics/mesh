@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.Point;
 
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
@@ -17,12 +18,18 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	static final String BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "binaryImageDominantColor";
 
+	static final String BINARY_IMAGE_FOCAL_POINT_X = "binaryImageFocalPointX";
+
+	static final String BINARY_IMAGE_FOCAL_POINT_Y = "binaryImageFocalPointY";
+
 	/**
 	 * Return the binary filename.
 	 * 
 	 * @return
 	 */
-	String getFileName();
+	default String getFileName() {
+		return getProperty(BINARY_FILENAME_PROPERTY_KEY);
+	}
 
 	/**
 	 * Copy the values of this field to the specified target field.
@@ -38,14 +45,19 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param fileName
 	 * @return Fluent API
 	 */
-	BinaryGraphField setFileName(String fileName);
+	default BinaryGraphField setFileName(String fileName) {
+		setProperty(BINARY_FILENAME_PROPERTY_KEY, fileName);
+		return this;
+	}
 
 	/**
 	 * Return the binary mime type of the node.
 	 * 
 	 * @return
 	 */
-	String getMimeType();
+	default String getMimeType() {
+		return getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
+	}
 
 	/**
 	 * Set the binary mime type of the node.
@@ -53,7 +65,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param mimeType
 	 * @return Fluent API
 	 */
-	BinaryGraphField setMimeType(String mimeType);
+	default BinaryGraphField setMimeType(String mimeType) {
+		setProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
+		return this;
+	}
 
 	/**
 	 * Check whether the binary data represents an image.
@@ -68,14 +83,40 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param dominantColor
 	 * @return Fluent API
 	 */
-	BinaryGraphField setImageDominantColor(String dominantColor);
+	default BinaryGraphField setImageDominantColor(String dominantColor) {
+		setProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
+		return this;
+	}
 
 	/**
 	 * Return the binary image dominant color.
 	 * 
 	 * @return
 	 */
-	String getImageDominantColor();
+	default String getImageDominantColor() {
+		return getProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
+	}
+
+	/**
+	 * Return the stored focal point of the image.
+	 * 
+	 * @return Focal point or null if no focal point has been set
+	 */
+	default Point getImageFocalPoint() {
+		Integer x = getProperty(BINARY_IMAGE_FOCAL_POINT_X);
+		Integer y = getProperty(BINARY_IMAGE_FOCAL_POINT_Y);
+		if (x == null || y == null) {
+			return null;
+		}
+		return new Point(x, y);
+	}
+
+	default void setImageFocalPoint(Point point) {
+		int x = point.x;
+		int y = point.y;
+		setProperty(BINARY_IMAGE_FOCAL_POINT_X, x);
+		setProperty(BINARY_IMAGE_FOCAL_POINT_Y, y);
+	}
 
 	/**
 	 * Return the uuid of the binary field.
