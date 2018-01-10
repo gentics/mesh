@@ -2,12 +2,27 @@
 
 = Gentics Mesh Changelog
 
-[[v0.14.0]]
-== 0.14.0 (Not yet released)
+[[nextMajorRelease]]
+== Next Major Release (Not yet released)
 
 CAUTION: The ElasticSearch server will no longer be embedded. Instead an external ElasticSearch 6.0 server can be used.
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
+
+[[v0.14.0]]
+== 0.14.0 (TBD)
+
+CAUTION: The image manipulation query parameters `cropx`, `cropy`, `croph` and `cropw` have been replaced by the `rect` parameter. The `rect` parameter contains the needed values `rect=x,y,w,h`.
+
+CAUTION: The image manipulation query parameter `width` was renamed to `w`. The parameter `height` was renamed to `h`.
+
+CAUTION: It is now required to specify the crop mode when cropping an image. Possible crop modes are `rect` which will utilize the specified crop area or `fp` which will utilize the focal point information in order to crop the image.
+
+icon:plus[] Image: It is now possible to specify a focal point within the binary field of an image.
+                   This focal point can be used to automatically crop the image in a way so that the focused area is kept in the image.
+                   The focal point can also be manually specified when requesting an image.
+                   This will overrule any previously stored focal point information within the binary field.
+
 
 [[v0.13.2]]
 == 0.13.2 (TBD)

@@ -28,6 +28,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
@@ -59,11 +60,12 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 */
 	protected BufferedImage cropIfRequested(BufferedImage originalImage, ImageManipulationParameters parameters) {
 		parameters.validate();
-		if (parameters.hasAllCropParameters()) {
-			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
+		ImageRect cropArea = parameters.getRect();
+		if (cropArea != null) {
+			cropArea.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
-						parameters.getCroph());
+				ImageRect rect = parameters.getRect();
+				BufferedImage image = Scalr.crop(originalImage, rect.getStartX(), rect.getStartY(), rect.getWidth(), rect.getHeight());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {

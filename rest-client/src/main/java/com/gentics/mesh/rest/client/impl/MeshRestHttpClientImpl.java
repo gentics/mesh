@@ -1003,17 +1003,18 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
-			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
+			String fieldKey, ImageManipulationParameters parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "language must not be null");
 		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(fieldKey, "field key must not be null");
 
-		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth()).setHeight(
-				imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx()).setCropy(imageManipulationParameter
-						.getStarty()).setCroph(imageManipulationParameter.getCroph()).setCropw(imageManipulationParameter.getCropw()).setLanguage(
-								languageTag).setVersion(version);
+		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest();
+		transformRequest.setCropRect(parameters.getRect());
+		transformRequest.setWidth(parameters.getWidth());
+		transformRequest.setHeight(parameters.getHeight());
+		transformRequest.setLanguage(languageTag).setVersion(version);
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
 				transformRequest);

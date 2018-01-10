@@ -66,10 +66,10 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
 
-		languageInfo.put("de",
-				new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createTimestamp()).setPublisher(createUserReference()));
-		languageInfo.put("en",
-				new PublishStatusModel().setVersion("1.1").setPublished(false).setPublishDate(createTimestamp()).setPublisher(createUserReference()));
+		languageInfo.put("de", new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createTimestamp()).setPublisher(
+				createUserReference()));
+		languageInfo.put("en", new PublishStatusModel().setVersion("1.1").setPublished(false).setPublishDate(createTimestamp()).setPublisher(
+				createUserReference()));
 
 		nodeResponse.setAvailableLanguages(languageInfo);
 		HashMap<String, String> languagePaths = new HashMap<>();
@@ -92,14 +92,11 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
 		fields.put("binary", createBinaryField());
-		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-				Tuple.tuple("longitude", createNumberField(16.373063840833))));
-		fields.put("locations",
-				createMicronodeListField(
-						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-								Tuple.tuple("longitude", createNumberField(16.373063840833))),
-						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.137222)),
-								Tuple.tuple("longitude", createNumberField(11.575556)))));
+		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
+				"longitude", createNumberField(16.373063840833))));
+		fields.put("locations", createMicronodeListField(createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(
+				48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createMicronodeField("geolocation", Tuple.tuple(
+						"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions(READ, UPDATE, DELETE, CREATE);
@@ -215,14 +212,11 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
-		fields.put("location", createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-				Tuple.tuple("longitude", createNumberField(16.373063840833))));
-		fields.put("locations",
-				createMicronodeListField(
-						createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-								Tuple.tuple("longitude", createNumberField(16.373063840833))),
-						createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.137222)),
-								Tuple.tuple("longitude", createNumberField(11.575556)))));
+		fields.put("location", createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
+				"longitude", createNumberField(16.373063840833))));
+		fields.put("locations", createMicronodeListField(createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(
+				48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createNewMicronodeField("geolocation", Tuple.tuple(
+						"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		return contentCreate;
 	}
@@ -249,10 +243,7 @@ public class NodeExamples extends AbstractExamples {
 		BinaryFieldTransformRequest request = new BinaryFieldTransformRequest();
 		request.setHeight(200);
 		request.setWidth(100);
-		request.setCropx(50);
-		request.setCropy(20);
-		request.setCropw(170);
-		request.setCroph(150);
+		request.setCropRect(50, 20, 150, 170);
 		request.setLanguage("en");
 		request.setVersion("1.0");
 		return request;
@@ -271,14 +262,11 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
-		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-				Tuple.tuple("longitude", createNumberField(16.373063840833))));
-		fields.put("locations",
-				createMicronodeListField(
-						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-								Tuple.tuple("longitude", createNumberField(16.373063840833))),
-						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.137222)),
-								Tuple.tuple("longitude", createNumberField(11.575556)))));
+		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
+				"longitude", createNumberField(16.373063840833))));
+		fields.put("locations", createMicronodeListField(createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(
+				48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createMicronodeField("geolocation", Tuple.tuple(
+						"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		return nodeUpdate;
 	}
