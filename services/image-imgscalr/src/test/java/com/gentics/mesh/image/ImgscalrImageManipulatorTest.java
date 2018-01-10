@@ -226,7 +226,7 @@ public class ImgscalrImageManipulatorTest {
 	public void testCropViaFocalPoint() {
 		// Valid cropping
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.resizeAndCropFocalPoint(bi, new ImageManipulationParametersImpl().setFocalPoint(20, 20).setCropMode(
+		BufferedImage outputImage = manipulator.getFocalPointCropper().apply(bi, new ImageManipulationParametersImpl().setFocalPoint(20, 20).setCropMode(
 				FOCALPOINT).setSize(50, 50));
 		assertEquals(50, outputImage.getWidth());
 		assertEquals(50, outputImage.getHeight());

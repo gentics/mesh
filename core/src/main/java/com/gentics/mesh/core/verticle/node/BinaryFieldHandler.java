@@ -41,6 +41,7 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.node.field.Point;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
@@ -109,8 +110,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// }
 
 			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(), ac
-					.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+					ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -433,6 +434,13 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					String binaryUuid = initialField.getBinary().getUuid();
 					Observable<Buffer> stream = binaryStorage.read(binaryUuid);
+
+					// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
+					// Otherwise the query parameter focal point will be used and thus override the stored focal point.
+					Point focalPoint = initialField.getImageFocalPoint();
+					if (parameters.getFocalPoint() == null && focalPoint != null) {
+						parameters.setFocalPoint(focalPoint);
+					}
 
 					// Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, parameters).flatMap(file -> {

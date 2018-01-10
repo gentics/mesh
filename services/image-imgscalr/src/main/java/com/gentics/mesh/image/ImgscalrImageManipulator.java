@@ -26,6 +26,7 @@ import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.core.rest.node.field.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
@@ -43,6 +44,8 @@ import io.vertx.reactivex.core.Vertx;
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
  */
 public class ImgscalrImageManipulator extends AbstractImageManipulator {
+
+	private FocalPointCropper focalPointCropper = new FocalPointCropper();
 
 	public ImgscalrImageManipulator() {
 		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
@@ -63,8 +66,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (cropArea != null) {
 			cropArea.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(), cropArea
-						.getHeight());
+				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(),
+						cropArea.getHeight());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -72,28 +75,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 		}
 		return originalImage;
-	}
-
-	/**
-	 * First resize the image and later crop the image to focus the focal point.
-	 * 
-	 * @param rgbCopy
-	 * @param parameters
-	 * @return resized and cropped image
-	 */
-	protected BufferedImage resizeAndCropFocalPoint(BufferedImage rgbCopy, ImageManipulationParameters parameters) {
-		parameters.validate();
-		Integer targetWidth = parameters.getWidth();
-		Integer targetHeight = parameters.getHeight();
-		// TODO validate the focal point against the source image dimensions
-
-		// TODO load the stored focalpoint and omit it if a custom one has been provided
-		parameters.getFocalPoint();
-
-		// TODO resize the image to the largest dimension while keeping the aspect ratio
-
-		// TODO next crop the other dimension using the focal point and choose the crop area closest to the middle of the needed focal point axis.
-		return rgbCopy;
 	}
 
 	/**
@@ -197,8 +178,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					rgbCopy = crop(rgbCopy, parameters.getRect());
 					break;
 				case FOCALPOINT:
-					rgbCopy = resizeAndCropFocalPoint(rgbCopy, parameters);
-					// We don't need to resize the image again. The dimensions already match up with the target dimension 
+					rgbCopy = focalPointCropper.apply(rgbCopy, parameters);
+					// We don't need to resize the image again. The dimensions already match up with the target dimension
 					omitResize = true;
 					break;
 				}
@@ -274,6 +255,10 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 			// ins.close();
 		});
+	}
+
+	public FocalPointCropper getFocalPointCropper() {
+		return focalPointCropper;
 	}
 
 }

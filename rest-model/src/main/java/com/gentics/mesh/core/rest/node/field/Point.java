@@ -72,4 +72,13 @@ public class Point {
 	public String toString() {
 		return x + ":" + y;
 	}
+
+	/**
+	 * Return the ration of x to y.
+	 * 
+	 * @return
+	 */
+	public double getRatio() {
+		return (double) getX() / (double) getY();
+	}
 }
