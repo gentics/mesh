@@ -115,8 +115,9 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * 
 	 * @return
 	 */
-	default String getCropMode() {
-		return getParameter(CROP_MODE_QUERY_PARAM_KEY);
+	default CropMode getCropMode() {
+		String mode = getParameter(CROP_MODE_QUERY_PARAM_KEY);
+		return CropMode.get(mode);
 	}
 
 	/**

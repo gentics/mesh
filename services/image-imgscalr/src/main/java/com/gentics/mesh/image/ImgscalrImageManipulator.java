@@ -28,6 +28,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
@@ -55,17 +56,15 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * Crop the image if the request contains cropping parameters. Fail if the crop parameters are invalid or incomplete.
 	 * 
 	 * @param originalImage
-	 * @param parameters
+	 * @param cropArea
 	 * @return cropped image or return original image if no cropping is requested
 	 */
-	protected BufferedImage cropIfRequested(BufferedImage originalImage, ImageManipulationParameters parameters) {
-		parameters.validate();
-		ImageRect cropArea = parameters.getRect();
+	protected BufferedImage crop(BufferedImage originalImage, ImageRect cropArea) {
 		if (cropArea != null) {
 			cropArea.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				ImageRect rect = parameters.getRect();
-				BufferedImage image = Scalr.crop(originalImage, rect.getStartX(), rect.getStartY(), rect.getWidth(), rect.getHeight());
+				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(), cropArea
+						.getHeight());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -73,6 +72,28 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 		}
 		return originalImage;
+	}
+
+	/**
+	 * First resize the image and later crop the image to focus the focal point.
+	 * 
+	 * @param rgbCopy
+	 * @param parameters
+	 * @return resized and cropped image
+	 */
+	protected BufferedImage resizeAndCropFocalPoint(BufferedImage rgbCopy, ImageManipulationParameters parameters) {
+		parameters.validate();
+		Integer targetWidth = parameters.getWidth();
+		Integer targetHeight = parameters.getHeight();
+		// TODO validate the focal point against the source image dimensions
+
+		// TODO load the stored focalpoint and omit it if a custom one has been provided
+		parameters.getFocalPoint();
+
+		// TODO resize the image to the largest dimension while keeping the aspect ratio
+
+		// TODO next crop the other dimension using the focal point and choose the crop area closest to the middle of the needed focal point axis.
+		return rgbCopy;
 	}
 
 	/**
@@ -168,8 +189,24 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 
 			// Manipulate image
-			rgbCopy = cropIfRequested(rgbCopy, parameters);
-			rgbCopy = resizeIfRequested(rgbCopy, parameters);
+			CropMode cropMode = parameters.getCropMode();
+			boolean omitResize = false;
+			if (cropMode != null) {
+				switch (cropMode) {
+				case RECT:
+					rgbCopy = crop(rgbCopy, parameters.getRect());
+					break;
+				case FOCALPOINT:
+					rgbCopy = resizeAndCropFocalPoint(rgbCopy, parameters);
+					// We don't need to resize the image again. The dimensions already match up with the target dimension 
+					omitResize = true;
+					break;
+				}
+			}
+
+			if (!omitResize) {
+				rgbCopy = resizeIfRequested(rgbCopy, parameters);
+			}
 
 			// Write image
 			try {

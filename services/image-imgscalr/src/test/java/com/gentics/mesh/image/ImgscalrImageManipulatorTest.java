@@ -32,7 +32,6 @@ import org.xml.sax.SAXException;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
@@ -196,13 +195,13 @@ public class ImgscalrImageManipulatorTest {
 	@Test(expected = GenericRestException.class)
 	public void testCropStartOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setRect(500, 500, 20, 25));
+		manipulator.crop(bi, new ImageManipulationParametersImpl().setRect(500, 500, 20, 25).getRect());
 	}
 
 	@Test(expected = GenericRestException.class)
 	public void testCropAreaOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setRect(1, 1, 400, 400));
+		manipulator.crop(bi, new ImageManipulationParametersImpl().setRect(1, 1, 400, 400).getRect());
 	}
 
 	@Test
@@ -210,14 +209,14 @@ public class ImgscalrImageManipulatorTest {
 
 		// No parameters
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl());
+		BufferedImage outputImage = manipulator.crop(bi, null);
 		assertEquals(100, outputImage.getWidth());
 		assertEquals(200, outputImage.getHeight());
 		assertEquals("No cropping operation should have occured", bi.hashCode(), outputImage.hashCode());
 
 		// Valid cropping
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setRect(1, 1, 20, 25));
+		outputImage = manipulator.crop(bi, new ImageManipulationParametersImpl().setRect(1, 1, 20, 25).getRect());
 		assertEquals(25, outputImage.getWidth());
 		assertEquals(20, outputImage.getHeight());
 
@@ -227,7 +226,7 @@ public class ImgscalrImageManipulatorTest {
 	public void testCropViaFocalPoint() {
 		// Valid cropping
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setFocalPoint(20, 20).setCropMode(
+		BufferedImage outputImage = manipulator.resizeAndCropFocalPoint(bi, new ImageManipulationParametersImpl().setFocalPoint(20, 20).setCropMode(
 				FOCALPOINT).setSize(50, 50));
 		assertEquals(50, outputImage.getWidth());
 		assertEquals(50, outputImage.getHeight());
