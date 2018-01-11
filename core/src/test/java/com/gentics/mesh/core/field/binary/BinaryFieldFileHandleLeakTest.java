@@ -17,123 +17,123 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
-    /**
-     * Tests if the file handles are closed correctly after downloading binaries.
-     */
-    @Test
-    public void testFileHandleLeakOnDownload() throws Exception {
-        String contentType = "image/png";
-        String fieldName = "image";
-        String fileName = "somefile.png";
-        Node node = folder("news");
 
-        try (Tx tx = tx()) {
-            prepareSchema(node, "", fieldName);
-            tx.success();
-        }
-        try (Tx tx = tx()) {
-            uploadImage(node, "en", fieldName, fileName, contentType);
-            tx.success();
-        }
+	/**
+	 * Tests if the file handles are closed correctly after downloading binaries.
+	 */
+	@Test
+	public void testFileHandleLeakOnDownload() throws Exception {
+		String contentType = "image/png";
+		String fieldName = "image";
+		String fileName = "somefile.png";
+		Node node = folder("news");
 
-        assertClosedFileHandleDifference(10, () -> {
-            for (int i = 0; i < 100; i++) {
-                client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName).toSingle().blockingGet();
-            }
-        });
-    }
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", fieldName);
+			tx.success();
+		}
+		try (Tx tx = tx()) {
+			uploadImage(node, "en", fieldName, fileName, contentType);
+			tx.success();
+		}
 
-    /**
-     * Tests if the file handles are closed correctly after downloading binaries.
-     */
-    @Test
-    public void testFileHandleLeakOnTransformation() throws Exception {
-        String contentType = "image/png";
-        String fieldName = "image";
-        String fileName = "somefile.png";
-        Node node = folder("news");
+		assertClosedFileHandleDifference(10, () -> {
+			for (int i = 0; i < 100; i++) {
+				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName).toSingle().blockingGet();
+			}
+		});
+	}
 
-        try (Tx tx = tx()) {
-            prepareSchema(node, "", fieldName);
-            tx.success();
-        }
-        try (Tx tx = tx()) {
-            uploadImage(node, "en", fieldName, fileName, contentType);
-            tx.success();
-        }
-        NodeResponse initialResponse;
-        try (Tx tx = tx()) {
-            initialResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
-            tx.success();
-        }
+	/**
+	 * Tests if the file handles are closed correctly after downloading binaries.
+	 */
+	@Test
+	public void testFileHandleLeakOnTransformation() throws Exception {
+		String contentType = "image/png";
+		String fieldName = "image";
+		String fileName = "somefile.png";
+		Node node = folder("news");
 
-        assertClosedFileHandleDifference(10, () -> {
-            AtomicReference<NodeResponse> atomicResponse = new AtomicReference<>(initialResponse);
-            NodeResponse response = atomicResponse.get();
-            for (int i = 0; i < 100; i++) {
-                client().transformNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response.getVersion(),
-                    fieldName, new ImageManipulationParametersImpl().setWidth(100 + i))
-                .toSingle().blockingGet();
-            }
-        });
-    }
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", fieldName);
+			tx.success();
+		}
+		try (Tx tx = tx()) {
+			uploadImage(node, "en", fieldName, fileName, contentType);
+			tx.success();
+		}
+		NodeResponse initialResponse;
+		try (Tx tx = tx()) {
+			initialResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+			tx.success();
+		}
 
-    /**
-     * Tests if the file handles are closed correctly after downloading binaries.
-     */
-    @Test
-    public void testFileHandleLeakOnImageManipulation() throws Exception {
-        String contentType = "image/png";
-        String fieldName = "image";
-        String fileName = "somefile.png";
-        Node node = folder("news");
+		assertClosedFileHandleDifference(10, () -> {
+			AtomicReference<NodeResponse> atomicResponse = new AtomicReference<>(initialResponse);
+			NodeResponse response = atomicResponse.get();
+			for (int i = 0; i < 100; i++) {
+				client().transformNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response.getVersion(), fieldName,
+						new ImageManipulationParametersImpl().setWidth(100 + i)).toSingle().blockingGet();
+			}
+		});
+	}
 
-        try (Tx tx = tx()) {
-            prepareSchema(node, "", fieldName);
-            tx.success();
-        }
-        try (Tx tx = tx()) {
-            uploadImage(node, "en", fieldName, fileName, contentType);
-            tx.success();
-        }
+	/**
+	 * Tests if the file handles are closed correctly after downloading binaries.
+	 */
+	@Test
+	public void testFileHandleLeakOnImageManipulation() throws Exception {
+		String contentType = "image/png";
+		String fieldName = "image";
+		String fileName = "somefile.png";
+		Node node = folder("news");
 
-        assertClosedFileHandleDifference(5, () -> {
-            for (int i = 0; i < 10; i++) {
-                client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(100 + i))
-                    .toSingle().blockingGet();
-            }
-        });
-    }
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", fieldName);
+			tx.success();
+		}
+		try (Tx tx = tx()) {
+			uploadImage(node, "en", fieldName, fileName, contentType);
+			tx.success();
+		}
 
-    /**
-     * Tests if the file handles are closed correctly after downloading binaries.
-     */
-    @Test
-    public void testFileHandleLeakOnUpload() throws Exception {
-        String contentType = "text/plain";
-        String fieldName = "image";
-        String fileName = "somefile.txt";
-        Node node = folder("news");
+		assertClosedFileHandleDifference(5, () -> {
+			for (int i = 0; i < 10; i++) {
+				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(100 + i))
+						.toSingle().blockingGet();
+			}
+		});
+	}
 
-        try (Tx tx = tx()) {
-            prepareSchema(node, "", fieldName);
-            tx.success();
-        }
-        NodeResponse initialResponse;
-        try (Tx tx = tx()) {
-            initialResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
-            tx.success();
-        }
+	/**
+	 * Tests if the file handles are closed correctly after downloading binaries.
+	 */
+	@Test
+	public void testFileHandleLeakOnUpload() throws Exception {
+		String contentType = "text/plain";
+		String fieldName = "image";
+		String fileName = "somefile.txt";
+		Node node = folder("news");
 
-        assertClosedFileHandleDifference(10, () -> {
-            AtomicReference<NodeResponse> atomicResponse = new AtomicReference<>(initialResponse);
-            for (int i = 0; i < 100; i++) {
-                Buffer buffer = Buffer.buffer("Testbuffer" + i);
-                NodeResponse response = atomicResponse.get();
-                atomicResponse.set(call(() -> client().updateNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response.getVersion(), fieldName, buffer,
-                    fileName, contentType)));
-            }
-        });
-    }
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", fieldName);
+			tx.success();
+		}
+		NodeResponse initialResponse;
+		try (Tx tx = tx()) {
+			initialResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+			tx.success();
+		}
+
+		assertClosedFileHandleDifference(10, () -> {
+			AtomicReference<NodeResponse> atomicResponse = new AtomicReference<>(initialResponse);
+			for (int i = 0; i < 100; i++) {
+				Buffer buffer = Buffer.buffer("Testbuffer" + i);
+				NodeResponse response = atomicResponse.get();
+				atomicResponse.set(call(() -> client().updateNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response
+						.getVersion(), fieldName, buffer, fileName, contentType)));
+			}
+		});
+	}
 
 }

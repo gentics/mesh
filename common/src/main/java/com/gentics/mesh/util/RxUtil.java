@@ -76,7 +76,6 @@ public final class RxUtil {
 	}
 
 	public static io.vertx.reactivex.core.streams.Pump pump1(Observable<Buffer> stream, io.vertx.reactivex.core.file.AsyncFile file) {
-		stream = stream.doOnTerminate(() -> file.close());
 		ReadStream<io.vertx.core.buffer.Buffer> rss = ReadStreamSubscriber.asReadStream(stream, Function.identity());
 		Pump pump = Pump.pump(rss, file.getDelegate());
 		return io.vertx.reactivex.core.streams.Pump.newInstance(pump);

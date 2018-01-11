@@ -2,8 +2,8 @@
 
 = Gentics Mesh Changelog
 
-[[v0.14.0]]
-== 0.14.0 (Not yet released)
+[[vNextMajorRelease]]
+== Next Major Release
 
 CAUTION: The ElasticSearch server will no longer be embedded. Instead an external ElasticSearch 6.0 server can be used.
 
