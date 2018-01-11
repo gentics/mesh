@@ -8,7 +8,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 
+import com.sun.management.UnixOperatingSystemMXBean;
+import io.reactivex.functions.Action;
 import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -51,7 +55,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Drop all indices and create a new index using the current data.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	protected void recreateIndices() throws Exception {
@@ -103,7 +107,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Return the graphql query for the given name.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 * @throws IOException
@@ -114,7 +118,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Return the es text for the given name.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 * @throws IOException
@@ -125,10 +129,10 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Returns the text string of the resource with the given path.
-	 * 
+	 *
 	 * @param path
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected String getText(String path) throws IOException {
 		return IOUtils.toString(getClass().getResourceAsStream(path));
@@ -136,7 +140,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Returns the json for the given path.
-	 * 
+	 *
 	 * @param path
 	 * @return
 	 * @throws IOException
@@ -147,7 +151,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
-	 * 
+	 *
 	 * @param action
 	 *            Action to be invoked. This action should trigger the migrations
 	 * @param status
@@ -193,7 +197,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Execute the action and check that the migration is executed and yields the given status.
-	 * 
+	 *
 	 * @param action
 	 *            Action to be invoked. This action should trigger the jobs
 	 * @param status
@@ -229,10 +233,10 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Inform the job worker that new jobs have been enqueued and block until all jobs complete or the timeout has been reached.
-	 * 
+	 *
 	 * @param jobUuid
 	 *            Uuid of the job we should wait for
-	 * 
+	 *
 	 */
 	protected JobListResponse triggerAndWaitForJob(String jobUuid) {
 		return triggerAndWaitForJob(jobUuid, COMPLETED);
@@ -241,7 +245,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	/**
 	 * Inform the job worker that new jobs are enqueued and check the migration status. This method will block until the migration finishes or a timeout has
 	 * been reached.
-	 * 
+	 *
 	 * @param jobUuid
 	 *            Uuid of the job we should wait for
 	 * @param status
@@ -284,4 +288,31 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	}
 
+	/**
+	 * Checks if there are too many additional file handles open after the action has been run.
+	 * @param action Action to be called
+	 */
+	protected void assertClosedFileHandleDifference(int maximumDifference, Action action) throws Exception {
+	    long countBefore = getFileHandleCount();
+	    action.run();
+	    long countAfter = getFileHandleCount();
+	    if (countAfter - countBefore > maximumDifference) {
+	        throw new RuntimeException(String.format("File handles were not closed properly: Expected max. %d additional handles, got %d",
+                maximumDifference, countAfter - countBefore
+            ));
+        }
+	}
+
+	/**
+	 * Counts how many files are currently opened by this JVM.
+	 * @return File handle count
+	 */
+	private long getFileHandleCount() {
+		OperatingSystemMXBean osStats = ManagementFactory.getOperatingSystemMXBean();
+		if (osStats instanceof UnixOperatingSystemMXBean) {
+			return ((UnixOperatingSystemMXBean)osStats).getOpenFileDescriptorCount();
+		} else {
+			throw new RuntimeException("Could not get file handle count");
+		}
+	}
 }

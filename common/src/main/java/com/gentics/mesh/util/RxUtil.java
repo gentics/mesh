@@ -66,7 +66,9 @@ public final class RxUtil {
 	}
 
 	public static Observable<Buffer> toBufferObs(AsyncFile file) {
-		return new io.vertx.reactivex.core.file.AsyncFile(file).toObservable().map(io.vertx.reactivex.core.buffer.Buffer::getDelegate);
+		return new io.vertx.reactivex.core.file.AsyncFile(file).toObservable()
+			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
+			.doOnTerminate(() -> file.close());
 	}
 
 	public static io.vertx.reactivex.core.streams.Pump pump1(Observable<Buffer> stream, io.vertx.reactivex.core.file.AsyncFile file) {

@@ -437,7 +437,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, imageManipulationParameter)
 							.flatMap(file -> {
 								Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
-								Observable<Buffer> resizedImageData = obs.doOnTerminate(file.getFile()::close).publish().autoConnect(2);
+								Observable<Buffer> resizedImageData = obs.publish().autoConnect(2);
 
 								// Hash the resized image data and store it using the computed fieldUuid + hash
 								Single<String> hash = FileUtils.hash(resizedImageData);
