@@ -81,16 +81,4 @@ public final class RxUtil {
 		return io.vertx.reactivex.core.streams.Pump.newInstance(pump);
 	}
 
-	/**
-	 * Creates a pump which applies a workaround for vertx-rxjava#123.
-	 * 
-	 * @param stream
-	 * @param file
-	 * @return
-	 */
-	public static io.vertx.reactivex.core.streams.Pump pump(Observable<io.vertx.reactivex.core.buffer.Buffer> stream,
-			io.vertx.reactivex.core.file.AsyncFile file) {
-		return pump1(stream.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate), file);
-
-	}
 }

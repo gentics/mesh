@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -35,7 +36,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 
 	@Override
 	public Completable store(Observable<Buffer> stream, String uuid) {
-		return Completable.create(sub -> {
+		return Completable.defer(() -> {
 			FileSystem fileSystem = FileSystem.newInstance(Mesh.vertx().fileSystem());
 			String path = getFilePath(uuid);
 			log.debug("Saving data for field to path {" + path + "}");
@@ -54,19 +55,13 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			}
 
 			File targetFile = new File(uploadFolder, uuid + ".bin");
-			fileSystem.open(targetFile.getAbsolutePath(), new OpenOptions(), rh -> {
-				if (rh.failed()) {
-					sub.onError(rh.cause());
-				} else {
-					AsyncFile file = rh.result();
-					Observable<Buffer> stream2 = stream.doOnTerminate(() -> file.close());
-					stream2 = stream2.doOnComplete((() -> sub.onComplete()));
-					stream2 = stream2.doOnError(error -> sub.onError(error));
-					Pump pump = RxUtil.pump1(stream2, file);
-					pump.start();
-				}
-			});
-
+			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
+				Pump pump = RxUtil.pump1(stream, file);
+				pump.start();
+				return file;
+			}).doOnSuccess(file -> {
+				file.flush();
+			}).toCompletable();
 		});
 	}
 
