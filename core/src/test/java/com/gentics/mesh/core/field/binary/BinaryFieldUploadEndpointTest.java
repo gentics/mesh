@@ -19,10 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -44,7 +42,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.buffer.Buffer;
@@ -501,19 +498,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertEquals(contentType, downloadResponse.getContentType());
 			assertEquals(fileName, downloadResponse.getFilename());
 		}
-	}
-
-	private int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
-		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
-		String uuid = node.getUuid();
-		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer,
-				filename, contentType));
-		assertNotNull(response);
-		return bytes.length;
-
 	}
 
 }

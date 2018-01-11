@@ -83,9 +83,7 @@ public class BinaryFieldResponseHandler {
 							// TODO encode filename?
 							response.putHeader("content-disposition", "inline; filename=" + fileName);
 							return fileWithProps.getFile();
-						}).flatMap(file -> {
-							return RxUtil.toBufferObs(file).doOnTerminate(file::close);
-						});
+						}).flatMap(RxUtil::toBufferObs);
 				resizedData.subscribe(response::write, rc::fail, response::end);
 			} else {
 				response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);

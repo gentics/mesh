@@ -10,11 +10,13 @@ CAUTION: The ElasticSearch server will no longer be embedded. Instead an externa
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 [[v0.13.2]]
-== 0.13.2 (TBD)
+== 0.13.2 (11.01.2018)
 
 icon:plus[] Java Rest Client: It is now possible to retrieve the client version via `MeshRestClient.getPlainVersion()`.
 
 icon:check[] Core: The consistency checks have been enhanced.
+
+icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
 
 [[v0.13.1]]
 == 0.13.1 (05.01.2018)
