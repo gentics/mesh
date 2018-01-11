@@ -17,6 +17,7 @@ import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
@@ -56,12 +57,12 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 
 			File targetFile = new File(uploadFolder, uuid + ".bin");
 			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
-				Pump pump = RxUtil.pump1(stream, file);
-				pump.start();
-				return file;
-			}).doOnSuccess(file -> {
-				file.flush();
-			}).toCompletable();
+				Observable<AsyncFile> s = stream.map(buffer -> {
+					file.write(new io.vertx.reactivex.core.buffer.Buffer(buffer));
+					return buffer;
+				}).map(buffer -> file);
+				return s.ignoreElements().andThen(Single.just(file)).doOnSuccess(AsyncFile::flush).doFinally(() -> file.close());
+			}).flatMap(e -> e).toCompletable();
 		});
 	}
 
@@ -86,8 +87,8 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Observable<Buffer> read(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
-		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable().map(file -> file
-				.getDelegate()).flatMap(RxUtil::toBufferObs);
+		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable()
+				.map(file -> file.getDelegate()).flatMap(RxUtil::toBufferObs);
 		return obs;
 	}
 
