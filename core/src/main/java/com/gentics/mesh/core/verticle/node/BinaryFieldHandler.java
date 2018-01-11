@@ -461,8 +461,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// Check whether the binary was already stored.
 					if (binary == null) {
 						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
-						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toObservable().flatMap(f -> f.toObservable())
-								.map(b -> b.getDelegate());
+						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).flatMapObservable(RxUtil::toBufferObs);
 						binary = binaryRoot.create(hash, result.getSize());
 						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
 					} else {

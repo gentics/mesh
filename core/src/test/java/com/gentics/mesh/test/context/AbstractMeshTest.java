@@ -3,16 +3,22 @@ package com.gentics.mesh.test.context;
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.util.VersionNumber;
 import com.sun.management.UnixOperatingSystemMXBean;
 import io.reactivex.functions.Action;
+import io.vertx.core.buffer.Buffer;
 import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -314,5 +320,19 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		} else {
 			throw new RuntimeException("Could not get file handle count");
 		}
+	}
+
+
+	protected int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+		String uuid = node.getUuid();
+		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer,
+			filename, contentType));
+		assertNotNull(response);
+		return bytes.length;
+
 	}
 }

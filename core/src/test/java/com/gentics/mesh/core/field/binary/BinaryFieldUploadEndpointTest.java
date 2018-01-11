@@ -19,11 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -45,7 +42,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.buffer.Buffer;
@@ -502,72 +498,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertEquals(contentType, downloadResponse.getContentType());
 			assertEquals(fileName, downloadResponse.getFilename());
 		}
-	}
-
-	/**
-	 * Tests if the file handles are closed correctly after downloading binaries.
-	 */
-	@Test
-	public void testFileHandleLeakOnDownload() throws Exception {
-		String contentType = "image/png";
-		String fieldName = "image";
-		String fileName = "somefile.png";
-		Node node = folder("news");
-
-		try (Tx tx = tx()) {
-			prepareSchema(node, "", fieldName);
-			tx.success();
-		}
-		try (Tx tx = tx()) {
-			uploadImage(node, "en", fieldName, fileName, contentType);
-			tx.success();
-		}
-
-		assertClosedFileHandleDifference(10, () -> {
-			for (int i = 0; i < 100; i++) {
-				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName).toSingle().blockingGet();
-			}
-		});
-	}
-
-	/**
-	 * Tests if the file handles are closed correctly after downloading binaries.
-	 */
-	@Test
-	public void testFileHandleLeakOnImageManipulation() throws Exception {
-		String contentType = "image/png";
-		String fieldName = "image";
-		String fileName = "somefile.png";
-		Node node = folder("news");
-
-		try (Tx tx = tx()) {
-			prepareSchema(node, "", fieldName);
-			tx.success();
-		}
-		try (Tx tx = tx()) {
-			uploadImage(node, "en", fieldName, fileName, contentType);
-			tx.success();
-		}
-
-		assertClosedFileHandleDifference(5, () -> {
-			for (int i = 0; i < 10; i++) {
-				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(100 + i))
-					.toSingle().blockingGet();
-			}
-		});
-	}
-
-	private int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
-		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
-		String uuid = node.getUuid();
-		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer,
-				filename, contentType));
-		assertNotNull(response);
-		return bytes.length;
-
 	}
 
 }
