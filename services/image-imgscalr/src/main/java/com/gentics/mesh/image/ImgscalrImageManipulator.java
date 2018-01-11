@@ -26,7 +26,6 @@ import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
-import com.gentics.mesh.core.rest.node.field.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;

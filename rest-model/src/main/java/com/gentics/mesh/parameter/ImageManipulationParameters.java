@@ -23,6 +23,8 @@ public interface ImageManipulationParameters extends ParameterProvider {
 
 	public static final String CROP_MODE_QUERY_PARAM_KEY = "crop";
 
+	public static final String FOCAL_POINT_DEBUG_PARAM_KEY = "fpdebug";
+
 	/**
 	 * Return the image width.
 	 * 
@@ -70,14 +72,26 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @param height
 	 * @return Fluent API
 	 */
-	default ImageManipulationParameters setSize(int height, int width) {
-		setHeight(height);
+	default ImageManipulationParameters setSize(int width, int height) {
 		setWidth(width);
+		setHeight(height);
 		return this;
 	}
 
 	/**
+	 * Set the target size of the image.
+	 * 
+	 * @param size
+	 * @return Fluent API
+	 */
+	default ImageManipulationParameters setSize(Point size) {
+		return setSize(size.getX(), size.getY());
+	}
+
+	/**
 	 * Returns the rect crop area parameter value.
+	 * 
+	 * @return Configured image crop area rectangle
 	 */
 	default ImageRect getRect() {
 		String rect = getParameter(RECT_QUERY_PARAM_KEY);
@@ -179,6 +193,31 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	}
 
 	/**
+	 * Set the focal point debug flag.
+	 * 
+	 * @param flag
+	 * @return
+	 */
+	default ImageManipulationParameters setFocalPointDebug(Boolean flag) {
+		if (flag == null) {
+			setParameter(FOCAL_POINT_DEBUG_PARAM_KEY, null);
+		} else {
+			setParameter(FOCAL_POINT_DEBUG_PARAM_KEY, flag.toString());
+		}
+		return this;
+	}
+
+	/**
+	 * Return the focal point debug flag.
+	 * 
+	 * @return
+	 */
+	default boolean getFocalPointDebug() {
+		String flag = getParameter(FOCAL_POINT_DEBUG_PARAM_KEY);
+		return Boolean.valueOf(flag);
+	}
+
+	/**
 	 * Set the focal point.
 	 * 
 	 * @param x
@@ -244,6 +283,9 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		if (getFocalPoint() != null) {
 			builder.append("fp" + getFocalPoint().toString());
 		}
+		if (getFocalPointDebug()) {
+			builder.append("fpdebug");
+		}
 		return builder.toString();
 	}
 
@@ -253,7 +295,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @return
 	 */
 	default boolean isSet() {
-		return getWidth() != null || getHeight() != null || getRect() != null || getFocalPoint() != null;
+		return getWidth() != null || getHeight() != null || getRect() != null || getFocalPoint() != null || getFocalPointDebug();
 	}
 
 }

@@ -9,22 +9,20 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -43,25 +41,17 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
-public class ImgscalrImageManipulatorTest {
+public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulatorTest.class);
 
 	private ImgscalrImageManipulator manipulator;
-	private File cacheDir;
+
 	private ImageManipulatorOptions options = new ImageManipulatorOptions();
 
 	@Before
 	public void setup() {
-		cacheDir = new File("target/cacheDir_" + System.currentTimeMillis());
 		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
-	}
-
-	@After
-	public void cleanup() throws IOException {
-		FileUtils.deleteDirectory(cacheDir);
-		FileUtils.deleteDirectory(new File("data"));
-		FileUtils.deleteDirectory(new File("target/data"));
 	}
 
 	@Test
@@ -112,7 +102,7 @@ public class ImgscalrImageManipulatorTest {
 
 	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Observable<Buffer>> action) throws JSONException,
 			IOException {
-		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
+		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), Charset.defaultCharset()));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject image = array.getJSONObject(i);
@@ -226,8 +216,8 @@ public class ImgscalrImageManipulatorTest {
 	public void testCropViaFocalPoint() {
 		// Valid cropping
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.getFocalPointCropper().apply(bi, new ImageManipulationParametersImpl().setFocalPoint(20, 20).setCropMode(
-				FOCALPOINT).setSize(50, 50));
+		BufferedImage outputImage = manipulator.getFocalPointCropper().apply(bi, new ImageManipulationParametersImpl().setFocalPoint(20, 20)
+				.setCropMode(FOCALPOINT).setSize(50, 50));
 		assertEquals(50, outputImage.getWidth());
 		assertEquals(50, outputImage.getHeight());
 	}
