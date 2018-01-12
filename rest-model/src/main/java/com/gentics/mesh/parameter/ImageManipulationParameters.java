@@ -88,6 +88,10 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return setSize(size.getX(), size.getY());
 	}
 
+	default Point getSize() {
+		return new Point(getWidth(), getHeight());
+	}
+
 	/**
 	 * Returns the rect crop area parameter value.
 	 * 
