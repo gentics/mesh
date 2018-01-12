@@ -62,8 +62,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (parameters.hasAllCropParameters()) {
 			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
-						parameters.getCroph());
+				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(), parameters
+						.getCroph());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -188,20 +188,16 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @return
 	 */
 	private Single<BufferedImage> readImage(Observable<Buffer> stream) {
-		try {
-			InputStream ins = RxUtil.toInputStream(stream, vertx);
-			return vertx.rxExecuteBlocking(bc -> {
-				try {
-					BufferedImage image = ImageIO.read(ins);
-					ins.close();
-					bc.complete(image);
-				} catch (IOException e) {
-					bc.fail(e);
-				}
-			}, false);
-		} catch (IOException e1) {
-			return Single.error(e1);
-		}
+		return vertx.rxExecuteBlocking(bc -> {
+			try {
+				InputStream ins = RxUtil.toInputStream(stream, vertx);
+				BufferedImage image = ImageIO.read(ins);
+				ins.close();
+				bc.complete(image);
+			} catch (IOException e) {
+				bc.fail(e);
+			}
+		}, false);
 	}
 
 	@Override

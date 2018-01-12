@@ -15,11 +15,6 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.util.VersionNumber;
-import com.sun.management.UnixOperatingSystemMXBean;
-import io.reactivex.functions.Action;
-import io.vertx.core.buffer.Buffer;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -34,6 +29,7 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -41,8 +37,12 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.util.VersionNumber;
+import com.sun.management.UnixOperatingSystemMXBean;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.functions.Action;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -313,43 +313,48 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	/**
 	 * Checks if there are too many additional file handles open after the action has been run.
-	 * @param action Action to be called
+	 * 
+	 * @param action
+	 *            Action to be called
 	 */
 	protected void assertClosedFileHandleDifference(int maximumDifference, Action action) throws Exception {
-	    long countBefore = getFileHandleCount();
-	    action.run();
-	    long countAfter = getFileHandleCount();
-	    if (countAfter - countBefore > maximumDifference) {
-	        throw new RuntimeException(String.format("File handles were not closed properly: Expected max. %d additional handles, got %d",
-                maximumDifference, countAfter - countBefore
-            ));
-        }
+		long countBefore = getFileHandleCount();
+		action.run();
+		long countAfter = getFileHandleCount();
+		if (countAfter - countBefore > maximumDifference) {
+			throw new RuntimeException(String.format("File handles were not closed properly: Expected max. %d additional handles, got %d",
+					maximumDifference, countAfter - countBefore));
+		}
 	}
 
 	/**
 	 * Counts how many files are currently opened by this JVM.
+	 * 
 	 * @return File handle count
 	 */
 	private long getFileHandleCount() {
 		OperatingSystemMXBean osStats = ManagementFactory.getOperatingSystemMXBean();
 		if (osStats instanceof UnixOperatingSystemMXBean) {
-			return ((UnixOperatingSystemMXBean)osStats).getOpenFileDescriptorCount();
+			return ((UnixOperatingSystemMXBean) osStats).getOpenFileDescriptorCount();
 		} else {
 			throw new RuntimeException("Could not get file handle count");
 		}
 	}
 
-
 	protected int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
+		return upload(node, buffer, languageTag, fieldname, filename, contentType);
+	}
+
+	protected int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		String uuid = node.getUuid();
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer,
-			filename, contentType));
+				filename, contentType));
 		assertNotNull(response);
-		return bytes.length;
+		return buffer.length();
 
 	}
 }

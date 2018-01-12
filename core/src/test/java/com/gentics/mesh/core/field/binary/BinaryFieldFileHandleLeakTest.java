@@ -9,11 +9,13 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.buffer.Buffer;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
@@ -79,10 +81,10 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Tests if the file handles are closed correctly after downloading binaries.
+	 * Tests if the file handles are closed correctly after downloading resized images.
 	 */
 	@Test
-	public void testFileHandleLeakOnImageManipulation() throws Exception {
+	public void testFileHandleLeakOnImageManipulationNoCache() throws Exception {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
@@ -101,6 +103,57 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 			for (int i = 0; i < 10; i++) {
 				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(100 + i))
 						.toSingle().blockingGet();
+			}
+		});
+	}
+
+	/**
+	 * Tests if the file handles are closed correctly after resizing images. Ensure that the cache is being used.
+	 */
+	@Test
+	public void testFileHandleLeakOnImageManipulationCached() throws Exception {
+		String contentType = "image/png";
+		String fieldName = "image";
+		String fileName = "somefile.png";
+		Node node = folder("news");
+
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", fieldName);
+			tx.success();
+		}
+		try (Tx tx = tx()) {
+			uploadImage(node, "en", fieldName, fileName, contentType);
+			tx.success();
+		}
+
+		assertClosedFileHandleDifference(5, () -> {
+			for (int i = 0; i < 10; i++) {
+				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(100))
+						.toSingle().blockingGet();
+			}
+		});
+	}
+
+	@Test
+	public void testResizeBrokenImage() throws Exception {
+		String contentType = "image/png";
+		String fieldName = "image";
+		String fileName = "somefile.png";
+		Node node = folder("news");
+
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", fieldName);
+			tx.success();
+		}
+		try (Tx tx = tx()) {
+			upload(node, Buffer.buffer("broken"), "en", fieldName, fileName, contentType);
+			tx.success();
+		}
+
+		assertClosedFileHandleDifference(5, () -> {
+			for (int i = 0; i < 40; i++) {
+				call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(
+						100)), BAD_REQUEST, "image_error_reading_failed");
 			}
 		});
 	}

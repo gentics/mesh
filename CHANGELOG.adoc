@@ -12,6 +12,8 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 [[v0.13.3]] (12.01.2018)
 == 0.13.3
 
+icon:check[] Core: Optimized concurrency when handling binary data streams (e.g: downloading, image resizing)
+
 icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
 
 [[v0.13.2]]

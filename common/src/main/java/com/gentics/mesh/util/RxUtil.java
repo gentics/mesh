@@ -46,7 +46,7 @@ public final class RxUtil {
 	public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		PipedOutputStream pos = new PipedOutputStream(pis);
-		stream.map(Buffer::getBytes).subscribeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnComplete(() -> {
+		stream.map(Buffer::getBytes).observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnComplete(() -> {
 			try {
 				pos.close();
 			} catch (IOException e) {
@@ -67,9 +67,7 @@ public final class RxUtil {
 	}
 
 	public static Observable<Buffer> toBufferObs(io.vertx.reactivex.core.file.AsyncFile file) {
-		return file.toObservable()
-			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
-			.doOnTerminate(() -> file.close());
+		return file.toObservable().map(io.vertx.reactivex.core.buffer.Buffer::getDelegate).doOnTerminate(() -> file.close());
 	}
 
 }
