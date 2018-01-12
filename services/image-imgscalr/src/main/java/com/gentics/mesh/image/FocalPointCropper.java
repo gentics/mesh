@@ -23,57 +23,72 @@ public class FocalPointCropper {
 	/**
 	 * First resize the image and later crop the image to focus the focal point.
 	 * 
-	 * @param rgbCopy
+	 * @param img
 	 * @param parameters
 	 * @return resized and cropped image
 	 */
-	protected BufferedImage apply(BufferedImage rgbCopy, ImageManipulationParameters parameters) {
+	protected BufferedImage apply(BufferedImage img, ImageManipulationParameters parameters) {
 		Point focalPoint = parameters.getFocalPoint();
 		if (focalPoint == null) {
-			return rgbCopy;
+			return img;
 		}
 
 		if (parameters.getFocalPointDebug()) {
-			drawFocusPointAxis(rgbCopy, focalPoint);
+			drawFocusPointAxis(img, focalPoint);
 		}
 
 		// Validate the focal point position
-		Point imageSize = new Point(rgbCopy.getWidth(), rgbCopy.getHeight());
+		Point imageSize = new Point(img.getWidth(), img.getHeight());
 		if (!parameters.getFocalPoint().isWithinBoundsOf(imageSize)) {
 			throw error(BAD_REQUEST, "image_error_focalpoint_out_of_bounds", focalPoint.toString(), imageSize.toString());
 		}
 
 		Point targetSize = parameters.getSize();
-		boolean alignX = targetSize.getX() > targetSize.getY();
-		Point resize = calculateResize(imageSize, targetSize);
+		Point newSize = calculateResize(imageSize, targetSize);
 
 		// Resize the image to the largest dimension while keeping the aspect ratio
 		try {
-			rgbCopy = Scalr.resize(rgbCopy, Mode.FIT_EXACT, resize.getX(), resize.getY());
+			img = Scalr.resize(img, Mode.FIT_EXACT, newSize.getX(), newSize.getY());
 		} catch (IllegalArgumentException e) {
 			throw error(BAD_REQUEST, "image_error_resizing_failed", e);
+		}
+
+		// No need for cropping. The image has already the target dimensions
+		if (imageSize.equals(targetSize)) {
+			return img;
 		}
 
 		// Recalculate the focal point position since the image has been resized
 		double fpxd = (double) focalPoint.getX() / (double) imageSize.getX();
 		double fpyd = (double) focalPoint.getY() / (double) imageSize.getY();
-		int fpx = (int) (fpxd * resize.getX());
-		int fpy = (int) (fpyd * resize.getY());
+		int fpx = (int) (fpxd * newSize.getX());
+		int fpy = (int) (fpyd * newSize.getY());
 		focalPoint = new Point(fpx, fpy);
 
-		// Update the image size
-		imageSize = resize;
-
-		Point cropStart = calculateCropStart(alignX, targetSize, imageSize, focalPoint);
+		boolean alignX = calculateAlignment(imageSize, targetSize);
+		Point cropStart = calculateCropStart(alignX, targetSize, newSize, focalPoint);
 
 		try {
-			rgbCopy = Scalr.crop(rgbCopy, cropStart.getX(), cropStart.getY(), targetSize.getX(), targetSize.getY());
-			rgbCopy.flush();
+			img = Scalr.crop(img, cropStart.getX(), cropStart.getY(), targetSize.getX(), targetSize.getY());
 		} catch (IllegalArgumentException e) {
 			throw error(BAD_REQUEST, "image_error_cropping_failed", e);
 		}
 
-		return rgbCopy;
+		img.flush();
+		return img;
+	}
+
+	/**
+	 * Determine
+	 * 
+	 * @param imageSize
+	 * @param targetSize
+	 * @return
+	 */
+	protected boolean calculateAlignment(Point imageSize, Point targetSize) {
+		int deltaX = targetSize.getX() - imageSize.getX();
+		int deltaY = targetSize.getY() - imageSize.getY();
+		return deltaX > deltaY;
 	}
 
 	/**
@@ -86,6 +101,12 @@ public class FocalPointCropper {
 	 * @return Calculated start point
 	 */
 	protected Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, Point focalPoint) {
+
+		// Cropping is actually not needed if the source already matches the target size
+		if (targetSize.equals(imageSize)) {
+			return new Point(0, 0);
+		}
+
 		// Next we need to crop the image in order to achieve the final targeted size
 		// TODO next crop the other dimension using the focal point and choose the crop area closest to the middle of the needed focal point axis.
 		int startX = 0;
@@ -128,17 +149,25 @@ public class FocalPointCropper {
 		g2.drawLine(0, focalPoint.getY(), img.getWidth(), focalPoint.getY());
 	}
 
+	/**
+	 * Calculate the new size for the initial resize operation.
+	 * 
+	 * @param imageSize
+	 * @param targetSize
+	 * @return
+	 */
 	protected Point calculateResize(Point imageSize, Point targetSize) {
 		Integer targetWidth = targetSize.getX();
 		Integer targetHeight = targetSize.getY();
 
-		// Determine which image dimension is nearest to the target dimension
-		int deltaX = targetWidth - imageSize.getX();
-		int deltaY = targetHeight - imageSize.getY();
+		// Determine which image dimension is nearest to the target dimension.
+		// The image should always be larger then the target size since the
+		// remaining additional area will be cropped
+		boolean alignX = calculateAlignment(imageSize, targetSize);
+
+		double aspectRatio = imageSize.getRatio();
 		int resizeX = targetWidth;
 		int resizeY = targetHeight;
-		double aspectRatio = imageSize.getRatio();
-		boolean alignX = targetWidth > targetHeight;
 		if (alignX) {
 			double c = Math.floor((double) targetWidth / aspectRatio);
 			resizeY = (int) c;
