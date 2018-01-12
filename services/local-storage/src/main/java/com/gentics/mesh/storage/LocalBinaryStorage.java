@@ -56,13 +56,14 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			}
 
 			File targetFile = new File(uploadFolder, uuid + ".bin");
-			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
-				Observable<AsyncFile> s = stream.map(buffer -> {
-					file.write(new io.vertx.reactivex.core.buffer.Buffer(buffer));
-					return buffer;
-				}).map(buffer -> file);
-				return s.ignoreElements().andThen(Single.just(file)).doOnSuccess(AsyncFile::flush).doFinally(() -> file.close());
-			}).flatMap(e -> e).toCompletable();
+			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).flatMapCompletable(file -> {
+				return stream
+					.map(io.vertx.reactivex.core.buffer.Buffer::new)
+					.doOnNext(file::write)
+					.doOnComplete(file::flush)
+					.doOnTerminate(file::close)
+					.ignoreElements();
+			});
 		});
 	}
 
@@ -88,7 +89,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	public Observable<Buffer> read(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
 		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable()
-				.map(file -> file.getDelegate()).flatMap(RxUtil::toBufferObs);
+				.flatMap(RxUtil::toBufferObs);
 		return obs;
 	}
 
