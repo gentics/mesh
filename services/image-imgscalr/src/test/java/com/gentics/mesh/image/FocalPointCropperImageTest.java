@@ -19,17 +19,17 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 
 @RunWith(Parameterized.class)
-public class FocalPointCropperTest extends AbstractImageTest {
+public class FocalPointCropperImageTest extends AbstractImageTest {
 
 	private FocalPointCropper cropper = new FocalPointCropper();
 
 	private Point focalPoint;
-	private Point imageSize;
+	private Point targetSize;
 	private String imageName;
 
-	public FocalPointCropperTest(int fpx, int fpy, int width, int height, String imageName) {
+	public FocalPointCropperImageTest(int fpx, int fpy, int width, int height, String imageName) {
 		this.focalPoint = new Point(fpx, fpy);
-		this.imageSize = new Point(width, height);
+		this.targetSize = new Point(width, height);
 		this.imageName = imageName;
 	}
 
@@ -65,9 +65,10 @@ public class FocalPointCropperTest extends AbstractImageTest {
 		return testData;
 	}
 
+	
 	@Test
 	public void testCrop() throws IOException {
-		File targetFile = new File("target/output_" + imageName + "-" + focalPoint.toString() + "-" + imageSize.toString() + ".jpg");
+		File targetFile = new File("target/output_" + imageName + "-" + focalPoint.toString() + "-" + targetSize.toString() + ".jpg");
 		targetFile.delete();
 
 		BufferedImage img = getImage(imageName);
@@ -77,7 +78,7 @@ public class FocalPointCropperTest extends AbstractImageTest {
 		param.setCropMode(FOCALPOINT);
 		param.setFocalPointDebug(true);
 		param.setFocalPoint(focalPoint);
-		param.setSize(imageSize);
+		param.setSize(targetSize);
 		param.validate();
 
 		BufferedImage result = cropper.apply(img, param);

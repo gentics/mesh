@@ -33,7 +33,9 @@ public class FocalPointCropper {
 			return rgbCopy;
 		}
 
-		handleDebugDrawing(rgbCopy, parameters);
+		if (parameters.getFocalPointDebug()) {
+			drawFocusPointAxis(rgbCopy, focalPoint);
+		}
 
 		// Validate the focal point position
 		Point imageSize = new Point(rgbCopy.getWidth(), rgbCopy.getHeight());
@@ -74,7 +76,16 @@ public class FocalPointCropper {
 		return rgbCopy;
 	}
 
-	private Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, Point focalPoint) {
+	/**
+	 * Calculate the start point of the crop area. The point will take the given focal point and the image size into account.
+	 * 
+	 * @param alignX
+	 * @param targetSize
+	 * @param imageSize
+	 * @param focalPoint
+	 * @return Calculated start point
+	 */
+	protected Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, Point focalPoint) {
 		// Next we need to crop the image in order to achieve the final targeted size
 		// TODO next crop the other dimension using the focal point and choose the crop area closest to the middle of the needed focal point axis.
 		int startX = 0;
@@ -101,20 +112,23 @@ public class FocalPointCropper {
 		return new Point(startX, startY);
 	}
 
-	private void handleDebugDrawing(BufferedImage img, ImageManipulationParameters parameters) {
-		Point focalPoint = parameters.getFocalPoint();
-		if (parameters.getFocalPointDebug()) {
-			Graphics2D g2 = img.createGraphics();
-			g2.setColor(Color.RED);
-			g2.setStroke(new BasicStroke(3));
-			// x-axis of focal point
-			g2.drawLine(focalPoint.getX(), 0, focalPoint.getX(), img.getHeight());
-			// y-axis of focal point
-			g2.drawLine(0, focalPoint.getY(), img.getWidth(), focalPoint.getY());
-		}
+	/**
+	 * Draw the focal point axis in the image.
+	 * 
+	 * @param img
+	 * @param focalPoint
+	 */
+	protected void drawFocusPointAxis(BufferedImage img, Point focalPoint) {
+		Graphics2D g2 = img.createGraphics();
+		g2.setColor(Color.RED);
+		g2.setStroke(new BasicStroke(3));
+		// x-axis of focal point
+		g2.drawLine(focalPoint.getX(), 0, focalPoint.getX(), img.getHeight());
+		// y-axis of focal point
+		g2.drawLine(0, focalPoint.getY(), img.getWidth(), focalPoint.getY());
 	}
 
-	private Point calculateResize(Point imageSize, Point targetSize) {
+	protected Point calculateResize(Point imageSize, Point targetSize) {
 		Integer targetWidth = targetSize.getX();
 		Integer targetHeight = targetSize.getY();
 
