@@ -62,13 +62,13 @@ public class FocalPointCropper {
 
 		boolean alignX = calculateAlignment(imageSize, targetSize);
 		Point cropStart = calculateCropStart(alignX, targetSize, newSize, focalPoint);
-
-		try {
-			img = Scalr.crop(img, cropStart.getX(), cropStart.getY(), targetSize.getX(), targetSize.getY());
-		} catch (IllegalArgumentException e) {
-			throw error(BAD_REQUEST, "image_error_cropping_failed", e);
+		if (cropStart != null) {
+			try {
+				img = Scalr.crop(img, cropStart.getX(), cropStart.getY(), targetSize.getX(), targetSize.getY());
+			} catch (IllegalArgumentException e) {
+				throw error(BAD_REQUEST, "image_error_cropping_failed", e);
+			}
 		}
-
 		img.flush();
 		return img;
 	}
@@ -96,13 +96,13 @@ public class FocalPointCropper {
 	 * @param targetSize
 	 * @param imageSize
 	 * @param focalPoint
-	 * @return Calculated start point
+	 * @return Calculated start point or null if cropping is not possible / not needed
 	 */
 	protected Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, FocalPoint focalPoint) {
 
 		// Cropping is actually not needed if the source already matches the target size
 		if (targetSize.equals(imageSize)) {
-			return new Point(0, 0);
+			return null;
 		}
 
 		Point point = focalPoint.convertToAbsolutePoint(imageSize);
@@ -115,9 +115,9 @@ public class FocalPointCropper {
 			int half = targetSize.getX() / 2;
 			startX = point.getX() - half;
 			// Clamp the start point to zero if the start-y value would be outside of the image.
-			startX = startX < 0 ? 0 : startX;
-			// We may need to move the start point to the right
-			if (startX - targetSize.getX() > 0) {
+			if (startX < 0) {
+				startX = 0;
+			} else if (startX + targetSize.getX() > imageSize.getX()) {
 				startX = imageSize.getX() - targetSize.getX();
 			}
 		} else {
@@ -126,8 +126,7 @@ public class FocalPointCropper {
 			// Clamp the start point to zero if the start-y value would be outside of the image.
 			if (startY < 0) {
 				startY = 0;
-			} else {
-				// We may need to move the point up. Otherwise the resulting crop area would be outside of the image bounds
+			} else if (startY + targetSize.getY() > imageSize.getY()) {
 				startY = imageSize.getY() - targetSize.getY();
 			}
 		}
