@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.test.Assert;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -122,7 +122,7 @@ public class ImageManipulationParametersTest {
 
 		try {
 			ImageManipulationParametersImpl request = new ImageManipulationParametersImpl(getActionContext(
-					ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY + "=20"));
+					ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY + "=0.1"));
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
@@ -131,7 +131,7 @@ public class ImageManipulationParametersTest {
 		}
 
 		ImageManipulationParametersImpl request = new ImageManipulationParametersImpl();
-		request.setFocalPoint(new Point(10, 10));
+		request.setFocalPoint(new FocalPoint(0.1f, 0.2f));
 		request.validate();
 	}
 

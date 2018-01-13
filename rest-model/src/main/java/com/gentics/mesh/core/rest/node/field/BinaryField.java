@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node.field;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 
 /**
  * A binary field is a field which can store binary and image related meta data.
@@ -123,7 +124,7 @@ public interface BinaryField extends Field {
 	 * 
 	 * @return
 	 */
-	Point getFocalPoint();
+	FocalPoint getFocalPoint();
 
 	/**
 	 * Set the focal point.
@@ -131,7 +132,7 @@ public interface BinaryField extends Field {
 	 * @param point
 	 * @return
 	 */
-	BinaryField setFocalPoint(Point point);
+	BinaryField setFocalPoint(FocalPoint point);
 
 	/**
 	 * Set the focal point.
@@ -140,8 +141,8 @@ public interface BinaryField extends Field {
 	 * @param y
 	 * @return
 	 */
-	default BinaryField setFocalPoint(int x, int y) {
-		setFocalPoint(new Point(x, y));
+	default BinaryField setFocalPoint(float x, float y) {
+		setFocalPoint(new FocalPoint(x, y));
 		return this;
 	}
 

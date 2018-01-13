@@ -3,7 +3,8 @@ package com.gentics.mesh.core.data.node.field;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
@@ -102,20 +103,23 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @return Focal point or null if no focal point has been set
 	 */
-	default Point getImageFocalPoint() {
-		Integer x = getProperty(BINARY_IMAGE_FOCAL_POINT_X);
-		Integer y = getProperty(BINARY_IMAGE_FOCAL_POINT_Y);
+	default FocalPoint getImageFocalPoint() {
+		Float x = getProperty(BINARY_IMAGE_FOCAL_POINT_X);
+		Float y = getProperty(BINARY_IMAGE_FOCAL_POINT_Y);
 		if (x == null || y == null) {
 			return null;
 		}
-		return new Point(x, y);
+		return new FocalPoint(x, y);
 	}
 
-	default void setImageFocalPoint(Point point) {
-		int x = point.x;
-		int y = point.y;
-		setProperty(BINARY_IMAGE_FOCAL_POINT_X, x);
-		setProperty(BINARY_IMAGE_FOCAL_POINT_Y, y);
+	/**
+	 * Set the image focal point.
+	 * 
+	 * @param point
+	 */
+	default void setImageFocalPoint(FocalPoint point) {
+		setProperty(BINARY_IMAGE_FOCAL_POINT_X, point.getX());
+		setProperty(BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
 	}
 
 	/**

@@ -162,8 +162,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			version = node.getGraphFieldContainer("en").getVersion();
 			tx.success();
 		}
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image", Buffer.buffer(
-				"I am not an image"), "test.txt", "text/plain"));
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image",
+				Buffer.buffer("I am not an image"), "test.txt", "text/plain"));
 
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,
@@ -180,13 +180,13 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			// 2. Update the binary field and set the focal point
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			BinaryField imageField = response.getFields().getBinaryField("image");
-			imageField.setFocalPoint(20, 21);
+			imageField.setFocalPoint(0.1f, 0.2f);
 			updateRequest.setLanguage("en");
 			updateRequest.setVersion(response.getVersion());
 			updateRequest.getFields().put("image", imageField);
 			NodeResponse response2 = call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest));
-			assertEquals(20, response2.getFields().getBinaryField("image").getFocalPoint().x);
-			assertEquals(21, response2.getFields().getBinaryField("image").getFocalPoint().y);
+			assertEquals(0.1f, response2.getFields().getBinaryField("image").getFocalPoint().getX(), 0);
+			assertEquals(0.2f, response2.getFields().getBinaryField("image").getFocalPoint().getY(), 0);
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(600).setHeight(102);
@@ -210,7 +210,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			updateRequest.getFields().put("image", imageField);
 			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest), BAD_REQUEST,
 					"field_binary_error_image_focalpoint_out_of_bounds", "image", "1377:21", "1376:1160");
-			
+
 			// No try the exact x bounds
 			imageField.setFocalPoint(1376, 21);
 			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest));

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.rest.node.field;
+package com.gentics.mesh.core.rest.node.field.image;
 
 /**
  * Point which can represent a point or image dimensions.

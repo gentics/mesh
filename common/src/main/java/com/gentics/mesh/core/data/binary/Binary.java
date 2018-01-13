@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 
 import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;

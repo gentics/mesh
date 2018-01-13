@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 
 @RunWith(Parameterized.class)
 public class FocalPointCropperResizeTest {
@@ -42,6 +42,15 @@ public class FocalPointCropperResizeTest {
 
 		// reduce - 2:1 - No need to resize - x will be cropped
 		testData.add(new Object[] { new Parameter().setImageSize(100, 50).setTargetSize(50, 50).setExpectedSize(100, 50) });
+
+		// case 1
+		testData.add(new Object[] { new Parameter().setImageSize(1160, 1376).setTargetSize(200, 700).setExpectedSize(590, 700) });
+
+		// case 2
+		testData.add(new Object[] { new Parameter().setImageSize(1160, 1376).setTargetSize(500, 700).setExpectedSize(590, 700) });
+
+		// case 3
+		testData.add(new Object[] { new Parameter().setImageSize(1376, 1160).setTargetSize(700, 500).setExpectedSize(700, 590) });
 
 		return testData;
 	}

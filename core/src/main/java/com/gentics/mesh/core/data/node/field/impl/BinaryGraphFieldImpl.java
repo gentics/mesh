@@ -17,7 +17,8 @@ import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -82,11 +83,11 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		}
 
 		// Handle Update - Focal point
-		Point newFocalPoint = binaryField.getFocalPoint();
+		FocalPoint newFocalPoint = binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
 			Point imageSize = graphBinaryField.getBinary().getImageSize();
 			if (imageSize != null) {
-				if (!newFocalPoint.isWithinBoundsOf(imageSize)) {
+				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
 					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(), imageSize.toString());
 				}
 			}
@@ -243,8 +244,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 			boolean matchingFocalPoint = true;
 			if (binaryField.getFocalPoint() != null) {
-				Point pointA = getImageFocalPoint();
-				Point pointB = binaryField.getFocalPoint();
+				FocalPoint pointA = getImageFocalPoint();
+				FocalPoint pointB = binaryField.getFocalPoint();
 				matchingFocalPoint = Objects.equals(pointA, pointB);
 			}
 

@@ -11,7 +11,8 @@ import java.awt.image.BufferedImage;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
 /**
@@ -28,7 +29,7 @@ public class FocalPointCropper {
 	 * @return resized and cropped image
 	 */
 	protected BufferedImage apply(BufferedImage img, ImageManipulationParameters parameters) {
-		Point focalPoint = parameters.getFocalPoint();
+		FocalPoint focalPoint = parameters.getFocalPoint();
 		if (focalPoint == null) {
 			return img;
 		}
@@ -39,7 +40,8 @@ public class FocalPointCropper {
 
 		// Validate the focal point position
 		Point imageSize = new Point(img.getWidth(), img.getHeight());
-		if (!parameters.getFocalPoint().isWithinBoundsOf(imageSize)) {
+		Point absFocalPoint = parameters.getFocalPoint().convertToAbsolutePoint(imageSize);
+		if (!absFocalPoint.isWithinBoundsOf(imageSize)) {
 			throw error(BAD_REQUEST, "image_error_focalpoint_out_of_bounds", focalPoint.toString(), imageSize.toString());
 		}
 
@@ -58,13 +60,6 @@ public class FocalPointCropper {
 			return img;
 		}
 
-		// Recalculate the focal point position since the image has been resized
-		double fpxd = (double) focalPoint.getX() / (double) imageSize.getX();
-		double fpyd = (double) focalPoint.getY() / (double) imageSize.getY();
-		int fpx = (int) (fpxd * newSize.getX());
-		int fpy = (int) (fpyd * newSize.getY());
-		focalPoint = new Point(fpx, fpy);
-
 		boolean alignX = calculateAlignment(imageSize, targetSize);
 		Point cropStart = calculateCropStart(alignX, targetSize, newSize, focalPoint);
 
@@ -79,16 +74,19 @@ public class FocalPointCropper {
 	}
 
 	/**
-	 * Determine
+	 * Determine which dimension to resize.
 	 * 
 	 * @param imageSize
 	 * @param targetSize
 	 * @return
 	 */
 	protected boolean calculateAlignment(Point imageSize, Point targetSize) {
-		int deltaX = targetSize.getX() - imageSize.getX();
-		int deltaY = targetSize.getY() - imageSize.getY();
-		return deltaX > deltaY;
+		double ratio = imageSize.getRatio();
+
+		// Determine which resize operation would yield the largest image. We will crop the rest of the image and thus align the image by that dimension.
+		int pixelByX = (int) (targetSize.getX() / ratio) * targetSize.getX();
+		int pixelByY = (int) (targetSize.getY() * ratio) * targetSize.getY();
+		return pixelByX > pixelByY;
 	}
 
 	/**
@@ -100,12 +98,14 @@ public class FocalPointCropper {
 	 * @param focalPoint
 	 * @return Calculated start point
 	 */
-	protected Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, Point focalPoint) {
+	protected Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, FocalPoint focalPoint) {
 
 		// Cropping is actually not needed if the source already matches the target size
 		if (targetSize.equals(imageSize)) {
 			return new Point(0, 0);
 		}
+
+		Point point = focalPoint.convertToAbsolutePoint(imageSize);
 
 		// Next we need to crop the image in order to achieve the final targeted size
 		// TODO next crop the other dimension using the focal point and choose the crop area closest to the middle of the needed focal point axis.
@@ -113,20 +113,21 @@ public class FocalPointCropper {
 		int startY = 0;
 		if (!alignX) {
 			int half = targetSize.getX() / 2;
-			startX = focalPoint.getX() - half;
+			startX = point.getX() - half;
 			// Clamp the start point to zero if the start-y value would be outside of the image.
 			startX = startX < 0 ? 0 : startX;
 			// We may need to move the start point to the right
 			if (startX - targetSize.getX() > 0) {
-				startX = imageSize.getX() - targetSize.getY();
+				startX = imageSize.getX() - targetSize.getX();
 			}
 		} else {
 			int half = targetSize.getY() / 2;
-			startY = focalPoint.getY() - half;
+			startY = point.getY() - half;
 			// Clamp the start point to zero if the start-y value would be outside of the image.
-			startY = startY < 0 ? 0 : startY;
-			// We may need to move the point up. Otherwise the resulting crop area would be outside of the image bounds
-			if (startY - targetSize.getY() > 0) {
+			if (startY < 0) {
+				startY = 0;
+			} else {
+				// We may need to move the point up. Otherwise the resulting crop area would be outside of the image bounds
 				startY = imageSize.getY() - targetSize.getY();
 			}
 		}
@@ -139,14 +140,16 @@ public class FocalPointCropper {
 	 * @param img
 	 * @param focalPoint
 	 */
-	protected void drawFocusPointAxis(BufferedImage img, Point focalPoint) {
+	protected void drawFocusPointAxis(BufferedImage img, FocalPoint focalPoint) {
+		Point point = focalPoint.convertToAbsolutePoint(new Point(img.getWidth(), img.getHeight()));
+
 		Graphics2D g2 = img.createGraphics();
 		g2.setColor(Color.RED);
 		g2.setStroke(new BasicStroke(3));
 		// x-axis of focal point
-		g2.drawLine(focalPoint.getX(), 0, focalPoint.getX(), img.getHeight());
+		g2.drawLine(point.getX(), 0, point.getX(), img.getHeight());
 		// y-axis of focal point
-		g2.drawLine(0, focalPoint.getY(), img.getWidth(), focalPoint.getY());
+		g2.drawLine(0, point.getY(), img.getWidth(), point.getY());
 	}
 
 	/**

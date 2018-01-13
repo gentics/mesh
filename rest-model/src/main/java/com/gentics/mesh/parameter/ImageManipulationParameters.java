@@ -4,7 +4,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.NumberUtils.toInteger;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
@@ -168,15 +169,15 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * 
 	 * @return
 	 */
-	default Point getFocalPoint() {
+	default FocalPoint getFocalPoint() {
 		String x = getParameter(FOCAL_POINT_X_QUERY_PARAM_KEY);
 		String y = getParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY);
 		if (x == null || y == null) {
 			return null;
 		}
-		Integer fpx = Integer.valueOf(x);
-		Integer fpy = Integer.valueOf(y);
-		return new Point(fpx, fpy);
+		Float fpx = Float.valueOf(x);
+		Float fpy = Float.valueOf(y);
+		return new FocalPoint(fpx, fpy);
 	}
 
 	/**
@@ -185,7 +186,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @param point
 	 * @return Fluent API
 	 */
-	default ImageManipulationParameters setFocalPoint(Point point) {
+	default ImageManipulationParameters setFocalPoint(FocalPoint point) {
 		if (point == null) {
 			setParameter(FOCAL_POINT_X_QUERY_PARAM_KEY, null);
 			setParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY, null);
@@ -228,8 +229,8 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @param y
 	 * @return Fluent API
 	 */
-	default ImageManipulationParameters setFocalPoint(int x, int y) {
-		return setFocalPoint(new Point(x, y));
+	default ImageManipulationParameters setFocalPoint(float x, float y) {
+		return setFocalPoint(new FocalPoint(x, y));
 	}
 
 	/**

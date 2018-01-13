@@ -9,7 +9,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.rest.node.field.Point;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 
 @RunWith(Parameterized.class)
 public class FocalPointCropperCropTest {
@@ -22,31 +23,47 @@ public class FocalPointCropperCropTest {
 	public static Collection<Object[]> paramData() {
 		Collection<Object[]> testData = new Vector<>();
 		// 1:1 source and enlarge
-		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(25, 25).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(0, 0).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(50, 50).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(0, 50).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(50, 0).setExpectedStart(0, 0) });
+		testData.add(
+				new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(0.25f, 0.25f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(0f, 0f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(1f, 1f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(0, 1f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(50, 50).setTargetSize(100, 100).setFocalPoint(1f, 0f).setExpectedStart(0, 0) });
 
 		// 1:1 source and reduce
-		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(25, 25).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(0, 0).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(50, 50).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(0, 50).setExpectedStart(0, 0) });
-		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(50, 0).setExpectedStart(0, 0) });
-		
+		testData.add(
+				new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(0.25f, 0.25f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(0f, 0f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(0.5f, 0.5f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(0f, 0.5f).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(100, 100).setTargetSize(50, 50).setFocalPoint(0.5f, 0f).setExpectedStart(0, 0) });
+
 		// 1:2 source
-		testData.add(new Object[] { new Parameter().setImageSize(100, 200).setTargetSize(100, 100).setFocalPoint(0, 0).setExpectedStart(0, 0) });
+		testData.add(new Object[] { new Parameter().setImageSize(100, 200).setTargetSize(100, 100).setFocalPoint(0f, 0f).setExpectedStart(0, 0) });
 
 		// 1:2 source - fp lower right corner - should crop y
-		testData.add(new Object[] { new Parameter().setImageSize(100, 200).setTargetSize(50, 50).setFocalPoint(100, 200).setExpectedStart(0, 50) });
+		testData.add(new Object[] { new Parameter().setImageSize(100, 200).setTargetSize(50, 50).setFocalPoint(1f, 1f).setExpectedStart(0, 50) });
 
 		// 1:2 source - fp lower left corner - should crop y
-		testData.add(new Object[] { new Parameter().setImageSize(100, 200).setTargetSize(50, 50).setFocalPoint(0, 200).setExpectedStart(0, 50) });
-		
+		testData.add(new Object[] { new Parameter().setImageSize(100, 200).setTargetSize(50, 50).setFocalPoint(0f, 1f).setExpectedStart(0, 50) });
+
 		// 2:1 source - fp center and target 1:1 - should crop x
-		testData.add(new Object[] { new Parameter().setImageSize(200, 100).setTargetSize(50, 50).setFocalPoint(100, 50).setExpectedStart(25, 0) });
-		
+		testData.add(new Object[] { new Parameter().setImageSize(200, 100).setTargetSize(50, 50).setFocalPoint(0.5f, 0.5f).setExpectedStart(25, 0) });
+
+		// case 1 - fp top right corner- should crop x
+		testData.add(
+				new Object[] { new Parameter().setImageSize(1160, 1376).setTargetSize(200, 700).setFocalPoint(1f, 0.1f).setExpectedStart(390, 0) });
+
+		// case 2 - fp top left corner
+		testData.add(
+				new Object[] { new Parameter().setImageSize(1160, 1376).setTargetSize(500, 700).setFocalPoint(0.1f, 0.1f).setExpectedStart(0, 0) });
+
+		// case 3 - fp at top left corner
+		testData.add(
+				new Object[] { new Parameter().setImageSize(1376, 1160).setTargetSize(700, 500).setFocalPoint(0.1f, 0.1f).setExpectedStart(0, 0) });
+
+		// case 4 - fp at lower left corner - should crop by y
+		testData.add(new Object[] { new Parameter().setImageSize(1376, 1160).setTargetSize(700, 500).setFocalPoint(0.1f, 1f).setExpectedStart(0, 90) });
 
 		return testData;
 	}
@@ -68,11 +85,11 @@ public class FocalPointCropperCropTest {
 
 		private Point imageSize;
 		private Point targetSize;
-		private Point focalPoint;
+		private FocalPoint focalPoint;
 		private Point expectedStart;
 
-		public Parameter setFocalPoint(int x, int y) {
-			this.focalPoint = new Point(x, y);
+		public Parameter setFocalPoint(float x, float y) {
+			this.focalPoint = new FocalPoint(x, y);
 			return this;
 		}
 
@@ -91,7 +108,7 @@ public class FocalPointCropperCropTest {
 			return this;
 		}
 
-		public Point getFocalPoint() {
+		public FocalPoint getFocalPoint() {
 			return focalPoint;
 		}
 
