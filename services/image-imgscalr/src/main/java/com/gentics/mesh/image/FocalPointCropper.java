@@ -6,6 +6,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 import org.imgscalr.Scalr;
@@ -49,11 +51,7 @@ public class FocalPointCropper {
 		Point newSize = calculateResize(imageSize, targetSize);
 
 		// Resize the image to the largest dimension while keeping the aspect ratio
-		try {
-			img = Scalr.resize(img, Mode.FIT_EXACT, newSize.getX(), newSize.getY());
-		} catch (IllegalArgumentException e) {
-			throw error(BAD_REQUEST, "image_error_resizing_failed", e);
-		}
+		img = applyResize(img, newSize);
 
 		// No need for cropping. The image has already the target dimensions
 		if (imageSize.equals(targetSize)) {
@@ -63,14 +61,76 @@ public class FocalPointCropper {
 		boolean alignX = calculateAlignment(imageSize, targetSize);
 		Point cropStart = calculateCropStart(alignX, targetSize, newSize, focalPoint);
 		if (cropStart != null) {
-			try {
-				img = Scalr.crop(img, cropStart.getX(), cropStart.getY(), targetSize.getX(), targetSize.getY());
-			} catch (IllegalArgumentException e) {
-				throw error(BAD_REQUEST, "image_error_cropping_failed", e);
-			}
+			img = applyCrop(img, cropStart, targetSize);
 		}
+
+		// TODO Add focal point zoom handling. Zooming should happen before other operations in order to preserve image quality 
+		// parameters.getFocalZoom();
+		// Float zoomFactor = 2f;
+		// img = applyZoom(img, zoomFactor, focalPoint);
+
 		img.flush();
 		return img;
+	}
+
+	/**
+	 * Apply the given zoom by cropping and resizing the image back to the original size. It is only supported to zoom in. Zooming out is not possible.
+	 * 
+	 * @param img
+	 * @param zoomFactor
+	 *            Positive zoom factor. Negative values will not result in any changes to the image
+	 * @param focalPoint
+	 * @return
+	 */
+	private BufferedImage applyZoom(BufferedImage img, Float zoomFactor, FocalPoint focalPoint) {
+		if (zoomFactor == null || zoomFactor <= 1) {
+			return img;
+		}
+		int x = img.getWidth();
+		int y = img.getHeight();
+
+		AffineTransform af = new AffineTransform();
+		af.scale(1 / zoomFactor, 1 / zoomFactor);
+		// af.translate(x / focalPoint.getX(), y / focalPoint.getY());
+
+		AffineTransformOp operation = new AffineTransformOp(af, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		img = operation.filter(img, null);
+
+		// Now resize it back to the actual dimension
+		img = applyResize(img, new Point(x, y));
+
+		return img;
+	}
+
+	/**
+	 * Resize the image.
+	 * 
+	 * @param img
+	 * @param size
+	 * @return
+	 */
+	private BufferedImage applyResize(BufferedImage img, Point size) {
+		try {
+			return Scalr.resize(img, Mode.FIT_EXACT, size.getX(), size.getY());
+		} catch (IllegalArgumentException e) {
+			throw error(BAD_REQUEST, "image_error_resizing_failed", e);
+		}
+	}
+
+	/**
+	 * Crop the image.
+	 * 
+	 * @param img
+	 * @param cropStart
+	 * @param cropSize
+	 * @return
+	 */
+	private BufferedImage applyCrop(BufferedImage img, Point cropStart, Point cropSize) {
+		try {
+			return Scalr.crop(img, cropStart.getX(), cropStart.getY(), cropSize.getX(), cropSize.getY());
+		} catch (IllegalArgumentException e) {
+			throw error(BAD_REQUEST, "image_error_cropping_failed", e);
+		}
 	}
 
 	/**
