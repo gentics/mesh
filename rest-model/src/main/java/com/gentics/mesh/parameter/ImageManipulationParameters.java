@@ -91,8 +91,18 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return setSize(size.getX(), size.getY());
 	}
 
+	/**
+	 * Return the image size.
+	 * 
+	 * @return Image size or null when width or height are missing
+	 */
 	default Point getSize() {
-		return new Point(getWidth(), getHeight());
+		Integer w = getWidth();
+		Integer h = getHeight();
+		if (w == null || h == null) {
+			return null;
+		}
+		return new Point(w, h);
 	}
 
 	/**

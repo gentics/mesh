@@ -52,6 +52,10 @@ public class FocalPointModifier {
 		}
 
 		Point targetSize = parameters.getSize();
+		if (targetSize == null) {
+			//TODO compute the height / width from the aspect ratio and the other dimension 
+			throw error(BAD_REQUEST, "image_error_focalpoint_target_missing");
+		}
 		Point newSize = calculateResize(imageSize, targetSize);
 
 		// Resize the image to the largest dimension while keeping the aspect ratio
