@@ -52,6 +52,11 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 			rect.validate();
 		}
 
+		Float fpz = getFocalPointZoom();
+		if (fpz != null && fpz < 1) {
+			throw error(BAD_REQUEST, "image_error_parameter_focal_point_zoom", String.valueOf(fpz));
+		}
+
 		validateFocalPointParameter();
 
 	}
@@ -78,19 +83,33 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 
 		// fpx
 		QueryParameter fpxParameter = new QueryParameter();
-		fpxParameter.setDescription("Set the focal point x coordinate.");
+		fpxParameter.setDescription(
+				"Set the focal point x factor between 0  and 1 where 0.5 is the middle of the image.  You can use this parameter in combination with the "
+						+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
+						+ " parameter in order to crop and resize the image in relation to the given point.");
 		fpxParameter.setRequired(false);
-		fpxParameter.setExample("120");
+		fpxParameter.setExample("0.1");
 		fpxParameter.setType(ParamType.NUMBER);
 		parameters.put(FOCAL_POINT_X_QUERY_PARAM_KEY, fpxParameter);
 
 		// fpy
 		QueryParameter fpyParameter = new QueryParameter();
-		fpyParameter.setDescription("Set the focal point y coordinate.");
+		fpyParameter.setDescription(
+				"Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the "
+						+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
+						+ " parameter in order to crop and resize the image in relation to the given point.");
 		fpyParameter.setRequired(false);
-		fpyParameter.setExample("140");
+		fpyParameter.setExample("0.2");
 		fpyParameter.setType(ParamType.NUMBER);
 		parameters.put(FOCAL_POINT_Y_QUERY_PARAM_KEY, fpyParameter);
+
+		// fpz
+		QueryParameter fpzParameter = new QueryParameter();
+		fpzParameter.setDescription("Set the focal point zoom factor. The value must be greater than one.");
+		fpzParameter.setRequired(false);
+		fpzParameter.setExample("1.5");
+		fpzParameter.setType(ParamType.NUMBER);
+		parameters.put(FOCAL_POINT_Z_QUERY_PARAM_KEY, fpzParameter);
 
 		// rect
 		QueryParameter rectParameter = new QueryParameter();

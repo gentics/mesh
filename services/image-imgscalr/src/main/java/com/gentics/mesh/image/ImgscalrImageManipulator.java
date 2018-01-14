@@ -27,6 +27,7 @@ import org.imgscalr.Scalr.Mode;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
@@ -44,7 +45,7 @@ import io.vertx.reactivex.core.Vertx;
  */
 public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
-	private FocalPointCropper focalPointCropper = new FocalPointCropper();
+	private FocalPointModifier focalPointModifier = new FocalPointModifier();
 
 	public ImgscalrImageManipulator() {
 		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
@@ -177,7 +178,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					rgbCopy = crop(rgbCopy, parameters.getRect());
 					break;
 				case FOCALPOINT:
-					rgbCopy = focalPointCropper.apply(rgbCopy, parameters);
+					rgbCopy = focalPointModifier.apply(rgbCopy, parameters);
 					// We don't need to resize the image again. The dimensions already match up with the target dimension
 					omitResize = true;
 					break;
@@ -254,10 +255,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 			// ins.close();
 		});
-	}
-
-	public FocalPointCropper getFocalPointCropper() {
-		return focalPointCropper;
 	}
 
 }

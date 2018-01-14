@@ -1,4 +1,4 @@
-package com.gentics.mesh.image;
+package com.gentics.mesh.image.focalpoint;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -6,8 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 import org.imgscalr.Scalr;
@@ -18,10 +16,13 @@ import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
 /**
- * Implementation of the focal point cropper. This cropper will: 1. Resize the image so that it exceeds the targeted size in one dimension 2. Crop the image in
- * a way so that the targeted size is reached
+ * Implementation of the focal point modifier. This modifier will:
+ * <ul>
+ * <li>1. Resize the image so that it exceeds the targeted size in one dimension
+ * <li>2. Crop the image in a way so that the targeted size is reached
+ * </ul>
  */
-public class FocalPointCropper {
+public class FocalPointModifier {
 
 	/**
 	 * First resize the image and later crop the image to focus the focal point.
@@ -30,7 +31,7 @@ public class FocalPointCropper {
 	 * @param parameters
 	 * @return resized and cropped image
 	 */
-	protected BufferedImage apply(BufferedImage img, ImageManipulationParameters parameters) {
+	public BufferedImage apply(BufferedImage img, ImageManipulationParameters parameters) {
 		FocalPoint focalPoint = parameters.getFocalPoint();
 		if (focalPoint == null) {
 			return img;
@@ -39,6 +40,9 @@ public class FocalPointCropper {
 		if (parameters.getFocalPointDebug()) {
 			drawFocusPointAxis(img, focalPoint);
 		}
+
+		Float zoomFactor = parameters.getFocalPointZoom();
+		img = applyZoom(img, zoomFactor, focalPoint);
 
 		// Validate the focal point position
 		Point imageSize = new Point(img.getWidth(), img.getHeight());
@@ -64,11 +68,6 @@ public class FocalPointCropper {
 			img = applyCrop(img, cropStart, targetSize);
 		}
 
-		// TODO Add focal point zoom handling. Zooming should happen before other operations in order to preserve image quality 
-		// parameters.getFocalZoom();
-		// Float zoomFactor = 2f;
-		// img = applyZoom(img, zoomFactor, focalPoint);
-
 		img.flush();
 		return img;
 	}
@@ -89,17 +88,52 @@ public class FocalPointCropper {
 		int x = img.getWidth();
 		int y = img.getHeight();
 
-		AffineTransform af = new AffineTransform();
-		af.scale(1 / zoomFactor, 1 / zoomFactor);
-		// af.translate(x / focalPoint.getX(), y / focalPoint.getY());
+		// We zoom by creating a sub image of the original image. The section size will be defined by the zoom factor.
+		int zw = Math.round(x / zoomFactor);
+		int zh = Math.round(y / zoomFactor);
 
-		AffineTransformOp operation = new AffineTransformOp(af, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-		img = operation.filter(img, null);
+		Point zstart = calculateZoomStart(focalPoint, new Point(x, y), zw, zh);
 
-		// Now resize it back to the actual dimension
+		// Now create the subimage
+		img = img.getSubimage(zstart.getX(), zstart.getY(), zw, zh);
+
+		// And resize it back to the actual dimension and thus applying the zoom
 		img = applyResize(img, new Point(x, y));
 
 		return img;
+	}
+
+	/**
+	 * Calculate the zoom subimage start coordinates. The coordinates will take the focal point and the zoom area size into account.
+	 * 
+	 * @param focalPoint
+	 * @param imageSize
+	 * @param zoomWidth
+	 * @param zoomHeight
+	 * @return
+	 */
+	protected Point calculateZoomStart(FocalPoint focalPoint, Point imageSize, int zoomWidth, int zoomHeight) {
+		int x = imageSize.getX();
+		int y = imageSize.getY();
+
+		// Next we need to determine the start point of our sub image in relation to the focal point
+		int zx = Math.round(x * focalPoint.getX()) - (zoomWidth / 2);
+
+		// Clamp the bounds so that the start point will not exceed the image bounds in relation to the sub image width
+		if (zx < 1) {
+			zx = 1;
+		} else if (zx > x - zoomWidth) {
+			zx = x - zoomWidth;
+		}
+		int zy = Math.round(y * focalPoint.getY()) - (zoomHeight / 2);
+
+		// Clamp the bounds so that the start point will not exceed the image bounds in relation to the sub image height
+		if (zy < 1) {
+			zy = 1;
+		} else if (zy > y - zoomHeight) {
+			zy = y - zoomHeight;
+		}
+		return new Point(zx, zy);
 	}
 
 	/**
@@ -202,13 +236,15 @@ public class FocalPointCropper {
 	protected void drawFocusPointAxis(BufferedImage img, FocalPoint focalPoint) {
 		Point point = focalPoint.convertToAbsolutePoint(new Point(img.getWidth(), img.getHeight()));
 
-		Graphics2D g2 = img.createGraphics();
-		g2.setColor(Color.RED);
-		g2.setStroke(new BasicStroke(3));
+		float strokeWidth = 3f;
+		Graphics2D g = img.createGraphics();
+		g.setColor(Color.RED);
+		g.setStroke(new BasicStroke(strokeWidth));
 		// x-axis of focal point
-		g2.drawLine(point.getX(), 0, point.getX(), img.getHeight());
+		g.drawLine(point.getX(), 0, point.getX(), img.getHeight());
 		// y-axis of focal point
-		g2.drawLine(0, point.getY(), img.getWidth(), point.getY());
+		g.drawLine(0, point.getY(), img.getWidth(), point.getY());
+		g.dispose();
 	}
 
 	/**

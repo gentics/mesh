@@ -20,6 +20,8 @@ public interface ImageManipulationParameters extends ParameterProvider {
 
 	public static final String FOCAL_POINT_Y_QUERY_PARAM_KEY = "fpy";
 
+	public static final String FOCAL_POINT_Z_QUERY_PARAM_KEY = "fpz";
+
 	public static final String RECT_QUERY_PARAM_KEY = "rect";
 
 	public static final String CROP_MODE_QUERY_PARAM_KEY = "crop";
@@ -181,6 +183,20 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	}
 
 	/**
+	 * Get the focal point zoom factor.
+	 * 
+	 * @return
+	 */
+	default Float getFocalPointZoom() {
+		String z = getParameter(FOCAL_POINT_Z_QUERY_PARAM_KEY);
+		if (z == null) {
+			return null;
+		} else {
+			return Float.valueOf(z);
+		}
+	}
+
+	/**
 	 * Set the focal point.
 	 * 
 	 * @param point
@@ -193,6 +209,32 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		} else {
 			setParameter(FOCAL_POINT_X_QUERY_PARAM_KEY, String.valueOf(point.getX()));
 			setParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY, String.valueOf(point.getY()));
+		}
+		return this;
+	}
+
+	/**
+	 * Set the focal point.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return Fluent API
+	 */
+	default ImageManipulationParameters setFocalPoint(float x, float y) {
+		return setFocalPoint(new FocalPoint(x, y));
+	}
+
+	/**
+	 * Set the focal point zoom factor.
+	 * 
+	 * @param factor
+	 * @return Fluent API
+	 */
+	default ImageManipulationParameters setFocalPointZoom(Float factor) {
+		if (factor == null) {
+			setParameter(FOCAL_POINT_Z_QUERY_PARAM_KEY, null);
+		} else {
+			setParameter(FOCAL_POINT_Z_QUERY_PARAM_KEY, String.valueOf(factor));
 		}
 		return this;
 	}
@@ -220,17 +262,6 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	default boolean getFocalPointDebug() {
 		String flag = getParameter(FOCAL_POINT_DEBUG_PARAM_KEY);
 		return Boolean.valueOf(flag);
-	}
-
-	/**
-	 * Set the focal point.
-	 * 
-	 * @param x
-	 * @param y
-	 * @return Fluent API
-	 */
-	default ImageManipulationParameters setFocalPoint(float x, float y) {
-		return setFocalPoint(new FocalPoint(x, y));
 	}
 
 	/**
@@ -290,6 +321,10 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		}
 		if (getFocalPointDebug()) {
 			builder.append("fpdebug");
+		}
+
+		if (getFocalPointZoom() != null) {
+			builder.append("fpz" + getFocalPointZoom());
 		}
 		return builder.toString();
 	}

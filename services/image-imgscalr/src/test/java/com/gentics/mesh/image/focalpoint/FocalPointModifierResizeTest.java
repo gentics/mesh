@@ -1,4 +1,4 @@
-package com.gentics.mesh.image;
+package com.gentics.mesh.image.focalpoint;
 
 import static org.junit.Assert.assertTrue;
 
@@ -10,11 +10,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 
 @RunWith(Parameterized.class)
-public class FocalPointCropperResizeTest {
+public class FocalPointModifierResizeTest {
 
-	private FocalPointCropper cropper = new FocalPointCropper();
+	private FocalPointModifier cropper = new FocalPointModifier();
 
 	private Parameter param;
 
@@ -55,7 +56,7 @@ public class FocalPointCropperResizeTest {
 		return testData;
 	}
 
-	public FocalPointCropperResizeTest(Parameter param) {
+	public FocalPointModifierResizeTest(Parameter param) {
 		this.param = param;
 	}
 

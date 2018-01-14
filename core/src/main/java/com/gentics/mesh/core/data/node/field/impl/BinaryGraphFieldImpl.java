@@ -88,7 +88,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			Point imageSize = graphBinaryField.getBinary().getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
-					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(), imageSize.toString());
+					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(),
+							imageSize.toString());
 				}
 			}
 			graphBinaryField.setImageFocalPoint(newFocalPoint);
@@ -191,6 +192,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	public GraphField cloneTo(GraphFieldContainer container) {
 		BinaryGraphFieldImpl field = getGraph().addFramedEdge(container, getBinary(), HAS_FIELD, BinaryGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
+
+		// Clone all properties except the uuid and the type.
 		for (String key : getPropertyKeys()) {
 			if (key.equals("uuid") || key.equals("ferma_type")) {
 				continue;

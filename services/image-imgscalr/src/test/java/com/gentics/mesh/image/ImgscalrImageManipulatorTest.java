@@ -30,6 +30,8 @@ import org.xml.sax.SAXException;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.image.ImageAction;
+import com.gentics.mesh.image.ImgscalrImageManipulator;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
@@ -210,16 +212,6 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		assertEquals(25, outputImage.getWidth());
 		assertEquals(20, outputImage.getHeight());
 
-	}
-
-	@Test
-	public void testCropViaFocalPoint() {
-		// Valid cropping
-		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.getFocalPointCropper().apply(bi, new ImageManipulationParametersImpl().setFocalPoint(20, 20)
-				.setCropMode(FOCALPOINT).setSize(50, 50));
-		assertEquals(50, outputImage.getWidth());
-		assertEquals(50, outputImage.getHeight());
 	}
 
 	@Test

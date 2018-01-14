@@ -1,4 +1,4 @@
-package com.gentics.mesh.image;
+package com.gentics.mesh.image.focalpoint;
 
 import static com.gentics.mesh.parameter.image.CropMode.FOCALPOINT;
 
@@ -16,17 +16,19 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.image.AbstractImageTest;
+import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 
 @RunWith(Parameterized.class)
-public class FocalPointCropperImageTest extends AbstractImageTest {
+public class FocalPointModifierImageTest extends AbstractImageTest {
 
-	private FocalPointCropper cropper = new FocalPointCropper();
+	private FocalPointModifier cropper = new FocalPointModifier();
 
 	private Parameter parameter;
 
-	public FocalPointCropperImageTest(Parameter parameter) {
+	public FocalPointModifierImageTest(Parameter parameter) {
 		this.parameter = parameter;
 	}
 
@@ -58,16 +60,30 @@ public class FocalPointCropperImageTest extends AbstractImageTest {
 		testData.add(new Object[] { new Parameter().setFocalPoint(0.1f, 0.1f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
 		testData.add(new Object[] { new Parameter().setFocalPoint(0.1f, 1f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
 
+		// Center of flower
+		testData.add(new Object[] { new Parameter().setFocalPoint(0.5f, 0.5f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
+
+		// Center of flower with zoom
+		testData.add(
+				new Object[] { new Parameter().setFocalPoint(0.5f, 0.5f).setZoom(2f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
+
+		// bottom right with zoom
+		testData.add(new Object[] { new Parameter().setFocalPoint(1f, 1f).setZoom(2f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
+
+		// top left with zoom
+		testData.add(new Object[] { new Parameter().setFocalPoint(0f, 0f).setZoom(2f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
+
 		return testData;
 	}
 
 	@Test
-	public void testCrop() throws IOException {
+	public void testManipulator() throws IOException {
 		String imageName = parameter.getImageName();
 		FocalPoint focalPoint = parameter.getFocalPoint();
 		Point targetSize = parameter.getTargetSize();
+		Float zoom = parameter.getZoom();
 
-		File targetFile = new File("target/output_" + imageName + "-" + focalPoint.toString() + "-" + targetSize.toString() + ".jpg");
+		File targetFile = new File("target/output_" + imageName + "-" + focalPoint.toString() + "-" + targetSize.toString() + "-z" + zoom + ".jpg");
 		targetFile.delete();
 
 		BufferedImage img = getImage(imageName);
@@ -78,6 +94,7 @@ public class FocalPointCropperImageTest extends AbstractImageTest {
 		param.setFocalPointDebug(true);
 		param.setFocalPoint(focalPoint);
 		param.setSize(targetSize);
+		param.setFocalPointZoom(zoom);
 		param.validate();
 
 		BufferedImage result = cropper.apply(img, param);
@@ -89,6 +106,7 @@ public class FocalPointCropperImageTest extends AbstractImageTest {
 		private FocalPoint focalPoint;
 		private Point targetSize;
 		private String imageName;
+		private Float zoom;
 
 		public Parameter setTargetSize(int x, int y) {
 			this.targetSize = new Point(x, y);
@@ -119,9 +137,17 @@ public class FocalPointCropperImageTest extends AbstractImageTest {
 
 		@Override
 		public String toString() {
-			return "fp: " + focalPoint + " target:" + targetSize + " img:" + imageName;
+			return "fp: " + focalPoint + " target:" + targetSize + " zoom: " + zoom + " img:" + imageName;
 		}
 
+		public Parameter setZoom(Float zoom) {
+			this.zoom = zoom;
+			return this;
+		}
+
+		public Float getZoom() {
+			return zoom;
+		}
 	}
 
 }
