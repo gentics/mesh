@@ -42,6 +42,8 @@ public class FocalPointModifier {
 		}
 
 		Float zoomFactor = parameters.getFocalPointZoom();
+		// TODO Either align the zoom start point in a way so that the cropped area is accounted for or add the crop and resize logic to the zoom method as
+		// well.
 		img = applyZoom(img, zoomFactor, focalPoint);
 
 		// Validate the focal point position
@@ -53,7 +55,7 @@ public class FocalPointModifier {
 
 		Point targetSize = parameters.getSize();
 		if (targetSize == null) {
-			//TODO compute the height / width from the aspect ratio and the other dimension 
+			// TODO compute the height / width from the aspect ratio and the other dimension
 			throw error(BAD_REQUEST, "image_error_focalpoint_target_missing");
 		}
 		Point newSize = calculateResize(imageSize, targetSize);
@@ -120,8 +122,9 @@ public class FocalPointModifier {
 		int x = imageSize.getX();
 		int y = imageSize.getY();
 
-		// Next we need to determine the start point of our sub image in relation to the focal point
-		int zx = Math.round(x * focalPoint.getX()) - (zoomWidth / 2);
+		Point absFocalPoint = focalPoint.convertToAbsolutePoint(imageSize);
+		// We need to determine the start point of our sub image in relation to the focal point
+		int zx = absFocalPoint.getX() - (zoomWidth / 2);
 
 		// Clamp the bounds so that the start point will not exceed the image bounds in relation to the sub image width
 		if (zx < 1) {
@@ -129,7 +132,8 @@ public class FocalPointModifier {
 		} else if (zx > x - zoomWidth) {
 			zx = x - zoomWidth;
 		}
-		int zy = Math.round(y * focalPoint.getY()) - (zoomHeight / 2);
+
+		int zy = absFocalPoint.getY() - (zoomHeight / 2);
 
 		// Clamp the bounds so that the start point will not exceed the image bounds in relation to the sub image height
 		if (zy < 1) {

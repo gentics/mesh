@@ -73,6 +73,8 @@ public class FocalPointModifierImageTest extends AbstractImageTest {
 		// top left with zoom
 		testData.add(new Object[] { new Parameter().setFocalPoint(0f, 0f).setZoom(2f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
 
+		testData.add(new Object[] { new Parameter().setFocalPoint(0.5f, 0.25f).setZoom(4f).setTargetSize(800, 600).setImageName("blume2.jpeg") });
+
 		return testData;
 	}
 
