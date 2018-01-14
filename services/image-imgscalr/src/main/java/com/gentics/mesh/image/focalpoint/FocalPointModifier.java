@@ -41,11 +41,6 @@ public class FocalPointModifier {
 			drawFocusPointAxis(img, focalPoint);
 		}
 
-		Float zoomFactor = parameters.getFocalPointZoom();
-		// TODO Either align the zoom start point in a way so that the cropped area is accounted for or add the crop and resize logic to the zoom method as
-		// well.
-		img = applyZoom(img, zoomFactor, focalPoint);
-
 		// Validate the focal point position
 		Point imageSize = new Point(img.getWidth(), img.getHeight());
 		Point absFocalPoint = parameters.getFocalPoint().convertToAbsolutePoint(imageSize);
@@ -54,26 +49,32 @@ public class FocalPointModifier {
 		}
 
 		Point targetSize = parameters.getSize();
-		if (targetSize == null) {
-			// TODO compute the height / width from the aspect ratio and the other dimension
-			throw error(BAD_REQUEST, "image_error_focalpoint_target_missing");
+		Float zoomFactor = parameters.getFocalPointZoom();
+		if (zoomFactor != null) {
+			img = applyZoom(img, zoomFactor, focalPoint, targetSize);
+		} else {
+
+			if (targetSize == null) {
+				throw error(BAD_REQUEST, "image_error_focalpoint_target_missing");
+			}
+
+			Point newSize = calculateResize(imageSize, targetSize);
+
+			// Resize the image to the largest dimension while keeping the aspect ratio
+			img = applyResize(img, newSize);
+
+			// No need for cropping. The image has already the target dimensions
+			if (imageSize.equals(targetSize)) {
+				return img;
+			}
+
+			boolean alignX = calculateAlignment(imageSize, targetSize);
+			Point cropStart = calculateCropStart(alignX, targetSize, newSize, focalPoint);
+			if (cropStart != null) {
+				img = applyCrop(img, cropStart, targetSize);
+			}
+
 		}
-		Point newSize = calculateResize(imageSize, targetSize);
-
-		// Resize the image to the largest dimension while keeping the aspect ratio
-		img = applyResize(img, newSize);
-
-		// No need for cropping. The image has already the target dimensions
-		if (imageSize.equals(targetSize)) {
-			return img;
-		}
-
-		boolean alignX = calculateAlignment(imageSize, targetSize);
-		Point cropStart = calculateCropStart(alignX, targetSize, newSize, focalPoint);
-		if (cropStart != null) {
-			img = applyCrop(img, cropStart, targetSize);
-		}
-
 		img.flush();
 		return img;
 	}
@@ -85,26 +86,44 @@ public class FocalPointModifier {
 	 * @param zoomFactor
 	 *            Positive zoom factor. Negative values will not result in any changes to the image
 	 * @param focalPoint
-	 * @return
+	 * @param targetSize
+	 * @return Zoomed image or input image if zoom factor is invalid
 	 */
-	private BufferedImage applyZoom(BufferedImage img, Float zoomFactor, FocalPoint focalPoint) {
+	private BufferedImage applyZoom(BufferedImage img, Float zoomFactor, FocalPoint focalPoint, Point targetSize) {
 		if (zoomFactor == null || zoomFactor <= 1) {
 			return img;
 		}
 		int x = img.getWidth();
 		int y = img.getHeight();
 
-		// We zoom by creating a sub image of the original image. The section size will be defined by the zoom factor.
+		// Use the original image size as target size if no specific target size has been specified.
+		if (targetSize == null) {
+			targetSize = new Point(x, y);
+		}
+
+		double targetRatio = targetSize.getRatio();
+		boolean alignX = targetRatio > 1;
+
+		// We zoom by creating a sub image of the original image. The section size will be defined by the zoom factor and the target size.
 		int zw = Math.round(x / zoomFactor);
 		int zh = Math.round(y / zoomFactor);
+
+		// The sub image size dimension needs to be calculated via the target size aspect ratio
+		if (!alignX) {
+			double c = Math.floor((double) zw / targetRatio);
+			zw = (int) c;
+		} else {
+			double c = Math.floor((double) zh / targetRatio);
+			zh = (int) c;
+		}
 
 		Point zstart = calculateZoomStart(focalPoint, new Point(x, y), zw, zh);
 
 		// Now create the subimage
 		img = img.getSubimage(zstart.getX(), zstart.getY(), zw, zh);
 
-		// And resize it back to the actual dimension and thus applying the zoom
-		img = applyResize(img, new Point(x, y));
+		// And resize it back to the target dimension and thus applying the zoom
+		img = applyResize(img, new Point(targetSize.getX(), targetSize.getY()));
 
 		return img;
 	}
