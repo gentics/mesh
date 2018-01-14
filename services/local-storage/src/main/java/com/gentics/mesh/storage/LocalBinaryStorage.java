@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,10 +17,12 @@ import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.file.AsyncFile;
 import io.vertx.reactivex.core.file.FileSystem;
 import io.vertx.reactivex.core.streams.Pump;
 
@@ -53,16 +56,14 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			}
 
 			File targetFile = new File(uploadFolder, uuid + ".bin");
-			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).map(file -> {
-				Pump pump = RxUtil.pump1(stream, file);
-				pump.start();
-				return file;
-			}).doOnSuccess(file -> {
-				file.flush();
-//				file.close();
-			}).toCompletable();
-			// log.error("Failed to save file to {" + targetPath + "}", error);
-			// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).flatMapCompletable(file -> {
+				return stream
+					.map(io.vertx.reactivex.core.buffer.Buffer::new)
+					.doOnNext(file::write)
+					.doOnComplete(file::flush)
+					.doOnTerminate(file::close)
+					.ignoreElements();
+			});
 		});
 	}
 
@@ -88,7 +89,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	public Observable<Buffer> read(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
 		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable()
-				.map(file -> file.getDelegate()).flatMap(RxUtil::toBufferObs);
+				.flatMap(RxUtil::toBufferObs);
 		return obs;
 	}
 
@@ -116,7 +117,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 		return FileSystem.newInstance(Mesh.vertx().fileSystem())
 
 				.rxDelete(path)
-				// Dont fail if the file is not even in the local storage
+				// Don't fail if the file is not even in the local storage
 				.onErrorComplete(e -> {
 					Throwable cause = e.getCause();
 					if (cause != null) {

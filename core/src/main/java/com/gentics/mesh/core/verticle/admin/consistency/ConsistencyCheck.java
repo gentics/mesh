@@ -59,7 +59,7 @@ public interface ConsistencyCheck {
 	 * @param clazz
 	 * @param response
 	 * @param severity
-	 * @param
+	 * @param edges
 	 */
 	default <N extends MeshVertex> void checkOut(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResponse response,
 			InconsistencySeverity severity, Edge... edges) {

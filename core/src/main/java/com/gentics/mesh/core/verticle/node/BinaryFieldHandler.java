@@ -444,21 +444,21 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					// Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, parameters).flatMap(file -> {
-						Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
-						Observable<Buffer> resizedImageData = obs.doOnTerminate(file.getFile()::close).publish().autoConnect(2);
+								Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
+								Observable<Buffer> resizedImageData = obs.publish().autoConnect(2);
 
-						// Hash the resized image data and store it using the computed fieldUuid + hash
-						Single<String> hash = FileUtils.hash(resizedImageData);
+								// Hash the resized image data and store it using the computed fieldUuid + hash
+								Single<String> hash = FileUtils.hash(resizedImageData);
 
-						// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-						Single<ImageInfo> info = imageManipulator.readImageInfo(resizedImageData);
+								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
+								Single<ImageInfo> info = imageManipulator.readImageInfo(resizedImageData);
 
-						return Single.zip(hash, info, (hashV, infoV) -> {
-							// Return a POJO which hold all information that is needed to update the field
-							TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV, file.getPath());
-							return Single.just(result);
-						}).flatMap(e -> e);
-					});
+								return Single.zip(hash, info, (hashV, infoV) -> {
+									// Return a POJO which hold all information that is needed to update the field
+									TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV, file.getPath());
+									return Single.just(result);
+								}).flatMap(e -> e);
+							});
 
 					// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
 					TransformationResult result = obsTransformation.blockingGet();
@@ -469,8 +469,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// Check whether the binary was already stored.
 					if (binary == null) {
 						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
-						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toObservable().flatMap(f -> f.toObservable())
-								.map(b -> b.getDelegate());
+						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).flatMapObservable(RxUtil::toBufferObs);
 						binary = binaryRoot.create(hash, result.getSize());
 						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
 					} else {

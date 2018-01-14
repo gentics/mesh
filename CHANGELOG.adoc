@@ -2,8 +2,8 @@
 
 = Gentics Mesh Changelog
 
-[[nextMajorRelease]]
-== Next Major Release (Not yet released)
+[[vNextMajorRelease]]
+== Next Major Release
 
 CAUTION: The ElasticSearch server will no longer be embedded. Instead an external ElasticSearch 6.0 server can be used.
 
@@ -23,13 +23,21 @@ icon:plus[] Image: It is now possible to specify a focal point within the binary
                    The focal point can also be manually specified when requesting an image.
                    This will overrule any previously stored focal point information within the binary field.
 
+[[v0.13.3]] 
+== 0.13.3 (12.01.2018)
+
+icon:check[] Core: Optimized concurrency when handling binary data streams (e.g: downloading, image resizing)
+
+icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
 
 [[v0.13.2]]
-== 0.13.2 (TBD)
+== 0.13.2 (11.01.2018)
 
 icon:plus[] Java Rest Client: It is now possible to retrieve the client version via `MeshRestClient.getPlainVersion()`.
 
 icon:check[] Core: The consistency checks have been enhanced.
+
+icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
 
 [[v0.13.1]]
 == 0.13.1 (05.01.2018)
