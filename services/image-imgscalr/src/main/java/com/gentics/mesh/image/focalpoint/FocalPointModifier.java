@@ -18,8 +18,9 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 /**
  * Implementation of the focal point modifier. This modifier will:
  * <ul>
- * <li>1. Resize the image so that it exceeds the targeted size in one dimension
- * <li>2. Crop the image in a way so that the targeted size is reached
+ * <li>Resize the image so that it exceeds the targeted size in one dimension
+ * <li>Crop the image in a way so that the targeted size is reached
+ * <li>Or apply a zoom and crop to the image
  * </ul>
  */
 public class FocalPointModifier {
