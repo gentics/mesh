@@ -73,7 +73,19 @@ public class FocalPointModifierImageTest extends AbstractImageTest {
 		// top left with zoom
 		testData.add(new Object[] { new Parameter().setFocalPoint(0f, 0f).setZoom(2f).setTargetSize(700, 500).setImageName("blume2_rotated.jpeg") });
 
+		// High zoom with offset FP on one axis
 		testData.add(new Object[] { new Parameter().setFocalPoint(0.5f, 0.25f).setZoom(4f).setTargetSize(800, 600).setImageName("blume2.jpeg") });
+
+		// case 5 - check out of bounds focus crop
+		testData.add(new Object[] { new Parameter().setFocalPoint(0.5f, 0.5f).setZoom(2f).setImageName("blume2.jpeg").setTargetSize(500, 1250) });
+
+		testData.add(new Object[] { new Parameter().setFocalPoint(0.5f, 0.5f).setZoom(2f).setImageName("blume2.jpeg").setTargetSize(1250, 500) });
+
+		testData.add(new Object[] { new Parameter().setFocalPoint(1f, 1f).setZoom(1.1f).setImageName("blume2.jpeg").setTargetSize(1250, 1200) });
+
+		testData.add(new Object[] { new Parameter().setFocalPoint(1f, 1f).setZoom(1.1f).setImageName("blume2.jpeg").setTargetSize(1250, 200) });
+
+		testData.add(new Object[] { new Parameter().setFocalPoint(1f, 1f).setZoom(1.1f).setImageName("blume2.jpeg").setTargetSize(250, 1200) });
 
 		return testData;
 	}
