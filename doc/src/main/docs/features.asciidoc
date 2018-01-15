@@ -869,8 +869,8 @@ NOTE: It is mandatory to specify all four crop parameters when cropping an image
 
 === Focal Point Handling
 
-Responsive design often suggests the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
-Sometimes responsive designs require image sizes which lead to cropped images. This can lead to images which seem chopped off at the worst possible place or images which miss the important part.
+Responsive designs often suggest the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
+Sometimes those designs require image sizes which lead to cropped images. This could result in images which seem chopped off at the worst possible place or images which miss the important part.
 
 You can however use the focal point feature in order to influence how the image should be cropped. 
 Gentics Mesh will use the focal point information when cropping the image so that the focused area will remain in the image.
