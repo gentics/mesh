@@ -51,10 +51,9 @@ public class FocalPointModifier {
 
 		Point targetSize = parameters.getSize();
 		Float zoomFactor = parameters.getFocalPointZoom();
-		if (zoomFactor != null) {
-			img = applyZoom(img, zoomFactor, focalPoint, targetSize);
-		} else {
-
+		BufferedImage zoomedImg = applyZoom(img, zoomFactor, focalPoint, targetSize);
+		// Apply the regular focal point logic if the zoom was not applied. Otherwise the image is already cropped and handled correctly.
+		if (zoomedImg == null) {
 			if (targetSize == null) {
 				throw error(BAD_REQUEST, "image_error_focalpoint_target_missing");
 			}
@@ -75,6 +74,8 @@ public class FocalPointModifier {
 				img = applyCrop(img, cropStart, targetSize);
 			}
 
+		} else {
+			img= zoomedImg;
 		}
 		img.flush();
 		return img;
@@ -88,11 +89,11 @@ public class FocalPointModifier {
 	 *            Positive zoom factor. Negative values will not result in any changes to the image
 	 * @param focalPoint
 	 * @param targetSize
-	 * @return Zoomed image or input image if zoom factor is invalid
+	 * @return Zoomed image or null if zoom factor is invalid
 	 */
 	private BufferedImage applyZoom(BufferedImage img, Float zoomFactor, FocalPoint focalPoint, Point targetSize) {
 		if (zoomFactor == null || zoomFactor <= 1) {
-			return img;
+			return null;
 		}
 		int x = img.getWidth();
 		int y = img.getHeight();
@@ -124,7 +125,7 @@ public class FocalPointModifier {
 		img = img.getSubimage(zstart.getX(), zstart.getY(), zw, zh);
 
 		// And resize it back to the target dimension and thus applying the zoom
-		img = applyResize(img, new Point(targetSize.getX(), targetSize.getY()));
+		img = applyResize(img, targetSize);
 
 		return img;
 	}
