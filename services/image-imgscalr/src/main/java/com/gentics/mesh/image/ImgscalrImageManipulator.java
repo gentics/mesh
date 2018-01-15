@@ -27,7 +27,10 @@ import org.imgscalr.Scalr.Mode;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
@@ -42,6 +45,8 @@ import io.vertx.reactivex.core.Vertx;
  */
 public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
+	private FocalPointModifier focalPointModifier = new FocalPointModifier();
+
 	public ImgscalrImageManipulator() {
 		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
 	}
@@ -54,16 +59,15 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * Crop the image if the request contains cropping parameters. Fail if the crop parameters are invalid or incomplete.
 	 * 
 	 * @param originalImage
-	 * @param parameters
+	 * @param cropArea
 	 * @return cropped image or return original image if no cropping is requested
 	 */
-	protected BufferedImage cropIfRequested(BufferedImage originalImage, ImageManipulationParameters parameters) {
-		parameters.validate();
-		if (parameters.hasAllCropParameters()) {
-			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
+	protected BufferedImage crop(BufferedImage originalImage, ImageRect cropArea) {
+		if (cropArea != null) {
+			cropArea.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(), parameters
-						.getCroph());
+				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(),
+						cropArea.getHeight());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -166,8 +170,24 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 
 			// Manipulate image
-			rgbCopy = cropIfRequested(rgbCopy, parameters);
-			rgbCopy = resizeIfRequested(rgbCopy, parameters);
+			CropMode cropMode = parameters.getCropMode();
+			boolean omitResize = false;
+			if (cropMode != null) {
+				switch (cropMode) {
+				case RECT:
+					rgbCopy = crop(rgbCopy, parameters.getRect());
+					break;
+				case FOCALPOINT:
+					rgbCopy = focalPointModifier.apply(rgbCopy, parameters);
+					// We don't need to resize the image again. The dimensions already match up with the target dimension
+					omitResize = true;
+					break;
+				}
+			}
+
+			if (!omitResize) {
+				rgbCopy = resizeIfRequested(rgbCopy, parameters);
+			}
 
 			// Write image
 			try {

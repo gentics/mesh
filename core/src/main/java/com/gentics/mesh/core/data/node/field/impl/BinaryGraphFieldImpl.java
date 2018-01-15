@@ -17,6 +17,8 @@ import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -70,7 +72,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			graphBinaryField = container.createBinary(fieldKey, binary);
 		}
 
-		// Otherwise we can't update the binaryfield 
+		// Otherwise we can't update the binaryfield
 		if (graphBinaryField == null && binaryField.hasValues()) {
 			throw error(BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", fieldKey);
 		}
@@ -78,6 +80,19 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// Handle Update - Dominant Color
 		if (binaryField.getDominantColor() != null) {
 			graphBinaryField.setImageDominantColor(binaryField.getDominantColor());
+		}
+
+		// Handle Update - Focal point
+		FocalPoint newFocalPoint = binaryField.getFocalPoint();
+		if (newFocalPoint != null) {
+			Point imageSize = graphBinaryField.getBinary().getImageSize();
+			if (imageSize != null) {
+				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
+					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(),
+							imageSize.toString());
+				}
+			}
+			graphBinaryField.setImageFocalPoint(newFocalPoint);
 		}
 
 		// Handle Update - Filename
@@ -117,6 +132,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			restModel.setHeight(binary.getImageHeight());
 		}
 
+		restModel.setFocalPoint(getImageFocalPoint());
 		restModel.setDominantColor(getImageDominantColor());
 		return restModel;
 	}
@@ -154,41 +170,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public String getImageDominantColor() {
-		return getProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
-	}
-
-	@Override
-	public BinaryGraphField setImageDominantColor(String dominantColor) {
-		setProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
-		return this;
-	}
-
-	@Override
-	public BinaryGraphField setFileName(String filenName) {
-		setProperty(BINARY_FILENAME_PROPERTY_KEY, filenName);
-		return this;
-	}
-
-	@Override
-	public String getFileName() {
-		return getProperty(BINARY_FILENAME_PROPERTY_KEY);
-	}
-
-	@Override
 	public String getDisplayName() {
 		return getFileName();
-	}
-
-	@Override
-	public String getMimeType() {
-		return getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
-	}
-
-	@Override
-	public BinaryGraphField setMimeType(String contentType) {
-		setProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY, contentType);
-		return this;
 	}
 
 	/**
@@ -209,6 +192,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	public GraphField cloneTo(GraphFieldContainer container) {
 		BinaryGraphFieldImpl field = getGraph().addFramedEdge(container, getBinary(), HAS_FIELD, BinaryGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
+
+		// Clone all properties except the uuid and the type.
 		for (String key : getPropertyKeys()) {
 			if (key.equals("uuid") || key.equals("ferma_type")) {
 				continue;
@@ -259,13 +244,28 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 				String mimeTypeB = binaryField.getMimeType();
 				matchingMimetype = Objects.equals(mimeTypeA, mimeTypeB);
 			}
+
+			boolean matchingFocalPoint = true;
+			if (binaryField.getFocalPoint() != null) {
+				FocalPoint pointA = getImageFocalPoint();
+				FocalPoint pointB = binaryField.getFocalPoint();
+				matchingFocalPoint = Objects.equals(pointA, pointB);
+			}
+
+			boolean matchingDominantColor = true;
+			if (binaryField.getDominantColor() != null) {
+				String colorA = getImageDominantColor();
+				String colorB = binaryField.getDominantColor();
+				matchingDominantColor = Objects.equals(colorA, colorB);
+			}
+
 			boolean matchingSha512sum = true;
 			if (binaryField.getSha512sum() != null) {
 				String hashSumA = getBinary() != null ? getBinary().getSHA512Sum() : null;
 				String hashSumB = binaryField.getSha512sum();
 				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
 			}
-			return matchingFilename && matchingMimetype && matchingSha512sum;
+			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum;
 		}
 		return false;
 	}

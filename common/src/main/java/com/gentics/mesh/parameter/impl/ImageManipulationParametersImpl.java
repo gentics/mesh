@@ -12,6 +12,8 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageRect;
 
 /**
  * Crop and resize parameters for image manipulation.
@@ -20,7 +22,6 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 
 	public ImageManipulationParametersImpl(ActionContext ac) {
 		super(ac);
-		// TODO validate parameters
 	}
 
 	public ImageManipulationParametersImpl() {
@@ -38,47 +39,25 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 	public void validate() {
 		Integer width = getWidth();
 		if (width != null && width < 1) {
-			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
+			throw error(BAD_REQUEST, "image_error_parameter_positive", WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		}
+
 		Integer height = getHeight();
 		if (height != null && height < 1) {
-			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.HEIGHT_QUERY_PARAM_KEY,
-					String.valueOf(height));
+			throw error(BAD_REQUEST, "image_error_parameter_positive", HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		}
 
-		Integer croph = getCroph();
-		Integer cropw = getCropw();
-		Integer startx = getStartx();
-		Integer starty = getStarty();
-		// Check whether all required crop parameters have been set when at least one crop parameter has been set.
-		boolean hasOneCropParameter = croph != null || cropw != null || startx != null || starty != null;
-		if (hasOneCropParameter) {
-			// Check whether all required crop parameters have been set.
-			if (!hasAllCropParameters()) {
-				throw error(BAD_REQUEST, "image_error_incomplete_crop_parameters");
-			}
-
-			if (croph != null && croph <= 0) {
-				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.CROP_HEIGHT_QUERY_PARAM_KEY,
-						String.valueOf(croph));
-			}
-
-			if (cropw != null && cropw <= 0) {
-				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.CROP_WIDTH_QUERY_PARAM_KEY,
-						String.valueOf(cropw));
-			}
-
-			if (startx != null && startx <= -1) {
-				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParametersImpl.CROP_X_QUERY_PARAM_KEY,
-						String.valueOf(startx));
-			}
-
-			if (starty != null && starty <= -1) {
-				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParametersImpl.CROP_Y_QUERY_PARAM_KEY,
-						String.valueOf(starty));
-			}
-
+		ImageRect rect = getRect();
+		if (rect != null) {
+			rect.validate();
 		}
+
+		Float fpz = getFocalPointZoom();
+		if (fpz != null && fpz < 1) {
+			throw error(BAD_REQUEST, "image_error_parameter_focal_point_zoom", String.valueOf(fpz));
+		}
+
+		validateFocalPointParameter();
 
 	}
 
@@ -86,7 +65,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
-		// width
+		// w
 		QueryParameter widthParameter = new QueryParameter();
 		widthParameter.setDescription("Set image target width. The height will automatically be calculated if the width was omitted.");
 		widthParameter.setExample("1280");
@@ -94,7 +73,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		widthParameter.setType(ParamType.NUMBER);
 		parameters.put(WIDTH_QUERY_PARAM_KEY, widthParameter);
 
-		// height
+		// h
 		QueryParameter heightParameter = new QueryParameter();
 		heightParameter.setDescription("Set image target height. The width will automatically be calculated if the height was omitted.");
 		heightParameter.setExample("720");
@@ -102,37 +81,51 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		heightParameter.setType(ParamType.NUMBER);
 		parameters.put(HEIGHT_QUERY_PARAM_KEY, heightParameter);
 
-		// cropx
-		QueryParameter cropxParameter = new QueryParameter();
-		cropxParameter.setDescription("Set image crop area start x coordinate.");
-		cropxParameter.setExample("260");
-		cropxParameter.setRequired(false);
-		cropxParameter.setType(ParamType.NUMBER);
-		parameters.put(CROP_X_QUERY_PARAM_KEY, cropxParameter);
+		// fpx
+		QueryParameter fpxParameter = new QueryParameter();
+		fpxParameter.setDescription(
+				"Set the focal point x factor between 0  and 1 where 0.5 is the middle of the image.  You can use this parameter in combination with the "
+						+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
+						+ " parameter in order to crop and resize the image in relation to the given point.");
+		fpxParameter.setRequired(false);
+		fpxParameter.setExample("0.1");
+		fpxParameter.setType(ParamType.NUMBER);
+		parameters.put(FOCAL_POINT_X_QUERY_PARAM_KEY, fpxParameter);
 
-		// cropy
-		QueryParameter cropyParameter = new QueryParameter();
-		cropyParameter.setDescription("Set image crop area start y coordinate.");
-		cropyParameter.setExample("260");
-		cropyParameter.setRequired(false);
-		cropyParameter.setType(ParamType.NUMBER);
-		parameters.put(CROP_Y_QUERY_PARAM_KEY, cropyParameter);
+		// fpy
+		QueryParameter fpyParameter = new QueryParameter();
+		fpyParameter.setDescription(
+				"Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the "
+						+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
+						+ " parameter in order to crop and resize the image in relation to the given point.");
+		fpyParameter.setRequired(false);
+		fpyParameter.setExample("0.2");
+		fpyParameter.setType(ParamType.NUMBER);
+		parameters.put(FOCAL_POINT_Y_QUERY_PARAM_KEY, fpyParameter);
 
-		// croph
-		QueryParameter crophParameter = new QueryParameter();
-		crophParameter.setDescription("Set image crop area height.");
-		crophParameter.setExample("35");
-		crophParameter.setType(ParamType.NUMBER);
-		crophParameter.setRequired(false);
-		parameters.put(CROP_HEIGHT_QUERY_PARAM_KEY, crophParameter);
+		// fpz
+		QueryParameter fpzParameter = new QueryParameter();
+		fpzParameter.setDescription("Set the focal point zoom factor. The value must be greater than one.");
+		fpzParameter.setRequired(false);
+		fpzParameter.setExample("1.5");
+		fpzParameter.setType(ParamType.NUMBER);
+		parameters.put(FOCAL_POINT_Z_QUERY_PARAM_KEY, fpzParameter);
 
-		// cropw
-		QueryParameter cropwParameter = new QueryParameter();
-		cropwParameter.setDescription("Set image crop area width.");
-		cropwParameter.setExample("35");
-		cropwParameter.setRequired(false);
-		cropwParameter.setType(ParamType.NUMBER);
-		parameters.put(CROP_WIDTH_QUERY_PARAM_KEY, cropwParameter);
+		// rect
+		QueryParameter rectParameter = new QueryParameter();
+		rectParameter.setDescription("Set image crop area.");
+		rectParameter.setExample("20,20,128,128");
+		rectParameter.setRequired(false);
+		rectParameter.setType(ParamType.STRING);
+		parameters.put(RECT_QUERY_PARAM_KEY, rectParameter);
+
+		// crop
+		QueryParameter cropParameter = new QueryParameter();
+		cropParameter.setDescription("Set the crop mode. Possible modes: " + CropMode.description());
+		cropParameter.setExample("rect");
+		cropParameter.setRequired(false);
+		cropParameter.setType(ParamType.STRING);
+		parameters.put(CROP_MODE_QUERY_PARAM_KEY, cropParameter);
 
 		return parameters;
 	}

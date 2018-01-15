@@ -41,6 +41,7 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
@@ -414,10 +415,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
-				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
-						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
-				if (!imageManipulationParameter.isSet()) {
+				ImageManipulationParameters parameters = new ImageManipulationParametersImpl();
+				parameters.setWidth(transformation.getWidth());
+				parameters.setHeight(transformation.getHeight());
+				parameters.setRect(transformation.getCropRect());
+				if (!parameters.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
 
@@ -433,9 +435,15 @@ public class BinaryFieldHandler extends AbstractHandler {
 					String binaryUuid = initialField.getBinary().getUuid();
 					Observable<Buffer> stream = binaryStorage.read(binaryUuid);
 
+					// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
+					// Otherwise the query parameter focal point will be used and thus override the stored focal point.
+					FocalPoint focalPoint = initialField.getImageFocalPoint();
+					if (parameters.getFocalPoint() == null && focalPoint != null) {
+						parameters.setFocalPoint(focalPoint);
+					}
+
 					// Resize the original image and store the result in the filesystem
-					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, imageManipulationParameter)
-							.flatMap(file -> {
+					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, parameters).flatMap(file -> {
 								Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
 								Observable<Buffer> resizedImageData = obs.publish().autoConnect(2);
 

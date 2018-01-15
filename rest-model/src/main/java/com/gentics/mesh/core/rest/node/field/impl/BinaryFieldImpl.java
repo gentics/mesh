@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 
 public class BinaryFieldImpl implements BinaryField {
 
@@ -41,6 +42,10 @@ public class BinaryFieldImpl implements BinaryField {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The dominant color of the image. This information can be used to set the background color of the container div for an image achieve an pinterest styled gallery.")
 	private String dominantColor;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.")
+	private FocalPoint focalPoint;
 
 	@Override
 	public long getFileSize() {
@@ -116,6 +121,17 @@ public class BinaryFieldImpl implements BinaryField {
 	@Override
 	public BinaryField setDominantColor(String dominantColor) {
 		this.dominantColor = dominantColor;
+		return this;
+	}
+
+	@Override
+	public FocalPoint getFocalPoint() {
+		return focalPoint;
+	}
+
+	@Override
+	public BinaryField setFocalPoint(FocalPoint point) {
+		this.focalPoint = point;
 		return this;
 	}
 

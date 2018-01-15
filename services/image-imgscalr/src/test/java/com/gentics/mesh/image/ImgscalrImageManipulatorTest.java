@@ -1,6 +1,7 @@
 package com.gentics.mesh.image;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.parameter.image.CropMode.FOCALPOINT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -8,22 +9,20 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -31,6 +30,8 @@ import org.xml.sax.SAXException;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.image.ImageAction;
+import com.gentics.mesh.image.ImgscalrImageManipulator;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
@@ -42,25 +43,17 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
-public class ImgscalrImageManipulatorTest {
+public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulatorTest.class);
 
 	private ImgscalrImageManipulator manipulator;
-	private File cacheDir;
+
 	private ImageManipulatorOptions options = new ImageManipulatorOptions();
 
 	@Before
 	public void setup() {
-		cacheDir = new File("target/cacheDir_" + System.currentTimeMillis());
 		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
-	}
-
-	@After
-	public void cleanup() throws IOException {
-		FileUtils.deleteDirectory(cacheDir);
-		FileUtils.deleteDirectory(new File("data"));
-		FileUtils.deleteDirectory(new File("target/data"));
 	}
 
 	@Test
@@ -111,7 +104,7 @@ public class ImgscalrImageManipulatorTest {
 
 	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Observable<Buffer>> action) throws JSONException,
 			IOException {
-		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
+		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), Charset.defaultCharset()));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject image = array.getJSONObject(i);
@@ -192,22 +185,15 @@ public class ImgscalrImageManipulatorTest {
 	}
 
 	@Test(expected = GenericRestException.class)
-	public void testIncompleteCropParameters() {
-		// Only one parameter
-		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setCroph(100));
-	}
-
-	@Test(expected = GenericRestException.class)
 	public void testCropStartOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(500).setStarty(500).setCroph(20).setCropw(25));
+		manipulator.crop(bi, new ImageManipulationParametersImpl().setRect(500, 500, 20, 25).getRect());
 	}
 
 	@Test(expected = GenericRestException.class)
 	public void testCropAreaOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(1).setStarty(1).setCroph(400).setCropw(400));
+		manipulator.crop(bi, new ImageManipulationParametersImpl().setRect(1, 1, 400, 400).getRect());
 	}
 
 	@Test
@@ -215,14 +201,14 @@ public class ImgscalrImageManipulatorTest {
 
 		// No parameters
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl());
+		BufferedImage outputImage = manipulator.crop(bi, null);
 		assertEquals(100, outputImage.getWidth());
 		assertEquals(200, outputImage.getHeight());
 		assertEquals("No cropping operation should have occured", bi.hashCode(), outputImage.hashCode());
 
 		// Valid cropping
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(1).setStarty(1).setCroph(20).setCropw(25));
+		outputImage = manipulator.crop(bi, new ImageManipulationParametersImpl().setRect(1, 1, 20, 25).getRect());
 		assertEquals(25, outputImage.getWidth());
 		assertEquals(20, outputImage.getHeight());
 

@@ -5,9 +5,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.test.Assert;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.junit.Assert;
 import com.syncleus.ferma.tx.Tx;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -57,8 +57,8 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	@Parameterized.Parameter(1)
 	public String testName;
 
-	@Override
 	@Test
+	@Override
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(this.num));
@@ -69,8 +69,8 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 		}
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NumberFieldImpl().setNumber(this.num));
@@ -79,8 +79,8 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 		}
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testReadNodeWithExistingField() throws IOException {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
@@ -98,8 +98,8 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 		}
 	}
 
-	@Override
 	@Ignore
+	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
 
 	}

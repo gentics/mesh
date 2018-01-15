@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.node.field;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.image.ImageRect;
 
 /**
  * POJO for a binary field transform request
@@ -23,17 +24,8 @@ public class BinaryFieldTransformRequest implements RestModel {
 	@JsonPropertyDescription("New height of the image.")
 	private Integer height;
 
-	@JsonPropertyDescription("Crop x axis start coordinate.")
-	private Integer cropx;
-
-	@JsonPropertyDescription("Crop y axis start coordinate.")
-	private Integer cropy;
-
-	@JsonPropertyDescription("Crop area height.")
-	private Integer croph;
-
-	@JsonPropertyDescription("Crop area width.")
-	private Integer cropw;
+	@JsonPropertyDescription("Crop area.")
+	private ImageRect cropRect;
 
 	/**
 	 * Get resize width
@@ -78,87 +70,33 @@ public class BinaryFieldTransformRequest implements RestModel {
 	}
 
 	/**
-	 * Get the crop x-axis start coordinate.
+	 * Return the crop area.
 	 * 
-	 * @return crop x-axis start coordinate
+	 * @return
 	 */
-	public Integer getCropx() {
-		return cropx;
+	public ImageRect getCropRect() {
+		return cropRect;
 	}
 
 	/**
-	 * Set the crop x-axis start coordinate.
-	 * 
-	 * @param cropx
-	 *            crop x-axis start coordinate
-	 * @return fluent API
+	 * Set the crop area.
 	 */
-	public BinaryFieldTransformRequest setCropx(Integer cropx) {
-		this.cropx = cropx;
+	public BinaryFieldTransformRequest setCropRect(ImageRect rect) {
+		this.cropRect = rect;
 		return this;
 	}
 
 	/**
-	 * Get the crop y-axis start coordinate.
+	 * Set the crop area.
 	 * 
-	 * @return crop y-axis start coordinate
+	 * @param startX
+	 * @param startY
+	 * @param height
+	 * @param width
+	 * @return
 	 */
-	public Integer getCropy() {
-		return cropy;
-	}
-
-	/**
-	 * Set the crop y-axis start coordinate.
-	 * 
-	 * @param cropy
-	 *            crop y-axis start coordinate
-	 * @return fluent API
-	 */
-	public BinaryFieldTransformRequest setCropy(Integer cropy) {
-		this.cropy = cropy;
-		return this;
-	}
-
-	/**
-	 * Get the crop height.
-	 * 
-	 * @return crop height
-	 */
-	public Integer getCroph() {
-		return croph;
-	}
-
-	/**
-	 * Set the crop height.
-	 * 
-	 * @param croph
-	 *            crop height
-	 * @return fluent API
-	 */
-	public BinaryFieldTransformRequest setCroph(Integer croph) {
-		this.croph = croph;
-		return this;
-	}
-
-	/**
-	 * Get the crop width.
-	 * 
-	 * @return crop width
-	 */
-	public Integer getCropw() {
-		return cropw;
-	}
-
-	/**
-	 * Set the crop width.
-	 * 
-	 * @param cropw
-	 *            crop width
-	 * @return fluent API
-	 */
-	public BinaryFieldTransformRequest setCropw(Integer cropw) {
-		this.cropw = cropw;
-		return this;
+	public BinaryFieldTransformRequest setCropRect(int startX, int startY, int height, int width) {
+		return setCropRect(new ImageRect(startX, startY, height, width));
 	}
 
 	/**

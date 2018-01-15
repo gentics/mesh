@@ -29,6 +29,8 @@ public final class RxUtil {
 
 	/**
 	 * Reads the entire stream and returns its contents as a buffer.
+	 * 
+	 * @deprecated Try to avoid this method in order to prevent memory issues.
 	 */
 	@Deprecated
 	public static Single<Buffer> readEntireData(Observable<Buffer> stream) {

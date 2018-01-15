@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.13.4-SNAPSHOT</version>
+		<version>0.14.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -151,16 +151,30 @@
 
 		<!-- Test dependencies -->
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-rest-model</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-api</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
