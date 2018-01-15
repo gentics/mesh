@@ -151,14 +151,21 @@
 
 		<!-- Test dependencies -->
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-rest-client</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
