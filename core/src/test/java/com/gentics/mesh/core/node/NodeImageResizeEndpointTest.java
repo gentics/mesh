@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -22,7 +22,6 @@ import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -36,6 +35,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.buffer.Buffer;
 
@@ -204,15 +204,15 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			// 2. Update the binary field and set the focal point
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			BinaryField imageField = response.getFields().getBinaryField("image");
-			imageField.setFocalPoint(1377, 21);
+			imageField.setFocalPoint(2.5f, 2.21f);
 			updateRequest.setLanguage("en");
 			updateRequest.setVersion(response.getVersion());
 			updateRequest.getFields().put("image", imageField);
 			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest), BAD_REQUEST,
-					"field_binary_error_image_focalpoint_out_of_bounds", "image", "1377:21", "1376:1160");
+					"field_binary_error_image_focalpoint_out_of_bounds", "image", "2.5:2.21", "1376:1160");
 
 			// No try the exact x bounds
-			imageField.setFocalPoint(1376, 21);
+			imageField.setFocalPoint(1f, 1f);
 			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest));
 		}
 	}

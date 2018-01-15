@@ -137,7 +137,11 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @return
 	 */
 	default ImageRect setRect(ImageRect rect) {
-		setParameter(RECT_QUERY_PARAM_KEY, rect.toString());
+		if (rect == null) {
+			setParameter(RECT_QUERY_PARAM_KEY, null);
+		} else {
+			setParameter(RECT_QUERY_PARAM_KEY, rect.toString());
+		}
 		return rect;
 	}
 

@@ -3,11 +3,12 @@ package com.gentics.mesh.core.rest.node.field.image;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * Focal point for which is the position is described by using factors of the height and width of the image instead of absolute pixel values.
  */
-public class FocalPoint {
+public class FocalPoint implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image.")
@@ -16,6 +17,9 @@ public class FocalPoint {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image.")
 	private float y;
+
+	public FocalPoint() {
+	}
 
 	/**
 	 * Construct a new focal point.
