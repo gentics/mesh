@@ -159,7 +159,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-client</artifactId>
+			<artifactId>mesh-rest-model</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
