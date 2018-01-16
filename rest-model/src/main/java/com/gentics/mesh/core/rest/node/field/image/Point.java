@@ -53,7 +53,7 @@ public class Point {
 	/**
 	 * Checks whether the point could fit within the area size.
 	 * 
-	 * @param imageSize
+	 * @param areaSize
 	 * @return
 	 */
 	public boolean isWithinBoundsOf(Point areaSize) {
