@@ -42,6 +42,9 @@ public class ImageRect {
 		this.width = width;
 	}
 
+	public ImageRect() {
+	}
+
 	public int getStartX() {
 		return startX;
 	}

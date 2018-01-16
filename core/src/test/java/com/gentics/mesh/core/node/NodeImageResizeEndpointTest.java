@@ -20,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -123,6 +124,36 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testTransformImageCrop() throws Exception {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		String version = db().tx(() -> {
+			Node node = folder("news");
+			// 1. Upload image
+			return uploadImage(node, "en", "image").getVersion();
+		});
+
+		// 2. Transform the image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl();
+		params.setWidth(100);
+		params.setHeight(200);
+		params.setRect(0, 0, 200, 200);
+
+		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
+		assertEquals("The image should have been resized", 100, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
+
+		// 3. Validate that a new version was created
+		String newNumber = transformResponse.getVersion();
+		assertNotEquals("The version number should have changed.", version, newNumber);
+
+		// 4. Download the image
+		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
+
+		// 5. Validate the resized image
+		validateResizeImage(result, null, params, 100, 200);
+
+	}
+
+	@Test
 	public void testTransformImageNoParameters() throws Exception {
 		try (Tx tx = tx()) {
 			Node node = folder("news");
@@ -162,8 +193,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			version = node.getGraphFieldContainer("en").getVersion();
 			tx.success();
 		}
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image",
-				Buffer.buffer("I am not an image"), "test.txt", "text/plain"));
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image", Buffer.buffer(
+				"I am not an image"), "test.txt", "text/plain"));
 
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,

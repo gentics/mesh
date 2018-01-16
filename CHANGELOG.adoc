@@ -16,6 +16,8 @@ CAUTION: The image manipulation query parameters `cropx`, `cropy`, `croph` and `
 
 CAUTION: The image manipulation query parameter `width` was renamed to `w`. The parameter `height` was renamed to `h`.
 
+CAUTION: The binary transformation request request was updated. The crop parameters are now nested within the `cropRect` object.
+
 CAUTION: It is now required to specify the crop mode when cropping an image. Possible crop modes are `rect` which will utilize the specified crop area or `fp` which will utilize the focal point information in order to crop the image.
 
 icon:plus[] Image: It is now possible to specify a focal point within the binary field of an image.
