@@ -10,7 +10,7 @@ CAUTION: The ElasticSearch server will no longer be embedded. Instead an externa
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 [[v0.14.0]]
-== 0.14.0 (TBD)
+== 0.14.0 (16.01.2018)
 
 CAUTION: The image manipulation query parameters `cropx`, `cropy`, `croph` and `cropw` have been replaced by the `rect` parameter. The `rect` parameter contains the needed values `rect=x,y,w,h`.
 
@@ -22,6 +22,8 @@ icon:plus[] Image: It is now possible to specify a focal point within the binary
                    This focal point can be used to automatically crop the image in a way so that the focused area is kept in the image.
                    The focal point can also be manually specified when requesting an image.
                    This will overrule any previously stored focal point information within the binary field.
+
+icon:plus[] UI: The admin UI has been updated to use the renamed image parameters.
 
 [[v0.13.3]] 
 == 0.13.3 (12.01.2018)
