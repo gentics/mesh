@@ -20,7 +20,7 @@ public interface ConsistencyCheck {
 	void invoke(Database db, ConsistencyCheckResponse response);
 
 	/**
-	 * Check existence of an incoming edge
+	 * Check existence of an incoming edge.
 	 * 
 	 * @param vertex
 	 * @param edgeLabel
