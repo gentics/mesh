@@ -37,8 +37,8 @@ import com.gentics.mesh.util.RxUtil;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.reactivex.RxHelper;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.WorkerExecutor;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -47,12 +47,15 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private FocalPointModifier focalPointModifier = new FocalPointModifier();
 
+	private WorkerExecutor workerPool;
+
 	public ImgscalrImageManipulator() {
 		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
 	}
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
 		super(vertx, options);
+		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, 10 * 1000 * 1000);
 	}
 
 	/**
@@ -66,8 +69,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (cropArea != null) {
 			cropArea.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(), cropArea
-						.getHeight());
+				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(),
+						cropArea.getHeight());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -141,62 +144,68 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
 		}
 
-		// Read the image and apply the changes - Make sure to run that code in a blocking scheduler since it may be CPU intensive for larger images.
-		return readImage(stream).observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).flatMap(bi -> {
-			if (bi == null) {
-				throw error(BAD_REQUEST, "image_error_reading_failed");
-			}
-			if (bi.getTransparency() == Transparency.TRANSLUCENT) {
-				// NOTE: For BITMASK images, the color model is likely IndexColorModel,
-				// and this model will contain the "real" color of the transparent parts
-				// which is likely a better fit than unconditionally setting it to white.
-				// Fill background with white
-				Graphics2D graphics = bi.createGraphics();
-				try {
-					graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
-					graphics.setPaint(Color.WHITE);
-					graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-				} finally {
+		// TODO handle execution timeout
+		// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
+		// pool
+		return workerPool.rxExecuteBlocking(bh -> {
+
+			// Read the image and apply the changes -
+			readImage(stream).flatMap(bi -> {
+				if (bi == null) {
+					throw error(BAD_REQUEST, "image_error_reading_failed");
+				}
+				if (bi.getTransparency() == Transparency.TRANSLUCENT) {
+					// NOTE: For BITMASK images, the color model is likely IndexColorModel,
+					// and this model will contain the "real" color of the transparent parts
+					// which is likely a better fit than unconditionally setting it to white.
+					// Fill background with white
+					Graphics2D graphics = bi.createGraphics();
+					try {
+						graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
+						graphics.setPaint(Color.WHITE);
+						graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+					} finally {
+						graphics.dispose();
+					}
+				}
+				// Convert the image to RGB for images with transparency (gif, png)
+				BufferedImage rgbCopy = bi;
+				if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
+					rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+					Graphics2D graphics = rgbCopy.createGraphics();
+					graphics.drawImage(bi, 0, 0, Color.WHITE, null);
 					graphics.dispose();
 				}
-			}
-			// Convert the image to RGB for images with transparency (gif, png)
-			BufferedImage rgbCopy = bi;
-			if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
-				rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-				Graphics2D graphics = rgbCopy.createGraphics();
-				graphics.drawImage(bi, 0, 0, Color.WHITE, null);
-				graphics.dispose();
-			}
 
-			// Manipulate image
-			CropMode cropMode = parameters.getCropMode();
-			boolean omitResize = false;
-			if (cropMode != null) {
-				switch (cropMode) {
-				case RECT:
-					rgbCopy = crop(rgbCopy, parameters.getRect());
-					break;
-				case FOCALPOINT:
-					rgbCopy = focalPointModifier.apply(rgbCopy, parameters);
-					// We don't need to resize the image again. The dimensions already match up with the target dimension
-					omitResize = true;
-					break;
+				// Manipulate image
+				CropMode cropMode = parameters.getCropMode();
+				boolean omitResize = false;
+				if (cropMode != null) {
+					switch (cropMode) {
+					case RECT:
+						rgbCopy = crop(rgbCopy, parameters.getRect());
+						break;
+					case FOCALPOINT:
+						rgbCopy = focalPointModifier.apply(rgbCopy, parameters);
+						// We don't need to resize the image again. The dimensions already match up with the target dimension
+						omitResize = true;
+						break;
+					}
 				}
-			}
 
-			if (!omitResize) {
-				rgbCopy = resizeIfRequested(rgbCopy, parameters);
-			}
+				if (!omitResize) {
+					rgbCopy = resizeIfRequested(rgbCopy, parameters);
+				}
 
-			// Write image
-			try {
-				ImageIO.write(rgbCopy, "jpg", cacheFile);
-			} catch (Exception e) {
-				throw error(BAD_REQUEST, "image_error_writing_failed", e);
-			}
-			// Return buffer to written cache file
-			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
+				// Write image
+				try {
+					ImageIO.write(rgbCopy, "jpg", cacheFile);
+				} catch (Exception e) {
+					throw error(BAD_REQUEST, "image_error_writing_failed", e);
+				}
+				// Return buffer to written cache file
+				return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
+			}).subscribe(result -> bh.complete(result), bh::fail);
 		});
 
 	}

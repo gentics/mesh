@@ -2,9 +2,6 @@ package com.gentics.mesh.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import com.gentics.mesh.util.rx.WrapperWriteStream;
