@@ -273,11 +273,16 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	Iterable<? extends Role> getRoles();
 
 	/**
-	 * Return a list of roles that belong to the user. Internally this will check the user role shortcut edge.
+	 * Return an iterable of roles that belong to the user. Internally this will check the user role shortcut edge.
 	 * 
 	 * @return
 	 */
-	List<? extends Role> getRolesViaShortcut();
+	Iterable<? extends Role> getRolesViaShortcut();
+
+	/**
+	 * Update all shortcut edges.
+	 */
+	void updateShortcutEdges();
 
 	/**
 	 * Disable the user.
@@ -483,5 +488,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 		setProperty(API_TOKEN_ID, null);
 		setProperty(API_TOKEN_ISSUE_TIMESTAMP, null);
 	}
+
+
 
 }

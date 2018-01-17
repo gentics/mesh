@@ -265,8 +265,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups, allGroups.size());
 
 		// Verify that extra group is not part of the response
-		List<GroupResponse> filteredUserList = allGroups.parallelStream().filter(restGroup -> restGroup.getName().equals(extraGroupName)).collect(
-				Collectors.toList());
+		List<GroupResponse> filteredUserList = allGroups.parallelStream().filter(restGroup -> restGroup.getName().equals(extraGroupName))
+				.collect(Collectors.toList());
 		assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 		call(() -> client().findGroups(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -416,8 +416,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 				call(() -> client().createGroup(createReq));
 			}
 
-			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000), new RolePermissionParametersImpl()
-					.setRoleUuid(role().getUuid()) };
+			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000),
+					new RolePermissionParametersImpl().setRoleUuid(role().getUuid()) };
 
 			int readCount = 100;
 			for (int i = 0; i < readCount; i++) {
@@ -451,6 +451,22 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		try (Tx tx = tx()) {
 			assertElement(boot().groupRoot(), groupUuid(), false);
 		}
+	}
+
+	/**
+	 * Assert that the shortcut edge between the user and the role is not removed if the user belongs to another group which would grant that role.
+	 */
+	@Test
+	public void testDeleteCase2() {
+
+		// Add second group and add role to that group
+		GroupResponse group2 = call(() -> client().createGroup(new GroupCreateRequest().setName("group2")));
+		String groupUuid = group2.getUuid();
+		call(() -> client().addRoleToGroup(groupUuid, roleUuid()));
+		call(() -> client().addUserToGroup(groupUuid, userUuid()));
+
+		// Now delete the first group and let the consistency check do the rest.
+		call(() -> client().deleteGroup(groupUuid()));
 	}
 
 	@Test

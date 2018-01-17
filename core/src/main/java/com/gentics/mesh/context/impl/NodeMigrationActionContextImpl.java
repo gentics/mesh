@@ -266,8 +266,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public List<? extends Role> getRolesViaShortcut() {
+			public Iterable<? extends Role> getRolesViaShortcut() {
 				return Collections.emptyList();
+			}
+
+			@Override
+			public void updateShortcutEdges() {
 			}
 
 			@Override
@@ -292,7 +296,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public String getLastname() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 

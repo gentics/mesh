@@ -215,8 +215,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public List<? extends Role> getRolesViaShortcut() {
-		return out(ASSIGNED_TO_ROLE).toListExplicit(RoleImpl.class);
+	public Iterable<? extends Role> getRolesViaShortcut() {
+		return out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class);
+	}
+
+	@Override
+	public void updateShortcutEdges() {
+		outE(ASSIGNED_TO_ROLE).removeAll();
+		for (Group group : getGroups()) {
+			for (Role role : group.getRoles()) {
+				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+			}
+		}
 	}
 
 	@Override
@@ -277,8 +287,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				Vertex role = roleEdge.getVertex(Direction.IN);
 				// Find all permission edges between the found role and target
 				// vertex with the specified label
-				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout", MeshInternal.get().database().createComposedIndexKey(
-						elementId, role.getId()));
+				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
+						MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
@@ -545,8 +555,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		keyBuilder.append(getLastEditedTimestamp());
 
 		Node referencedNode = getReferencedNode();
-		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference") || ac.getNodeParameters()
-				.getExpandAll();
+		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
+				|| ac.getNodeParameters().getExpandAll();
 		// We only need to compute the full etag if the referenced node is expanded.
 		if (referencedNode != null && expandReference) {
 			keyBuilder.append("-");

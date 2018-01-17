@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -85,10 +86,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public void removeUser(User user) {
 		unlinkIn(user, HAS_USER);
 
-		// Remove shortcut edge from user to roles of this group
-		for (Role role : getRoles()) {
-			user.unlinkOut(role, ASSIGNED_TO_ROLE);
-		}
+		// The user does no longer belong to the group so lets update the shortcut edges
+		user.updateShortcutEdges();
 		PermissionStore.invalidate();
 	}
 
@@ -112,9 +111,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public void removeRole(Role role) {
 		unlinkIn(role, HAS_ROLE);
 
-		// Remove shortcut edges from role to users of this group
+		// Update the shortcut edges since the role does no longer belong to the group
 		for (User user : getUsers()) {
-			user.unlinkOut(role, ASSIGNED_TO_ROLE);
+			user.updateShortcutEdges();
 		}
 		PermissionStore.invalidate();
 	}
@@ -172,7 +171,12 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public void delete(SearchQueueBatch batch) {
 		// TODO don't allow deletion of the admin group
 		batch.delete(this, true);
+
+		Set<? extends User> affectedUsers = getUsers().stream().collect(Collectors.toSet());
 		getElement().remove();
+		for (User user : affectedUsers) {
+			user.updateShortcutEdges();
+		}
 		PermissionStore.invalidate();
 	}
 
