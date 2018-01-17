@@ -175,6 +175,26 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testUploadMultipleBrokenImages() {
+		String contentType = "image/jpeg";
+		int binaryLen = 10000;
+
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+
+			// Add a schema called nonBinary
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+
+			for (int i = 0; i < 100; i++) {
+				String fileName = "somefile" + i + ".dat";
+				call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
+			}
+		}
+	}
+
+	@Test
 	public void testUploadToNodeWithoutBinaryField() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;

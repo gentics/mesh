@@ -61,10 +61,10 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	@Override
 	public Single<ImageInfo> readImageInfo(Observable<Buffer> stream) {
 		Single<BufferedImage> obs = vertx.rxExecuteBlocking(bc -> {
+			InputStream pis = null;
 			try {
-				InputStream pis = RxUtil.toInputStream(stream, vertx);
+				pis = RxUtil.toInputStream(stream, vertx);
 				BufferedImage image = ImageIO.read(pis);
-				pis.close();
 				if (image == null) {
 					bc.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 				} else {
@@ -72,9 +72,17 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 				}
 			} catch (IOException e) {
 				bc.fail(e);
+			} finally {
+				if (pis != null) {
+					try {
+						pis.close();
+					} catch (IOException e) {
+					}
+				}
 			}
 		}, false);
 		return obs.map(this::toImageInfo);
+
 	}
 
 	/**

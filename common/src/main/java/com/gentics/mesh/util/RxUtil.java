@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+
+import com.gentics.mesh.util.rx.WrapperWriteStream;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -46,22 +49,13 @@ public final class RxUtil {
 	 * @throws IOException
 	 */
 	public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
-		PipedInputStream pis = new PipedInputStream();
-		PipedOutputStream pos = new PipedOutputStream(pis);
-		stream.map(Buffer::getBytes).observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnComplete(() -> {
-			try {
-				pos.close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}).subscribe(buf -> {
-			try {
-				pos.write(buf);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		});
-		return pis;
+		WrapperWriteStream wstream = new WrapperWriteStream();
+		stream.observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false))
+
+				.doOnComplete(wstream::end)
+
+				.subscribe(wstream::write);
+		return wstream.createInputStream();
 	}
 
 	public static Observable<Buffer> toBufferObs(AsyncFile file) {
