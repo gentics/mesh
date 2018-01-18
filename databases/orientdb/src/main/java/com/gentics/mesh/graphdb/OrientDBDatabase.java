@@ -122,8 +122,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void stop() {
-		factory.close();
-		Orient.instance().shutdown();
+		if (factory != null) {
+			factory.close();
+			Orient.instance().shutdown();
+		}
 		if (server != null) {
 			server.shutdown();
 		}
