@@ -2,9 +2,9 @@ package com.gentics.mesh.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.function.Function;
-
-import com.gentics.mesh.util.rx.WrapperWriteStream;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -45,14 +45,32 @@ public final class RxUtil {
 	 * @return
 	 * @throws IOException
 	 */
+	// public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
+	// WrapperWriteStream wstream = new WrapperWriteStream();
+	// stream.observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false))
+	//
+	// .doOnComplete(wstream::end)
+	//
+	// .subscribe(wstream::write);
+	// return wstream.createInputStream();
+	// }
 	public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
-		WrapperWriteStream wstream = new WrapperWriteStream();
-		stream.observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false))
-
-				.doOnComplete(wstream::end)
-
-				.subscribe(wstream::write);
-		return wstream.createInputStream();
+		PipedInputStream pis = new PipedInputStream();
+		PipedOutputStream pos = new PipedOutputStream(pis);
+		stream.map(Buffer::getBytes).observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnComplete(() -> {
+			try {
+				pos.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}).subscribe(buf -> {
+			try {
+				pos.write(buf);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+		return pis;
 	}
 
 	public static Observable<Buffer> toBufferObs(AsyncFile file) {

@@ -217,7 +217,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @return
 	 */
 	private Single<BufferedImage> readImage(Observable<Buffer> stream) {
-		return vertx.rxExecuteBlocking(bc -> {
+		return workerPool.rxExecuteBlocking(bc -> {
 			InputStream ins = null;
 			try {
 				ins = RxUtil.toInputStream(stream, vertx);

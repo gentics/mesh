@@ -78,7 +78,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 				latch.countDown();
 			});
 			try {
-				if (!latch.await(5, TimeUnit.SECONDS)) {
+				if (!latch.await(10, TimeUnit.SECONDS)) {
 					fail("Timeout reached");
 				}
 			} catch (Exception e) {
