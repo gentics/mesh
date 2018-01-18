@@ -111,8 +111,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// }
 
 			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(), ac
-					.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+					ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -461,7 +461,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 							// Return a POJO which hold all information that is needed to update the field
 							TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV, file.getPath());
 							return Single.just(result);
-						}).flatMap(e -> e);
+						}).doAfterTerminate(() -> file.getFile().close()).flatMap(e -> e);
 					});
 
 					// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
