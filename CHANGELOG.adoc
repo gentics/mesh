@@ -10,11 +10,15 @@ CAUTION: The ElasticSearch server will no longer be embedded. Instead an externa
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 [[v0.14.1]]
-== 0.14.1 (TBD)
+== 0.14.1 (19.01.2018)
 
-icon:check[] Core: Fixed a deadlock sitation which could occur when handling more than 20 image resize requests in parallel.
+icon:check[] Core: Fixed a deadlock sitation which could occur when handling more than 20 image resize requests in parallel. Image resize operations will now utilize a dedicated thread pool.
 
 icon:check[] Core: Fixed a bug which caused permission inconsistencies when deleting a group from the system.
+
+icon:plus[] REST: Added support to automatically handle the `Expect: 100-Continue` header. We however recommend to only use this header for upload requests.
+Using this header will otherwise reduce the response times of your requests. Note that PHP curl will add this header by default.
+You can read more about the link:https://support.urbanairship.com/hc/en-us/articles/213492003--Expect-100-Continue-Issues-and-Risks[header here].
 
 [[v0.14.0]]
 == 0.14.0 (16.01.2018)

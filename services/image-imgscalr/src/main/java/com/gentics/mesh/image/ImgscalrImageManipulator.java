@@ -55,6 +55,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
 		super(vertx, options);
+		// 10 seconds
 		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, 10 * 1000 * 1000);
 	}
 
