@@ -24,8 +24,10 @@ public interface GenericMessageErrorHandler<T> extends ResponseHandler<T> {
 				log.debug(body);
 			}
 
-			log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + body
-					+ "} for method {" + getMethod() + "} and uri {" + getUri() + "}");
+			if (log.isDebugEnabled()) {
+				log.debug("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + body
+						+ "} for method {" + getMethod() + "} and uri {" + getUri() + "}");
+			}
 
 			// Try to parse the body data and fail using the extracted exception.
 			try {
