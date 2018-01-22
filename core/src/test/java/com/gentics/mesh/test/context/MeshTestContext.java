@@ -8,6 +8,8 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.Wait;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
@@ -19,7 +21,7 @@ import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchHost;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -40,6 +42,10 @@ public class MeshTestContext extends TestWatcher {
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
+
+	public static GenericContainer elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2")
+			.withEnv("discovery.type", "single-node").withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
+
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
@@ -77,6 +83,7 @@ public class MeshTestContext extends TestWatcher {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
@@ -88,6 +95,9 @@ public class MeshTestContext extends TestWatcher {
 			if (description.isSuite()) {
 				removeDataDirectory();
 				removeConfigDirectory();
+				if (elasticsearch.isRunning()) {
+					elasticsearch.stop();
+				}
 			} else {
 				cleanupFolders();
 				if (settings.startServer()) {
@@ -289,12 +299,15 @@ public class MeshTestContext extends TestWatcher {
 			directory.mkdirs();
 		}
 		options.getStorageOptions().setDirectory(graphPath);
-		ElasticSearchOptions searchOptions = new ElasticSearchOptions();
+		options.getSearchOptions().getHosts().clear();
 		if (settings.useElasticsearch()) {
-			//TODO add ES local instance here
-//			searchOptions.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
+			if (!elasticsearch.isRunning()) {
+				elasticsearch.start();
+			}
+			elasticsearch.waitingFor(Wait.forHttp("/"));
+			options.getSearchOptions().getHosts()
+					.add(new ElasticSearchHost().setPort(elasticsearch.getMappedPort(9200)).setHostname("localhost").setProtocol("http"));
 		}
-		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
 		return options;
 	}

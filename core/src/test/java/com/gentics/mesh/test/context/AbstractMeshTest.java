@@ -51,7 +51,7 @@ import io.vertx.ext.web.RoutingContext;
 public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	static {
-		// Use slf4j instead of jul
+		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
