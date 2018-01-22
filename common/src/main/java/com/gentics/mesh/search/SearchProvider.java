@@ -1,15 +1,14 @@
 package com.gentics.mesh.search;
 
+import java.io.IOException;
 import java.util.Map;
-
-import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.json.JsonObject;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.
@@ -98,20 +97,14 @@ public interface SearchProvider {
 
 	/**
 	 * Stop the search provider.
+	 * @throws IOException 
 	 */
-	void stop();
+	void stop() throws IOException;
 
 	/**
 	 * Reset the search provider.
 	 */
 	void reset();
-
-	/**
-	 * Clear the given index. This will effectively remove all documents from the index without removing the index itself.
-	 * 
-	 * @param indexName
-	 */
-	Completable clearIndex(String indexName);
 
 	/**
 	 * Delete all indices.
@@ -139,29 +132,29 @@ public interface SearchProvider {
 	 */
 	Completable deleteIndex(String indexName, boolean failOnMissingIndex);
 
-	/**
-	 * Delete all documents which were found using the query.
-	 * 
-	 * @param query
-	 *            Search query
-	 * @param indices
-	 *            Indices to be searched for documents
-	 * @return Single which emits the amount of deleted documents
-	 */
-	Single<Integer> deleteDocumentsViaQuery(String query, String... indices);
-
-	/**
-	 * Delete all documents which were found using the query.
-	 * 
-	 * @param query
-	 *            Search query
-	 * @param indices
-	 *            Indices to be searched for documents
-	 * @return Single which emits the amount of deleted nodes
-	 */
-	default Single<Integer> deleteDocumentsViaQuery(JSONObject query, String... indices) {
-		return deleteDocumentsViaQuery(query.toString(), indices);
-	}
+//	/**
+//	 * Delete all documents which were found using the query.
+//	 * 
+//	 * @param query
+//	 *            Search query
+//	 * @param indices
+//	 *            Indices to be searched for documents
+//	 * @return Single which emits the amount of deleted documents
+//	 */
+//	Single<Integer> deleteDocumentsViaQuery(String query, String... indices);
+//
+//	/**
+//	 * Delete all documents which were found using the query.
+//	 * 
+//	 * @param query
+//	 *            Search query
+//	 * @param indices
+//	 *            Indices to be searched for documents
+//	 * @return Single which emits the amount of deleted nodes
+//	 */
+//	default Single<Integer> deleteDocumentsViaQuery(JSONObject query, String... indices) {
+//		return deleteDocumentsViaQuery(query.toString(), indices);
+//	}
 
 	/**
 	 * Returns the search provider vendor name.

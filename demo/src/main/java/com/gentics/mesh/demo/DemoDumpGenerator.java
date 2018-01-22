@@ -87,7 +87,7 @@ public class DemoDumpGenerator {
 
 	}
 
-	private void shutdown() throws MeshConfigurationException, InterruptedException {
+	private void shutdown() throws MeshConfigurationException, InterruptedException, IOException {
 		// Close the elastic search instance
 		SearchProvider searchProvider = MeshInternal.get().searchProvider();
 		if (searchProvider.getClient() !=null) {

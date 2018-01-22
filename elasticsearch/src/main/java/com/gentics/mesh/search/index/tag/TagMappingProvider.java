@@ -2,9 +2,9 @@ package com.gentics.mesh.search.index.tag;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.TEXT;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
-import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,14 +23,14 @@ public class TagMappingProvider extends AbstractMappingProvider {
 	@Override
 	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, trigramStringType());
+		props.put(NAME_KEY, trigramTextType());
 
 		// tagFamily
 		JsonObject tagFamilyMapping = new JsonObject();
 		tagFamilyMapping.put("type", OBJECT);
 		JsonObject schemaMappingProperties = new JsonObject();
-		schemaMappingProperties.put("uuid", notAnalyzedType(STRING));
-		schemaMappingProperties.put("name", trigramStringType());
+		schemaMappingProperties.put("uuid", notAnalyzedType(TEXT));
+		schemaMappingProperties.put("name", trigramTextType());
 		tagFamilyMapping.put("properties", schemaMappingProperties);
 		props.put("tagFamily", tagFamilyMapping);
 
@@ -38,8 +38,8 @@ public class TagMappingProvider extends AbstractMappingProvider {
 		JsonObject projectMapping = new JsonObject();
 		projectMapping.put("type", OBJECT);
 		JsonObject projectMappingProps = new JsonObject();
-		projectMappingProps.put("name", trigramStringType());
-		projectMappingProps.put("uuid", notAnalyzedType(STRING));
+		projectMappingProps.put("name", trigramTextType());
+		projectMappingProps.put("uuid", notAnalyzedType(TEXT));
 		projectMapping.put("properties", projectMappingProps);
 		props.put("project", projectMapping);
 

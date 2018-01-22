@@ -93,7 +93,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
 		try {
 			JsonObject json = prepareSearchQuery(ac, query);
-			builder.setExtraSource(json.toString());
+			builder.setSource(parseQuery(json.toString()));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}

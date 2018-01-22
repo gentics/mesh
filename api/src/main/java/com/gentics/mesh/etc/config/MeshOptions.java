@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 /**
  * Main mesh configuration POJO.

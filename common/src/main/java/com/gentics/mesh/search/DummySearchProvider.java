@@ -105,22 +105,12 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable clearIndex(String indexName) {
-		return Completable.complete();
-	}
-
-	@Override
 	public void clear() {
 		updateEvents.clear();
 		deleteEvents.clear();
 		storeEvents.clear();
 		dropIndexEvents.clear();
 		createIndexEvents.clear();
-	}
-
-	@Override
-	public Single<Integer> deleteDocumentsViaQuery(String query, String... indices) {
-		return Single.just(0);
 	}
 
 	@Override

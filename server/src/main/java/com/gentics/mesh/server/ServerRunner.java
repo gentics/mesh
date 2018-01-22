@@ -33,6 +33,9 @@ public class ServerRunner {
 		// options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		// options.getStorageOptions().setStartServer(true);
+		options.getClusterOptions().setClusterName("test");
+		options.getClusterOptions().setEnabled(true);
+		
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {

@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.14.2-SNAPSHOT</version>
+	<version>0.15.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -18,7 +18,7 @@
 		<spring.security.version>4.2.3.RELEASE</spring.security.version>
 		<ferma.version>2.4.0</ferma.version>
 		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
-		<elasticsearch.version>2.4.6</elasticsearch.version>
+		<elasticsearch.version>6.1.2</elasticsearch.version>
 		<orientdb.version>2.2.31</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>

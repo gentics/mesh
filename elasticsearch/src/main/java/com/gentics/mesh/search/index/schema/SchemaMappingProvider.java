@@ -2,7 +2,7 @@ package com.gentics.mesh.search.index.schema;
 
 import static com.gentics.mesh.search.index.MappingHelper.DESCRIPTION_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,8 +21,8 @@ public class SchemaMappingProvider extends AbstractMappingProvider {
 	@Override
 	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, trigramStringType());
-		props.put(DESCRIPTION_KEY, trigramStringType());
+		props.put(NAME_KEY, trigramTextType());
+		props.put(DESCRIPTION_KEY, trigramTextType());
 		return props;
 	}
 }

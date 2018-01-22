@@ -20,13 +20,6 @@ import io.reactivex.Completable;
 public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 
 	/**
-	 * Clear the index. This will effectively remove all documents from the index without removing the index itself.
-	 * 
-	 * @return
-	 */
-	Completable clearIndex();
-
-	/**
 	 * Initialise the search index by creating the index first and setting the mapping afterwards.
 	 * 
 	 * @return
