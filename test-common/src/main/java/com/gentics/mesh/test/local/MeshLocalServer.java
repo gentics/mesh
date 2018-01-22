@@ -73,7 +73,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		options.setNodeName(nodeName);
 
 		options.getStorageOptions().setDirectory(basePath + "/graph");
-		options.getSearchOptions().setDirectory(basePath + "/es");
+//		options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
 		options.getUploadOptions().setTempDirectory(basePath + "/temp");
 		options.getHttpServerOptions().setPort(httpPort);

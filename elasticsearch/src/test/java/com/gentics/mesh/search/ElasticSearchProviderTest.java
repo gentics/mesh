@@ -17,7 +17,7 @@ public class ElasticSearchProviderTest {
 	public void testES() {
 		MeshOptions options = new MeshOptions();
 		options.setNodeName("dummy");
-		options.getSearchOptions().setDirectory("target/esprovidertest" + UUIDUtil.randomUUID());
+		//options.getSearchOptions().setDirectory("target/esprovidertest" + UUIDUtil.randomUUID());
 		provider.init(options);
 		provider.start();
 		IndexInfo info = new IndexInfo("test", new JsonObject(), new JsonObject());

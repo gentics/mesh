@@ -52,7 +52,7 @@ public class DemoDumpGenerator {
 
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory("target/dump/" + options.getStorageOptions().getDirectory());
-		options.getSearchOptions().setDirectory("target/dump/" + options.getSearchOptions().getDirectory());
+		//options.getSearchOptions().setDirectory("target/dump/" + options.getSearchOptions().getDirectory());
 
 		// 2. Setup the java keystore
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());

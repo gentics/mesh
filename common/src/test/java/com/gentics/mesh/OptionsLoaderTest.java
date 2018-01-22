@@ -49,15 +49,6 @@ public class OptionsLoaderTest {
 		options.validate();
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void testMissingTransportPort() {
-		MeshOptions options = new MeshOptions();
-		options.setNodeName("someNode");
-		options.getClusterOptions().setEnabled(true).setClusterName("someName");
-		options.getSearchOptions().setTransportPort(null);
-		options.validate();
-	}
-
 	@Test
 	public void testInvalidOptions3() {
 		MeshOptions options = new MeshOptions();

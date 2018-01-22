@@ -291,9 +291,8 @@ public class MeshTestContext extends TestWatcher {
 		options.getStorageOptions().setDirectory(graphPath);
 		ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 		if (settings.useElasticsearch()) {
-			searchOptions.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
-		} else {
-			searchOptions.setDirectory(null);
+			//TODO add ES local instance here
+//			searchOptions.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
 		}
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);

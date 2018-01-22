@@ -164,13 +164,6 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		try {
 			stop();
-			ElasticSearchOptions searchOptions = options.getSearchOptions();
-			if (searchOptions.getDirectory() != null) {
-				File storageDirectory = new File(searchOptions.getDirectory());
-				if (storageDirectory.exists()) {
-					FileUtils.deleteDirectory(storageDirectory);
-				}
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

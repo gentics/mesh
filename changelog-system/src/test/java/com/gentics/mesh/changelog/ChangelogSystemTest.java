@@ -99,7 +99,6 @@ public class ChangelogSystemTest {
 	public void testChangelogSystem() throws Exception {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
-		options.getSearchOptions().setDirectory(null);
 		options.setNodeName("dummyNode");
 
 		Database db = getDatabase(options);
