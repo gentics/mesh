@@ -31,24 +31,27 @@ public class ElasticSearchHost {
 		return hostname;
 	}
 
-	public void setHostname(String hostname) {
+	public ElasticSearchHost setHostname(String hostname) {
 		this.hostname = hostname;
+		return this;
 	}
 
 	public int getPort() {
 		return port;
 	}
 
-	public void setPort(int port) {
+	public ElasticSearchHost setPort(int port) {
 		this.port = port;
+		return this;
 	}
 
 	public String getProtocol() {
 		return protocol;
 	}
 
-	public void setProtocol(String protocol) {
+	public ElasticSearchHost setProtocol(String protocol) {
 		this.protocol = protocol;
+		return this;
 	}
 
 	public void validate(MeshOptions meshOptions) {

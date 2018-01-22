@@ -190,13 +190,18 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
 		try {
 			JsonObject query = prepareSearchQuery(ac, searchQuery);
+			if (log.isDebugEnabled()) {
+				log.debug("Using parsed query {" + query.encodePrettily() + "}");
+			}
 			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
-			SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-			//parseQuery(query.toString())
-			searchSourceBuilder.query(QueryBuilders.wrapperQuery(query.toString()));
-			searchRequest.source(searchSourceBuilder);
-			
+			// SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+			// searchSourceBuilder.query(parseQuery(query.toString()).query());
+			// searchSourceBuilder.query(QueryBuilders.wrapperQuery(query.toString()));
+			searchRequest.source(parseQuery(query.toString()));
 		} catch (Exception e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Query failed {" + searchQuery + "}");
+			}
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
 		}

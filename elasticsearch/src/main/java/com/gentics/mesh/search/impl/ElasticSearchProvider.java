@@ -6,16 +6,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.PUT;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -48,19 +45,22 @@ import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.engine.DocumentMissingException;
 import org.elasticsearch.node.Node;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ElasticSearchHost;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
+import io.vertx.core.WorkerExecutor;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.RxHelper;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -75,7 +75,12 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
+	private Scheduler scheduler;
+
+	private WorkerExecutor workerPool;
+
 	public ElasticSearchProvider() {
+
 	}
 
 	/**
@@ -107,6 +112,9 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Creating elasticsearch node");
 		}
+
+		workerPool = Mesh.vertx().createSharedWorkerExecutor("searchWorker", 15, 10 * 1000 * 1000);
+		scheduler = RxHelper.blockingScheduler(workerPool);
 
 		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		long start = System.currentTimeMillis();
@@ -184,6 +192,12 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (node != null) {
 			node.close();
 		}
+		if (scheduler != null) {
+			scheduler.shutdown();
+		}
+		if (workerPool != null) {
+			workerPool.close();
+		}
 	}
 
 	@Override
@@ -211,6 +225,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable createIndex(IndexInfo info) {
 		String indexName = info.getIndexName();
+
 		return Completable.create(sub -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating ES Index {" + indexName + "}");
@@ -238,13 +253,13 @@ public class ElasticSearchProvider implements SearchProvider {
 								try (InputStream ins = re.getResponse().getEntity().getContent()) {
 									String json = IOUtils.toString(ins);
 									JsonObject ob = new JsonObject(json);
-									if (log.isDebugEnabled()) {
-										log.debug("Got failure response {" + ob.encodePrettily() + "}");
-									}
 									String type = ob.getJsonObject("error").getString("type");
 									if (type.equals("resource_already_exists_exception")) {
 										sub.onComplete();
 									} else {
+										if (log.isDebugEnabled()) {
+											log.debug("Got failure response {" + ob.encodePrettily() + "}");
+										}
 										sub.onError(e);
 									}
 								} catch (UnsupportedOperationException | IOException e1) {
@@ -258,12 +273,12 @@ public class ElasticSearchProvider implements SearchProvider {
 						}
 
 					});
-		});
+		}).subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override
 	public Single<Map<String, Object>> getDocument(String index, String uuid) {
-		return Single.create(sub -> {
+		Single<Map<String, Object>> single = Single.create(sub -> {
 			getSearchClient().getAsync(new GetRequest(index, DEFAULT_TYPE, uuid), new ActionListener<GetResponse>() {
 
 				@Override
@@ -281,6 +296,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 			});
 		});
+		return single.subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override
@@ -308,7 +324,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 				}
 			});
-		});
+		}).subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override
@@ -343,7 +359,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 				}
 			});
-		});
+		}).subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override
@@ -381,7 +397,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 			});
-		});
+		}).subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override
@@ -393,6 +409,11 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			IndexRequest indexRequest = new IndexRequest(index, DEFAULT_TYPE, uuid);
 			indexRequest.source(document.toString(), XContentType.JSON);
+
+			// UpdateRequest updateRequest = new UpdateRequest(index, DEFAULT_TYPE, uuid);
+			// updateRequest.doc(document.toString(), XContentType.JSON);
+
+			/// getSearchClient().updateAsync(updateRequest, new ActionListener<UpdateResponse>() {
 			getSearchClient().indexAsync(indexRequest, new ActionListener<IndexResponse>() {
 
 				@Override
@@ -411,7 +432,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					sub.onError(e);
 				}
 			});
-		});
+		}).subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override
@@ -441,7 +462,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 				}
 			});
-		});
+		}).subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override
@@ -486,7 +507,7 @@ public class ElasticSearchProvider implements SearchProvider {
 							sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e.getMessage()));
 						}
 					});
-		});
+		}).subscribeOn(scheduler).observeOn(scheduler);
 	}
 
 	@Override

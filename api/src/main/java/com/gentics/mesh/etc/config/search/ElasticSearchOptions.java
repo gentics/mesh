@@ -1,6 +1,6 @@
 package com.gentics.mesh.etc.config.search;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,9 +14,11 @@ import com.gentics.mesh.etc.config.MeshOptions;
 @GenerateDocumentation
 public class ElasticSearchOptions {
 
+	private final ElasticSearchHost DEFAULT_HOST = new ElasticSearchHost().setHostname("localhost").setPort(9200).setProtocol("http");
+
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Elasticsearch hosts to be used.")
-	private List<ElasticSearchHost> hosts = new ArrayList<>();
+	@JsonPropertyDescription("Elasticsearch hosts to be used. You can specify multiple hosts in order to loadbalance the requests.")
+	private List<ElasticSearchHost> hosts = Arrays.asList(DEFAULT_HOST);
 
 	public List<ElasticSearchHost> getHosts() {
 		return hosts;

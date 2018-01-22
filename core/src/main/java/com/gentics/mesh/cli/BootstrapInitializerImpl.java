@@ -238,9 +238,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				clusterOptions.setNetworkHost(localIp);
 			}
 
-			searchProvider.init(options);
-			searchProvider.start();
-
 			if (isInitMode) {
 				log.info("Init cluster flag was found. Creating initial graph database now.");
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
@@ -251,6 +248,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.startServer();
 				// db.setupConnectionPool();
 				initVertx(options, isClustered);
+				searchProvider.init(options);
+				searchProvider.start();
 				if (setupData) {
 					createSearchIndicesAndMappings();
 				}
@@ -262,8 +261,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.joinCluster();
 				isInitialSetup = false;
 				db.setupConnectionPool();
+				searchProvider.init(options);
+				searchProvider.start();
 				initLocalData(true);
 			}
+
+
 			boolean active = false;
 			while (!active) {
 				log.info("Waiting for hazelcast to become active");
@@ -275,16 +278,17 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		} else {
 
+			initVertx(options, isClustered);
 			searchProvider.init(options);
 			searchProvider.start();
-
-			initVertx(options, isClustered);
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
 			initLocalData(false);
 			if (startOrientServer) {
 				db.startServer();
 			}
+
+
 		}
 
 		eventManager.registerHandlers();
