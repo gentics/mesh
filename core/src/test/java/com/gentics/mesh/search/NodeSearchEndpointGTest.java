@@ -13,7 +13,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -32,6 +31,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
@@ -47,11 +47,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		String uuid = db().tx(() -> content("concorde").getUuid());
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent),
+				new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent), new VersioningParametersImpl()
+				.draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		// change draft version of content
@@ -61,10 +62,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
+				.draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent), new VersioningParametersImpl()
+				.draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
@@ -81,8 +84,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		String contentUuid = db().tx(() -> content().getUuid());
 		String folderUuid = db().tx(() -> folder("2015").getUuid());
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
-		SchemaUpdateRequest schemaUpdate = db()
-				.tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		SchemaUpdateRequest schemaUpdate = db().tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
+				SchemaUpdateRequest.class));
 
 		// 1. Create the microschema
 		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
@@ -102,8 +105,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
-		NodeListResponse response2 = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
+		NodeListResponse response2 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
+				.draft()));
 		assertThat(response2.getData()).as("Search result").isNotEmpty();
 
 		// Lets create a new node that has a micronode
@@ -127,7 +130,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.setName("TestMicroschema");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
-		
+
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
 			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
@@ -150,8 +153,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse nodeResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
 		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
 
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
+				.draft()));
 		assertThat(response.getData()).as("Search result").isNotEmpty();
 
 	}
@@ -175,8 +178,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		failingLatch(latch);
 
 		// Assert that the node can be found within the publish index witin the new release
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParametersImpl().setRelease(releaseName).setVersion("published")));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
+				.setRelease(releaseName).setVersion("published")));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

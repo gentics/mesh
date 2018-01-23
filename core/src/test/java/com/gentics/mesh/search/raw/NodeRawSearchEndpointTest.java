@@ -58,7 +58,7 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteProject(projectUuid()));
 
 		// search in old project
-		JsonObject response = call(() -> client().searchNodesRaw(getSimpleQuery(contentFieldValue)));
+		JsonObject response = call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue)));
 		assertThat(response).has("hits.total", "2", "Not exactly two item was found.");
 		String uuid1 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
 		String uuid2 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");

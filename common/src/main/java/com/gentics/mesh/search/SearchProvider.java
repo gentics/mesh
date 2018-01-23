@@ -97,7 +97,8 @@ public interface SearchProvider {
 
 	/**
 	 * Stop the search provider.
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	void stop() throws IOException;
 
@@ -131,30 +132,6 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Completable deleteIndex(String indexName, boolean failOnMissingIndex);
-
-//	/**
-//	 * Delete all documents which were found using the query.
-//	 * 
-//	 * @param query
-//	 *            Search query
-//	 * @param indices
-//	 *            Indices to be searched for documents
-//	 * @return Single which emits the amount of deleted documents
-//	 */
-//	Single<Integer> deleteDocumentsViaQuery(String query, String... indices);
-//
-//	/**
-//	 * Delete all documents which were found using the query.
-//	 * 
-//	 * @param query
-//	 *            Search query
-//	 * @param indices
-//	 *            Indices to be searched for documents
-//	 * @return Single which emits the amount of deleted nodes
-//	 */
-//	default Single<Integer> deleteDocumentsViaQuery(JSONObject query, String... indices) {
-//		return deleteDocumentsViaQuery(query.toString(), indices);
-//	}
 
 	/**
 	 * Returns the search provider vendor name.

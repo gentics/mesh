@@ -41,8 +41,8 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		for (NodeResponse nodeResponse : response.getData()) {
 			Date date = Date.from(Instant.parse(nodeResponse.getCreated()));
 			if (lastCreated > date.getTime()) {
-				fail("Found entry that was not sorted by create timestamp. Last entry: {" + lastCreated + "} current entry: {"
-						+ nodeResponse.getCreated() + "}");
+				fail("Found entry that was not sorted by create timestamp. Last entry: {" + lastCreated + "} current entry: {" + nodeResponse
+						.getCreated() + "}");
 			} else {
 				lastCreated = date.getTime();
 			}
@@ -56,8 +56,8 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
+				.setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -83,7 +83,8 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		try (Tx tx = tx()) {
-			NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2)));
+			NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("fields.content", "the"), new PagingParametersImpl().setPage(1)
+					.setPerPage(2)));
 			assertEquals(0, response.getData().size());
 			assertEquals(0, response.getMetainfo().getTotalCount());
 		}

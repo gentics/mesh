@@ -30,13 +30,13 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()));
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new PagingParametersImpl().setPage(1).setPerPage(2),
-				new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"), new PagingParametersImpl().setPage(1)
+				.setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals("We added the delete action and therefore the document should no longer be part of the index.", 0, response.getData().size());
 
 	}
@@ -52,8 +52,8 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", "content"), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", "content"),
+				new VersioningParametersImpl().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 

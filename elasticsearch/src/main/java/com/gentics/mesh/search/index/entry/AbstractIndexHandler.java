@@ -194,7 +194,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable init() {
-		// 1. Create the indices
+		// Create the indices
 		Map<String, IndexInfo> indexInfo = getIndices();
 		Set<Completable> obs = new HashSet<>();
 

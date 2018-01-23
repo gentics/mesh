@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
 import java.io.IOException;
@@ -14,12 +16,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -181,7 +185,22 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public void clear() {
 		// TODO only delete indices of mesh. Don't touch other indices!
-		// client.delete(new DeleteRequest().index("_all"));
+		try {
+			List<String> indices = Collections.emptyList();
+			Response response = client.getLowLevelClient().performRequest(GET.toString(), "/_all");
+			try (InputStream ins = response.getEntity().getContent()) {
+				String json = IOUtils.toString(ins);
+				JsonObject indexInfo = new JsonObject(json);
+				indices = indexInfo.fieldNames().stream().collect(Collectors.toList());
+			}
+			if (!indices.isEmpty()) {
+				log.debug("Deleting indices {" + StringUtils.join(indices.toArray(), ","));
+				DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indices.toArray(new String[indices.size()]));
+				client.indices().deleteIndex(deleteIndexRequest);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -202,20 +221,20 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public void refreshIndex(String... indices) {
-		// String indicesStr = StringUtils.join(indices, ",");
-		// String path = "/_refresh";
-		// if (indices.length > 0) {
-		// path = "/" + indicesStr + "/_refresh";
-		// }
-		// try {
-		// if (log.isDebugEnabled()) {
-		// log.debug("Refreshing indices with path {" + path + "}");
-		// }
-		// client.getLowLevelClient().performRequest(POST.toString(), path);
-		// } catch (IOException e) {
-		// log.error("Refreshing of indices {" + indicesStr + "} failed.", e);
-		// throw error(INTERNAL_SERVER_ERROR, "Refreshing indices failed.");
-		// }
+		String indicesStr = StringUtils.join(indices, ",");
+		String path = "/_refresh";
+		if (indices.length > 0) {
+			path = "/" + indicesStr + "/_refresh";
+		}
+		try {
+			if (log.isDebugEnabled()) {
+				log.debug("Refreshing indices with path {" + path + "}");
+			}
+			client.getLowLevelClient().performRequest(POST.toString(), path);
+		} catch (IOException e) {
+			log.error("Refreshing of indices {" + indicesStr + "} failed.", e);
+			throw error(INTERNAL_SERVER_ERROR, "Refreshing indices failed.");
+		}
 	}
 
 	private RestHighLevelClient getSearchClient() {
@@ -409,26 +428,21 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			IndexRequest indexRequest = new IndexRequest(index, DEFAULT_TYPE, uuid);
 			indexRequest.source(document.toString(), XContentType.JSON);
-
-			// UpdateRequest updateRequest = new UpdateRequest(index, DEFAULT_TYPE, uuid);
-			// updateRequest.doc(document.toString(), XContentType.JSON);
-
-			/// getSearchClient().updateAsync(updateRequest, new ActionListener<UpdateResponse>() {
 			getSearchClient().indexAsync(indexRequest, new ActionListener<IndexResponse>() {
 
 				@Override
 				public void onResponse(IndexResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start)
-								+ "[ms]");
+						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
+								- start) + "[ms]");
 					}
 					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Exception e) {
-					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-							+ "[ms]", e);
+					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System
+							.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 			});

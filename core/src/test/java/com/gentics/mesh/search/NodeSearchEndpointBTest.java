@@ -71,9 +71,9 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParametersImpl().setPage(1).setPerPage(2),
-						new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.firstName", "Mickey"),
+				new PagingParametersImpl().setPage(1).setPerPage(2), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
+				new VersioningParametersImpl().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
@@ -137,8 +137,8 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeResponse concorde = call(
-				() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()), new VersioningParametersImpl().draft()));
+		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()),
+				new VersioningParametersImpl().draft()));
 
 		// 1. Create a new release
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
@@ -148,14 +148,14 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		failingLatch(latch);
 
 		// 2. Search within the newly create release
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
+				new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// 3. Search within the initial release
 		String releaseName = db().tx(() -> project().getInitialRelease().getName());
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParametersImpl().setRelease(releaseName).draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
+				.setRelease(releaseName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
