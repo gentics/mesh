@@ -2,8 +2,7 @@
   "query": {
       "simple_query_string" : {
           "query": "slug*",
-          "analyzer": "snowball",
-          "fields": ["_all"],
+          "fields": ["fields.slug.raw"],
           "default_operator": "and"
       }
   }

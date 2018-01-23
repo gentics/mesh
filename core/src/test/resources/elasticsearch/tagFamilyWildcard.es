@@ -2,8 +2,7 @@
   "query": {
       "simple_query_string" : {
           "query": "testtag*",
-          "analyzer": "snowball",
-          "fields": ["name^5","_all"],
+          "fields": ["name.raw^5"],
           "default_operator": "and"
       }
   }
