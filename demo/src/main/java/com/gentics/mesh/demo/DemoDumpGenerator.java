@@ -52,7 +52,7 @@ public class DemoDumpGenerator {
 
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory("target/dump/" + options.getStorageOptions().getDirectory());
-		//options.getSearchOptions().setDirectory("target/dump/" + options.getSearchOptions().getDirectory());
+		// options.getSearchOptions().setDirectory("target/dump/" + options.getSearchOptions().getDirectory());
 
 		// 2. Setup the java keystore
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
@@ -90,10 +90,11 @@ public class DemoDumpGenerator {
 	private void shutdown() throws MeshConfigurationException, InterruptedException, IOException {
 		// Close the elastic search instance
 		SearchProvider searchProvider = MeshInternal.get().searchProvider();
-		if (searchProvider.getClient() !=null) {
+		if (searchProvider.getClient() != null) {
 			searchProvider.refreshIndex("_all");
 		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getClient() + "}");
+			throw new MeshConfigurationException(
+					"Unable to get elasticsearch instance from search provider got {" + searchProvider.getClient() + "}");
 		}
 		searchProvider.stop();
 		Thread.sleep(5000);

@@ -1,6 +1,6 @@
 {
 	# [$.data.roles.elements.length()=1]
-	roles(query: "{\"query\":{\"query_string\":{\"query\":\"admin\"}}}") {
+	roles(query: "{\"query\":{\"query_string\":{\"query\":\"admin\", \"type\": \"phrase\"}}}") {
 		elements {
 			uuid
 			# [$.data.roles.elements[0].name=admin]
@@ -9,7 +9,7 @@
 	}
 
 	# [$.data.empty.elements.length()=0]
-	empty: roles(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+	empty: roles(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\", \"type\": \"phrase\"}}}") {
 		elements {
 			uuid
 			name

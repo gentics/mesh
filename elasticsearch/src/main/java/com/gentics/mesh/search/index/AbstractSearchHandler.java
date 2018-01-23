@@ -345,7 +345,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
 			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		RestHighLevelClient client = searchProvider.getClient();
-
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
 		}

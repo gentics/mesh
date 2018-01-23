@@ -1,7 +1,9 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -13,10 +15,13 @@ import java.util.stream.StreamSupport;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -78,93 +83,100 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	 */
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
 			GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-
-		Client client = searchProvider.getClient();
+		RestHighLevelClient client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {Containers}");
 		}
 		Set<String> indices = getIndexHandler().getSelectedIndices(ac);
+		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
 
-		/*
-		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
-		 */
-		SearchRequestBuilder builder = null;
-		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
 		try {
-			JsonObject json = prepareSearchQuery(ac, query);
-			builder.setSource(parseQuery(json.toString()));
+			// Add permission checks to the query
+			JsonObject queryJson = prepareSearchQuery(ac, query);
+			if (log.isDebugEnabled()) {
+				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
+			}
+			// Prepare the request
+			SearchSourceBuilder sourceBuilder = parseQuery(queryJson.toString());
+			sourceBuilder.size(INITIAL_BATCH_SIZE);
+			// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
+			sourceBuilder.fetchSource(false);
+			searchRequest.source(sourceBuilder);
+			searchRequest.scroll(TimeValue.timeValueMinutes(1));
 		} catch (Exception e) {
-			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
+			throw error(BAD_REQUEST, "search_query_not_parsable", e);
 		}
-		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
-		builder.setFetchSource(false);
-		builder.setSize(INITIAL_BATCH_SIZE);
-		builder.setScroll(new TimeValue(60000));
-		SearchResponse scrollResp = builder.execute().actionGet();
-		long unfilteredCount = scrollResp.getHits().getTotalHits();
-		// The scrolling iterator will wrap the current response and query ES for more data if needed.
-		ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
-		Page<? extends NodeContent> page = db.tx(() -> {
 
-			// Prepare a stream which applies all needed filtering
-			Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
+		try {
+			SearchResponse scrollResp = client.search(searchRequest);
+			long unfilteredCount = scrollResp.getHits().getTotalHits();
+			// The scrolling iterator will wrap the current response and query ES for more data if needed.
+			ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
+			Page<? extends NodeContent> page = db.tx(() -> {
 
-					.map(hit -> {
-						String id = hit.getId();
-						int pos = id.indexOf("-");
+				// Prepare a stream which applies all needed filtering
+				Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
 
-						String language = pos > 0 ? id.substring(pos + 1) : null;
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
+						.map(hit -> {
+							String id = hit.getId();
+							int pos = id.indexOf("-");
 
-						return new MeshSearchHit<Node>(uuid, language);
-					})
-					// TODO filter by requested language
-					.filter(hit -> {
-						return hit.language != null;
-					})
+							String language = pos > 0 ? id.substring(pos + 1) : null;
+							String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-					.map(hit -> {
-						// Load the node
-						RootVertex<Node> root = getIndexHandler().getRootVertex();
-						hit.element = root.findByUuid(hit.uuid);
-						if (hit.element == null) {
-							log.error("Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + root.getRootLabel() + "}");
-						}
+							return new MeshSearchHit<Node>(uuid, language);
+						})
+						// TODO filter by requested language
+						.filter(hit -> {
+							return hit.language != null;
+						})
 
-						return hit;
-					})
+						.map(hit -> {
+							// Load the node
+							RootVertex<Node> root = getIndexHandler().getRootVertex();
+							hit.element = root.findByUuid(hit.uuid);
+							if (hit.element == null) {
+								log.error("Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + root.getRootLabel() + "}");
+							}
 
-					.filter(hit -> {
-						// Only include found elements
-						return hit.element != null;
-					})
+							return hit;
+						})
 
-					.map(hit -> {
+						.filter(hit -> {
+							// Only include found elements
+							return hit.element != null;
+						})
 
-						ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-						Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
-						if (languageTag == null) {
-							log.debug("Could not find language {" + hit.language + "}");
+						.map(hit -> {
+
+							ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+							Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
+							if (languageTag == null) {
+								log.debug("Could not find language {" + hit.language + "}");
+								return null;
+							}
+
+							// Locate the matching container and add it to the list of found containers
+							NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
+							if (container != null) {
+								return new NodeContent(hit.element, container);
+							}
 							return null;
-						}
+						})
 
-						// Locate the matching container and add it to the list of found containers
-						NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
-						if (container != null) {
-							return new NodeContent(hit.element, container);
-						}
-						return null;
-					})
+						.filter(hit -> {
+							return hit != null;
+						});
+				DynamicStreamPageImpl<NodeContent> dynamicPage = new DynamicStreamPageImpl<>(stream, pagingInfo);
+				dynamicPage.setUnfilteredSearchCount(unfilteredCount);
+				return dynamicPage;
+			});
+			return page;
+		} catch (IOException e) {
+			log.error("Error while processing query", e);
+			throw error(BAD_REQUEST, "search_error_query", e);
+		}
 
-					.filter(hit -> {
-						return hit != null;
-					});
-			DynamicStreamPageImpl<NodeContent> dynamicPage = new DynamicStreamPageImpl<>(stream, pagingInfo);
-			dynamicPage.setUnfilteredSearchCount(unfilteredCount);
-			return dynamicPage;
-		});
-		return page;
 	}
 
 }
