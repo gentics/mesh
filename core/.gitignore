@@ -3,3 +3,4 @@
 /mesh.yml
 /.apt_generated/
 keystore.jceks
+/.testcontainers*

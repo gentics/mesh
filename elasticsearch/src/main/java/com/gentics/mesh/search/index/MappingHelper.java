@@ -14,6 +14,7 @@ public final class MappingHelper {
 
 	// Field Types
 	public static final String OBJECT = "object";
+	public static final String KEYWORD = "keyword";
 	public static final String NESTED = "nested";
 	public static final String TEXT = "text";
 	public static final String BOOLEAN = "boolean";
@@ -22,8 +23,8 @@ public final class MappingHelper {
 	public static final String DOUBLE = "double";
 
 	// Index Types
-	public static final boolean NOT_ANALYZED = false;
-	public static final boolean ANALYZED = true;
+	public static final boolean DONT_INDEX_VALUE = false;
+	public static final boolean INDEX_VALUE = true;
 
 	// Analyzer
 	public static final String TRIGRAM_ANALYZER = "trigrams";
@@ -34,7 +35,7 @@ public final class MappingHelper {
 	 * @param type
 	 *            Type of the field
 	 * @param analyzeField
-	 *            Flag which indicates whether the field should be analyzed 
+	 *            Flag which indicates whether the field should be analyzed
 	 * @param analyzer
 	 *            Name of the analyzer to be used
 	 * @return
@@ -53,7 +54,7 @@ public final class MappingHelper {
 	 * @return
 	 */
 	public static JsonObject trigramTextType() {
-		return addRawInfo(fieldType(TEXT, ANALYZED, TRIGRAM_ANALYZER), TEXT);
+		return addRawInfo(fieldType(TEXT, INDEX_VALUE, TRIGRAM_ANALYZER), TEXT);
 	}
 
 	/**
@@ -67,7 +68,7 @@ public final class MappingHelper {
 	public static JsonObject addRawInfo(JsonObject fieldInfo, String mappingType) {
 		JsonObject rawInfo = new JsonObject();
 		rawInfo.put("type", mappingType);
-		rawInfo.put("index", NOT_ANALYZED);
+		rawInfo.put("index", DONT_INDEX_VALUE);
 		JsonObject rawFieldInfo = new JsonObject();
 		rawFieldInfo.put("raw", rawInfo);
 		fieldInfo.put("fields", rawFieldInfo);
@@ -83,7 +84,7 @@ public final class MappingHelper {
 	public static JsonObject notAnalyzedType(String type) {
 		JsonObject indexFieldInfo = new JsonObject();
 		indexFieldInfo.put("type", type);
-		indexFieldInfo.put("index", NOT_ANALYZED);
+		indexFieldInfo.put("index", DONT_INDEX_VALUE);
 		return indexFieldInfo;
 	}
 

@@ -1,14 +1,14 @@
 package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.INDEX_VALUE;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
 import static com.gentics.mesh.search.index.MappingHelper.LONG;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NESTED;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.DONT_INDEX_VALUE;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
 import static com.gentics.mesh.search.index.MappingHelper.TEXT;
 import static com.gentics.mesh.search.index.MappingHelper.TRIGRAM_ANALYZER;
@@ -148,7 +148,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		case STRING:
 		case HTML:
 			fieldInfo.put("type", TEXT);
-			fieldInfo.put("index", ANALYZED);
+			fieldInfo.put("index", INDEX_VALUE);
 			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
 			if (customIndexOptions != null) {
 				fieldInfo.put("fields", customIndexOptions);
@@ -180,7 +180,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			break;
 		case NODE:
 			fieldInfo.put("type", TEXT);
-			fieldInfo.put("index", NOT_ANALYZED);
+			fieldInfo.put("index", DONT_INDEX_VALUE);
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
@@ -188,7 +188,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				switch (listFieldSchema.getListType()) {
 				case "node":
 					fieldInfo.put("type", TEXT);
-					fieldInfo.put("index", NOT_ANALYZED);
+					fieldInfo.put("index", DONT_INDEX_VALUE);
 					break;
 				case "date":
 					fieldInfo.put("type", DATE);

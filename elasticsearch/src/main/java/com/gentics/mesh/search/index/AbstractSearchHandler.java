@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -25,11 +26,14 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchModule;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -400,7 +404,13 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 */
 	protected SearchSourceBuilder parseQuery(String query) {
 		try {
-			return SearchSourceBuilder.fromXContent(XContentType.JSON.xContent().createParser(NamedXContentRegistry.EMPTY, query));
+			SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+			SearchModule searchModule = new SearchModule(Settings.EMPTY, false, Collections.emptyList());
+			try (XContentParser parser = XContentFactory.xContent(XContentType.JSON).createParser(new NamedXContentRegistry(searchModule
+					.getNamedXContents()), query)) {
+				searchSourceBuilder.parseXContent(parser);
+			}
+			return searchSourceBuilder;
 		} catch (IOException e) {
 			throw new RuntimeException("Error while parsing query", e);
 		}
