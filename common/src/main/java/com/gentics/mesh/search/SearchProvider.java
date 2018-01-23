@@ -15,7 +15,15 @@ import io.vertx.core.json.JsonObject;
  */
 public interface SearchProvider {
 
-	static String DEFAULT_TYPE = "default";
+	/**
+	 * Prefix for indices created by mesh.
+	 */
+	static final String INDEX_PREFIX = "mesh-";
+
+	/**
+	 * Default document type for all indices. Note that the type handling will be removed in future ES versions.
+	 */
+	static final String DEFAULT_TYPE = "default";
 
 	/**
 	 * Explicitly refresh one or more indices (making the content indexed since the last refresh searchable).

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema;
 import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_CREATED;
 import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_DELETED;
 import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_UPDATED;
+import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
 
 import java.util.Objects;
 
@@ -35,7 +36,7 @@ public interface MicroschemaContainer extends
 	 * @return
 	 */
 	static String composeIndexName() {
-		return TYPE.toLowerCase();
+		return INDEX_PREFIX + TYPE.toLowerCase();
 	}
 
 	/**

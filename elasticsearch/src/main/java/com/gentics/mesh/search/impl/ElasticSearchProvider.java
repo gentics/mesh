@@ -184,14 +184,14 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public void clear() {
-		// TODO only delete indices of mesh. Don't touch other indices!
 		try {
 			List<String> indices = Collections.emptyList();
+			// Read all indices and locate indices which have been created for/by mesh.
 			Response response = client.getLowLevelClient().performRequest(GET.toString(), "/_all");
 			try (InputStream ins = response.getEntity().getContent()) {
 				String json = IOUtils.toString(ins);
 				JsonObject indexInfo = new JsonObject(json);
-				indices = indexInfo.fieldNames().stream().collect(Collectors.toList());
+				indices = indexInfo.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
 			}
 			if (!indices.isEmpty()) {
 				log.debug("Deleting indices {" + StringUtils.join(indices.toArray(), ","));
