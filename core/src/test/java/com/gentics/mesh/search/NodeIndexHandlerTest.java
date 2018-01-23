@@ -28,7 +28,7 @@ public class NodeIndexHandlerTest extends AbstractMeshTest {
 		}
 
 		for (String key : dummySearchProvider().getStoreEvents().keySet()) {
-			if (!key.startsWith("node")) {
+			if (!key.startsWith("mesh-node")) {
 				fail("We found a document which was does not represent a node. Only nodes should have been reindexed. {"
 						+ key + "}");
 			}
