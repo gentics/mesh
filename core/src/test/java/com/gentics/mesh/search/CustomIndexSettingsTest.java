@@ -152,7 +152,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaValidationError() {
 		SchemaCreateRequest schema = new SchemaCreateRequest();
 		schema.setName("settingsTest");
-		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
+//		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		schema.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 
 		SchemaValidationResponse response = call(() -> client().validateSchema(schema));

@@ -372,8 +372,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
 						sub.onComplete();
 					} else {
-						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]", e);
+						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]", e);
 						sub.onError(e);
 					}
 				}
@@ -402,16 +402,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System
-								.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Exception e) {
-					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-							- start) + "[ms]", e);
+					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+							+ (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 
@@ -433,16 +433,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(IndexResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]");
+						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Exception e) {
-					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System
-							.currentTimeMillis() - start) + "[ms]", e);
+					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration "
+							+ (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 			});
@@ -518,7 +518,20 @@ public class ElasticSearchProvider implements SearchProvider {
 
 						@Override
 						public void onFailure(Exception e) {
-							sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e.getMessage()));
+							if (e instanceof ResponseException) {
+								ResponseException re = (ResponseException) e;
+								try (InputStream ins = re.getResponse().getEntity().getContent()) {
+									String json = IOUtils.toString(ins);
+									JsonObject errorInfo = new JsonObject(json);
+									sub.onError(error(BAD_REQUEST, "schema_error_index_validation",
+											errorInfo.getJsonObject("error").getString("reason")));
+								} catch (UnsupportedOperationException | IOException e1) {
+									sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e1.getMessage()));
+								}
+
+							} else {
+								sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e.getMessage()));
+							}
 						}
 					});
 		}).subscribeOn(scheduler).observeOn(scheduler);
