@@ -228,36 +228,38 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		try (Tx tx = tx()) {
-			NodeResponse oldNode = call(() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParametersImpl()
-					.draft()));
+		NodeResponse oldNode = call(() -> client().findNodeByUuid(PROJECT_NAME, tx(() -> content("concorde").getUuid()),
+				new VersioningParametersImpl().draft()));
 
-			ProjectCreateRequest createProject = new ProjectCreateRequest();
-			createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
-			createProject.setName("mynewproject");
-			ProjectResponse projectResponse = call(() -> client().createProject(createProject));
+		// Create a new project with a new node
+		ProjectCreateRequest createProject = new ProjectCreateRequest();
+		createProject.setSchema(new SchemaReferenceImpl().setName("content"));
+		createProject.setName("mynewproject");
+		ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
-			NodeCreateRequest createNode = new NodeCreateRequest();
-			createNode.setLanguage("en");
-			createNode.setSchema(new SchemaReferenceImpl().setName("folder"));
-			createNode.setParentNode(projectResponse.getRootNode());
-			createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
-			NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
+		NodeCreateRequest createNode = new NodeCreateRequest();
+		createNode.setLanguage("en");
+		createNode.setSchema(new SchemaReferenceImpl().setName("content"));
+		createNode.setParentNode(projectResponse.getRootNode());
+		createNode.getFields().put("slug", FieldUtil.createStringField("newNode"));
+		createNode.getFields().put("teaser", FieldUtil.createStringField("newTeaser"));
+		createNode.getFields().put("content", FieldUtil.createHtmlField("Concorde"));
+		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 
-			// search in old project
-			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.name", "Concorde"),
-					new VersioningParametersImpl().draft()));
-			assertThat(response.getData()).as("Search result in " + PROJECT_NAME).usingElementComparatorOnFields("uuid").containsOnly(oldNode);
+		// search in old project
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
+				new VersioningParametersImpl().draft()));
+		assertThat(response.getData()).as("Search result in " + PROJECT_NAME).usingElementComparatorOnFields("uuid").containsOnly(oldNode);
 
-			// search in new project
-			response = call(() -> client().searchNodes("mynewproject", getSimpleQuery("fields.name", "Concorde"), new VersioningParametersImpl()
-					.draft()));
-			assertThat(response.getData()).as("Search result in mynewproject").usingElementComparatorOnFields("uuid").containsOnly(newNode);
+		// search in new project
+		response = call(() -> client().searchNodes("mynewproject", getSimpleQuery("fields.content", "Concorde"), new VersioningParametersImpl()
+				.draft()));
+		assertThat(response.getData()).as("Search result in mynewproject").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
-			// search globally
-			response = call(() -> client().searchNodes(getSimpleQuery("fields.name", "Concorde"), new VersioningParametersImpl().draft()));
-			assertThat(response.getData()).as("Global search result").usingElementComparatorOnFields("uuid").containsOnly(newNode, oldNode);
-		}
+		// search globally
+		response = call(() -> client().searchNodes(getSimpleQuery("fields.content", "Concorde"), new VersioningParametersImpl().draft()));
+		assertThat(response.getData()).as("Global search result").usingElementComparatorOnFields("uuid").containsOnly(newNode, oldNode);
+
 	}
 
 	@Test
