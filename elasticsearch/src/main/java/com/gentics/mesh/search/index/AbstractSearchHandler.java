@@ -122,9 +122,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			userJson.put("query", newQuery);
 		}
 
-		if (userJson.getLong("size") == null) {
-			userJson.put("size", Integer.MAX_VALUE);
-		}
+//		if (userJson.getLong("size") == null) {
+//			userJson.put("size", Integer.MAX_VALUE);
+//		}
 
 		return userJson;
 	}
@@ -198,9 +198,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				log.debug("Using parsed query {" + query.encodePrettily() + "}");
 			}
 			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
-			// SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-			// searchSourceBuilder.query(parseQuery(query.toString()).query());
-			// searchSourceBuilder.query(QueryBuilders.wrapperQuery(query.toString()));
 			searchRequest.source(parseQuery(query.toString()));
 		} catch (Exception e) {
 			if (log.isDebugEnabled()) {

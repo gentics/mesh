@@ -54,21 +54,19 @@ public final class MappingHelper {
 	 * @return
 	 */
 	public static JsonObject trigramTextType() {
-		return addRawInfo(fieldType(TEXT, INDEX_VALUE, TRIGRAM_ANALYZER), TEXT);
+		return addRawInfo(fieldType(TEXT, INDEX_VALUE, TRIGRAM_ANALYZER));
 	}
 
 	/**
 	 * Add the raw field info to the given mapping element.
 	 *
 	 * @param fieldInfo
-	 * @param mappingType
-	 *
 	 * @return The modified field info object
 	 */
-	public static JsonObject addRawInfo(JsonObject fieldInfo, String mappingType) {
+	public static JsonObject addRawInfo(JsonObject fieldInfo) {
 		JsonObject rawInfo = new JsonObject();
-		rawInfo.put("type", mappingType);
-		rawInfo.put("index", DONT_INDEX_VALUE);
+		rawInfo.put("type", KEYWORD);
+		rawInfo.put("index", INDEX_VALUE);
 		JsonObject rawFieldInfo = new JsonObject();
 		rawFieldInfo.put("raw", rawInfo);
 		fieldInfo.put("fields", rawFieldInfo);
@@ -82,9 +80,12 @@ public final class MappingHelper {
 	 * @return
 	 */
 	public static JsonObject notAnalyzedType(String type) {
+		if (type.equals(TEXT)) {
+			throw new RuntimeException("Type {text} is invalid for this operation. You most likly want {keyword}");
+		}
 		JsonObject indexFieldInfo = new JsonObject();
 		indexFieldInfo.put("type", type);
-		indexFieldInfo.put("index", DONT_INDEX_VALUE);
+		indexFieldInfo.put("index", INDEX_VALUE);
 		return indexFieldInfo;
 	}
 

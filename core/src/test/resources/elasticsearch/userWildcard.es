@@ -3,7 +3,7 @@
       "simple_query_string" : {
           "query": "testuser*",
           "analyzer": "snowball",
-          "fields": ["name^5","_all"],
+          "fields": ["username.raw"],
           "default_operator": "and"
       }
   }

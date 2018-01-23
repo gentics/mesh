@@ -1,8 +1,8 @@
 package com.gentics.mesh.search.index.user;
 
+import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
-import static com.gentics.mesh.search.index.MappingHelper.TEXT;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
@@ -27,10 +27,10 @@ public class UserMappingProvider extends AbstractMappingProvider {
 		props.put(UserTransformer.USERNAME_KEY, trigramTextType());
 		props.put(UserTransformer.LASTNAME_KEY, trigramTextType());
 		props.put(UserTransformer.FIRSTNAME_KEY, trigramTextType());
-		props.put(UserTransformer.EMAIL_KEY, notAnalyzedType(TEXT));
-		props.put(UserTransformer.NODEREFERECE_KEY, notAnalyzedType(TEXT));
-		props.put(UserTransformer.GROUPS_KEY, new JsonObject().put("type", OBJECT).put("properties", new JsonObject().put(NAME_KEY,
-				trigramTextType()).put(UUID_KEY, notAnalyzedType(TEXT))));
+		props.put(UserTransformer.EMAIL_KEY, notAnalyzedType(KEYWORD));
+		props.put(UserTransformer.NODEREFERECE_KEY, notAnalyzedType(KEYWORD));
+		props.put(UserTransformer.GROUPS_KEY, new JsonObject().put("type", OBJECT).put("properties", new JsonObject().put(NAME_KEY, trigramTextType())
+				.put(UUID_KEY, notAnalyzedType(KEYWORD))));
 
 		return props;
 	}
