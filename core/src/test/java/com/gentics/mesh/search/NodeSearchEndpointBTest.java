@@ -71,7 +71,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.firstName", "Mickey"),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
 				new VersioningParametersImpl().draft()));
 

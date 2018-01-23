@@ -24,6 +24,7 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -282,7 +283,6 @@ public class ElasticSearchProvider implements SearchProvider {
 										sub.onError(e);
 									}
 								} catch (UnsupportedOperationException | IOException e1) {
-									// TODO Auto-generated catch block
 									sub.onError(e1);
 								}
 							} else {
@@ -456,10 +456,10 @@ public class ElasticSearchProvider implements SearchProvider {
 			if (log.isDebugEnabled()) {
 				log.debug("Deleting index {" + indexName + "}");
 			}
-			DeleteRequest deleteRequest = new DeleteRequest(indexName);
-			getSearchClient().deleteAsync(deleteRequest, new ActionListener<DeleteResponse>() {
+			DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
+			getSearchClient().indices().deleteIndexAsync(deleteIndexRequest, new ActionListener<DeleteIndexResponse>() {
 
-				public void onResponse(DeleteResponse response) {
+				public void onResponse(DeleteIndexResponse response) {
 					if (log.isDebugEnabled()) {
 						log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}

@@ -10,16 +10,12 @@ import com.gentics.mesh.test.TestSize;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MeshTestSetting {
 
-	boolean useElasticsearch() default false;
-
 	/**
-	 * Flag which indicates whether the ES http server should be started.
+	 * Flag which indicates whether the ES docker container should be started.
 	 * 
 	 * @return
-	 * @deprecated Currently not supported since Netty of Vert.x 3.5.0 is not compatible with ES 
 	 */
-	@Deprecated
-	boolean startESServer() default false;
+	boolean useElasticsearch() default false;
 
 	/**
 	 * Setting which indicates what size of test data should be created.

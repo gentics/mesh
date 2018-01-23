@@ -154,9 +154,9 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
+		int numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
-			int numAdditionalNodes = 99;
 			addMicronodeField();
 			User user = user();
 			Language english = english();
@@ -175,13 +175,17 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				vcardField.getMicronode().createString("lastName").setString("Mouse");
 				role().grantPermissions(node, GraphPermission.READ_PERM);
 			}
-			recreateIndices();
-
-			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.firstName", "Mickey"),
-					new PagingParametersImpl().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParametersImpl().draft()));
-
-			assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
+			tx.success();
 		}
+		try (Tx tx = tx()) {
+			recreateIndices();
+		}
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
+				new PagingParametersImpl().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParametersImpl().draft()));
+
+		assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
+
 	}
 
 	/**
@@ -241,17 +245,17 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 
 			// search in old project
-			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
+			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.name", "Concorde"),
 					new VersioningParametersImpl().draft()));
 			assertThat(response.getData()).as("Search result in " + PROJECT_NAME).usingElementComparatorOnFields("uuid").containsOnly(oldNode);
 
 			// search in new project
-			response = call(() -> client().searchNodes("mynewproject", getSimpleQuery("fields.content", "Concorde"), new VersioningParametersImpl()
+			response = call(() -> client().searchNodes("mynewproject", getSimpleQuery("fields.name", "Concorde"), new VersioningParametersImpl()
 					.draft()));
 			assertThat(response.getData()).as("Search result in mynewproject").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 			// search globally
-			response = call(() -> client().searchNodes(getSimpleQuery("fields.content", "Concorde"), new VersioningParametersImpl().draft()));
+			response = call(() -> client().searchNodes(getSimpleQuery("fields.name", "Concorde"), new VersioningParametersImpl().draft()));
 			assertThat(response.getData()).as("Global search result").usingElementComparatorOnFields("uuid").containsOnly(newNode, oldNode);
 		}
 	}

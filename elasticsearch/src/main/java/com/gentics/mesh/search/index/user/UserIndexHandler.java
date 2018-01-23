@@ -22,7 +22,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 @Singleton
 public class UserIndexHandler extends AbstractIndexHandler<User> {
 
-	private final static Set<String> indices = Collections.singleton(User.TYPE);
+	private final static Set<String> indices = Collections.singleton(User.composeIndexName());
 
 	@Inject
 	UserTransformer transformer;

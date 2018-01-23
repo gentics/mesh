@@ -43,8 +43,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
-	public static GenericContainer elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2")
-			.withEnv("discovery.type", "single-node").withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
+	public static GenericContainer elasticsearch;
 
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
@@ -95,7 +94,7 @@ public class MeshTestContext extends TestWatcher {
 			if (description.isSuite()) {
 				removeDataDirectory();
 				removeConfigDirectory();
-				if (elasticsearch.isRunning()) {
+				if (elasticsearch != null && elasticsearch.isRunning()) {
 					elasticsearch.stop();
 				}
 			} else {
@@ -231,9 +230,6 @@ public class MeshTestContext extends TestWatcher {
 		for (File folder : tmpFolders) {
 			FileUtils.deleteDirectory(folder);
 		}
-		// if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
-		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
-		// }
 		PermissionStore.invalidate(false);
 	}
 
@@ -301,12 +297,14 @@ public class MeshTestContext extends TestWatcher {
 		options.getStorageOptions().setDirectory(graphPath);
 		options.getSearchOptions().getHosts().clear();
 		if (settings.useElasticsearch()) {
+			elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2").withEnv("discovery.type", "single-node")
+					.withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
 			elasticsearch.waitingFor(Wait.forHttp("/"));
-			options.getSearchOptions().getHosts()
-					.add(new ElasticSearchHost().setPort(elasticsearch.getMappedPort(9200)).setHostname("localhost").setProtocol("http"));
+			options.getSearchOptions().getHosts().add(new ElasticSearchHost().setPort(elasticsearch.getMappedPort(9200)).setHostname("localhost")
+					.setProtocol("http"));
 		}
 		Mesh.mesh(options);
 		return options;

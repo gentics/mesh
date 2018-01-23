@@ -120,6 +120,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			userJson.put("query", newQuery);
 		}
 
+		if (userJson.getLong("size") == null) {
+			userJson.put("size", 8000);
+		}
+		
+		//TODO filter the node language for a node search request
+
 		return userJson;
 	}
 
@@ -237,6 +243,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						if (y == null) {
 							return;
 						}
+						//TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES. 
 						// Check whether the language matches up
 						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
 								|| requestedLanguageTags.contains(y.v2());
