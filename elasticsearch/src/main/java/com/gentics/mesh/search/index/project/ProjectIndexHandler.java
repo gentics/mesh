@@ -62,7 +62,7 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return Collections.singleton(Project.TYPE);
+		return Collections.singleton(Project.composeIndexName());
 	}
 
 	@Override

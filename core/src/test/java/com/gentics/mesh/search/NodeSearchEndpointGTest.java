@@ -81,6 +81,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
+
+		// Assert initial condition
+		NodeListResponse response1 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
+				new VersioningParametersImpl().draft()));
+		assertThat(response1.getData()).as("Search result").isNotEmpty();
+
 		String contentUuid = db().tx(() -> content().getUuid());
 		String folderUuid = db().tx(() -> folder("2015").getUuid());
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
@@ -99,14 +105,17 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
+
+		// Trigger the migration
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
-		NodeListResponse response2 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
-				.draft()));
+		// Assert that the nodes were migrated and added to the new index. The data should be searchable
+		NodeListResponse response2 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
+				new VersioningParametersImpl().draft()));
 		assertThat(response2.getData()).as("Search result").isNotEmpty();
 
 		// Lets create a new node that has a micronode
@@ -153,8 +162,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse nodeResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
 		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
-				.draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
+				new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").isNotEmpty();
 
 	}
@@ -177,9 +186,9 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().createRelease(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
-		// Assert that the node can be found within the publish index witin the new release
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
-				.setRelease(releaseName).setVersion("published")));
+		// Assert that the node can be found within the publish index within the new release
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
+				new VersioningParametersImpl().setRelease(releaseName).setVersion("published")));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
