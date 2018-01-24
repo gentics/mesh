@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.verticle;
+package com.gentics.mesh.search.endpoint;
 
 import static io.vertx.core.http.HttpMethod.GET;
 
