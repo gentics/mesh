@@ -5,6 +5,6 @@ import io.vertx.core.json.JsonObject;
 public final class IndexOptionHelper {
 
 	public static JsonObject getRawFieldOption() {
-		return new JsonObject().put("raw", new JsonObject().put("index", "not_analyzed").put("type", "string"));
+		return new JsonObject().put("raw", new JsonObject().put("index", true).put("type", "keyword"));
 	}
 }
