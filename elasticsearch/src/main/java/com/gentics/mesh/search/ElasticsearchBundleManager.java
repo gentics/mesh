@@ -68,7 +68,7 @@ public final class ElasticsearchBundleManager {
 	}
 
 	public static void unzip(String zipClasspath, String outdir) throws FileNotFoundException, IOException, ZipException {
-		InputStream ins = ESTest.class.getResourceAsStream(zipClasspath);
+		InputStream ins = ElasticsearchBundleManager.class.getResourceAsStream(zipClasspath);
 		if (ins != null) {
 			// Write the classpath resource to a file so that we can extract it later
 			File zipFile = new File(System.getProperty("java.io.tmpdir"), "elasticsearch.zip");
