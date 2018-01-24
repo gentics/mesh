@@ -367,7 +367,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 		assertThat(dummySearchProvider()).hasEvents(size + size + 1, size + size, 2, 2);
 		for (JsonObject mapping : dummySearchProvider().getCreateIndexEvents().values()) {
-			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "string",
+			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "keyword",
 					"The mapping should include a raw field for the teaser field");
 			assertThat(mapping).hasNot("$.mapping.default.properties.fields.properties.title.fields.raw",
 					"The mapping should not include a raw field for the title field");
