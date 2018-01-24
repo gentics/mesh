@@ -49,12 +49,12 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.engine.DocumentMissingException;
-import org.elasticsearch.node.Node;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.search.ElasticsearchBundleManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -67,6 +67,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.RxHelper;
+import net.lingala.zip4j.exception.ZipException;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -77,13 +78,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private RestHighLevelClient client;
 
-	private Node node;
-
 	private MeshOptions options;
 
 	private Scheduler scheduler;
 
 	private WorkerExecutor workerPool;
+
+	private Process embeddedESProcess;
 
 	public ElasticSearchProvider() {
 
@@ -125,6 +126,15 @@ public class ElasticSearchProvider implements SearchProvider {
 		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		long start = System.currentTimeMillis();
 
+		if (searchOptions.isStartEmbeddedES()) {
+			try {
+				embeddedESProcess = ElasticsearchBundleManager.start();
+				// TODO wait until the server is ready
+			} catch (IOException | ZipException e) {
+				log.error("Error while starting embedded Elasticsearch server.", e);
+			}
+		}
+
 		List<HttpHost> hosts = searchOptions.getHosts().stream().map(hostConfig -> {
 			return new HttpHost(hostConfig.getHostname(), hostConfig.getPort(), hostConfig.getProtocol());
 		}).collect(Collectors.toList());
@@ -132,14 +142,14 @@ public class ElasticSearchProvider implements SearchProvider {
 		RestClientBuilder builder = RestClient.builder(hosts.toArray(new HttpHost[hosts.size()]));
 		client = new RestHighLevelClient(builder);
 
-		// waitForCluster(client, 45);
+		waitForCluster(client, 45);
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}
 
 	}
 
-	private void waitForCluster(Client client, long timeoutInSec) {
+	private void waitForCluster(RestHighLevelClient client, long timeoutInSec) {
 		long start = System.currentTimeMillis();
 		// Wait until the cluster is ready
 		while (true) {
@@ -148,11 +158,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				break;
 			}
 			log.debug("Checking elasticsearch status...");
-			ClusterHealthResponse response = client.admin().cluster().prepareHealth().get(TimeValue.timeValueSeconds(10));
-			log.debug("Elasticsearch status is: " + response.getStatus());
-			if (response.getStatus() != ClusterHealthStatus.RED) {
-				log.info("Elasticsearch status {" + response.getStatus() + "}. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
-				return;
+			try {
+				MainResponse response = client.info();
+				boolean ready = response.isAvailable();
+				log.debug("Elasticsearch status is: " + ready);
+				if (ready) {
+					log.info("Elasticsearch is ready. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
+					return;
+				}
+			} catch (IOException e1) {
+				// ignored
 			}
 			try {
 				Thread.sleep(1000);
@@ -208,15 +223,21 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public void stop() throws IOException {
 		if (client != null) {
+			log.info("Closing Elasticsearch REST client.");
 			client.close();
 		}
-		if (node != null) {
-			node.close();
+
+		if (embeddedESProcess != null) {
+			log.info("Stopping Elasticsearch server.");
+			embeddedESProcess.destroy();
 		}
+
 		if (scheduler != null) {
+			log.info("Shutting down Elasticsearch job scheduler.");
 			scheduler.shutdown();
 		}
 		if (workerPool != null) {
+			log.info("Closing Elasticsearch worker pool.");
 			workerPool.close();
 		}
 	}
@@ -373,8 +394,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
 						sub.onComplete();
 					} else {
-						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]", e);
+						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]", e);
 						sub.onError(e);
 					}
 				}
@@ -403,16 +424,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System
-								.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Exception e) {
-					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-							- start) + "[ms]", e);
+					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+							+ (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 
@@ -434,16 +455,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(IndexResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]");
+						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Exception e) {
-					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System
-							.currentTimeMillis() - start) + "[ms]", e);
+					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration "
+							+ (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 			});
@@ -524,8 +545,8 @@ public class ElasticSearchProvider implements SearchProvider {
 								try (InputStream ins = re.getResponse().getEntity().getContent()) {
 									String json = IOUtils.toString(ins);
 									JsonObject errorInfo = new JsonObject(json);
-									sub.onError(error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString(
-											"reason")));
+									sub.onError(error(BAD_REQUEST, "schema_error_index_validation",
+											errorInfo.getJsonObject("error").getString("reason")));
 								} catch (UnsupportedOperationException | IOException e1) {
 									sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e1.getMessage()));
 								}

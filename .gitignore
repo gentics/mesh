@@ -47,3 +47,4 @@ inclusions.txt
 /includes-*
 .idea
 *.iml
+elasticsearch-6.1.2

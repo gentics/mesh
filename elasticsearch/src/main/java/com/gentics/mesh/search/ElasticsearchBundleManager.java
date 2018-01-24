@@ -1,12 +1,10 @@
 package com.gentics.mesh.search;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import org.apache.commons.io.IOUtils;
 
@@ -24,13 +22,13 @@ public final class ElasticsearchBundleManager {
 
 	private static final String RESOURCE_NAME = "elasticsearch-6.1.2";
 
-	public static void start() throws FileNotFoundException, IOException, ZipException {
-		File outputDir = new File("es");
-		if (!outputDir.exists()) {
+	public static Process start() throws FileNotFoundException, IOException, ZipException {
+		File outputDir = new File(".");
+		File esDir = new File(outputDir, RESOURCE_NAME);
+		if (!esDir.exists()) {
 			unzip("/" + RESOURCE_NAME + ".zip", outputDir.getAbsolutePath());
 		}
 
-		File esDir = new File(outputDir, RESOURCE_NAME);
 		if (!esDir.exists()) {
 			throw new FileNotFoundException("Could not find elasticsearch in {" + esDir.getAbsolutePath() + "}");
 		}
@@ -50,21 +48,23 @@ public final class ElasticsearchBundleManager {
 				"org.elasticsearch.bootstrap.Elasticsearch");
 
 		Process p = builder.start();
-		Thread closeChildThread = new Thread() {
-			public void run() {
-				p.destroy();
-			}
-		};
+		Thread closeChildThread = new Thread(() -> p.destroy());
 		Runtime.getRuntime().addShutdownHook(closeChildThread);
-
-		StringBuffer sb = new StringBuffer();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-		String line = "";
-		while ((line = reader.readLine()) != null) {
-			sb.append(line + "\n");
-		}
-		System.out.println(sb.toString());
-
+		new Thread(() -> {
+			try {
+				IOUtils.copy(p.getInputStream(), System.out);
+			} catch (IOException e1) {
+				log.debug("Error while reading output from process.", e1);
+			}
+		}).start();
+		new Thread(() -> {
+			try {
+				IOUtils.copy(p.getErrorStream(), System.err);
+			} catch (IOException e) {
+				log.debug("Error while reading output from process.", e);
+			}
+		}).start();
+		return p;
 	}
 
 	public static void unzip(String zipClasspath, String outdir) throws FileNotFoundException, IOException, ZipException {

@@ -18,6 +18,13 @@ public @interface MeshTestSetting {
 	boolean useElasticsearch() default false;
 
 	/**
+	 * Flag which indicates whether the ES test container should be used. Otherwise the embedded ES will be used instead.
+	 * 
+	 * @return
+	 */
+	boolean useElasticsearchContainer() default true;
+
+	/**
 	 * Setting which indicates what size of test data should be created.
 	 * 
 	 * @return

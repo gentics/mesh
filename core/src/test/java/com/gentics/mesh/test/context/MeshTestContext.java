@@ -295,16 +295,19 @@ public class MeshTestContext extends TestWatcher {
 			directory.mkdirs();
 		}
 		options.getStorageOptions().setDirectory(graphPath);
-		options.getSearchOptions().getHosts().clear();
-		if (settings.useElasticsearch()) {
-			elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2").withEnv("discovery.type", "single-node")
-					.withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
-			if (!elasticsearch.isRunning()) {
-				elasticsearch.start();
+		if (settings.useElasticsearchContainer()) {
+			options.getSearchOptions().setStartEmbeddedES(false);
+			options.getSearchOptions().getHosts().clear();
+			if (settings.useElasticsearch()) {
+				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2").withEnv("discovery.type", "single-node")
+						.withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
+				if (!elasticsearch.isRunning()) {
+					elasticsearch.start();
+				}
+				elasticsearch.waitingFor(Wait.forHttp("/"));
+				options.getSearchOptions().getHosts()
+						.add(new ElasticSearchHost().setPort(elasticsearch.getMappedPort(9200)).setHostname("localhost").setProtocol("http"));
 			}
-			elasticsearch.waitingFor(Wait.forHttp("/"));
-			options.getSearchOptions().getHosts().add(new ElasticSearchHost().setPort(elasticsearch.getMappedPort(9200)).setHostname("localhost")
-					.setProtocol("http"));
 		}
 		Mesh.mesh(options);
 		return options;
