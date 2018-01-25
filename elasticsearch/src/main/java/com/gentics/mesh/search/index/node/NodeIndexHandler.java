@@ -177,8 +177,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().flatMapCompletable(indexName -> searchProvider
-					.refreshIndex(indexName));
+			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().ignoreElements();
 		});
 	}
 
