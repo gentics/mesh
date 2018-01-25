@@ -113,6 +113,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (searchOptions.isStartEmbeddedES()) {
 			try {
 				processManager.start();
+				processManager.startWatchDog();
 			} catch (IOException | ZipException e) {
 				log.error("Error while starting embedded Elasticsearch server.", e);
 			}
@@ -257,6 +258,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		if (processManager != null) {
 			log.info("Stopping Elasticsearch server.");
+			processManager.stopWatchDog();
 			processManager.stop();
 		}
 

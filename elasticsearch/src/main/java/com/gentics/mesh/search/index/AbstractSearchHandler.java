@@ -110,8 +110,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 		}
 
-		JsonObject newQuery = new JsonObject().put("bool", new JsonObject().put("filter", new JsonObject().put("terms", new JsonObject().put(
-				"_roleUuids", roleUuids))));
+		JsonObject newQuery = new JsonObject().put("bool",
+				new JsonObject().put("filter", new JsonObject().put("terms", new JsonObject().put("_roleUuids", roleUuids))));
 
 		// Wrap the original query in a nested bool query in order check the role perms
 		JsonObject originalQuery = userJson.getJsonObject("query");
@@ -123,8 +123,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		if (userJson.getLong("size") == null) {
 			userJson.put("size", 8000);
 		}
-		
-		//TODO filter the node language for a node search request
+
+		// TODO filter the node language for a node search request
 
 		return userJson;
 	}
@@ -161,13 +161,17 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 
 			public void onFailure(Exception e) {
-				log.error("Search query failed", e);
-				try {
-					JsonObject json = convertToJson(e);
-					ac.send(json.encodePrettily(), HttpResponseStatus.BAD_REQUEST);
-				} catch (Exception e1) {
-					log.error("Error while converting es error to response", e1);
-					throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
+				if (e instanceof TimeoutException) {
+					ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
+				} else {
+					log.error("Search query failed", e);
+					try {
+						JsonObject json = convertToJson(e);
+						ac.send(json.encodePrettily(), HttpResponseStatus.BAD_REQUEST);
+					} catch (Exception e1) {
+						log.error("Error while converting es error to response", e1);
+						throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
+					}
 				}
 			}
 		});
@@ -243,7 +247,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						if (y == null) {
 							return;
 						}
-						//TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES. 
+						// TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES.
 						// Check whether the language matches up
 						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
 								|| requestedLanguageTags.contains(y.v2());
@@ -305,16 +309,18 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 			@Override
 			public void onFailure(Exception e) {
-				log.error("Search query failed", e);
-				GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
-				if (e instanceof ElasticsearchException) {
+				if (e instanceof TimeoutException) {
+					ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
+				} else if (e instanceof ElasticsearchException) {
+					GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
+					log.error("Search query failed", e);
 					int i = 0;
 					for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
 						error.setProperty("cause-" + i, simpleMessage(e1));
 						i++;
 					}
+					ac.fail(error);
 				}
-				ac.fail(error);
 			}
 		});
 
@@ -413,8 +419,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		try {
 			SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 			SearchModule searchModule = new SearchModule(Settings.EMPTY, false, Collections.emptyList());
-			try (XContentParser parser = XContentFactory.xContent(XContentType.JSON).createParser(new NamedXContentRegistry(searchModule
-					.getNamedXContents()), query)) {
+			try (XContentParser parser = XContentFactory.xContent(XContentType.JSON)
+					.createParser(new NamedXContentRegistry(searchModule.getNamedXContents()), query)) {
 				searchSourceBuilder.parseXContent(parser);
 			}
 			return searchSourceBuilder;

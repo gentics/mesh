@@ -1,10 +1,15 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.io.IOException;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.search.ElasticSearchHost;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
@@ -24,18 +29,22 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProviderTimeoutTest.class);
 
-	@Test
-	public void testSimpleQuerySearch() throws IOException {
-
+	/**
+	 * Use the vert.x server which answers requests after 12s instead.
+	 * 
+	 * @throws IOException
+	 */
+	@BeforeClass
+	public static void setupTimeoutServer() throws IOException {
 		Vertx vertx = new Vertx(Mesh.mesh().getVertx());
-		ElasticSearchProvider provider = ((ElasticSearchProvider) searchProvider());
+		ElasticSearchProvider provider = ((ElasticSearchProvider) MeshInternal.get().searchProvider());
 		ElasticSearchOptions options = provider.getOptions();
 
 		// Create a dummy server which just blocks on every in-bound request for 1 second
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(0));
 		server.requestHandler(rh -> {
 			log.info("Waiting for 1 second to answer request: " + rh.absoluteURI());
-			vertx.setTimer(6000, th -> rh.response().end());
+			vertx.setTimer(12000, th -> rh.response().end());
 		});
 		server.rxListen().blockingGet();
 
@@ -44,10 +53,19 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		options.getHosts().add(new ElasticSearchHost().setHostname("localhost").setPort(server.actualPort()));
 		provider.stop();
 		provider.start(false);
+	}
 
+	@Test
+	public void testDocumentCreation() throws IOException {
 		String username = "testuser42a";
 		try (Tx tx = tx()) {
 			createUser(username);
 		}
+	}
+
+	@Test
+	public void testSearchQuery() throws IOException {
+		String json = getESText("userWildcard.es");
+		 call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error_timeout");
 	}
 }
