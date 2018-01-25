@@ -25,7 +25,7 @@
 		<rx.version>1.2.3</rx.version>
 		<jackson.version>2.9.0</jackson.version>
 
-		<surefire.forkcount>3</surefire.forkcount>
+		<surefire.forkcount>2</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>

@@ -47,7 +47,6 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.engine.DocumentMissingException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
@@ -56,17 +55,13 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Maybe;
-import io.reactivex.Scheduler;
 import io.reactivex.Single;
-import io.vertx.core.WorkerExecutor;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.RxHelper;
 import net.lingala.zip4j.exception.ZipException;
 
 /**
@@ -80,37 +75,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
-	private Scheduler scheduler;
+	// private Scheduler scheduler;
 
-	private WorkerExecutor workerPool;
+	// private WorkerExecutor workerPool;
 
 	private Process embeddedESProcess;
 
 	public ElasticSearchProvider() {
-
-	}
-
-	/**
-	 * Returns the default index settings.
-	 * 
-	 * @return
-	 */
-	@Override
-	public JsonObject getDefaultIndexSettings() {
-
-		JsonObject tokenizer = new JsonObject();
-		tokenizer.put("type", "nGram");
-		tokenizer.put("min_gram", "3");
-		tokenizer.put("max_gram", "3");
-
-		JsonObject trigramsAnalyzer = new JsonObject();
-		trigramsAnalyzer.put("tokenizer", "mesh_default_ngram_tokenizer");
-		trigramsAnalyzer.put("filter", new JsonArray().add("lowercase"));
-
-		JsonObject analysis = new JsonObject();
-		analysis.put("analyzer", new JsonObject().put("trigrams", trigramsAnalyzer));
-		analysis.put("tokenizer", new JsonObject().put("mesh_default_ngram_tokenizer", tokenizer));
-		return new JsonObject().put("analysis", analysis);
 
 	}
 
@@ -127,8 +98,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	public void start(boolean waitForCluster) {
 		log.debug("Creating elasticsearch provider.");
 
-		workerPool = Mesh.vertx().createSharedWorkerExecutor("searchWorker", 15, 10 * 1000 * 1000);
-		scheduler = RxHelper.blockingScheduler(workerPool);
+		// workerPool = Mesh.vertx().createSharedWorkerExecutor("searchWorker", 15, 10 * 1000 * 1000);
+		// scheduler = RxHelper.blockingScheduler(workerPool);
 
 		ElasticSearchOptions searchOptions = getOptions();
 		long start = System.currentTimeMillis();
@@ -207,6 +178,30 @@ public class ElasticSearchProvider implements SearchProvider {
 		start();
 	}
 
+	/**
+	 * Returns the default index settings.
+	 * 
+	 * @return
+	 */
+	@Override
+	public JsonObject getDefaultIndexSettings() {
+
+		JsonObject tokenizer = new JsonObject();
+		tokenizer.put("type", "nGram");
+		tokenizer.put("min_gram", "3");
+		tokenizer.put("max_gram", "3");
+
+		JsonObject trigramsAnalyzer = new JsonObject();
+		trigramsAnalyzer.put("tokenizer", "mesh_default_ngram_tokenizer");
+		trigramsAnalyzer.put("filter", new JsonArray().add("lowercase"));
+
+		JsonObject analysis = new JsonObject();
+		analysis.put("analyzer", new JsonObject().put("trigrams", trigramsAnalyzer));
+		analysis.put("tokenizer", new JsonObject().put("mesh_default_ngram_tokenizer", tokenizer));
+		return new JsonObject().put("analysis", analysis);
+
+	}
+
 	@Override
 	public Completable clear() {
 
@@ -259,14 +254,14 @@ public class ElasticSearchProvider implements SearchProvider {
 			embeddedESProcess.destroy();
 		}
 
-		if (scheduler != null) {
-			log.info("Shutting down Elasticsearch job scheduler.");
-			scheduler.shutdown();
-		}
-		if (workerPool != null) {
-			log.info("Closing Elasticsearch worker pool.");
-			workerPool.close();
-		}
+		// if (scheduler != null) {
+		// log.info("Shutting down Elasticsearch job scheduler.");
+		// scheduler.shutdown();
+		// }
+		// if (workerPool != null) {
+		// log.info("Closing Elasticsearch worker pool.");
+		// workerPool.close();
+		// }
 	}
 
 	@Override
@@ -426,8 +421,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
 						sub.onComplete();
 					} else {
-						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]", e);
+						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]", e);
 						sub.onError(e);
 					}
 				}
@@ -456,16 +451,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System
-								.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Exception e) {
-					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-							- start) + "[ms]", e);
+					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+							+ (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 
@@ -487,16 +482,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(IndexResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]");
+						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onComplete();
 				}
 
 				@Override
 				public void onFailure(Exception e) {
-					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System
-							.currentTimeMillis() - start) + "[ms]", e);
+					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration "
+							+ (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 			});
@@ -577,8 +572,8 @@ public class ElasticSearchProvider implements SearchProvider {
 								try (InputStream ins = re.getResponse().getEntity().getContent()) {
 									String json = IOUtils.toString(ins);
 									JsonObject errorInfo = new JsonObject(json);
-									sub.onError(error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString(
-											"reason")));
+									sub.onError(error(BAD_REQUEST, "schema_error_index_validation",
+											errorInfo.getJsonObject("error").getString("reason")));
 								} catch (UnsupportedOperationException | IOException e1) {
 									sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e1.getMessage()));
 								}

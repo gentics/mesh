@@ -294,6 +294,8 @@ public class MeshTestContext extends TestWatcher {
 			directory.deleteOnExit();
 			directory.mkdirs();
 		}
+		// Increase timeout to high load during testing
+		options.getSearchOptions().setTimeout(10_000L);
 		options.getStorageOptions().setDirectory(graphPath);
 		if (settings.useElasticsearchContainer()) {
 			options.getSearchOptions().setStartEmbeddedES(false);
