@@ -57,8 +57,24 @@ public final class ElasticsearchBundleManager {
 				"org.elasticsearch.bootstrap.Elasticsearch");
 
 		Process p = builder.start();
-		Thread closeChildThread = new Thread(() -> p.destroy());
+
+		Thread closeChildThread = new Thread(() -> {
+			log.info("Terminating Elasticsearch process..");
+			p.destroy();
+			sleep(1);
+			for (int i = 0; i < 15; i++) {
+				if (!p.isAlive()) {
+					return;
+				}
+				sleep(1);
+			}
+			log.info("Elasticsearch still running. Killing it..");
+			p.destroyForcibly();
+		});
+
 		Runtime.getRuntime().addShutdownHook(closeChildThread);
+
+		// Redirect the log output of ES to stdout/stderr
 		new Thread(() -> {
 			try {
 				IOUtils.copy(p.getInputStream(), System.out);
@@ -74,6 +90,13 @@ public final class ElasticsearchBundleManager {
 			}
 		}).start();
 		return p;
+	}
+
+	private static void sleep(int seconds) {
+		try {
+			Thread.sleep(seconds * 1000);
+		} catch (InterruptedException e) {
+		}
 	}
 
 	private static boolean isWindows() {
