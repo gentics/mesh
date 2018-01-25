@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,9 +52,11 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.MeshRestChannel;
 import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
@@ -131,8 +134,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	@Override
 	public void rawQuery(InternalActionContext ac) {
-		RestHighLevelClient client = searchProvider.getClient();
+		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
+			ac.fail(error(SERVICE_UNAVAILABLE, "search_error_no_elasticsearch_configured"));
+			return;
+		}
 
+		RestHighLevelClient client = searchProvider.getClient();
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "}");
@@ -181,6 +188,10 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	@Override
 	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
+		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
+			ac.fail(error(SERVICE_UNAVAILABLE, "search_error_no_elasticsearch_configured"));
+			return;
+		}
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
 		if (pagingInfo.getPage() < 1) {
