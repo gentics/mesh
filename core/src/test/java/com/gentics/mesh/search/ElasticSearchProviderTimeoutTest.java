@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.etc.config.search.ElasticSearchHost;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
@@ -50,12 +49,5 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			createUser(username);
 		}
-
-		// String json = getESText("userWildcard.es");
-		//
-		// UserListResponse list = call(() -> client().searchUsers(json));
-		// assertEquals(1, list.getData().size());
-		// assertEquals("The found element is not the user we were looking for", username, list.getData().get(0).getUsername());
-
 	}
 }

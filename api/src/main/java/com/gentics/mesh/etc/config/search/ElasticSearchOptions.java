@@ -19,7 +19,7 @@ public class ElasticSearchOptions {
 	 */
 	private static final ElasticSearchHost DEFAULT_HOST = new ElasticSearchHost().setHostname("localhost").setPort(9200).setProtocol("http");
 
-	private static final long DEFAULT_TIMEOUT = 1000L;
+	private static final long DEFAULT_TIMEOUT = 3000L;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Elasticsearch hosts to be used. You can specify multiple hosts in order to loadbalance the requests. You can also specify no hosts in order to competely disable the Elasticsearch integration.")

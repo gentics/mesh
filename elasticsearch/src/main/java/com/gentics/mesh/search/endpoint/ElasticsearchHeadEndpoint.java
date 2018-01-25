@@ -30,7 +30,25 @@ public class ElasticsearchHeadEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void registerEndPoints() {
+		addRedirectionHandler();
 		addStaticHandler();
+	}
+
+	private void addRedirectionHandler() {
+		routerStorage.getRootRouter().route("/").method(GET).handler(rc -> {
+			rc.response().setStatusCode(302);
+			rc.response().headers().set("Location", "/" + basePath + "/");
+			rc.response().end();
+		});
+		route().method(GET).handler(rc -> {
+			if ("/elastichead".equals(rc.request().path())) {
+				rc.response().setStatusCode(302);
+				rc.response().headers().set("Location", "/" + basePath + "/");
+				rc.response().end();
+			} else {
+				rc.next();
+			}
+		});
 	}
 
 	public void addStaticHandler() {

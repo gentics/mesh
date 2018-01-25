@@ -23,6 +23,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NStringEntity;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -46,6 +47,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.engine.DocumentMissingException;
+import org.elasticsearch.rest.RestStatus;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -335,8 +337,8 @@ public class ElasticSearchProvider implements SearchProvider {
 									sub.onError(e1);
 								}
 							} else {
-								sub.onError(e);
 								log.error("Error while creating index {" + indexName + "}", e);
+								sub.onError(e);
 							}
 						}
 
@@ -418,13 +420,16 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Exception e) {
-					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
-						sub.onComplete();
-					} else {
-						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]", e);
-						sub.onError(e);
+					if (e instanceof ElasticsearchStatusException) {
+						ElasticsearchStatusException se = (ElasticsearchStatusException) e;
+						if (ignoreMissingDocumentError && RestStatus.NOT_FOUND.equals(se.status())) {
+							sub.onComplete();
+							return;
+						}
 					}
+					log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+							+ "[ms]", e);
+					sub.onError(e);
 				}
 			});
 		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}"));
