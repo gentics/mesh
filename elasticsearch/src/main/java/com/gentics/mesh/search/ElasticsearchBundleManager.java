@@ -38,8 +38,17 @@ public final class ElasticsearchBundleManager {
 
 		String esPath = esDir.getAbsolutePath();
 		String javaHome = System.getenv("JAVA_HOME");
-		String javaBin = new File(javaHome, "bin/java").getAbsolutePath();
+		if (javaHome == null) {
+			throw new FileNotFoundException("Could not find java installation. The 'JAVA_HOME' environment variable was not set.");
+		}
 
+		String javaBinPath = "bin/java";
+		if (isWindows()) {
+			javaBinPath = "bin/java.exe";
+		}
+		String javaBin = new File(javaHome, javaBinPath).getAbsolutePath();
+
+		// Directly start the java process
 		builder.command(javaBin, "-Xms1g", "-Xmx1g", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
 				"-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+AlwaysPreTouch", "-server", "-Xss1m", "-Djava.awt.headless=true", "-Dfile.encoding=UTF-8",
 				"-Djna.nosys=true", "-XX:-OmitStackTraceInFastThrow", "-Dio.netty.noUnsafe=true", "-Dio.netty.noKeySetOptimization=true",
@@ -65,6 +74,11 @@ public final class ElasticsearchBundleManager {
 			}
 		}).start();
 		return p;
+	}
+
+	private static boolean isWindows() {
+		String os = System.getProperty("os.name");
+		return os != null && os.toLowerCase().startsWith("windows");
 	}
 
 	public static void unzip(String zipClasspath, String outdir) throws FileNotFoundException, IOException, ZipException {

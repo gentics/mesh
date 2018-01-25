@@ -142,9 +142,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Init the classes / indices
 		DatabaseHelper.init(db);
 
+		// TODO replace this logic with the differential ES sync
+
 		// 1. Drop all indices
 		log.info("Clearing all indices..");
-		searchProvider.clear();
+		searchProvider.clear().blockingAwait();
+
 		log.info("Clearing indices completed.");
 
 		// 2. Recreate indices + mappings and reindex the documents
@@ -266,7 +269,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				initLocalData(true);
 			}
 
-
 			boolean active = false;
 			while (!active) {
 				log.info("Waiting for hazelcast to become active");
@@ -287,7 +289,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			if (startOrientServer) {
 				db.startServer();
 			}
-
 
 		}
 

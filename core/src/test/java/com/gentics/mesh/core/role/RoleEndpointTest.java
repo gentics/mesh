@@ -428,7 +428,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		}
 
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 		call(() -> client().deleteRole(extraRoleUuid));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		assertThat(dummySearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);

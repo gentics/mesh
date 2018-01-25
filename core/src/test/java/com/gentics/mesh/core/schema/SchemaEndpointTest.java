@@ -134,7 +134,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
 
-			dummySearchProvider().clear();
+			dummySearchProvider().clear().blockingAwait();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
 			// Only schemas which are not in use can be delete and also removed from the index
 			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);

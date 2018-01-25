@@ -29,18 +29,20 @@ public interface SearchProvider {
 	 * Explicitly refresh one or more indices (making the content indexed since the last refresh searchable).
 	 * 
 	 * @param indices
+	 *            Indices to refresh
+	 * @return Completable for the action
 	 */
-	void refreshIndex(String... indices);
+	Completable refreshIndex(String... indices);
 
 	/**
 	 * Create a search index with index information.
 	 * 
 	 * @param info
 	 *            Index information which includes index name, mappings and settings.
+	 * @return Completable for the action
 	 */
 	Completable createIndex(IndexInfo info);
 
-	// TODO add a good response instead of void. We need this in order to handle correct logging?
 	/**
 	 * Update the document.
 	 * 
@@ -116,9 +118,11 @@ public interface SearchProvider {
 	void reset();
 
 	/**
-	 * Delete all indices.
+	 * Delete all indices which are managed by mesh.
+	 * 
+	 * @return Completable for the clear action
 	 */
-	void clear();
+	Completable clear();
 
 	/**
 	 * Delete the given index and don't fail if the index is not existing.
@@ -127,19 +131,19 @@ public interface SearchProvider {
 	 *            Name of the index which should be deleted
 	 * @return
 	 */
-	default Completable deleteIndex(String indexName) {
-		return deleteIndex(indexName, false);
+	default Completable deleteIndex(String... indexName) {
+		return deleteIndex(false, indexName);
 	}
 
 	/**
-	 * Delete the given index.
+	 * Delete the given indices.
 	 * 
-	 * @param indexName
-	 *            Name of the index which should be deleted
 	 * @param failOnMissingIndex
+	 * @param indexNames
+	 *            Names of the indices which should be deleted
 	 * @return
 	 */
-	Completable deleteIndex(String indexName, boolean failOnMissingIndex);
+	Completable deleteIndex(boolean failOnMissingIndex, String... indexNames);
 
 	/**
 	 * Returns the search provider vendor name.

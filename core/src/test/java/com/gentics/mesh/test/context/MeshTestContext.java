@@ -26,7 +26,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.util.TestUtils;
@@ -48,7 +48,7 @@ public class MeshTestContext extends TestWatcher {
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
-	private DummySearchProvider dummySearchProvider;
+	private TrackingSearchProvider dummySearchProvider;
 	private Vertx vertx;
 
 	protected int port;
@@ -104,9 +104,9 @@ public class MeshTestContext extends TestWatcher {
 					closeClient();
 				}
 				if (settings.useElasticsearch()) {
-					meshDagger.searchProvider().clear();
+					meshDagger.searchProvider().clear().blockingAwait();
 				} else {
-					meshDagger.dummySearchProvider().clear();
+					meshDagger.trackingSearchProvider().clear();
 				}
 				resetDatabase(settings);
 			}
@@ -157,7 +157,7 @@ public class MeshTestContext extends TestWatcher {
 			client.login().blockingGet();
 		}
 		if (dummySearchProvider != null) {
-			dummySearchProvider.clear();
+			dummySearchProvider.clear().blockingAwait();
 		}
 	}
 
@@ -237,7 +237,7 @@ public class MeshTestContext extends TestWatcher {
 		return dataProvider;
 	}
 
-	public DummySearchProvider getDummySearchProvider() {
+	public TrackingSearchProvider getDummySearchProvider() {
 		return dummySearchProvider;
 	}
 
@@ -342,8 +342,8 @@ public class MeshTestContext extends TestWatcher {
 		meshDagger = DaggerTestMeshComponent.create();
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
-		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
-			dummySearchProvider = meshDagger.dummySearchProvider();
+		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
+			dummySearchProvider = meshDagger.trackingSearchProvider();
 		}
 		try {
 			meshDagger.boot().init(Mesh.mesh(), false, options, null);

@@ -5,7 +5,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.test.util.TestUtils;
 
@@ -25,8 +25,8 @@ public class MeshComponentNoDBConfiguration {
 
 	@Provides
 	@Singleton
-	public DummySearchProvider dummySearchProvider() {
-		return new DummySearchProvider();
+	public TrackingSearchProvider dummySearchProvider() {
+		return new TrackingSearchProvider();
 	}
 
 	@Provides

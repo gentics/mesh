@@ -1618,7 +1618,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("slug", FieldUtil.createStringField(newSlug));
 
 		// 3. Invoke update
-		searchProvider().clear();
+		searchProvider().clear().blockingAwait();
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("en", "de")));
 		// Assert updater information
 		assertEquals("Dummy Firstname", restNode.getEditor().getFirstName());
@@ -1680,7 +1680,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String releaseUuid = tx(() -> project().getLatestRelease().getUuid());
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
-		searchProvider().clear();
+		searchProvider().clear().blockingAwait();
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
 		assertEquals("de", restNode.getLanguage());
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages

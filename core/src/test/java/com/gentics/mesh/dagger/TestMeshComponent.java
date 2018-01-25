@@ -19,11 +19,12 @@ import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.FakeConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
+import com.gentics.mesh.dagger.module.TestSearchProviderModule;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -39,7 +40,7 @@ import com.gentics.mesh.storage.BinaryStorage;
 import dagger.Component;
 
 @Singleton
-@Component(modules = { MeshModule.class, BindModule.class, FakeConsoleModule.class })
+@Component(modules = { MeshModule.class, TestSearchProviderModule.class, BindModule.class, FakeConsoleModule.class })
 public interface TestMeshComponent extends MeshComponent {
 
 	BootstrapInitializer boot();
@@ -54,8 +55,8 @@ public interface TestMeshComponent extends MeshComponent {
 
 	BinaryStorage binaryStorage();
 
-	default DummySearchProvider dummySearchProvider() {
-		return (DummySearchProvider) searchProvider();
+	default TrackingSearchProvider trackingSearchProvider() {
+		return (TrackingSearchProvider) searchProvider();
 	}
 
 	MeshAuthHandler authenticationHandler();

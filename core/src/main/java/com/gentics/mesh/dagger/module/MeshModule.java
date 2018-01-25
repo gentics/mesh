@@ -12,14 +12,10 @@ import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
-import com.gentics.mesh.search.DummySearchProvider;
-import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.BinaryStorageService;
 
@@ -139,24 +135,5 @@ public class MeshModule {
 		return handler;
 	}
 
-	/**
-	 * Return the configured search provider.
-	 * 
-	 * @return
-	 */
-	@Provides
-	@Singleton
-	public static SearchProvider searchProvider() {
-		MeshOptions options = Mesh.mesh().getOptions();
-		SearchProvider searchProvider = null;
-		// Automatically select the dummy search provider if no directory or
-		// options have been specified
-		if (options.getSearchOptions().getHosts().isEmpty()) {
-			searchProvider = new DummySearchProvider();
-		} else {
-			searchProvider = new ElasticSearchProvider();
-		}
-		return searchProvider;
-	}
 
 }

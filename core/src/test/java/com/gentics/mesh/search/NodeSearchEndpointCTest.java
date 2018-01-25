@@ -189,7 +189,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 		// Add the user to the admin group - this way the user is in fact an admin.
 		tx(() -> user().addGroup(groups().get("admin")));
-		searchProvider().refreshIndex();
+		searchProvider().refreshIndex().blockingAwait();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		assertMessage(message, "search_admin_reindex_invoked");

@@ -14,11 +14,20 @@ import com.gentics.mesh.etc.config.MeshOptions;
 @GenerateDocumentation
 public class ElasticSearchOptions {
 
-	private final ElasticSearchHost DEFAULT_HOST = new ElasticSearchHost().setHostname("localhost").setPort(9200).setProtocol("http");
+	/**
+	 * Default ES connection details.
+	 */
+	private static final ElasticSearchHost DEFAULT_HOST = new ElasticSearchHost().setHostname("localhost").setPort(9200).setProtocol("http");
+
+	private static final long DEFAULT_TIMEOUT = 1000L;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Elasticsearch hosts to be used. You can specify multiple hosts in order to loadbalance the requests.")
+	@JsonPropertyDescription("Elasticsearch hosts to be used. You can specify multiple hosts in order to loadbalance the requests. You can also specify no hosts in order to competely disable the Elasticsearch integration.")
 	private List<ElasticSearchHost> hosts = new ArrayList<>();
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Timeout for Elasticsearch operations. Default: " + DEFAULT_TIMEOUT + "ms")
+	private Long timeout = DEFAULT_TIMEOUT;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether to deploy and start the included Elasticsearch server.")
@@ -45,9 +54,31 @@ public class ElasticSearchOptions {
 	 * Set the flag to start the embedded ES server.
 	 * 
 	 * @param startEmbeddedES
+	 * @return Fluent API
 	 */
-	public void setStartEmbeddedES(boolean startEmbeddedES) {
+	public ElasticSearchOptions setStartEmbeddedES(boolean startEmbeddedES) {
 		this.startEmbeddedES = startEmbeddedES;
+		return this;
+	}
+
+	/**
+	 * Return the operation timeout in milliseconds.
+	 * 
+	 * @return
+	 */
+	public Long getTimeout() {
+		return timeout;
+	}
+
+	/**
+	 * Set the operation timeout.
+	 * 
+	 * @param timeout
+	 * @return Fluent API
+	 */
+	public ElasticSearchOptions setTimeout(Long timeout) {
+		this.timeout = timeout;
+		return this;
 	}
 
 	public void validate(MeshOptions meshOptions) {

@@ -33,7 +33,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 			user().addGroup(groups().get("admin"));
 			tx.success();
 		}
-		searchProvider().refreshIndex();
+		searchProvider().refreshIndex().blockingAwait();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		assertMessage(message, "search_admin_reindex_invoked");

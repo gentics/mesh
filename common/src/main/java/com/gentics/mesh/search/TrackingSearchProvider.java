@@ -10,14 +10,14 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.json.JsonObject;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 
 /**
- * Dummy search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
+ * Search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
  */
-public class DummySearchProvider implements SearchProvider {
+public class TrackingSearchProvider implements SearchProvider {
 
 	private Map<String, JsonObject> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();
@@ -37,7 +37,8 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void refreshIndex(String... indices) {
+	public Completable refreshIndex(String... indices) {
+		return Completable.complete();
 	}
 
 	@Override
@@ -94,23 +95,26 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteIndex(String indexName, boolean failOnMissingIndex) {
-		dropIndexEvents.add(indexName);
+	public Completable deleteIndex(boolean failOnMissingIndex, String... indexNames) {
+		for (String indexName : indexNames) {
+			dropIndexEvents.add(indexName);
+		}
 		return Completable.complete();
 	}
 
 	@Override
 	public void reset() {
-		clear();
+		clear().blockingAwait();
 	}
 
 	@Override
-	public void clear() {
+	public Completable clear() {
 		updateEvents.clear();
 		deleteEvents.clear();
 		storeEvents.clear();
 		dropIndexEvents.clear();
 		createIndexEvents.clear();
+		return Completable.complete();
 	}
 
 	@Override

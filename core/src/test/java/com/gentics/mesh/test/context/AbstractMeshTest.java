@@ -83,7 +83,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		MeshInternal.get().searchProvider().clear();
+		MeshInternal.get().searchProvider().clear().blockingAwait();
 		for (IndexHandler<?> handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
 			handler.init().blockingAwait();
 			handler.reindexAll().blockingAwait();

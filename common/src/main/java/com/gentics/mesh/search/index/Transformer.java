@@ -20,7 +20,7 @@ public interface Transformer<T> {
 	JsonObject toDocument(T object);
 
 	/**
-	 * Create the json document for a permission update.
+	 * Create the JSON document for a permission update.
 	 * 
 	 * @param element
 	 * @return

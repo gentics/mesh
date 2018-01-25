@@ -61,7 +61,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// Now clear all data
-		searchProvider().clear();
+		searchProvider().clear().blockingAwait();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		assertMessage(message, "search_admin_reindex_invoked");

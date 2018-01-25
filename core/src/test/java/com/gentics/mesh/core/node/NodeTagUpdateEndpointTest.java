@@ -105,7 +105,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
 		}
 
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 		request.getTags().clear();
 		request.getTags().add(new TagReference().setName("bla2").setTagFamily("basic"));
 		request.getTags().add(new TagReference().setName("blub3").setTagFamily("colors"));

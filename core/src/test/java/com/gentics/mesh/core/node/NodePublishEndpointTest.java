@@ -76,7 +76,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
 
 		// 3. Publish the created node - It should fail since the parentfolder is not published
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid);
 		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 

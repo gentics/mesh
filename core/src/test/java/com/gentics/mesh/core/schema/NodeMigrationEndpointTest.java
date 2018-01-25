@@ -181,7 +181,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
 		 * must be recorded for the new index.
 		 */
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 		MeshInternal.get().jobWorkerVerticle().stop();
 
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
