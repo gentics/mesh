@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import javax.inject.Singleton;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -49,10 +51,11 @@ import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.engine.DocumentMissingException;
 import org.elasticsearch.rest.RestStatus;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
-import com.gentics.mesh.search.ElasticsearchBundleManager;
+import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -69,6 +72,7 @@ import net.lingala.zip4j.exception.ZipException;
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
  */
+@Singleton
 public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
@@ -81,7 +85,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	// private WorkerExecutor workerPool;
 
-	private Process embeddedESProcess;
+	private ElasticsearchProcessManager processManager = new ElasticsearchProcessManager(Mesh.mesh().getVertx());
 
 	public ElasticSearchProvider() {
 
@@ -108,7 +112,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		if (searchOptions.isStartEmbeddedES()) {
 			try {
-				embeddedESProcess = ElasticsearchBundleManager.start();
+				processManager.start();
 			} catch (IOException | ZipException e) {
 				log.error("Error while starting embedded Elasticsearch server.", e);
 			}
@@ -251,9 +255,9 @@ public class ElasticSearchProvider implements SearchProvider {
 			client.close();
 		}
 
-		if (embeddedESProcess != null) {
+		if (processManager != null) {
 			log.info("Stopping Elasticsearch server.");
-			embeddedESProcess.destroy();
+			processManager.stop();
 		}
 
 		// if (scheduler != null) {
