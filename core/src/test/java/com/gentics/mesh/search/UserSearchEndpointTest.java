@@ -15,7 +15,6 @@ import java.io.IOException;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -27,13 +26,13 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
 	public void testSimpleQuerySearch() throws IOException {
-
 		String username = "testuser42a";
 		try (Tx tx = tx()) {
 			createUser(username);
@@ -246,8 +245,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
-		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()),
-				new PagingParametersImpl().setPerPage(0)));
+		UserListResponse list = call(
+				() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0)));
 		assertEquals(0, list.getData().size());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 	}

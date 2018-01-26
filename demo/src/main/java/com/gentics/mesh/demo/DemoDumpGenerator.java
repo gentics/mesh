@@ -16,7 +16,6 @@ import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -36,6 +35,8 @@ public class DemoDumpGenerator {
 	public void init() throws Exception {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
+		options.getSearchOptions().getHosts().clear();
+		options.getSearchOptions().setStartEmbeddedES(false);
 
 		// Prefix all default directories in order to place them into the dump directory
 		String uploads = "target/dump/" + options.getUploadOptions().getDirectory();
@@ -52,9 +53,8 @@ public class DemoDumpGenerator {
 
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory("target/dump/" + options.getStorageOptions().getDirectory());
-		options.getSearchOptions().setDirectory("target/dump/" + options.getSearchOptions().getDirectory());
 
-		// 2. Setup the java keystore
+		// Setup the java keystore
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		File keyStoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jks");
 		options.getAuthenticationOptions().setKeystorePath(keyStoreFile.getAbsolutePath());
@@ -65,11 +65,10 @@ public class DemoDumpGenerator {
 		options.setNodeName("dumpGenerator");
 		Mesh mesh = Mesh.mesh(options);
 
-		// 1. Setup dagger
+		// Setup dagger
 		MeshComponent meshDagger = MeshInternal.create();
 		BootstrapInitializer boot = meshDagger.boot();
 		boot.init(mesh, false, options, null);
-
 	}
 
 	/**
@@ -79,7 +78,7 @@ public class DemoDumpGenerator {
 	 */
 	public void dump() throws Exception {
 
-		// 4. Initialise demo data
+		// Initialise demo data
 		MeshComponent meshDagger = MeshInternal.get();
 		BootstrapInitializer boot = meshDagger.boot();
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl(), boot);
@@ -87,22 +86,13 @@ public class DemoDumpGenerator {
 
 	}
 
-	private void shutdown() throws MeshConfigurationException, InterruptedException {
-		// Close the elastic search instance
-		SearchProvider searchProvider = MeshInternal.get().searchProvider();
-		if (searchProvider.getClient() !=null) {
-			searchProvider.refreshIndex("_all");
-		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getClient() + "}");
-		}
-		searchProvider.stop();
-		Thread.sleep(5000);
+	private void shutdown() throws MeshConfigurationException, InterruptedException, IOException {
+		Thread.sleep(2000);
 		System.exit(0);
-
 	}
 
 	/**
-	 * Cleanup the dump directories and remove the existing mesh config.
+	 * Cleanup the dump directories and remove the existing mesh configuration.
 	 * 
 	 * @throws IOException
 	 */
@@ -131,7 +121,6 @@ public class DemoDumpGenerator {
 		boot.initOptionalData(true);
 		boot.initPermissions();
 		boot.markChangelogApplied();
-		boot.createSearchIndicesAndMappings();
 
 		// Setup demo data
 		provider.setup();

@@ -98,7 +98,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
-			searchProvider.refreshIndex();
 		});
 	}
 
@@ -111,12 +110,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		} else {
 			String indexName = composeIndexNameFromEntry(entry);
 			String documentId = composeDocumentIdFromEntry(entry);
-			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).doOnComplete(() -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Updated object in index.");
-				}
-				searchProvider.refreshIndex();
-			});
+			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).andThen(searchProvider
+					.refreshIndex(indexName)).doOnComplete(() -> {
+						if (log.isDebugEnabled()) {
+							log.debug("Updated object in index.");
+						}
+					});
 		}
 	}
 
@@ -194,7 +193,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable init() {
-		// 1. Create the indices
+		// Create the indices
 		Map<String, IndexInfo> indexInfo = getIndices();
 		Set<Completable> obs = new HashSet<>();
 
@@ -205,19 +204,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			obs.add(searchProvider.createIndex(info));
 		}
 		return Completable.merge(obs);
-	}
-
-	@Override
-	public Completable clearIndex() {
-		Set<Completable> obs = new HashSet<>();
-		// Iterate over all indices which the handler is responsible for and
-		// clear all of them.
-		getIndices().keySet().forEach(index -> obs.add(searchProvider.clearIndex(index)));
-		if (obs.isEmpty()) {
-			return Completable.complete();
-		} else {
-			return Completable.merge(obs);
-		}
 	}
 
 	@Override

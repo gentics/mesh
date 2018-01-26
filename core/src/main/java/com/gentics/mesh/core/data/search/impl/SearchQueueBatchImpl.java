@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.context.impl.MoveEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
 import com.gentics.mesh.search.index.common.DropIndexEntryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
@@ -71,6 +72,9 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Inject
 	DropIndexHandler commonHandler;
+	
+	@Inject
+	SearchProvider searchProvider;
 
 	@Inject
 	public SearchQueueBatchImpl() {
@@ -268,7 +272,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				})).toList().flatMapCompletable(it -> Completable.concat(it)));
 			}
 
-			return obs.doOnComplete(() -> {
+			return obs.andThen(searchProvider.refreshIndex()).doOnComplete(() -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Handled all search queue items.");
 				}

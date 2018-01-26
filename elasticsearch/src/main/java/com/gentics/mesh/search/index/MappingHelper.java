@@ -14,16 +14,17 @@ public final class MappingHelper {
 
 	// Field Types
 	public static final String OBJECT = "object";
+	public static final String KEYWORD = "keyword";
 	public static final String NESTED = "nested";
-	public static final String STRING = "string";
+	public static final String TEXT = "text";
 	public static final String BOOLEAN = "boolean";
 	public static final String DATE = "date";
 	public static final String LONG = "long";
 	public static final String DOUBLE = "double";
 
 	// Index Types
-	public static final String NOT_ANALYZED = "not_analyzed";
-	public static final String ANALYZED = "analyzed";
+	public static final boolean DONT_INDEX_VALUE = false;
+	public static final boolean INDEX_VALUE = true;
 
 	// Analyzer
 	public static final String TRIGRAM_ANALYZER = "trigrams";
@@ -33,41 +34,39 @@ public final class MappingHelper {
 	 * 
 	 * @param type
 	 *            Type of the field
-	 * @param indexType
-	 *            Index type of the field
+	 * @param analyzeField
+	 *            Flag which indicates whether the field should be analyzed
 	 * @param analyzer
 	 *            Name of the analyzer to be used
 	 * @return
 	 */
-	public static JsonObject fieldType(String type, String indexType, String analyzer) {
+	public static JsonObject fieldType(String type, boolean analyzeField, String analyzer) {
 		JsonObject indexFieldInfo = new JsonObject();
 		indexFieldInfo.put("type", type);
-		indexFieldInfo.put("index", indexType);
+		indexFieldInfo.put("index", analyzeField);
 		indexFieldInfo.put("analyzer", analyzer);
 		return indexFieldInfo;
 	}
 
 	/**
-	 * Return a trigram analyzer type for strings.
+	 * Return a trigram analyzer type for text.
 	 * 
 	 * @return
 	 */
-	public static JsonObject trigramStringType() {
-		return addRawInfo(fieldType(STRING, ANALYZED, TRIGRAM_ANALYZER), STRING);
+	public static JsonObject trigramTextType() {
+		return addRawInfo(fieldType(TEXT, INDEX_VALUE, TRIGRAM_ANALYZER));
 	}
 
 	/**
 	 * Add the raw field info to the given mapping element.
 	 *
 	 * @param fieldInfo
-	 * @param mappingType
-	 *
 	 * @return The modified field info object
 	 */
-	public static JsonObject addRawInfo(JsonObject fieldInfo, String mappingType) {
+	public static JsonObject addRawInfo(JsonObject fieldInfo) {
 		JsonObject rawInfo = new JsonObject();
-		rawInfo.put("type", mappingType);
-		rawInfo.put("index", "not_analyzed");
+		rawInfo.put("type", KEYWORD);
+		rawInfo.put("index", INDEX_VALUE);
 		JsonObject rawFieldInfo = new JsonObject();
 		rawFieldInfo.put("raw", rawInfo);
 		fieldInfo.put("fields", rawFieldInfo);
@@ -81,9 +80,12 @@ public final class MappingHelper {
 	 * @return
 	 */
 	public static JsonObject notAnalyzedType(String type) {
+		if (type.equals(TEXT)) {
+			throw new RuntimeException("Type {text} is invalid for this operation. You most likly want {keyword}");
+		}
 		JsonObject indexFieldInfo = new JsonObject();
 		indexFieldInfo.put("type", type);
-		indexFieldInfo.put("index", NOT_ANALYZED);
+		indexFieldInfo.put("index", INDEX_VALUE);
 		return indexFieldInfo;
 	}
 

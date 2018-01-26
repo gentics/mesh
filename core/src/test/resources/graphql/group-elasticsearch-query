@@ -1,6 +1,6 @@
 {
 	# [$.data.groups.elements.length()=1]
-	groups(query: "{\"query\":{\"query_string\":{\"query\":\"admin\"}}}") {
+	groups(query: "{\"query\":{\"query_string\":{\"query\":\"admin\", \"type\": \"phrase\"}}}") {
 		elements {
 			uuid
 			name
@@ -8,7 +8,7 @@
 	}
 
 	# [$.data.empty.elements.length()=0]
-	empty: groups(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+	empty: groups(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\", \"type\": \"phrase\"}}}") {
 		elements {
 			uuid
 			name

@@ -97,14 +97,14 @@ public class MeshImpl implements Mesh {
 			createLockFile();
 		}
 
-		// Also trigger the reindex if the index folder could not be found.
-		String indexDir = options.getSearchOptions().getDirectory();
-		if (indexDir != null) {
-			File folder = new File(indexDir);
-			if (!folder.exists() || folder.listFiles().length == 0) {
-				forceReindex = true;
-			}
-		}
+//		// Also trigger the reindex if the index folder could not be found.
+//		String indexDir = options.getSearchOptions().getDirectory();
+//		if (indexDir != null) {
+//			File folder = new File(indexDir);
+//			if (!folder.exists() || folder.listFiles().length == 0) {
+//				forceReindex = true;
+//			}
+//		}
 
 		if (isFirstApril()) {
 			printAprilFoolJoke();

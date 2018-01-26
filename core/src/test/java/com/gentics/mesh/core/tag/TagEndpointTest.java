@@ -224,7 +224,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
-			dummySearchProvider().clear();
+			dummySearchProvider().clear().blockingAwait();
 			nodes = tag.getNodes(project().getLatestRelease());
 			tx.success();
 		}
@@ -401,7 +401,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 		String projectUuid = db().tx(() -> project().getUuid());
 
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getName());
 		assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));

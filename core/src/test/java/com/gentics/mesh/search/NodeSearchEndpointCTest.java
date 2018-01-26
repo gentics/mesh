@@ -46,8 +46,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// from 100 to 9000
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 100, 9000), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 100, 9000),
+				new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 	}
 
@@ -62,8 +62,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// from 9 to 1
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 900, 1500), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 900, 1500),
+				new VersioningParametersImpl().draft()));
 		assertEquals("We could expect to find the node with the given seed number field since the value {" + numberValue
 				+ "} is between the search range.", 1, response.getData().size());
 	}
@@ -92,18 +92,18 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// filesize
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.filesize", 100, 300), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.filesize", 100, 300),
+				new VersioningParametersImpl().draft()));
 		assertEquals("Exactly two nodes should be found for the given filesize range.", 2, response.getData().size());
 
 		// width
-		response = call(
-				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParametersImpl()
+				.draft()));
 		assertEquals("Exactly one node should be found for the given image width range.", 1, response.getData().size());
 
 		// height
-		response = call(
-				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.height", 100, 300), new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.height", 100, 300), new VersioningParametersImpl()
+				.draft()));
 		assertEquals("Exactly one node should be found for the given image height range.", 1, response.getData().size());
 
 		// dominantColor
@@ -128,8 +128,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// out of bounds
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 1000, 90), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 1000, 90),
+				new VersioningParametersImpl().draft()));
 		assertEquals("No node should be found since the range is invalid.", 0, response.getData().size());
 	}
 
@@ -141,7 +141,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			tx.success();
 		}
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
@@ -189,7 +189,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 		// Add the user to the admin group - this way the user is in fact an admin.
 		tx(() -> user().addGroup(groups().get("admin")));
-		searchProvider().refreshIndex();
+		searchProvider().refreshIndex().blockingAwait();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		assertMessage(message, "search_admin_reindex_invoked");
@@ -202,8 +202,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	private void addRawToSchemaField() {
 		// Update the schema and enable the addRaw field
 		String schemaUuid = tx(() -> content().getSchemaContainer().getUuid());
-		SchemaUpdateRequest request = tx(
-				() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(),
+				SchemaUpdateRequest.class));
 		request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
 
 		tx(() -> group().addRole(roles().get("admin")));
@@ -223,7 +223,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		String newString = "ABCDEFGHI";
 		String nodeUuid = db().tx(() -> content("concorde").getUuid());
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 
@@ -233,12 +233,12 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new PagingParametersImpl().setPage(1).setPerPage(2),
-				new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new PagingParametersImpl().setPage(1)
+				.setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newString), new PagingParametersImpl().setPage(1).setPerPage(2),
-				new VersioningParametersImpl().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newString), new PagingParametersImpl().setPage(1)
+				.setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for '" + newString + "' after update", 1, response.getData().size());
 	}
 
@@ -248,9 +248,9 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2),
-						new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de", "en"), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl().setPage(1)
+				.setPerPage(2), new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de", "en"), new VersioningParametersImpl()
+						.draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -265,9 +265,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2),
-						new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
+				.setPage(1).setPerPage(2), new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {

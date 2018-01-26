@@ -9,6 +9,14 @@ CAUTION: The ElasticSearch server will no longer be embedded. Instead an externa
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+[[v0.15.0]]
+== 0.15.0 (TBD)
+
+CAUTION: The embedded Elasticsearch was removed and replaced by a connector to an external Elasticsearch server. It is highly recommended to verify existing queries due to breaking changes between Elasticsearch version 2.4 and 6.1.
+Please check the Elasticsearch changelog: link:https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-6.1.0.html[Elasticsearch Changelog]
+
+
+
 [[v0.14.1]]
 == 0.14.1 (19.01.2018)
 

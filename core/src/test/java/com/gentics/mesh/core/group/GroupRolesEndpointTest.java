@@ -3,8 +3,8 @@ package com.gentics.mesh.core.group;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -26,6 +25,7 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class GroupRolesEndpointTest extends AbstractMeshTest {
@@ -70,7 +70,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		searchProvider().clear();
+		searchProvider().clear().blockingAwait();
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		// The role is not updated since it is not changing
@@ -123,7 +123,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			role().grantPermissions(extraRole, READ_PERM);
 			tx.success();
 			assertEquals(2, group().getRoles().size());
-			searchProvider().clear();
+			searchProvider().clear().blockingAwait();
 		}
 
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));

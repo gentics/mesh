@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
+import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,8 +18,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 /**
  * A schema container is a graph element which stores the JSON schema data.
  */
-public interface SchemaContainer
-		extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, SchemaContainer, SchemaContainerVersion>, IndexableElement {
+public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, SchemaContainer, SchemaContainerVersion>,
+		IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -33,7 +34,7 @@ public interface SchemaContainer
 	 * @return
 	 */
 	static String composeIndexName() {
-		return TYPE.toLowerCase();
+		return INDEX_PREFIX + TYPE.toLowerCase();
 	}
 
 	/**

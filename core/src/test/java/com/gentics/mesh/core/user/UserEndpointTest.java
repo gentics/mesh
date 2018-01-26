@@ -501,7 +501,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), uuid);
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
 			assertThat(restUser).matches(updateRequest);
@@ -1159,7 +1159,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			dummySearchProvider().clear();
+			dummySearchProvider().clear().blockingAwait();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");

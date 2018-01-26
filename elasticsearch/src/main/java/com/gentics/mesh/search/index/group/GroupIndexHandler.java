@@ -69,7 +69,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return Collections.singleton(Group.TYPE);
+		return Collections.singleton(Group.composeIndexName());
 	}
 
 	@Override

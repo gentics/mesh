@@ -1,6 +1,6 @@
 {
 	# [$.data.nodes.elements.length()=1]
-	nodes(query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\"}}}") {
+	nodes(query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
 		elements {
 			node {uuid}
 			language
@@ -8,7 +8,7 @@
 	}
 
 	# [$.data.empty.elements.length()=0]
-	empty: nodes(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+	empty: nodes(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\", \"type\": \"phrase\"}}}") {
 		elements {
 			uuid
 		}

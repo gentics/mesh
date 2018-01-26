@@ -1,39 +1,48 @@
 package com.gentics.mesh.search;
 
+import java.io.IOException;
 import java.util.Map;
-
-import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.json.JsonObject;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.
  */
 public interface SearchProvider {
 
-	static String DEFAULT_TYPE = "default";
+	/**
+	 * Prefix for indices created by mesh.
+	 */
+	static final String INDEX_PREFIX = "mesh-";
+
+	/**
+	 * Default document type for all indices. Note that the type handling will be removed in future ES versions.
+	 */
+	static final String DEFAULT_TYPE = "default";
 
 	/**
 	 * Explicitly refresh one or more indices (making the content indexed since the last refresh searchable).
 	 * 
 	 * @param indices
+	 *            Indices to refresh
+	 * @return Completable for the action
 	 */
-	void refreshIndex(String... indices);
+	Completable refreshIndex(String... indices);
 
 	/**
 	 * Create a search index with index information.
 	 * 
 	 * @param info
 	 *            Index information which includes index name, mappings and settings.
+	 * @return Completable for the action
 	 */
 	Completable createIndex(IndexInfo info);
 
-	// TODO add a good response instead of void. We need this in order to handle correct logging?
 	/**
 	 * Update the document.
 	 * 
@@ -98,8 +107,10 @@ public interface SearchProvider {
 
 	/**
 	 * Stop the search provider.
+	 * 
+	 * @throws IOException
 	 */
-	void stop();
+	void stop() throws IOException;
 
 	/**
 	 * Reset the search provider.
@@ -107,16 +118,11 @@ public interface SearchProvider {
 	void reset();
 
 	/**
-	 * Clear the given index. This will effectively remove all documents from the index without removing the index itself.
+	 * Delete all indices which are managed by mesh.
 	 * 
-	 * @param indexName
+	 * @return Completable for the clear action
 	 */
-	Completable clearIndex(String indexName);
-
-	/**
-	 * Delete all indices.
-	 */
-	void clear();
+	Completable clear();
 
 	/**
 	 * Delete the given index and don't fail if the index is not existing.
@@ -125,43 +131,19 @@ public interface SearchProvider {
 	 *            Name of the index which should be deleted
 	 * @return
 	 */
-	default Completable deleteIndex(String indexName) {
-		return deleteIndex(indexName, false);
+	default Completable deleteIndex(String... indexName) {
+		return deleteIndex(false, indexName);
 	}
 
 	/**
-	 * Delete the given index.
+	 * Delete the given indices.
 	 * 
-	 * @param indexName
-	 *            Name of the index which should be deleted
 	 * @param failOnMissingIndex
+	 * @param indexNames
+	 *            Names of the indices which should be deleted
 	 * @return
 	 */
-	Completable deleteIndex(String indexName, boolean failOnMissingIndex);
-
-	/**
-	 * Delete all documents which were found using the query.
-	 * 
-	 * @param query
-	 *            Search query
-	 * @param indices
-	 *            Indices to be searched for documents
-	 * @return Single which emits the amount of deleted documents
-	 */
-	Single<Integer> deleteDocumentsViaQuery(String query, String... indices);
-
-	/**
-	 * Delete all documents which were found using the query.
-	 * 
-	 * @param query
-	 *            Search query
-	 * @param indices
-	 *            Indices to be searched for documents
-	 * @return Single which emits the amount of deleted nodes
-	 */
-	default Single<Integer> deleteDocumentsViaQuery(JSONObject query, String... indices) {
-		return deleteDocumentsViaQuery(query.toString(), indices);
-	}
+	Completable deleteIndex(boolean failOnMissingIndex, String... indexNames);
 
 	/**
 	 * Returns the search provider vendor name.

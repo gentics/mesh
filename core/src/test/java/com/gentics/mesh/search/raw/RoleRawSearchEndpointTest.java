@@ -3,7 +3,6 @@ package com.gentics.mesh.search.raw;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
@@ -28,7 +27,6 @@ public class RoleRawSearchEndpointTest extends AbstractMeshTest {
 		String query = getSimpleTermQuery("name.raw", roleName);
 
 		JsonObject response = call(() -> client().searchRolesRaw(query));
-		assertNotNull(response);
 		assertThat(response).has("hits.hits[0]._id", role.getUuid(), "The correct element was not found.");
 	}
 }

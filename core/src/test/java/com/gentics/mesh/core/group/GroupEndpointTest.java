@@ -77,7 +77,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
 			assertElement(boot().groupRoot(), restGroup.getUuid(), true);

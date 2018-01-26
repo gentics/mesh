@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -44,16 +43,11 @@ public class AdminIndexHandler {
 	public void handleReindex(InternalActionContext ac) {
 		db.asyncTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
-				searchProvider.clear();
+				return searchProvider.clear().andThen(Observable.fromIterable(registry.getHandlers())
 
-				// Iterate over all index handlers update the index
-				for (IndexHandler<?> handler : registry.getHandlers()) {
-					// Create all indices and mappings
-					handler.init().blockingAwait();
-					searchProvider.refreshIndex();
-					handler.reindexAll().blockingAwait();
-				}
-				return Single.just(message(ac, "search_admin_reindex_invoked"));
+						.flatMapCompletable(handler -> handler.init().andThen(handler.reindexAll()))
+
+						.andThen(searchProvider.refreshIndex()).andThen(Single.just(message(ac, "search_admin_reindex_invoked"))));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

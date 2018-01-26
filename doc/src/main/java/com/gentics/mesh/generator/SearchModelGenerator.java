@@ -42,7 +42,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -64,7 +64,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-	private DummySearchProvider provider;
+	private TrackingSearchProvider provider;
 
 	private static MeshComponent meshDagger;
 
@@ -91,7 +91,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
-		options.getSearchOptions().setDirectory(null);
 		options.setNodeName("exampleGenerator");
 		Mesh.mesh(options);
 	}
@@ -107,7 +106,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		// outputDir.mkdirs();
 
 		meshDagger = MeshInternal.create();
-		provider = (DummySearchProvider) meshDagger.searchProvider();
+		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
 			writeNodeDocumentExample();

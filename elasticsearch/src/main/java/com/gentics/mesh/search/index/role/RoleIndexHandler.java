@@ -70,7 +70,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return Collections.singleton(Role.TYPE);
+		return Collections.singleton(Role.composeIndexName());
 	}
 
 	@Override

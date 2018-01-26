@@ -181,7 +181,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
 		 * must be recorded for the new index.
 		 */
-		dummySearchProvider().clear();
+		dummySearchProvider().clear().blockingAwait();
 		MeshInternal.get().jobWorkerVerticle().stop();
 
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
@@ -367,7 +367,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 		assertThat(dummySearchProvider()).hasEvents(size + size + 1, size + size, 2, 2);
 		for (JsonObject mapping : dummySearchProvider().getCreateIndexEvents().values()) {
-			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "string",
+			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "keyword",
 					"The mapping should include a raw field for the teaser field");
 			assertThat(mapping).hasNot("$.mapping.default.properties.fields.properties.title.fields.raw",
 					"The mapping should not include a raw field for the title field");

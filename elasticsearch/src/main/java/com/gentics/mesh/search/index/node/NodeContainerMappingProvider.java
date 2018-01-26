@@ -1,20 +1,20 @@
 package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
+import static com.gentics.mesh.search.index.MappingHelper.INDEX_VALUE;
+import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;
 import static com.gentics.mesh.search.index.MappingHelper.LONG;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NESTED;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.TEXT;
 import static com.gentics.mesh.search.index.MappingHelper.TRIGRAM_ANALYZER;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
-import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -64,8 +64,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject projectMapping = new JsonObject();
 		projectMapping.put("type", OBJECT);
 		JsonObject projectMappingProps = new JsonObject();
-		projectMappingProps.put("name", trigramStringType());
-		projectMappingProps.put("uuid", notAnalyzedType(STRING));
+		projectMappingProps.put("name", trigramTextType());
+		projectMappingProps.put("uuid", notAnalyzedType(KEYWORD));
 		projectMapping.put("properties", projectMappingProps);
 		typeProperties.put("project", projectMapping);
 
@@ -73,8 +73,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject tagsMapping = new JsonObject();
 		tagsMapping.put("type", NESTED);
 		JsonObject tagsMappingProps = new JsonObject();
-		tagsMappingProps.put("name", trigramStringType());
-		tagsMappingProps.put("uuid", notAnalyzedType(STRING));
+		tagsMappingProps.put("name", trigramTextType());
+		tagsMappingProps.put("uuid", notAnalyzedType(KEYWORD));
 		tagsMapping.put("properties", tagsMappingProps);
 		typeProperties.put("tags", tagsMapping);
 
@@ -82,21 +82,21 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		typeProperties.put("tagFamilies", new JsonObject().put("type", "object").put("dynamic", true));
 
 		typeMapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
-				"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(STRING)))).add(new JsonObject().put(
+				"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(KEYWORD)))).add(new JsonObject().put(
 						"tagFamilyTags", new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
-								new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramStringType()).put("uuid",
-										notAnalyzedType(STRING)))))));
+								new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramTextType()).put("uuid",
+										notAnalyzedType(KEYWORD)))))));
 
 		// .language
-		typeProperties.put("language", notAnalyzedType(STRING));
+		typeProperties.put("language", notAnalyzedType(KEYWORD));
 
 		// .schema
 		JsonObject schemaMapping = new JsonObject();
 		schemaMapping.put("type", OBJECT);
 		JsonObject schemaMappingProperties = new JsonObject();
-		schemaMappingProperties.put("uuid", notAnalyzedType(STRING));
-		schemaMappingProperties.put("name", trigramStringType());
-		schemaMappingProperties.put("version", notAnalyzedType(STRING));
+		schemaMappingProperties.put("uuid", notAnalyzedType(KEYWORD));
+		schemaMappingProperties.put("name", trigramTextType());
+		schemaMappingProperties.put("version", notAnalyzedType(KEYWORD));
 		schemaMapping.put("properties", schemaMappingProperties);
 		typeProperties.put("schema", schemaMapping);
 
@@ -104,8 +104,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject displayFieldMapping = new JsonObject();
 		displayFieldMapping.put("type", OBJECT);
 		JsonObject displayFieldMappingProperties = new JsonObject();
-		displayFieldMappingProperties.put("key", trigramStringType());
-		displayFieldMappingProperties.put("value", trigramStringType());
+		displayFieldMappingProperties.put("key", trigramTextType());
+		displayFieldMappingProperties.put("value", trigramTextType());
 		displayFieldMapping.put("properties", displayFieldMappingProperties);
 		typeProperties.put("displayField", displayFieldMapping);
 
@@ -113,7 +113,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject parentNodeMapping = new JsonObject();
 		parentNodeMapping.put("type", OBJECT);
 		JsonObject parentNodeMappingProperties = new JsonObject();
-		parentNodeMappingProperties.put("uuid", notAnalyzedType(STRING));
+		parentNodeMappingProperties.put("uuid", notAnalyzedType(KEYWORD));
 		parentNodeMapping.put("properties", parentNodeMappingProperties);
 		typeProperties.put("parentNode", parentNodeMapping);
 
@@ -147,8 +147,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		switch (type) {
 		case STRING:
 		case HTML:
-			fieldInfo.put("type", STRING);
-			fieldInfo.put("index", ANALYZED);
+			fieldInfo.put("type", TEXT);
+			fieldInfo.put("index", INDEX_VALUE);
 			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
 			if (customIndexOptions != null) {
 				fieldInfo.put("fields", customIndexOptions);
@@ -165,13 +165,13 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			JsonObject binaryProps = new JsonObject();
 			fieldInfo.put("properties", binaryProps);
 
-			binaryProps.put("sha512sum", notAnalyzedType(STRING));
-			binaryProps.put("filename", notAnalyzedType(STRING));
+			binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
+			binaryProps.put("filename", notAnalyzedType(KEYWORD));
 			binaryProps.put("filesize", notAnalyzedType(LONG));
-			binaryProps.put("mimeType", notAnalyzedType(STRING));
+			binaryProps.put("mimeType", notAnalyzedType(KEYWORD));
 			binaryProps.put("width", notAnalyzedType(LONG));
 			binaryProps.put("height", notAnalyzedType(LONG));
-			binaryProps.put("dominantColor", notAnalyzedType(STRING));
+			binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
 			break;
 		case NUMBER:
 			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
@@ -179,16 +179,16 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			fieldInfo.put("type", DOUBLE);
 			break;
 		case NODE:
-			fieldInfo.put("type", STRING);
-			fieldInfo.put("index", NOT_ANALYZED);
+			fieldInfo.put("type", KEYWORD);
+			fieldInfo.put("index", INDEX_VALUE);
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
 				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 				switch (listFieldSchema.getListType()) {
 				case "node":
-					fieldInfo.put("type", STRING);
-					fieldInfo.put("index", NOT_ANALYZED);
+					fieldInfo.put("type", KEYWORD);
+					fieldInfo.put("index", INDEX_VALUE);
 					break;
 				case "date":
 					fieldInfo.put("type", DATE);
@@ -213,13 +213,13 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 					// fieldProps.put(field.getName(), fieldInfo);
 					break;
 				case "string":
-					fieldInfo.put("type", STRING);
+					fieldInfo.put("type", TEXT);
 					if (customIndexOptions != null) {
 						fieldInfo.put("fields", customIndexOptions);
 					}
 					break;
 				case "html":
-					fieldInfo.put("type", STRING);
+					fieldInfo.put("type", TEXT);
 					if (customIndexOptions != null) {
 						fieldInfo.put("fields", customIndexOptions);
 					}
@@ -239,8 +239,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			micronodeMappingProperties.put("microschema", microschemaMapping);
 
 			JsonObject microschemaMappingProperties = new JsonObject();
-			microschemaMappingProperties.put(NAME_KEY, trigramStringType());
-			microschemaMappingProperties.put(UUID_KEY, notAnalyzedType(STRING));
+			microschemaMappingProperties.put(NAME_KEY, trigramTextType());
+			microschemaMappingProperties.put(UUID_KEY, notAnalyzedType(KEYWORD));
 			microschemaMapping.put("properties", microschemaMappingProperties);
 			fieldInfo.put("dynamic", true);
 

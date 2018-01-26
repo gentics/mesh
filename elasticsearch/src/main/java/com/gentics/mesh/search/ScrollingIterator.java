@@ -1,10 +1,12 @@
 package com.gentics.mesh.search;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 
@@ -15,7 +17,7 @@ public class ScrollingIterator implements Iterator<SearchHit> {
 
 	private Iterator<SearchHit> currentIterator;
 	private SearchResponse currentResponse;
-	private Client client;
+	private RestHighLevelClient client;
 
 	/**
 	 * Create a new iterator.
@@ -25,7 +27,7 @@ public class ScrollingIterator implements Iterator<SearchHit> {
 	 * @param scrollResp
 	 *            Current scroll which will provide the initial results and the scroll reference id.
 	 */
-	public ScrollingIterator(Client client, SearchResponse scrollResp) {
+	public ScrollingIterator(RestHighLevelClient client, SearchResponse scrollResp) {
 		this.currentIterator = scrollResp.getHits().iterator();
 		this.currentResponse = scrollResp;
 		this.client = client;
@@ -49,7 +51,13 @@ public class ScrollingIterator implements Iterator<SearchHit> {
 	 * Load a new search response using the scrollId of the previous scroll.
 	 */
 	private void advanceScroll() {
-		currentResponse = client.prepareSearchScroll(currentResponse.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
+		SearchScrollRequest request = new SearchScrollRequest(currentResponse.getScrollId());
+		request.scroll(TimeValue.timeValueMinutes(1));
+		try {
+			currentResponse = client.searchScroll(request);
+		} catch (IOException e) {
+			throw new RuntimeException("Error while handling scroll request", e);
+		}
 		currentIterator = currentResponse.getHits().iterator();
 	}
 

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_DELETED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
+import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,8 +27,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project
-		extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, IndexableElement {
+public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex,
+		IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -47,7 +48,7 @@ public interface Project
 	 * @return
 	 */
 	static String composeIndexName() {
-		return TYPE.toLowerCase();
+		return INDEX_PREFIX + TYPE.toLowerCase();
 	}
 
 	/**

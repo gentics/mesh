@@ -64,14 +64,14 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class MeshAssertions extends Assertions {
 
-	public static DummySearchProviderAssert assertThat(DummySearchProvider actual) {
+	public static DummySearchProviderAssert assertThat(TrackingSearchProvider actual) {
 		return new DummySearchProviderAssert(actual);
 	}
 

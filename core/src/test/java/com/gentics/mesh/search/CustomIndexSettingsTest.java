@@ -54,7 +54,6 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testValidationErrorOnCreate() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
-		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().createSchema(request), BAD_REQUEST, "schema_error_index_validation",
 				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
@@ -64,7 +63,6 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testValidationErrorOnUpdate() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
-		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		SchemaResponse response = call(() -> client().createSchema(request));
 
@@ -79,7 +77,6 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testSuccessfulValidation() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
-		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		call(() -> client().createSchema(request));
 	}
@@ -92,16 +89,16 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
 		request.setUrlFields("text");
-		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		SchemaResponse response = call(() -> client().createSchema(request));
 
 		// Update settings and expect new version
 		SchemaUpdateRequest updateRequest = JsonUtil.readValue(request.toJson(), SchemaUpdateRequest.class);
-		updateRequest.setElasticsearch(new JsonObject().put("somebogus", "value2"));
+		updateRequest.setElasticsearch(new JsonObject().put("number_of_shards", 3));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 		SchemaResponse response2 = call(() -> client().findSchemaByUuid(response.getUuid()));
-		assertEquals("value2", response2.getElasticsearch().getString("somebogus"));
+
+		assertEquals(3, response2.getElasticsearch().getInteger("number_of_shards").intValue());
 		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(), response2
 				.getVersion());
 		assertThat(response2.getUrlFields()).containsOnly("text");
@@ -152,7 +149,6 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaValidationError() {
 		SchemaCreateRequest schema = new SchemaCreateRequest();
 		schema.setName("settingsTest");
-		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		schema.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 
 		SchemaValidationResponse response = call(() -> client().validateSchema(schema));
@@ -302,7 +298,6 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaValidationSuccess() {
 		SchemaCreateRequest schema = new SchemaCreateRequest();
 		schema.setName("settingsTest");
-		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		SchemaValidationResponse response = call(() -> client().validateSchema(schema));
 		assertNotNull(response.getElasticsearch());
 		assertEquals(ValidationStatus.VALID, response.getStatus());

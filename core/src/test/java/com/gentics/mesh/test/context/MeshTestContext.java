@@ -8,6 +8,8 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.Wait;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
@@ -18,13 +20,13 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchHost;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.util.TestUtils;
@@ -40,10 +42,13 @@ public class MeshTestContext extends TestWatcher {
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
+
+	public static GenericContainer elasticsearch;
+
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
-	private DummySearchProvider dummySearchProvider;
+	private TrackingSearchProvider dummySearchProvider;
 	private Vertx vertx;
 
 	protected int port;
@@ -77,6 +82,7 @@ public class MeshTestContext extends TestWatcher {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
@@ -88,6 +94,9 @@ public class MeshTestContext extends TestWatcher {
 			if (description.isSuite()) {
 				removeDataDirectory();
 				removeConfigDirectory();
+				if (elasticsearch != null && elasticsearch.isRunning()) {
+					elasticsearch.stop();
+				}
 			} else {
 				cleanupFolders();
 				if (settings.startServer()) {
@@ -95,9 +104,9 @@ public class MeshTestContext extends TestWatcher {
 					closeClient();
 				}
 				if (settings.useElasticsearch()) {
-					meshDagger.searchProvider().clear();
+					meshDagger.searchProvider().clear().blockingAwait();
 				} else {
-					meshDagger.dummySearchProvider().clear();
+					meshDagger.trackingSearchProvider().clear();
 				}
 				resetDatabase(settings);
 			}
@@ -148,7 +157,7 @@ public class MeshTestContext extends TestWatcher {
 			client.login().blockingGet();
 		}
 		if (dummySearchProvider != null) {
-			dummySearchProvider.clear();
+			dummySearchProvider.clear().blockingAwait();
 		}
 	}
 
@@ -221,9 +230,6 @@ public class MeshTestContext extends TestWatcher {
 		for (File folder : tmpFolders) {
 			FileUtils.deleteDirectory(folder);
 		}
-		// if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
-		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
-		// }
 		PermissionStore.invalidate(false);
 	}
 
@@ -231,7 +237,7 @@ public class MeshTestContext extends TestWatcher {
 		return dataProvider;
 	}
 
-	public DummySearchProvider getDummySearchProvider() {
+	public TrackingSearchProvider getDummySearchProvider() {
 		return dummySearchProvider;
 	}
 
@@ -288,14 +294,23 @@ public class MeshTestContext extends TestWatcher {
 			directory.deleteOnExit();
 			directory.mkdirs();
 		}
+		// Increase timeout to high load during testing
+		options.getSearchOptions().setTimeout(10_000L);
 		options.getStorageOptions().setDirectory(graphPath);
-		ElasticSearchOptions searchOptions = new ElasticSearchOptions();
-		if (settings.useElasticsearch()) {
-			searchOptions.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
-		} else {
-			searchOptions.setDirectory(null);
+		if (settings.useElasticsearchContainer()) {
+			options.getSearchOptions().setStartEmbeddedES(false);
+			options.getSearchOptions().getHosts().clear();
+			if (settings.useElasticsearch()) {
+				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2").withEnv("discovery.type", "single-node")
+						.withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
+				if (!elasticsearch.isRunning()) {
+					elasticsearch.start();
+				}
+				elasticsearch.waitingFor(Wait.forHttp("/"));
+				options.getSearchOptions().getHosts()
+						.add(new ElasticSearchHost().setPort(elasticsearch.getMappedPort(9200)).setHostname("localhost").setProtocol("http"));
+			}
 		}
-		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
 		return options;
 	}
@@ -329,8 +344,8 @@ public class MeshTestContext extends TestWatcher {
 		meshDagger = DaggerTestMeshComponent.create();
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
-		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
-			dummySearchProvider = meshDagger.dummySearchProvider();
+		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
+			dummySearchProvider = meshDagger.trackingSearchProvider();
 		}
 		try {
 			meshDagger.boot().init(Mesh.mesh(), false, options, null);

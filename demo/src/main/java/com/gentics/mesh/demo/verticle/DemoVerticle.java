@@ -61,7 +61,12 @@ public class DemoVerticle extends AbstractVerticle {
 			});
 		} else {
 			log.info("Demo graph was already setup once. Not invoking demo data setup.");
-			startFuture.complete();
+			vertx.executeBlocking(bc -> {
+				demoDataProvider.invokeFullIndex();
+				bc.complete();
+			}, false, rh -> {
+				startFuture.complete();
+			});
 		}
 
 	}

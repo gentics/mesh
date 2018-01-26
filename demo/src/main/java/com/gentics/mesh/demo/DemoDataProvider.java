@@ -131,7 +131,10 @@ public class DemoDataProvider {
 		log.info("Demo data setup completed");
 	}
 
-	private void invokeFullIndex() {
+	/**
+	 * Invoke the reindex action to update the search index.
+	 */
+	public void invokeFullIndex() {
 		boot.reindexAll();
 	}
 

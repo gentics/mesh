@@ -51,13 +51,13 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		}
 
 		MeshResponse<SchemaListResponse> future = client()
-				.searchSchemas(getSimpleQuery("folder"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
+				.searchSchemas(getSimpleQuery("name", "folder"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
 		assertEquals(1, response.getData().size());
 
-		future = client().searchSchemas(getSimpleQuery("blub"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
+		future = client().searchSchemas(getSimpleQuery("name", "blub"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();

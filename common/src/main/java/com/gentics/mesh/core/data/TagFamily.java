@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_CREATED;
 import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_DELETED;
 import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_UPDATED;
+import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
 
 import java.util.Objects;
 
@@ -41,6 +42,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	static String composeIndexName(String projectUuid) {
 		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
 		StringBuilder indexName = new StringBuilder();
+		indexName.append(INDEX_PREFIX);
 		indexName.append(TYPE.toLowerCase());
 		indexName.append("-").append(projectUuid);
 		return indexName.toString();

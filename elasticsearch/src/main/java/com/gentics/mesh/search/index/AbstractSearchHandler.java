@@ -4,8 +4,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -17,13 +20,20 @@ import java.util.stream.Collectors;
 
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchModule;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -42,9 +52,11 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.MeshRestChannel;
 import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
@@ -101,14 +113,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 		}
 
-		JsonObject newQuery = new JsonObject()
-			.put("bool", new JsonObject()
-				.put("filter", new JsonObject()
-					.put("terms", new JsonObject()
-						.put("_roleUuids", roleUuids)
-					)
-				)
-			);
+		JsonObject newQuery = new JsonObject().put("bool",
+				new JsonObject().put("filter", new JsonObject().put("terms", new JsonObject().put("_roleUuids", roleUuids))));
 
 		// Wrap the original query in a nested bool query in order check the role perms
 		JsonObject originalQuery = userJson.getJsonObject("query");
@@ -118,46 +124,61 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		if (userJson.getLong("size") == null) {
-			userJson.put("size", Integer.MAX_VALUE);
+			userJson.put("size", 8000);
 		}
+
+		// TODO filter the node language for a node search request
 
 		return userJson;
 	}
 
 	@Override
 	public void rawQuery(InternalActionContext ac) {
-		Client client = searchProvider.getClient();
+		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
+			ac.fail(error(SERVICE_UNAVAILABLE, "search_error_no_elasticsearch_configured"));
+			return;
+		}
 
+		RestHighLevelClient client = searchProvider.getClient();
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "}");
 		}
 		Set<String> indices = indexHandler.getSelectedIndices(ac);
 
-		SearchRequestBuilder builder = null;
+		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
 		try {
-			JsonObject query = prepareSearchQuery(ac, searchQuery);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
+			// Modify the query and add permission checks
+			JsonObject queryJson = prepareSearchQuery(ac, searchQuery);
+			if (log.isDebugEnabled()) {
+				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
+			}
+			// Setup the request
+			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
+			searchRequest.source(parseQuery(queryJson.toString()));
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
 		}
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
 				ac.send(response.toString(), OK);
 			}
 
-			public void onFailure(Throwable e) {
-				log.error("Search query failed", e);
-				try {
-					JsonObject json = convertToJson(e);
-					ac.send(json.encodePrettily(), HttpResponseStatus.BAD_REQUEST);
-				} catch (Exception e1) {
-					log.error("Error while converting es error to response", e1);
-					throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
+			public void onFailure(Exception e) {
+				if (e instanceof TimeoutException) {
+					ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
+				} else {
+					log.error("Search query failed", e);
+					try {
+						JsonObject json = convertToJson(e);
+						ac.send(json.encodePrettily(), HttpResponseStatus.BAD_REQUEST);
+					} catch (Exception e1) {
+						log.error("Error while converting es error to response", e1);
+						throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
+					}
 				}
 			}
 		});
@@ -167,6 +188,10 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	@Override
 	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
+		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
+			ac.fail(error(SERVICE_UNAVAILABLE, "search_error_no_elasticsearch_configured"));
+			return;
+		}
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
 		if (pagingInfo.getPage() < 1) {
@@ -177,25 +202,31 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		RL listResponse = classOfRL.newInstance();
-
-		Client client = searchProvider.getClient();
-
+		RestHighLevelClient client = searchProvider.getClient();
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 		}
 
 		Set<String> indices = indexHandler.getSelectedIndices(ac);
-		SearchRequestBuilder builder = null;
+		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
 		try {
-			JsonObject query = prepareSearchQuery(ac, searchQuery);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
+			// Add permission checks to the query
+			JsonObject queryJson = prepareSearchQuery(ac, searchQuery);
+			if (log.isDebugEnabled()) {
+				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
+			}
+			// Prepare the request
+			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
+			searchRequest.source(parseQuery(queryJson.toString()));
 		} catch (Exception e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Query failed {" + searchQuery + "}");
+			}
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
 		}
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
@@ -227,6 +258,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						if (y == null) {
 							return;
 						}
+						// TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES.
 						// Check whether the language matches up
 						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
 								|| requestedLanguageTags.contains(y.v2());
@@ -287,17 +319,19 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 
 			@Override
-			public void onFailure(Throwable e) {
-				log.error("Search query failed", e);
-				GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
-				if (e instanceof ElasticsearchException) {
+			public void onFailure(Exception e) {
+				if (e instanceof TimeoutException) {
+					ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
+				} else if (e instanceof ElasticsearchException) {
+					GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
+					log.error("Search query failed", e);
 					int i = 0;
 					for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
 						error.setProperty("cause-" + i, simpleMessage(e1));
 						i++;
 					}
+					ac.fail(error);
 				}
-				ac.fail(error);
 			}
 		});
 
@@ -316,34 +350,38 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		return "No ElasticsearchException found";
 	}
 
-	private static JsonObject convertToJson(Throwable e) throws Exception {
+	private static JsonObject convertToJson(Exception e) throws Exception {
 		// Create a mocked channel and convert the throwable to json
 		MeshRestChannel channel = new MeshRestChannel(null, true);
 		BytesRestResponse response = new BytesRestResponse(channel, e);
 		BytesReference ref = response.content();
-		return new JsonObject(new String(ref.array()));
+		return new JsonObject(new String(ref.utf8ToString()));
 	}
 
 	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
 			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		Client client = searchProvider.getClient();
-
+		RestHighLevelClient client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
 		}
 
-		SearchRequestBuilder builder = null;
+		Set<String> indices = indexHandler.getSelectedIndices(ac);
+		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
 		try {
+			// Add permission checks to the query
 			JsonObject queryJson = prepareSearchQuery(ac, query);
-			Set<String> indices = indexHandler.getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryJson.toString());
+			if (log.isDebugEnabled()) {
+				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
+			}
+			// Prepare the request
+			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
+			searchRequest.source(parseQuery(queryJson.toString()));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
@@ -367,7 +405,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 
 			@Override
-			public void onFailure(Throwable e) {
+			public void onFailure(Exception e) {
 				log.error("Search query failed", e);
 				future.completeExceptionally(e);
 			}
@@ -379,4 +417,27 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		return indexHandler;
 	}
 
+	/**
+	 * Parses an Elasticsearch query string to the SearchSourceBuilder object, which is used to send queries to ES.
+	 * 
+	 * @param query
+	 *            The query to be sent to ES
+	 * @return The SearchSourceBuilder object
+	 * @throws IOException
+	 *             if the query could not be parsed
+	 */
+	protected SearchSourceBuilder parseQuery(String query) {
+		try {
+			SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+			SearchModule searchModule = new SearchModule(Settings.EMPTY, false, Collections.emptyList());
+			try (XContentParser parser = XContentFactory.xContent(XContentType.JSON)
+					.createParser(new NamedXContentRegistry(searchModule.getNamedXContents()), query)) {
+				searchSourceBuilder.parseXContent(parser);
+			}
+			return searchSourceBuilder;
+
+		} catch (IOException e) {
+			throw new RuntimeException("Error while parsing query", e);
+		}
+	}
 }

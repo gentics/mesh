@@ -41,7 +41,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		String newContent = "urschnell";
 
 		// "urschnell" not found in published nodes
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		String uuid = db().tx(() -> content("concorde").getUuid());
@@ -51,7 +51,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
 		// "supersonic" found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// // Add the user to the admin group - this way the user is in fact an admin.
@@ -61,12 +61,12 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// Now clear all data
-		searchProvider().clear();
+		searchProvider().clear().blockingAwait();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		assertMessage(message, "search_admin_reindex_invoked");
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 	}
@@ -80,7 +80,8 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
 		// "urschnell" not found in published nodes
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent)));
+		System.out.println(response.toJson());
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		String uuid = db().tx(() -> content("concorde").getUuid());
@@ -90,7 +91,9 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
 		// "supersonic" found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().published()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
+				.published()));
+		System.out.println(response.toJson());
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// Change draft version of content
@@ -101,18 +104,20 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
 		// "supersonic" still found, "urschnell" not found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().published()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
+				.published()));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParametersImpl().published()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent), new VersioningParametersImpl()
+				.published()));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish content "urschnell"
 		call(() -> client().publishNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid())));
 
 		// "supersonic" no longer found, but "urschnell" found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

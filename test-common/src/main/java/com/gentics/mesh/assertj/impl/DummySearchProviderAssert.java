@@ -19,13 +19,13 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 
 import io.vertx.core.json.JsonObject;
 
-public class DummySearchProviderAssert extends AbstractAssert<DummySearchProviderAssert, DummySearchProvider> {
+public class DummySearchProviderAssert extends AbstractAssert<DummySearchProviderAssert, TrackingSearchProvider> {
 
-	public DummySearchProviderAssert(DummySearchProvider actual) {
+	public DummySearchProviderAssert(TrackingSearchProvider actual) {
 		super(actual, DummySearchProviderAssert.class);
 	}
 

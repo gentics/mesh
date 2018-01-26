@@ -113,10 +113,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				for (Release release : project.getReleaseRoot().findAllIt()) {
 					// Each release specific index has also document type specific mappings
 					for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
-						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
-								containerVersion.getUuid(), DRAFT);
-						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
-								containerVersion.getUuid(), PUBLISHED);
+						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+								.getUuid(), DRAFT);
+						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+								.getUuid(), PUBLISHED);
 						if (log.isDebugEnabled()) {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "");
 							log.debug("Adding index to map of known idices {" + publishIndexName + "");
@@ -143,8 +143,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				Release release = ac.getRelease();
 				// Locate all schema versions which need to be taken into consideration when choosing the indices
 				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
-					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(),
-							ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
+					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(), ContainerType
+							.forVersion(ac.getVersioningParameters().getVersion())));
 				}
 			} else {
 				// The project was not specified. Maybe a global search wants to know which indices must be searched.
@@ -177,8 +177,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
-					.doOnNext(indexName -> searchProvider.refreshIndex(indexName)).ignoreElements();
+			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().ignoreElements();
 		});
 	}
 
@@ -263,8 +262,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getReleaseUuid();
-		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable()
-				.andThen(deleteContainer(context.getOldContainer(), releaseUuid, type));
+		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
+				releaseUuid, type));
 	}
 
 	/**
@@ -335,13 +334,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					}
 				}
 			}
-			return Observable.merge(obs).toList().map(list -> {
+			return Observable.merge(obs).toList().flatMapCompletable(list -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Updated object in index.");
 				}
-				searchProvider.refreshIndex(list.stream().toArray(String[]::new));
-				return list;
-			}).toCompletable();
+				return searchProvider.refreshIndex(list.stream().toArray(String[]::new));
+			});
 		}
 	}
 

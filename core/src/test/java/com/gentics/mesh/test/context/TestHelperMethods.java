@@ -74,7 +74,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
@@ -190,7 +190,7 @@ public interface TestHelperMethods {
 		return getTestContext().getClient();
 	}
 
-	default DummySearchProvider dummySearchProvider() {
+	default TrackingSearchProvider dummySearchProvider() {
 		return getTestContext().getDummySearchProvider();
 	}
 

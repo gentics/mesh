@@ -135,11 +135,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			container = container.getNextVersion();
 		}
 
-		if (container == null) {
-			throw error(BAD_REQUEST, "error_field_container_without_node");
-		} else {
-			return container.getParentNode();
-		}
+		return container.getParentNode();
 	}
 
 	@Override
