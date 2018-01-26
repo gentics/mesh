@@ -85,7 +85,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	// private WorkerExecutor workerPool;
 
-	private ElasticsearchProcessManager processManager = new ElasticsearchProcessManager(Mesh.mesh().getVertx());
+	private ElasticsearchProcessManager processManager;
 
 	public ElasticSearchProvider() {
 
@@ -169,6 +169,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public ElasticSearchProvider init(MeshOptions options) {
 		this.options = options;
+		processManager = new ElasticsearchProcessManager(Mesh.mesh().getVertx());
 		return this;
 	}
 

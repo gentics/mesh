@@ -30,9 +30,9 @@ public class ServerRunner {
 
 		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);
-		options.getHttpServerOptions().setCorsAllowCredentials(true);
-		options.getHttpServerOptions().setEnableCors(true);
-		options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
+		// options.getHttpServerOptions().setCorsAllowCredentials(true);
+		// options.getHttpServerOptions().setEnableCors(true);
+		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		// options.getStorageOptions().setStartServer(true);
 		// options.getClusterOptions().setClusterName("test");
 		// options.getClusterOptions().setEnabled(true);

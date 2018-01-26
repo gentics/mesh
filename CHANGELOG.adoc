@@ -22,7 +22,7 @@ icon:plus[] GraphQL: It is now possible to read the focal point information and 
 [[v0.14.1]]
 == 0.14.1 (19.01.2018)
 
-icon:check[] Core: Fixed a deadlock sitation which could occur when handling more than 20 image resize requests in parallel. Image resize operations will now utilize a dedicated thread pool.
+icon:check[] Core: Fixed a deadlock situation which could occur when handling more than 20 image resize requests in parallel. Image resize operations will now utilize a dedicated thread pool.
 
 icon:check[] Core: Fixed a bug which caused permission inconsistencies when deleting a group from the system.
 

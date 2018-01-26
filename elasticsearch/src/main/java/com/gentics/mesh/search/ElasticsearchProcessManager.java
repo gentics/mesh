@@ -23,6 +23,11 @@ public final class ElasticsearchProcessManager {
 
 	private static final String RESOURCE_NAME = "elasticsearch-6.1.2";
 
+	/**
+	 * Check in the interval for the embedded process.
+	 */
+	private static final int WATCH_DOG_INTERVAL = 10;
+
 	private Process p;
 
 	private Vertx vertx;
@@ -63,7 +68,8 @@ public final class ElasticsearchProcessManager {
 
 	public void startWatchDog() {
 		if (watchDogTimerId == null) {
-			this.watchDogTimerId = vertx.setPeriodic(5000, rh -> {
+			log.info("Starting watchdog for Elasticsearch process");
+			this.watchDogTimerId = vertx.setPeriodic(WATCH_DOG_INTERVAL * 1000, rh -> {
 				if (p != null) {
 					if (!p.isAlive()) {
 						log.info("Detected stopped server. Restarting..");
@@ -122,6 +128,9 @@ public final class ElasticsearchProcessManager {
 		return esDir;
 	}
 
+	/**
+	 * Register the stop call on JVM shutdown.
+	 */
 	private void registerShutdownHook() {
 		Thread closeChildThread = new Thread(this::stop);
 		Runtime.getRuntime().addShutdownHook(closeChildThread);
@@ -132,15 +141,15 @@ public final class ElasticsearchProcessManager {
 	 */
 	private void redirectLogOutput() {
 		new Thread(() -> {
-			try {
-				IOUtils.copy(p.getInputStream(), System.out);
+			try (InputStream ins = p.getInputStream()) {
+				IOUtils.copy(ins, System.out);
 			} catch (IOException e1) {
 				log.debug("Error while reading output from process.", e1);
 			}
 		}).start();
 		new Thread(() -> {
-			try {
-				IOUtils.copy(p.getErrorStream(), System.err);
+			try (InputStream ins = p.getErrorStream()) {
+				IOUtils.copy(ins, System.err);
 			} catch (IOException e) {
 				log.debug("Error while reading output from process.", e);
 			}
