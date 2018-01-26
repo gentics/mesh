@@ -126,6 +126,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 		Binary binary = getBinary();
 		if (binary != null) {
+			restModel.setBinaryUuid(binary.getUuid());
 			restModel.setFileSize(binary.getSize());
 			restModel.setSha512sum(binary.getSHA512Sum());
 			restModel.setWidth(binary.getImageWidth());

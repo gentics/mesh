@@ -37,12 +37,27 @@
 					}
 				}
 				binary {
+					# [$.data.node.fields.binary.binaryUuid=<is-uuid>]
+					binaryUuid
+					# [$.data.node.fields.binary.sha512sum=<is-not-null>]
 					sha512sum
+					# [$.data.node.fields.binary.height=10]
 					height
+					# [$.data.node.fields.binary.width=20]
 					width
+					# [$.data.node.fields.binary.mimeType=image/jpeg]
 					mimeType
+					# [$.data.node.fields.binary.dominantColor=00FF00]
 					dominantColor
+					# [$.data.node.fields.binary.fileSize=2048]
 					fileSize
+
+					focalPoint {
+						# [$.data.node.fields.binary.focalPoint.x=0.2]
+						x
+						# [$.data.node.fields.binary.focalPoint.y=0.3]
+						y
+					}
 				}
 				stringList
 				dateList

@@ -6,6 +6,7 @@ import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLFloat;
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -75,6 +77,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLObjectType createBinaryFieldType() {
 		Builder type = newObject().name(BINARY_FIELD_TYPE_NAME).description("Binary field");
 
+		// .binaryUuid
+		type.field(newFieldDefinition().name("binaryUuid").description("UUID of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
+			BinaryGraphField field = fetcher.getSource();
+			Binary binary = field.getBinary();
+			return binary == null ? 0 : binary.getUuid();
+		}));
+
 		// .fileName
 		type.field(newFieldDefinition().name("fileName").description("Filename of the uploaded file.").type(GraphQLString));
 
@@ -82,14 +91,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
 			Binary binary = field.getBinary();
-			return binary == null ? 0: binary.getImageWidth();
+			return binary == null ? 0 : binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
 			Binary binary = field.getBinary();
-			return binary == null ? 0: binary.getImageHeight();
+			return binary == null ? 0 : binary.getImageHeight();
 		}));
 
 		// .sha512sum
@@ -113,6 +122,33 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				newFieldDefinition().name("dominantColor").description("Computed image dominant color").type(GraphQLString).dataFetcher(fetcher -> {
 					BinaryGraphField field = fetcher.getSource();
 					return field.getImageDominantColor();
+				}));
+
+		// .focalPoint
+		type.field(
+				newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType()).dataFetcher(fetcher -> {
+					BinaryGraphField field = fetcher.getSource();
+					return field.getImageFocalPoint();
+				}));
+
+		return type.build();
+	}
+
+	public GraphQLObjectType createFocalPointType() {
+		Builder type = newObject().name("FocalPoint").description("Focal point");
+
+		// .x
+		type.field(newFieldDefinition().name("x").description("X-axis factor of the focal point. Left is 0 and middle is 0.5.").type(GraphQLFloat)
+				.dataFetcher(fetcher -> {
+					FocalPoint point = fetcher.getSource();
+					return point.getX();
+				}));
+
+		// .y
+		type.field(newFieldDefinition().name("y").description("Y-axis factor of the focal point. Top is 0 and middle is 0.5.").type(GraphQLFloat)
+				.dataFetcher(fetcher -> {
+					FocalPoint point = fetcher.getSource();
+					return point.getY();
 				}));
 
 		return type.build();

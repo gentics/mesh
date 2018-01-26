@@ -9,6 +9,21 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 public interface BinaryField extends Field {
 
 	/**
+	 * Uuid of the used binary data.
+	 * 
+	 * @return
+	 */
+	String getBinaryUuid();
+
+	/**
+	 * Set the Uuid of the used binary data.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	BinaryField setBinaryUuid(String uuid);
+
+	/**
 	 * Return the binary filesize.
 	 * 
 	 * @return Filesize in bytes

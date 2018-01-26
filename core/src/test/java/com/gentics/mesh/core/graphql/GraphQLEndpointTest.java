@@ -36,6 +36,7 @@ import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -275,7 +276,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Binary binary = MeshInternal.get().boot().binaryRoot().create("hashsumvalue", 1L);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
-					.setMimeType("image/jpeg");
+					.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));;
 
 			// stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");

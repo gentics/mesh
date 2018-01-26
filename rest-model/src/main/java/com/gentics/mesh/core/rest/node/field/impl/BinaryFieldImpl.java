@@ -16,6 +16,10 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("Uuid of the binary data. Two fields which share the same binary data will also share the same Uuid.")
+	private String binaryUuid;
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("File name of the binary data. This information can also be use to locate the node via the webroot API. The segment field must be set accordingly.")
 	private String fileName;
 
@@ -46,6 +50,17 @@ public class BinaryFieldImpl implements BinaryField {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.")
 	private FocalPoint focalPoint;
+
+	@Override
+	public String getBinaryUuid() {
+		return binaryUuid;
+	}
+
+	@Override
+	public BinaryField setBinaryUuid(String uuid) {
+		this.binaryUuid = uuid;
+		return this;
+	}
 
 	@Override
 	public long getFileSize() {

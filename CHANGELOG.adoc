@@ -15,7 +15,9 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 CAUTION: The embedded Elasticsearch was removed and replaced by a connector to an external Elasticsearch server. It is highly recommended to verify existing queries due to breaking changes between Elasticsearch version 2.4 and 6.1.
 Please check the Elasticsearch changelog: link:https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-6.1.0.html[Elasticsearch Changelog]
 
+icon:plus[] REST: The UUID of the referenced binary data will now also be listed for binary fields. Fields which share the same binary data will also share the same binary UUID.
 
+icon:plus[] GraphQL: It is now possible to read the focal point information and binary uuid of binary fields.
 
 [[v0.14.1]]
 == 0.14.1 (19.01.2018)
