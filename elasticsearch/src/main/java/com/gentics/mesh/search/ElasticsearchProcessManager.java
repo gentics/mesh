@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
 
@@ -23,6 +24,7 @@ public final class ElasticsearchProcessManager {
 
 	private static final String RESOURCE_NAME = "elasticsearch-6.1.2";
 
+	private static AtomicBoolean stopCalled = new AtomicBoolean(false);
 	/**
 	 * Check in the interval for the embedded process.
 	 */
@@ -61,6 +63,8 @@ public final class ElasticsearchProcessManager {
 				"org.elasticsearch.bootstrap.Elasticsearch");
 
 		this.p = builder.start();
+		// Mark the process as being started.
+		stopCalled.set(false);
 		registerShutdownHook();
 		redirectLogOutput();
 		return p;
@@ -160,6 +164,12 @@ public final class ElasticsearchProcessManager {
 	 * Stop the created Elasticsearch process and also the watchdog to prevent any restarts.
 	 */
 	public void stop() {
+		boolean wasAlreadyCalled = stopCalled.getAndSet(true);
+		if (wasAlreadyCalled) {
+			// Don't handle stop twice
+			return;
+		}
+
 		// Stop the watchdog. We don't want it to restart the server
 		stopWatchDog();
 		sleep(1);
@@ -168,15 +178,17 @@ public final class ElasticsearchProcessManager {
 			p.destroy();
 			sleep(1);
 			for (int i = 0; i < 15; i++) {
-				if (!p.isAlive()) {
+				if (p == null || !p.isAlive()) {
 					p = null;
 					return;
 				}
 				sleep(1);
 			}
 			log.info("Elasticsearch still running. Killing it..");
-			p.destroyForcibly();
-			p = null;
+			if (p != null) {
+				p.destroyForcibly();
+				p = null;
+			}
 		}
 	}
 

@@ -5,8 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
-import java.util.concurrent.atomic.AtomicReference;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -17,14 +15,11 @@ import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.file.AsyncFile;
 import io.vertx.reactivex.core.file.FileSystem;
-import io.vertx.reactivex.core.streams.Pump;
 
 @Singleton
 public class LocalBinaryStorage extends AbstractBinaryStorage {

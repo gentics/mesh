@@ -20,7 +20,6 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;

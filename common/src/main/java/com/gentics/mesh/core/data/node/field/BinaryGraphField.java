@@ -4,7 +4,6 @@ import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.image.Point;
 
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
