@@ -650,15 +650,4 @@ public class ElasticSearchProvider implements SearchProvider {
 		}).onErrorComplete();
 	}
 
-	// private CompletableSource withTimeoutAndLog(Completable c) {
-	// Long timeout = getOptions().getTimeout();
-	// return c.timeout(timeout, TimeUnit.MILLISECONDS).doOnError(error -> {
-	// if (error instanceof TimeoutException) {
-	// log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached.");
-	// } else {
-	// log.error(error);
-	// }
-	// }).onErrorComplete();
-	// }
-
 }
