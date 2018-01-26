@@ -1,11 +1,5 @@
 package com.gentics.mesh.search;
 
-import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.rest.AbstractRestChannel;
-import org.elasticsearch.rest.RestChannel;
-import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.rest.RestResponse;
-
 /**
  * Wrapper for an elasticsearch rest channel.
  */

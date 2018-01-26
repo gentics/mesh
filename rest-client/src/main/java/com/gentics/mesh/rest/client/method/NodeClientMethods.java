@@ -168,7 +168,9 @@ public interface NodeClientMethods {
 	 * Load multiple tags that were assigned to a given node.
 	 * 
 	 * @param projectName
+	 *            Name of the project
 	 * @param nodeUuid
+	 *            Uuid of the node
 	 * @param parameters
 	 * @return Mesh request which can be invoked
 	 */
