@@ -38,8 +38,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -91,6 +91,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
+		options.getSearchOptions().getHosts().clear();
 		options.setNodeName("exampleGenerator");
 		Mesh.mesh(options);
 	}
@@ -105,7 +106,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		meshDagger = MeshInternal.create();
+		meshDagger = DaggerTestMeshComponent.builder().build();
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
@@ -136,7 +137,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), randomUUID(), ContainerType.PUBLISHED).toCompletable().blockingAwait();
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), randomUUID(), ContainerType.PUBLISHED).toCompletable()
+				.blockingAwait();
 		writeStoreEvent("node.search");
 	}
 
