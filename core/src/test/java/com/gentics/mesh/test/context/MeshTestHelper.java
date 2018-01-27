@@ -11,12 +11,6 @@ import java.util.concurrent.CyclicBarrier;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder.Type;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
 
 import com.gentics.mesh.rest.client.MeshResponse;
 
@@ -48,8 +42,8 @@ public final class MeshTestHelper {
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
 	 */
-	public static void validateCreation(Set<MeshResponse<?>> set, CyclicBarrier barrier) throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchMethodException, SecurityException {
+	public static void validateCreation(Set<MeshResponse<?>> set, CyclicBarrier barrier)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Set<String> uuids = new HashSet<>();
 		for (MeshResponse<?> future : set) {
 			latchFor(future);
@@ -58,8 +52,8 @@ public final class MeshTestHelper {
 			// Rest responses do not share a common class. We just use reflection to extract the uuid from the response pojo
 			Object uuidObject = result.getClass().getMethod("getUuid").invoke(result);
 			String currentUuid = uuidObject.toString();
-			assertFalse("The rest api returned a response with a uuid that was returned before. Each create request must always be atomic.", uuids
-					.contains(currentUuid));
+			assertFalse("The rest api returned a response with a uuid that was returned before. Each create request must always be atomic.",
+					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
 		// Trx.disableDebug();

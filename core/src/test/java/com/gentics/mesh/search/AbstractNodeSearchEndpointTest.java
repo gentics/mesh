@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
-import org.elasticsearch.common.xcontent.XContentFactory;
 
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -33,6 +32,8 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
+
+import io.vertx.core.json.JsonObject;
 
 public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 
@@ -157,10 +158,18 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 	 * @throws IOException
 	 */
 	protected String getNestedVCardListSearch(String firstName, String lastName) throws IOException {
-		return XContentFactory.jsonBuilder().startObject().startObject("query").startObject("nested").field("path", "fields.vcardlist")
-				.startObject("query").startObject("bool").startArray("must").startObject().startObject("match")
-				.field("fields.vcardlist.fields-vcard.firstName", firstName).endObject().endObject().startObject().startObject("match")
-				.field("fields.vcardlist.fields-vcard.lastName", lastName).endObject().endObject().endArray().endObject().endObject().endObject()
-				.endObject().endObject().string();
+		JsonObject request = new JsonObject(); 
+				
+		JsonObject query = new JsonObject();
+			request.put("query",query);
+			
+			query.put("nested", new JsonObject());
+				
+//				.startObject("query").startObject("nested").field("path", "fields.vcardlist")
+//				.startObject("query").startObject("bool").startArray("must").startObject().startObject("match")
+//				.field("fields.vcardlist.fields-vcard.firstName", firstName).endObject().endObject().startObject().startObject("match")
+//				.field("fields.vcardlist.fields-vcard.lastName", lastName).endObject().endObject().endArray().endObject().endObject().endObject()
+//				.endObject().endObject().string();
+		return request.toString();
 	}
 }

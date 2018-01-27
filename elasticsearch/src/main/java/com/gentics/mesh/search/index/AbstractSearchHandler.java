@@ -6,9 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -18,6 +16,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
@@ -36,12 +35,13 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.DevNullSearchProvider;
-import com.gentics.mesh.search.MeshRestChannel;
 import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
+import com.tinkerpop.gremlin.Tokens.T;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
@@ -122,47 +122,37 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			return;
 		}
 
-		RestHighLevelClient client = searchProvider.getClient();
+		SearchClient client = searchProvider.getClient();
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "}");
 		}
 		Set<String> indices = indexHandler.getSelectedIndices(ac);
 
-		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
-		try {
-			// Modify the query and add permission checks
-			JsonObject queryJson = prepareSearchQuery(ac, searchQuery);
-			if (log.isDebugEnabled()) {
-				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
-			}
-			// Setup the request
-			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
-			searchRequest.source(parseQuery(queryJson.toString()));
-		} catch (Exception e) {
-			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
-			return;
+		// Modify the query and add permission checks
+		JsonObject request = prepareSearchQuery(ac, searchQuery);
+		if (log.isDebugEnabled()) {
+			log.debug("Using parsed query {" + request.encodePrettily() + "}");
 		}
-		client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
 
-			@Override
-			public void onResponse(SearchResponse response) {
-				ac.send(response.toString(), OK);
-			}
+		// Setup the request
+		// ?search_type=dfs_query_then_fetch
 
-			public void onFailure(Exception e) {
-				if (e instanceof TimeoutException) {
-					ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
-				} else {
-					log.error("Search query failed", e);
-					try {
-						JsonObject json = convertToJson(e);
-						ac.send(json.encodePrettily(), HttpResponseStatus.BAD_REQUEST);
-					} catch (Exception e1) {
-						log.error("Error while converting es error to response", e1);
-						throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
-					}
+		client.queryAsync(request, indices.toArray(new String[indices.size()])).subscribe(response -> {
+			ac.send(response.toString(), OK);
+		}, error -> {
+			if (error instanceof HttpErrorException) {
+				HttpErrorException he = (HttpErrorException) error;
+				log.error("Search query failed", error);
+				try {
+					ac.send(he.getBody(), HttpResponseStatus.BAD_REQUEST);
+				} catch (Exception e1) {
+					log.error("Error while converting es error to response", e1);
+					throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
 				}
+			} else {
+				// ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
+				// ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
 			}
 		});
 
@@ -185,213 +175,172 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		RL listResponse = classOfRL.newInstance();
-		RestHighLevelClient client = searchProvider.getClient();
+		SearchClient client = searchProvider.getClient();
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 		}
 
 		Set<String> indices = indexHandler.getSelectedIndices(ac);
-		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
-		try {
-			// Add permission checks to the query
-			JsonObject queryJson = prepareSearchQuery(ac, searchQuery);
-			if (log.isDebugEnabled()) {
-				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
-			}
-			// Prepare the request
-			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
-			searchRequest.source(parseQuery(queryJson.toString()));
-		} catch (Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Query failed {" + searchQuery + "}");
-			}
-			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
-			return;
+		JsonObject request = prepareSearchQuery(ac, searchQuery);
+		// Add permission checks to the query
+		if (log.isDebugEnabled()) {
+			log.debug("Using parsed query {" + request.encodePrettily() + "}");
 		}
-		client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
 
-			@Override
-			public void onResponse(SearchResponse response) {
-				db.tx(() -> {
-					List<Single<Tuple<T, String>>> obs = new ArrayList<>();
-					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
+		// ?search_type=dfs_query_then_fetch
+		client.queryAsync(request, indices.toArray(new String[indices.size()])).map(response -> {
+			db.tx(() -> {
+				List<Single<Tuple<T, String>>> obs = new ArrayList<>();
+				List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
-					for (SearchHit hit : response.getHits()) {
+				for (JsonObject hit : response.getJsonArray("hits")) {
 
-						String id = hit.getId();
-						int pos = id.indexOf("-");
+					String id = hit.getString("id");
+					int pos = id.indexOf("-");
 
-						String language = pos > 0 ? id.substring(pos + 1) : null;
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
+					String language = pos > 0 ? id.substring(pos + 1) : null;
+					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						// Locate the node
-						T element = rootVertex.get().findByUuid(uuid);
-						if (element == null) {
-							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel() + "}");
-						} else {
-							obs.add(Single.just(Tuple.tuple(element, language)));
+					// Locate the node
+					T element = rootVertex.get().findByUuid(uuid);
+					if (element == null) {
+						log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel() + "}");
+					} else {
+						obs.add(Single.just(Tuple.tuple(element, language)));
+					}
+				}
+
+				Single.merge(obs).collect(() -> {
+					return new ArrayList<Tuple<T, String>>();
+				}, (x, y) -> {
+					if (y == null) {
+						return;
+					}
+					// TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES.
+					// Check whether the language matches up
+					boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
+							|| requestedLanguageTags.contains(y.v2());
+					if (y != null && matchesRequestedLang) {
+						x.add(y);
+					}
+				}).subscribe(list -> {
+					// Internally we start with page 0
+					int page = pagingInfo.getPage() - 1;
+
+					int low = page * pagingInfo.getPerPage();
+					int upper = low + pagingInfo.getPerPage() - 1;
+
+					int n = 0;
+					List<Single<RM>> transformedElements = new ArrayList<>();
+					for (Tuple<T, String> objectAndLanguageTag : list) {
+
+						// Only transform elements that we want to list in our resultset
+						if (n >= low && n <= upper) {
+							// Transform node and add it to the list of nodes
+							transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, 0, objectAndLanguageTag.v2()));
 						}
-
+						n++;
 					}
 
-					Single.merge(obs).collect(() -> {
-						return new ArrayList<Tuple<T, String>>();
+					// Set meta information to the rest response
+					PagingMetaInfo metainfo = new PagingMetaInfo();
+					int totalPages = 0;
+					if (pagingInfo.getPerPage() != 0) {
+						totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
+					}
+					// Cap totalpages to 1
+					totalPages = totalPages == 0 ? 1 : totalPages;
+					metainfo.setTotalCount(list.size());
+					metainfo.setCurrentPage(pagingInfo.getPage());
+					metainfo.setPageCount(totalPages);
+					metainfo.setPerPage(pagingInfo.getPerPage());
+					listResponse.setMetainfo(metainfo);
+
+					List<Observable<RM>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+					// Populate the response data with the transformed elements and send the response
+					Observable.concat(Observable.fromIterable(obsList)).collect(() -> {
+						return listResponse.getData();
 					}, (x, y) -> {
-						if (y == null) {
-							return;
-						}
-						// TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES.
-						// Check whether the language matches up
-						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
-								|| requestedLanguageTags.contains(y.v2());
-						if (y != null && matchesRequestedLang) {
-							x.add(y);
-						}
-					}).subscribe(list -> {
-						// Internally we start with page 0
-						int page = pagingInfo.getPage() - 1;
-
-						int low = page * pagingInfo.getPerPage();
-						int upper = low + pagingInfo.getPerPage() - 1;
-
-						int n = 0;
-						List<Single<RM>> transformedElements = new ArrayList<>();
-						for (Tuple<T, String> objectAndLanguageTag : list) {
-
-							// Only transform elements that we want to list in our resultset
-							if (n >= low && n <= upper) {
-								// Transform node and add it to the list of nodes
-								transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, 0, objectAndLanguageTag.v2()));
-							}
-							n++;
-						}
-
-						// Set meta information to the rest response
-						PagingMetaInfo metainfo = new PagingMetaInfo();
-						int totalPages = 0;
-						if (pagingInfo.getPerPage() != 0) {
-							totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
-						}
-						// Cap totalpages to 1
-						totalPages = totalPages == 0 ? 1 : totalPages;
-						metainfo.setTotalCount(list.size());
-						metainfo.setCurrentPage(pagingInfo.getPage());
-						metainfo.setPageCount(totalPages);
-						metainfo.setPerPage(pagingInfo.getPerPage());
-						listResponse.setMetainfo(metainfo);
-
-						List<Observable<RM>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-						// Populate the response data with the transformed elements and send the response
-						Observable.concat(Observable.fromIterable(obsList)).collect(() -> {
-							return listResponse.getData();
-						}, (x, y) -> {
-							x.add(y);
-						}).subscribe(itemList -> {
-							ac.send(JsonUtil.toJson(listResponse), OK);
-						}, error -> {
-							ac.fail(error);
-						});
-
+						x.add(y);
+					}).subscribe(itemList -> {
+						ac.send(JsonUtil.toJson(listResponse), OK);
 					}, error -> {
-						log.error("Error while processing search response items", error);
 						ac.fail(error);
 					});
-					return null;
-				});
-			}
 
-			@Override
-			public void onFailure(Exception e) {
-				if (e instanceof TimeoutException) {
-					ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
-				} else if (e instanceof ElasticsearchException) {
-					GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
-					log.error("Search query failed", e);
-					int i = 0;
-					for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
-						error.setProperty("cause-" + i, simpleMessage(e1));
-						i++;
-					}
+				}, error -> {
+					log.error("Error while processing search response items", error);
 					ac.fail(error);
+				});
+				return null;
+			});
+		}).doOnError(error -> {
+
+			// if (log.isDebugEnabled()) {
+			// log.debug("Query failed {" + searchQuery + "}");
+			// }
+			// ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
+
+			if (error instanceof TimeoutException) {
+				ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
+			} else if (e instanceof ElasticsearchException) {
+				GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
+				log.error("Search query failed", e);
+				int i = 0;
+				for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
+					error.setProperty("cause-" + i, simpleMessage(e1));
+					i++;
 				}
+				ac.fail(error);
 			}
 		});
 
 	}
 
-	private static String simpleMessage(Throwable t) {
-		int counter = 0;
-		Throwable next = t;
-		while (next != null && counter++ < 10) {
-			if (t instanceof ElasticsearchException) {
-				return next.getClass().getSimpleName() + "[" + next.getMessage() + "]";
-			}
-			next = next.getCause();
-		}
-
-		return "No ElasticsearchException found";
-	}
-
-	private static JsonObject convertToJson(Exception e) throws Exception {
-		// Create a mocked channel and convert the throwable to json
-		MeshRestChannel channel = new MeshRestChannel(null, true);
-		BytesRestResponse response = new BytesRestResponse(channel, e);
-		BytesReference ref = response.content();
-		return new JsonObject(new String(ref.utf8ToString()));
-	}
-
 	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
 			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		RestHighLevelClient client = searchProvider.getClient();
+		SearchClient client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
 		}
 
 		Set<String> indices = indexHandler.getSelectedIndices(ac);
-		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
+
+		// Add permission checks to the query
+		JsonObject queryJson = prepareSearchQuery(ac, query);
+		if (log.isDebugEnabled()) {
+			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
+		}
 		try {
-			// Add permission checks to the query
-			JsonObject queryJson = prepareSearchQuery(ac, query);
-			if (log.isDebugEnabled()) {
-				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
-			}
 			// Prepare the request
-			searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH);
-			searchRequest.source(parseQuery(queryJson.toString()));
+			//?search_type=dfs_query_then_fetch
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
-		client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
+		client.queryAsync(queryJson, indices.toArray(new String[indices.size()])).map(response -> {
+			Page<? extends T> page = db.tx(() -> {
+				List<T> elementList = new ArrayList<T>();
+				for (JsonObject  hit : response.getJsonObject("hits").getJsonArray("hits")) {
+					String id = hit.getString("id");
+					int pos = id.indexOf("-");
+					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-			@Override
-			public void onResponse(SearchResponse response) {
-				Page<? extends T> page = db.tx(() -> {
-					List<T> elementList = new ArrayList<T>();
-					for (SearchHit hit : response.getHits()) {
-						String id = hit.getId();
-						int pos = id.indexOf("-");
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
-
-						// Locate the node
-						T element = indexHandler.getRootVertex().findByUuid(uuid);
-						if (element != null) {
-							elementList.add(element);
-						}
+					// Locate the node
+					T element = indexHandler.getRootVertex().findByUuid(uuid);
+					if (element != null) {
+						elementList.add(element);
 					}
-					Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
-					return elementPage;
-				});
-				future.complete(page);
-			}
-
-			@Override
-			public void onFailure(Exception e) {
-				log.error("Search query failed", e);
-				future.completeExceptionally(e);
-			}
+				}
+				Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
+				return elementPage;
+			});
+			future.complete(page);
+		}).doOnError(error -> {
+			log.error("Search query failed", e);
+			future.completeExceptionally(e);
 		});
 		return future.get(60, TimeUnit.SECONDS);
 	}
@@ -400,27 +349,4 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		return indexHandler;
 	}
 
-	/**
-	 * Parses an Elasticsearch query string to the SearchSourceBuilder object, which is used to send queries to ES.
-	 * 
-	 * @param query
-	 *            The query to be sent to ES
-	 * @return The SearchSourceBuilder object
-	 * @throws IOException
-	 *             if the query could not be parsed
-	 */
-	protected SearchSourceBuilder parseQuery(String query) {
-		try {
-			SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-			SearchModule searchModule = new SearchModule(Settings.EMPTY, false, Collections.emptyList());
-			try (XContentParser parser = XContentFactory.xContent(XContentType.JSON)
-					.createParser(new NamedXContentRegistry(searchModule.getNamedXContents()), query)) {
-				searchSourceBuilder.parseXContent(parser);
-			}
-			return searchSourceBuilder;
-
-		} catch (IOException e) {
-			throw new RuntimeException("Error while parsing query", e);
-		}
-	}
 }

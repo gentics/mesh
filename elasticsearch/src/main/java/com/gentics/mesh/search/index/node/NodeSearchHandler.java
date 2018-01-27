@@ -34,6 +34,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.MeshSearchHit;
 import com.gentics.mesh.search.ScrollingIterator;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
 import io.vertx.core.json.JsonObject;
@@ -74,33 +75,29 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	 */
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
 			GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		RestHighLevelClient client = searchProvider.getClient();
+		SearchClient client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {Containers}");
 		}
 		Set<String> indices = getIndexHandler().getSelectedIndices(ac);
-		SearchRequest searchRequest = new SearchRequest(indices.toArray(new String[indices.size()]));
 
+		// Add permission checks to the query
+		JsonObject queryJson = prepareSearchQuery(ac, query);
+		if (log.isDebugEnabled()) {
+			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
+		}
 		try {
-			// Add permission checks to the query
-			JsonObject queryJson = prepareSearchQuery(ac, query);
-			if (log.isDebugEnabled()) {
-				log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
-			}
 			// Prepare the request
-			SearchSourceBuilder sourceBuilder = parseQuery(queryJson.toString());
 			sourceBuilder.size(INITIAL_BATCH_SIZE);
 			// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
 			sourceBuilder.fetchSource(false);
-			searchRequest.source(sourceBuilder);
 			searchRequest.scroll(TimeValue.timeValueMinutes(1));
 		} catch (Exception e) {
-			throw error(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 
 		try {
-			SearchResponse scrollResp = client.search(searchRequest);
-			long unfilteredCount = scrollResp.getHits().getTotalHits();
+			JsonObject scrollResp = client.queryScroll(query, indices.toArray(new String[indices.size()]));
+			long unfilteredCount = scrollResp.getJsonArray("hits").getLong("totalHits");
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
 			Page<? extends NodeContent> page = db.tx(() -> {
@@ -109,7 +106,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 				Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
 
 						.map(hit -> {
-							String id = hit.getId();
+							String id = hit.getString("id");
 							int pos = id.indexOf("-");
 
 							String language = pos > 0 ? id.substring(pos + 1) : null;
@@ -164,6 +161,9 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 			});
 			return page;
 		} catch (IOException e) {
+			//throw error(BAD_REQUEST, "search_query_not_parsable", e);
+
+			
 			log.error("Error while processing query", e);
 			throw error(BAD_REQUEST, "search_error_query", e);
 		}

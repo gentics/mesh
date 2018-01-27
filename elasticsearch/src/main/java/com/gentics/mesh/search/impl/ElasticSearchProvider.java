@@ -49,10 +49,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
-	// private Scheduler scheduler;
-
-	// private WorkerExecutor workerPool;
-
 	private ElasticsearchProcessManager processManager;
 
 	public ElasticSearchProvider() {
@@ -71,9 +67,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	 */
 	public void start(boolean waitForCluster) {
 		log.debug("Creating elasticsearch provider.");
-
-		// workerPool = Mesh.vertx().createSharedWorkerExecutor("searchWorker", 15, 10 * 1000 * 1000);
-		// scheduler = RxHelper.blockingScheduler(workerPool);
 
 		ElasticSearchOptions searchOptions = getOptions();
 		long start = System.currentTimeMillis();

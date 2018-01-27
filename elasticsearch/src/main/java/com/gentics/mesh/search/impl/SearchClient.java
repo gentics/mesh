@@ -11,5 +11,4 @@ public class SearchClient extends ElasticsearchOkClient<JsonObject> {
 		setConverterFunction(JsonObject::new);
 	}
 
-
 }

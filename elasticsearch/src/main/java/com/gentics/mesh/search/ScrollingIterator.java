@@ -4,20 +4,20 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.search.SearchHit;
+import com.gentics.mesh.search.impl.SearchClient;
+
+import io.vertx.core.json.JsonObject;
+
+
 
 /**
  * Wrapper for typical elasticsearch {@link SearchResponse} results. The wrapper will use the scroll API to advance the iteration if needed.
  */
-public class ScrollingIterator implements Iterator<SearchHit> {
+public class ScrollingIterator implements Iterator<JsonObject> {
 
-	private Iterator<SearchHit> currentIterator;
-	private SearchResponse currentResponse;
-	private RestHighLevelClient client;
+	private Iterator<JsonObject> currentIterator;
+	private JsonObject currentResponse;
+	private SearchClient client;
 
 	/**
 	 * Create a new iterator.
@@ -27,8 +27,8 @@ public class ScrollingIterator implements Iterator<SearchHit> {
 	 * @param scrollResp
 	 *            Current scroll which will provide the initial results and the scroll reference id.
 	 */
-	public ScrollingIterator(RestHighLevelClient client, SearchResponse scrollResp) {
-		this.currentIterator = scrollResp.getHits().iterator();
+	public ScrollingIterator(SearchClient client, JsonObject scrollResp) {
+		this.currentIterator = scrollResp.getJsonArray("hits").iterator();
 		this.currentResponse = scrollResp;
 		this.client = client;
 	}
@@ -39,7 +39,7 @@ public class ScrollingIterator implements Iterator<SearchHit> {
 			return true;
 		}
 
-		if (currentResponse.getHits().getHits().length == 0) {
+		if (currentResponse.getJsonObject("hits").getJsonArray("hits").length == 0) {
 			return false;
 		} else {
 			advanceScroll();
@@ -62,7 +62,7 @@ public class ScrollingIterator implements Iterator<SearchHit> {
 	}
 
 	@Override
-	public SearchHit next() {
+	public JsonObject next() {
 		// We need to invoke the hasNext method in order to advance the iterator if needed.
 		if (hasNext()) {
 			return currentIterator.next();
