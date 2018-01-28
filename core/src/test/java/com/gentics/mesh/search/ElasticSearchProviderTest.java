@@ -23,5 +23,13 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 		String uuid = UUIDUtil.randomUUID();
 		// provider.storeDocument("test", uuid, new JsonObject()).blockingAwait();
 		provider.updateDocument("test", uuid, new JsonObject(), true).blockingAwait();
+
+		provider.deleteIndex("testindex").blockingAwait();
+
+		provider.createIndex(new IndexInfo("testindex", new JsonObject(), new JsonObject())).blockingAwait();
+
+		provider.deleteIndex("testindex").blockingAwait();
+
+		provider.validateCreateViaTemplate(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
 	}
 }
