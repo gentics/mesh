@@ -9,20 +9,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.gentics.mesh.rest.client.MeshResponse;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Collection of helper methods which are useful for testing mesh.
  */
 public final class MeshTestHelper {
-
-	private static final Logger log = LoggerFactory.getLogger(MeshTestHelper.class);
 
 	public static CyclicBarrier prepareBarrier(int nJobs) {
 		// Trx.enableDebug();
@@ -63,49 +58,31 @@ public final class MeshTestHelper {
 
 	}
 
-	public static String getSimpleQuery(String field, String text) throws JSONException {
-		QueryStringQueryBuilder qb = QueryBuilders.queryStringQuery(text);
-		qb.type(Type.PHRASE);
-		qb.field(field);
-
-		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(qb.toString()));
-		String query = request.toString();
-		if (log.isDebugEnabled()) {
-			log.debug(query);
-		}
-		return query;
+	public static String getSimpleQuery(String field, String text) {
+		JsonObject json = new JsonObject(
+				"{\"query\":{\"query_string\":{\"query\":\"supersonic\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}");
+		json.getJsonObject("query").getJsonObject("query_string").put("query", text).put("fields", new JsonArray().add(field)).put("type", "phrase");
+		return json.encodePrettily();
 	}
 
-	public static String getSimpleTermQuery(String key, String value) throws JSONException {
-		QueryBuilder qb = QueryBuilders.termQuery(key, value);
-
-		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(qb.toString()));
-		String query = request.toString();
-		if (log.isDebugEnabled()) {
-			log.debug(query);
-		}
-		return query;
+	public static String getSimpleTermQuery(String key, String value) {
+		JsonObject request = new JsonObject("{\"query\":{\"term\":{}}}");
+		request.getJsonObject("query").getJsonObject("term").put(key, new JsonObject().put("value", value).put("boost", 1));
+		return request.encodePrettily();
 	}
 
-	public static String getSimpleWildCardQuery(String key, String value) throws JSONException {
-		QueryBuilder qb = QueryBuilders.wildcardQuery(key, value);
-		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-		bqb.must(qb);
-
-		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(bqb.toString()));
-		String query = request.toString();
-		if (log.isDebugEnabled()) {
-			log.debug(query);
-		}
-		return query;
+	public static String getSimpleWildCardQuery(String key, String value) {
+		JsonObject json = new JsonObject("{\"query\":{\"bool\":{\"must\":[{\"wildcard\":{}}]}}}");
+		JsonObject wildcard = json.getJsonObject("query").getJsonObject("bool").getJsonArray("must").getJsonObject(0).getJsonObject("wildcard");
+		wildcard.put(key, new JsonObject().put("wildcard", value).put("boost", 1));
+		return json.encodePrettily();
 	}
 
-	public static String getRangeQuery(String fieldName, double from, double to) throws JSONException {
-		RangeQueryBuilder range = QueryBuilders.rangeQuery(fieldName).from(from).to(to);
-		return "{ \"query\": " + range.toString() + "}";
+	public static String getRangeQuery(String fieldName, double from, double to) {
+		JsonObject json = new JsonObject();
+		json.put("query", new JsonObject().put("range", new JsonObject().put(fieldName,
+				new JsonObject().put("from", from).put("to", to).put("include_lower", true).put("include_upper", true).put("boost", 1))));
+		return json.encodePrettily();
 	}
 
 }
