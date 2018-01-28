@@ -41,7 +41,6 @@ import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.gremlin.Tokens.T;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
@@ -194,8 +193,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				List<Single<Tuple<T, String>>> obs = new ArrayList<>();
 				List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
-				for (JsonObject hit : response.getJsonArray("hits")) {
-
+				for (Object o : response.getJsonArray("hits")) {
+					JsonObject hit = (JsonObject) o;
 					String id = hit.getString("id");
 					int pos = id.indexOf("-");
 
@@ -315,7 +314,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 		try {
 			// Prepare the request
-			//?search_type=dfs_query_then_fetch
+			// ?search_type=dfs_query_then_fetch
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
@@ -323,7 +322,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		client.queryAsync(queryJson, indices.toArray(new String[indices.size()])).map(response -> {
 			Page<? extends T> page = db.tx(() -> {
 				List<T> elementList = new ArrayList<T>();
-				for (JsonObject  hit : response.getJsonObject("hits").getJsonArray("hits")) {
+				for (Object o : response.getJsonObject("hits").getJsonArray("hits")) {
+					JsonObject hit = (JsonObject) o;
 					String id = hit.getString("id");
 					int pos = id.indexOf("-");
 					String uuid = pos > 0 ? id.substring(0, pos) : id;

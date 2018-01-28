@@ -39,7 +39,7 @@ public class ScrollingIterator implements Iterator<JsonObject> {
 			return true;
 		}
 
-		if (currentResponse.getJsonObject("hits").getJsonArray("hits").length == 0) {
+		if (currentResponse.getJsonObject("hits").getJsonArray("hits").size() == 0) {
 			return false;
 		} else {
 			advanceScroll();
@@ -51,14 +51,15 @@ public class ScrollingIterator implements Iterator<JsonObject> {
 	 * Load a new search response using the scrollId of the previous scroll.
 	 */
 	private void advanceScroll() {
-		SearchScrollRequest request = new SearchScrollRequest(currentResponse.getScrollId());
-		request.scroll(TimeValue.timeValueMinutes(1));
+		JsonObject json = new JsonObject();
+		json.put("scroll", "1m");
+		json.put("scroll_id", currentResponse.getString("scroll_id"));
 		try {
-			currentResponse = client.searchScroll(request);
+			currentResponse = client.queryScroll(json);
 		} catch (IOException e) {
 			throw new RuntimeException("Error while handling scroll request", e);
 		}
-		currentIterator = currentResponse.getHits().iterator();
+		currentIterator = currentResponse.getJsonObject("hits").getJsonArray("hits").iterator();
 	}
 
 	@Override

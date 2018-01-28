@@ -113,7 +113,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					log.info("Elasticsearch is ready. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
 					return;
 				}
-			} catch (IOException e1) {
+			} catch (HttpErrorException e1) {
 				// ignored
 			}
 			try {
@@ -237,24 +237,23 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
 			}
 
-		}).doOnError(error -> {
+		}).toCompletable().onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException re = (HttpErrorException) error;
 				JsonObject ob = re.getBodyObject();
 				String type = ob.getJsonObject("error").getString("type");
 				if (type.equals("resource_already_exists_exception")) {
-					sub.onComplete();
+					return Completable.complete();
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Got failure response {" + ob.encodePrettily() + "}");
 					}
 				}
-
 			} else {
 				log.error("Error while creating index {" + indexName + "}", error);
 			}
-
-		}).toCompletable().compose(withTimeoutAndLog("Creating index {" + indexName + "}"));
+			return Completable.error(error);
+		}).compose(withTimeoutAndLog("Creating index {" + indexName + "}"));
 	}
 
 	@Override
@@ -282,16 +281,16 @@ public class ElasticSearchProvider implements SearchProvider {
 			if (log.isDebugEnabled()) {
 				log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
 			}
-		}).doOnError(error -> {
+		}).toCompletable().onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException se = (HttpErrorException) error;
 				// if (e instanceof DocumentMissingException) {
-				sub.onComplete();
-				return;
+				return Completable.complete();
 			} else {
 				log.error("Could not delete object {" + uuid + "} from index {" + index + "}");
+				return Completable.error(error);
 			}
-		}).toCompletable().compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}"));
+		}).compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}"));
 	}
 
 	@Override
@@ -306,19 +305,19 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.debug("Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 			}
 
-		}).doOnError(error -> {
+		}).toCompletable().onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException se = (HttpErrorException) error;
 				if (ignoreMissingDocumentError && se.getStatusCode() == 404) {
-					sub.onComplete();
-					return;
+					return Completable.complete();
 				}
 			}
 			log.error(
 					"Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
 					error);
+			return Completable.error(error);
 
-		}).toCompletable().compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}"));
+		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}"));
 	}
 
 	@Override
@@ -359,7 +358,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}");
 		}
-		client.storeDocumentAsync(index, DEFAULT_TYPE, uuid, document).doOnSuccess(response -> {
+		return client.storeDocumentAsync(index, DEFAULT_TYPE, uuid, document).doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration "
 						+ (System.currentTimeMillis() - start) + "[ms]");
@@ -378,22 +377,22 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting index {" + indexNames + "}");
 		}
-		client.deleteIndexAsync(indexNames).doOnSuccess(response -> {
+		return client.deleteIndexAsync(indexNames).doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Deleted index {" + indexNames + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 			}
-		}).doOnError(error -> {
+		}).toCompletable().onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
+				// Don't fail if the index can't be found.
 				HttpErrorException se = (HttpErrorException) error;
 				if (se.getStatusCode() == 404) {
-					sub.onComplete();
-					return;
+					return Completable.complete();
 				}
 			} else {
 				log.error("Deleting index {" + indexNames + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", error);
 			}
-
-		}).toCompletable().compose(withTimeoutAndLog("Deletion of index " + indexNames));
+			return Completable.error(error);
+		}).compose(withTimeoutAndLog("Deletion of index " + indexNames));
 	}
 
 	@Override
@@ -407,7 +406,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		String templateName = randomName.toLowerCase();
 		json.put("template", templateName);
 
-		client.createIndexTemplateAsync(templateName, json).doOnSuccess(response -> {
+		return client.createIndexTemplateAsync(templateName, json).doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
 			}
@@ -419,7 +418,6 @@ public class ElasticSearchProvider implements SearchProvider {
 			} else {
 				throw error(BAD_REQUEST, "schema_error_index_validation", error.getMessage());
 			}
-
 		}).toCompletable().andThen(client.deleteIndexTemplateAsync(templateName).toCompletable()).compose(withTimeoutAndLog("Template validation"));
 	}
 
@@ -433,7 +431,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		try {
 			JsonObject info = client.info();
 			return info.getString("version");
-		} catch (IOException e) {
+		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
 			throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
 		}

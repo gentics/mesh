@@ -86,18 +86,14 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		if (log.isDebugEnabled()) {
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
-		try {
-			// Prepare the request
-			sourceBuilder.size(INITIAL_BATCH_SIZE);
-			// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
-			sourceBuilder.fetchSource(false);
-			searchRequest.scroll(TimeValue.timeValueMinutes(1));
-		} catch (Exception e) {
-		}
+		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
+		queryJson.put("source", false);
+		queryJson.put("size", INITIAL_BATCH_SIZE);
+		queryJson.put("scroll", "1m");
 
 		try {
 			JsonObject scrollResp = client.queryScroll(query, indices.toArray(new String[indices.size()]));
-			long unfilteredCount = scrollResp.getJsonArray("hits").getLong("totalHits");
+			long unfilteredCount = scrollResp.getJsonObject("hits").getLong("totalHits");
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
 			Page<? extends NodeContent> page = db.tx(() -> {
@@ -161,9 +157,8 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 			});
 			return page;
 		} catch (IOException e) {
-			//throw error(BAD_REQUEST, "search_query_not_parsable", e);
+			// throw error(BAD_REQUEST, "search_query_not_parsable", e);
 
-			
 			log.error("Error while processing query", e);
 			throw error(BAD_REQUEST, "search_error_query", e);
 		}
