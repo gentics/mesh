@@ -454,8 +454,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	 * @return
 	 */
 	private CompletableTransformer withTimeoutAndLog(String msg) {
-		// Long timeout = getOptions().getTimeout();
-		Long timeout = 2000000L;
+		Long timeout = getOptions().getTimeout();
 		return c -> c.timeout(timeout, TimeUnit.MILLISECONDS).doOnError(error -> {
 			if (error instanceof TimeoutException) {
 				log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
@@ -463,8 +462,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				error.printStackTrace();
 				log.error(error);
 			}
-		});
-		// .onErrorComplete();
+		}).onErrorComplete();
 	}
 
 }
