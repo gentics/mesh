@@ -14,6 +14,8 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 icon:check[] Elasticsearch: Fixed a bug which caused an internal error when granting multiple permissions to the same element at the same time.
 
+icon:check[] GraphQL: The `linkType` parameter for string and html fields now causes the the link to be rendered in the language of the queried node if no language information is given.
+
 [[v0.14.1]]
 == 0.14.1 (19.01.2018)
 
