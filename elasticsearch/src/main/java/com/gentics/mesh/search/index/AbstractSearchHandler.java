@@ -230,6 +230,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						// Reduce the total count
 						hitsInfo.put("total", hitsInfo.getLong("total") - 1);
 					} else {
+						// TODO maybe it would be better to directly transform the element here.
 						list.add(Tuple.tuple(element, language));
 					}
 				}
@@ -259,7 +260,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			// TODO add resume next to omit the item if it can't be transformed for some reason.
 			// This would be better than to just fail the whole request
 			// TODO maybe add extra permission filtering? This would not be very costly for smaller pages and ensure perm consistency?
-			return element.v1().transformToRest(ac, 0, element.v2());
+			// TODO it would be good to batch the transformation of the elements to save the overhead of creating transactions and use the L1 cache.
+			return db.tx(() -> Single.just(element.v1().transformToRestSync(ac, 0, element.v2())));
 		}).collect(() -> listResponse.getData(), (x, y) -> {
 			x.add(y);
 		}).subscribe(list -> {
