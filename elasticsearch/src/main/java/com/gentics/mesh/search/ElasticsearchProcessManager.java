@@ -22,9 +22,21 @@ public final class ElasticsearchProcessManager {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessManager.class);
 
+	/**
+	 * Name of the ES installation archive resource.
+	 */
 	private static final String RESOURCE_NAME = "elasticsearch-6.1.2";
 
+	/**
+	 * Name of the folder in which the ES installation is placed.
+	 */
+	private static final String OUTPUT_FOLDER_NAME = "elasticsearch";
+
+	/**
+	 * Flag that is used to record and debounce stop/restart calls.
+	 */
 	private static AtomicBoolean stopCalled = new AtomicBoolean(false);
+
 	/**
 	 * Check in the interval for the embedded process.
 	 */
@@ -36,8 +48,48 @@ public final class ElasticsearchProcessManager {
 
 	private Long watchDogTimerId = null;
 
+	private int watchDogInterval = WATCH_DOG_INTERVAL;
+
+	private String xmx = "1g";
+
 	public ElasticsearchProcessManager(Vertx vertx) {
 		this.vertx = vertx;
+	}
+
+	/**
+	 * Return the process watchdog interval.
+	 * 
+	 * @return
+	 */
+	public int getWatchDogInterval() {
+		return watchDogInterval;
+	}
+
+	/**
+	 * Set the interval the watchdog is checking the process.
+	 * 
+	 * @param intervalInSeconds
+	 */
+	public void setWatchDogInterval(int intervalInSeconds) {
+		this.watchDogInterval = intervalInSeconds;
+	}
+
+	/**
+	 * Return the maximum configured memory usage.
+	 * 
+	 * @return
+	 */
+	public String getXmx() {
+		return xmx;
+	}
+
+	/**
+	 * Set the maximum memory usage for the process.
+	 * 
+	 * @param xmx
+	 */
+	public void setXmx(String xmx) {
+		this.xmx = xmx;
 	}
 
 	/**
@@ -55,7 +107,7 @@ public final class ElasticsearchProcessManager {
 		builder.directory(esDir);
 		String esPath = esDir.getAbsolutePath();
 		String javaBin = getJavaBinPath();
-		builder.command(javaBin, "-Xms1g", "-Xmx1g", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+		builder.command(javaBin, "-Xms1g", "-Xmx" + xmx, "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
 				"-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+AlwaysPreTouch", "-client", "-Xss1m", "-Djava.awt.headless=true", "-Dfile.encoding=UTF-8",
 				"-Djna.nosys=true", "-XX:-OmitStackTraceInFastThrow", "-Dio.netty.noUnsafe=true", "-Dio.netty.noKeySetOptimization=true",
 				"-Dio.netty.recycler.maxCapacityPerThread=0", "-Dlog4j.shutdownHookEnabled=false", "-Dlog4j2.disable.jmx=true",
@@ -73,7 +125,7 @@ public final class ElasticsearchProcessManager {
 	public void startWatchDog() {
 		if (watchDogTimerId == null) {
 			log.info("Starting watchdog for Elasticsearch process");
-			this.watchDogTimerId = vertx.setPeriodic(WATCH_DOG_INTERVAL * 1000, rh -> {
+			this.watchDogTimerId = vertx.setPeriodic(watchDogInterval * 1000, rh -> {
 				if (p != null) {
 					if (!p.isAlive()) {
 						log.info("Detected stopped server. Restarting..");
@@ -88,6 +140,9 @@ public final class ElasticsearchProcessManager {
 		}
 	}
 
+	/**
+	 * Stop the watchdog timer which is checking the process status.
+	 */
 	public void stopWatchDog() {
 		if (watchDogTimerId != null) {
 			vertx.cancelTimer(watchDogTimerId);
@@ -130,7 +185,7 @@ public final class ElasticsearchProcessManager {
 	 */
 	private File prepareESDirectory() throws IOException, ZipException {
 		File outputDir = new File(".");
-		File esDir = new File(outputDir, RESOURCE_NAME);
+		File esDir = new File(outputDir, OUTPUT_FOLDER_NAME);
 		if (!esDir.exists()) {
 			unzip("/" + RESOURCE_NAME + ".zip", outputDir.getAbsolutePath());
 		}

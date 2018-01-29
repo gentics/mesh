@@ -24,7 +24,7 @@ public class ElasticsearchProcessManagerTest {
 		// Start the watchdog and stop the process directly. The watchdog must restart the process.
 		manager.startWatchDog();
 		p.destroyForcibly();
-		Thread.sleep(6000);
+		Thread.sleep(14000);
 		assertTrue("The process should have been restarted.", manager.getProcess().isAlive());
 
 		// Stop the watchdog and check that the proccess was not restarted
