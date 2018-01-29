@@ -353,6 +353,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, DEFAULT_TYPE, uuid);
 			builder.setDoc(document.toString());
+			builder.setRetryOnConflict(5);
 			builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
 				@Override
