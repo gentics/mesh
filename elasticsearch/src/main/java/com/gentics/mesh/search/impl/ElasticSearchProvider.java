@@ -35,6 +35,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import joptsimple.internal.Strings;
 import net.lingala.zip4j.exception.ZipException;
 
 /**
@@ -209,11 +210,10 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable refreshIndex(String... indices) {
-		String indicesStr = StringUtils.join(indices, ",");
 		return client.refresh(indices).async().doOnError(error -> {
-			log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
+			log.error("Refreshing of indices {" + Strings.join(indices, ",") + "} failed.", error);
 			throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
-		}).toCompletable().compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}"));
+		}).toCompletable().compose(withTimeoutAndLog("Refreshing indices {" + Strings.join(indices, ",") + "}"));
 	}
 
 	@Override
@@ -367,13 +367,14 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable deleteIndex(boolean failOnMissingIndex, String... indexNames) {
+		String indices = Strings.join(indexNames, ",");
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
-			log.debug("Deleting index {" + indexNames + "}");
+			log.debug("Deleting indices {" + indices + "}");
 		}
 		return client.deleteIndex(indexNames).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Deleted index {" + indexNames + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 			}
 		}).toCompletable().onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
@@ -383,10 +384,11 @@ public class ElasticSearchProvider implements SearchProvider {
 					return Completable.complete();
 				}
 			} else {
-				log.error("Deleting index {" + indexNames + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", error);
+				log.error("Deleting index {" + indices + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
+					error);
 			}
 			return Completable.error(error);
-		}).compose(withTimeoutAndLog("Deletion of index " + indexNames));
+		}).compose(withTimeoutAndLog("Deletion of indices " + indices));
 	}
 
 	@Override

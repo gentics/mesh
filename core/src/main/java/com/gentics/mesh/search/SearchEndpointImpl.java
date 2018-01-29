@@ -101,25 +101,25 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	 */
 	private void addSearchEndpoints() {
 		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userSearchHandler, userExamples
-				.getUserListResponse());
+			.getUserListResponse(), false);
 		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupSearchHandler, groupExamples
-				.getGroupListResponse());
+			.getGroupListResponse(), false);
 		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleSearchHandler, roleExamples
-				.getRoleListResponse());
+			.getRoleListResponse(), false);
 
 		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
-				.getNodeListResponse());
+			.getNodeListResponse(), true);
 		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
-				.createTagListResponse());
+			.createTagListResponse(), false);
 		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
-				tagFamilyExamples.getTagFamilyListResponse());
+			tagFamilyExamples.getTagFamilyListResponse(), false);
 
 		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectSearchHandler, projectExamples
-				.getProjectListResponse());
+			.getProjectListResponse(), false);
 		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, schemaContainerSearchHandler,
-				schemaExamples.getSchemaListResponse());
+			schemaExamples.getSchemaListResponse(), false);
 		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,
-				microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse());
+			microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse(), false);
 		addAdminHandlers();
 	}
 
@@ -171,7 +171,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	 *            key of the index handlers
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
-			Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse) {
+		Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse, boolean filterByLanguage) {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -183,7 +183,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				searchHandler.query(ac, root, classOfRL);
+				searchHandler.query(ac, root, classOfRL, filterByLanguage);
 			} catch (Exception e) {
 				rc.fail(e);
 			}

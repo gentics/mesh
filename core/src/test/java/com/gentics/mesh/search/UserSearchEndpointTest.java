@@ -48,6 +48,25 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	}
 
 	@Test
+	public void testPaging() throws IOException {
+		String username = "testuser";
+		try (Tx tx = tx()) {
+			for (int i = 0; i < 100; i++) {
+				createUser(username + i);
+			}
+		}
+
+		String json = getESText("userWildcard.es");
+
+		UserListResponse list = call(() -> client().searchUsers(json, new PagingParametersImpl(2, 25)));
+		assertEquals("The page should be full.", 25, list.getData().size());
+		assertEquals("The page did not match.", 2, list.getMetainfo().getCurrentPage());
+		assertEquals("The page count did not match.", 4, list.getMetainfo().getPageCount());
+		assertEquals("The total count did not match.", 100, list.getMetainfo().getTotalCount());
+
+	}
+
+	@Test
 	public void testBogusQuery() throws IOException {
 		String username = "testuser42a";
 		try (Tx tx = tx()) {
@@ -128,8 +147,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		assertNotNull(list);
 		assertTrue(
-			"No user should be found since the lastname field is not tokenized anymore thus it is not possible to search with a lowercased term.",
-			list.getData().isEmpty());
+				"No user should be found since the lastname field is not tokenized anymore thus it is not possible to search with a lowercased term.",
+				list.getData().isEmpty());
 	}
 
 	@Test
@@ -199,8 +218,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		UserListResponse response = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())));
 		System.out.println(response.toJson());
 		assertEquals(
-			"We assigned the user to the group and thus the index should have been updated but we were unable to find the user with the specified group.",
-			1, response.getData().size());
+				"We assigned the user to the group and thus the index should have been updated but we were unable to find the user with the specified group.",
+				1, response.getData().size());
 	}
 
 	@Test
@@ -256,8 +275,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
-		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()),
-			new PagingParametersImpl().setPerPage(0)));
+		UserListResponse list = call(
+				() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0)));
 		assertEquals(0, list.getData().size());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 	}

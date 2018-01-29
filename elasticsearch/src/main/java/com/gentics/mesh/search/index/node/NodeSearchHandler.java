@@ -56,7 +56,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 	@Inject
 	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler, HandlerUtilities utils,
-			BootstrapInitializer boot) {
+		BootstrapInitializer boot) {
 		super(db, searchProvider, nodeIndexHandler);
 		this.boot = boot;
 	}
@@ -75,7 +75,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	 * @throws InterruptedException
 	 */
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
-			GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
+		GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		SearchClient client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {Containers}");
@@ -83,7 +83,11 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		Set<String> indices = getIndexHandler().getSelectedIndices(ac);
 
 		// Add permission checks to the query
-		JsonObject queryJson = prepareSearchQuery(ac, query);
+		JsonObject queryJson = prepareSearchQuery(ac, query, true);
+
+		// TODO apply paging - size should be rather large otherwise the scrolling would most likly not work
+		// applyPagingParams(queryJson, pagingInfo);
+
 		if (log.isDebugEnabled()) {
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
@@ -101,57 +105,48 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 				// Prepare a stream which applies all needed filtering
 				Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
+					.map(hit -> {
 
-						.map(hit -> {
-							String id = hit.getString("_id");
-							int pos = id.indexOf("-");
+						String id = hit.getString("_id");
+						int pos = id.indexOf("-");
 
-							String language = pos > 0 ? id.substring(pos + 1) : null;
-							String uuid = pos > 0 ? id.substring(0, pos) : id;
+						String language = pos > 0 ? id.substring(pos + 1) : null;
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-							return new MeshSearchHit<Node>(uuid, language);
-						})
-						// TODO filter by requested language
-						.filter(hit -> {
-							return hit.language != null;
-						})
+						return new MeshSearchHit<Node>(uuid, language);
+					}).filter(hit -> {
+						return hit.language != null;
+					}).map(hit -> {
 
-						.map(hit -> {
-							// Load the node
-							RootVertex<Node> root = getIndexHandler().getRootVertex();
-							hit.element = root.findByUuid(hit.uuid);
-							if (hit.element == null) {
-								log.error("Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + root.getRootLabel() + "}");
-							}
+						// Load the node
+						RootVertex<Node> root = getIndexHandler().getRootVertex();
+						hit.element = root.findByUuid(hit.uuid);
+						if (hit.element == null) {
+							log.error("Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + root.getRootLabel() + "}");
+						}
+						return hit;
+					}).filter(hit -> {
+						// Only include found elements
+						return hit.element != null;
+					}).map(hit -> {
 
-							return hit;
-						})
-
-						.filter(hit -> {
-							// Only include found elements
-							return hit.element != null;
-						})
-
-						.map(hit -> {
-
-							ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-							Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
-							if (languageTag == null) {
-								log.debug("Could not find language {" + hit.language + "}");
-								return null;
-							}
-
-							// Locate the matching container and add it to the list of found containers
-							NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
-							if (container != null) {
-								return new NodeContent(hit.element, container);
-							}
+						ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+						Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
+						if (languageTag == null) {
+							log.debug("Could not find language {" + hit.language + "}");
 							return null;
-						})
+						}
 
-						.filter(hit -> {
-							return hit != null;
-						});
+						// Locate the matching container and add it to the list of found containers
+						NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
+						if (container != null) {
+							return new NodeContent(hit.element, container);
+						}
+						// TODO mapping to null will cause errors?
+						return null;
+					}).filter(hit -> {
+						return hit != null;
+					});
 				DynamicStreamPageImpl<NodeContent> dynamicPage = new DynamicStreamPageImpl<>(stream, pagingInfo);
 				dynamicPage.setUnfilteredSearchCount(unfilteredCount);
 				return dynamicPage;
