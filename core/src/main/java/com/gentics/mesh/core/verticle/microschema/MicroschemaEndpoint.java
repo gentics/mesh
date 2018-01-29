@@ -64,7 +64,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(), "Found difference between both microschemas.");
 		endpoint.description(
-				"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
+			"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
@@ -92,7 +92,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.description(
-				"Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema. Please note that this operation is non-blocking and will continue to run in the background.");
+			"Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema. Please note that this operation is non-blocking and will continue to run in the background.");
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Microschema migration was invoked.");
 		endpoint.handler(rc -> {

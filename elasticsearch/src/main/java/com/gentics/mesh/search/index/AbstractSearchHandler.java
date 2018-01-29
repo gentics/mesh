@@ -260,9 +260,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			// This would be better than to just fail the whole request
 			// TODO maybe add extra permission filtering? This would not be very costly for smaller pages and ensure perm consistency?
 			return element.v1().transformToRest(ac, 0, element.v2());
-		}).collect(() -> {
-			return listResponse.getData();
-		}, (x, y) -> {
+		}).collect(() -> listResponse.getData(), (x, y) -> {
 			x.add(y);
 		}).subscribe(list -> {
 			ac.send(listResponse.toJson(), OK);

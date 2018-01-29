@@ -51,7 +51,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	@Inject
 	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-			HandlerUtilities utils) {
+		HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;

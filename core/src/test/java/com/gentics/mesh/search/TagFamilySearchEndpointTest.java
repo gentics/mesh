@@ -48,7 +48,7 @@ public class TagFamilySearchEndpointTest extends AbstractMeshTest implements Bas
 		String tagFamilyName = "newtagfamily";
 		TagFamilyResponse tagFamily = createTagFamily(PROJECT_NAME, tagFamilyName);
 
-		//  Update the name of the tag family we just created 
+		// Update the name of the tag family we just created
 		String newTagFamilyName = "updatetagfamilyname";
 		updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), newTagFamilyName);
 
@@ -59,9 +59,9 @@ public class TagFamilySearchEndpointTest extends AbstractMeshTest implements Bas
 		// Check that old tag family name is no longer stored in the search index
 		list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
 		assertEquals(
-				"The simple term query for name {" + tagFamilyName
-						+ "}did find tag families using the old name. Those documents should have been removed from the search index since we updated the tag family name.",
-				0, list.getData().size());
+			"The simple term query for name {" + tagFamilyName
+				+ "}did find tag families using the old name. Those documents should have been removed from the search index since we updated the tag family name.",
+			0, list.getData().size());
 	}
 
 }

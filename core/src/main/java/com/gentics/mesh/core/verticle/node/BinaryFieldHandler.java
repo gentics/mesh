@@ -91,7 +91,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	@Inject
 	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-			BinaryFieldResponseHandler binaryFieldResponseHandler, BinaryStorage binaryStorage) {
+		BinaryFieldResponseHandler binaryFieldResponseHandler, BinaryStorage binaryStorage) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
@@ -112,7 +112,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 			Release release = ac.getRelease(node.getProject());
 			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
-					ac.getVersioningParameters().getVersion());
+				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -434,7 +434,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					// Create a new node version field container to store the upload
 					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion,
-							true);
+						true);
 
 					String binaryUuid = initialField.getBinary().getUuid();
 					Observable<Buffer> stream = binaryStorage.read(binaryUuid);

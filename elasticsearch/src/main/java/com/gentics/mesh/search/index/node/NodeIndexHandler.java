@@ -114,9 +114,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					// Each release specific index has also document type specific mappings
 					for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
 						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
-								.getUuid(), DRAFT);
+							.getUuid(), DRAFT);
 						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
-								.getUuid(), PUBLISHED);
+							.getUuid(), PUBLISHED);
 						if (log.isDebugEnabled()) {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "");
 							log.debug("Adding index to map of known idices {" + publishIndexName + "");
@@ -144,7 +144,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// Locate all schema versions which need to be taken into consideration when choosing the indices
 				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(), ContainerType
-							.forVersion(ac.getVersioningParameters().getVersion())));
+						.forVersion(ac.getVersioningParameters().getVersion())));
 				}
 			} else {
 				// The project was not specified. Maybe a global search wants to know which indices must be searched.
@@ -153,7 +153,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					for (Release release : currentProject.getReleaseRoot().findAllIt()) {
 						for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
-									ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
+								ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 						}
 					}
 				}
@@ -238,7 +238,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), releaseUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
-						+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
+					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
 			} else {
 				obs.add(storeContainer(container, releaseUuid, type));
 			}
@@ -263,7 +263,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getReleaseUuid();
 		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
-				releaseUuid, type));
+			releaseUuid, type));
 	}
 
 	/**

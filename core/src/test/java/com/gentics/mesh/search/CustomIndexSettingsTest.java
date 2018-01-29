@@ -56,7 +56,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		request.setName("settingsTest");
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().createSchema(request), BAD_REQUEST, "schema_error_index_validation",
-				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -70,7 +70,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		updateRequest.removeField("text");
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest), BAD_REQUEST, "schema_error_index_validation",
-				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -100,7 +100,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 		assertEquals(3, response2.getElasticsearch().getInteger("number_of_shards").intValue());
 		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(), response2
-				.getVersion());
+			.getVersion());
 		assertThat(response2.getUrlFields()).containsOnly("text");
 
 		// Set the settings to empty and update again
@@ -109,7 +109,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
 		assertTrue("The options should be empty", new JsonObject().equals(response3.getElasticsearch()));
 		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response2.getVersion(), response3
-				.getVersion());
+			.getVersion());
 		assertThat(response3.getUrlFields()).containsOnly("text");
 
 		updateRequest.setElasticsearch(null);
@@ -142,7 +142,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
 		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(), response3
-				.getVersion());
+			.getVersion());
 	}
 
 	@Test
@@ -157,7 +157,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		assertEquals(ValidationStatus.INVALID, response.getStatus());
 
 		String message = I18NUtil.get(Locale.ENGLISH, "schema_error_index_validation",
-				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 		assertEquals(message, response.getMessage().getMessage());
 		assertEquals("schema_error_index_validation", response.getMessage().getInternalMessage());
 
@@ -188,7 +188,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		contents.add(prefix + "no text with more content you can poke a stick at");
 		contents.add(prefix + "s<b>om</b>e text with more content test you can poke content the a convert stick at");
 		contents.add(prefix
-				+ "some <strong>more</strong> content text you content this Content thAmbalaru can poke a content Telefon connection stick at too");
+			+ "some <strong>more</strong> content text you content this Content thAmbalaru can poke a content Telefon connection stick at too");
 		contents.add(prefix + "someth<strong>ing</strong> context completely conTent save different");
 		contents.add(prefix + "some<strong>what</strong> strange content");
 
