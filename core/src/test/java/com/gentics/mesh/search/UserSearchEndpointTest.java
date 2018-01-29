@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleWildCardQuery;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -44,6 +45,17 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		assertEquals(1, list.getData().size());
 		assertEquals("The found element is not the user we were looking for", username, list.getData().get(0).getUsername());
 
+	}
+
+	@Test
+	public void testBogusQuery() throws IOException {
+		String username = "testuser42a";
+		try (Tx tx = tx()) {
+			createUser(username);
+		}
+
+		String json = "someBogusInput";
+		call(() -> client().searchUsers(json), BAD_REQUEST, "search_query_not_parsable");
 	}
 
 	@Test
@@ -245,8 +257,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
-		UserListResponse list = call(
-				() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0)));
+		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()),
+				new PagingParametersImpl().setPerPage(0)));
 		assertEquals(0, list.getData().size());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 	}

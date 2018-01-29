@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -15,6 +15,7 @@ import java.util.stream.StreamSupport;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -92,7 +93,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		queryJson.put("scroll", "1m");
 
 		try {
-			JsonObject scrollResp = client.queryScroll(query, indices.toArray(new String[indices.size()]));
+			JsonObject scrollResp = client.queryScroll(queryJson, new ArrayList<>(indices)).sync();
 			long unfilteredCount = scrollResp.getJsonObject("hits").getLong("totalHits");
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
@@ -156,9 +157,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 				return dynamicPage;
 			});
 			return page;
-		} catch (IOException e) {
-			// throw error(BAD_REQUEST, "search_query_not_parsable", e);
-
+		} catch (HttpErrorException e) {
 			log.error("Error while processing query", e);
 			throw error(BAD_REQUEST, "search_error_query", e);
 		}

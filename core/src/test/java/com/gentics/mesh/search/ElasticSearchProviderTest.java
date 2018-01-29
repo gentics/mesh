@@ -24,12 +24,19 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 		// provider.storeDocument("test", uuid, new JsonObject()).blockingAwait();
 		provider.updateDocument("test", uuid, new JsonObject(), true).blockingAwait();
 
+		provider.deleteDocument("test", uuid).blockingAwait();
+
+		// Should not fail if the document is gone since we end result would be the same.
+		provider.deleteDocument("test", uuid).blockingAwait();
+
 		provider.deleteIndex("testindex").blockingAwait();
+
+		provider.createIndex(new IndexInfo("testindex", new JsonObject(), new JsonObject())).blockingAwait();
 
 		provider.createIndex(new IndexInfo("testindex", new JsonObject(), new JsonObject())).blockingAwait();
 
 		provider.deleteIndex("testindex").blockingAwait();
 
-		provider.validateCreateViaTemplate(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
+		// provider.validateCreateViaTemplate(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
 	}
 }

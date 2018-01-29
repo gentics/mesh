@@ -9,14 +9,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
+import com.gentics.elasticsearch.client.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
@@ -86,32 +85,34 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * @return
 	 */
 	protected JsonObject prepareSearchQuery(InternalActionContext ac, String searchQuery) {
-		JsonObject userJson = new JsonObject(searchQuery);
+		try {
+			JsonObject userJson = new JsonObject(searchQuery);
 
-		JsonArray roleUuids = new JsonArray();
-		try (Tx tx = db.tx()) {
-			for (Role role : ac.getUser().getRoles()) {
-				roleUuids.add(role.getUuid());
+			JsonArray roleUuids = new JsonArray();
+			try (Tx tx = db.tx()) {
+				for (Role role : ac.getUser().getRoles()) {
+					roleUuids.add(role.getUuid());
+				}
 			}
+			JsonObject newQuery = new JsonObject().put("bool", new JsonObject().put("filter", new JsonObject().put("terms", new JsonObject().put(
+					"_roleUuids", roleUuids))));
+
+			// Wrap the original query in a nested bool query in order check the role perms
+			JsonObject originalQuery = userJson.getJsonObject("query");
+			if (originalQuery != null) {
+				newQuery.getJsonObject("bool").put("must", originalQuery);
+				userJson.put("query", newQuery);
+			}
+
+			if (userJson.getLong("size") == null) {
+				userJson.put("size", 8000);
+			}
+
+			// TODO filter the node language for a node search request
+			return userJson;
+		} catch (Exception e) {
+			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
-
-		JsonObject newQuery = new JsonObject().put("bool",
-				new JsonObject().put("filter", new JsonObject().put("terms", new JsonObject().put("_roleUuids", roleUuids))));
-
-		// Wrap the original query in a nested bool query in order check the role perms
-		JsonObject originalQuery = userJson.getJsonObject("query");
-		if (originalQuery != null) {
-			newQuery.getJsonObject("bool").put("must", originalQuery);
-			userJson.put("query", newQuery);
-		}
-
-		if (userJson.getLong("size") == null) {
-			userJson.put("size", 8000);
-		}
-
-		// TODO filter the node language for a node search request
-
-		return userJson;
 	}
 
 	@Override
@@ -136,8 +137,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		// Setup the request
 		// ?search_type=dfs_query_then_fetch
-
-		client.queryAsync(request, indices.toArray(new String[indices.size()])).subscribe(response -> {
+		client.query(request, new ArrayList<>(indices)).async().subscribe(response -> {
 			ac.send(response.toString(), OK);
 		}, error -> {
 			if (error instanceof HttpErrorException) {
@@ -149,9 +149,11 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 					log.error("Error while converting es error to response", e1);
 					throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
 				}
+			} else if (error instanceof TimeoutException) {
+				ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
 			} else {
-				// ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
-				// ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
+				log.error("Error while handling raw query", error);
+				ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_query"));
 			}
 		});
 
@@ -188,13 +190,14 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		// ?search_type=dfs_query_then_fetch
-		client.queryAsync(request, indices.toArray(new String[indices.size()])).map(response -> {
+		List<String> requestedLanguageTags = db.tx(() -> ac.getNodeParameters().getLanguageList());
+		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
+		Observable<Tuple<T, String>> result = requestBuilder.async().flatMapObservable(response -> {
+			List<Tuple<T, String>> list = new ArrayList<>();
 			db.tx(() -> {
-				List<Single<Tuple<T, String>>> obs = new ArrayList<>();
-				List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
-
-				for (Object o : response.getJsonArray("hits")) {
-					JsonObject hit = (JsonObject) o;
+				JsonArray hits = response.getJsonObject("hits").getJsonArray("hits");
+				for (int i = 0; i < hits.size(); i++) {
+					JsonObject hit = hits.getJsonObject(i);
 					String id = hit.getString("id");
 					int pos = id.indexOf("-");
 
@@ -206,93 +209,89 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 					if (element == null) {
 						log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel() + "}");
 					} else {
-						obs.add(Single.just(Tuple.tuple(element, language)));
+						list.add(Tuple.tuple(element, language));
 					}
 				}
-
-				Single.merge(obs).collect(() -> {
-					return new ArrayList<Tuple<T, String>>();
-				}, (x, y) -> {
-					if (y == null) {
-						return;
-					}
-					// TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES.
-					// Check whether the language matches up
-					boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
-							|| requestedLanguageTags.contains(y.v2());
-					if (y != null && matchesRequestedLang) {
-						x.add(y);
-					}
-				}).subscribe(list -> {
-					// Internally we start with page 0
-					int page = pagingInfo.getPage() - 1;
-
-					int low = page * pagingInfo.getPerPage();
-					int upper = low + pagingInfo.getPerPage() - 1;
-
-					int n = 0;
-					List<Single<RM>> transformedElements = new ArrayList<>();
-					for (Tuple<T, String> objectAndLanguageTag : list) {
-
-						// Only transform elements that we want to list in our resultset
-						if (n >= low && n <= upper) {
-							// Transform node and add it to the list of nodes
-							transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, 0, objectAndLanguageTag.v2()));
-						}
-						n++;
-					}
-
-					// Set meta information to the rest response
-					PagingMetaInfo metainfo = new PagingMetaInfo();
-					int totalPages = 0;
-					if (pagingInfo.getPerPage() != 0) {
-						totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
-					}
-					// Cap totalpages to 1
-					totalPages = totalPages == 0 ? 1 : totalPages;
-					metainfo.setTotalCount(list.size());
-					metainfo.setCurrentPage(pagingInfo.getPage());
-					metainfo.setPageCount(totalPages);
-					metainfo.setPerPage(pagingInfo.getPerPage());
-					listResponse.setMetainfo(metainfo);
-
-					List<Observable<RM>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-					// Populate the response data with the transformed elements and send the response
-					Observable.concat(Observable.fromIterable(obsList)).collect(() -> {
-						return listResponse.getData();
-					}, (x, y) -> {
-						x.add(y);
-					}).subscribe(itemList -> {
-						ac.send(JsonUtil.toJson(listResponse), OK);
-					}, error -> {
-						ac.fail(error);
-					});
-
-				}, error -> {
-					log.error("Error while processing search response items", error);
-					ac.fail(error);
-				});
-				return null;
 			});
-		}).doOnError(error -> {
 
-			// if (log.isDebugEnabled()) {
-			// log.debug("Query failed {" + searchQuery + "}");
-			// }
-			// ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
+			Observable<Tuple<T, String>> obs = Observable.fromIterable(list);
+			return obs;
 
+		});
+
+		result = result.onErrorResumeNext(error -> {
 			if (error instanceof TimeoutException) {
-				ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
-			} else if (e instanceof ElasticsearchException) {
-				GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
-				log.error("Search query failed", e);
+				return Observable.error(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
+			} else if (error instanceof HttpErrorException) {
+				// GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
+				log.error("Search query failed", error);
 				int i = 0;
-				for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
-					error.setProperty("cause-" + i, simpleMessage(e1));
-					i++;
-				}
-				ac.fail(error);
+				// for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
+				// error.setProperty("cause-" + i, simpleMessage(e1));
+				// i++;
+				// }
 			}
+			return Observable.error(error);
+		});
+
+		result.collect(() -> {
+			return new ArrayList<Tuple<T, String>>();
+		}, (x, y) -> {
+			if (y == null) {
+				return;
+			}
+			// TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES.
+			// Check whether the language matches up
+			boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty() || requestedLanguageTags
+					.contains(y.v2());
+			if (y != null && matchesRequestedLang) {
+				x.add(y);
+			}
+		}).map(filteredList -> {
+			// Internally we start with page 0
+			int page = pagingInfo.getPage() - 1;
+
+			int low = page * pagingInfo.getPerPage();
+			int upper = low + pagingInfo.getPerPage() - 1;
+
+			int n = 0;
+			List<Single<RM>> transformedElements = new ArrayList<>();
+			for (Tuple<T, String> objectAndLanguageTag : filteredList) {
+
+				// Only transform elements that we want to list in our resultset
+				if (n >= low && n <= upper) {
+					// Transform node and add it to the list of nodes
+					transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, 0, objectAndLanguageTag.v2()));
+				}
+				n++;
+			}
+
+			// Set meta information to the rest response
+			PagingMetaInfo metainfo = new PagingMetaInfo();
+			int totalPages = 0;
+			if (pagingInfo.getPerPage() != 0) {
+				totalPages = (int) Math.ceil(filteredList.size() / (double) pagingInfo.getPerPage());
+			}
+			// Cap totalpages to 1
+			totalPages = totalPages == 0 ? 1 : totalPages;
+			metainfo.setTotalCount(filteredList.size());
+			metainfo.setCurrentPage(pagingInfo.getPage());
+			metainfo.setPageCount(totalPages);
+			metainfo.setPerPage(pagingInfo.getPerPage());
+			listResponse.setMetainfo(metainfo);
+
+			List<Observable<RM>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+			// Populate the response data with the transformed elements and send the response
+			return Observable.concat(Observable.fromIterable(obsList)).collect(() -> {
+				return listResponse.getData();
+			}, (x, y) -> {
+				x.add(y);
+			});
+		}).subscribe(list -> {
+			ac.send(JsonUtil.toJson(listResponse), OK);
+		}, error -> {
+			log.error("Error while processing search response items", error);
+			ac.fail(error);
 		});
 
 	}
@@ -312,18 +311,16 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		if (log.isDebugEnabled()) {
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
-		try {
-			// Prepare the request
-			// ?search_type=dfs_query_then_fetch
-		} catch (Exception e) {
-			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
-		}
-		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
-		client.queryAsync(queryJson, indices.toArray(new String[indices.size()])).map(response -> {
+		// Prepare the request
+		// ?search_type=dfs_query_then_fetch
+
+		RequestBuilder<JsonObject> requestBuilder = client.query(queryJson, new ArrayList<>(indices));
+		Single<Page<? extends T>> result = requestBuilder.async().map(response -> {
 			Page<? extends T> page = db.tx(() -> {
 				List<T> elementList = new ArrayList<T>();
-				for (Object o : response.getJsonObject("hits").getJsonArray("hits")) {
-					JsonObject hit = (JsonObject) o;
+				JsonArray hits = response.getJsonObject("hits").getJsonArray("hits");
+				for (int i = 0; i < hits.size(); i++) {
+					JsonObject hit = hits.getJsonObject(i);
 					String id = hit.getString("id");
 					int pos = id.indexOf("-");
 					String uuid = pos > 0 ? id.substring(0, pos) : id;
@@ -337,12 +334,15 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
 				return elementPage;
 			});
-			future.complete(page);
-		}).doOnError(error -> {
-			log.error("Search query failed", e);
-			future.completeExceptionally(e);
+			return page;
 		});
-		return future.get(60, TimeUnit.SECONDS);
+
+		// TODO add timeout
+		return result.doOnError(error ->
+
+		{
+			log.error("Search query failed", error);
+		}).blockingGet();
 	}
 
 	public IndexHandler<T> getIndexHandler() {

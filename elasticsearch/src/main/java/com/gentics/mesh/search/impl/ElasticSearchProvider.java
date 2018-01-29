@@ -106,10 +106,10 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			try {
 				log.debug("Checking elasticsearch status...");
-				JsonObject response = client.info();
-				boolean ready = response.getBoolean("todo");
-				log.debug("Elasticsearch status is: " + ready);
-				if (ready) {
+				JsonObject response = client.clusterHealth().sync();
+				String status = response.getString("status");
+				log.debug("Elasticsearch status is: " + status);
+				if (!"red".equals(status)) {
 					log.info("Elasticsearch is ready. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
 					return;
 				}
@@ -176,7 +176,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	public Completable clear() {
 
 		// Read all indices and locate indices which have been created for/by mesh.
-		Maybe<List<String>> indexInfo = client.readIndexAsync("_all").flatMapMaybe(response -> {
+		Maybe<List<String>> indexInfo = client.readIndex("_all").async().flatMapMaybe(response -> {
 			List<String> indices = Collections.emptyList();
 			indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
 			if (indices.isEmpty()) {
@@ -211,13 +211,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable refreshIndex(String... indices) {
 		String indicesStr = StringUtils.join(indices, ",");
-
-		String path = "/_refresh";
-		if (indices.length > 0) {
-			path = "/" + indicesStr + "/_refresh";
-		}
-
-		return client.refreshAsync(indices).doOnError(error -> {
+		return client.refresh(indices).async().doOnError(error -> {
 			log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
 			throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
 		}).toCompletable().compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}"));
@@ -232,7 +226,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 
 		JsonObject json = createIndexSettings(info);
-		return client.createIndexAsync(indexName, json).doOnSuccess(response -> {
+		return client.createIndex(indexName, json).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
 			}
@@ -240,7 +234,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}).toCompletable().onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException re = (HttpErrorException) error;
-				JsonObject ob = re.getBodyObject();
+				JsonObject ob = re.getBodyObject(JsonObject::new);
 				String type = ob.getJsonObject("error").getString("type");
 				if (type.equals("resource_already_exists_exception")) {
 					return Completable.complete();
@@ -259,7 +253,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Single<Map<String, Object>> getDocument(String index, String uuid) {
 
-		Single<Map<String, Object>> s = client.getDocumentAsync(index, DEFAULT_TYPE, uuid).map(response -> {
+		Single<Map<String, Object>> s = client.getDocument(index, DEFAULT_TYPE, uuid).async().map(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Get object {" + uuid + "} from index {" + index + "}");
 			}
@@ -277,19 +271,21 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting document {" + uuid + "} from index {" + index + "}.");
 		}
-		return client.deleteDocumentAsync(index, DEFAULT_TYPE, uuid).doOnSuccess(response -> {
+		return client.deleteDocument(index, DEFAULT_TYPE, uuid).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
 			}
 		}).toCompletable().onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException se = (HttpErrorException) error;
-				// if (e instanceof DocumentMissingException) {
-				return Completable.complete();
+				JsonObject errorResp = se.getBodyObject(JsonObject::new);
+				if (se.getStatusCode() == 404 && "not_found".equals(errorResp.getString("result"))) {
+					return Completable.complete();
+				}
 			} else {
 				log.error("Could not delete object {" + uuid + "} from index {" + index + "}");
-				return Completable.error(error);
 			}
+			return Completable.error(error);
 		}).compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}"));
 	}
 
@@ -300,7 +296,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
 		}
 
-		return client.updateDocumentAsync(index, DEFAULT_TYPE, uuid, document).doOnSuccess(response -> {
+		return client.updateDocument(index, DEFAULT_TYPE, uuid, document).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 			}
@@ -312,9 +308,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					return Completable.complete();
 				}
 			}
-			log.error(
-					"Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
-					error);
+			log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+					+ "[ms]", error);
 			return Completable.error(error);
 
 		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}"));
@@ -341,10 +336,10 @@ public class ElasticSearchProvider implements SearchProvider {
 			items.add(item);
 		}
 
-		return client.storeDocumentBulkAsync(bulkData).doOnSuccess(response -> {
+		return client.storeDocumentBulk(bulkData).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration "
-						+ (System.currentTimeMillis() - start) + "[ms]");
+				log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System.currentTimeMillis()
+						- start) + "[ms]");
 			}
 		}).doOnError(error -> {
 			log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
@@ -358,15 +353,15 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}");
 		}
-		return client.storeDocumentAsync(index, DEFAULT_TYPE, uuid, document).doOnSuccess(response -> {
+		return client.storeDocument(index, DEFAULT_TYPE, uuid, document).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration "
-						+ (System.currentTimeMillis() - start) + "[ms]");
+				log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
+						- start) + "[ms]");
 			}
 
 		}).doOnError(error -> {
-			log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration "
-					+ (System.currentTimeMillis() - start) + "[ms]", error);
+			log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System.currentTimeMillis()
+					- start) + "[ms]", error);
 
 		}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}"));
 	}
@@ -377,7 +372,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting index {" + indexNames + "}");
 		}
-		return client.deleteIndexAsync(indexNames).doOnSuccess(response -> {
+		return client.deleteIndex(indexNames).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Deleted index {" + indexNames + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 			}
@@ -406,19 +401,20 @@ public class ElasticSearchProvider implements SearchProvider {
 		String templateName = randomName.toLowerCase();
 		json.put("template", templateName);
 
-		return client.createIndexTemplateAsync(templateName, json).doOnSuccess(response -> {
+		return client.createIndexTemplate(templateName, json).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
 			}
-		}).doOnError(error -> {
+		}).onErrorResumeNext(error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException re = (HttpErrorException) error;
-				JsonObject errorInfo = re.getBodyObject();
-				throw error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString("reason"));
+				JsonObject errorInfo = re.getBodyObject(JsonObject::new);
+				return Single.error(error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString("reason")));
 			} else {
-				throw error(BAD_REQUEST, "schema_error_index_validation", error.getMessage());
+				return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
 			}
-		}).toCompletable().andThen(client.deleteIndexTemplateAsync(templateName).toCompletable()).compose(withTimeoutAndLog("Template validation"));
+		}).toCompletable().andThen(client.deleteIndexTemplate(templateName).async().toCompletable()).compose(withTimeoutAndLog(
+				"Template validation"));
 	}
 
 	@Override
@@ -429,7 +425,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public String getVersion() {
 		try {
-			JsonObject info = client.info();
+			JsonObject info = client.info().sync();
 			return info.getString("version");
 		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
@@ -441,10 +437,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	@SuppressWarnings("unchecked")
 	public <T> T getClient() {
 		return (T) client;
-	}
-
-	private SearchClient getSearchClient() {
-		return client;
 	}
 
 	/**
@@ -463,14 +455,17 @@ public class ElasticSearchProvider implements SearchProvider {
 	 * @return
 	 */
 	private CompletableTransformer withTimeoutAndLog(String msg) {
-		Long timeout = getOptions().getTimeout();
+		// Long timeout = getOptions().getTimeout();
+		Long timeout = 2000000L;
 		return c -> c.timeout(timeout, TimeUnit.MILLISECONDS).doOnError(error -> {
 			if (error instanceof TimeoutException) {
 				log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 			} else {
+				error.printStackTrace();
 				log.error(error);
 			}
-		}).onErrorComplete();
+		});
+		// .onErrorComplete();
 	}
 
 }
