@@ -461,7 +461,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 							// Return a POJO which hold all information that is needed to update the field
 							TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV, file.getPath());
 							return Single.just(result);
-						}).doAfterTerminate(() -> file.getFile().close()).flatMap(e -> e);
+						}).flatMap(e -> e);
 					});
 
 					// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.

@@ -56,7 +56,7 @@ public final class ElasticsearchProcessManager {
 		String esPath = esDir.getAbsolutePath();
 		String javaBin = getJavaBinPath();
 		builder.command(javaBin, "-Xms1g", "-Xmx1g", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
-				"-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+AlwaysPreTouch", "-server", "-Xss1m", "-Djava.awt.headless=true", "-Dfile.encoding=UTF-8",
+				"-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+AlwaysPreTouch", "-client", "-Xss1m", "-Djava.awt.headless=true", "-Dfile.encoding=UTF-8",
 				"-Djna.nosys=true", "-XX:-OmitStackTraceInFastThrow", "-Dio.netty.noUnsafe=true", "-Dio.netty.noKeySetOptimization=true",
 				"-Dio.netty.recycler.maxCapacityPerThread=0", "-Dlog4j.shutdownHookEnabled=false", "-Dlog4j2.disable.jmx=true",
 				"-XX:+HeapDumpOnOutOfMemoryError", "-Des.path.home=" + esPath, "-Des.path.conf=" + esPath + "/config", "-cp", esPath + "/lib/*",
@@ -102,15 +102,23 @@ public final class ElasticsearchProcessManager {
 	 * @throws FileNotFoundException
 	 */
 	private String getJavaBinPath() throws FileNotFoundException {
+		boolean isWindows = isWindows();
 		String javaHome = System.getenv("JAVA_HOME");
 		if (javaHome == null) {
+			javaHome = System.getProperty("java.home");
+		}
+		if (isWindows && javaHome == null) {
 			throw new FileNotFoundException("Could not find java installation. The 'JAVA_HOME' environment variable was not set.");
 		}
-		String javaBinPath = "bin/java";
-		if (isWindows()) {
-			javaBinPath = "bin/java.exe";
+		if (javaHome != null) {
+			String javaBinPath = "bin/java";
+			if (isWindows()) {
+				javaBinPath = "bin/java.exe";
+			}
+			return new File(javaHome, javaBinPath).getAbsolutePath();
+		} else {
+			return "java";
 		}
-		return new File(javaHome, javaBinPath).getAbsolutePath();
 	}
 
 	/**

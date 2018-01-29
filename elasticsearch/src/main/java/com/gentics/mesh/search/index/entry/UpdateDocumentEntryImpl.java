@@ -53,7 +53,6 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 
 		case UPDATE_ROLE_PERM_ACTION:
 			return indexHandler.updatePermission(this);
-			
 		default:
 			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
 		}
