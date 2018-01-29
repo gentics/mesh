@@ -309,7 +309,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 			}
 			log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-					+ "[ms]", error);
+				+ "[ms]", error);
 			return Completable.error(error);
 
 		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}"));
@@ -339,11 +339,11 @@ public class ElasticSearchProvider implements SearchProvider {
 		return client.storeDocumentBulk(bulkData).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System.currentTimeMillis()
-						- start) + "[ms]");
+					- start) + "[ms]");
 			}
 		}).doOnError(error -> {
 			log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-					+ "[ms]", error);
+				+ "[ms]", error);
 		}).toCompletable().compose(withTimeoutAndLog("Storing document batch"));
 	}
 
@@ -356,12 +356,12 @@ public class ElasticSearchProvider implements SearchProvider {
 		return client.storeDocument(index, DEFAULT_TYPE, uuid, document).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
-						- start) + "[ms]");
+					- start) + "[ms]");
 			}
 
 		}).doOnError(error -> {
 			log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System.currentTimeMillis()
-					- start) + "[ms]", error);
+				- start) + "[ms]", error);
 
 		}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}"));
 	}
@@ -414,7 +414,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
 			}
 		}).toCompletable().andThen(client.deleteIndexTemplate(templateName).async().toCompletable()).compose(withTimeoutAndLog(
-				"Template validation"));
+			"Template validation"));
 	}
 
 	@Override
