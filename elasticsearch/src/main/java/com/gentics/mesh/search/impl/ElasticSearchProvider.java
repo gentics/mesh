@@ -174,7 +174,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable clear() {
-
 		// Read all indices and locate indices which have been created for/by mesh.
 		Maybe<List<String>> indexInfo = client.readIndex("_all").async().flatMapMaybe(response -> {
 			List<String> indices = Collections.emptyList();

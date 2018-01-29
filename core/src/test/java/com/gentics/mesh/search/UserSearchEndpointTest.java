@@ -128,8 +128,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		assertNotNull(list);
 		assertTrue(
-				"No user should be found since the lastname field is not tokenized anymore thus it is not possible to search with a lowercased term.",
-				list.getData().isEmpty());
+			"No user should be found since the lastname field is not tokenized anymore thus it is not possible to search with a lowercased term.",
+			list.getData().isEmpty());
 	}
 
 	@Test
@@ -196,12 +196,11 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		call(() -> client().addUserToGroup(group.getUuid(), user.getUuid()));
 
 		// Check whether the user index was updated
-		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
+		UserListResponse response = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())));
+		System.out.println(response.toJson());
 		assertEquals(
-				"We assigned the user to the group and thus the index should have been update but we were unable to find the user with the specified group.",
-				1, searchFuture.result().getData().size());
+			"We assigned the user to the group and thus the index should have been updated but we were unable to find the user with the specified group.",
+			1, response.getData().size());
 	}
 
 	@Test
@@ -258,7 +257,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		}
 
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()),
-				new PagingParametersImpl().setPerPage(0)));
+			new PagingParametersImpl().setPerPage(0)));
 		assertEquals(0, list.getData().size());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 	}

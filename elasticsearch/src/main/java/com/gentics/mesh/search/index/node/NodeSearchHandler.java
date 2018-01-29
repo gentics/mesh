@@ -103,7 +103,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 				Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
 
 						.map(hit -> {
-							String id = hit.getString("id");
+							String id = hit.getString("_id");
 							int pos = id.indexOf("-");
 
 							String language = pos > 0 ? id.substring(pos + 1) : null;

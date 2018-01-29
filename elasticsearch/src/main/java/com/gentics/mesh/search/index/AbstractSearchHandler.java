@@ -95,7 +95,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				}
 			}
 			JsonObject newQuery = new JsonObject().put("bool", new JsonObject().put("filter", new JsonObject().put("terms", new JsonObject().put(
-					"_roleUuids", roleUuids))));
+				"_roleUuids", roleUuids))));
 
 			// Wrap the original query in a nested bool query in order check the role perms
 			JsonObject originalQuery = userJson.getJsonObject("query");
@@ -136,8 +136,10 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		// Setup the request
-		// ?search_type=dfs_query_then_fetch
-		client.query(request, new ArrayList<>(indices)).async().subscribe(response -> {
+		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
+		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
+		requestBuilder.async().subscribe(response -> {
+			// Directly relay the response to the requestor without converting it.
 			ac.send(response.toString(), OK);
 		}, error -> {
 			if (error instanceof HttpErrorException) {
@@ -161,7 +163,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	@Override
 	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL)
-			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
+		throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
 			ac.fail(error(SERVICE_UNAVAILABLE, "search_error_no_elasticsearch_configured"));
 			return;
@@ -189,16 +191,16 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + request.encodePrettily() + "}");
 		}
 
-		// ?search_type=dfs_query_then_fetch
 		List<String> requestedLanguageTags = db.tx(() -> ac.getNodeParameters().getLanguageList());
 		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
+		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
 		Observable<Tuple<T, String>> result = requestBuilder.async().flatMapObservable(response -> {
 			List<Tuple<T, String>> list = new ArrayList<>();
 			db.tx(() -> {
 				JsonArray hits = response.getJsonObject("hits").getJsonArray("hits");
 				for (int i = 0; i < hits.size(); i++) {
 					JsonObject hit = hits.getJsonObject(i);
-					String id = hit.getString("id");
+					String id = hit.getString("_id");
 					int pos = id.indexOf("-");
 
 					String language = pos > 0 ? id.substring(pos + 1) : null;
@@ -225,7 +227,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			} else if (error instanceof HttpErrorException) {
 				// GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
 				log.error("Search query failed", error);
-				int i = 0;
+				// int i = 0;
 				// for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
 				// error.setProperty("cause-" + i, simpleMessage(e1));
 				// i++;
@@ -243,11 +245,11 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			// TODO it would be better to filter the request language within the ES query instead. This way we could also use native paging from ES.
 			// Check whether the language matches up
 			boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty() || requestedLanguageTags
-					.contains(y.v2());
+				.contains(y.v2());
 			if (y != null && matchesRequestedLang) {
 				x.add(y);
 			}
-		}).map(filteredList -> {
+		}).flatMap(filteredList -> {
 			// Internally we start with page 0
 			int page = pagingInfo.getPage() - 1;
 
@@ -288,7 +290,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				x.add(y);
 			});
 		}).subscribe(list -> {
-			ac.send(JsonUtil.toJson(listResponse), OK);
+			ac.send(listResponse.toJson(), OK);
 		}, error -> {
 			log.error("Error while processing search response items", error);
 			ac.fail(error);
@@ -298,7 +300,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
-			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
+		throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		SearchClient client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
@@ -311,17 +313,17 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		if (log.isDebugEnabled()) {
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
-		// Prepare the request
-		// ?search_type=dfs_query_then_fetch
 
+		// Prepare the request
 		RequestBuilder<JsonObject> requestBuilder = client.query(queryJson, new ArrayList<>(indices));
+		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
 		Single<Page<? extends T>> result = requestBuilder.async().map(response -> {
 			Page<? extends T> page = db.tx(() -> {
 				List<T> elementList = new ArrayList<T>();
 				JsonArray hits = response.getJsonObject("hits").getJsonArray("hits");
 				for (int i = 0; i < hits.size(); i++) {
 					JsonObject hit = hits.getJsonObject(i);
-					String id = hit.getString("id");
+					String id = hit.getString("_id");
 					int pos = id.indexOf("-");
 					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
@@ -338,9 +340,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		});
 
 		// TODO add timeout
-		return result.doOnError(error ->
-
-		{
+		return result.doOnError(error -> {
 			log.error("Search query failed", error);
 		}).blockingGet();
 	}
