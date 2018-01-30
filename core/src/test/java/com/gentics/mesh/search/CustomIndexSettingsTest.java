@@ -174,10 +174,9 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 		JsonObject fieldSettings = getJson("/elasticsearch/custom/suggestionFieldMapping.json");
 		schema.addField(FieldUtil.createStringFieldSchema("content").setElasticsearch(fieldSettings));
-		// System.out.println(schema.toJson());
 
 		SchemaValidationResponse validationResponse = call(() -> client().validateSchema(schema));
-		// System.out.println(validationResponse.toJson());
+		assertEquals(ValidationStatus.VALID, validationResponse.getStatus());
 
 		SchemaResponse response = call(() -> client().createSchema(schema));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));

@@ -1,0 +1,468 @@
+:icons: font
+
+= Elasticsearch
+
+Elasticsearch is used in order to provide the main search functionality within Gentics Mesh.
+
+When enabled it is possible to search for:
+
+* link:#users[Users]
+* link:#groups[Groups]
+* link:#roles[Roles]
+* link:#nodes[Nodes]
+* link:#projects[Projects]
+* link:#schemas[Schemas]
+* link:#microschemas[Microschemas]
+* link:#tags[Tags]
+* link:#tagfamilies[TagFamilies]
+
+Search queries can be executed via the dedicated search link:#endpoints[REST endpoints] or link:#graphql[GraphQL].
+
+== TL;DR
+
+You can use link:https://www.elastic.co/guide/en/elasticsearch/reference/6.1/_introducing_the_query_language.html[Elasticsearch queries] to search for data.
+Please note that the format of the documents which can be searched differs from the format which Gentics Mesh returns by the REST API. 
+This difference will affect your queries.
+
+== Integration details
+
+=== Data format
+
+NOTE:  The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints.
+Thus it is important to know the elasticsearch document format when building an elasticsearch query.
+
+=== Permission handling
+
+Internally Gentics Mesh will check which roles of the user match up with the needed roles of the documents and thus only return elements which are visible by the user.
+This is done by nesting the input query inside of an outer boolean query which includes the needed filter terms.
+
+=== Limitations
+
+NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
+
+== Configuration
+
+The elasticsearch connection can be configured within the `mesh.yml` configuration file.
+
+[source,yaml]
+----
+search:
+  hosts:
+  - hostname: "localhost"
+    port: 9200
+    protocol: "http"
+  timeout: 3000
+  startEmbeddedES: true
+----
+
+[options="header"]
+|======
+| Configuration                | Type     | Default          | Description
+| ```search.hosts```           | List     | local            | List of hosts which are used to connect to Elasticsearch.
+| ```search.timeout```         | Number   | 3000             | Timeout for interactions with the search server.
+| ```search.startEmbeddedES``` | Boolean  | true             | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
+|======
+
+=== Embedded mode
+
+Gentics Mesh will setup and start the Elasticsearch server if the `search.startEmbeddedES` property is set to true.
+The server installation will be placed in the current working directory and started.
+A watchdog will continuously check the process and restart it when a crash has been detected.
+
+=== Disabling search
+
+It is also possible to completely turn off the search support by setting the `search.startEmbeddedES` property to false and not specifying any hosts.
+
+== Compatibility
+
+We currently run and test against Elasticsearch version 6.1.2. Other versions have not yet been tested.
+
+
+[[endpoints]]
+== REST endpoints
+
+Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
+
+== Examples / Queries
+
+[[users]]
+=== Users
+
+Endpoint: ```/api/v1/search/users```
+
+[source,json]
+----
+{
+  "query": {
+      "simple_query_string" : {
+          "query": "myusername*",
+          "fields": ["username.raw"],
+          "default_operator": "and"
+      }
+  }
+}
+----
+
+[[groups]]
+=== Groups
+
+Endpoint: ```/api/v1/search/groups```
+
+[source,json]
+----
+{
+  "query": {
+      "simple_query_string" : {
+          "query": "testgroup*",
+          "fields": ["name.raw^5"],
+          "default_operator": "and"
+      }
+  }
+}
+----
+
+[[roles]]
+=== Roles
+
+Endpoint: ```/api/v1/search/roles```
+
+[[nodes]]
+=== Nodes
+
+Endpoint: ```/api/v1/search/nodes```
+
+*Search nodes by schema name*
+
+Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
+The found nodes will be sorted ascending by creator.
+
+[source,json]
+----
+{
+  "sort" : {
+     "created" : { "order" : "asc" }
+  },
+  "query":{
+    "bool" : {
+      "must" : {
+        "term" : { "schema.name" : "content" }
+       }
+    }
+  }
+}
+----
+
+*Search nodes by micronode field values*
+
+Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"):
+
+[source,json]
+----
+{
+  "query": {
+    "nested": {
+      "path": "fields.vcardlist",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "fields.vcardlist.fields.firstName": "Joe"
+              }
+            },
+            {
+              "match": {
+                "fields.vcardlist.fields.lastName": "Doe"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+----
+
+*Search nodes which are tagged 'Solar' and 'Blue'*
+
+The tags field is a nested field and thus a nested query must be used to match the two tags. Please note that you need to use `match_phrase` because you want to match the whole tag name. Using `match` would cause elasticsearch to match any of trigram found within the tag name value. 
+
+[source,json]
+----
+{
+  "query": {
+    "nested": {
+      "path": "tags",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match_phrase": {
+                "tags.name": "Solar"
+              }
+            },
+            {
+              "match_phrase": {
+                "tags.name": "Blue"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+----
+
+[[projects]]
+=== Projects
+
+Endpoint: ```/api/v1/search/projects```
+
+[[tags]]
+=== Tags
+
+Endpoint: ```/api/v1/search/tags```
+
+[source,json]
+----
+{
+  "query": {
+    "nested": {
+      "path": "tags",
+      "query": {
+        "bool": {
+          "must": {
+            "match_phrase": {
+              "tags.name": "Twinjet"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+[[tagfamilies]]
+=== Tag Families
+
+Endpoint: ```/api/v1/search/tagFamilies```
+
+
+[source,json]
+----
+{
+	"query": {
+		"nested": {
+			"path": "tagFamilies.colors.tags",
+			"query": {
+				"match": {
+					"tagFamilies.colors.tags.name": "red"
+				}
+			}
+		}
+	}
+}
+----
+
+[[schemas]]
+=== Schemas
+
+Endpoint: ```/api/v1/search/schemas```
+
+[[microschemas]]
+=== Microschemas
+
+Endpoint: ```/api/v1/search/microschemas```
+
+=== Paging
+
+The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
+
+=== Raw search
+
+Additionally it is also possible to use the ```/api/v1/rawSearch``` or ```/api/v1/:projectName/rawSearch``` endpoints.
+
+These endpoints will accept the same query but return the regular Elasticsearch response instead of the typical Gentics Mesh list response.
+This is useful if you want to use for example the Elasticsearch highlighing and aggregation features. 
+The endpoint will automatically select the needed indices and modify the query in order to add needed permission checks.
+
+==== Reindex
+
+The ```POST /api/v1/search/reindex``` endpoint can be used to rebuild the full search index from scratch.
+
+NOTE: This operation will remove all indices which have been created by Mesh and rebuild them one at a time. 
+
+NOTE: Future versions of Gentics Mesh will utilize a differential sync and thus this operation will not cause temporary dataloss.
+
+NOTE: The reindex operation will automatically be invoked when Mesh is being started and a unclean shutdown has been detected.
+
+== GraphQL
+
+It is possible to nest Elasticsearch queries within the GraphQL query in order to filter elements.
+
+See link:graphql.html#search[GraphQL examples].
+
+== Document format
+
+The following section contains document examples which are useful when creating queries.
+Gentics Mesh transforms elements into these documents which then can be stored within Elasticsearch.
+
+=== Users
+
+[source,json]
+----
+include::examples/search/user.search.json[]
+----
+
+=== Groups
+
+[source,json]
+----
+include::examples/search/group.search.json[]
+----
+
+=== Roles
+
+[source,json]
+----
+include::examples/search/role.search.json[]
+----
+
+=== Nodes
+
+[source,json]
+----
+include::examples/search/node.search.json[]
+----
+
+=== Projects
+
+[source,json]
+----
+include::examples/search/project.search.json[]
+----
+
+=== Tags
+
+[source,json]
+----
+include::examples/search/tag.search.json[]
+----
+
+=== Tag Families
+
+[source,json]
+----
+include::examples/search/tagFamily.search.json[]
+----
+
+=== Microschemas
+
+[source,json]
+----
+include::examples/search/microschema.search.json[]
+----
+
+=== Schemas
+
+[source,json]
+----
+include::examples/search/schema.search.json[]
+----
+
+== Custom mappings / index settings
+
+The index settings for nodes can be configured within the schema json. Additionally it is also possible to add extra mappings to fields.
+This may be desired when if a field needs to be analyzed in a special way or a `keyword` field must be added.
+
+An example for such Schema can be seen below. 
+This schema contains additional tokenizer and analyzer which can be used to setup an index that is ready to be used for a full-text search which supports autocompletion and auto suggestion.
+
+[source,json]
+----
+{
+    "container": false,
+    "name": "CustomSchema",
+    "elasticsearch": {
+        "analysis": {
+            "filter": {
+                "my_stop": {
+                    "type": "stop",
+                    "stopwords": "_english_"
+                },
+                "autocomplete_filter": {
+                    "type": "edge_ngram",
+                    "min_gram": 1,
+                    "max_gram": 20
+                }
+            },
+            "tokenizer": {
+                "basicsearch": {
+                    "type": "edge_ngram",
+                    "min_gram": 1,
+                    "max_gram": 10,
+                    "token_chars": [
+                        "letter"
+                    ]
+                }
+            },
+            "analyzer": {
+                "autocomplete": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "char_filter": [
+                        "html_strip"
+                    ],
+                    "filter": [
+                        "lowercase",
+                        "my_stop",
+                        "autocomplete_filter"
+                    ]
+                },
+                "basicsearch": {
+                    "tokenizer": "basicsearch",
+                    "char_filter": [
+                        "html_strip"
+                    ],
+                    "filter": [
+                        "my_stop",
+                        "lowercase"
+                    ]
+                },
+                "basicsearch_search": {
+                    "char_filter": [
+                        "html_strip"
+                    ],
+                    "tokenizer": "lowercase"
+                }
+            }
+        }
+    },
+    "fields": [
+        {
+            "name": "content",
+            "required": false,
+            "elasticsearch": {
+                "basicsearch": {
+                    "type": "text",
+                    "analyzer": "basicsearch",
+                    "search_analyzer": "basicsearch_search"
+                },
+                "suggest": {
+                    "type": "text",
+                    "analyzer": "simple"
+                },
+                "auto": {
+                    "type": "text",
+                    "analyzer": "autocomplete"
+                }
+            },
+            "type": "string"
+        }
+    ]
+}
+----
+
+NOTE: Index settings for other elements (e.g: Users, Roles etc) can currently not be configured.

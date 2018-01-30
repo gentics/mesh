@@ -14,7 +14,6 @@ Possible usecases are:
 * Load users, roles, groups
 * Load tags, tag families, schema and microschema information
 
-
 == Live Examples
 
 If you want to learn more about the http://graphql.org/learn/queries/[GraphQL syntax take a look at the good documentation].
@@ -37,6 +36,7 @@ Nodes can be linked together in various way. One way is the regular parent-child
 
 include::examples/graphql/node-reference-query[]
 
+[[search]]
 === Invoking a search query to find specific nodes
 
 The search query is an escaped JSON object which represents the a regular https://www.elastic.co/guide/en/elasticsearch/reference/2.4/_executing_searches.html[Elasticsearch query].

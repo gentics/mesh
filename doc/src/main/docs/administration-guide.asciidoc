@@ -204,10 +204,10 @@ By default all specified directories are relative to the installation directory.
 
 [options="header"]
 |======
-| Configuration              | Type     | Default          | Description
-| ```search.directory```     | Path     | data/searchindex | Path to the elasticsearch storage location.
-| ```search.httpEnabled```   | Boolean  | false            | Enable the elasticsearch http endpoint. Enabling this has security implications! See security guide for more information.
-| ```search.transportPort``` | String   | 9300-9400        | Range for the binary transport ports
+| Configuration                | Type     | Default          | Description
+| ```search.hosts```           | List     | local            | List of hosts which are used to connect to Elasticsearch.
+| ```search.timeout```         | Number   | 3000             | Timeout for interactions with the search server.
+| ```search.startEmbeddedES``` | Boolean  | true             | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
 |======
 
 === Upload Options

@@ -173,7 +173,7 @@ ul.doc-toc h2 {
                                 <a href="features.html#_content_releases">Content Releases</a>
                             </li>
                             <li>
-                                <a href="features.html#_search">Search</a>
+                                <a href="elasticsearch.html">Search</a>
                             </li>
                             <li>
                                 <a href="features.html#_preview_handling">Preview Handling</a>
