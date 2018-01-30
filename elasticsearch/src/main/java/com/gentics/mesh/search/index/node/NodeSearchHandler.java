@@ -4,18 +4,16 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
+import com.gentics.elasticsearch.client.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -24,20 +22,20 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.search.MeshSearchHit;
-import com.gentics.mesh.search.ScrollingIterator;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -49,8 +47,6 @@ import io.vertx.core.logging.LoggerFactory;
 public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchHandler.class);
-
-	private static final int INITIAL_BATCH_SIZE = 30;
 
 	private BootstrapInitializer boot;
 
@@ -85,71 +81,65 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		// Add permission checks to the query
 		JsonObject queryJson = prepareSearchQuery(ac, query, true);
 
-		// TODO apply paging - size should be rather large otherwise the scrolling would most likly not work
-		// applyPagingParams(queryJson, pagingInfo);
+		// Apply paging
+		applyPagingParams(queryJson, pagingInfo);
+
+		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
+		queryJson.put("_source", false);
 
 		if (log.isDebugEnabled()) {
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
-		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
-		queryJson.put("source", false);
-		queryJson.put("size", INITIAL_BATCH_SIZE);
-		queryJson.put("scroll", "1m");
-
 		try {
-			JsonObject scrollResp = client.queryScroll(queryJson, new ArrayList<>(indices)).sync();
-			long unfilteredCount = scrollResp.getJsonObject("hits").getLong("totalHits");
+			RequestBuilder<JsonObject> scrollRequest = client.query(queryJson, new ArrayList<>(indices));
+			JsonObject scrollResp = scrollRequest.sync();
+			JsonObject hitsInfo = scrollResp.getJsonObject("hits");
+
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
-			ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
 			Page<? extends NodeContent> page = db.tx(() -> {
+				long totalCount = hitsInfo.getLong("total");
+				List<NodeContent> elementList = new ArrayList<>();
+				JsonArray hits = hitsInfo.getJsonArray("hits");
+				for (int i = 0; i < hits.size(); i++) {
+					JsonObject hit = hits.getJsonObject(i);
 
-				// Prepare a stream which applies all needed filtering
-				Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
-					.map(hit -> {
+					String id = hit.getString("_id");
+					int pos = id.indexOf("-");
 
-						String id = hit.getString("_id");
-						int pos = id.indexOf("-");
+					String language = pos > 0 ? id.substring(pos + 1) : null;
+					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						String language = pos > 0 ? id.substring(pos + 1) : null;
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
+					RootVertex<Node> root = getIndexHandler().getRootVertex();
+					Node element = root.findByUuid(uuid);
+					if (element == null) {
+						log.warn("Object could not be found for uuid {" + uuid + "} in root vertex {" + root.getRootLabel() + "}");
+						totalCount--;
+						continue;
+					}
 
-						return new MeshSearchHit<Node>(uuid, language);
-					}).filter(hit -> {
-						return hit.language != null;
-					}).map(hit -> {
+					ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+					Language languageTag = boot.languageRoot().findByLanguageTag(language);
+					if (languageTag == null) {
+						log.warn("Could not find language {" + language + "}");
+						totalCount--;
+						continue;
+					}
 
-						// Load the node
-						RootVertex<Node> root = getIndexHandler().getRootVertex();
-						hit.element = root.findByUuid(hit.uuid);
-						if (hit.element == null) {
-							log.error("Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + root.getRootLabel() + "}");
-						}
-						return hit;
-					}).filter(hit -> {
-						// Only include found elements
-						return hit.element != null;
-					}).map(hit -> {
+					// Locate the matching container and add it to the list of found containers
+					NodeGraphFieldContainer container = element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
+					if (container != null) {
+						elementList.add(new NodeContent(element, container));
+					} else {
+						totalCount--;
+						continue;
+					}
 
-						ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-						Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
-						if (languageTag == null) {
-							log.debug("Could not find language {" + hit.language + "}");
-							return null;
-						}
+				}
+				// Update the total count
+				hitsInfo.put("total", totalCount);
 
-						// Locate the matching container and add it to the list of found containers
-						NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
-						if (container != null) {
-							return new NodeContent(hit.element, container);
-						}
-						// TODO mapping to null will cause errors?
-						return null;
-					}).filter(hit -> {
-						return hit != null;
-					});
-				DynamicStreamPageImpl<NodeContent> dynamicPage = new DynamicStreamPageImpl<>(stream, pagingInfo);
-				dynamicPage.setUnfilteredSearchCount(unfilteredCount);
-				return dynamicPage;
+				PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
+				return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
 			});
 			return page;
 		} catch (HttpErrorException e) {

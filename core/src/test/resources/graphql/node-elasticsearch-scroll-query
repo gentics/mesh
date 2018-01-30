@@ -1,0 +1,18 @@
+{
+	# [$.data.nodes.elements.length()=80]
+	nodes(query: "{\"query\":{\"query_string\":{\"query\":\"mealtime\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}", perPage: 80) {
+		elements {
+			uuid
+			language
+		}
+		# [$.data.nodes.perPage=80]
+		perPage
+		# [$.data.nodes.pageCount=2]
+		pageCount
+		# [$.data.nodes.totalCount=100]
+		totalCount
+		# [$.data.nodes.size=80]
+		size
+	}
+}
+# [$.errors=<is-undefined>]

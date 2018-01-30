@@ -19,6 +19,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -104,11 +105,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				userJson.put("query", newQuery);
 			}
 
-			// TODO remove this once paging is handled by ES
-			if (userJson.getLong("size") == null) {
-				userJson.put("size", 8000);
-			}
-
 			// Add language filter
 			if (filterLanguage) {
 				List<String> requestedLanguageTags = db.tx(() -> ac.getNodeParameters().getLanguageList());
@@ -148,7 +144,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
 		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
 		requestBuilder.async().subscribe(response -> {
-			// Directly relay the response to the requestor without converting it.
+			// Directly relay the response to the requester without converting it.
 			ac.send(response.toString(), OK);
 		}, error -> {
 			if (error instanceof HttpErrorException) {
@@ -292,7 +288,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * @param pagingInfo
 	 * @return
 	 */
-	private PagingMetaInfo extractMetaInfo(JsonObject info, PagingParameters pagingInfo) {
+	protected PagingMetaInfo extractMetaInfo(JsonObject info, PagingParameters pagingInfo) {
 		PagingMetaInfo metaInfo = new PagingMetaInfo();
 		long total = info.getLong("total");
 		metaInfo.setTotalCount(total);
@@ -321,18 +317,21 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		// Add permission checks to the query
 		JsonObject queryJson = prepareSearchQuery(ac, query, false);
+
+		// Add paging to query
+		applyPagingParams(queryJson, pagingInfo);
+
 		if (log.isDebugEnabled()) {
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
 
-		// TODO add paging to query
 
 		// Prepare the request
 		RequestBuilder<JsonObject> requestBuilder = client.query(queryJson, new ArrayList<>(indices));
 		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
 		Single<Page<? extends T>> result = requestBuilder.async().map(response -> {
 			return db.tx(() -> {
-				List<T> elementList = new ArrayList<T>();
+				List<T> elementList = new ArrayList<>();
 				JsonObject hitsInfo = response.getJsonObject("hits");
 				JsonArray hits = hitsInfo.getJsonArray("hits");
 				for (int i = 0; i < hits.size(); i++) {
@@ -347,8 +346,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						elementList.add(element);
 					}
 				}
-				Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
-				return elementPage;
+
+				PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
+				return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
 			});
 		});
 

@@ -4,14 +4,19 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
+import com.gentics.elasticsearch.client.RequestBuilder;
 import com.gentics.mesh.search.impl.SearchClient;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Wrapper for typical elasticsearch {@link SearchResponse} results. The wrapper will use the scroll API to advance the iteration if needed.
  */
 public class ScrollingIterator implements Iterator<JsonObject> {
+
+	private static final Logger log = LoggerFactory.getLogger(ScrollingIterator.class);
 
 	private Iterator<JsonObject> currentIterator;
 	private JsonObject currentResponse;
@@ -51,11 +56,14 @@ public class ScrollingIterator implements Iterator<JsonObject> {
 	 */
 	private void advanceScroll() {
 		JsonObject json = new JsonObject();
+		json.put("scroll_id", currentResponse.getString("_scroll_id"));
 		json.put("scroll", "1m");
-		json.put("scroll_id", currentResponse.getString("scroll_id"));
 		try {
-			currentResponse = client.queryScroll(json, null).sync();
+			RequestBuilder<JsonObject> scrollRequest = client.queryScroll(json, null);
+			currentResponse = scrollRequest.sync();
 		} catch (HttpErrorException e) {
+			System.out.println(e.toString());
+			log.error("Error while handling scroll request.", e);
 			throw new RuntimeException("Error while handling scroll request", e);
 		}
 		currentIterator = currentResponse.getJsonObject("hits").getJsonArray("hits").stream().map(o -> (JsonObject) o).iterator();

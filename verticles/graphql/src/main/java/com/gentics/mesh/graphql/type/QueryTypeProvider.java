@@ -376,14 +376,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 					return page.getTotalElements();
 				}).type(GraphQLLong));
 
-		type.field(newFieldDefinition().name("unfilteredCount")
-				.description(
-						"Return the unfiltered total count. Note that this value may not be exact since no permission filtering will be applied.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getUnfilteredSearchCount();
-				}).type(GraphQLLong));
-
 		type.field(newFieldDefinition().name("currentPage").description("Return the current page number.").dataFetcher(env -> {
 			Page<?> page = env.getSource();
 			return page.getNumber();
