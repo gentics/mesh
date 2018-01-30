@@ -43,8 +43,8 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		// Create a dummy server which just blocks on every in-bound request for 1 second
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(0));
 		server.requestHandler(rh -> {
-			log.info("Waiting for 1 second to answer request: " + rh.absoluteURI());
-			vertx.setTimer(12000, th -> rh.response().end());
+			log.info("Waiting for 16 second to answer request: " + rh.absoluteURI());
+			vertx.setTimer(16000, th -> rh.response().end());
 		});
 		server.rxListen().blockingGet();
 

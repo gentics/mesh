@@ -295,7 +295,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
 		}
 
-		return client.updateDocument(index, DEFAULT_TYPE, uuid, document).async().doOnSuccess(response -> {
+		return client.updateDocument(index, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async().doOnSuccess(response -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 			}
