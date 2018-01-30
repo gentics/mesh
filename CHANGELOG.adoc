@@ -21,6 +21,13 @@ icon:plus[] REST: The UUID of the referenced binary data will now also be listed
 
 icon:plus[] GraphQL: It is now possible to read the focal point information and binary uuid of binary fields.
 
+[[v0.14.2]]
+== 0.14.2 (30.01.2018)
+
+icon:check[] Elasticsearch: Fixed a bug which caused an internal error when granting multiple permissions to the same element at the same time.
+
+icon:check[] GraphQL: The `linkType` parameter for string and html fields now causes the the link to be rendered in the language of the queried node if no language information is given.
+
 [[v0.14.1]]
 == 0.14.1 (19.01.2018)
 

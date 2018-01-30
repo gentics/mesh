@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -136,6 +137,14 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		}
 
 		return container.getParentNode();
+	}
+
+	/**
+	 * Returns the language of the container, since the micronode itself does not have an edge to the language
+	 */
+	@Override
+	public Language getLanguage() {
+		return getContainer().getLanguage();
 	}
 
 	@Override

@@ -265,7 +265,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
 				StringGraphFieldList stringList = container.getStringList(schema.getName());
@@ -275,7 +275,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":
 				NumberGraphFieldList numberList = container.getNumberList(schema.getName());
