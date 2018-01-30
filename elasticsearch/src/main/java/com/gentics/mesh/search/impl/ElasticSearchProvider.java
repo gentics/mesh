@@ -191,7 +191,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Deleting indices {" + StringUtils.join(result.toArray(), ","));
 			String[] indices = result.toArray(new String[result.size()]);
 			return deleteIndex(indices);
-		}).compose(withTimeoutAndLog("Clearing mesh indices."));
+		}).compose(withTimeoutAndLog("Clearing mesh indices.", true));
 	}
 
 	@Override
@@ -213,7 +213,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		return client.refresh(indices).async().doOnError(error -> {
 			log.error("Refreshing of indices {" + Strings.join(indices, ",") + "} failed.", error);
 			throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
-		}).toCompletable().compose(withTimeoutAndLog("Refreshing indices {" + Strings.join(indices, ",") + "}"));
+		}).toCompletable().compose(withTimeoutAndLog("Refreshing indices {" + Strings.join(indices, ",") + "}", true));
 	}
 
 	@Override
@@ -246,7 +246,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.error("Error while creating index {" + indexName + "}", error);
 			}
 			return Completable.error(error);
-		}).compose(withTimeoutAndLog("Creating index {" + indexName + "}"));
+		}).compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
 	}
 
 	@Override
@@ -285,7 +285,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.error("Could not delete object {" + uuid + "} from index {" + index + "}");
 			}
 			return Completable.error(error);
-		}).compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}"));
+		}).compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -311,7 +311,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				+ "[ms]", error);
 			return Completable.error(error);
 
-		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}"));
+		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -343,7 +343,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}).doOnError(error -> {
 			log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
 				+ "[ms]", error);
-		}).toCompletable().compose(withTimeoutAndLog("Storing document batch"));
+		}).toCompletable().compose(withTimeoutAndLog("Storing document batch", true));
 	}
 
 	@Override
@@ -362,7 +362,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System.currentTimeMillis()
 				- start) + "[ms]", error);
 
-		}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}"));
+		}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -388,7 +388,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					error);
 			}
 			return Completable.error(error);
-		}).compose(withTimeoutAndLog("Deletion of indices " + indices));
+		}).compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 	}
 
 	@Override
@@ -414,8 +414,9 @@ public class ElasticSearchProvider implements SearchProvider {
 			} else {
 				return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
 			}
-		}).toCompletable().andThen(client.deleteIndexTemplate(templateName).async().toCompletable()).compose(withTimeoutAndLog(
-			"Template validation"));
+		}).toCompletable()
+			.andThen(client.deleteIndexTemplate(templateName).async().toCompletable())
+			.compose(withTimeoutAndLog("Template validation", false));
 	}
 
 	@Override
@@ -452,19 +453,30 @@ public class ElasticSearchProvider implements SearchProvider {
 	/**
 	 * Modify the given completable and add the configured timeout and error logging.
 	 * 
-	 * @param c
+	 * @param msg
+	 *            Message to be shown on timeout
+	 * @param ignoreError
+	 *            Whether to ignore any encountered errors
 	 * @return
 	 */
-	private CompletableTransformer withTimeoutAndLog(String msg) {
+	private CompletableTransformer withTimeoutAndLog(String msg, boolean ignoreError) {
 		Long timeout = getOptions().getTimeout();
-		return c -> c.timeout(timeout, TimeUnit.MILLISECONDS).doOnError(error -> {
-			if (error instanceof TimeoutException) {
-				log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
+		return c -> {
+			Completable t = c.timeout(timeout, TimeUnit.MILLISECONDS).doOnError(error -> {
+
+				if (error instanceof TimeoutException) {
+					log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
+				} else {
+					error.printStackTrace();
+					log.error(error);
+				}
+			});
+			if (ignoreError) {
+				return t.onErrorComplete();
 			} else {
-				error.printStackTrace();
-				log.error(error);
+				return t;
 			}
-		}).onErrorComplete();
+		};
 	}
 
 }
