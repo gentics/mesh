@@ -82,10 +82,10 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		typeProperties.put("tagFamilies", new JsonObject().put("type", "object").put("dynamic", true));
 
 		typeMapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
-				"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(KEYWORD)))).add(new JsonObject().put(
-						"tagFamilyTags", new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
-								new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramTextType()).put("uuid",
-										notAnalyzedType(KEYWORD)))))));
+			"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(KEYWORD)))).add(new JsonObject().put(
+				"tagFamilyTags", new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
+					new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramTextType()).put("uuid",
+						notAnalyzedType(KEYWORD)))))));
 
 		// .language
 		typeProperties.put("language", notAnalyzedType(KEYWORD));

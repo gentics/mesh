@@ -104,15 +104,4 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 		return hasNextPage.get();
 	}
 
-	@Override
-	public long getUnfilteredSearchCount() {
-		return unfilteredSearchCount;
-	}
-
-	@Override
-	public Page<T> setUnfilteredSearchCount(long unfilteredSearchCount) {
-		this.unfilteredSearchCount = unfilteredSearchCount;
-		return this;
-	}
-
 }

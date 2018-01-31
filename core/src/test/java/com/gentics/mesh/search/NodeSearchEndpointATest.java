@@ -92,7 +92,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 		// "supersonic" found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
-				.published()));
+			.published()));
 		System.out.println(response.toJson());
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
@@ -105,10 +105,10 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 		// "supersonic" still found, "urschnell" not found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
-				.published()));
+			.published()));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent), new VersioningParametersImpl()
-				.published()));
+			.published()));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish content "urschnell"
@@ -133,7 +133,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		oldCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
 
 		SchemaResponse schema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(it -> it.getName().equals("content"))
-				.findAny().get();
+			.findAny().get();
 		List<FieldSchema> fields = schema.getFields();
 		fields.add(new StringFieldSchemaImpl().setName("test").setLabel("Test"));
 

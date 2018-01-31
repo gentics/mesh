@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
-import org.elasticsearch.common.xcontent.XContentFactory;
 
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -34,6 +33,9 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 
 	/**
@@ -51,8 +53,9 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		String uuid = db().tx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),
-						new NodeParametersImpl().setLanguages(expectedLanguages), new VersioningParametersImpl().draft()));
+			() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "concorde"),
+				new PagingParametersImpl().setPage(1).setPerPage(100),
+				new NodeParametersImpl().setLanguages(expectedLanguages), new VersioningParametersImpl().draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());
 
@@ -93,7 +96,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		schema.addField(vcardFieldSchema);
 
 		MicronodeGraphField vcardField = node.getLatestDraftFieldContainer(english()).createMicronode("vcard",
-				microschemaContainers().get("vcard").getLatestVersion());
+			microschemaContainers().get("vcard").getLatestVersion());
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
 	}
@@ -157,10 +160,11 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 	 * @throws IOException
 	 */
 	protected String getNestedVCardListSearch(String firstName, String lastName) throws IOException {
-		return XContentFactory.jsonBuilder().startObject().startObject("query").startObject("nested").field("path", "fields.vcardlist")
-				.startObject("query").startObject("bool").startArray("must").startObject().startObject("match")
-				.field("fields.vcardlist.fields-vcard.firstName", firstName).endObject().endObject().startObject().startObject("match")
-				.field("fields.vcardlist.fields-vcard.lastName", lastName).endObject().endObject().endArray().endObject().endObject().endObject()
-				.endObject().endObject().string();
+		JsonObject request = new JsonObject(
+			"{\"query\":{\"nested\":{\"path\":\"fields.vcardlist\",\"query\":{\"bool\":{\"must\":[{\"match\":{\"fields.vcardlist.fields-vcard.firstName\":\"Mickey\"}},{\"match\":{\"fields.vcardlist.fields-vcard.lastName\":\"Duck\"}}]}}}}}\n");
+		JsonArray must = request.getJsonObject("query").getJsonObject("nested").getJsonObject("query").getJsonObject("bool").getJsonArray("must");
+		must.getJsonObject(0).getJsonObject("match").put("fields.vcardlist.fields-vcard.firstName", firstName);
+		must.getJsonObject(1).getJsonObject("match").put("fields.vcardlist.fields-vcard.lastName", lastName);
+		return request.toString();
 	}
 }

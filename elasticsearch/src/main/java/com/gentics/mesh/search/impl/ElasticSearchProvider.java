@@ -1,15 +1,13 @@
 package com.gentics.mesh.search.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -19,38 +17,10 @@ import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.nio.entity.NStringEntity;
-import org.elasticsearch.ElasticsearchStatusException;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.main.MainResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.ResponseListener;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.IndexNotFoundException;
-import org.elasticsearch.index.engine.DocumentMissingException;
-import org.elasticsearch.rest.RestStatus;
 
+import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -67,6 +37,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import joptsimple.internal.Strings;
 import net.lingala.zip4j.exception.ZipException;
 
 /**
@@ -77,15 +48,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
-	private RestHighLevelClient client;
+	private SearchClient client;
 
 	private MeshOptions options;
 
-	// private Scheduler scheduler;
-
-	// private WorkerExecutor workerPool;
-
 	private ElasticsearchProcessManager processManager;
+
+	private final static int MAX_RETRY_ON_ERROR = 5;
 
 	public ElasticSearchProvider() {
 
@@ -104,9 +73,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	public void start(boolean waitForCluster) {
 		log.debug("Creating elasticsearch provider.");
 
-		// workerPool = Mesh.vertx().createSharedWorkerExecutor("searchWorker", 15, 10 * 1000 * 1000);
-		// scheduler = RxHelper.blockingScheduler(workerPool);
-
 		ElasticSearchOptions searchOptions = getOptions();
 		long start = System.currentTimeMillis();
 
@@ -123,8 +89,12 @@ public class ElasticSearchProvider implements SearchProvider {
 			return new HttpHost(hostConfig.getHostname(), hostConfig.getPort(), hostConfig.getProtocol());
 		}).collect(Collectors.toList());
 
-		RestClientBuilder builder = RestClient.builder(hosts.toArray(new HttpHost[hosts.size()]));
-		client = new RestHighLevelClient(builder);
+		if (hosts.size() >= 2) {
+			throw error(INTERNAL_SERVER_ERROR, "Configuring multiple hosts is currently not supported.");
+		}
+		// TODO add support for multiple servers
+		HttpHost first = hosts.get(0);
+		client = new SearchClient(first.getSchemeName(), first.getHostName(), first.getPort());
 
 		if (waitForCluster) {
 			waitForCluster(client, 45);
@@ -134,7 +104,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 	}
 
-	private void waitForCluster(RestHighLevelClient client, long timeoutInSec) {
+	private void waitForCluster(SearchClient client, long timeoutInSec) {
 		long start = System.currentTimeMillis();
 		// Wait until the cluster is ready
 		while (true) {
@@ -144,14 +114,14 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			try {
 				log.debug("Checking elasticsearch status...");
-				MainResponse response = client.info();
-				boolean ready = response.isAvailable();
-				log.debug("Elasticsearch status is: " + ready);
-				if (ready) {
+				JsonObject response = client.clusterHealth().sync();
+				String status = response.getString("status");
+				log.debug("Elasticsearch status is: " + status);
+				if (!"red".equals(status)) {
 					log.info("Elasticsearch is ready. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
 					return;
 				}
-			} catch (IOException e1) {
+			} catch (HttpErrorException e1) {
 				// ignored
 			}
 			try {
@@ -212,42 +182,24 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable clear() {
-
-		Maybe<List<String>> indexInfo = Maybe.create(sub -> {
-			// Read all indices and locate indices which have been created for/by mesh.
-			client.getLowLevelClient().performRequestAsync(GET.toString(), "/_all", new ResponseListener() {
-
-				@Override
-				public void onSuccess(Response response) {
-					List<String> indices = Collections.emptyList();
-					try (InputStream ins = response.getEntity().getContent()) {
-						String json = IOUtils.toString(ins);
-						JsonObject indexInfo = new JsonObject(json);
-						indices = indexInfo.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
-					} catch (UnsupportedOperationException | IOException e1) {
-						sub.onError(e1);
-						return;
-					}
-					if (indices.isEmpty()) {
-						sub.onComplete();
-					} else {
-						sub.onSuccess(indices);
-					}
-				}
-
-				@Override
-				public void onFailure(Exception exception) {
-					sub.onError(exception);
+		// Read all indices and locate indices which have been created for/by mesh.
+		Maybe<List<String>> indexInfo = client.readIndex("_all").async()
+			.flatMapMaybe(response -> {
+				List<String> indices = Collections.emptyList();
+				indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
+				if (indices.isEmpty()) {
+					return Maybe.empty();
+				} else {
+					return Maybe.just(indices);
 				}
 			});
-		});
 
 		// Now delete the found indices
 		return indexInfo.flatMapCompletable(result -> {
 			log.debug("Deleting indices {" + StringUtils.join(result.toArray(), ","));
 			String[] indices = result.toArray(new String[result.size()]);
 			return deleteIndex(indices);
-		}).compose(withTimeoutAndLog("Clearing mesh indices."));
+		}).compose(withTimeoutAndLog("Clearing mesh indices.", true));
 	}
 
 	@Override
@@ -256,190 +208,90 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.info("Closing Elasticsearch REST client.");
 			client.close();
 		}
-
 		if (processManager != null) {
 			log.info("Stopping Elasticsearch server.");
 			processManager.stopWatchDog();
 			processManager.stop();
 		}
-
-		// if (scheduler != null) {
-		// log.info("Shutting down Elasticsearch job scheduler.");
-		// scheduler.shutdown();
-		// }
-		// if (workerPool != null) {
-		// log.info("Closing Elasticsearch worker pool.");
-		// workerPool.close();
-		// }
 	}
 
 	@Override
 	public Completable refreshIndex(String... indices) {
-		String indicesStr = StringUtils.join(indices, ",");
-		return Completable.create(sub -> {
-			String path = "/_refresh";
-			if (indices.length > 0) {
-				path = "/" + indicesStr + "/_refresh";
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Refreshing indices with path {" + path + "}");
-			}
-			client.getLowLevelClient().performRequestAsync(POST.toString(), path, new ResponseListener() {
-
-				@Override
-				public void onSuccess(Response response) {
-					sub.onComplete();
-				}
-
-				@Override
-				public void onFailure(Exception e) {
-					log.error("Refreshing of indices {" + indicesStr + "} failed.", e);
-					sub.onError(error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", e));
-				}
-			});
-		}).compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}"));
+		String indicesStr = Strings.join(indices, ",");
+		return client.refresh(indices).async()
+			.doOnError(error -> {
+				log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
+				throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
+			}).toCompletable()
+			.compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}", true));
 	}
 
 	@Override
 	public Completable createIndex(IndexInfo info) {
 		String indexName = info.getIndexName();
 
-		return Completable.create(sub -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Creating ES Index {" + indexName + "}");
-			}
+		if (log.isDebugEnabled()) {
+			log.debug("Creating ES Index {" + indexName + "}");
+		}
 
-			JsonObject json = createIndexSettings(info);
-			HttpEntity entity = new NStringEntity(json.toString(), ContentType.APPLICATION_JSON);
-
-			// TODO replace this code with high level client when upgrading to 6.2.0
-			getSearchClient().getLowLevelClient().performRequestAsync(PUT.toString(), indexName, Collections.emptyMap(), entity,
-					new ResponseListener() {
-
-						@Override
-						public void onSuccess(Response response) {
-							if (log.isDebugEnabled()) {
-								log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
-							}
-							sub.onComplete();
-						}
-
-						@Override
-						public void onFailure(Exception e) {
-							if (e instanceof ResponseException) {
-								ResponseException re = (ResponseException) e;
-								try (InputStream ins = re.getResponse().getEntity().getContent()) {
-									String json = IOUtils.toString(ins);
-									JsonObject ob = new JsonObject(json);
-									String type = ob.getJsonObject("error").getString("type");
-									if (type.equals("resource_already_exists_exception")) {
-										sub.onComplete();
-									} else {
-										if (log.isDebugEnabled()) {
-											log.debug("Got failure response {" + ob.encodePrettily() + "}");
-										}
-										sub.onError(e);
-									}
-								} catch (UnsupportedOperationException | IOException e1) {
-									sub.onError(e1);
-								}
-							} else {
-								log.error("Error while creating index {" + indexName + "}", e);
-								sub.onError(e);
-							}
-						}
-
-					});
-		}).compose(withTimeoutAndLog("Creating index {" + indexName + "}"));
+		JsonObject json = createIndexSettings(info);
+		return client.createIndex(indexName, json).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
+				}
+			}).toCompletable()
+			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
 	}
 
 	@Override
-	public Single<Map<String, Object>> getDocument(String index, String uuid) {
-		Single<Map<String, Object>> single = Single.create(sub -> {
-			getSearchClient().getAsync(new GetRequest(index, DEFAULT_TYPE, uuid), new ActionListener<GetResponse>() {
-
-				@Override
-				public void onResponse(GetResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Get object {" + uuid + "} from index {" + index + "}");
-					}
-					sub.onSuccess(response.getSourceAsMap());
+	public Single<JsonObject> getDocument(String index, String uuid) {
+		return client.getDocument(index, DEFAULT_TYPE, uuid).async()
+			.map(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Get object {" + uuid + "} from index {" + index + "}");
 				}
-
-				@Override
-				public void onFailure(Exception e) {
-					log.error("Could not get object {" + uuid + "} from index {" + index + "}");
-					sub.onError(e);
-				}
+				return response;
+			}).timeout(getOptions().getTimeout(), TimeUnit.MILLISECONDS).doOnError(error -> {
+				log.error("Could not get object {" + uuid + "} from index {" + index + "}", error);
 			});
-		});
-		return single.timeout(getOptions().getTimeout(), TimeUnit.MILLISECONDS).doOnError(log::error);
 	}
 
 	@Override
 	public Completable deleteDocument(String index, String uuid) {
-		return Completable.create(sub -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Deleting document {" + uuid + "} from index {" + index + "}.");
-			}
-			getSearchClient().deleteAsync(new DeleteRequest(index, DEFAULT_TYPE, uuid), new ActionListener<DeleteResponse>() {
-				@Override
-				public void onResponse(DeleteResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
-					}
-					sub.onComplete();
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting document {" + uuid + "} from index {" + index + "}.");
+		}
+		return client.deleteDocument(index, DEFAULT_TYPE, uuid).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
 				}
-
-				@Override
-				public void onFailure(Exception e) {
-					if (e instanceof DocumentMissingException) {
-						sub.onComplete();
-					} else {
-						log.error("Could not delete object {" + uuid + "} from index {" + index + "}");
-						sub.onError(e);
-					}
-				}
-			});
-		}).compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}"));
+			}).toCompletable()
+			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
 	public Completable updateDocument(String index, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
-		return Completable.create(sub -> {
-			long start = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
-			}
+		long start = System.currentTimeMillis();
+		if (log.isDebugEnabled()) {
+			log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
+		}
 
-			UpdateRequest request = new UpdateRequest(index, DEFAULT_TYPE, uuid);
-			request.doc(document.toString(), XContentType.JSON);
-			getSearchClient().updateAsync(request, new ActionListener<UpdateResponse>() {
-
-				@Override
-				public void onResponse(UpdateResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start)
-								+ "[ms]");
-					}
-					sub.onComplete();
+		return client.updateDocument(index, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-
-				@Override
-				public void onFailure(Exception e) {
-					if (e instanceof ElasticsearchStatusException) {
-						ElasticsearchStatusException se = (ElasticsearchStatusException) e;
-						if (ignoreMissingDocumentError && RestStatus.NOT_FOUND.equals(se.status())) {
-							sub.onComplete();
-							return;
-						}
-					}
-					log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-							+ "[ms]", e);
-					sub.onError(e);
+			}).toCompletable().onErrorResumeNext(error -> {
+				if (ignoreMissingDocumentError && isNotFoundError(error)) {
+					return Completable.complete();
 				}
-			});
-		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}"));
+				return Completable.error(error);
+			}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -447,155 +299,91 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (documents.isEmpty()) {
 			return Completable.complete();
 		}
-		return Completable.create(sub -> {
-			long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 
-			BulkRequest request = new BulkRequest();
+		JsonArray items = new JsonArray();
+		JsonObject bulkData = new JsonObject();
+		bulkData.put("items", items);
 
-			// Add index requests for each document to the bulk request
-			for (Map.Entry<String, JsonObject> entry : documents.entrySet()) {
-				String documentId = entry.getKey();
-				JsonObject document = entry.getValue();
-				request.add(new IndexRequest(index, DEFAULT_TYPE, documentId).source(document.toString(), XContentType.JSON));
-			}
+		// Add index requests for each document to the bulk request
+		// for (Map.Entry<String, JsonObject> entry : documents.entrySet()) {
+		// JsonObject item = new JsonObject();
+		// item.put("index", value)
+		// String documentId = entry.getKey();
+		// JsonObject document = entry.getValue();
+		// request.add(new IndexRequest(index, DEFAULT_TYPE, documentId).source(document.toString(), XContentType.JSON));
+		// items.add(item);
+		// }
 
-			getSearchClient().bulkAsync(request, new ActionListener<BulkResponse>() {
-				@Override
-				public void onResponse(BulkResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]");
-					}
-					sub.onComplete();
+		return client.storeDocumentBulk(bulkData).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System.currentTimeMillis()
+						- start) + "[ms]");
 				}
-
-				@Override
-				public void onFailure(Exception e) {
-					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration "
-							+ (System.currentTimeMillis() - start) + "[ms]", e);
-					sub.onError(e);
-				}
-
-			});
-		}).compose(withTimeoutAndLog("Storing document batch"));
+			}).toCompletable()
+			.compose(withTimeoutAndLog("Storing document batch {" + index + "} / {" + DEFAULT_TYPE + "}", true));
 	}
 
 	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
-		return Completable.create(sub -> {
-			long start = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}");
-			}
-			IndexRequest indexRequest = new IndexRequest(index, DEFAULT_TYPE, uuid);
-			indexRequest.source(document.toString(), XContentType.JSON);
-			getSearchClient().indexAsync(indexRequest, new ActionListener<IndexResponse>() {
-
-				@Override
-				public void onResponse(IndexResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]");
-					}
-					sub.onComplete();
+		long start = System.currentTimeMillis();
+		if (log.isDebugEnabled()) {
+			log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}");
+		}
+		return client.storeDocument(index, DEFAULT_TYPE, uuid, document).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
+						- start) + "[ms]");
 				}
-
-				@Override
-				public void onFailure(Exception e) {
-					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration "
-							+ (System.currentTimeMillis() - start) + "[ms]", e);
-					sub.onError(e);
-				}
-			});
-		}).compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}"));
+			}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
 	public Completable deleteIndex(boolean failOnMissingIndex, String... indexNames) {
-		return Completable.create(sub -> {
-			long start = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Deleting index {" + indexNames + "}");
-			}
-			DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexNames);
-			getSearchClient().indices().deleteIndexAsync(deleteIndexRequest, new ActionListener<DeleteIndexResponse>() {
-
-				public void onResponse(DeleteIndexResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Deleted index {" + indexNames + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-					}
-					sub.onComplete();
-				};
-
-				@Override
-				public void onFailure(Exception e) {
-					if (e instanceof IndexNotFoundException && !failOnMissingIndex) {
-						sub.onComplete();
-					} else {
-						log.error("Deleting index {" + indexNames + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-						sub.onError(e);
-					}
+		String indices = Strings.join(indexNames, ",");
+		long start = System.currentTimeMillis();
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting indices {" + indices + "}");
+		}
+		return client.deleteIndex(indexNames).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-			});
-		}).compose(withTimeoutAndLog("Deletion of index " + indexNames));
+			}).toCompletable()
+			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 	}
 
 	@Override
 	public Completable validateCreateViaTemplate(IndexInfo info) {
-		return Completable.create(sub -> {
-			JsonObject json = createIndexSettings(info);
-			if (log.isDebugEnabled()) {
-				log.debug("Validating index configuration {" + json.encodePrettily() + "}");
-			}
+		JsonObject json = createIndexSettings(info);
+		if (log.isDebugEnabled()) {
+			log.debug("Validating index configuration {" + json.encodePrettily() + "}");
+		}
 
-			String randomName = info.getIndexName() + UUIDUtil.randomUUID();
-			String templateName = randomName.toLowerCase();
-			json.put("template", templateName);
+		String randomName = info.getIndexName() + UUIDUtil.randomUUID();
+		String templateName = randomName.toLowerCase();
+		json.put("template", templateName);
 
-			HttpEntity entity = new NStringEntity(json.toString(), ContentType.APPLICATION_JSON);
-			getSearchClient().getLowLevelClient().performRequestAsync(PUT.toString(), "_template/" + templateName, Collections.emptyMap(), entity,
-					new ResponseListener() {
-						@Override
-						public void onSuccess(Response response) {
-							if (log.isDebugEnabled()) {
-								log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
-							}
-
-							getSearchClient().getLowLevelClient().performRequestAsync(DELETE.toString(), "_template/" + templateName,
-									new ResponseListener() {
-
-										@Override
-										public void onSuccess(Response response) {
-											sub.onComplete();
-										}
-
-										@Override
-										public void onFailure(Exception e) {
-											sub.onError(e);
-										}
-
-									});
-						}
-
-						@Override
-						public void onFailure(Exception e) {
-							if (e instanceof ResponseException) {
-								ResponseException re = (ResponseException) e;
-								try (InputStream ins = re.getResponse().getEntity().getContent()) {
-									String json = IOUtils.toString(ins);
-									JsonObject errorInfo = new JsonObject(json);
-									sub.onError(error(BAD_REQUEST, "schema_error_index_validation",
-											errorInfo.getJsonObject("error").getString("reason")));
-								} catch (UnsupportedOperationException | IOException e1) {
-									sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e1.getMessage()));
-								}
-
-							} else {
-								sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e.getMessage()));
-							}
-						}
-					});
-		}).compose(withTimeoutAndLog("Template validation"));
+		return client.createIndexTemplate(templateName, json).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
+				}
+			}).onErrorResumeNext(error -> {
+				if (error instanceof HttpErrorException) {
+					HttpErrorException re = (HttpErrorException) error;
+					JsonObject errorInfo = re.getBodyObject(JsonObject::new);
+					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString("reason")));
+				} else {
+					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
+				}
+			}).toCompletable()
+			.andThen(client.deleteIndexTemplate(templateName).async().toCompletable())
+			.compose(withTimeoutAndLog("Template validation", false));
 	}
 
 	@Override
@@ -606,9 +394,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public String getVersion() {
 		try {
-			MainResponse info = client.info();
-			return info.getVersion().toString();
-		} catch (IOException e) {
+			JsonObject info = client.info().sync();
+			return info.getString("version");
+		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
 			throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
 		}
@@ -618,10 +406,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	@SuppressWarnings("unchecked")
 	public <T> T getClient() {
 		return (T) client;
-	}
-
-	private RestHighLevelClient getSearchClient() {
-		return client;
 	}
 
 	/**
@@ -634,20 +418,35 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	/**
-	 * Modify the given completable and add the configured timeout and error logging.
+	 * Modify the given completable and add the configured timeout, error logging and retry handler.
 	 * 
-	 * @param c
+	 * @param msg
+	 *            Message to be shown on timeout
+	 * @param ignoreError
+	 *            Whether to ignore any encountered errors
 	 * @return
 	 */
-	private CompletableTransformer withTimeoutAndLog(String msg) {
+	private CompletableTransformer withTimeoutAndLog(String msg, boolean ignoreError) {
 		Long timeout = getOptions().getTimeout();
-		return c -> c.timeout(timeout, TimeUnit.MILLISECONDS).doOnError(error -> {
-			if (error instanceof TimeoutException) {
-				log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
+		return c -> {
+			Completable t = c
+				// Retry the operation if an conflict error was returned
+				.retry((nTry, error) -> nTry < MAX_RETRY_ON_ERROR && isConflictError(error))
+				.timeout(timeout, TimeUnit.MILLISECONDS)
+				.doOnError(error -> {
+					if (error instanceof TimeoutException) {
+						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
+					} else {
+						error.printStackTrace();
+						log.error(error);
+					}
+				});
+			if (ignoreError) {
+				return t.onErrorComplete();
 			} else {
-				log.error(error);
+				return t;
 			}
-		}).onErrorComplete();
+		};
 	}
 
 }

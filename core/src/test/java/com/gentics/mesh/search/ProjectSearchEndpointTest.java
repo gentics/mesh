@@ -32,7 +32,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		}
 
 		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleQuery("name", "dummy"), new PagingParametersImpl().setPage(1)
-				.setPerPage(2)).invoke();
+			.setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse response = future.result();
@@ -61,7 +61,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 			MeshAssert.assertElement(boot().projectRoot(), project.getUuid(), true);
 		}
 		ProjectListResponse response = call(() -> client().searchProjects(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(
-				1).setPerPage(2)));
+			1).setPerPage(2)));
 		assertEquals(1, response.getData().size());
 	}
 
@@ -72,7 +72,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		ProjectResponse project = createProject(projectName);
 
 		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
-				.setPage(1).setPerPage(2)).invoke();
+			.setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());
@@ -94,13 +94,13 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		updateProject(project.getUuid(), newProjectName);
 
 		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
-				.setPage(1).setPerPage(2)).invoke();
+			.setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
 
 		future = client().searchProjects(getSimpleTermQuery("name.raw", newProjectName), new PagingParametersImpl().setPage(1).setPerPage(2))
-				.invoke();
+			.invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());

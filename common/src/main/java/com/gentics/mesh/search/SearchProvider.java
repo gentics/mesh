@@ -97,8 +97,9 @@ public interface SearchProvider {
 	 *            Index name of the document
 	 * @param uuid
 	 *            Uuid for the document
+	 * @return Single that yields the document data
 	 */
-	Single<Map<String, Object>> getDocument(String indexName, String uuid);
+	Single<JsonObject> getDocument(String indexName, String uuid);
 
 	/**
 	 * Start the search provider.

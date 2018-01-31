@@ -109,8 +109,8 @@ public abstract class AbstractTypeProvider {
 		// #lang
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 		return newArgument().name("lang").type(new GraphQLList(GraphQLString)).description(
-				"Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned")
-				.defaultValue(Arrays.asList(defaultLanguage)).build();
+			"Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned")
+			.defaultValue(Arrays.asList(defaultLanguage)).build();
 	}
 
 	/**
@@ -144,15 +144,16 @@ public abstract class AbstractTypeProvider {
 
 	public GraphQLEnumType createLinkEnumType() {
 		GraphQLEnumType linkTypeEnum = newEnum().name(LINK_TYPE_NAME).description("Mesh resolve link type").value(LinkType.FULL.name(), LinkType.FULL,
-				"Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links").value(LinkType.SHORT.name(),
-						LinkType.SHORT, "Render short links").value(LinkType.OFF.name(), LinkType.OFF, "Don't render links").build();
+			"Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links").value(LinkType.SHORT.name(),
+				LinkType.SHORT, "Render short links")
+			.value(LinkType.OFF.name(), LinkType.OFF, "Don't render links").build();
 		return linkTypeEnum;
 	}
 
 	public GraphQLArgument createLinkTypeArg() {
 
 		return newArgument().name("linkType").type(new GraphQLTypeReference(LINK_TYPE_NAME)).defaultValue(LinkType.OFF).description(
-				"Specify the resolve type").build();
+			"Specify the resolve type").build();
 	}
 
 	/**
@@ -191,7 +192,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected MeshCoreVertex<?, ?> handleUuidNameArgsNoPerm(DataFetchingEnvironment env, Function<String, MeshCoreVertex<?, ?>> uuidFetcher,
-			Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
+		Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
 		String uuid = env.getArgument("uuid");
 		MeshCoreVertex<?, ?> element = null;
 		if (uuid != null) {
@@ -218,14 +219,14 @@ public abstract class AbstractTypeProvider {
 			SchemaContainer container = schema.getSchemaContainer();
 			return container.getUuid().equals(uuid) && gc.getUser().hasPermission(container, READ_PERM);
 		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && gc.getUser().hasPermission(schema
-				.getSchemaContainer(), READ_PERM)).findFirst().get());
+			.getSchemaContainer(), READ_PERM)).findFirst().get());
 	}
 
 	protected Page<SchemaContainerVersion> handleReleaseSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Release release = env.getSource();
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false).filter(
-				schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
+			schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
 		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}
 
@@ -245,21 +246,21 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-			String pageTypeName, SearchHandler searchHandler) {
+		String pageTypeName, SearchHandler searchHandler) {
 		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg()).type(
-				new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
-					GraphQLContext gc = env.getContext();
-					String query = env.getArgument("query");
-					if (query != null) {
-						try {
-							return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
-						} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
-							throw new RuntimeException(e);
-						}
-					} else {
-						return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
+			new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
+				GraphQLContext gc = env.getContext();
+				String query = env.getArgument("query");
+				if (query != null) {
+					try {
+						return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
+					} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+						throw new RuntimeException(e);
 					}
-				}).build();
+				} else {
+					return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
+				}
+			}).build();
 	}
 
 	/**
@@ -276,18 +277,18 @@ public abstract class AbstractTypeProvider {
 	 * @return Field definition
 	 */
 	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher<?> dataFetcher,
-			String referenceTypeName) {
+		String referenceTypeName) {
 		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName).build();
 	}
 
 	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
-			DataFetcher<?> dataFetcher, String pageTypeName) {
+		DataFetcher<?> dataFetcher, String pageTypeName) {
 		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).type(new GraphQLTypeReference(pageTypeName))
-				.dataFetcher(dataFetcher);
+			.dataFetcher(dataFetcher);
 	}
 
 	protected GraphQLFieldDefinition newPagingField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-			String referenceTypeName) {
+		String referenceTypeName) {
 		return newPagingFieldWithFetcher(name, description, (env) -> {
 			GraphQLContext gc = env.getContext();
 			return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
@@ -308,12 +309,12 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-			String elementType) {
+		String elementType) {
 		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + ".")).argument(createNameArg(
-				"Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
-					GraphQLContext gc = env.getContext();
-					return handleUuidNameArgs(env, rootProvider.apply(gc));
-				}).build();
+			"Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
+				GraphQLContext gc = env.getContext();
+				return handleUuidNameArgs(env, rootProvider.apply(gc));
+			}).build();
 	}
 
 	/**

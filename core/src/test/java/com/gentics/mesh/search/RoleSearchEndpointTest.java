@@ -40,7 +40,6 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(0, list.getData().size());
-
 	}
 
 	@Test

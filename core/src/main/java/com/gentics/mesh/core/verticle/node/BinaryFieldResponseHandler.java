@@ -75,15 +75,15 @@ public class BinaryFieldResponseHandler {
 				// Resize the image if needed
 				Observable<Buffer> data = binary.getStream();
 				Observable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).toObservable()
-						.map(fileWithProps -> {
-							response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
-							response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
-							response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-							response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-							// TODO encode filename?
-							response.putHeader("content-disposition", "inline; filename=" + fileName);
-							return fileWithProps.getFile();
-						}).flatMap(RxUtil::toBufferObs);
+					.map(fileWithProps -> {
+						response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
+						response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
+						response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+						response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+						// TODO encode filename?
+						response.putHeader("content-disposition", "inline; filename=" + fileName);
+						return fileWithProps.getFile();
+					}).flatMap(RxUtil::toBufferObs);
 				resizedData.subscribe(response::write, rc::fail, response::end);
 			} else {
 				response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);

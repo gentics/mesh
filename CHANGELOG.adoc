@@ -5,19 +5,62 @@
 [[vNextMajorRelease]]
 == Next Major Release
 
-CAUTION: The ElasticSearch server will no longer be embedded. Instead an external ElasticSearch 6.0 server can be used.
-
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 [[v0.15.0]]
-== 0.15.0 (TBD)
+== 0.15.0 (31.01.2018)
 
-CAUTION: The embedded Elasticsearch was removed and replaced by a connector to an external Elasticsearch server. It is highly recommended to verify existing queries due to breaking changes between Elasticsearch version 2.4 and 6.1.
-Please check the Elasticsearch changelog: link:https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-6.1.0.html[Elasticsearch Changelog]
+CAUTION: The embedded Elasticsearch was removed and replaced by a connector to a dedicated Elasticsearch server. It is highly recommended to verify existing queries due to breaking changes between Elasticsearch version 2.4 and 6.1.
+Please also check the Elasticsearch changelog: link:https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-6.1.0.html[Elasticsearch Changelog]
+
+CAUTION: Configuration: The `mesh.yml` format has been updated. Please remove the `search` section or replace it with the following settings.
+
+[source,json]
+----
+search:
+  hosts:
+  - hostname: "localhost"
+    port: 9200
+    protocol: "http"
+  startEmbeddedES: true
+----
+
+CAUTION: The Elasticsearch update may affect custom mappings within your schemas. You may need to manually update your schemas.
+
+Elasticsearch 6.1 compliant example for the commonly used raw field:
+
+[source,json]
+----
+{
+    "fields": {
+        "raw": {
+            "type": "keyword",
+            "index": true
+        }
+    }
+}
+----
+
+CAUTION: The `unfilteredCount` GraphQL paging property has been removed. You can now use the `totalCount` property instead.
+
+CAUTION: Gentics Mesh will automatically extract and start an embedded Elasticsearch server into the `elasticsearch` folder. The old search index (e.g: `data/searchIndex`) can be removed. 
 
 icon:plus[] REST: The UUID of the referenced binary data will now also be listed for binary fields. Fields which share the same binary data will also share the same binary UUID.
 
 icon:plus[] GraphQL: It is now possible to read the focal point information and binary uuid of binary fields.
+
+icon:plus[] Docs: The link:elasticsearch.html[Elasticsearch integration documentation] has been enhanced.
+
+icon:plus[] Search: The overall search performance has been increased.
+
+icon:plus[] Logging: The logging verbosity has been further decreased.
+
+[[v0.14.2]]
+== 0.14.2 (30.01.2018)
+
+icon:check[] Elasticsearch: Fixed a bug which caused an internal error when granting multiple permissions to the same element at the same time.
+
+icon:check[] GraphQL: The `linkType` parameter for string and html fields now causes the the link to be rendered in the language of the queried node if no language information is given.
 
 [[v0.14.1]]
 == 0.14.1 (19.01.2018)

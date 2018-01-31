@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.page.impl;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import com.gentics.mesh.core.data.page.Page;
 
 /**
@@ -79,17 +77,6 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	@Override
 	public boolean hasNextPage() {
 		return getPageCount() > getNumber();
-	}
-
-	@Override
-	public long getUnfilteredSearchCount() {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public Page<T> setUnfilteredSearchCount(long unfilteredSearchCount) {
-		// Not suported
-		return this;
 	}
 
 }

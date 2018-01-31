@@ -40,7 +40,7 @@ public interface SearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestM
 	 * @throws TimeoutException
 	 */
 	Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
-			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException;
+		throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException;
 
 	/**
 	 * Invoke the query and response to the requester via the action context.
@@ -52,16 +52,16 @@ public interface SearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestM
 	 *            Class of the rest model list that should be used when creating the response
 	 * @param indices
 	 *            Names of indices which should be searched
-	 * @param permission
-	 *            required permission
+	 * @param filterByLanguage
+	 *            Whether to add the language term filter (Usually only needed for node queries)
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException
 	 * @throws MeshJsonException
 	 * @throws MeshConfigurationException
 	 */
-	<RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL)
-			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException;
+	<RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL, boolean filterByLanguage)
+		throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException;
 
 	/**
 	 * Invoke a raw query which will not post process the search result. Instead the result of the search provider will directly be returned.

@@ -64,11 +64,11 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 */
 	private void addSearchEndpoints() {
 		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
-				.getNodeListResponse());
+			.getNodeListResponse(), true);
 		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
-				.createTagListResponse());
+			.createTagListResponse(), false);
 		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
-				tagFamilyExamples.getTagFamilyListResponse());
+			tagFamilyExamples.getTagFamilyListResponse(), false);
 
 	}
 
@@ -85,9 +85,11 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 *            index handler key
 	 * @param exampleResponse
 	 *            Example list response used for RAML generation
+	 * @param filterByLanguage
+	 *            Whether to append the language filter
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-			Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse) {
+		Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -99,7 +101,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				searchHandler.query(ac, root, classOfRL);
+				searchHandler.query(ac, root, classOfRL, filterByLanguage);
 			} catch (Exception e) {
 				rc.fail(e);
 			}

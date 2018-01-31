@@ -11,7 +11,17 @@ import java.util.Collection;
 import java.util.Vector;
 
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import org.json.JSONException;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.functions.Function;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,8 +45,12 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -106,6 +120,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "node-fields-query", true, "draft" });
 		testData.add(new Object[] { "node-fields-no-microschema-query", false, "draft" });
 		testData.add(new Object[] { "node-fields-link-resolve-query", true, "draft" });
+		testData.add(new Object[] { "node-fields-link-resolve-language-query", true, "draft" });
 		testData.add(new Object[] { "node-field-list-path-query", true, "draft" });
 		testData.add(new Object[] { "project-query", true, "draft" });
 		testData.add(new Object[] { "tag-query", true, "draft" });
@@ -118,7 +133,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testNodeQuery() throws JSONException, IOException, ParseException {
+	public void testNodeQuery() throws Exception {
 		String staticUuid = "43ee8f9ff71e4016ae8f9ff71e10161c";
 		String staticSchemaUuid = "70bf14ed1267446eb70c5f02cfec0e38";
 		// String contentUuid = db().tx(() -> content().getUuid());
@@ -359,6 +374,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		request.setParentNode(new NodeReference().setUuid(baseNodeUuid));
 		call(() -> client().createNode(PROJECT_NAME, request));
 
+		createLanguageLinkResolvingNode(baseNodeUuid, staticUuid).blockingAwait();
+
 		GraphQLResponse response = call(
 				() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
 		System.out.println(response.toJson());
@@ -369,4 +386,45 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date).getTime();
 	}
 
+	private Completable createLanguageLinkResolvingNode(String parentUuid, String referencedUuid) throws Exception {
+
+		Function<String, FieldMap> createFields = language -> {
+			FieldMap map = new FieldMapImpl();
+
+			// stringList
+			StringFieldListImpl stringList = new StringFieldListImpl();
+			stringList.add("A Link: {{mesh.link(\"" + referencedUuid + "\", \"en\")}}");
+			stringList.add("B Link: {{mesh.link(\"" + referencedUuid + "\", \"de\")}}");
+			stringList.add("C Link: {{mesh.link(\"" + referencedUuid + "\")}}");
+			map.put("stringList", stringList);
+
+			// htmlList
+			HtmlFieldListImpl htmlList = new HtmlFieldListImpl();
+			htmlList.add("A Link: {{mesh.link(\"" + referencedUuid + "\", \"en\")}}");
+			htmlList.add("B Link: {{mesh.link(\"" + referencedUuid + "\", \"de\")}}");
+			htmlList.add("C Link: {{mesh.link(\"" + referencedUuid + "\")}}");
+			map.put("htmlList", htmlList);
+
+			map.put("slug", new StringFieldImpl().setString("new-page-" + language));
+
+			return map;
+		};
+
+		Function<NodeResponse, Single<NodeResponse>> updateNode = response -> {
+			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+			updateRequest.setFields(createFields.apply("de"));
+			updateRequest.setLanguage("de");
+			return client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest).toSingle();
+		};
+
+		NodeCreateRequest createRequest = new NodeCreateRequest();
+		createRequest.setLanguage("en");
+		createRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		createRequest.setParentNode(new NodeReference().setUuid(parentUuid));
+		createRequest.setFields(createFields.apply("en"));
+
+		return client().createNode(PROJECT_NAME, createRequest).toSingle()
+			.flatMap(updateNode)
+			.toCompletable();
+	}
 }

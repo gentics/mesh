@@ -1,0 +1,10 @@
+{
+	# [$.data.users.elements.length()=80]
+	users(query: "{\n  \"query\": {\n \"simple_query_string\" : {\n  \"query\": \"testuser*\",\n \"fields\": [\"username.raw\"],\n \"default_operator\": \"and\"\n}\n  }\n}", perPage: 80) {
+		elements {
+			uuid
+			username
+		}
+	}
+}
+# [$.errors=<is-undefined>]

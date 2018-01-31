@@ -46,7 +46,9 @@ import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
+import com.gentics.mesh.search.RawSearchEndpointImpl;
 import com.gentics.mesh.search.SearchEndpointImpl;
 
 import io.vertx.core.Vertx;
@@ -82,7 +84,8 @@ public class RAMLGenerator extends AbstractGenerator {
 	 *            Output filename
 	 * @throws IOException
 	 */
-	public RAMLGenerator(File outputFolder, String fileName, BiConsumer<MimeType, Class<?>> schemaHandler, boolean writeExtraFiles) throws IOException {
+	public RAMLGenerator(File outputFolder, String fileName, BiConsumer<MimeType, Class<?>> schemaHandler, boolean writeExtraFiles)
+		throws IOException {
 		super(new File(outputFolder, "api"), false);
 		this.fileName = fileName;
 		this.schemaHandler = schemaHandler;
@@ -221,7 +224,7 @@ public class RAMLGenerator extends AbstractGenerator {
 			String path = endpoint.getRamlPath();
 			if (path == null) {
 				throw new RuntimeException(
-						"Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
+					"Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
 			}
 			Resource pathResource = verticleResource.getResources().get(path);
 			if (pathResource == null) {
@@ -308,6 +311,10 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(projectSearchEndpoint);
 		addEndpoints(projectBasePath, resources, projectSearchEndpoint);
 
+		ProjectRawSearchEndpointImpl projectRawSearchEndpoint = Mockito.spy(new ProjectRawSearchEndpointImpl());
+		initEndpoint(projectRawSearchEndpoint);
+		addEndpoints(projectBasePath, resources, projectRawSearchEndpoint);
+
 		ProjectSchemaEndpoint projectSchemaEndpoint = Mockito.spy(new ProjectSchemaEndpoint());
 		initEndpoint(projectSchemaEndpoint);
 		addEndpoints(projectBasePath, resources, projectSchemaEndpoint);
@@ -358,6 +365,10 @@ public class RAMLGenerator extends AbstractGenerator {
 		SearchEndpointImpl searchEndpoint = Mockito.spy(new SearchEndpointImpl());
 		initEndpoint(searchEndpoint);
 		addEndpoints(coreBasePath, resources, searchEndpoint);
+
+		RawSearchEndpointImpl rawSearchEndpoint = Mockito.spy(new RawSearchEndpointImpl());
+		initEndpoint(rawSearchEndpoint);
+		addEndpoints(coreBasePath, resources, rawSearchEndpoint);
 
 		UtilityEndpoint utilityEndpoint = Mockito.spy(new UtilityEndpoint());
 		initEndpoint(utilityEndpoint);

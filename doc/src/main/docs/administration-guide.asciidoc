@@ -8,8 +8,8 @@
 | Component                                                    | Type                 | Version
 | http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
-| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.4.x
-| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.4.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.5.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
 | https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
 |======
@@ -76,7 +76,6 @@ On first startup, Gentics Mesh will create all files and folders.
     binaryFiles
     binaryImageCache
     graphdb
-    searchindex
     tmp
  conf
     keystore.jceks
@@ -86,6 +85,7 @@ On first startup, Gentics Mesh will create all files and folders.
     hazelcast.xml
     mesh-ui-config.js
     mesh.yml
+elasticsearch
 
 Gentics Mesh ships with two configuration files:
 
@@ -94,11 +94,13 @@ Gentics Mesh ships with two configuration files:
 
 All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
 
-The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The orientDB graph and the Elasticsearch index are stored within the ```graphdb``` and ```searchindex``` folders, respectively. ```tmp``` is used by Vert.x and other components e.g. for file uploads.
+The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The OrientDB graph data is stored within the ```graphdb``` folder. ```tmp``` is used by Vert.x and other components e.g. for file uploads.
 
 NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
 
 The keystore file, by default, is named ```keystore.jceks```. On first startup, a password for the keystore file is created randomly and stored in ```mesh.yml```.
+
+The ```elasticsearch``` folder contains the included Elasticsearch installation which will be started by default.
 
 == System Requirements
 
@@ -204,10 +206,10 @@ By default all specified directories are relative to the installation directory.
 
 [options="header"]
 |======
-| Configuration              | Type     | Default          | Description
-| ```search.directory```     | Path     | data/searchindex | Path to the elasticsearch storage location.
-| ```search.httpEnabled```   | Boolean  | false            | Enable the elasticsearch http endpoint. Enabling this has security implications! See security guide for more information.
-| ```search.transportPort``` | String   | 9300-9400        | Range for the binary transport ports
+| Configuration                | Type     | Default          | Description
+| ```search.hosts```           | List     | local            | List of hosts which are used to connect to Elasticsearch.
+| ```search.timeout```         | Number   | 3000             | Timeout for interactions with the search server.
+| ```search.startEmbeddedES``` | Boolean  | true             | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
 |======
 
 === Upload Options
@@ -234,7 +236,7 @@ By default all specified directories are relative to the installation directory.
 
 === Cache Options
 
-Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying OrientDB and Elasticsearch database cache settings.
+Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying OrientDB cache settings.
 
 == Backup & Recovery
 

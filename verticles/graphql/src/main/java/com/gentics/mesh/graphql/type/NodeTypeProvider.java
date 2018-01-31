@@ -181,12 +181,12 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Builder nodeType = newObject();
 		nodeType.name(NODE_TYPE_NAME);
 		nodeType.description(
-				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
+			"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
 		interfaceTypeProvider.addCommonFields(nodeType, true);
 
 		// .project
 		nodeType.field(newFieldDefinition().name("project").description("Project of the node").type(new GraphQLTypeReference("Project")).dataFetcher((
-				env) -> {
+			env) -> {
 			GraphQLContext gc = env.getContext();
 			NodeContent content = env.getSource();
 			if (content == null) {
@@ -198,64 +198,64 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .breadcrumb
 		nodeType.field(newFieldDefinition().name("breadcrumb").description("Breadcrumb of the node").type(new GraphQLList(new GraphQLTypeReference(
-				NODE_TYPE_NAME))).dataFetcher(this::breadcrumbFetcher));
+			NODE_TYPE_NAME))).dataFetcher(this::breadcrumbFetcher));
 
 		// .availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages").description("List all available languages for the node").type(new GraphQLList(
-				GraphQLString)).dataFetcher(env -> {
+			GraphQLString)).dataFetcher(env -> {
+				NodeContent content = env.getSource();
+				if (content == null) {
+					return null;
+				}
+				// TODO handle release!
+				return content.getNode().getAvailableLanguageNames();
+			}));
+
+		// .languages
+		nodeType.field(newFieldDefinition().name("languages").description("Load all languages of the node").type(new GraphQLList(
+			new GraphQLTypeReference(NODE_TYPE_NAME))).dataFetcher(this::languagesFetcher));
+
+		// .child
+		nodeType.field(newFieldDefinition().name("child").description("Resolve a webroot path to a specific child node.").argument(createPathArg())
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
+				String nodePath = env.getArgument("path");
+				if (nodePath != null) {
+					GraphQLContext gc = env.getContext();
+
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
 					}
-					// TODO handle release!
-					return content.getNode().getAvailableLanguageNames();
-				}));
-
-		// .languages
-		nodeType.field(newFieldDefinition().name("languages").description("Load all languages of the node").type(new GraphQLList(
-				new GraphQLTypeReference(NODE_TYPE_NAME))).dataFetcher(this::languagesFetcher));
-
-		// .child
-		nodeType.field(newFieldDefinition().name("child").description("Resolve a webroot path to a specific child node.").argument(createPathArg())
-				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-					String nodePath = env.getArgument("path");
-					if (nodePath != null) {
-						GraphQLContext gc = env.getContext();
-
-						NodeContent content = env.getSource();
-						if (content == null) {
+					Node node = content.getNode();
+					// Resolve the given path and return the found container
+					Release release = gc.getRelease();
+					String releaseUuid = release.getUuid();
+					ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
+					Stack<String> pathStack = new Stack<>();
+					pathStack.add(nodePath);
+					Path path = new Path();
+					try {
+						node.resolvePath(releaseUuid, type, path, pathStack);
+					} catch (GenericRestException e) {
+						// Check whether the path could not be resolved
+						if (e.getStatus() == NOT_FOUND) {
 							return null;
+						} else {
+							throw e;
 						}
-						Node node = content.getNode();
-						// Resolve the given path and return the found container
-						Release release = gc.getRelease();
-						String releaseUuid = release.getUuid();
-						ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
-						Stack<String> pathStack = new Stack<>();
-						pathStack.add(nodePath);
-						Path path = new Path();
-						try {
-							node.resolvePath(releaseUuid, type, path, pathStack);
-						} catch (GenericRestException e) {
-							// Check whether the path could not be resolved
-							if (e.getStatus() == NOT_FOUND) {
-								return null;
-							} else {
-								throw e;
-							}
-						}
-						// Check whether the path could not be resolved. In those cases the segments is empty
-						if (path.getSegments().isEmpty()) {
-							return null;
-						}
-						// Otherwise return the last segment.
-						PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
-						NodeGraphFieldContainer container = lastSegment.getContainer();
-						Node nodeOfContainer = null;
-						return new NodeContent(nodeOfContainer, container);
 					}
-					return null;
-				}));
+					// Check whether the path could not be resolved. In those cases the segments is empty
+					if (path.getSegments().isEmpty()) {
+						return null;
+					}
+					// Otherwise return the last segment.
+					PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
+					NodeGraphFieldContainer container = lastSegment.getContainer();
+					Node nodeOfContainer = null;
+					return new NodeContent(nodeOfContainer, container);
+				}
+				return null;
+			}));
 
 		// .children
 		nodeType.field(newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
@@ -281,11 +281,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .parent
 		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(
-				this::parentNodeFetcher));
+			this::parentNodeFetcher));
 
 		// .tags
 		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
-				env) -> {
+			env) -> {
 			GraphQLContext gc = env.getContext();
 			NodeContent content = env.getSource();
 			if (content == null) {
@@ -298,20 +298,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// TODO Fix name confusion and check what version of schema should be used to determine this type
 		// .isContainer
 		nodeType.field(newFieldDefinition().name("isContainer").description("Check whether the node can have subnodes via children").type(
-				GraphQLBoolean).dataFetcher((env) -> {
-					NodeContent content = env.getSource();
-					if (content == null) {
-						return null;
-					}
-					Node node = content.getNode();
-					return node.getSchemaContainer().getLatestVersion().getSchema().isContainer();
-				}));
+			GraphQLBoolean).dataFetcher((env) -> {
+				NodeContent content = env.getSource();
+				if (content == null) {
+					return null;
+				}
+				Node node = content.getNode();
+				return node.getSchemaContainer().getLatestVersion().getSchema().isContainer();
+			}));
 
 		// Content specific fields
 
 		// .node
 		nodeType.field(newFieldDefinition().name("node").description("Load the node with a different language.").argument(createLanguageTagArg())
-				.argument(createLanguageTagArg()).dataFetcher(this::nodeLanguageFetcher).type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
+			.argument(createLanguageTagArg()).dataFetcher(this::nodeLanguageFetcher).type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .path
 		nodeType.field(newFieldDefinition().name("path").description("Webroot path of the content.").type(GraphQLString).dataFetcher(env -> {
@@ -342,48 +342,48 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .editor
 		nodeType.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference(USER_TYPE_NAME))
-				.dataFetcher(this::editorFetcher));
+			.dataFetcher(this::editorFetcher));
 
 		// .schema
 		nodeType.field(newFieldDefinition().name("schema").description("Schema of the node").type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
-				.dataFetcher(env -> {
-					NodeContent content = env.getSource();
-					if (content == null) {
-						return null;
-					}
-					NodeGraphFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
-					}
-					return container.getSchemaContainerVersion();
-				}));
+			.dataFetcher(env -> {
+				NodeContent content = env.getSource();
+				if (content == null) {
+					return null;
+				}
+				NodeGraphFieldContainer container = content.getContainer();
+				if (container == null) {
+					return null;
+				}
+				return container.getSchemaContainerVersion();
+			}));
 
 		// .isPublished
 		nodeType.field(newFieldDefinition().name("isPublished").description("Check whether the content is published.").type(GraphQLBoolean)
-				.dataFetcher(env -> {
-					GraphQLContext gc = env.getContext();
-					NodeContent content = env.getSource();
-					if (content == null) {
-						return null;
-					}
-					NodeGraphFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
-					}
-					return container.isPublished(gc.getRelease().getUuid());
-				}));
+			.dataFetcher(env -> {
+				GraphQLContext gc = env.getContext();
+				NodeContent content = env.getSource();
+				if (content == null) {
+					return null;
+				}
+				NodeGraphFieldContainer container = content.getContainer();
+				if (container == null) {
+					return null;
+				}
+				return container.isPublished(gc.getRelease().getUuid());
+			}));
 
 		// .isDraft
 		nodeType.field(newFieldDefinition().name("isDraft").description("Check whether the content is a draft.").type(GraphQLBoolean).dataFetcher(
-				env -> {
-					GraphQLContext gc = env.getContext();
-					NodeContent content = env.getSource();
-					NodeGraphFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
-					}
-					return container.isDraft(gc.getRelease().getUuid());
-				}));
+			env -> {
+				GraphQLContext gc = env.getContext();
+				NodeContent content = env.getSource();
+				NodeGraphFieldContainer container = content.getContainer();
+				if (container == null) {
+					return null;
+				}
+				return container.isDraft(gc.getRelease().getUuid());
+			}));
 
 		// .version
 		nodeType.field(newFieldDefinition().name("version").description("Version of the content.").type(GraphQLString).dataFetcher(env -> {
@@ -397,11 +397,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .fields
 		nodeType.field(newFieldDefinition().name("fields").description("Contains the fields of the content.").type(nodeFieldTypeProvider
-				.getSchemaFieldsType(project)).dataFetcher(env -> {
-					// The fields can be accessed via the container so we can directly pass it along.
-					NodeContent content = env.getSource();
-					return content.getContainer();
-				}));
+			.getSchemaFieldsType(project)).dataFetcher(env -> {
+				// The fields can be accessed via the container so we can directly pass it along.
+				NodeContent content = env.getSource();
+				return content.getContainer();
+			}));
 
 		// .language
 		nodeType.field(newFieldDefinition().name("language").description("The language of this content.").type(GraphQLString).dataFetcher(env -> {
@@ -413,14 +413,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return container.getLanguage().getLanguageTag();
 		}));
 
-		nodeType.field(newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
-			NodeContent content = env.getSource();
-			NodeGraphFieldContainer container = content.getContainer();
-			if (container == null) {
-				return null;
-			}
-			return container.getDisplayFieldValue();
-		}));
+		nodeType
+			.field(newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
+				NodeContent content = env.getSource();
+				NodeGraphFieldContainer container = content.getContainer();
+				if (container == null) {
+					return null;
+				}
+				return container.getDisplayFieldValue();
+			}));
 
 		return nodeType.build();
 	}

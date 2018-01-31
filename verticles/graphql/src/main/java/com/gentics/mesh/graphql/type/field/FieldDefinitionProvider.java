@@ -103,10 +103,10 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .sha512sum
 		type.field(
-				newFieldDefinition().name("sha512sum").description("SHA512 checksum of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
-					BinaryGraphField field = fetcher.getSource();
-					return field.getBinary().getSHA512Sum();
-				}));
+			newFieldDefinition().name("sha512sum").description("SHA512 checksum of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
+				BinaryGraphField field = fetcher.getSource();
+				return field.getBinary().getSHA512Sum();
+			}));
 
 		// .fileSize
 		type.field(newFieldDefinition().name("fileSize").description("Size of the binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
@@ -119,17 +119,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .dominantColor
 		type.field(
-				newFieldDefinition().name("dominantColor").description("Computed image dominant color").type(GraphQLString).dataFetcher(fetcher -> {
-					BinaryGraphField field = fetcher.getSource();
-					return field.getImageDominantColor();
-				}));
+			newFieldDefinition().name("dominantColor").description("Computed image dominant color").type(GraphQLString).dataFetcher(fetcher -> {
+				BinaryGraphField field = fetcher.getSource();
+				return field.getImageDominantColor();
+			}));
 
 		// .focalPoint
 		type.field(
-				newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType()).dataFetcher(fetcher -> {
-					BinaryGraphField field = fetcher.getSource();
-					return field.getImageFocalPoint();
-				}));
+			newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType()).dataFetcher(fetcher -> {
+				BinaryGraphField field = fetcher.getSource();
+				return field.getImageFocalPoint();
+			}));
 
 		return type.build();
 	}
@@ -139,27 +139,27 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .x
 		type.field(newFieldDefinition().name("x").description("X-axis factor of the focal point. Left is 0 and middle is 0.5.").type(GraphQLFloat)
-				.dataFetcher(fetcher -> {
-					FocalPoint point = fetcher.getSource();
-					return point.getX();
-				}));
+			.dataFetcher(fetcher -> {
+				FocalPoint point = fetcher.getSource();
+				return point.getX();
+			}));
 
 		// .y
 		type.field(newFieldDefinition().name("y").description("Y-axis factor of the focal point. Top is 0 and middle is 0.5.").type(GraphQLFloat)
-				.dataFetcher(fetcher -> {
-					FocalPoint point = fetcher.getSource();
-					return point.getY();
-				}));
+			.dataFetcher(fetcher -> {
+				FocalPoint point = fetcher.getSource();
+				return point.getY();
+			}));
 
 		return type.build();
 	}
 
 	public GraphQLFieldDefinition createBinaryDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(BINARY_FIELD_TYPE_NAME))
-				.dataFetcher(env -> {
-					GraphFieldContainer container = env.getSource();
-					return container.getBinary(schema.getName());
-				}).build();
+			.dataFetcher(env -> {
+				GraphFieldContainer container = env.getSource();
+				return container.getBinary(schema.getName());
+			}).build();
 
 	}
 
@@ -187,32 +187,32 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 	public GraphQLFieldDefinition createHtmlDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).argument(createLinkTypeArg())
-				.dataFetcher(env -> {
-					GraphFieldContainer container = env.getSource();
-					HtmlGraphField htmlField = container.getHtml(schema.getName());
-					if (htmlField != null) {
-						GraphQLContext gc = env.getContext();
-						LinkType type = getLinkType(env);
-						String content = htmlField.getHTML();
-						return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
-					}
-					return null;
-				}).build();
+			.dataFetcher(env -> {
+				GraphFieldContainer container = env.getSource();
+				HtmlGraphField htmlField = container.getHtml(schema.getName());
+				if (htmlField != null) {
+					GraphQLContext gc = env.getContext();
+					LinkType type = getLinkType(env);
+					String content = htmlField.getHTML();
+					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
+				}
+				return null;
+			}).build();
 	}
 
 	public GraphQLFieldDefinition createStringDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).argument(createLinkTypeArg())
-				.dataFetcher(env -> {
-					GraphFieldContainer container = env.getSource();
-					StringGraphField field = container.getString(schema.getName());
-					if (field != null) {
-						GraphQLContext gc = env.getContext();
-						LinkType type = getLinkType(env);
-						String content = field.getString();
-						return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
-					}
-					return null;
-				}).build();
+			.dataFetcher(env -> {
+				GraphFieldContainer container = env.getSource();
+				StringGraphField field = container.getString(schema.getName());
+				if (field != null) {
+					GraphQLContext gc = env.getContext();
+					LinkType type = getLinkType(env);
+					String content = field.getString();
+					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
+				}
+				return null;
+			}).build();
 	}
 
 	public GraphQLFieldDefinition createDateDef(FieldSchema schema) {
@@ -236,7 +236,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLFieldDefinition createListDef(ListFieldSchema schema) {
 		GraphQLType type = getElementTypeOfList(schema);
 		graphql.schema.GraphQLFieldDefinition.Builder fieldType = newFieldDefinition().name(schema.getName()).description(schema.getLabel())
-				.type(new GraphQLList(type)).argument(createPagingArgs());
+			.type(new GraphQLList(type)).argument(createPagingArgs());
 
 		// Add link resolving arg to html and string lists
 		switch (schema.getListType()) {
@@ -265,7 +265,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
 				StringGraphFieldList stringList = container.getStringList(schema.getName());
@@ -275,7 +275,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":
 				NumberGraphFieldList numberList = container.getNumberList(schema.getName());
@@ -351,14 +351,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, Project project) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
-				.dataFetcher(env -> {
-					GraphFieldContainer container = env.getSource();
-					MicronodeGraphField micronodeField = container.getMicronode(schema.getName());
-					if (micronodeField != null) {
-						return micronodeField.getMicronode();
-					}
-					return null;
-				}).build();
+			.dataFetcher(env -> {
+				GraphFieldContainer container = env.getSource();
+				MicronodeGraphField micronodeField = container.getMicronode(schema.getName());
+				if (micronodeField != null) {
+					return micronodeField.getMicronode();
+				}
+				return null;
+			}).build();
 	}
 
 	/**
@@ -369,25 +369,25 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public GraphQLFieldDefinition createNodeDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).argument(createLanguageTagArg()).description(schema.getLabel())
-				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-					GraphQLContext gc = env.getContext();
-					GraphFieldContainer source = env.getSource();
-					// TODO decide whether we want to reference the default content by default
-					NodeGraphField nodeField = source.getNode(schema.getName());
-					if (nodeField != null) {
-						Node node = nodeField.getNode();
-						if (node != null) {
-							// TODO the language should be loaded using the parent node language. Note that we would need to check for micronodes which are not
-							// language specific!
-							List<String> languageTags = getLanguageArgument(env);
-							// Check permissions for the linked node
-							gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-							NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-							return new NodeContent(node, container);
-						}
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
+				GraphQLContext gc = env.getContext();
+				GraphFieldContainer source = env.getSource();
+				// TODO decide whether we want to reference the default content by default
+				NodeGraphField nodeField = source.getNode(schema.getName());
+				if (nodeField != null) {
+					Node node = nodeField.getNode();
+					if (node != null) {
+						// TODO the language should be loaded using the parent node language. Note that we would need to check for micronodes which are not
+						// language specific!
+						List<String> languageTags = getLanguageArgument(env);
+						// Check permissions for the linked node
+						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+						return new NodeContent(node, container);
 					}
-					return null;
-				}).build();
+				}
+				return null;
+			}).build();
 	}
 
 }

@@ -272,7 +272,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
 								addMicroschema(itemMap, microschameContainerVersion);
 								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
-										microschameContainerVersion.getSchema().getFields());
+									microschameContainerVersion.getSchema().getFields());
 								return itemMap;
 							}).toList().blockingGet());
 						}
@@ -323,7 +323,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
 						// Micronode field can't be stored. The datastructure is dynamic
 						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
-								micronode.getSchemaContainerVersion().getSchema().getFields());
+							micronode.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}
