@@ -9,6 +9,7 @@ src/main/resources/mesh-demo.zip
 mesh-dump.zip
 data-nodeA
 orient-plugins/studio*.zip
+/elasticsearch
 mesh-ui-config.js
 data_*
 restore*.sh

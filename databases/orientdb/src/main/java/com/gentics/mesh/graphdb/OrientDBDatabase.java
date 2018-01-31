@@ -164,7 +164,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 		if (isInMemory && startOrientServer) {
 			throw new RuntimeException(
-					"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
+				"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 		}
 
 		initConfigurationFiles();
@@ -610,7 +610,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					OrientEdgeType superType = noTx.getEdgeType(superClazzOfEdge.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
-								+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
+							+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
 					}
 					e.setSuperClass(superType);
 				}
@@ -646,7 +646,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					OrientVertexType superType = noTx.getVertexType(superClazzOfVertex.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
-								+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
+							+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
 					}
 					vertexType.setSuperClass(superType);
 				}
@@ -750,7 +750,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 			if (v.getClassIndex(indexName) == null) {
 				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
-						null, new ODocument().fields("ignoreNullValues", true), new String[] { fieldKey });
+					null, new ODocument().fields("ignoreNullValues", true), new String[] { fieldKey });
 			}
 		} finally {
 			noTx.shutdown();
@@ -859,10 +859,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// Don't log. Just throw it along so that others can handle it
 				throw e;
 			} catch (RuntimeException e) {
-				log.error("Error handling transaction", e);
+				if (log.isDebugEnabled()) {
+					log.debug("Error handling transaction", e);
+				}
 				throw e;
 			} catch (Exception e) {
-				log.error("Error handling transaction", e);
+				if (log.isDebugEnabled()) {
+					log.debug("Error handling transaction", e);
+				}
 				throw new RuntimeException("Transaction error", e);
 			}
 			if (!handlerFinished && log.isDebugEnabled()) {

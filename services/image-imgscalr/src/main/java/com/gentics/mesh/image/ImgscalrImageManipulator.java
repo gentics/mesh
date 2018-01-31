@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
 		super(vertx, options);
 		// 10 seconds
-		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, 10 * 1000 * 1000);
+		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
 	}
 
 	/**

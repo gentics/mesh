@@ -11,7 +11,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -20,6 +19,7 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -71,7 +71,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		String keyStorePath = options.getKeystorePath();
 		String type = "jceks";
 		JsonObject config = new JsonObject().put("keyStore",
-				new JsonObject().put("path", keyStorePath).put("type", type).put("password", keystorePassword));
+			new JsonObject().put("path", keyStorePath).put("type", type).put("password", keystorePassword));
 		jwtProvider = JWTAuth.create(Mesh.vertx(), config);
 
 	}
@@ -82,7 +82,11 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			// We will use this information to load the Mesh User from the graph.
 			jwtProvider.authenticate(authInfo, rh -> {
 				if (rh.failed()) {
-					log.error("Could not authenticate token", rh.cause());
+					if (log.isDebugEnabled()) {
+						log.debug("Could not authenticate token.", rh.cause());
+					} else {
+						log.warn("Could not authenticate token.");
+					}
 					resultHandler.handle(Future.failedFuture("Invalid Token"));
 				} else {
 					JsonObject decodedJwt = rh.result().principal();
@@ -146,7 +150,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				}
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
 				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
-						new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
+					new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
 			}
 		});
 	}
@@ -284,7 +288,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 			} else {
 				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
-						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+					.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
 			}
 		});

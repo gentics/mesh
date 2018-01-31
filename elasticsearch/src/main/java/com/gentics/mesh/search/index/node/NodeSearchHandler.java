@@ -1,9 +1,6 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

@@ -82,7 +82,9 @@ public class AdminGUIEndpoint extends AbstractEndpoint {
 	}
 
 	private void addMeshUiStaticHandler() {
-		route("/*").method(GET).handler(StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUiVersion).setIndexPage("index.html"));
+		StaticHandler handler = StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUiVersion);
+		handler.setIndexPage("index.html");
+		route("/*").method(GET).blockingHandler(handler);
 	}
 
 	private void addMeshConfigHandler() {
