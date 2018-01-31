@@ -10,9 +10,14 @@ import java.util.concurrent.TimeoutException;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public final class ElasticsearchErrorHelper {
+
+	private static final Logger log = LoggerFactory.getLogger(ElasticsearchErrorHelper.class);
 
 	/**
 	 * Check whether the found error is an version conflict error.
@@ -59,11 +64,21 @@ public final class ElasticsearchErrorHelper {
 		} else if (error instanceof HttpErrorException) {
 			HttpErrorException he = (HttpErrorException) error;
 			JsonObject errorResponse = he.getBodyObject(JsonObject::new);
+			if (log.isDebugEnabled()) {
+				log.debug("Got response {" + errorResponse.encodePrettily() + "}");
+			}
 			JsonObject errorInfo = errorResponse.getJsonObject("error");
 			if (errorInfo != null) {
 				String reason = errorInfo.getString("reason");
-				// TODO use specific error for parsing errors?
-				return error(BAD_REQUEST, "search_error_query", reason);
+				GenericRestException restError = error(BAD_REQUEST, "search_error_query", reason);
+				JsonArray causes = errorInfo.getJsonArray("root_cause");
+				if (causes != null) {
+					for (int i = 0; i < causes.size(); i++) {
+						JsonObject cause = causes.getJsonObject(i);
+						restError.getProperties().put("cause-" + i, cause.getString("reason"));
+					}
+				}
+				return restError;
 			}
 		}
 		return error(INTERNAL_SERVER_ERROR, "search_error", error);

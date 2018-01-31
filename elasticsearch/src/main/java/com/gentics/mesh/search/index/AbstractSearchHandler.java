@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
@@ -312,37 +313,39 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
 
-
 		// Prepare the request
 		RequestBuilder<JsonObject> requestBuilder = client.query(queryJson, new ArrayList<>(indices));
 		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
-		Single<Page<? extends T>> result = requestBuilder.async().map(response -> {
-			return db.tx(() -> {
-				List<T> elementList = new ArrayList<>();
-				JsonObject hitsInfo = response.getJsonObject("hits");
-				JsonArray hits = hitsInfo.getJsonArray("hits");
-				for (int i = 0; i < hits.size(); i++) {
-					JsonObject hit = hits.getJsonObject(i);
-					String id = hit.getString("_id");
-					int pos = id.indexOf("-");
-					String uuid = pos > 0 ? id.substring(0, pos) : id;
+		Single<Page<? extends T>> result = requestBuilder.async()
+			.map(response -> {
+				return db.tx(() -> {
+					List<T> elementList = new ArrayList<>();
+					JsonObject hitsInfo = response.getJsonObject("hits");
+					JsonArray hits = hitsInfo.getJsonArray("hits");
+					for (int i = 0; i < hits.size(); i++) {
+						JsonObject hit = hits.getJsonObject(i);
+						String id = hit.getString("_id");
+						int pos = id.indexOf("-");
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-					// Locate the node
-					T element = indexHandler.getRootVertex().findByUuid(uuid);
-					if (element != null) {
-						elementList.add(element);
+						// Locate the node
+						T element = indexHandler.getRootVertex().findByUuid(uuid);
+						if (element != null) {
+							elementList.add(element);
+						}
 					}
-				}
 
-				PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
-				return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
+					PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
+					return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
+				});
 			});
-		});
 
-		// TODO add timeout
-		return result.doOnError(error -> {
-			log.error("Search query failed", error);
-		}).blockingGet();
+		// TODO make this configurable
+		return result.timeout(30, TimeUnit.SECONDS)
+			.onErrorResumeNext(error -> {
+				log.error("Search query failed", error);
+				return Single.error(mapToMeshError(error));
+			}).blockingGet();
 	}
 
 	public IndexHandler<T> getIndexHandler() {
