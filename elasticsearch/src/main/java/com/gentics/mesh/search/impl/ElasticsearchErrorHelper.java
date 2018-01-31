@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeoutException;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -53,7 +54,7 @@ public final class ElasticsearchErrorHelper {
 	}
 
 	public static GenericRestException mapToMeshError(Throwable error) {
-		if (error instanceof TimeoutException) {
+		if (error instanceof TimeoutException || error instanceof SocketTimeoutException) {
 			return error(INTERNAL_SERVER_ERROR, "search_error_timeout");
 		} else if (error instanceof HttpErrorException) {
 			HttpErrorException he = (HttpErrorException) error;

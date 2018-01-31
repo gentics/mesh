@@ -66,6 +66,6 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	@Test
 	public void testSearchQuery() throws IOException {
 		String json = getESText("userWildcard.es");
-		 call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error_timeout");
+		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error_timeout");
 	}
 }
