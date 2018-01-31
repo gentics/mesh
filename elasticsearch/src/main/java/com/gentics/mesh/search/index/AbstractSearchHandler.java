@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -237,21 +238,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 			return Observable.fromIterable(list);
 		}).onErrorResumeNext(error -> {
-			if (error instanceof TimeoutException) {
-				return Observable.error(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));
-			} else if (error instanceof HttpErrorException) {
-				HttpErrorException he = (HttpErrorException) error;
-				log.error("Search query failed", he);
-				JsonObject errorResponse = he.getBodyObject(JsonObject::new);
-				JsonObject errorInfo = errorResponse.getJsonObject("error");
-				if (errorInfo != null) {
-					String reason = errorInfo.getString("reason");
-					// TODO use specific error for parsing errors?
-					GenericRestException ge = error(BAD_REQUEST, "search_error_query", reason);
-					return Observable.error(ge);
-				}
-			}
-			return Observable.error(error);
+			return Observable.error(mapToMeshError(error));
 		}).flatMapSingle(element -> {
 			// TODO add resume next to omit the item if it can't be transformed for some reason.
 			// This would be better than to just fail the whole request

@@ -11,6 +11,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.reactivex.Observable;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
@@ -38,5 +39,15 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 		provider.deleteIndex("testindex").blockingAwait();
 
 		// provider.validateCreateViaTemplate(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
+
+	}
+
+	@Test
+	public void testConcurrencyConflictError() {
+		ElasticSearchProvider provider = ((ElasticSearchProvider) searchProvider());
+		provider.createIndex(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
+		provider.storeDocument("test", "1", new JsonObject().put("value", 0)).blockingAwait();
+		Observable.range(1, 2000).flatMapCompletable(i -> provider.updateDocument("test", "1", new JsonObject().put("value", i), false))
+			.blockingAwait();
 	}
 }

@@ -1,12 +1,14 @@
 package com.gentics.mesh.search.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +54,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private ElasticsearchProcessManager processManager;
 
+	private final static int MAX_RETRY_ON_ERROR = 5;
+
 	public ElasticSearchProvider() {
 
 	}
@@ -85,6 +89,9 @@ public class ElasticSearchProvider implements SearchProvider {
 			return new HttpHost(hostConfig.getHostname(), hostConfig.getPort(), hostConfig.getProtocol());
 		}).collect(Collectors.toList());
 
+		if (hosts.size() >= 2) {
+			throw error(INTERNAL_SERVER_ERROR, "Configuring multiple hosts is currently not supported.");
+		}
 		// TODO add support for multiple servers
 		HttpHost first = hosts.get(0);
 		client = new SearchClient(first.getSchemeName(), first.getHostName(), first.getPort());
@@ -176,15 +183,16 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable clear() {
 		// Read all indices and locate indices which have been created for/by mesh.
-		Maybe<List<String>> indexInfo = client.readIndex("_all").async().flatMapMaybe(response -> {
-			List<String> indices = Collections.emptyList();
-			indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
-			if (indices.isEmpty()) {
-				return Maybe.empty();
-			} else {
-				return Maybe.just(indices);
-			}
-		});
+		Maybe<List<String>> indexInfo = client.readIndex("_all").async()
+			.flatMapMaybe(response -> {
+				List<String> indices = Collections.emptyList();
+				indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
+				if (indices.isEmpty()) {
+					return Maybe.empty();
+				} else {
+					return Maybe.just(indices);
+				}
+			});
 
 		// Now delete the found indices
 		return indexInfo.flatMapCompletable(result -> {
@@ -200,7 +208,6 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.info("Closing Elasticsearch REST client.");
 			client.close();
 		}
-
 		if (processManager != null) {
 			log.info("Stopping Elasticsearch server.");
 			processManager.stopWatchDog();
@@ -210,10 +217,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable refreshIndex(String... indices) {
-		return client.refresh(indices).async().doOnError(error -> {
-			log.error("Refreshing of indices {" + Strings.join(indices, ",") + "} failed.", error);
-			throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
-		}).toCompletable().compose(withTimeoutAndLog("Refreshing indices {" + Strings.join(indices, ",") + "}", true));
+		String indicesStr = Strings.join(indices, ",");
+		return client.refresh(indices).async()
+			.doOnError(error -> {
+				log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
+				throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
+			}).toCompletable()
+			.compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}", true));
 	}
 
 	@Override
@@ -225,44 +235,27 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 
 		JsonObject json = createIndexSettings(info);
-		return client.createIndex(indexName, json).async().doOnSuccess(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
-			}
-
-		}).toCompletable().onErrorResumeNext(error -> {
-			if (error instanceof HttpErrorException) {
-				HttpErrorException re = (HttpErrorException) error;
-				JsonObject ob = re.getBodyObject(JsonObject::new);
-				String type = ob.getJsonObject("error").getString("type");
-				if (type.equals("resource_already_exists_exception")) {
-					return Completable.complete();
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Got failure response {" + ob.encodePrettily() + "}");
-					}
+		return client.createIndex(indexName, json).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
 				}
-			} else {
-				log.error("Error while creating index {" + indexName + "}", error);
-			}
-			return Completable.error(error);
-		}).compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
+			}).toCompletable()
+			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
 	}
 
 	@Override
-	public Single<Map<String, Object>> getDocument(String index, String uuid) {
-
-		Single<Map<String, Object>> s = client.getDocument(index, DEFAULT_TYPE, uuid).async().map(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Get object {" + uuid + "} from index {" + index + "}");
-			}
-			// return response.getSourceAsMap();
-			return new HashMap<String, Object>();
-		});
-		return s.doOnError(error -> {
-			log.error("Could not get object {" + uuid + "} from index {" + index + "}", error);
-		}).timeout(getOptions().getTimeout(), TimeUnit.MILLISECONDS).doOnError(log::error);
-
+	public Single<JsonObject> getDocument(String index, String uuid) {
+		return client.getDocument(index, DEFAULT_TYPE, uuid).async()
+			.map(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Get object {" + uuid + "} from index {" + index + "}");
+				}
+				return response;
+			}).timeout(getOptions().getTimeout(), TimeUnit.MILLISECONDS).doOnError(error -> {
+				log.error("Could not get object {" + uuid + "} from index {" + index + "}", error);
+			});
 	}
 
 	@Override
@@ -270,22 +263,14 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting document {" + uuid + "} from index {" + index + "}.");
 		}
-		return client.deleteDocument(index, DEFAULT_TYPE, uuid).async().doOnSuccess(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
-			}
-		}).toCompletable().onErrorResumeNext(error -> {
-			if (error instanceof HttpErrorException) {
-				HttpErrorException se = (HttpErrorException) error;
-				JsonObject errorResp = se.getBodyObject(JsonObject::new);
-				if (se.getStatusCode() == 404 && "not_found".equals(errorResp.getString("result"))) {
-					return Completable.complete();
+		return client.deleteDocument(index, DEFAULT_TYPE, uuid).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
 				}
-			} else {
-				log.error("Could not delete object {" + uuid + "} from index {" + index + "}");
-			}
-			return Completable.error(error);
-		}).compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}", true));
+			}).toCompletable()
+			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -295,23 +280,18 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
 		}
 
-		return client.updateDocument(index, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async().doOnSuccess(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-			}
-
-		}).toCompletable().onErrorResumeNext(error -> {
-			if (error instanceof HttpErrorException) {
-				HttpErrorException se = (HttpErrorException) error;
-				if (ignoreMissingDocumentError && se.getStatusCode() == 404) {
+		return client.updateDocument(index, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				}
+			}).toCompletable().onErrorResumeNext(error -> {
+				if (ignoreMissingDocumentError && isNotFoundError(error)) {
 					return Completable.complete();
 				}
-			}
-			log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-				+ "[ms]", error);
-			return Completable.error(error);
-
-		}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}", true));
+				return Completable.error(error);
+			}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -326,24 +306,23 @@ public class ElasticSearchProvider implements SearchProvider {
 		bulkData.put("items", items);
 
 		// Add index requests for each document to the bulk request
-		for (Map.Entry<String, JsonObject> entry : documents.entrySet()) {
-			JsonObject item = new JsonObject();
-			// item.put("index", value)
-			// String documentId = entry.getKey();
-			// JsonObject document = entry.getValue();
-			// request.add(new IndexRequest(index, DEFAULT_TYPE, documentId).source(document.toString(), XContentType.JSON));
-			items.add(item);
-		}
+		// for (Map.Entry<String, JsonObject> entry : documents.entrySet()) {
+		// JsonObject item = new JsonObject();
+		// item.put("index", value)
+		// String documentId = entry.getKey();
+		// JsonObject document = entry.getValue();
+		// request.add(new IndexRequest(index, DEFAULT_TYPE, documentId).source(document.toString(), XContentType.JSON));
+		// items.add(item);
+		// }
 
-		return client.storeDocumentBulk(bulkData).async().doOnSuccess(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System.currentTimeMillis()
-					- start) + "[ms]");
-			}
-		}).doOnError(error -> {
-			log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-				+ "[ms]", error);
-		}).toCompletable().compose(withTimeoutAndLog("Storing document batch", true));
+		return client.storeDocumentBulk(bulkData).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System.currentTimeMillis()
+						- start) + "[ms]");
+				}
+			}).toCompletable()
+			.compose(withTimeoutAndLog("Storing document batch {" + index + "} / {" + DEFAULT_TYPE + "}", true));
 	}
 
 	@Override
@@ -352,17 +331,13 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}");
 		}
-		return client.storeDocument(index, DEFAULT_TYPE, uuid, document).async().doOnSuccess(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
-					- start) + "[ms]");
-			}
-
-		}).doOnError(error -> {
-			log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "} failed. Duration " + (System.currentTimeMillis()
-				- start) + "[ms]", error);
-
-		}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}", true));
+		return client.storeDocument(index, DEFAULT_TYPE, uuid, document).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
+						- start) + "[ms]");
+				}
+			}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -372,23 +347,14 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting indices {" + indices + "}");
 		}
-		return client.deleteIndex(indexNames).async().doOnSuccess(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-			}
-		}).toCompletable().onErrorResumeNext(error -> {
-			if (error instanceof HttpErrorException) {
-				// Don't fail if the index can't be found.
-				HttpErrorException se = (HttpErrorException) error;
-				if (se.getStatusCode() == 404) {
-					return Completable.complete();
+		return client.deleteIndex(indexNames).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-			} else {
-				log.error("Deleting index {" + indices + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
-					error);
-			}
-			return Completable.error(error);
-		}).compose(withTimeoutAndLog("Deletion of indices " + indices, true));
+			}).toCompletable()
+			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 	}
 
 	@Override
@@ -402,19 +368,20 @@ public class ElasticSearchProvider implements SearchProvider {
 		String templateName = randomName.toLowerCase();
 		json.put("template", templateName);
 
-		return client.createIndexTemplate(templateName, json).async().doOnSuccess(response -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
-			}
-		}).onErrorResumeNext(error -> {
-			if (error instanceof HttpErrorException) {
-				HttpErrorException re = (HttpErrorException) error;
-				JsonObject errorInfo = re.getBodyObject(JsonObject::new);
-				return Single.error(error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString("reason")));
-			} else {
-				return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
-			}
-		}).toCompletable()
+		return client.createIndexTemplate(templateName, json).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
+				}
+			}).onErrorResumeNext(error -> {
+				if (error instanceof HttpErrorException) {
+					HttpErrorException re = (HttpErrorException) error;
+					JsonObject errorInfo = re.getBodyObject(JsonObject::new);
+					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString("reason")));
+				} else {
+					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
+				}
+			}).toCompletable()
 			.andThen(client.deleteIndexTemplate(templateName).async().toCompletable())
 			.compose(withTimeoutAndLog("Template validation", false));
 	}
@@ -451,7 +418,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	/**
-	 * Modify the given completable and add the configured timeout and error logging.
+	 * Modify the given completable and add the configured timeout, error logging and retry handler.
 	 * 
 	 * @param msg
 	 *            Message to be shown on timeout
@@ -462,15 +429,18 @@ public class ElasticSearchProvider implements SearchProvider {
 	private CompletableTransformer withTimeoutAndLog(String msg, boolean ignoreError) {
 		Long timeout = getOptions().getTimeout();
 		return c -> {
-			Completable t = c.timeout(timeout, TimeUnit.MILLISECONDS).doOnError(error -> {
-
-				if (error instanceof TimeoutException) {
-					log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
-				} else {
-					error.printStackTrace();
-					log.error(error);
-				}
-			});
+			Completable t = c
+				// Retry the operation if an conflict error was returned
+				.retry((nTry, error) -> nTry < MAX_RETRY_ON_ERROR && isConflictError(error))
+				.timeout(timeout, TimeUnit.MILLISECONDS)
+				.doOnError(error -> {
+					if (error instanceof TimeoutException) {
+						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
+					} else {
+						error.printStackTrace();
+						log.error(error);
+					}
+				});
 			if (ignoreError) {
 				return t.onErrorComplete();
 			} else {

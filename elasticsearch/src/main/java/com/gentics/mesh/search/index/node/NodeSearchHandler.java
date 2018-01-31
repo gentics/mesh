@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
@@ -144,7 +145,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 			return page;
 		} catch (HttpErrorException e) {
 			log.error("Error while processing query", e);
-			throw error(BAD_REQUEST, "search_error_query", e);
+			throw mapToMeshError(e);
 		}
 
 	}

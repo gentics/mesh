@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import java.util.Collections;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -51,8 +50,8 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Single<Map<String, Object>> getDocument(String index, String uuid) {
-		return Single.just(Collections.emptyMap());
+	public Single<JsonObject> getDocument(String index, String uuid) {
+		return Single.just(new JsonObject());
 	}
 
 	@Override
