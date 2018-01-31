@@ -22,7 +22,6 @@
 		<orientdb.version>2.2.31</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
-		<rx.version>1.2.3</rx.version>
 		<jackson.version>2.9.0</jackson.version>
 
 		<surefire.forkcount>2</surefire.forkcount>

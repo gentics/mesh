@@ -28,8 +28,8 @@ This difference will affect your queries.
 
 === Data format
 
-NOTE:  The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints.
-Thus it is important to know the elasticsearch document format when building an elasticsearch query.
+NOTE:  The JSON format of stored documents within the Elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints.
+Thus it is important to know the Elasticsearch document format when building an Elasticsearch query.
 
 === Permission handling
 
@@ -40,9 +40,12 @@ This is done by nesting the input query inside of an outer boolean query which i
 
 NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
 
+NOTE: The stored documents within the Elasticsearch indices do not contain all properties which are otherwise available via REST. 
+Only directly accessible values which have minimal dependencies to other elements are stored in order to keep the update effort manageable.
+
 == Configuration
 
-The elasticsearch connection can be configured within the `mesh.yml` configuration file.
+The Elasticsearch connection can be configured within the `mesh.yml` configuration file.
 
 [source,yaml]
 ----
@@ -253,16 +256,16 @@ Endpoint: ```/api/v1/search/tagFamilies```
 [source,json]
 ----
 {
-	"query": {
-		"nested": {
-			"path": "tagFamilies.colors.tags",
-			"query": {
-				"match": {
-					"tagFamilies.colors.tags.name": "red"
-				}
-			}
-		}
-	}
+  "query": {
+    "nested": {
+      "path": "tagFamilies.colors.tags",
+      "query": {
+        "match": {
+          "tagFamilies.colors.tags.name": "red"
+        }
+      }
+    }
+  }
 }
 ----
 
