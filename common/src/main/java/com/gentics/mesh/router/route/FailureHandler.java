@@ -1,7 +1,6 @@
 package com.gentics.mesh.router.route;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
-import static org.junit.Assert.fail;
 
 import java.util.MissingResourceException;
 
