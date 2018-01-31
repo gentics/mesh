@@ -396,7 +396,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	public String getVersion() {
 		try {
 			JsonObject info = client.info().sync();
-			return info.getString("version");
+			return info.getJsonObject("version").getString("number");
 		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
 			throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");

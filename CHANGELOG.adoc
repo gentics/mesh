@@ -7,6 +7,13 @@
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+
+
+[[v0.15.1]]
+== 0.15.1 (TBD)
+
+icon:check[] REST: An error which prevented the `/api/v1` info endpoint from returning version information has been fixed.
+
 [[v0.15.0]]
 == 0.15.0 (31.01.2018)
 
