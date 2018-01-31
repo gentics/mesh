@@ -377,7 +377,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (error instanceof HttpErrorException) {
 					HttpErrorException re = (HttpErrorException) error;
 					JsonObject errorInfo = re.getBodyObject(JsonObject::new);
-					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", errorInfo.getJsonObject("error").getString("reason")));
+					String reason = errorInfo.getJsonObject("error").getString("reason");
+					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", reason));
 				} else {
 					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
 				}

@@ -19,6 +19,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -43,8 +44,13 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		// Create a dummy server which just blocks on every in-bound request for 1 second
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(0));
 		server.requestHandler(rh -> {
-			log.info("Waiting for 16 second to answer request: " + rh.absoluteURI());
-			vertx.setTimer(16000, th -> rh.response().end());
+			// Don't block validation requests.
+			if (rh.absoluteURI().indexOf("_template/validation") > 0) {
+				rh.response().end(new JsonObject().encodePrettily());
+			} else {
+				log.info("Waiting for 16 second to answer request: " + rh.absoluteURI());
+				vertx.setTimer(16000, th -> rh.response().end());
+			}
 		});
 		server.rxListen().blockingGet();
 
