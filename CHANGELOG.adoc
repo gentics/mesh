@@ -45,6 +45,8 @@ CAUTION: The `unfilteredCount` GraphQL paging property has been removed. You can
 
 CAUTION: Gentics Mesh will automatically extract and start an embedded Elasticsearch server into the `elasticsearch` folder. The old search index (e.g: `data/searchIndex`) can be removed. 
 
+CAUTION: The user which is used to run the process within the docker image has been changed. You may need to update your data volume ownership to uid/gid 1000.
+
 icon:plus[] REST: The UUID of the referenced binary data will now also be listed for binary fields. Fields which share the same binary data will also share the same binary UUID.
 
 icon:plus[] GraphQL: It is now possible to read the focal point information and binary uuid of binary fields.
