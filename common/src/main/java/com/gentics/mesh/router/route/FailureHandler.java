@@ -1,6 +1,7 @@
 package com.gentics.mesh.router.route;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static org.junit.Assert.fail;
 
 import java.util.MissingResourceException;
 
@@ -86,16 +87,19 @@ public class FailureHandler implements Handler<RoutingContext> {
 			int code = getResponseStatusCode(failure);
 			switch (code) {
 			case 401:
-				log.error("Unauthorized - Request for path {" + rc.normalisedPath() + "?" + rc.request().query() + "} was not authorized.");
+				log.error("Unauthorized - Request for path {" + toPath(rc) + "} was not authorized.");
 				break;
 			case 404:
-				log.error("Could not find resource for path {" + rc.normalisedPath() + "?" + rc.request().query() + "}");
+				log.error("Could not find resource for path {" + toPath(rc) + "}");
 				break;
 			case 403:
-				log.error("Request for request in path: " + rc.normalisedPath() + "?" + rc.request().query() + " is not authorized.");
+				log.error("Request for request in path: " + toPath(rc) + " is not authorized.");
+				break;
+			case 400:
+				log.error("Bad request in path: " + toPath(rc) + " with message " + failure.getMessage());
 				break;
 			default:
-				log.error("Error for request in path: " + rc.normalisedPath() + "?" + rc.request().query());
+				log.error("Error for request in path: " + toPath(rc));
 				if (failure != null) {
 					log.error("Error:", failure);
 				}
@@ -125,6 +129,16 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 		}
 
+	}
+
+	private String toPath(RoutingContext rc) {
+		StringBuilder b = new StringBuilder();
+		b.append(rc.normalisedPath());
+		String query = rc.request().query();
+		if (query != null) {
+			b.append("?" + rc.request().query());
+		}
+		return b.toString();
 	}
 
 	/**
