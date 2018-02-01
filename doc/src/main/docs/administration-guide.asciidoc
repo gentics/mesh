@@ -206,10 +206,11 @@ By default all specified directories are relative to the installation directory.
 
 [options="header"]
 |======
-| Configuration                | Type     | Default          | Description
-| ```search.hosts```           | List     | local            | List of hosts which are used to connect to Elasticsearch.
-| ```search.timeout```         | Number   | 3000             | Timeout for interactions with the search server.
-| ```search.startEmbeddedES``` | Boolean  | true             | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
+| Configuration                  | Type       | Default                 | Description
+| ```search.url```               | String     | http://localhost:9200   | URL to the Elasticsearch server.
+| ```search.timeout```           | Number     | 3000                    | Timeout for interactions with the search server.
+| ```search.startEmbedded```     | Boolean    | true                    | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
+| ```search.embeddedArguments``` | String     | Default JVM Arguments   | Set the JVM arguments for the embedded Elasticsearch server process.
 |======
 
 === Upload Options

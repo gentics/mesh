@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.etc.config.search.ElasticSearchHost;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.test.TestSize;
@@ -55,8 +54,8 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		server.rxListen().blockingGet();
 
 		// Set some bogus connection details and restart the provider
-		options.setTimeout(500L).getHosts().clear();
-		options.getHosts().add(new ElasticSearchHost().setHostname("localhost").setPort(server.actualPort()));
+		options.setTimeout(500L).setUrl(null);
+		options.setUrl("http://localhost:" + server.actualPort());
 		provider.stop();
 		provider.start(false);
 	}

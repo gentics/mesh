@@ -47,7 +47,7 @@ public class ServerRunner {
 			registry.register(AdminGUIEndpoint.class);
 
 			// Add elastichead
-			if (options.getSearchOptions().getHosts() != null && !options.getSearchOptions().getHosts().isEmpty()) {
+			if (options.getSearchOptions().getUrl() != null) {
 				registry.register(ElasticsearchHeadEndpoint.class);
 			}
 		});

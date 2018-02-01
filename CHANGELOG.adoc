@@ -16,6 +16,18 @@ icon:check[] REST: An error which prevented the `/api/v1` info endpoint from ret
 
 icon:plus[] OrientDB: The included OrientDB Studio has been updated to version 2.2.31.
 
+icon:plus[] Config: It is now possible to configure the JVM arguments of the embedded Elasticsearch server via the `search.embeddedArguments` property.
+
+CAUTION: The `mesh.yml` search section has been updated. The `search.url` property replaces the `search.hosts` property.
+
+[source,yaml]
+----
+search:
+  url: "http://localhost:9200"
+  timeout: 8000
+  startEmbedded: false
+----
+
 [[v0.15.0]]
 == 0.15.0 (31.01.2018)
 

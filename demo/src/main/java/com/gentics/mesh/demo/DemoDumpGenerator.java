@@ -35,8 +35,8 @@ public class DemoDumpGenerator {
 	public void init() throws Exception {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
-		options.getSearchOptions().getHosts().clear();
-		options.getSearchOptions().setStartEmbeddedES(false);
+		options.getSearchOptions().setUrl(null);
+		options.getSearchOptions().setStartEmbedded(false);
 
 		// Prefix all default directories in order to place them into the dump directory
 		String uploads = "target/dump/" + options.getUploadOptions().getDirectory();

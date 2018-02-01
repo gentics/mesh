@@ -50,20 +50,23 @@ The Elasticsearch connection can be configured within the `mesh.yml` configurati
 [source,yaml]
 ----
 search:
-  hosts:
-  - hostname: "localhost"
-    port: 9200
-    protocol: "http"
-  timeout: 3000
-  startEmbeddedES: true
+  url: "http://localhost:9200"
+  timeout: 8000
+  startEmbedded: false
+  embeddedArguments: "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75\
+    \ -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true\
+    \ -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true\
+    \ -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0\
+    \ -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError"
 ----
 
 [options="header"]
 |======
-| Configuration                | Type     | Default          | Description
-| ```search.hosts```           | List     | local            | List of hosts which are used to connect to Elasticsearch.
-| ```search.timeout```         | Number   | 3000             | Timeout for interactions with the search server.
-| ```search.startEmbeddedES``` | Boolean  | true             | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
+| Configuration                  | Type       | Default                 | Description
+| ```search.url```               | String     | http://localhost:9200   | URL to the Elasticsearch server.
+| ```search.timeout```           | Number     | 3000                    | Timeout for interactions with the search server.
+| ```search.startEmbedded```     | Boolean    | true                    | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
+| ```search.embeddedArguments``` | String     | See above               | Set the JVM arguments for the embedded Elasticsearch server process.
 |======
 
 === Embedded mode
@@ -74,7 +77,9 @@ A watchdog will continuously check the process and restart it when a crash has b
 
 === Disabling search
 
-It is also possible to completely turn off the search support by setting the `search.startEmbeddedES` property to false and not specifying any hosts.
+It is also possible to completely turn off the search support by setting the `search.startEmbedded` property to false and the `search.url` property to null.
+
+NOTE: The Gentics Mesh UI currently requires the Elasticsearch support to function correctly. 
 
 == Compatibility
 
