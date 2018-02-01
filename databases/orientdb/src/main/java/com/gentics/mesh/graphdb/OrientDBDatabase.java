@@ -104,7 +104,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String DB_NAME = "storage";
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.26.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.31.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
