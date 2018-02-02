@@ -26,7 +26,7 @@ public class TestSearchProviderModule {
 		SearchProvider searchProvider = null;
 		// Automatically select the dummy search provider if no directory or
 		// options have been specified
-		if (options.getSearchOptions().getHosts().isEmpty()) {
+		if (options.getSearchOptions().getUrl() != null) {
 			searchProvider = new TrackingSearchProvider();
 		} else {
 			searchProvider = new ElasticSearchProvider();

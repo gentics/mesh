@@ -1,8 +1,5 @@
 package com.gentics.mesh.etc.config.search;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
@@ -17,28 +14,30 @@ public class ElasticSearchOptions {
 	/**
 	 * Default ES connection details.
 	 */
-	private static final ElasticSearchHost DEFAULT_HOST = new ElasticSearchHost().setHostname("localhost").setPort(9200).setProtocol("http");
+	private static final String DEFAULT_URL = "http://localhost:9200";
 
-	private static final long DEFAULT_TIMEOUT = 3000L;
+	private static final long DEFAULT_TIMEOUT = 8000L;
 
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Elasticsearch hosts to be used. You can specify multiple hosts in order to loadbalance the requests. You can also specify no hosts in order to competely disable the Elasticsearch integration.")
-	private List<ElasticSearchHost> hosts = new ArrayList<>();
+	private static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
+	private String url = DEFAULT_URL;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Timeout for Elasticsearch operations. Default: " + DEFAULT_TIMEOUT + "ms")
 	private Long timeout = DEFAULT_TIMEOUT;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether to deploy and start the included Elasticsearch server.")
-	private boolean startEmbeddedES = true;
+	private boolean startEmbedded = true;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("String of arguments which will be used for starting the Elasticsearch server instance")
+	private String embeddedArguments = DEFAULT_ARGS;
 
 	public ElasticSearchOptions() {
-		hosts.add(DEFAULT_HOST);
-	}
 
-	public List<ElasticSearchHost> getHosts() {
-		return hosts;
 	}
 
 	/**
@@ -46,18 +45,18 @@ public class ElasticSearchOptions {
 	 * 
 	 * @return
 	 */
-	public boolean isStartEmbeddedES() {
-		return startEmbeddedES;
+	public boolean isStartEmbedded() {
+		return startEmbedded;
 	}
 
 	/**
 	 * Set the flag to start the embedded ES server.
 	 * 
-	 * @param startEmbeddedES
+	 * @param startEmbedded
 	 * @return Fluent API
 	 */
-	public ElasticSearchOptions setStartEmbeddedES(boolean startEmbeddedES) {
-		this.startEmbeddedES = startEmbeddedES;
+	public ElasticSearchOptions setStartEmbedded(boolean startEmbedded) {
+		this.startEmbedded = startEmbedded;
 		return this;
 	}
 
@@ -81,10 +80,25 @@ public class ElasticSearchOptions {
 		return this;
 	}
 
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getEmbeddedArguments() {
+		return embeddedArguments;
+	}
+
+	public ElasticSearchOptions setEmbeddedArguments(String embeddedArguments) {
+		this.embeddedArguments = embeddedArguments;
+		return this;
+	}
+
 	public void validate(MeshOptions meshOptions) {
-		for (ElasticSearchHost host : hosts) {
-			host.validate(meshOptions);
-		}
+
 	}
 
 }

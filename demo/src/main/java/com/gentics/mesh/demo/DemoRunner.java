@@ -72,7 +72,7 @@ public class DemoRunner {
 			registry.register(AdminGUIEndpoint.class);
 
 			// Add elastichead
-			if (options.getSearchOptions().getHosts() != null && !options.getSearchOptions().getHosts().isEmpty()) {
+			if (options.getSearchOptions() != null) {
 				registry.register(ElasticsearchHeadEndpoint.class);
 			}
 		});

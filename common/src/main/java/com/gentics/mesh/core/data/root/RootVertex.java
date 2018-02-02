@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Predicate;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -46,7 +47,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	@Deprecated
-	default public List<? extends T> findAll() {
+	default List<? extends T> findAll() {
 		return out(getRootLabel()).toListExplicit(getPersistanceClass());
 	}
 
@@ -55,7 +56,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default public long computeCount() {
+	default long computeCount() {
 		return Iterators.size(findAllIt().iterator());
 	}
 
@@ -64,7 +65,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default public Iterable<? extends T> findAllIt() {
+	default Iterable<? extends T> findAllIt() {
 		return out(getRootLabel()).frameExplicit(getPersistanceClass());
 	}
 
@@ -74,7 +75,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default public Iterable<? extends T> findAllDynamic() {
+	default Iterable<? extends T> findAllDynamic() {
 		return out(getRootLabel()).frame(getPersistanceClass());
 	}
 
@@ -84,12 +85,27 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param ac
 	 *            action context
 	 * @param pagingInfo
-	 *            Paging information object that contains page options.
+	 *            Paging information object that contains page options
 	 * 
 	 * @return
 	 */
-	default public TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null, true);
+	}
+
+	/**
+	 * Find the visible elements and return a paged result.
+	 * 
+	 * @param ac
+	 *            action context
+	 * @param pagingInfo
+	 *            Paging information object that contains page options
+	 * @param extraFilter
+	 *            Additional filter to be applied
+	 * @return
+	 */
+	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Vertex> extraFilter) {
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
 	}
 
 	/**
@@ -98,11 +114,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param ac
 	 *            action context
 	 * @param pagingInfo
-	 *            Paging information object that contains page options.
-	 * 
+	 *            Paging information object that contains page options
 	 * @return
 	 */
-	default public TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	default TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, true);
 	}
 
@@ -110,9 +125,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * Find the element with the given name.
 	 * 
 	 * @param name
-	 * @return
+	 * @return Found element or null if element with the name could not be found
 	 */
-	default public T findByName(String name) {
+	default T findByName(String name) {
 		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
@@ -125,10 +140,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Name of the object that should be loaded
 	 * @param perm
 	 *            Permission that must be granted in order to load the object
-	 * 
 	 * @return
 	 */
-	default public T findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	default T findByName(InternalActionContext ac, String name, GraphPermission perm) {
 		T element = findByName(name);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_name", name);
@@ -150,7 +164,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Uuid of the element to be located
 	 * @return Found element or null if the element could not be located
 	 */
-	default public T findByUuid(String uuid) {
+	default T findByUuid(String uuid) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { MeshVertex.UUID_KEY }, new String[] { uuid });
@@ -158,7 +172,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-					.getId(), getId()));
+				.getId(), getId()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
@@ -177,7 +191,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Permission that must be granted in order to load the object
 	 * @return Loaded element. A not found error will be thrown if the element could not be found. Returned value will never be null.
 	 */
-	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	default T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		return loadObjectByUuid(ac, uuid, perm, true);
 	}
 
@@ -195,7 +209,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
 	 *         be null.
 	 */
-	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	default T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		T element = findByUuid(uuid);
 		if (element == null) {
 			if (errorIfNotFound) {
@@ -224,7 +238,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
 	 *         be null.
 	 */
-	default public T loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
+	default T loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
 		T element = findByUuid(uuid);
 		if (element == null) {
 			if (errorIfNotFound) {
@@ -243,7 +257,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
 	 * @return
 	 */
-	default public MeshVertex resolveToElement(Stack<String> stack) {
+	default MeshVertex resolveToElement(Stack<String> stack) {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {
@@ -291,11 +305,11 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @param item
 	 */
-	default public void addItem(T item) {
+	default void addItem(T item) {
 		FramedGraph graph = getGraph();
 		// Check whether the item was already added by checking the index
 		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.getId(),
-				getId()));
+			getId()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());
 		}
@@ -306,7 +320,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @param item
 	 */
-	default public void removeItem(T item) {
+	default void removeItem(T item) {
 		unlinkOut(item, getRootLabel());
 	}
 

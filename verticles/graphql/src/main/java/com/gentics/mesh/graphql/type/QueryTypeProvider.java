@@ -217,6 +217,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	/**
 	 * Data fetcher for the current release.
+	 * 
 	 * @param env
 	 * @return
 	 */
@@ -256,11 +257,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		// .me
 		root.field(newFieldDefinition().name("me").description("The current user").type(new GraphQLTypeReference(USER_TYPE_NAME))
-				.dataFetcher(this::userMeFetcher).build());
+			.dataFetcher(this::userMeFetcher).build());
 
 		// .project
 		root.field(newFieldDefinition().name("project").description("Load the project that is active for this GraphQL query.")
-				.type(new GraphQLTypeReference(PROJECT_TYPE_NAME)).dataFetcher(this::projectFetcher).build());
+			.type(new GraphQLTypeReference(PROJECT_TYPE_NAME)).dataFetcher(this::projectFetcher).build());
 
 		// NOT ALLOWED - See class description for details
 		// .projects
@@ -268,54 +269,54 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		// .node
 		root.field(newFieldDefinition().name("node").description("Load a node by uuid, uuid and language or webroot path.")
-				.argument(createUuidArg("Node uuid")).argument(createLanguageTagArg()).argument(createPathArg()).dataFetcher(this::nodeFetcher)
-				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
+			.argument(createUuidArg("Node uuid")).argument(createLanguageTagArg()).argument(createPathArg()).dataFetcher(this::nodeFetcher)
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .nodes
 		root.field(newFieldDefinition().name("nodes").description("Load a page of nodes via the regular nodes list or via a search.")
-				.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
-				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
-					GraphQLContext gc = env.getContext();
-					PagingParameters pagingInfo = getPagingInfo(env);
-					String query = env.getArgument("query");
+			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
+			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
+				GraphQLContext gc = env.getContext();
+				PagingParameters pagingInfo = getPagingInfo(env);
+				String query = env.getArgument("query");
 
-					// Check whether we need to load the nodes via a query or regular project-wide paging
-					if (query != null) {
-						return nodeTypeProvider.handleContentSearch(gc, query, pagingInfo);
-					} else {
-						NodeRoot nodeRoot = gc.getProject().getNodeRoot();
-						TransformablePage<? extends Node> nodes = nodeRoot.findAll(gc, pagingInfo);
+				// Check whether we need to load the nodes via a query or regular project-wide paging
+				if (query != null) {
+					return nodeTypeProvider.handleContentSearch(gc, query, pagingInfo);
+				} else {
+					NodeRoot nodeRoot = gc.getProject().getNodeRoot();
+					TransformablePage<? extends Node> nodes = nodeRoot.findAll(gc, pagingInfo);
 
-						// Now lets try to load the containers for those found nodes - apply the language fallback
-						List<String> languageTags = getLanguageArgument(env);
-						List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
-							NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-							return new NodeContent(node, container);
-						}).collect(Collectors.toList());
-						return new WrappedPageImpl<NodeContent>(contents, nodes);
-					}
-				}));
+					// Now lets try to load the containers for those found nodes - apply the language fallback
+					List<String> languageTags = getLanguageArgument(env);
+					List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
+						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+						return new NodeContent(node, container);
+					}).collect(Collectors.toList());
+					return new WrappedPageImpl<NodeContent>(contents, nodes);
+				}
+			}));
 
 		// .baseNode
 		root.field(newFieldDefinition().name("rootNode").description("Return the project root node.").argument(createLanguageTagArg())
-				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(this::rootNodeFetcher).build());
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(this::rootNodeFetcher).build());
 
 		// .tag
 		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), TAG_TYPE_NAME));
 
 		// .tags
-		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagSearchHandler));
+		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagSearchHandler, null));
 
 		// .tagFamily
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
 
 		// .tagFamilies
 		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
-				tagFamilySearchHandler));
+			tagFamilySearchHandler, null));
 
 		// .release
 		root.field(newFieldDefinition().name("release").description("Load the release that is active for this GraphQL query.")
-				.type(new GraphQLTypeReference(RELEASE_TYPE_NAME)).dataFetcher(this::releaseFetcher).build());
+			.type(new GraphQLTypeReference(RELEASE_TYPE_NAME)).dataFetcher(this::releaseFetcher).build());
 
 		// .schema
 		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
@@ -325,7 +326,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		// .microschema
 		root.field(
-				newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_TYPE_NAME));
+			newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_TYPE_NAME));
 
 		// .microschemas
 		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_PAGE_TYPE_NAME));
@@ -334,19 +335,20 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), ROLE_TYPE_NAME));
 
 		// .roles
-		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleSearchHandler));
+		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleSearchHandler, null));
 
 		// .group
 		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), GROUP_TYPE_NAME));
 
 		// .groups
-		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupSearchHandler));
+		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupSearchHandler, null));
 
 		// .user
 		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userRoot(), USER_TYPE_NAME));
 
 		// .users
-		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), USER_PAGE_TYPE_NAME, userSearchHandler));
+		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), USER_PAGE_TYPE_NAME, userSearchHandler,
+			userTypeProvider));
 
 		// .mesh
 		root.field(meshTypeProvider.createMeshFieldType());
@@ -371,10 +373,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		}));
 
 		type.field(newFieldDefinition().name("totalCount").description("Return the total item count which the resource could provide.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getTotalElements();
-				}).type(GraphQLLong));
+			.dataFetcher(env -> {
+				Page<?> page = env.getSource();
+				return page.getTotalElements();
+			}).type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("currentPage").description("Return the current page number.").dataFetcher(env -> {
 			Page<?> page = env.getSource();
@@ -382,35 +384,35 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		}).type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("pageCount").description("Return the total amount of pages which the resource can provide.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getPageCount();
-				}).type(GraphQLLong));
+			.dataFetcher(env -> {
+				Page<?> page = env.getSource();
+				return page.getPageCount();
+			}).type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("perPage").description("Return the per page parameter value that was used to load the page.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getPerPage();
-				}).type(GraphQLLong));
+			.dataFetcher(env -> {
+				Page<?> page = env.getSource();
+				return page.getPerPage();
+			}).type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("size").description(
-				"Return the amount of items which the page is containing. Please note that a page may always contain less items compared to its maximum capacity.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getSize();
-				}).type(GraphQLLong));
+			"Return the amount of items which the page is containing. Please note that a page may always contain less items compared to its maximum capacity.")
+			.dataFetcher(env -> {
+				Page<?> page = env.getSource();
+				return page.getSize();
+			}).type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("hasNextPage").description("Check whether the paged resource could serve another page")
-				.type(GraphQLBoolean).dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.hasNextPage();
-				}));
+			.type(GraphQLBoolean).dataFetcher(env -> {
+				Page<?> page = env.getSource();
+				return page.hasNextPage();
+			}));
 
 		type.field(newFieldDefinition().name("hasPreviousPage").description("Check whether the current page has a previous page.")
-				.type(GraphQLBoolean).dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.hasPreviousPage();
-				}));
+			.type(GraphQLBoolean).dataFetcher(env -> {
+				Page<?> page = env.getSource();
+				return page.hasPreviousPage();
+			}));
 
 		return type.build();
 	}
