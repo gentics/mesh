@@ -13,6 +13,7 @@ dependency-reduced-pom.xml
 .checkstyle
 mesh.json
 mesh-config.yml
+.testcontainers*
 mesh.yml
 .bak
 mesh.lock
