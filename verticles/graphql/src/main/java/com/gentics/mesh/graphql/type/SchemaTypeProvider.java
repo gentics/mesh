@@ -42,6 +42,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	public static final String SCHEMA_PAGE_TYPE_NAME = "SchemasPage";
 
+	public static final String SCHEMA_FIELD_TYPE = "SchemaFieldType";
+
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
 
@@ -100,7 +102,6 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env));
 		}, NODE_PAGE_TYPE_NAME));
 
-		String SCHEMA_FIELD_TYPE = "SchemaFieldType";
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 
 		fieldListBuilder.field(newFieldDefinition().name("name").type(GraphQLString).description("Name of the field"));
