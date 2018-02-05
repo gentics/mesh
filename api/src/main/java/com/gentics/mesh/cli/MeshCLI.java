@@ -57,18 +57,19 @@ public final class MeshCLI {
 		elasticsearchUrl.setArgName("url");
 		options.addOption(elasticsearchUrl);
 
-		Option resetAdminPassword = new Option(RESET_ADMIN_PASSWORD, true, "Reset the admin password");
+		//TODO remove this and replace it by an option which will read a new password from stdin
+		Option resetAdminPassword = new Option(RESET_ADMIN_PASSWORD, true, "Reset the admin password.");
 		resetAdminPassword.setArgName("password");
 		options.addOption(resetAdminPassword);
 
 		Option initCluster = new Option(INIT_CLUSTER, false, "Flag which can be used to initialise the first instance of a cluster.");
 		options.addOption(initCluster);
 
-		Option nodeName = new Option(NODE_NAME, true, "Node instance name");
+		Option nodeName = new Option(NODE_NAME, true, "Override the configured node name.");
 		nodeName.setArgName("name");
 		options.addOption(nodeName);
 
-		Option clusterName = new Option(CLUSTER_NAME, true, "Cluster name");
+		Option clusterName = new Option(CLUSTER_NAME, true, "Override the cluster name. Setting a cluster name will also enable clustering.");
 		clusterName.setArgName("name");
 		options.addOption(clusterName);
 
