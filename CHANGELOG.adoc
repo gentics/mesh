@@ -20,6 +20,8 @@ icon:plus[] Config: It is now possible to configure the JVM arguments of the emb
 
 CAUTION: The `mesh.yml` search section has been updated. The `search.url` property replaces the `search.hosts` property.
 
+icon:plus[] GraphQL: Schema fields can now be queried. Currently supported are `name`, `label`, `required` and `type`.
+
 [source,yaml]
 ----
 search:
