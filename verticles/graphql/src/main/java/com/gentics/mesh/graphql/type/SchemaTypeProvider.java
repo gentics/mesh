@@ -100,18 +100,18 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env));
 		}, NODE_PAGE_TYPE_NAME));
 
-        String SCHEMA_FIELD_TYPE = "SchemaFieldType";
-        Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
+		String SCHEMA_FIELD_TYPE = "SchemaFieldType";
+		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 
-        fieldListBuilder.field(newFieldDefinition().name("name").type(GraphQLString).description("Name of the field"));
-        fieldListBuilder.field(newFieldDefinition().name("label").type(GraphQLString).description("Label of the field"));
-        fieldListBuilder.field(newFieldDefinition().name("required").type(GraphQLBoolean).description("Whether this field is required"));
-        fieldListBuilder.field(newFieldDefinition().name("type").type(GraphQLString).description("The type of the field"));
-        // TODO add "allow" and "indexSettings"
+		fieldListBuilder.field(newFieldDefinition().name("name").type(GraphQLString).description("Name of the field"));
+		fieldListBuilder.field(newFieldDefinition().name("label").type(GraphQLString).description("Label of the field"));
+		fieldListBuilder.field(newFieldDefinition().name("required").type(GraphQLBoolean).description("Whether this field is required"));
+		fieldListBuilder.field(newFieldDefinition().name("type").type(GraphQLString).description("The type of the field"));
+		// TODO add "allow" and "indexSettings"
 
-        GraphQLOutputType type = GraphQLList.list(fieldListBuilder.build());
+		GraphQLOutputType type = GraphQLList.list(fieldListBuilder.build());
 
-        schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> loadModelWithFallback(env).getFields()));
+		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> loadModelWithFallback(env).getFields()));
 
 		return schemaType.build();
 	}
