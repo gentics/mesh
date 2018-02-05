@@ -248,7 +248,7 @@ public abstract class AbstractTypeProvider {
 	 * @param filterArgument
 	 * @return
 	 */
-	protected GraphQLFieldDefinition  newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
 		String pageTypeName, SearchHandler searchHandler, Filterable filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
@@ -258,7 +258,7 @@ public abstract class AbstractTypeProvider {
 			.dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
 				String query = env.getArgument("query");
-				Map<String, Object>  filter = env.getArgument("filter");
+				Map<String, Object> filter = env.getArgument("filter");
 				if (query != null && filter != null) {
 					throw new RuntimeException("Only one way of filtering can be specified. Either by query or by filter");
 				}
@@ -270,7 +270,11 @@ public abstract class AbstractTypeProvider {
 					}
 				} else {
 					RootVertex<?> root = rootProvider.apply(gc);
-					return root.findAll(gc, getPagingInfo(env), filterProvider.constructFilter(filter, root));
+					if (filterProvider != null) {
+						return root.findAll(gc, getPagingInfo(env), filterProvider.constructFilter(filter, root));
+					} else {
+						return root.findAll(gc, getPagingInfo(env));
+					}
 				}
 			});
 
