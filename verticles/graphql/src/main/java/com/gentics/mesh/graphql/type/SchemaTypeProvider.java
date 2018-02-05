@@ -6,6 +6,10 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -22,14 +26,12 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLObjectType.Builder;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @Singleton
 public class SchemaTypeProvider extends AbstractTypeProvider {
@@ -95,10 +97,21 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				return new NodeContent(node, container);
 			});
 
-			return new DynamicStreamPageImpl(nodes, getPagingInfo(env));
+			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env));
 		}, NODE_PAGE_TYPE_NAME));
 
-		// TODO add fields
+        String SCHEMA_FIELD_TYPE = "SchemaFieldType";
+        Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
+
+        fieldListBuilder.field(newFieldDefinition().name("name").type(GraphQLString).description("Name of the field"));
+        fieldListBuilder.field(newFieldDefinition().name("label").type(GraphQLString).description("Label of the field"));
+        fieldListBuilder.field(newFieldDefinition().name("required").type(GraphQLBoolean).description("Whether this field is required"));
+        fieldListBuilder.field(newFieldDefinition().name("type").type(GraphQLString).description("The type of the field"));
+        // TODO add "allow" and "indexSettings"
+
+        GraphQLOutputType type = GraphQLList.list(fieldListBuilder.build());
+
+        schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> loadModelWithFallback(env).getFields()));
 
 		return schemaType.build();
 	}

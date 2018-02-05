@@ -70,7 +70,34 @@
 		        }
 		    }
 		}
+
+		# [$.data.schema.fields[0].name=slug]
+		# [$.data.schema.fields[0].label=Slug]
+		# [$.data.schema.fields[0].required=true]
+		# [$.data.schema.fields[0].type=string]
+		# [$.data.schema.fields[1].name=title]
+		# [$.data.schema.fields[1].label=Title]
+		# [$.data.schema.fields[1].required=false]
+		# [$.data.schema.fields[1].type=string]
+		# [$.data.schema.fields[3].name=content]
+		# [$.data.schema.fields[3].label=Content]
+		# [$.data.schema.fields[3].required=false]
+		# [$.data.schema.fields[3].type=html]
+		fields {
+			name
+			label
+			required
+			type
+		}
 	}
+
+	# Check if "fields" type is generated only once (if not, this would cause an error)
+	schemaAlias: schema(name:"content") {
+		fields {
+			name
+		}
+	}
+
 	project {
 		name
 		rootNode {
