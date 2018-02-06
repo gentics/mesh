@@ -265,6 +265,33 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	}
 
+	@Test
+	public void testTransformImageFilename() throws Exception {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		String filename = "image";
+
+		String version = db().tx(() -> {
+			Node node = folder("news");
+			// 1. Upload image
+			return uploadImage(node, "en", filename).getVersion();
+		});
+
+		// 2. Transform the image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
+		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
+		assertEquals("The image should have been resized", 100, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
+
+		// 3. Validate that a new version was created
+		String newNumber = transformResponse.getVersion();
+		assertNotEquals("The version number should have changed.", version, newNumber);
+
+		// 4. Download the image
+		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
+
+		// 5. Validate the filename
+		assertEquals(filename, result.getFilename());
+	}
+
 	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
 			int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
