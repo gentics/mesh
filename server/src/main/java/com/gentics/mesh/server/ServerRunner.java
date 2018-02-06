@@ -21,7 +21,6 @@ public class ServerRunner {
 	static {
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
-		System.setProperty("storage.trackChangedRecordsInWAL", "true");
 	}
 
 	public static void main(String[] args) throws Exception {

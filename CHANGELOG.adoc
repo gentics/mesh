@@ -14,7 +14,7 @@ icon:plus[] GraphQL: The underlying graphql-java library was updated to version 
 
 icon:check[] REST: An error which prevented the `/api/v1` info endpoint from returning version information has been fixed.
 
-icon:plus[] OrientDB: The included OrientDB Studio has been updated to version 2.2.31.
+icon:plus[] OrientDB: The included OrientDB Studio has been updated to version 2.2.32.
 
 icon:plus[] Config: It is now possible to configure the JVM arguments of the embedded Elasticsearch server via the `search.embeddedArguments` property.
 
