@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.jsoup.Jsoup;
 
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -165,10 +166,15 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 				HtmlGraphField htmlField = container.getHtml(name);
 				if (htmlField != null) {
 					String value = htmlField.getHTML();
-					if (addRaw) {
-						value = truncateRawFieldValue(value);
+					if (value != null) {
+						String plainValue = Jsoup.parse(value).text();
+						if (addRaw) {
+							plainValue = truncateRawFieldValue(plainValue);
+						}
+						fieldsMap.put(name, plainValue);
+					} else {
+						fieldsMap.put(name, value);
 					}
-					fieldsMap.put(name, value);
 				}
 				break;
 			case BINARY:
@@ -297,10 +303,15 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							List<String> htmlItems = new ArrayList<>();
 							for (HtmlGraphField listItem : graphHtmlList.getList()) {
 								String value = listItem.getHTML();
-								if (addRaw) {
-									value = truncateRawFieldValue(value);
+								if (value != null) {
+									String plainValue = Jsoup.parse(value).text();
+									if (addRaw) {
+										plainValue = truncateRawFieldValue(plainValue);
+									}
+									htmlItems.add(plainValue);
+								} else {
+									htmlItems.add(value);
 								}
-								htmlItems.add(value);
 							}
 							fieldsMap.put(fieldSchema.getName(), htmlItems);
 						}

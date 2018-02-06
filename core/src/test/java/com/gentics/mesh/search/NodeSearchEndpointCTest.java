@@ -11,6 +11,7 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.jsoup.Jsoup;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -212,6 +213,35 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
+	}
+
+	@Test
+	public void testSearchHtml() throws Exception {
+		try (Tx tx = tx()) {
+			recreateIndices();
+		}
+
+		String newHtml = "ABCD<strong>EF</strong>GHI";
+		String newPlain = Jsoup.parse(newHtml).text();
+		String nodeUuid = db().tx(() -> content("concorde").getUuid());
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
+			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
+
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.getFields().put("content", FieldUtil.createHtmlField(newHtml));
+		update.setVersion("1.0");
+		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
+
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new PagingParametersImpl().setPage(1)
+			.setPerPage(2), new VersioningParametersImpl().draft()));
+		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
+
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newPlain), new PagingParametersImpl().setPage(1)
+			.setPerPage(2), new VersioningParametersImpl().draft()));
+		assertEquals("Check hits for '" + newPlain+ "' after update", 1, response.getData().size());
 	}
 
 	@Test

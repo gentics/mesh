@@ -10,6 +10,8 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 [[v0.15.1]]
 == 0.15.1 (TBD)
 
+CAUTION: Search: The contents of HTML and HTML list fields will now automatically be stripped of markup prior of indexing.
+
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 7.0.
 
 icon:check[] REST: An error which prevented the `/api/v1` info endpoint from returning version information has been fixed.
