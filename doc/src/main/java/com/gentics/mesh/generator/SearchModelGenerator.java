@@ -123,7 +123,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 			e.printStackTrace();
 			System.exit(10);
 		}
-		System.exit(0);
 	}
 
 	private void writeNodeDocumentExample() throws Exception {

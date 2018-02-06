@@ -46,7 +46,7 @@ public final class MeshCLI {
 		Option help = new Option(HELP, "This output");
 		options.addOption(help);
 
-		Option elasticsearch = new Option(EMBEDDED_ELASTICSEARCH, true, "Flag which can be used to disable the embeddded Elasticsearch server.");
+		Option elasticsearch = new Option(EMBEDDED_ELASTICSEARCH, true, "Flag which can be used to disable the embedded Elasticsearch server.");
 		elasticsearch.setArgName("flag");
 		options.addOption(elasticsearch);
 
@@ -57,12 +57,14 @@ public final class MeshCLI {
 		elasticsearchUrl.setArgName("url");
 		options.addOption(elasticsearchUrl);
 
-		//TODO remove this and replace it by an option which will read a new password from stdin
-		Option resetAdminPassword = new Option(RESET_ADMIN_PASSWORD, true, "Reset the admin password.");
+		// TODO remove this and replace it by an option which will read a new password from stdin
+		Option resetAdminPassword = new Option(RESET_ADMIN_PASSWORD, true,
+			"Reset the admin password. It is advised to change the password once again after the reset has been performed.");
 		resetAdminPassword.setArgName("password");
 		options.addOption(resetAdminPassword);
 
-		Option initCluster = new Option(INIT_CLUSTER, false, "Flag which can be used to initialise the first instance of a cluster.");
+		Option initCluster = new Option(INIT_CLUSTER, false,
+			"Flag which can be used to initialise the first instance of a cluster. This is usually only used for testing or setup of fresh cluster instances.");
 		options.addOption(initCluster);
 
 		Option nodeName = new Option(NODE_NAME, true, "Override the configured node name.");
@@ -73,7 +75,7 @@ public final class MeshCLI {
 		clusterName.setArgName("name");
 		options.addOption(clusterName);
 
-		Option httpPort = new Option(HTTP_PORT, true, "Server HTTP port");
+		Option httpPort = new Option(HTTP_PORT, true, "Override the configured server HTTP port.");
 		httpPort.setArgName("port");
 		options.addOption(httpPort);
 		return options;
