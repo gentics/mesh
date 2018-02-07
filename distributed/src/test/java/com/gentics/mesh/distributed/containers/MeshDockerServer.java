@@ -30,6 +30,7 @@ import org.testcontainers.utility.TestEnvironment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.docker.NoWaitStrategy;
@@ -104,7 +105,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 *            Additional JVM options
 	 */
 	public MeshDockerServer(String clusterName, String nodeName, String dataPathPostfix, boolean initCluster, boolean waitForStartup,
-			boolean clearDataFolders, Vertx vertx, Integer debugPort, String extraOpts) {
+		boolean clearDataFolders, Vertx vertx, Integer debugPort, String extraOpts) {
 		super(image);
 		this.vertx = vertx;
 		this.clusterName = clusterName;
@@ -135,7 +136,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
 		if (initCluster) {
-			addEnv("MESHARGS", "-initCluster");
+			addEnv("MESHARGS", "-" + MeshCLI.INIT_CLUSTER);
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv("NODENAME", nodeName);
@@ -161,7 +162,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		exposedPorts.add(9200);
 		exposedPorts.add(9300);
 
-//		 setPrivilegedMode(true);
+		// setPrivilegedMode(true);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
 		// setContainerName("mesh-test-" + nodeName);
@@ -205,7 +206,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 			// Locate all class folders
 			List<Path> classFolders = Files.walk(projectRoot.toPath()).filter(file -> "classes".equals(file.toFile().getName()))
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 
 			// Iterate over all classes in the class folders and add those to the docker context
 			String classPathArg = "";
@@ -269,7 +270,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		StringBuilder builder = new StringBuilder();
 		builder.append("#!/bin/sh\n");
 		builder.append("java $JAVAOPTS -cp " + classpath
-				+ " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME -clusterName $CLUSTERNAME $MESHARGS\n");
+			+ " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME -clusterName $CLUSTERNAME -" + MeshCLI.DISABLE_ELASTICSEARCH + " $MESHARGS\n");
 		builder.append("\n\n");
 		return builder.toString();
 	}
@@ -316,9 +317,9 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
 		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
-				.withUser("root")
-				// .withPrivileged(true)
-				.withCmd(command).exec();
+			.withUser("root")
+			// .withPrivileged(true)
+			.withCmd(command).exec();
 
 		final ToStringConsumer stdoutConsumer = new ToStringConsumer();
 		final ToStringConsumer stderrConsumer = new ToStringConsumer();
