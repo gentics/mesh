@@ -6,8 +6,6 @@ import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import java.io.File;
 import java.io.IOException;
 
-import com.gentics.mesh.cli.MeshCLI;
-
 /**
  * Runner for various example generators.
  */
