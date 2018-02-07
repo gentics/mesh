@@ -21,11 +21,11 @@ public interface TestHttpMethods extends TestHelperMethods {
 
 	OkHttpClient httpClient();
 	
-	default Request.Builder httpRequest(@NotNull String path, ParameterProvider... params) {
+	default HttpUrl prepareUrl(@NotNull String path, ParameterProvider... params) {
 		HttpUrl.Builder url = new HttpUrl.Builder();
 		url.scheme("http");
 		url.host("localhost");
-		url.port(this.port());
+		url.port(port());
 		url.encodedPath(path);
 		
 		if (params != null) {
@@ -36,36 +36,42 @@ public interface TestHttpMethods extends TestHelperMethods {
 			}
 		}
 		
-		Request.Builder b = new Request.Builder();
-		b.url(url.build());
-		
-		return b;
+		return url.build();
 	}
 	
 	default Call httpGet(@NotNull String path, ParameterProvider... params) {
-		Request.Builder b = this.httpRequest(path, params);
+		HttpUrl url = this.prepareUrl(path, params);
+		
+		Request.Builder b = new Request.Builder();
+		b.url(url);
 		b.method("GET", null);
 		
 		return this.httpClient().newCall(b.build());
 	}
 	
 	default Call httpPost(@NotNull String path, RequestBody body, ParameterProvider... params) {	
-		Request.Builder b = this.httpRequest(path, params);
+		HttpUrl url = this.prepareUrl(path, params);
+		
+		Request.Builder b = new Request.Builder();
+		b.url(url);
 		b.method("POST", body);
 		
 		return this.httpClient().newCall(b.build());
 	}
 	
-	default Call httpPost(@NotNull String path, String body) {
-		return this.httpPost(path, RequestBody.create(MediaType.parse("application/json"), body));
+	default Call httpPost(@NotNull String path, String body, ParameterProvider... params) {
+		return this.httpPost(path, RequestBody.create(MediaType.parse("application/json"), body), params);
 	}
 	
-	default Call httpPost(@NotNull String path, JsonObject json) {
-		return this.httpPost(path, RequestBody.create(MediaType.parse("application/json"), json.encode()));
+	default Call httpPost(@NotNull String path, JsonObject json, ParameterProvider... params) {
+		return this.httpPost(path, RequestBody.create(MediaType.parse("application/json"), json.encode()), params);
 	}
 	
 	default Call httpDelete(@NotNull String path, ParameterProvider... params) {
-		Request.Builder b = this.httpRequest(path, params);
+		HttpUrl url = this.prepareUrl(path, params);
+		
+		Request.Builder b = new Request.Builder();
+		b.url(url);
 		b.method("DELETE", null);
 		
 		return this.httpClient().newCall(b.build());
