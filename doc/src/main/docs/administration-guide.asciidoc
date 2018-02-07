@@ -35,7 +35,7 @@ On first startup, Gentics Mesh will create the data folder and subfolders, set a
 
 Various command line arguments can be used to override or supplement previously configured settings.
 
-[source]
+[source,text]
 ----
 include::examples/models/mesh-cli-help.txt[]
 ----

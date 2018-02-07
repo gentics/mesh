@@ -14,11 +14,11 @@ import com.gentics.mesh.cli.MeshCLI;
 public class CLIHelpGenerator extends AbstractGenerator {
 
 	public CLIHelpGenerator(File outputFolder) {
-		this.outputFolder = outputFolder;
+		this.outputFolder = new File(outputFolder, "models");
 	}
 
 	public static void main(String[] args) throws IOException {
-		new CLIHelpGenerator(new File("target", "output")).run();
+		new CLIHelpGenerator(new File("target", "output/models")).run();
 	}
 
 	public void run() throws IOException {
