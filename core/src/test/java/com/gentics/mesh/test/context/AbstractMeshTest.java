@@ -47,13 +47,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
+import okhttp3.OkHttpClient;
 
-public abstract class AbstractMeshTest implements TestHelperMethods {
+public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMethods {
 
 	static {
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
+	
+	private OkHttpClient httpClient;
 
 	@Rule
 	@ClassRule
@@ -74,6 +77,13 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
 		}
+	}
+	
+	public OkHttpClient httpClient() {
+		if (this.httpClient == null) {
+			this.httpClient = new OkHttpClient.Builder().build();
+		}
+		return this.httpClient;
 	}
 
 	/**
