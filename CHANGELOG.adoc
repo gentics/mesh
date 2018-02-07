@@ -8,13 +8,13 @@
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 [[v0.16.0]]
-== 0.16.0 (07.02.2015)
+== 0.16.0 (07.02.2018)
 
 CAUTION: Search: The contents of HTML and HTML list fields will now automatically be stripped of markup prior of indexing.
 
 CAUTION: The `mesh.yml` search section has been updated. The `search.url` property replaces the `search.hosts` property.
 
-[source,yaml]
+[source,json]
 ----
 search:
   url: "http://localhost:9200"
