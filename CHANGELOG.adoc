@@ -12,17 +12,7 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 CAUTION: Search: The contents of HTML and HTML list fields will now automatically be stripped of markup prior of indexing.
 
-icon:plus[] GraphQL: The underlying graphql-java library was updated to version 7.0.
-
-icon:check[] REST: An error which prevented the `/api/v1` info endpoint from returning version information has been fixed.
-
-icon:plus[] OrientDB: The included OrientDB Studio has been updated to version 2.2.32.
-
-icon:plus[] Config: It is now possible to configure the JVM arguments of the embedded Elasticsearch server via the `search.embeddedArguments` property.
-
 CAUTION: The `mesh.yml` search section has been updated. The `search.url` property replaces the `search.hosts` property.
-
-icon:plus[] GraphQL: Schema fields can now be queried. Currently supported are `name`, `label`, `required` and `type`.
 
 [source,yaml]
 ----
@@ -31,6 +21,16 @@ search:
   timeout: 8000
   startEmbedded: false
 ----
+
+icon:plus[] GraphQL: The underlying graphql-java library was updated to version 7.0.
+
+icon:check[] REST: An error which prevented the `/api/v1` info endpoint from returning version information has been fixed.
+
+icon:plus[] OrientDB: The included OrientDB Studio has been updated to version 2.2.32.
+
+icon:plus[] Config: It is now possible to configure the JVM arguments of the embedded Elasticsearch server via the `search.embeddedArguments` property.
+
+icon:plus[] GraphQL: Schema fields can now be queried. Currently supported are `name`, `label`, `required` and `type`.
 
 [[v0.15.0]]
 == 0.15.0 (31.01.2018)
