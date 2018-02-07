@@ -7,8 +7,8 @@
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
-[[v0.15.1]]
-== 0.15.1 (TBD)
+[[v0.16.0]]
+== 0.16.0 (07.02.2015)
 
 CAUTION: Search: The contents of HTML and HTML list fields will now automatically be stripped of markup prior of indexing.
 
