@@ -88,7 +88,15 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		try {
 			URL url = new URL(searchOptions.getUrl());
-			client = new SearchClient(url.getProtocol(), url.getHost(), url.getPort());
+			int port = url.getPort();
+			String proto = url.getProtocol();
+			if ("http".equals(proto) && port == -1) {
+				port = 80;
+			}
+			if ("https".equals(proto) && port == -1) {
+				port = 443;
+			}
+			client = new SearchClient(proto, url.getHost(), port);
 
 			if (waitForCluster) {
 				waitForCluster(client, 45);
