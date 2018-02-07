@@ -1,10 +1,10 @@
 package com.gentics.mesh.storage.s3;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
@@ -17,6 +17,7 @@ import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 
+@Ignore
 public class S3BinaryStorageTest {
 
 	public static final String VERSION = "RELEASE.2018-01-18T20-33-21Z";
