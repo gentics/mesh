@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -46,10 +47,11 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	private ImgscalrImageManipulator manipulator;
 
-	private ImageManipulatorOptions options = new ImageManipulatorOptions();
 
 	@Before
 	public void setup() {
+		ImageManipulatorOptions options = new ImageManipulatorOptions();
+		options.setImageCacheDirectory(new File("target", "tmp_" + System.currentTimeMillis()).getAbsolutePath());
 		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
 	}
 
