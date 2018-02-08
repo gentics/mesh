@@ -6,8 +6,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.security.InvalidParameterException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -49,11 +53,14 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.google.common.collect.Sets;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 /**
@@ -380,4 +387,62 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		}
 	}
 
+	@Override
+	public Iterable<? extends Node> getReferencedNodes() {
+		// Get all fields and group them by type
+		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
+			.filter(this::isNodeReferenceType)
+			.collect(Collectors.groupingBy(FieldSchema::getType));
+
+		Function<FieldTypes, List<FieldSchema>> getFields = type ->
+			Optional.ofNullable(affectedFields.get(type.toString())).orElse(Collections.emptyList());
+
+		return Stream.of(
+			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
+			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
+			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
+		).flatMap(Function.identity())::iterator;
+	}
+
+	private boolean isNodeReferenceType(FieldSchema schema) {
+		String type = schema.getType();
+		return type.equals(FieldTypes.NODE.toString()) || type.equals(FieldTypes.LIST.toString()) || type.equals(FieldTypes.MICRONODE.toString());
+	}
+
+	private Stream<Node> getNodeFromNodeField(FieldSchema field) {
+		return Optional.ofNullable(getNode(field.getName()))
+			.map(NodeGraphField::getNode)
+			.map(Stream::of)
+			.orElseGet(Stream::empty);
+	}
+
+	private Stream<? extends Node> getNodesFromMicronode(FieldSchema field) {
+		return Optional.ofNullable(getMicronode(field.getName()))
+			.map(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false))
+			.orElseGet(Stream::empty);
+	}
+
+	private Stream<? extends Node> getNodesFromList(FieldSchema field) {
+		ListFieldSchema list;
+		if (field instanceof ListFieldSchema) {
+			list = (ListFieldSchema)field;
+		} else {
+			throw new InvalidParameterException("Invalid field type");
+		}
+
+		String type = list.getListType();
+		if (type.equals(FieldTypes.NODE.toString())) {
+			return Optional.ofNullable(getNodeList(list.getName()))
+				.map(listField -> listField.getList().stream())
+				.orElseGet(Stream::empty)
+				.map(NodeGraphField::getNode);
+		} else if (type.equals(FieldTypes.MICRONODE.toString())) {
+			return Optional.ofNullable(getMicronodeList(list.getName()))
+				.map(listField -> listField.getList().stream())
+				.orElseGet(Stream::empty)
+				.flatMap(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false));
+		} else {
+			throw new InvalidParameterException("Invalid List type");
+		}
+	}
 }

@@ -352,4 +352,5 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 */
 	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version);
 
+    Iterable<? extends Node> getReferencedNodes();
 }
