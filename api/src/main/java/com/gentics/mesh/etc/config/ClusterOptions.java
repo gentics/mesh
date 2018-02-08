@@ -5,12 +5,14 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 
 /**
  * POJO for the mesh cluster options
  */
 @GenerateDocumentation
-public class ClusterOptions {
+public class ClusterOptions implements Option {
 
 	public static final boolean ENABLED = true;
 	public static final boolean DISABLED = false;
@@ -19,6 +21,7 @@ public class ClusterOptions {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
+	@EnvironmentVariable(name = "CLUSTER_NETWORK_HOST", description = "Override the cluster network host.")
 	private String networkHost;
 
 	// TODO use public and bind host - https://www.prjhub.com/#/issues/9058, https://www.elastic.co/guide/en/elasticsearch/reference/2.0/modules-network.html
@@ -26,15 +29,18 @@ public class ClusterOptions {
 	// private String bindHost;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag to enable or disable the cluster mode. (Not yet fully implemented)")
+	@JsonPropertyDescription("Flag to enable or disable the cluster mode.")
+	@EnvironmentVariable(name = "CLUSTER_ENABLED", description = "Override cluster enabled flag.")
 	private boolean enabled = DEFAULT_CLUSTER_MODE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the cluster. Only instances with a common cluster name will form a cluster.")
+	@EnvironmentVariable(name = "CLUSTER_NAME", description = "Override the cluster name.")
 	private String clusterName;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Port used by Vert.x for the eventbus server. A random free port will be selected if set to 0.")
+	@EnvironmentVariable(name = "CLUSTER_VERTX_PORT", description = "Override the vert.x eventbus server port.")
 	private Integer vertxPort = 0;
 
 	/**

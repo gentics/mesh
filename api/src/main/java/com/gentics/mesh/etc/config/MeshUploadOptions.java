@@ -5,9 +5,11 @@ import java.io.File;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 
 @GenerateDocumentation
-public class MeshUploadOptions {
+public class MeshUploadOptions implements Option {
 
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250; // 250 MiB
 
@@ -15,10 +17,12 @@ public class MeshUploadOptions {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path binary data storage directory. Fileuploads will be placed here.")
+	@EnvironmentVariable(name = "BINARY_DIR", description = "Override the configured binary data directory.")
 	private String directory = "data" + File.separator + "binaryFiles";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.")
+	@EnvironmentVariable(name = "BINARY_UPLOAD_TEMP_DIR", description = "Override the configured upload temporary directory.")
 	private String tempDirectory = "data" + File.separator + "tmp" + File.separator + "file-uploads";
 
 	/**

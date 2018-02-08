@@ -1,11 +1,12 @@
 package com.gentics.mesh.etc.config;
 
-import io.vertx.core.json.JsonObject;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.etc.config.env.Option;
 
-public class MeshVerticleConfiguration {
+import io.vertx.core.json.JsonObject;
+
+public class MeshVerticleConfiguration implements Option {
 
 	@JsonProperty(value = "config", required = false)
 	@JsonPropertyDescription("Custom verticle configuration.")

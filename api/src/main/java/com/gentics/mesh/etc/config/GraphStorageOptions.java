@@ -7,12 +7,14 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 
 /**
  * Underlying graph database storage configuration.
  */
 @GenerateDocumentation
-public class GraphStorageOptions {
+public class GraphStorageOptions implements Option {
 
 	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "graphdb";
 	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "backup";
@@ -20,10 +22,12 @@ public class GraphStorageOptions {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
+	@EnvironmentVariable(name = "GRAPH_DB_DIRECTORY", description = "Override the graph database storage directory.")
 	private String directory = DEFAULT_DIRECTORY;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database backup directory.")
+	@EnvironmentVariable(name = "GRAPH_BACKUP_DIRECTORY", description = "Override the graph database backup directory.")
 	private String backupDirectory = DEFAULT_BACKUP_DIRECTORY;
 
 	@JsonProperty(required = true)
@@ -32,6 +36,7 @@ public class GraphStorageOptions {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the graph database admin web server should be started.")
+	@EnvironmentVariable(name = "GRAPH_STARTSERVER", description = "Override the graph database server flag.")
 	private Boolean startServer = false;
 
 	@JsonProperty(required = false)

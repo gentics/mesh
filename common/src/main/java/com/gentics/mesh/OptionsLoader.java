@@ -44,9 +44,19 @@ public final class OptionsLoader {
 	 */
 	public static MeshOptions createOrloadOptions(String... args) {
 		MeshOptions options = loadMeshOptions();
+		applyEnvironmentVariables(options);
 		applyCommandLineArgs(options, args);
 		options.validate();
 		return options;
+	}
+
+	/**
+	 * Check which environment variables have been set and override those in the provided options.
+	 * 
+	 * @param options
+	 */
+	private static void applyEnvironmentVariables(MeshOptions options) {
+		options.overrideWithEnv();
 	}
 
 	/**

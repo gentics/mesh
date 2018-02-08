@@ -6,13 +6,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 /**
  * Main mesh configuration POJO.
  */
 @GenerateDocumentation
-public class MeshOptions {
+public class MeshOptions implements Option {
 
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
@@ -22,10 +24,12 @@ public class MeshOptions {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.")
+	@EnvironmentVariable(name = "DEFAULT_LANG", description = "Override the configured default language.")
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Turn on or off the update checker.")
+	@EnvironmentVariable(name = "UPDATECHECK", description = "Override the configured updatecheck flag.")
 	private boolean updateCheck = true;
 
 	@JsonProperty(required = true)
@@ -62,14 +66,17 @@ public class MeshOptions {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
+	@EnvironmentVariable(name = "TEMP_DIR", description = "Override the configured temp directory.")
 	private String tempDirectory = "data" + File.separator + "tmp";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
+	@EnvironmentVariable(name = "NODE_NAME", description = "Override the configured node name.")
 	private String nodeName;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
+	@EnvironmentVariable(name = "CLUSTER_INIT", description = "Enable or disable the initial cluster database setup. This is useful for testing.")
 	private boolean isInitCluster = false;
 
 	@JsonIgnore
@@ -338,6 +345,27 @@ public class MeshOptions {
 		}
 
 		// TODO check for other invalid characters in node name
+	}
+
+	@Override
+	public void validate(MeshOptions options) {
+		validate(null);
+	}
+
+	/**
+	 * Apply the environment variables.
+	 */
+	@JsonIgnore
+	@Override
+	public void overrideWithEnv() {
+		Option.super.overrideWithEnv();
+
+		getClusterOptions().overrideWithEnv();
+		getSearchOptions().overrideWithEnv();
+		getStorageOptions().overrideWithEnv();
+		getHttpServerOptions().overrideWithEnv();
+		getAuthenticationOptions().overrideWithEnv();
+		getImageOptions().overrideWithEnv();
 	}
 
 }

@@ -3,10 +3,15 @@ package com.gentics.mesh;
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -25,6 +30,42 @@ public class OptionsLoaderTest {
 		assertTrue("The file should have been created.", confFile.exists());
 		assertNotNull("A keystore password should have been generated.", options.getAuthenticationOptions().getKeystorePassword());
 		assertNotNull("The node name should have been generated.", options.getNodeName());
+	}
+
+	@Test
+	public void testApplyEnvs() throws Exception {
+		Map<String, String> envMap = new HashMap<>();
+		envMap.put("DEFAULT_LANG", "ru");
+		envMap.put("UPDATECHECK", "false");
+		envMap.put("HTTP_PORT", "8100");
+		envMap.put("ELASTICSEARCH_URL", "https://somewhere.com");
+		set(envMap);
+		MeshOptions options = OptionsLoader.createOrloadOptions();
+		assertEquals(8100, options.getHttpServerOptions().getPort());
+		assertEquals("ru", options.getDefaultLanguage());
+		assertFalse(options.isUpdateCheckEnabled());
+		assertEquals("https://somewhere.com", options.getSearchOptions().getUrl());
+	}
+
+	/**
+	 * Override the env variables.
+	 * 
+	 * @param newenv
+	 * @throws Exception
+	 */
+	public static void set(Map<String, String> newenv) throws Exception {
+		Class[] classes = Collections.class.getDeclaredClasses();
+		Map<String, String> env = System.getenv();
+		for (Class cl : classes) {
+			if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+				Field field = cl.getDeclaredField("m");
+				field.setAccessible(true);
+				Object obj = field.get(env);
+				Map<String, String> map = (Map<String, String>) obj;
+				map.clear();
+				map.putAll(newenv);
+			}
+		}
 	}
 
 	@Test

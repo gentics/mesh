@@ -5,12 +5,14 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 
 /**
  * Authentication options POJO.
  */
 @GenerateDocumentation
-public class AuthenticationOptions {
+public class AuthenticationOptions implements Option {
 
 	public static final String DEFAULT_ALGORITHM = "HS256";
 
@@ -24,10 +26,12 @@ public class AuthenticationOptions {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The Java keystore password for the keystore file.")
+	@EnvironmentVariable(name = "AUTH_KEYSTORE_PASS", description = "Override the configured keystore password.")
 	private String keystorePassword = null;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the java keystore file which will be used to store cryptographic keys.")
+	@EnvironmentVariable(name = "AUTH_KEYSTORE_PATH", description = "Override the configured keystore path.")
 	private String keystorePath = DEFAULT_KEYSTORE_PATH;
 
 	@JsonProperty(required = true)
@@ -36,6 +40,7 @@ public class AuthenticationOptions {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether anonymous access should be enabled.")
+	@EnvironmentVariable(name = "AUTH_ANONYMOUS_ENABLED", description = "Override the configrued anonymous enabled flag.")
 	private boolean enableAnonymousAccess = true;
 
 	/**

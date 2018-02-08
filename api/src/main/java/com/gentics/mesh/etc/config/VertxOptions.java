@@ -3,12 +3,13 @@ package com.gentics.mesh.etc.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.Option;
 
 /**
  * Options for the used Vert.x instance.
  */
 @GenerateDocumentation
-public class VertxOptions {
+public class VertxOptions implements Option {
 
 	public static final int DEFAULT_WORKER_POOL_SIZE = 20;
 

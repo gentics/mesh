@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 
 /**
  * Mesh Http Server configuration POJO.
  */
 @GenerateDocumentation
-public class HttpServerConfig {
+public class HttpServerConfig implements Option {
 
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "";
 
@@ -23,22 +25,27 @@ public class HttpServerConfig {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port. Default is: " + DEFAULT_HTTP_PORT)
+	@EnvironmentVariable(name = "HTTP_PORT", description = "Override the configured server http port.")
 	private int port = DEFAULT_HTTP_PORT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server host to bind to. Default is: " + DEFAULT_HTTP_HOST)
+	@EnvironmentVariable(name = "HTTP_HOST", description = "Override the configured http server host which is used to bind to.")
 	private String host = DEFAULT_HTTP_HOST;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.")
+	@EnvironmentVariable(name = "HTTP_CORS_ORIGIN_PATTERN", description = "Override the configured CORS allowed origin pattern.")
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether credentials are allowed to be passed along using CORS requests.")
+	@EnvironmentVariable(name = "HTTP_CORS_ALLOW_CREDENTIALS", description = "Override the configured CORS allowed credentials flag.")
 	private Boolean corsAllowCredentials = DEFAULT_CORS_ALLOW_CREDENTIALS;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether CORS handling should be enabled.")
+	@EnvironmentVariable(name = "HTTP_CORS_ENABLE", description = "Override the configured CORS enable flag.")
 	private Boolean enableCors = false;
 
 	public HttpServerConfig() {
