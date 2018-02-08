@@ -404,11 +404,19 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		).flatMap(Function.identity())::iterator;
 	}
 
+	/**
+	 * Checks if a field can have a node reference.
+	 */
 	private boolean isNodeReferenceType(FieldSchema schema) {
 		String type = schema.getType();
 		return type.equals(FieldTypes.NODE.toString()) || type.equals(FieldTypes.LIST.toString()) || type.equals(FieldTypes.MICRONODE.toString());
 	}
 
+	/**
+	 * Gets the node from a node field.
+	 * @param field The node field to get the node from
+	 * @return Gets the node as a stream or an empty stream if the node field is not set
+	 */
 	private Stream<Node> getNodeFromNodeField(FieldSchema field) {
 		return Optional.ofNullable(getNode(field.getName()))
 			.map(NodeGraphField::getNode)
@@ -416,12 +424,21 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			.orElseGet(Stream::empty);
 	}
 
+	/**
+	 * Gets the nodes that are referenced by a micronode in the given field.
+	 * This includes all node fields and node list fields in the micronode.
+	 */
 	private Stream<? extends Node> getNodesFromMicronode(FieldSchema field) {
 		return Optional.ofNullable(getMicronode(field.getName()))
 			.map(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false))
 			.orElseGet(Stream::empty);
 	}
 
+	/**
+	 * Gets the nodes that are referenced by a list field.
+	 * The list can either be a node list or a micronode list.
+	 * In case of a micronode list, all nodes referenced by all node fields and node list fields are returned.
+	 */
 	private Stream<? extends Node> getNodesFromList(FieldSchema field) {
 		ListFieldSchema list;
 		if (field instanceof ListFieldSchema) {

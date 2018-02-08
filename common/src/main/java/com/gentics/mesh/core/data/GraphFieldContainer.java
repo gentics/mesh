@@ -352,5 +352,14 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 */
 	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version);
 
+	/**
+	 * Get all nodes that are in any way referenced by this node. This includes the following cases:
+	 * <ul>
+	 *     <li>Node fields</li>
+	 *     <li>Node list fields</li>
+	 *     <li>Micronode fields with node fields or node list fields</li>
+	 *     <li>Micronode list fields with node fields or node list fields</li>
+	 * </ul>
+	 */
     Iterable<? extends Node> getReferencedNodes();
 }

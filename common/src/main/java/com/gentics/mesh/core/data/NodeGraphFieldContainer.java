@@ -296,15 +296,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);
 
 	/**
-	 * Get all nodes that are in any way referenced by this node. This includes the following cases:
-	 * * Node fields
-	 * * Node list fields
-	 * * Micronode fields with node fields or node list fields
-	 * * Micronode list fields with node fields or node list fields
-	 */
-	Iterable<? extends Node> getReferencedNodes();
-
-	/**
 	 * Return the ETag for the field container.
 	 * 
 	 * @param ac
