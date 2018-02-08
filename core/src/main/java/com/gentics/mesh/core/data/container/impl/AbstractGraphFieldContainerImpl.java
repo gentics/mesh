@@ -436,8 +436,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	/**
 	 * Gets the nodes that are referenced by a list field.
-	 * The list can either be a node list or a micronode list.
-	 * In case of a micronode list, all nodes referenced by all node fields and node list fields are returned.
+	 * In case of a node list, all nodes in that list are returned.
+	 * In case of a micronode list, all nodes referenced by all node fields and node list fields in all microschemas are returned.
+	 * Otherwise an empty stream is returned.
 	 */
 	private Stream<? extends Node> getNodesFromList(FieldSchema field) {
 		ListFieldSchema list;
@@ -459,7 +460,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				.orElseGet(Stream::empty)
 				.flatMap(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false));
 		} else {
-			throw new InvalidParameterException("Invalid List type");
+			return Stream.empty();
 		}
 	}
 }
