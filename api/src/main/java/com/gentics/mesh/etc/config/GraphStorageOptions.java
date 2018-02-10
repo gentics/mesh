@@ -22,21 +22,22 @@ public class GraphStorageOptions implements Option {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
-	@EnvironmentVariable(name = "GRAPH_DB_DIRECTORY", description = "Override the graph database storage directory.")
+	@EnvironmentVariable(name = "MESH_GRAPH_DB_DIRECTORY", description = "Override the graph database storage directory.")
 	private String directory = DEFAULT_DIRECTORY;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database backup directory.")
-	@EnvironmentVariable(name = "GRAPH_BACKUP_DIRECTORY", description = "Override the graph database backup directory.")
+	@EnvironmentVariable(name = "MESH_GRAPH_BACKUP_DIRECTORY", description = "Override the graph database backup directory.")
 	private String backupDirectory = DEFAULT_BACKUP_DIRECTORY;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database export directory.")
+	@EnvironmentVariable(name = "MESH_GRAPH_EXPORT_DIRECTORY", description = "Override the graph database export directory.")
 	private String exportDirectory = DEFAULT_EXPORT_DIRECTORY;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the graph database admin web server should be started.")
-	@EnvironmentVariable(name = "GRAPH_STARTSERVER", description = "Override the graph database server flag.")
+	@EnvironmentVariable(name = "MESH_GRAPH_STARTSERVER", description = "Override the graph database server flag.")
 	private Boolean startServer = false;
 
 	@JsonProperty(required = false)
@@ -150,7 +151,7 @@ public class GraphStorageOptions implements Option {
 	public void validate(MeshOptions meshOptions) {
 		if (getStartServer() && getDirectory() == null) {
 			throw new NullPointerException(
-					"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
+				"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
 		}
 	}
 }

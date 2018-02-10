@@ -18,12 +18,12 @@ public class ImageManipulatorOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.")
-	@EnvironmentVariable(name = "IMAGE_MAX_WIDTH", description = "Override the max width for image resize operations.")
+	@EnvironmentVariable(name = "MESH_IMAGE_MAX_WIDTH", description = "Override the max width for image resize operations.")
 	private Integer maxWidth = 2048;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.")
-	@EnvironmentVariable(name = "IMAGE_MAX_HEIGHT", description = "Override the max height for image resize operations.")
+	@EnvironmentVariable(name = "MESH_IMAGE_MAX_HEIGHT", description = "Override the max height for image resize operations.")
 	private Integer maxHeight = 2048;
 
 	/**

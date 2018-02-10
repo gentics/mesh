@@ -26,21 +26,22 @@ public class AuthenticationOptions implements Option {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The Java keystore password for the keystore file.")
-	@EnvironmentVariable(name = "AUTH_KEYSTORE_PASS", description = "Override the configured keystore password.")
+	@EnvironmentVariable(name = "MESH_AUTH_KEYSTORE_PASS", description = "Override the configured keystore password.")
 	private String keystorePassword = null;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the java keystore file which will be used to store cryptographic keys.")
-	@EnvironmentVariable(name = "AUTH_KEYSTORE_PATH", description = "Override the configured keystore path.")
+	@EnvironmentVariable(name = "MESH_AUTH_KEYSTORE_PATH", description = "Override the configured keystore path.")
 	private String keystorePath = DEFAULT_KEYSTORE_PATH;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Algorithm which is used to verify and sign JWT.")
+	@EnvironmentVariable(name = "MESH_AUTH_JWT_ALGO", description = "Override the configured algorithm which is used to sign the JWT.")
 	private String algorithm = DEFAULT_ALGORITHM;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether anonymous access should be enabled.")
-	@EnvironmentVariable(name = "AUTH_ANONYMOUS_ENABLED", description = "Override the configrued anonymous enabled flag.")
+	@EnvironmentVariable(name = "MESH_AUTH_ANONYMOUS_ENABLED", description = "Override the configured anonymous enabled flag.")
 	private boolean enableAnonymousAccess = true;
 
 	/**

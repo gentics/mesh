@@ -35,10 +35,10 @@ public class OptionsLoaderTest {
 	@Test
 	public void testApplyEnvs() throws Exception {
 		Map<String, String> envMap = new HashMap<>();
-		envMap.put("DEFAULT_LANG", "ru");
-		envMap.put("UPDATECHECK", "false");
-		envMap.put("HTTP_PORT", "8100");
-		envMap.put("ELASTICSEARCH_URL", "https://somewhere.com");
+		envMap.put("MESH_DEFAULT_LANG", "ru");
+		envMap.put("MESH_UPDATECHECK", "false");
+		envMap.put("MESH_HTTP_PORT", "8100");
+		envMap.put("MESH_ELASTICSEARCH_URL", "https://somewhere.com");
 		set(envMap);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
@@ -48,7 +48,7 @@ public class OptionsLoaderTest {
 	}
 
 	/**
-	 * Override the env variables.
+	 * Override the environment variables.
 	 * 
 	 * @param newenv
 	 * @throws Exception

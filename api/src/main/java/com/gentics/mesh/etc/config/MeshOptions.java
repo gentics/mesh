@@ -24,12 +24,12 @@ public class MeshOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.")
-	@EnvironmentVariable(name = "DEFAULT_LANG", description = "Override the configured default language.")
+	@EnvironmentVariable(name = "MESH_DEFAULT_LANG", description = "Override the configured default language.")
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Turn on or off the update checker.")
-	@EnvironmentVariable(name = "UPDATECHECK", description = "Override the configured updatecheck flag.")
+	@EnvironmentVariable(name = "MESH_UPDATECHECK", description = "Override the configured updatecheck flag.")
 	private boolean updateCheck = true;
 
 	@JsonProperty(required = true)
@@ -66,17 +66,17 @@ public class MeshOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
-	@EnvironmentVariable(name = "TEMP_DIR", description = "Override the configured temp directory.")
+	@EnvironmentVariable(name = "MESH_TEMP_DIR", description = "Override the configured temp directory.")
 	private String tempDirectory = "data" + File.separator + "tmp";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
-	@EnvironmentVariable(name = "NODE_NAME", description = "Override the configured node name.")
+	@EnvironmentVariable(name = "MESH_NODE_NAME", description = "Override the configured node name.")
 	private String nodeName;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
-	@EnvironmentVariable(name = "CLUSTER_INIT", description = "Enable or disable the initial cluster database setup. This is useful for testing.")
+	@EnvironmentVariable(name = "MESH_CLUSTER_INIT", description = "Enable or disable the initial cluster database setup. This is useful for testing.")
 	private boolean isInitCluster = false;
 
 	@JsonIgnore

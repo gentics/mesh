@@ -17,12 +17,12 @@ public class MeshUploadOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path binary data storage directory. Fileuploads will be placed here.")
-	@EnvironmentVariable(name = "BINARY_DIR", description = "Override the configured binary data directory.")
+	@EnvironmentVariable(name = "MESH_BINARY_DIR", description = "Override the configured binary data directory.")
 	private String directory = "data" + File.separator + "binaryFiles";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.")
-	@EnvironmentVariable(name = "BINARY_UPLOAD_TEMP_DIR", description = "Override the configured upload temporary directory.")
+	@EnvironmentVariable(name = "MESH_BINARY_UPLOAD_TEMP_DIR", description = "Override the configured upload temporary directory.")
 	private String tempDirectory = "data" + File.separator + "tmp" + File.separator + "file-uploads";
 
 	/**

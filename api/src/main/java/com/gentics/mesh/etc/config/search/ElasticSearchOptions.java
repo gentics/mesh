@@ -24,17 +24,17 @@ public class ElasticSearchOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
-	@EnvironmentVariable(name = "ELASTICSEARCH_URL", description = "Override the configured elasticsearch server url.")
+	@EnvironmentVariable(name = "MESH_ELASTICSEARCH_URL", description = "Override the configured elasticsearch server url.")
 	private String url = DEFAULT_URL;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Timeout for Elasticsearch operations. Default: " + DEFAULT_TIMEOUT + "ms")
-	@EnvironmentVariable(name = "ELASTICSEARCH_TIMEOUT", description = "Override the configured elasticsearch server timeout.")
+	@EnvironmentVariable(name = "MESH_ELASTICSEARCH_TIMEOUT", description = "Override the configured elasticsearch server timeout.")
 	private Long timeout = DEFAULT_TIMEOUT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether to deploy and start the included Elasticsearch server.")
-	@EnvironmentVariable(name = "ELASTICSEARCH_START_EMBEDDED", description = "Override the start embedded elasticsearch server flag.")
+	@EnvironmentVariable(name = "MESH_ELASTICSEARCH_START_EMBEDDED", description = "Override the start embedded elasticsearch server flag.")
 	private boolean startEmbedded = true;
 
 	@JsonProperty(required = false)
