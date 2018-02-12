@@ -28,7 +28,7 @@ cluster:
 
 === Port Mapping
 
-Clustering involves the following components: Vert.x, ElasticSearch and OrientDB, Hazelcast. Each component utilize different ports.
+Clustering involves the following components: Vert.x, OrientDB, Hazelcast. Each component utilize different ports.
 
 .Table Port Mappings
 [options="header",cols="5%,30%,20%,45%"]
@@ -39,11 +39,6 @@ Clustering involves the following components: Vert.x, ElasticSearch and OrientDB
 | 0  (random, eventbus server)
 | TCP
 | `mesh.yml` - `cluster/vertxPort`
-
-|ElasticSearch
-|9200 (REST), 9300-9400 (Clustering)
-|TCP, UDP
-| `mesh.yml` - `search/transportPort`
 
 |OrientDB
 |2424-2430 (binary), 2480-2490 (HTTP)
@@ -101,6 +96,11 @@ Alternatively it is also possible to hardcode the IP addresses of the cluster in
 
 Since Gentics Mesh is not using sessions it is not needed to distribute sessions across the cluster. A link:https://jwt.io/introduction/[JWT] will be used to authenticate the user. 
 Each instance of Gentics Mesh is able to validate the JWT by using the crypographic key which has been stored in the `config/keystore.jceks` file. This means the same `keystore.jceks` must be available on each instance.
+
+== Elasticsearch
+
+Note that the Elasticsearch needs to be clustered dedicatedly. This can be achieved by running a configured dedicated instance or by configuring the instance that is started by Gentics Mesh.
+Please refer to the link:https://www.elastic.co/guide/en/elasticsearch/reference/current/discovery-settings.html[Elasticsearch documentation].
 
 == Handling binary data
 
@@ -171,7 +171,7 @@ Yes. This can be done by starting a new cluster using a different `cluster.clust
 
 The `/api/v1/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
 
-Additionally it is possible to access the JMX beans of OrientDB and ElasticSearch.
+Additionally it is possible to access the JMX beans of OrientDB.
 
 == Limitations
 
