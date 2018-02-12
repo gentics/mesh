@@ -22,6 +22,9 @@ public interface Option {
 						field.setAccessible(true);
 						Class<?> typeClazz = field.getType();
 						log.info("Setting env {" + name + "=" + value + "}");
+						if ("null".equals(value)) {
+							value = null;
+						}
 						if (typeClazz.equals(String.class)) {
 							field.set(this, value);
 							continue;

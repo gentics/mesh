@@ -31,7 +31,9 @@ import org.testcontainers.utility.TestEnvironment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.docker.NoWaitStrategy;
 import com.gentics.mesh.test.docker.StartupLatchingConsumer;
@@ -64,9 +66,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 */
 	private Runnable startupAction = () -> {
 		client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
-		client.setLogin("admin", "admin");
-		client.login().blockingGet();
 	};
+
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
 
 	/**
@@ -139,8 +140,10 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 			addEnv("MESHARGS", "-" + MeshCLI.INIT_CLUSTER);
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
-		addEnv("NODENAME", nodeName);
-		addEnv("CLUSTERNAME", clusterName);
+		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
+		addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
+		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
+		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 		String javaOpts = null;
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
@@ -270,7 +273,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		StringBuilder builder = new StringBuilder();
 		builder.append("#!/bin/sh\n");
 		builder.append("java $JAVAOPTS -cp " + classpath
-			+ " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME -clusterName $CLUSTERNAME -" + MeshCLI.DISABLE_ELASTICSEARCH + " $MESHARGS\n");
+			+ " com.gentics.mesh.server.ServerRunner  $MESHARGS\n");
 		builder.append("\n\n");
 		return builder.toString();
 	}

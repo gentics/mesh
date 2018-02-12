@@ -20,28 +20,35 @@ public class AuthenticationOptions implements Option {
 
 	public static final String DEFAULT_KEYSTORE_PATH = CONFIG_FOLDERNAME + "/keystore.jceks";
 
+	public static final String MESH_AUTH_TOKEN_EXP_ENV = "MESH_AUTH_TOKEN_EXP";
+	public static final String MESH_AUTH_KEYSTORE_PASS_ENV = "MESH_AUTH_KEYSTORE_PASS";
+	public static final String MESH_AUTH_KEYSTORE_PATH_ENV = "MESH_AUTH_KEYSTORE_PATH";
+	public static final String MESH_AUTH_JWT_ALGO_ENV = "MESH_AUTH_JWT_ALGO";
+	public static final String MESH_AUTH_ANONYMOUS_ENABLED_ENV = "MESH_AUTH_ANONYMOUS_ENABLED";
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Time in minutes which an issued token stays valid.")
+	@EnvironmentVariable(name = MESH_AUTH_TOKEN_EXP_ENV, description = "Override the configured JWT expiration time.")
 	private long tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The Java keystore password for the keystore file.")
-	@EnvironmentVariable(name = "MESH_AUTH_KEYSTORE_PASS", description = "Override the configured keystore password.")
+	@EnvironmentVariable(name = MESH_AUTH_KEYSTORE_PASS_ENV, description = "Override the configured keystore password.")
 	private String keystorePassword = null;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the java keystore file which will be used to store cryptographic keys.")
-	@EnvironmentVariable(name = "MESH_AUTH_KEYSTORE_PATH", description = "Override the configured keystore path.")
+	@EnvironmentVariable(name = MESH_AUTH_KEYSTORE_PATH_ENV, description = "Override the configured keystore path.")
 	private String keystorePath = DEFAULT_KEYSTORE_PATH;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Algorithm which is used to verify and sign JWT.")
-	@EnvironmentVariable(name = "MESH_AUTH_JWT_ALGO", description = "Override the configured algorithm which is used to sign the JWT.")
+	@EnvironmentVariable(name = MESH_AUTH_JWT_ALGO_ENV, description = "Override the configured algorithm which is used to sign the JWT.")
 	private String algorithm = DEFAULT_ALGORITHM;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether anonymous access should be enabled.")
-	@EnvironmentVariable(name = "MESH_AUTH_ANONYMOUS_ENABLED", description = "Override the configured anonymous enabled flag.")
+	@EnvironmentVariable(name = MESH_AUTH_ANONYMOUS_ENABLED_ENV, description = "Override the configured anonymous enabled flag.")
 	private boolean enableAnonymousAccess = true;
 
 	/**

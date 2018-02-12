@@ -23,29 +23,35 @@ public class HttpServerConfig implements Option {
 
 	public static final int DEFAULT_HTTP_PORT = 8080;
 
+	public static final String MESH_HTTP_PORT_ENV = "MESH_HTTP_PORT";
+	public static final String MESH_HTTP_HOST_ENV = "MESH_HTTP_HOST";
+	public static final String MESH_HTTP_CORS_ORIGIN_PATTERN_ENV = "MESH_HTTP_CORS_ORIGIN_PATTERN";
+	public static final String MESH_HTTP_CORS_ENABLE_ENV = "MESH_HTTP_CORS_ENABLE";
+	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV ="MESH_HTTP_CORS_ALLOW_CREDENTIALS";
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port. Default is: " + DEFAULT_HTTP_PORT)
-	@EnvironmentVariable(name = "MESH_HTTP_PORT", description = "Override the configured server http port.")
+	@EnvironmentVariable(name = MESH_HTTP_PORT_ENV, description = "Override the configured server http port.")
 	private int port = DEFAULT_HTTP_PORT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server host to bind to. Default is: " + DEFAULT_HTTP_HOST)
-	@EnvironmentVariable(name = "MESH_HTTP_HOST", description = "Override the configured http server host which is used to bind to.")
+	@EnvironmentVariable(name = MESH_HTTP_HOST_ENV, description = "Override the configured http server host which is used to bind to.")
 	private String host = DEFAULT_HTTP_HOST;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.")
-	@EnvironmentVariable(name = "MESH_HTTP_CORS_ORIGIN_PATTERN", description = "Override the configured CORS allowed origin pattern.")
+	@EnvironmentVariable(name = MESH_HTTP_CORS_ORIGIN_PATTERN_ENV, description = "Override the configured CORS allowed origin pattern.")
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether credentials are allowed to be passed along using CORS requests.")
-	@EnvironmentVariable(name = "MESH_HTTP_CORS_ALLOW_CREDENTIALS", description = "Override the configured CORS allowed credentials flag.")
+	@EnvironmentVariable(name = MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV, description = "Override the configured CORS allowed credentials flag.")
 	private Boolean corsAllowCredentials = DEFAULT_CORS_ALLOW_CREDENTIALS;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether CORS handling should be enabled.")
-	@EnvironmentVariable(name = "MESH_HTTP_CORS_ENABLE", description = "Override the configured CORS enable flag.")
+	@EnvironmentVariable(name = MESH_HTTP_CORS_ENABLE_ENV, description = "Override the configured CORS enable flag.")
 	private Boolean enableCors = false;
 
 	public HttpServerConfig() {

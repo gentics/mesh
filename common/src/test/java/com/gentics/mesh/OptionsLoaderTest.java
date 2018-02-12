@@ -5,6 +5,7 @@ import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -15,7 +16,9 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 public class OptionsLoaderTest {
 
@@ -35,16 +38,25 @@ public class OptionsLoaderTest {
 	@Test
 	public void testApplyEnvs() throws Exception {
 		Map<String, String> envMap = new HashMap<>();
-		envMap.put("MESH_DEFAULT_LANG", "ru");
-		envMap.put("MESH_UPDATECHECK", "false");
-		envMap.put("MESH_HTTP_PORT", "8100");
-		envMap.put("MESH_ELASTICSEARCH_URL", "https://somewhere.com");
+		envMap.put(MeshOptions.MESH_DEFAULT_LANG_ENV, "ru");
+		envMap.put(MeshOptions.MESH_UPDATECHECK_ENV, "false");
+		envMap.put(HttpServerConfig.MESH_HTTP_PORT_ENV, "8100");
+		envMap.put(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "https://somewhere.com");
 		set(envMap);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
 		assertEquals("ru", options.getDefaultLanguage());
 		assertFalse(options.isUpdateCheckEnabled());
 		assertEquals("https://somewhere.com", options.getSearchOptions().getUrl());
+	}
+
+	@Test
+	public void testApplyEnvsNull() throws Exception {
+		Map<String, String> envMap = new HashMap<>();
+		envMap.put(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
+		set(envMap);
+		MeshOptions options = OptionsLoader.createOrloadOptions();
+		assertNull(options.getSearchOptions().getUrl());
 	}
 
 	/**
