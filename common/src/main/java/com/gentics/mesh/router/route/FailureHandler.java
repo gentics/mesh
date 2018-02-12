@@ -116,7 +116,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				AbstractRestException error = (AbstractRestException) failure;
 				rc.response().setStatusCode(code);
 				translateMessage(error, rc);
-				rc.response().end(JsonUtil.toJson(error));
+				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(error)));
 			} else if (failure != null) {
 				rc.response().setStatusCode(code);
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));

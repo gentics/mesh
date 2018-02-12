@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.rest.common;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.error.AbstractRestException;
 
 /**
  * The {@link GenericMessageResponse} is used when a generic message should be returned to the requester.
@@ -49,6 +51,15 @@ public class GenericMessageResponse implements RestModel {
 	public GenericMessageResponse(String message, String internalMessage) {
 		this.message = message;
 		this.internalMessage = internalMessage;
+	}
+
+	/**
+	 * Create a new generic message from a rest exception.
+	 */
+	public GenericMessageResponse(AbstractRestException error) {
+		this(error.getTranslatedMessage(), error.getI18nKey());
+		this.properties = new HashMap<>(error.getProperties());
+		this.properties.put("i18nParameters", error.getI18nParameters());
 	}
 
 	/**

@@ -150,7 +150,6 @@ public abstract class AbstractRestException extends RuntimeException {
 		}
 	}
 
-	@JsonIgnore
 	public String getI18nKey() {
 		return this.i18nKey;
 	}
@@ -159,7 +158,6 @@ public abstract class AbstractRestException extends RuntimeException {
 		this.i18nKey = i18nKey;
 	}
 
-	@JsonIgnore
 	public String getTranslatedMessage() {
 		return translatedMessage;
 	}
