@@ -107,7 +107,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		// Remove all touched fields (if necessary, they will be readded later)
 		container.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
 
-		String nodeJson = JsonUtil.toJson(restModel);
+		String nodeJson = restModel.toJson();
 
 		for (Tuple<String, List<Tuple<String, Object>>> scriptEntry : migrationScripts) {
 			String script = scriptEntry.v1();

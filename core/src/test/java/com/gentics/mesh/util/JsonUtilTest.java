@@ -62,15 +62,14 @@ public class JsonUtilTest {
 		ListResponse<UserResponse> list = new ListResponse<>();
 		UserResponse user = new UserResponse();
 		list.getData().add(user);
-		String json = JsonUtil.toJson(list);
-		assertNotNull(json);
+		assertNotNull(list.toJson());
 	}
 
 	@Test
 	public void testGraphQLResponse() {
 		GraphQLExamples examples = new GraphQLExamples();
 		GraphQLResponse response = examples.createResponse();
-		String jsonStr = JsonUtil.toJson(response);
+		String jsonStr = response.toJson();
 		JsonObject json = new JsonObject(jsonStr);
 		System.out.println(json.encodePrettily());
 		GraphQLResponse response2 = JsonUtil.readValue(jsonStr, GraphQLResponse.class);
@@ -88,7 +87,7 @@ public class JsonUtilTest {
 	public void testMicroschemaAllowField() {
 		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
-		String json = JsonUtil.toJson(schemaUpdate);
+		String json = schemaUpdate.toJson();
 		SchemaModel model = JsonUtil.readValue(json, SchemaResponse.class);
 		assertThat(model.getField("micro", MicronodeFieldSchemaImpl.class).getAllowedMicroSchemas()).containsExactly("TestMicroschema");
 	}
@@ -99,7 +98,7 @@ public class JsonUtilTest {
 		group.getPermissions().setOthers(false);
 		group.getPermissions().set(READ, true);
 		group.getPermissions().setCreate(true);
-		assertNotNull(JsonUtil.toJson(group));
+		assertNotNull(group.toJson());
 	}
 
 	@Test
@@ -135,14 +134,14 @@ public class JsonUtilTest {
 		stringField.setString("testtext");
 		node.getFields().put("test", stringField);
 
-		String json = JsonUtil.toJson(node);
+		String json = node.toJson();
 		assertNotNull(json);
 		System.out.println("From POJO: " + json);
 
 		NodeResponse node2 = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(node2);
 		node2.getFields().put("extra", FieldUtil.createBooleanField(false));
-		String json2 = JsonUtil.toJson(node2);
+		String json2 = node2.toJson();
 		System.out.println("From Deserialized POJO: " + json2);
 
 		StringField field = node2.getFields().getStringField("test");

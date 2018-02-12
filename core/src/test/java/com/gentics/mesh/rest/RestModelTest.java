@@ -48,7 +48,7 @@ public class RestModelTest extends AbstractMeshTest {
 		stringField.setString("some text");
 		response.getFields().put("name", stringField);
 		response.setSchema(new SchemaReferenceImpl().setName("content").setUuid(UUIDUtil.randomUUID()));
-		String json = JsonUtil.toJson(response);
+		String json = response.toJson();
 		assertNotNull(json);
 
 		NodeResponse deserializedResponse = JsonUtil.readValue(json, NodeResponse.class);
@@ -97,7 +97,7 @@ public class RestModelTest extends AbstractMeshTest {
 		request.getFields().put("title", titleField);
 
 		// Serialize the NodeCreateRequest
-		String json = JsonUtil.toJson(request);
+		String json = request.toJson();
 		System.out.println(json);
 
 		// Deserialize the json and extract the schema info
@@ -140,7 +140,7 @@ public class RestModelTest extends AbstractMeshTest {
 			NodeListResponse list = new NodeListResponse();
 			list.getData().add(folder);
 			list.getData().add(content);
-			String json = JsonUtil.toJson(list);
+			String json = list.toJson();
 			NodeListResponse deserializedList = JsonUtil.readValue(json, NodeListResponse.class);
 			assertNotNull(deserializedList);
 		}
@@ -195,7 +195,7 @@ public class RestModelTest extends AbstractMeshTest {
 		// assertNotNull(schema);
 
 		// Serialize the object
-		String json = JsonUtil.toJson(schemaCreateRequest);
+		String json = schemaCreateRequest.toJson();
 		assertNotNull(json);
 
 		// Deserialize the object
@@ -203,7 +203,7 @@ public class RestModelTest extends AbstractMeshTest {
 		assertNotNull(loadedRequest);
 
 		// Serialize the object
-		String json2 = JsonUtil.toJson(loadedRequest);
+		String json2 = loadedRequest.toJson();
 		assertEquals(json, json2);
 
 	}

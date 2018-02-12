@@ -523,7 +523,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	public void testNoChangesUpdate() {
 		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
-			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()), SchemaUpdateRequest.class);
+			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getSchema().toJson(), SchemaUpdateRequest.class);
 
 			// Update the schema server side
 			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema));
@@ -636,7 +636,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			newRelease = project().getReleaseRoot().create("newrelease", user());
 			content.createGraphFieldContainer(english(), newRelease, user());
-			request = JsonUtil.readValue(JsonUtil.toJson(schemaContainer.getLatestVersion().getSchema()), SchemaUpdateRequest.class);
+			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getSchema().toJson(), SchemaUpdateRequest.class);
 			request.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
 			MeshInternal.get().serverSchemaStorage().clear();
 			tx.success();

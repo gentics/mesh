@@ -417,7 +417,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertNotNull(response);
 				long dur = System.currentTimeMillis() - start;
 				log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
-				JsonUtil.toJson(response);
+				response.toJson();
 			}
 			// assertEquals(2, response.getChildTags().size());
 			// assertEquals(4, response.getPerms().length);

@@ -88,7 +88,7 @@ public final class MeshRestRequestUtil {
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel,
 			MeshRestClient meshRestClient, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess) {
 		Buffer buffer = Buffer.buffer();
-		String json = JsonUtil.toJson(restModel);
+		String json = restModel.toJson();
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}

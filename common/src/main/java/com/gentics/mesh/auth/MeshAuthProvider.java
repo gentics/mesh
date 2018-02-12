@@ -289,7 +289,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			} else {
 				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
 					.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
-				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
+				ac.send(new TokenResponse(rh.result()).toJson());
 			}
 		});
 	}

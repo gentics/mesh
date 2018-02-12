@@ -92,7 +92,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public String getBodyAsString() {
-		return JsonUtil.toJson(payloadObject);
+		return payloadObject.toJson();
 	}
 
 	@Override

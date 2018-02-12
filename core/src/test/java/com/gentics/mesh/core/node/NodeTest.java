@@ -188,7 +188,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node newsNode = content("concorde");
 
 			NodeResponse response = newsNode.transformToRest(ac, 0).blockingGet();
-			String json = JsonUtil.toJson(response);
+			String json = response.toJson();
 			assertNotNull(json);
 
 			NodeResponse deserialized = JsonUtil.readValue(json, NodeResponse.class);

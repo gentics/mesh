@@ -49,7 +49,7 @@ public class GraphQLSearchEndpointTest extends AbstractMeshTest {
 			recreateIndices();
 		}
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		JsonObject json = new JsonObject(JsonUtil.toJson(response));
+		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
 		assertThat(json).compliesToAssertions(queryName);
 	}

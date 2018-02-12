@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.rest.auth;
 
+import com.gentics.mesh.core.rest.common.RestModel;
+
 /**
  * This response is returned when a new JWToken is requested.
  */
-public class TokenResponse {
+public class TokenResponse implements RestModel {
 	private String token;
 
 	public String getToken() {
