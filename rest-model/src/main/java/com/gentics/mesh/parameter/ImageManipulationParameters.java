@@ -188,11 +188,9 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	default FocalPoint getFocalPoint() {
 		String x = getParameter(FOCAL_POINT_X_QUERY_PARAM_KEY);
 		String y = getParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY);
-		if (x == null || y == null) {
-			return null;
-		}
-		Float fpx = Float.valueOf(x);
-		Float fpy = Float.valueOf(y);
+		// If either x or y has not been set, use the center of the image for the respective focal point part.
+		Float fpx = x != null ? Float.valueOf(x) : 0.5F;
+		Float fpy = y != null ? Float.valueOf(y) : 0.5F;
 		return new FocalPoint(fpx, fpy);
 	}
 
