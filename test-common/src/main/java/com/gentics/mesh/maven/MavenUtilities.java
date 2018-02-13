@@ -1,4 +1,4 @@
-package com.gentics.mesh.changelog;
+package com.gentics.mesh.maven;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -7,16 +7,18 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+
 
 public final class MavenUtilities {
 
 	/**
 	 * Url that points to the internal repository
 	 */
-	public static String INTERNAL_REPOSITORY_URL_SEGMENT = "artifactory.office/repository/lan.internal";
+	public static String INTERNAL_REPOSITORY_URL_SEGMENT = "maven.gentics.com/maven2";
 
 	/**
 	 * Return the artifact url for the given maven coordinates.
