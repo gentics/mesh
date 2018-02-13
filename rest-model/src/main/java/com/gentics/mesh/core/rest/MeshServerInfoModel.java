@@ -29,6 +29,9 @@ public class MeshServerInfoModel implements RestModel {
 	@JsonPropertyDescription("Used Vert.x version.")
 	private String vertxVersion;
 
+	@JsonPropertyDescription("Database structure revision hash.")
+	private String databaseRevision;
+
 	public MeshServerInfoModel() {
 	}
 
@@ -86,6 +89,14 @@ public class MeshServerInfoModel implements RestModel {
 
 	public void setMeshNodeId(String meshNodeId) {
 		this.meshNodeId = meshNodeId;
+	}
+
+	public String getDatabaseRevision() {
+		return databaseRevision;
+	}
+
+	public void setDatabaseRevision(String databaseRevision) {
+		this.databaseRevision = databaseRevision;
 	}
 
 }

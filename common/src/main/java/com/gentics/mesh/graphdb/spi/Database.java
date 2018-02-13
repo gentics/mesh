@@ -499,4 +499,11 @@ public interface Database extends TxFactory {
 	 */
 	<T extends MeshElement> T findVertex(String propertyKey, Object propertyValue, Class<T> clazz);
 
+	/**
+	 * Generate the database revision change by generating a hash over all database changes and the database vendor version.
+	 * 
+	 * @return
+	 */
+	String getDatabaseRevision();
+
 }

@@ -26,13 +26,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Database -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>

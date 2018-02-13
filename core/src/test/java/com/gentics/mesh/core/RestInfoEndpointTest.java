@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.orientechnologies.orient.core.OConstants;
@@ -29,6 +30,7 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 		assertEquals(Mesh.mesh().getOptions().getNodeName(), info.getMeshNodeId());
 		assertEquals("The database version did not match.", OConstants.getVersion(), info.getDatabaseVersion());
 		assertEquals("1.0", info.getSearchVersion());
+		assertEquals(DB.get().getDatabaseRevision(), info.getDatabaseRevision());
 	}
 
 	@Test
