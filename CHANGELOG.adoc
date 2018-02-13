@@ -12,6 +12,8 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 icon:check[] Elasticsearch: Fixed handling of `search.url` settings which contained https URLs.
 
+icon:check[] Core: Fixed deletion of mesh.token cookie on logout.
+
 [[v0.16.0]]
 == 0.16.0 (07.02.2018)
 
