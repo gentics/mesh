@@ -36,6 +36,8 @@ import java.util.function.Predicate;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
+
+// TODO Also test other possible field types
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 @RunWith(VertxUnitRunner.class)
 public class SchemaAllowEndpointTest extends AbstractMeshTest {
@@ -49,7 +51,7 @@ public class SchemaAllowEndpointTest extends AbstractMeshTest {
             .toCompletable().andThen(createFolder("test"))
             .map(this::createNodeList)
             .flatMap(this::createAllowSchemaNode)
-            .subscribe(expectMeshRestError(context, ignore -> false));
+            .subscribe(expectMeshRestError(context, "node_error_reference_not_allowed_schema"));
     }
 
     @Test
@@ -58,7 +60,7 @@ public class SchemaAllowEndpointTest extends AbstractMeshTest {
             .toCompletable().andThen(createFolder("test"))
             .map(this::createNodeField)
             .flatMap(this::createAllowSchemaNode)
-            .subscribe(expectMeshRestError(context, ignore -> false));
+            .subscribe(expectMeshRestError(context, "node_error_reference_not_allowed_schema"));
     }
 
     @Test

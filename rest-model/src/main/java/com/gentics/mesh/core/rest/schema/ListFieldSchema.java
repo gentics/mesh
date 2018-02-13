@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-public interface ListFieldSchema extends FieldSchema {
+public interface ListFieldSchema extends FieldSchema, SchemaRestriction {
 
 	/**
 	 * Return the list of allowed schemas.

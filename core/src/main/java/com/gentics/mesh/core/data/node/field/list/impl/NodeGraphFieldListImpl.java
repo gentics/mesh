@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -80,6 +81,9 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			Node node = boot.nodeRoot().findByUuid(item.getUuid());
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
+			}
+			if (!NodeGraphFieldImpl.isAllowedSchema(node.getSchemaContainer().getName(), fieldSchema)) {
+				throw error(NOT_FOUND, "node_error_reference_not_allowed_schema", item.getUuid(), fieldKey);
 			}
 			int pos = integer.getAndIncrement();
 			if (log.isDebugEnabled()) {

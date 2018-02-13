@@ -3,8 +3,13 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -18,6 +23,8 @@ import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -66,14 +73,29 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		graphStringList = container.createStringList(fieldKey);
 
 		// Handle Update
+		Set<String> allowedStrings = getAllowedStrings(fieldSchema);
 		graphStringList.removeAll();
 		for (String item : stringList.getItems()) {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
+			if (!(allowedStrings.isEmpty() || allowedStrings.contains(item))) {
+                throw error(BAD_REQUEST, "node_error_invalid_string_field_value", fieldKey, item);
+            }
 			graphStringList.createString(item);
 		}
 	};
+
+	private static Set<String> getAllowedStrings(FieldSchema fieldSchema) {
+		if (!(fieldSchema instanceof ListFieldSchema)) {
+			throw new InvalidParameterException();
+		}
+		ListFieldSchema listSchema = (ListFieldSchema) fieldSchema;
+		return Optional.ofNullable(listSchema.getAllowedSchemas())
+			.map(Stream::of)
+            .map(stream -> stream.collect(Collectors.toSet()))
+            .orElse(Collections.emptySet());
+	}
 
 	public static FieldGetter STRING_LIST_GETTER = (container, fieldSchema) -> {
 		return container.getStringList(fieldSchema.getName());

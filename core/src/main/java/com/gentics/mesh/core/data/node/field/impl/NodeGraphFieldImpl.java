@@ -4,11 +4,20 @@ import static com.gentics.mesh.core.data.ContainerType.forVersion;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.security.InvalidParameterException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaRestriction;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -82,22 +91,44 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			if (log.isDebugEnabled()) {
 				log.debug("Node field {" + fieldKey + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
 			}
-			// TODO we need to fail here - the node could not be found.
-			// throw error(NOT_FOUND, "The field {, parameters)
+		 	throw error(NOT_FOUND, "node_error_reference_not_found", nodeField.getUuid(), fieldKey);
+		} else if (!isAllowedSchema(node.getSchemaContainer().getName(), fieldSchema)) {
+			throw error(NOT_FOUND, "node_error_reference_not_allowed_schema", nodeField.getUuid(), fieldKey);
 		} else {
+
 			// Check whether the container already contains a node field
 			// TODO check node permissions
 			// TODO check whether we want to allow cross project node references
-			if (graphNodeField == null) {
-				container.createNode(fieldKey, node);
-			} else {
-				// We can't update the graphNodeField since it is in fact an edge. 
+			if (graphNodeField != null) {
+				// We can't update the graphNodeField since it is in fact an edge.
 				// We need to delete it and create a new one.
 				container.deleteFieldEdge(fieldKey);
-				container.createNode(fieldKey, node);
 			}
+			container.createNode(fieldKey, node);
 		}
 	};
+
+	/**
+	 * Tests if a schema is allowed according to the schema restrictions.
+	 * @param schemaName The name of the schema to be tested
+	 * @param fieldSchema The schema containing the restriction information
+	 */
+	public static boolean isAllowedSchema(String schemaName, FieldSchema fieldSchema) {
+		if (!(fieldSchema instanceof SchemaRestriction)) {
+			throw new InvalidParameterException();
+		}
+		SchemaRestriction nodeSchema = (SchemaRestriction) fieldSchema;
+		List<String> allowedSchemas = Optional.ofNullable(nodeSchema.getAllowedSchemas())
+			.map(Arrays::asList)
+			.orElse(Collections.emptyList());
+
+		// Empty or not set list means that all schemas are allowed
+		if (allowedSchemas.isEmpty()) {
+			return true;
+		} else {
+			return allowedSchemas.contains(schemaName);
+		}
+	}
 
 	public static FieldGetter NODE_GETTER = (container, fieldSchema) -> {
 		return container.getNode(fieldSchema.getName());
