@@ -50,7 +50,7 @@ public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 		rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 		rc.response().setStatusCode(404);
 		rc.response().setStatusMessage("Not Found");
-		rc.response().end(JsonUtil.toJson(msg));
+		rc.response().end(msg.toJson());
 
 	}
 

@@ -67,7 +67,7 @@ public class SchemaTest {
 		schema.setName("dummySchema");
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
-		JsonObject json = new JsonObject(JsonUtil.toJson(schema));
+		JsonObject json = new JsonObject(schema.toJson());
 		// Remove the type
 		json.getJsonArray("fields").getJsonObject(0).remove("type");
 
@@ -147,7 +147,7 @@ public class SchemaTest {
 
 	private void validateSchema(Schema schema) throws JsonParseException, JsonMappingException, IOException {
 		assertNotNull(schema);
-		String json = JsonUtil.toJson(schema);
+		String json = schema.toJson();
 		System.out.println(json);
 		assertNotNull(json);
 		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);

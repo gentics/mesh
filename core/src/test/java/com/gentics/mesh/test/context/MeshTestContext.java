@@ -21,7 +21,6 @@ import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ElasticSearchHost;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -298,17 +297,16 @@ public class MeshTestContext extends TestWatcher {
 		options.getSearchOptions().setTimeout(10_000L);
 		options.getStorageOptions().setDirectory(graphPath);
 		if (settings.useElasticsearchContainer()) {
-			options.getSearchOptions().setStartEmbeddedES(false);
-			options.getSearchOptions().getHosts().clear();
+			options.getSearchOptions().setStartEmbedded(false);
+			options.getSearchOptions().setUrl(null);
 			if (settings.useElasticsearch()) {
 				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2").withEnv("discovery.type", "single-node")
-						.withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
+					.withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
 				if (!elasticsearch.isRunning()) {
 					elasticsearch.start();
 				}
 				elasticsearch.waitingFor(Wait.forHttp("/"));
-				options.getSearchOptions().getHosts()
-						.add(new ElasticSearchHost().setPort(elasticsearch.getMappedPort(9200)).setHostname("localhost").setProtocol("http"));
+				options.getSearchOptions().setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
 			}
 		}
 		Mesh.mesh(options);

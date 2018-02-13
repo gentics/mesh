@@ -28,11 +28,11 @@ public class ExampleGeneratorRunner {
 		restModelGen.run();
 
 		// Generate RAML
-		RAMLGenerator generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api.raml", null, false);
-		generator.run();
+		RAMLGenerator ramlGenerator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api.raml", null, false);
+		ramlGenerator.run();
 
 		// Generate the RAML for the raml2html docs. This raml includes a markdown table
-		generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api-docs.raml", (mimeType, clazz) -> {
+		ramlGenerator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api-docs.raml", (mimeType, clazz) -> {
 			try {
 				mimeType.setSchema(tableGen.renderModelTableViaSchema(clazz, tableGen.getTemplate("model-props-markdown-table.hbs")));
 			} catch (IOException e) {
@@ -40,11 +40,19 @@ public class ExampleGeneratorRunner {
 				throw new RuntimeException("Could not render table");
 			}
 		}, true);
-		generator.run();
+		ramlGenerator.run();
 
 		// Generate elasticsearch flattened models
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
 		searchModelGen.run();
+
+		// Generate environment variable table
+		EnvHelpGenerator envGen = new EnvHelpGenerator(OUTPUT_ROOT_FOLDER);
+		envGen.run();
+
+		// Generate CLI info
+		CLIHelpGenerator cliGenerator = new CLIHelpGenerator(OUTPUT_ROOT_FOLDER);
+		cliGenerator.run();
 	}
 
 	private static void cleanConf() {

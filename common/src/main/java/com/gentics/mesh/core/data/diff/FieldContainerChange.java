@@ -58,7 +58,7 @@ public class FieldContainerChange {
 	}
 
 	/**
-	 * Set the field corrdinates.
+	 * Set the field coordinates.
 	 * 
 	 * @param fieldCoordinates
 	 */

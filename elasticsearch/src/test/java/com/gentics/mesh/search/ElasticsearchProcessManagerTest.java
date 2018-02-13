@@ -9,6 +9,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+
 import io.vertx.core.Vertx;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -16,7 +18,7 @@ public class ElasticsearchProcessManagerTest {
 
 	@Test
 	public void testExec() throws IOException, ZipException, InterruptedException {
-		ElasticsearchProcessManager manager = new ElasticsearchProcessManager(Vertx.vertx());
+		ElasticsearchProcessManager manager = new ElasticsearchProcessManager(Vertx.vertx(), new ElasticSearchOptions());
 		Process p = manager.start();
 		assertEquals(p, manager.getProcess());
 		assertTrue("Process should have been started.", p.isAlive());

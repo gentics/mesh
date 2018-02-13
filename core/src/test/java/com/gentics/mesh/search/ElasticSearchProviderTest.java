@@ -1,5 +1,7 @@
 package com.gentics.mesh.search;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
 import org.junit.Test;
@@ -17,9 +19,13 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class ElasticSearchProviderTest extends AbstractMeshTest {
 
+	private ElasticSearchProvider getProvider() {
+		return ((ElasticSearchProvider) searchProvider());
+	}
+
 	@Test
 	public void testProvider() throws IOException {
-		ElasticSearchProvider provider = ((ElasticSearchProvider) searchProvider());
+		ElasticSearchProvider provider = getProvider();
 		provider.createIndex(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
 		String uuid = UUIDUtil.randomUUID();
 		// provider.storeDocument("test", uuid, new JsonObject()).blockingAwait();
@@ -43,8 +49,14 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testVersion() {
+		ElasticSearchProvider provider = getProvider();
+		assertEquals("6.1.2", provider.getVersion());
+	}
+
+	@Test
 	public void testConcurrencyConflictError() {
-		ElasticSearchProvider provider = ((ElasticSearchProvider) searchProvider());
+		ElasticSearchProvider provider = getProvider();
 		provider.createIndex(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
 		provider.storeDocument("test", "1", new JsonObject().put("value", 0)).blockingAwait();
 		Observable.range(1, 2000).flatMapCompletable(i -> provider.updateDocument("test", "1", new JsonObject().put("value", i), false))

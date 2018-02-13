@@ -286,7 +286,7 @@ public class EndpointImpl implements EndpointRoute {
 
 		MimeType mimeType = new MimeType();
 		if (model instanceof RestModel) {
-			String json = JsonUtil.toJson(model);
+			String json = ((RestModel) model).toJson();
 			mimeType.setExample(json);
 			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
 			map.put("application/json", mimeType);
@@ -329,7 +329,7 @@ public class EndpointImpl implements EndpointRoute {
 	public EndpointRoute exampleRequest(RestModel model) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
-		String json = JsonUtil.toJson(model);
+		String json = model.toJson();
 		mimeType.setExample(json);
 		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
 		bodyMap.put("application/json", mimeType);

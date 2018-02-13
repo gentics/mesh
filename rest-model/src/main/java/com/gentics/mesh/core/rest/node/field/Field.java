@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.node.field;
 
-public interface Field {
+import com.gentics.mesh.core.rest.common.RestModel;
+
+public interface Field extends RestModel {
 
 	/**
 	 * Return the field type.

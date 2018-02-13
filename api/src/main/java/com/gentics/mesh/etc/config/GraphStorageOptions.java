@@ -7,31 +7,42 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 
 /**
  * Underlying graph database storage configuration.
  */
 @GenerateDocumentation
-public class GraphStorageOptions {
+public class GraphStorageOptions implements Option {
 
 	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "graphdb";
 	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "backup";
 	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
 
+	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
+	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
+	public static final String MESH_GRAPH_EXPORT_DIRECTORY_ENV = "MESH_GRAPH_EXPORT_DIRECTORY";
+	public static final String MESH_GRAPH_STARTSERVER_ENV = "MESH_GRAPH_STARTSERVER";
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
+	@EnvironmentVariable(name = MESH_GRAPH_DB_DIRECTORY_ENV, description = "Override the graph database storage directory.")
 	private String directory = DEFAULT_DIRECTORY;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database backup directory.")
+	@EnvironmentVariable(name = MESH_GRAPH_BACKUP_DIRECTORY_ENV, description = "Override the graph database backup directory.")
 	private String backupDirectory = DEFAULT_BACKUP_DIRECTORY;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database export directory.")
+	@EnvironmentVariable(name = MESH_GRAPH_EXPORT_DIRECTORY_ENV, description = "Override the graph database export directory.")
 	private String exportDirectory = DEFAULT_EXPORT_DIRECTORY;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the graph database admin web server should be started.")
+	@EnvironmentVariable(name = MESH_GRAPH_STARTSERVER_ENV, description = "Override the graph database server flag.")
 	private Boolean startServer = false;
 
 	@JsonProperty(required = false)
@@ -145,7 +156,7 @@ public class GraphStorageOptions {
 	public void validate(MeshOptions meshOptions) {
 		if (getStartServer() && getDirectory() == null) {
 			throw new NullPointerException(
-					"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
+				"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
 		}
 	}
 }

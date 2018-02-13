@@ -363,8 +363,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		ProjectListResponse listResponse = call(() -> client().findProjects(new PagingParametersImpl(4242, 25)));
 
-		String response = JsonUtil.toJson(listResponse);
-		assertNotNull(response);
+		assertNotNull(listResponse.toJson());
 
 		assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, listResponse.getMetainfo().getPerPage());

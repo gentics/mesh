@@ -906,9 +906,7 @@ Endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
 POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
 ...
 {
-  "version" : {
-    "number" : "1.0"
-  },
+  "version" : "1.0",
   "language" : "en",
   "width" : 300
 }

@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.15.1-SNAPSHOT</version>
+		<version>0.16.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -62,7 +62,7 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
-			<version>1.4.2</version>
+			<version>1.6.0</version>
 		</dependency>
 	</dependencies>
 

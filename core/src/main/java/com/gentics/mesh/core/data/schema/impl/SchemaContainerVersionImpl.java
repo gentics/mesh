@@ -120,7 +120,7 @@ public class SchemaContainerVersionImpl extends
 	public void setSchema(SchemaModel schema) {
 		MeshInternal.get().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
 		MeshInternal.get().serverSchemaStorage().addSchema(schema);
-		String json = JsonUtil.toJson(schema);
+		String json = schema.toJson();
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());
 	}

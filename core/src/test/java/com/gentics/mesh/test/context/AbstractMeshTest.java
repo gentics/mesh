@@ -33,7 +33,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.test.TestDataProvider;
@@ -93,7 +92,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	public String getJson(Node node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return JsonUtil.toJson(node.transformToRest(ac, 0).blockingGet());
+		return node.transformToRest(ac, 0).blockingGet().toJson();
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {

@@ -7,6 +7,43 @@
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+[[v0.16.1]]
+== 0.16.1 (TBD)
+
+icon:plus[] Clustering: Gentics Mesh is now able to form cluster between different server versions. 
+			A database revision hash will now be used to determine which versions of Gentics Mesh can form a cluster.
+			Only instances with the same database revision hash are allowed to form a cluster.
+			The current revision hash info is included in the `/api/v1` endpoint response.
+
+icon:check[] Elasticsearch: Fixed handling of `search.url` settings which contained https URLs.
+
+icon:check[] REST: The `/api/v1/auth/logout` endpoint will now correctly delete the `mesh.token` cookie.
+
+[[v0.16.0]]
+== 0.16.0 (07.02.2018)
+
+CAUTION: Search: The contents of HTML and HTML list fields will now automatically be stripped of markup prior of indexing.
+
+CAUTION: The `mesh.yml` search section has been updated. The `search.url` property replaces the `search.hosts` property.
+
+[source,json]
+----
+search:
+  url: "http://localhost:9200"
+  timeout: 8000
+  startEmbedded: false
+----
+
+icon:plus[] GraphQL: The underlying graphql-java library was updated to version 7.0.
+
+icon:check[] REST: An error which prevented the `/api/v1` info endpoint from returning version information has been fixed.
+
+icon:plus[] OrientDB: The included OrientDB Studio has been updated to version 2.2.32.
+
+icon:plus[] Config: It is now possible to configure the JVM arguments of the embedded Elasticsearch server via the `search.embeddedArguments` property.
+
+icon:plus[] GraphQL: Schema fields can now be queried. Currently supported are `name`, `label`, `required` and `type`.
+
 [[v0.15.0]]
 == 0.15.0 (31.01.2018)
 

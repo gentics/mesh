@@ -63,7 +63,7 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 		// 3. Invoke the query and assert that the nodes can still be loaded (due to read published)
 		GraphQLResponse response = call(
 				() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion("published")));
-		JsonObject json = new JsonObject(JsonUtil.toJson(response));
+		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
 		assertThat(json).compliesToAssertions(queryName);
 	}

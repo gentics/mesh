@@ -44,9 +44,19 @@ public final class OptionsLoader {
 	 */
 	public static MeshOptions createOrloadOptions(String... args) {
 		MeshOptions options = loadMeshOptions();
+		applyEnvironmentVariables(options);
 		applyCommandLineArgs(options, args);
 		options.validate();
 		return options;
+	}
+
+	/**
+	 * Check which environment variables have been set and override those in the provided options.
+	 * 
+	 * @param options
+	 */
+	private static void applyEnvironmentVariables(MeshOptions options) {
+		options.overrideWithEnv();
 	}
 
 	/**
@@ -58,6 +68,27 @@ public final class OptionsLoader {
 	private static void applyCommandLineArgs(MeshOptions options, String... args) {
 		try {
 			CommandLine commandLine = MeshCLI.parse(args);
+
+			if (commandLine.hasOption(MeshCLI.HELP)) {
+				MeshCLI.printHelp();
+				System.exit(0);
+			}
+
+			String esUrl = commandLine.getOptionValue(MeshCLI.ELASTICSEARCH_URL);
+			if (esUrl != null) {
+				options.getSearchOptions().setUrl(esUrl);
+			}
+
+			String embeddedEsFlag = commandLine.getOptionValue(MeshCLI.EMBEDDED_ELASTICSEARCH);
+			if (embeddedEsFlag != null) {
+				options.getSearchOptions().setStartEmbedded(Boolean.valueOf(embeddedEsFlag));
+			}
+
+			boolean disableES = commandLine.hasOption(MeshCLI.DISABLE_ELASTICSEARCH);
+			if (disableES) {
+				options.getSearchOptions().setUrl(null);
+				options.getSearchOptions().setStartEmbedded(false);
+			}
 
 			String adminPassword = commandLine.getOptionValue(MeshCLI.RESET_ADMIN_PASSWORD);
 			options.setAdminPassword(adminPassword);

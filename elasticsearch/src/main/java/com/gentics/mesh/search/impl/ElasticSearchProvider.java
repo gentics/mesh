@@ -8,6 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +20,6 @@ import java.util.stream.Collectors;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHost;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.Mesh;
@@ -37,6 +38,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 import joptsimple.internal.Strings;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -76,7 +78,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		ElasticSearchOptions searchOptions = getOptions();
 		long start = System.currentTimeMillis();
 
-		if (searchOptions.isStartEmbeddedES()) {
+		if (searchOptions.isStartEmbedded()) {
 			try {
 				processManager.start();
 				processManager.startWatchDog();
@@ -85,22 +87,26 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 		}
 
-		List<HttpHost> hosts = searchOptions.getHosts().stream().map(hostConfig -> {
-			return new HttpHost(hostConfig.getHostname(), hostConfig.getPort(), hostConfig.getProtocol());
-		}).collect(Collectors.toList());
-
-		if (hosts.size() >= 2) {
-			throw error(INTERNAL_SERVER_ERROR, "Configuring multiple hosts is currently not supported.");
-		}
-		// TODO add support for multiple servers
-		HttpHost first = hosts.get(0);
-		client = new SearchClient(first.getSchemeName(), first.getHostName(), first.getPort());
-
-		if (waitForCluster) {
-			waitForCluster(client, 45);
-			if (log.isDebugEnabled()) {
-				log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
+		try {
+			URL url = new URL(searchOptions.getUrl());
+			int port = url.getPort();
+			String proto = url.getProtocol();
+			if ("http".equals(proto) && port == -1) {
+				port = 80;
 			}
+			if ("https".equals(proto) && port == -1) {
+				port = 443;
+			}
+			client = new SearchClient(proto, url.getHost(), port);
+
+			if (waitForCluster) {
+				waitForCluster(client, 45);
+				if (log.isDebugEnabled()) {
+					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
+				}
+			}
+		} catch (MalformedURLException e) {
+			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
 		}
 	}
 
@@ -139,7 +145,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public ElasticSearchProvider init(MeshOptions options) {
 		this.options = options;
-		processManager = new ElasticsearchProcessManager(Mesh.mesh().getVertx());
+		processManager = new ElasticsearchProcessManager(Mesh.mesh().getVertx(), options.getSearchOptions());
 		return this;
 	}
 
@@ -396,7 +402,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	public String getVersion() {
 		try {
 			JsonObject info = client.info().sync();
-			return info.getString("version");
+			return info.getJsonObject("version").getString("number");
 		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
 			throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");

@@ -150,7 +150,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			SchemaContainer container = getSchemaContainer();
 			SchemaModel schema = container.getLatestVersion().getSchema();
 			assertNotNull(schema);
-			String json = JsonUtil.toJson(schema);
+			String json = schema.toJson();
 			assertNotNull(json);
 			Schema deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);
 			assertNotNull(deserializedSchema);

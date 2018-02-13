@@ -5,9 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
+
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -52,8 +57,11 @@ public final class ElasticsearchProcessManager {
 
 	private String xmx = "1g";
 
-	public ElasticsearchProcessManager(Vertx vertx) {
+	private ElasticSearchOptions options;
+
+	public ElasticsearchProcessManager(Vertx vertx, ElasticSearchOptions options) {
 		this.vertx = vertx;
+		this.options = options;
 	}
 
 	/**
@@ -106,13 +114,20 @@ public final class ElasticsearchProcessManager {
 		ProcessBuilder builder = new ProcessBuilder();
 		builder.directory(esDir);
 		String esPath = esDir.getAbsolutePath();
-		String javaBin = getJavaBinPath();
-		builder.command(javaBin, "-Xms1g", "-Xmx" + xmx, "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
-				"-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+AlwaysPreTouch", "-client", "-Xss1m", "-Djava.awt.headless=true", "-Dfile.encoding=UTF-8",
-				"-Djna.nosys=true", "-XX:-OmitStackTraceInFastThrow", "-Dio.netty.noUnsafe=true", "-Dio.netty.noKeySetOptimization=true",
-				"-Dio.netty.recycler.maxCapacityPerThread=0", "-Dlog4j.shutdownHookEnabled=false", "-Dlog4j2.disable.jmx=true",
-				"-XX:+HeapDumpOnOutOfMemoryError", "-Des.path.home=" + esPath, "-Des.path.conf=" + esPath + "/config", "-cp", esPath + "/lib/*",
-				"org.elasticsearch.bootstrap.Elasticsearch");
+
+		List<String> allArgs = new ArrayList<>();
+		allArgs.add(getJavaBinPath());
+
+		// Add the configured arguments
+		String args = getOptions().getEmbeddedArguments();
+		if (args != null) {
+			allArgs.addAll(Arrays.asList(args.split(" ")));
+		}
+
+		// Add the fixed classpath arguments
+		allArgs.addAll(Arrays.asList("-Des.path.home=" + esPath, "-Des.path.conf=" + esPath + "/config", "-cp", esPath + "/lib/*",
+			"org.elasticsearch.bootstrap.Elasticsearch"));
+		builder.command(allArgs.stream().toArray(String[]::new));
 
 		this.p = builder.start();
 		// Mark the process as being started.
@@ -286,6 +301,10 @@ public final class ElasticsearchProcessManager {
 
 	public Process getProcess() {
 		return p;
+	}
+
+	public ElasticSearchOptions getOptions() {
+		return options;
 	}
 
 }

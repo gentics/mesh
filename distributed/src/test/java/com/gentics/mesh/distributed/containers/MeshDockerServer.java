@@ -30,7 +30,10 @@ import org.testcontainers.utility.TestEnvironment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.cli.MeshCLI;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.docker.NoWaitStrategy;
 import com.gentics.mesh.test.docker.StartupLatchingConsumer;
@@ -63,9 +66,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 */
 	private Runnable startupAction = () -> {
 		client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
-		client.setLogin("admin", "admin");
-		client.login().blockingGet();
 	};
+
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
 
 	/**
@@ -104,7 +106,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 *            Additional JVM options
 	 */
 	public MeshDockerServer(String clusterName, String nodeName, String dataPathPostfix, boolean initCluster, boolean waitForStartup,
-			boolean clearDataFolders, Vertx vertx, Integer debugPort, String extraOpts) {
+		boolean clearDataFolders, Vertx vertx, Integer debugPort, String extraOpts) {
 		super(image);
 		this.vertx = vertx;
 		this.clusterName = clusterName;
@@ -135,11 +137,13 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
 		if (initCluster) {
-			addEnv("MESHARGS", "-initCluster");
+			addEnv("MESHARGS", "-" + MeshCLI.INIT_CLUSTER);
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
-		addEnv("NODENAME", nodeName);
-		addEnv("CLUSTERNAME", clusterName);
+		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
+		addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
+		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
+		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 		String javaOpts = null;
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
@@ -161,7 +165,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		exposedPorts.add(9200);
 		exposedPorts.add(9300);
 
-//		 setPrivilegedMode(true);
+		// setPrivilegedMode(true);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
 		// setContainerName("mesh-test-" + nodeName);
@@ -205,7 +209,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 			// Locate all class folders
 			List<Path> classFolders = Files.walk(projectRoot.toPath()).filter(file -> "classes".equals(file.toFile().getName()))
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 
 			// Iterate over all classes in the class folders and add those to the docker context
 			String classPathArg = "";
@@ -269,7 +273,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		StringBuilder builder = new StringBuilder();
 		builder.append("#!/bin/sh\n");
 		builder.append("java $JAVAOPTS -cp " + classpath
-				+ " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME -clusterName $CLUSTERNAME $MESHARGS\n");
+			+ " com.gentics.mesh.server.ServerRunner  $MESHARGS\n");
 		builder.append("\n\n");
 		return builder.toString();
 	}
@@ -316,9 +320,9 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
 		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
-				.withUser("root")
-				// .withPrivileged(true)
-				.withCmd(command).exec();
+			.withUser("root")
+			// .withPrivileged(true)
+			.withCmd(command).exec();
 
 		final ToStringConsumer stdoutConsumer = new ToStringConsumer();
 		final ToStringConsumer stderrConsumer = new ToStringConsumer();

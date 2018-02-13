@@ -311,7 +311,10 @@ public class MeshImpl implements Mesh {
 		// meshInternal.searchQueue().blockUntilEmpty(120);
 		meshInternal.database().stop();
 		meshInternal.searchProvider().stop();
-		getVertx().close();
+		Vertx vertx = getVertx();
+		if (vertx != null) {
+			vertx.close();
+		}
 		MeshFactoryImpl.clear();
 		deleteLock();
 		log.info("Shutdown completed...");

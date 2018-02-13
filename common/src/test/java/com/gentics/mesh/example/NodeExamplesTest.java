@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.json.JsonUtil;
 
 public class NodeExamplesTest {
 
@@ -16,6 +15,6 @@ public class NodeExamplesTest {
 		assertNotNull(response.getUuid());
 		assertThat(response.getTags()).isNotEmpty();
 		assertThat(response.getBreadcrumb()).isNotEmpty();
-		assertNotNull(JsonUtil.toJson(response));
+		assertNotNull(response.toJson());
 	}
 }

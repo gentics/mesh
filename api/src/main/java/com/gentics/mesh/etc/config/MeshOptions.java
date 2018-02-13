@@ -6,26 +6,37 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 /**
  * Main mesh configuration POJO.
  */
 @GenerateDocumentation
-public class MeshOptions {
+public class MeshOptions implements Option {
 
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
 
+	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
+	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
+	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
+	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
+	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
+
+	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.")
+	@EnvironmentVariable(name = MESH_DEFAULT_LANG_ENV, description = "Override the configured default language.")
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Turn on or off the update checker.")
+	@EnvironmentVariable(name = MESH_UPDATECHECK_ENV, description = "Override the configured updatecheck flag.")
 	private boolean updateCheck = true;
 
 	@JsonProperty(required = true)
@@ -62,14 +73,17 @@ public class MeshOptions {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
+	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
 	private String tempDirectory = "data" + File.separator + "tmp";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
+	@EnvironmentVariable(name = MESH_NODE_NAME_ENV, description = "Override the configured node name.")
 	private String nodeName;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
+	@EnvironmentVariable(name = MESH_CLUSTER_INIT_ENV, description = "Enable or disable the initial cluster database setup. This is useful for testing.")
 	private boolean isInitCluster = false;
 
 	@JsonIgnore
@@ -338,6 +352,27 @@ public class MeshOptions {
 		}
 
 		// TODO check for other invalid characters in node name
+	}
+
+	@Override
+	public void validate(MeshOptions options) {
+		validate(null);
+	}
+
+	/**
+	 * Apply the environment variables.
+	 */
+	@JsonIgnore
+	@Override
+	public void overrideWithEnv() {
+		Option.super.overrideWithEnv();
+
+		getClusterOptions().overrideWithEnv();
+		getSearchOptions().overrideWithEnv();
+		getStorageOptions().overrideWithEnv();
+		getHttpServerOptions().overrideWithEnv();
+		getAuthenticationOptions().overrideWithEnv();
+		getImageOptions().overrideWithEnv();
 	}
 
 }

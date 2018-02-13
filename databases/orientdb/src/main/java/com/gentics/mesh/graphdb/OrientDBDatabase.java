@@ -29,7 +29,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.changelog.Change;
+import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
@@ -41,6 +42,7 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.util.DateUtils;
+import com.gentics.mesh.util.ETag;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
@@ -104,7 +106,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String DB_NAME = "storage";
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.26.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.31.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -385,7 +387,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 		if (clusterOptions != null && clusterOptions.isEnabled()) {
 			// This setting will be referenced by the hazelcast configuration
-			System.setProperty("mesh.clusterName", clusterOptions.getClusterName() + "@" + Mesh.getPlainVersion());
+			System.setProperty("mesh.clusterName", clusterOptions.getClusterName() + "@" + getDatabaseRevision());
 		}
 
 		log.info("Starting OrientDB Server");
@@ -406,6 +408,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
 			postStartupDBEventHandling();
 		}
+	}
+
+	@Override
+	public String getDatabaseRevision() {
+		StringBuilder builder = new StringBuilder();
+		for (Change change : ChangesList.getList()) {
+			builder.append(change.getUuid());
+		}
+		return ETag.hash(builder.toString() + getVersion());
 	}
 
 	/**

@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.15.1-SNAPSHOT</version>
+		<version>0.16.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -36,6 +36,13 @@
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
 			<version>1.3.2</version>
+		</dependency>
+
+		<!-- HTML stripping -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.11.2</version>
 		</dependency>
 	</dependencies>
 

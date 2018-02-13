@@ -11,6 +11,7 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -38,6 +39,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
 
@@ -243,14 +245,23 @@ public abstract class AbstractTypeProvider {
 	 *            Name of the page type
 	 * @param indexHandler
 	 *            Handler which will be used to invoke the query
+	 * @param filterArgument
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-		String pageTypeName, SearchHandler searchHandler) {
-		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg()).type(
-			new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
+		String pageTypeName, SearchHandler searchHandler, Filterable filterProvider) {
+		Builder fieldDefBuilder = newFieldDefinition()
+			.name(name)
+			.description(description)
+			.argument(createPagingArgs())
+			.argument(createQueryArg()).type(new GraphQLTypeReference(pageTypeName))
+			.dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
 				String query = env.getArgument("query");
+				Map<String, Object> filter = env.getArgument("filter");
+				if (query != null && filter != null) {
+					throw new RuntimeException("Only one way of filtering can be specified. Either by query or by filter");
+				}
 				if (query != null) {
 					try {
 						return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
@@ -258,9 +269,19 @@ public abstract class AbstractTypeProvider {
 						throw new RuntimeException(e);
 					}
 				} else {
-					return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
+					RootVertex<?> root = rootProvider.apply(gc);
+					if (filterProvider != null) {
+						return root.findAll(gc, getPagingInfo(env), filterProvider.constructFilter(filter, root));
+					} else {
+						return root.findAll(gc, getPagingInfo(env));
+					}
 				}
-			}).build();
+			});
+
+		if (filterProvider != null) {
+			fieldDefBuilder.argument(filterProvider.createFilterArgument());
+		}
+		return fieldDefBuilder.build();
 	}
 
 	/**
