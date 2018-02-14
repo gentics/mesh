@@ -227,19 +227,21 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	
 	@Test
 	public void testFocalPointZoomWithTooLargeTarget() throws IOException {
+		String uuid;
 		try (Tx tx = tx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			NodeResponse response = uploadImage(node, "en", "image");
-			
-			// 2. Zoom into image
-			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(2048).setHeight(2048);
-			params.setFocalPoint(0.5f, 0.5f);
-			params.setFocalPointZoom(1.5f);
-			params.setCropMode(CropMode.FOCALPOINT);
-			call(() -> client().downloadBinaryField(PROJECT_NAME, response.getUuid(), "en", "image", params), BAD_REQUEST,
-					"image_error_target_too_large_for_zoom");
+			uuid = response.getUuid();
 		}
+			
+		// 2. Zoom into image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(2048).setHeight(2048);
+		params.setFocalPoint(0.5f, 0.5f);
+		params.setFocalPointZoom(1.5f);
+		params.setCropMode(CropMode.FOCALPOINT);
+		call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image", params), BAD_REQUEST,
+				"image_error_target_too_large_for_zoom");
 	}
 
 	@Test
