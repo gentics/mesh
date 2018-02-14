@@ -112,10 +112,10 @@ public class FocalPointModifier {
 
 		// The sub image size dimension needs to be calculated via the target size aspect ratio
 		if (!alignX) {
-			double c = Math.floor((double) zw * targetRatio);
+			double c = Math.floor((double) zh * targetRatio);
 			zw = (int) c;
 		} else {
-			double c = Math.floor((double) zh / targetRatio);
+			double c = Math.floor((double) zw / targetRatio);
 			zh = (int) c;
 		}
 
