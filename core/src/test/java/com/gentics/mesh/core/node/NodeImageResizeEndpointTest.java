@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -221,6 +222,23 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(600).setHeight(102);
 			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
+		}
+	}
+	
+	@Test
+	public void testFocalPointZoomWithTooLargeTarget() throws IOException {
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+			// 1. Upload image
+			NodeResponse response = uploadImage(node, "en", "image");
+			
+			// 2. Zoom into image
+			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(2048).setHeight(2048);
+			params.setFocalPoint(0.5f, 0.5f);
+			params.setFocalPointZoom(1.5f);
+			params.setCropMode(CropMode.FOCALPOINT);
+			call(() -> client().downloadBinaryField(PROJECT_NAME, response.getUuid(), "en", "image", params), BAD_REQUEST,
+					"image_error_target_too_large_for_zoom");
 		}
 	}
 
