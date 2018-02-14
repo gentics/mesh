@@ -257,7 +257,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			updateRequest.setVersion(response.getVersion());
 			updateRequest.getFields().put("image", imageField);
 			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest), BAD_REQUEST,
-					"field_binary_error_image_focalpoint_out_of_bounds", "image", "2.5:2.21", "1376:1160");
+					"field_binary_error_image_focalpoint_out_of_bounds", "image", "2.5-2.21", "1376:1160");
 
 			// No try the exact x bounds
 			imageField.setFocalPoint(1f, 1f);
