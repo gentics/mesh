@@ -75,7 +75,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth() + 1).setHeight(102);
 			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
-					"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
+				"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
 		}
 	}
 
@@ -161,8 +161,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 			// 2. Transform the image
 			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl();
-			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion(), "image", params), BAD_REQUEST,
-					"error_no_image_transformation", "image");
+			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion(), "image", params));
 		}
 	}
 
@@ -178,7 +177,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "name", params), BAD_REQUEST,
-				"error_found_field_is_not_binary", "name");
+			"error_found_field_is_not_binary", "name");
 	}
 
 	@Test
@@ -193,11 +192,11 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image", Buffer.buffer(
-				"I am not an image"), "test.txt", "text/plain"));
+			"I am not an image"), "test.txt", "text/plain"));
 
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,
-				"error_transformation_non_image", "image");
+			"error_transformation_non_image", "image");
 	}
 
 	@Test
@@ -239,7 +238,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			updateRequest.setVersion(response.getVersion());
 			updateRequest.getFields().put("image", imageField);
 			call(() -> client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest), BAD_REQUEST,
-					"field_binary_error_image_focalpoint_out_of_bounds", "image", "2.5:2.21", "1376:1160");
+				"field_binary_error_image_focalpoint_out_of_bounds", "image", "2.5:2.21", "1376:1160");
 
 			// No try the exact x bounds
 			imageField.setFocalPoint(1f, 1f);
@@ -261,19 +260,18 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		// 2. Transform the image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl();
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version, "image", params), NOT_FOUND,
-				"error_binaryfield_not_found_with_name", "image");
+			"error_binaryfield_not_found_with_name", "image");
 
 	}
 
 	@Test
 	public void testTransformImageFilename() throws Exception {
 		String uuid = db().tx(() -> folder("news").getUuid());
-		String filename = "image";
 
 		String version = db().tx(() -> {
 			Node node = folder("news");
 			// 1. Upload image
-			return uploadImage(node, "en", filename).getVersion();
+			return uploadImage(node, "en", "image").getVersion();
 		});
 
 		// 2. Transform the image
@@ -289,11 +287,11 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
 
 		// 5. Validate the filename
-		assertEquals(filename, result.getFilename());
+		assertEquals("blume.jpg", result.getFilename());
 	}
 
 	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
-			int expectedWidth, int expectedHeight) throws Exception {
+		int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);
 		Mesh.vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), download.getBuffer(), rh -> {

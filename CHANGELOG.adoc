@@ -10,6 +10,9 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 [[v0.16.1]]
 == 0.16.1 (TBD)
 
+icon:check[] Core: Image transformation calls previously did not copy the image properties of the binary field. 
+                   Instead the filename and other properties were not copied to the new binary image field. This has been fixed now.
+
 icon:check[] Elasticsearch: Fixed handling of `search.url` settings which contained https URLs.
 
 icon:check[] Core: Fixed deletion of mesh.token cookie on logout.

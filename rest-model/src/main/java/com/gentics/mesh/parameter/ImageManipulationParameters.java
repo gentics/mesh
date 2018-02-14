@@ -343,13 +343,4 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return builder.toString();
 	}
 
-	/**
-	 * Check whether any of the parameters is set.
-	 * 
-	 * @return
-	 */
-	default boolean isSet() {
-		return getWidth() != null || getHeight() != null || getRect() != null || getFocalPoint() != null || getFocalPointDebug();
-	}
-
 }

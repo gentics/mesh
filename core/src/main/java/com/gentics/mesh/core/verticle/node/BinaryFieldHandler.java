@@ -256,6 +256,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// Create the new field
 			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
+			// Reuse the existing properties
+			if (oldField != null) {
+				oldField.copyTo(field);
+			}
+
 			// Process the upload which will update the binary field
 			processUpload(ac, ul, field, storeBinary);
 
@@ -423,9 +428,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 				if (parameters.getRect() != null) {
 					parameters.setCropMode(CropMode.RECT);
 				}
-				if (!parameters.isSet()) {
-					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
-				}
+
+				parameters.validate();
 
 				// Update the binary field with the new information
 				SearchQueueBatch sqb = db.tx(() -> {
@@ -484,6 +488,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 					if (oldField != null) {
+						oldField.copyTo(field);
 						oldField.remove();
 					}
 					field.getBinary().setSize(result.getSize());
