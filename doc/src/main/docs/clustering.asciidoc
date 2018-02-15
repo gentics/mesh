@@ -126,11 +126,11 @@ A running migration on one instance will cause the other instances of the cluste
 
 == Upgrading a cluster
 
-There are two types of upgrades. An upgrade can either support live upgrade or offline upgrade. 
+There are two types of upgrades. An upgrade can either be handled online of offline. 
 
-=== Live Upgrade
+=== Online Upgrade
 
-Live upgrades can happen without any downtime. First you stop a single instance within your cluster. Next you start the instance up again using the new Gentics Mesh version.
+Online upgrades can happen without any downtime. First you stop a single instance within your cluster. Next you start the instance up again using the new Gentics Mesh version.
 The instance will directly join the cluster and receive the changes from other instances. This is possible since the newly started Gentics Mesh version uses the same
 link:administration-guide.html#database-revisions[database revision] as the older version.
 
@@ -142,14 +142,14 @@ You can rollback by stopping the Gentics Mesh version and starting the older ver
 Offline upgrades are required when database changes need to be applied. These changes could negativly impact other (older) instances in the cluster and thus an offline upgrade will 
 only occure locally and not directly propagate throughout the cluster. Gentics Mesh will not join the cluster in such situations.
 The cluster will only form in-between versions which use the same database revision. You can check the list of link:administration-guide.html#database-revisions[Database revisions] in 
-order to determine whether an live or offline upgrade can be done.
+order to determine whether an online or offline upgrade can be done.
 
 Data which has been written to other instances in the cluster __can't__ be merged back to the now upgraded instance. Instead the upgraded instance will act as a new source of truth. 
 Other instances in the cluster need to be stopped one by one and restarted with the new version. The database from the initially migrated instance will be replicated to these instances and replace their older database.
 The old database will be moved in a backup location and can later be deleted. You could alternatively also just start new instances which replicate the data and afterwards drop the now outdated cluster.
 
 *Rollback*:
-You can rollback as long as you still have instances which have not yet been migrate by just starting older Gentics Mesh instances. These instances will automatically join corresponding the cluster with the same database revision.
+You can rollback as long as you still have instances which have not yet been migrated by just starting older Gentics Mesh instances. These instances will automatically join the corresponding cluster with the same database revision.
 
 == AWS / GCE / Kubernetes support
 

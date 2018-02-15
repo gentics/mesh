@@ -170,7 +170,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			fail("An exception should have been thrown.");
 		} catch (Exception e) {
 			String msg = e.getMessage();
-			assertTrue("Messge did not match {" + msg + "}", msg.startsWith("Downgrade not allowed"));
+			assertTrue("We did not expect the message {" + msg + "}", msg.startsWith("Downgrade not allowed"));
 		}
 	}
 
