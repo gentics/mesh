@@ -34,6 +34,11 @@ public interface ListFieldSchema extends FieldSchema, SchemaRestriction {
 	//TODO convert the list type to an enum
 	ListFieldSchema setListType(String listType);
 
+	@Override
+	default boolean isAllowedSchema(String schemaName) {
+		return SchemaRestriction.super.isAllowedSchema(schemaName);
+	}
+
 	//	/**
 	//	 * Return the maximum of items that the list is allowed to hold.
 	//	 * 

@@ -82,7 +82,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}
-			if (!NodeGraphFieldImpl.isAllowedSchema(node.getSchemaContainer().getName(), fieldSchema)) {
+			if (!fieldSchema.isAllowedSchema(node.getSchemaContainer().getName())) {
 				throw error(NOT_FOUND, "node_error_reference_not_allowed_schema", item.getUuid(), fieldKey);
 			}
 			int pos = integer.getAndIncrement();

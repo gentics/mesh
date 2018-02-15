@@ -127,4 +127,13 @@ public interface FieldSchema {
 	default boolean isDisplayField() {
 		return false;
 	}
+
+	/**
+	 * Tests if a schema is allowed according to the schema restrictions.
+	 * @param schemaName The name of the schema to be tested
+	 */
+	@JsonIgnore
+	default boolean isAllowedSchema(String schemaName) {
+		throw new UnsupportedOperationException();
+	}
 }

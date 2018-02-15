@@ -17,4 +17,8 @@ public interface NodeFieldSchema extends FieldSchema, SchemaRestriction {
 	 */
 	NodeFieldSchema setAllowedSchemas(String... allowedSchemas);
 
+	@Override
+	default boolean isAllowedSchema(String schemaName) {
+		return SchemaRestriction.super.isAllowedSchema(schemaName);
+	}
 }

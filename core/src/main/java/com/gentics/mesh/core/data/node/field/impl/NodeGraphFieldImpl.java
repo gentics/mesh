@@ -92,7 +92,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 				log.debug("Node field {" + fieldKey + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
 			}
 		 	throw error(NOT_FOUND, "node_error_reference_not_found", nodeField.getUuid(), fieldKey);
-		} else if (!isAllowedSchema(node.getSchemaContainer().getName(), fieldSchema)) {
+		} else if (!fieldSchema.isAllowedSchema(node.getSchemaContainer().getName())) {
 			throw error(NOT_FOUND, "node_error_reference_not_allowed_schema", nodeField.getUuid(), fieldKey);
 		} else {
 
@@ -107,28 +107,6 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			container.createNode(fieldKey, node);
 		}
 	};
-
-	/**
-	 * Tests if a schema is allowed according to the schema restrictions.
-	 * @param schemaName The name of the schema to be tested
-	 * @param fieldSchema The schema containing the restriction information
-	 */
-	public static boolean isAllowedSchema(String schemaName, FieldSchema fieldSchema) {
-		if (!(fieldSchema instanceof SchemaRestriction)) {
-			throw new InvalidParameterException();
-		}
-		SchemaRestriction nodeSchema = (SchemaRestriction) fieldSchema;
-		List<String> allowedSchemas = Optional.ofNullable(nodeSchema.getAllowedSchemas())
-			.map(Arrays::asList)
-			.orElse(Collections.emptyList());
-
-		// Empty or not set list means that all schemas are allowed
-		if (allowedSchemas.isEmpty()) {
-			return true;
-		} else {
-			return allowedSchemas.contains(schemaName);
-		}
-	}
 
 	public static FieldGetter NODE_GETTER = (container, fieldSchema) -> {
 		return container.getNode(fieldSchema.getName());
