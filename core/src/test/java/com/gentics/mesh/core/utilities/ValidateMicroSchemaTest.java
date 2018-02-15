@@ -8,7 +8,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 public class ValidateMicroSchemaTest extends AbstractValidateSchemaTest {
 
 	public ValidateMicroSchemaTest() {
-		super("/utilities/validateMicroschema", true);
+		super("/utilities/validateMicroschema", false);
 	}
 
 }
