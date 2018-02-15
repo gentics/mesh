@@ -1,4 +1,4 @@
-package com.gentics.mesh.changelog.changes;
+package com.gentics.mesh.graphdb.orientdb.changelog;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
