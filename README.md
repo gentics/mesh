@@ -170,17 +170,3 @@ If you don't find this option, you most likely need to install the M2E APT Plugi
 Import all maven modules in your IDE.
 
 Please note that this project is using Google Dagger for dependency injection. Adding new dependencies or beans may require a fresh build (via Project->Clean) of the mesh-core/mesh-api modules.
-
-### Maven
-
-Configure the path to your Java 1.8 JDK using the `JAVA_1_8_HOME` profile property:
-
-```
-  <profile>
-    <id>misc</id>
-    <properties>
-      <JAVA_1_7_HOME>/opt/jvm/jdk1.7.0_51-x64</JAVA_1_7_HOME>
-      <JAVA_1_8_HOME>/opt/jvm/jdk1.8.0_121</JAVA_1_8_HOME>
-    </properties>
-  </profile>
-```

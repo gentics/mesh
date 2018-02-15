@@ -62,7 +62,7 @@
 						</goals>
 						<phase>process-classes</phase>
 						<configuration>
-							<executable>${JAVA_1_8_HOME}/bin/java</executable>
+							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath/>
