@@ -41,7 +41,6 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	protected NodeFieldSchema createFieldSchema(boolean isRequired) {
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 		nodeFieldSchema.setName(NODE_FIELD);
-		nodeFieldSchema.setAllowedSchemas("folder");
 		nodeFieldSchema.setRequired(isRequired);
 		return nodeFieldSchema;
 	}
