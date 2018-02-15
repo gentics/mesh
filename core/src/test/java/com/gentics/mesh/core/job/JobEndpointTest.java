@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
@@ -183,7 +184,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		jobResonse = call(() -> client().findJobByUuid(jobUuid));
 		assertNull(jobResonse.getErrorMessage());
-
+		assertEquals("After reset the job must be 'queued'", MigrationStatus.QUEUED, jobResonse.getStatus());
 	}
 
 	@Test
