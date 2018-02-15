@@ -9,7 +9,6 @@ properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
-		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
@@ -140,7 +139,7 @@ node("docker") {
 						}
 
 						stage("Cluster Tests") {
-							if (Boolean.valueOf(params.runClusterTests)) {
+							if (Boolean.valueOf(params.runTests)) {
 								try {
 									sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
 									sh "mvn -B test -pl distributed"
