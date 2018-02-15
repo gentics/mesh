@@ -356,7 +356,7 @@ public class MeshOptions implements Option {
 
 	@Override
 	public void validate(MeshOptions options) {
-		 validate();
+		validate();
 	}
 
 	/**
