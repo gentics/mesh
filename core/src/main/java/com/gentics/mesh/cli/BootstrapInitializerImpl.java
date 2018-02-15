@@ -205,7 +205,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			markChangelogApplied();
 			return true;
 		} else {
-
 			handleMeshVersion();
 			if (!isJoiningCluster) {
 				// Only execute the changelog if there are any elements in the graph
@@ -447,7 +446,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		MavenVersionNumber current = MavenVersionNumber.parse(currentVersion);
 		if (current.isSnapshot()) {
 			log.warn("You are running snapshot version {" + currentVersion
-					+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
+				+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
 		}
 		try (Tx tx = db.tx()) {
 			String graphVersion = meshRoot().getMeshVersion();
@@ -470,7 +469,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			boolean ignoreSnapshotUpgrade = System.getProperty("ignoreSnapshotUpgradeCheck") != null;
 			if (ignoreSnapshotUpgrade) {
 				log.warn(
-						"You disabled the upgrade check for snapshot upgrades. Please note that upgrading a snapshot version to a release version could create unforseen errors since the snapshot may have altered your data in a way which was not anticipated by the release.");
+					"You disabled the upgrade check for snapshot upgrades. Please note that upgrading a snapshot version to a release version could create unforseen errors since the snapshot may have altered your data in a way which was not anticipated by the release.");
 				log.warn("Press any key to continue. This warning will only be shown once.");
 				try {
 					console.read();
@@ -480,20 +479,30 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 			if (isSnapshotUpgrade && !ignoreSnapshotUpgrade) {
 				log.error("You are currently trying to run release version {" + currentVersion
-						+ "} but your instance was last run using a snapshot version. {" + graphVersion
-						+ "}. Running this version could cause unforseen errors.");
+					+ "} but your instance was last run using a snapshot version. {" + graphVersion
+					+ "}. Running this version could cause unforseen errors.");
 				throw new RuntimeException("Downgrade not allowed");
 			}
 
 			boolean isVersionDowngrade = diff >= 1;
 			if (isVersionDowngrade) {
-				log.error("You are currently trying to run version {" + currentVersion + "} on a dump which was last used by version {" + graphVersion
+				// We need to check the database revision. If the stored database revision matches up the needed rev of this jar we can allow the downgrade.
+				String jarRev = db.getDatabaseRevision();
+				String dbRev = meshRoot().getDatabaseRevision();
+				if (dbRev != null && jarRev.equals(dbRev)) {
+					log.info("Downgrade allowed since the database revision of {" + dbRev + "} matches the needed revision.");
+				} else {
+					log.error("You are currently trying to run version {" + currentVersion + "} on a dump which was last used by version {"
+						+ graphVersion
 						+ "}. This is not supported. You can't downgrade your mesh instance. Doing so would cause unforseen errors. Aborting startup.");
-				throw new RuntimeException("Downgrade not allowed");
+					if (dbRev != null) {
+						throw new RuntimeException(
+							"Downgrade not allowed since the database rev of {" + dbRev + "} does not match the needed rev {" + jarRev + "}");
+					} else {
+						throw new RuntimeException("Downgrade not allowed since the database is pre-revision handling.");
+					}
+				}
 			}
-
-			// Version is okay. So lets store it.
-			meshRoot().setMeshVersion(currentVersion);
 		}
 	}
 
@@ -512,6 +521,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
 		log.info("Changelog completed.");
+		cls.setCurrentVersionAndRev();
 	}
 
 	@Override

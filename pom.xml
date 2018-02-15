@@ -89,9 +89,9 @@
 		<module>test-common</module>
 		<module>elasticsearch</module>
 		<module>rest-client</module>
+		<module>changelog-system</module>
 		<module>databases</module>
 		<module>services</module>
-		<module>changelog-system</module>
 		<module>core</module>
 		<module>performance-tests</module>
 		<module>verticles</module>

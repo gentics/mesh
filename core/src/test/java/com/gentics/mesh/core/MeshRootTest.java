@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -36,7 +38,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags", tagFamily("colors"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/" + tag("red").getUuid(),
-					tag("red"));
+				tag("red"));
 
 			expectSuccess("users", meshRoot().getUserRoot());
 			expectSuccess("users/" + user().getUuid(), user());
@@ -114,8 +116,14 @@ public class MeshRootTest extends AbstractMeshTest {
 		boot().handleMeshVersion();
 		boot().handleMeshVersion();
 
-		// Downgrade one bugfix version
+		// Downgrade one bugfix version is allowed if the database rev is the same
 		setMeshVersions("1.0.1", "1.0.0");
+		setDatabaseRev(DB.get().getDatabaseRevision());
+		boot().handleMeshVersion();
+
+		// Downgrade one bugfix version is not allowed if the database rev is different
+		setMeshVersions("1.0.1", "1.0.0");
+		setDatabaseRev("different");
 		expectException(() -> {
 			boot().handleMeshVersion();
 		});
@@ -139,6 +147,13 @@ public class MeshRootTest extends AbstractMeshTest {
 
 	}
 
+	private void setDatabaseRev(String rev) {
+		try (Tx tx = tx()) {
+			meshRoot().setDatabaseRevision(rev);
+			tx.success();
+		}
+	}
+
 	private void setMeshVersions(String graphVersion, String buildVersion) throws IOException {
 		MeshVersion.buildInfo.set(new BuildInfo(buildVersion, null));
 		assertEquals(buildVersion, Mesh.getPlainVersion());
@@ -154,7 +169,8 @@ public class MeshRootTest extends AbstractMeshTest {
 			action.run();
 			fail("An exception should have been thrown.");
 		} catch (Exception e) {
-			assertEquals("Downgrade not allowed", e.getMessage());
+			String msg = e.getMessage();
+			assertTrue("We did not expect the message {" + msg + "}", msg.startsWith("Downgrade not allowed"));
 		}
 	}
 

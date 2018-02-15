@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-changelog-system</artifactId>
@@ -26,13 +27,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Database -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
@@ -41,10 +35,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>1.1</version>
-			<type>jar</type>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

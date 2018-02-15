@@ -30,6 +30,9 @@ import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.maven.MavenMetadata;
+import com.gentics.mesh.maven.MavenUtilities;
+import com.gentics.mesh.maven.VersionNumber;
 import com.tinkerpop.blueprints.Vertex;
 
 import net.lingala.zip4j.core.ZipFile;

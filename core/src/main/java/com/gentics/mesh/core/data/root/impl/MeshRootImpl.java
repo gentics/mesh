@@ -85,6 +85,16 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
+	public String getDatabaseRevision() {
+		return getProperty(MESH_DB_REV);
+	}
+
+	@Override
+	public void setDatabaseRevision(String rev) {
+		setProperty(MESH_DB_REV, rev);
+	}
+
+	@Override
 	public BinaryRoot getBinaryRoot() {
 		if (binaryRoot == null) {
 			synchronized (MeshRootImpl.class) {
@@ -203,7 +213,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		if (schemaContainerRoot == null) {
 			synchronized (MeshRootImpl.class) {
 				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(
-						SchemaContainerRootImpl.class, null);
+					SchemaContainerRootImpl.class, null);
 				if (foundSchemaContainerRoot == null) {
 					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 					linkOut(schemaContainerRoot, HAS_SCHEMA_ROOT);
@@ -280,7 +290,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		if (tagFamilyRoot == null) {
 			synchronized (MeshRootImpl.class) {
 				TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class,
-						null);
+					null);
 				if (foundTagFamilyRoot == null) {
 					tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
 					linkOut(tagFamilyRoot, HAS_TAGFAMILY_ROOT);
@@ -300,7 +310,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		if (microschemaContainerRoot == null) {
 			synchronized (MeshRootImpl.class) {
 				MicroschemaContainerRoot foundMicroschemaContainerRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class)
-						.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
+					.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
 				if (foundMicroschemaContainerRoot == null) {
 					microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
 					linkOut(microschemaContainerRoot, HAS_MICROSCHEMA_ROOT);

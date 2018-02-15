@@ -64,7 +64,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		endpoint.method(GET);
 		endpoint.description("Endpoint which provides a RAML document for all registed endpoints.");
 		endpoint.displayName("RAML specification");
-		endpoint.exampleResponse(OK, "123");
+		endpoint.exampleResponse(OK, "Not yet specified");
 		endpoint.produces(APPLICATION_YAML);
 		endpoint.blockingHandler(rc -> {
 			RAMLGenerator generator = new RAMLGenerator();
@@ -90,6 +90,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setMeshNodeId(Mesh.mesh().getOptions().getNodeName());
 			info.setVertxVersion(VersionCommand.getVersion());
+			info.setDatabaseRevision(db.getDatabaseRevision());
 			ac.send(info, OK);
 		}, false);
 	}
