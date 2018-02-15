@@ -32,7 +32,7 @@ import io.reactivex.Single;
  */
 public interface Database extends TxFactory {
 
-	static final Logger log = LoggerFactory.getLogger(Database.class);
+	Logger log = LoggerFactory.getLogger(Database.class);
 
 	/**
 	 * Stop the graph database.

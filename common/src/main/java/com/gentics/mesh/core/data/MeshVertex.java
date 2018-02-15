@@ -14,7 +14,7 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public interface MeshVertex extends MeshElement, VertexFrame {
 
-	static final String UUID_KEY = "uuid";
+	String UUID_KEY = "uuid";
 
 	/**
 	 * Return the tinkerpop blueprint vertex of this mesh vertex.

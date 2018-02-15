@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public interface AddFieldChange extends SchemaFieldChange {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.ADDFIELD;
+	SchemaChangeOperation OPERATION = SchemaChangeOperation.ADDFIELD;
 
 	/**
 	 * Set the type of the field that should be added.

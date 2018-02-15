@@ -33,9 +33,9 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "project";
+	String TYPE = "project";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_PROJECT_CREATED, EVENT_PROJECT_UPDATED, EVENT_PROJECT_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_PROJECT_CREATED, EVENT_PROJECT_UPDATED, EVENT_PROJECT_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

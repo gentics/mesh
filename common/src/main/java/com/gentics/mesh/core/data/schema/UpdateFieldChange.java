@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public interface UpdateFieldChange extends SchemaFieldChange {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATEFIELD;
+	SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATEFIELD;
 
 	/**
 	 * Return the field label.

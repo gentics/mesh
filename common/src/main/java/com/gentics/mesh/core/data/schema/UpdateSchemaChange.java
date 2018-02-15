@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
  */
 public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<Schema> {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATESCHEMA;
+	SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATESCHEMA;
 
 	/**
 	 * Set the displayField name.

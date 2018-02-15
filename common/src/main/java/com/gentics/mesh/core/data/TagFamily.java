@@ -29,9 +29,9 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "tagFamily";
+	String TYPE = "tagFamily";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_FAMILY_CREATED, EVENT_TAG_FAMILY_UPDATED, EVENT_TAG_FAMILY_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_FAMILY_CREATED, EVENT_TAG_FAMILY_UPDATED, EVENT_TAG_FAMILY_DELETED);
 
 	/**
 	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.

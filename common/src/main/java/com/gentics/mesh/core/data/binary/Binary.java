@@ -12,13 +12,13 @@ import io.vertx.core.buffer.Buffer;
  */
 public interface Binary extends MeshVertex {
 
-	static final String SHA512SUM_KEY = "sha512sum";
+	String SHA512SUM_KEY = "sha512sum";
 
-	static final String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
+	String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
 
-	static final String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
+	String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
 
-	static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
+	String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
 	/**
 	 * Return the binary data stream.

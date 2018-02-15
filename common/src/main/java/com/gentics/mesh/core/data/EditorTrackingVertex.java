@@ -8,7 +8,8 @@ import com.gentics.mesh.util.DateUtils;
  * Interface for vertices that track their editor and editing time
  */
 public interface EditorTrackingVertex extends MeshVertex {
-	static final String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
+
+	String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
 
 	/**
 	 * Return the editor of the vertex.

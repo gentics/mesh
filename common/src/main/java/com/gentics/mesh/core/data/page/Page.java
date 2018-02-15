@@ -69,6 +69,11 @@ public interface Page<T> extends Iterable<T> {
 	 */
 	List<? extends T> getWrappedList();
 
+	/**
+	 * Return the iterator over the elements of the page.
+	 * 
+	 * @return
+	 */
 	default Iterator<T> iterator() {
 		return (Iterator<T>) getWrappedList().iterator();
 	}

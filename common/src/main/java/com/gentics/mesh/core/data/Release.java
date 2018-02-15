@@ -41,9 +41,9 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "release";
+	String TYPE = "release";
 
-	static TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_RELEASE_CREATED, EVENT_RELEASE_UPDATED, EVENT_RELEASE_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_RELEASE_CREATED, EVENT_RELEASE_UPDATED, EVENT_RELEASE_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public interface UpdateMicroschemaChange extends FieldSchemaContainerUpdateChange<Microschema> {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATEMICROSCHEMA;
+	SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATEMICROSCHEMA;
 
 	/**
 	 * Set the field order.

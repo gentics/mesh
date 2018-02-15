@@ -40,19 +40,19 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "user";
+	String TYPE = "user";
 
 	/**
 	 * API token id property name {@value #API_TOKEN_ID}
 	 */
-	static final String API_TOKEN_ID = "APITokenId";
+	String API_TOKEN_ID = "APITokenId";
 
 	/**
 	 * API token timestamp property name {@value #API_TOKEN_ISSUE_TIMESTAMP}
 	 */
-	static final String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
+	String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_USER_CREATED, EVENT_USER_UPDATED, EVENT_USER_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_USER_CREATED, EVENT_USER_UPDATED, EVENT_USER_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
