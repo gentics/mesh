@@ -1076,7 +1076,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				.isPublished(releaseUuid)).collect(Collectors.toList());
 
 		// publish all unpublished containers and handle recursion
-		unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser())).collect(Collectors.toList());
+		unpublishedContainers.stream().forEach(c -> publish(c.getLanguage(), release, ac.getUser()));
 
 		PublishParameters parameters = ac.getPublishParameters();
 		if (parameters.isRecursive()) {
@@ -1939,7 +1939,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					humanNames.add(permission.getRestPerm().getName());
 				}
 				String[] names = humanNames.toArray(new String[humanNames.size()]);
-				keyBuilder.append(names);
+				keyBuilder.append(Arrays.toString(names));
 			}
 
 		}

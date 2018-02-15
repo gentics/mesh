@@ -65,8 +65,8 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
 				.recordedStoreEvents(2);
 		// node-[:nodeUuid]-[draft/published]-[schemaname]-[schemaversion]-[release_uuid]
-		dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-published-folder-1-" + initialReleaseUuid());
-		dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-draft-folder-1-" + initialReleaseUuid());
+		assertTrue(dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-published-folder-1-" + initialReleaseUuid()));
+		assertTrue(dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-draft-folder-1-" + initialReleaseUuid()));
 
 		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
 

@@ -60,7 +60,7 @@ public class BinaryFieldResponseHandler {
 
 			// Check the etag
 			String etagKey = sha512sum;
-			if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
+			if (binaryField.hasImage()) {
 				etagKey += ac.getImageParameters().getQueryParameters();
 			}
 
@@ -71,7 +71,7 @@ public class BinaryFieldResponseHandler {
 
 			if (requestETag != null && requestETag.equals(etagHeaderValue)) {
 				response.setStatusCode(NOT_MODIFIED.code()).end();
-			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
+			} else if (binaryField.hasImage()) {
 				// Resize the image if needed
 				Observable<Buffer> data = binary.getStream();
 				Observable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).toObservable()

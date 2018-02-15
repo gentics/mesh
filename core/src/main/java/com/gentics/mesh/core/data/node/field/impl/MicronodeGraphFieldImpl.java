@@ -93,7 +93,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
 				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
 			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName()
-					+ "} is now allowed. Allowed microschemas {" + microschemaFieldSchema.getAllowedMicroSchemas() + "}");
+					+ "} is now allowed. Allowed microschemas {" + Arrays.toString(microschemaFieldSchema.getAllowedMicroSchemas()) + "}");
 			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
 		}
 
