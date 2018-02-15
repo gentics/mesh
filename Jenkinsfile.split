@@ -59,8 +59,6 @@ node("docker") {
 				], 
 				workspaceVolume: emptyDirWorkspaceVolume(false)) {
 					node("mesh") {
-						//env.DOCKER_HOST = "tcp://127.0.0.1:2375"
-
 						stage("Checkout") {
 							checkout scm
 						}
