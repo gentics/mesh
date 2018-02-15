@@ -86,14 +86,18 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		}
 	};
 
+	/**
+	 * Gets the set of all allowed strings or an empty set if all strings are allowed.
+	 *
+	 * @param fieldSchema The field schema to get the allowed strings from
+	 */
 	private static Set<String> getAllowedStrings(FieldSchema fieldSchema) {
 		if (!(fieldSchema instanceof ListFieldSchema)) {
 			throw new InvalidParameterException();
 		}
 		ListFieldSchema listSchema = (ListFieldSchema) fieldSchema;
 		return Optional.ofNullable(listSchema.getAllowedSchemas())
-			.map(Stream::of)
-            .map(stream -> stream.collect(Collectors.toSet()))
+            .map(schemas -> Stream.of(schemas).collect(Collectors.toSet()))
             .orElse(Collections.emptySet());
 	}
 

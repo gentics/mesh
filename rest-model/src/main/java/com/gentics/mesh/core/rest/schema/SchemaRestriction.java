@@ -21,6 +21,10 @@ public interface SchemaRestriction {
      */
     SchemaRestriction setAllowedSchemas(String... allowedSchemas);
 
+    /**
+     * Tests if a schema is allowed according to the schema restrictions.
+     * @param schemaName The name of the schema to be tested
+     */
     default boolean isAllowedSchema(String schemaName) {
         List<String> allowedSchemas = Optional.ofNullable(getAllowedSchemas())
             .map(Arrays::asList)

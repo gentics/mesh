@@ -40,6 +40,9 @@ import static com.gentics.mesh.test.TestSize.FULL;
 // TODO Also test other possible field types
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 @RunWith(VertxUnitRunner.class)
+/**
+ * Tests the <pre>allow</pre> attribute of field schemas.
+ */
 public class SchemaAllowEndpointTest extends AbstractMeshTest {
 
     private static final String ALLOW_SCHEMA_NAME = "allow_schema";

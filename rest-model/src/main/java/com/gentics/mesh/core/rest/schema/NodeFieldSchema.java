@@ -17,6 +17,10 @@ public interface NodeFieldSchema extends FieldSchema, SchemaRestriction {
 	 */
 	NodeFieldSchema setAllowedSchemas(String... allowedSchemas);
 
+	/**
+	 * Tests if a schema is allowed according to the schema restrictions.
+	 * @param schemaName The name of the schema to be tested
+	 */
 	@Override
 	default boolean isAllowedSchema(String schemaName) {
 		return SchemaRestriction.super.isAllowedSchema(schemaName);
