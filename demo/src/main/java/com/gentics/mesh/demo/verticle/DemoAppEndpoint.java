@@ -35,7 +35,7 @@ public class DemoAppEndpoint extends AbstractEndpoint {
 	public void registerEndPoints() {
 		addRedirectionHandler();
 
-		StaticHandler staticHandler = StaticHandler.create("demo");
+		StaticHandler staticHandler = StaticHandler.create("demo/dist");
 		staticHandler.setDirectoryListing(false);
 		staticHandler.setCachingEnabled(false);
 		staticHandler.setIndexPage("index.html");
