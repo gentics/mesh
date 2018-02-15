@@ -10,6 +10,9 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 [[v0.16.1]]
 == 0.16.1 (TBD)
 
+icon:check[] Core: After resetting a job via rest (admin/jobs/::uuid::/error) the job was not processed again.
+                    This has been fixed now.
+
 icon:check[] Core: When the migration for multiple nodes faild during a schema migration the error details could become very long.
 					This has been fixed now. Error details in the job list will be truncated after a certain amount of characters.
 

@@ -235,7 +235,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	@Override
 	public void setErrorDetail(String info) {
 		// truncate the error detail message to the max length for the error detail property
-		if (info.length() > ERROR_DETAIL_MAX_LENGTH) {
+		if (info != null && info.length() > ERROR_DETAIL_MAX_LENGTH) {
 			info = info.substring(0, ERROR_DETAIL_MAX_LENGTH - ERROR_DETAIL_MAX_LENGTH_MSG.length()) + ERROR_DETAIL_MAX_LENGTH_MSG;
 		}
 		setProperty(ERROR_DETAIL_PROPERTY_KEY, info);
@@ -273,6 +273,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		setStopTimestamp(null);
 		setErrorDetail(null);
 		setErrorMessage(null);
+		setStatus(MigrationStatus.QUEUED);
 	}
 
 	@Override
