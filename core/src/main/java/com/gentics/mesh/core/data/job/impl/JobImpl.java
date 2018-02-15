@@ -43,6 +43,10 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	private static final Logger log = LoggerFactory.getLogger(JobImpl.class);
 
+	private static final String ERROR_DETAIL_MAX_LENGTH_MSG = "..." + System.lineSeparator() +
+			"For further details concerning this error please refer to the logs.";
+
+
 	@Override
 	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Jobs can't be updated");
@@ -230,6 +234,10 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setErrorDetail(String info) {
+		// truncate the error detail message to the max length for the error detail property
+		if (info.length() > ERROR_DETAIL_MAX_LENGTH) {
+			info = info.substring(0, ERROR_DETAIL_MAX_LENGTH - ERROR_DETAIL_MAX_LENGTH_MSG.length()) + ERROR_DETAIL_MAX_LENGTH_MSG;
+		}
 		setProperty(ERROR_DETAIL_PROPERTY_KEY, info);
 	}
 

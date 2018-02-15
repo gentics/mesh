@@ -31,6 +31,10 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	public static final String STATUS_PROPERTY_KEY = "status";
 
 	public static final String NODE_NAME_PROPERTY_KEY = "nodeName";
+	/**
+	 * The max length before detail error messages will be truncated
+	 */
+	int ERROR_DETAIL_MAX_LENGTH = 50000;
 
 	/**
 	 * Return the job type.
