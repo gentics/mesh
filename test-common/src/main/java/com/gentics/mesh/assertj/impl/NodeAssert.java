@@ -38,7 +38,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 * @return fluent API
 	 */
 	public NodeAssert isOf(SchemaContainer schemaContainer) {
-		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").equals(schemaContainer);
+		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").isEqualTo(schemaContainer);
 		return this;
 	}
 
