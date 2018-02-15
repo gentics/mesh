@@ -12,6 +12,8 @@ public interface MeshRoot extends MeshVertex {
 
 	public static final String MESH_VERSION = "meshVersion";
 
+	public static final String MESH_DB_REV = "meshDatabaseRevision";
+
 	/**
 	 * Returns the mesh version which was last used to access the graph. This version is usually updated by the {@link BootstrapInitializer} during startup of
 	 * mesh.
@@ -26,6 +28,20 @@ public interface MeshRoot extends MeshVertex {
 	 * @param version
 	 */
 	void setMeshVersion(String version);
+
+	/**
+	 * Return the currently stored database revision hash.
+	 * 
+	 * @return
+	 */
+	String getDatabaseRevision();
+
+	/**
+	 * Update the stored database revision hash.
+	 * 
+	 * @param databaseRevision
+	 */
+	void setDatabaseRevision(String databaseRevision);
 
 	/**
 	 * Returns the user aggregation vertex.

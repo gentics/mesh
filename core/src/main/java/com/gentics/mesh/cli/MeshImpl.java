@@ -115,7 +115,11 @@ public class MeshImpl implements Mesh {
 		MeshInternal.create().boot().init(this, forceReindex, options, verticleLoader);
 
 		if (options.isUpdateCheckEnabled()) {
-			invokeUpdateCheck();
+			try {
+				invokeUpdateCheck();
+			} catch (Exception e) {
+				// Ignored
+			}
 		}
 		setStatus(MeshStatus.READY);
 		dontExit();

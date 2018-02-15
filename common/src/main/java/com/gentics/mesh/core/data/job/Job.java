@@ -16,21 +16,21 @@ import com.gentics.mesh.util.DateUtils;
  */
 public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVertex {
 
-	public static final String TYPE_PROPERTY_KEY = "type";
+	String TYPE_PROPERTY_KEY = "type";
 
-	public static final String ERROR_DETAIL_PROPERTY_KEY = "error_detail";
+	String ERROR_DETAIL_PROPERTY_KEY = "error_detail";
 
-	public static final String ERROR_MSG_PROPERTY_KEY = "error_msg";
+	String ERROR_MSG_PROPERTY_KEY = "error_msg";
 
-	public static final String START_TIMESTAMP_PROPERTY_KEY = "startDate";
+	String START_TIMESTAMP_PROPERTY_KEY = "startDate";
 
-	public static final String STOP_TIMESTAMP_PROPERTY_KEY = "stopDate";
+	String STOP_TIMESTAMP_PROPERTY_KEY = "stopDate";
 
-	public static final String COMPLETION_COUNT_PROPERTY_KEY = "completionCount";
+	String COMPLETION_COUNT_PROPERTY_KEY = "completionCount";
 
-	public static final String STATUS_PROPERTY_KEY = "status";
+	String STATUS_PROPERTY_KEY = "status";
 
-	public static final String NODE_NAME_PROPERTY_KEY = "nodeName";
+	String NODE_NAME_PROPERTY_KEY = "nodeName";
 
 	/**
 	 * Return the job type.

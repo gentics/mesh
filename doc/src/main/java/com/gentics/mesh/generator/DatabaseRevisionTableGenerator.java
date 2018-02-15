@@ -44,7 +44,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 
 		List<Map<String, String>> entries = new ArrayList<>();
 		for (String version : metadata.getVersions()) {
-			// 0.16.1 introduced the revsision artifact
+			// 0.16.1 introduced the revision artifact
 			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.16.1")) >= 0) {
 				URL revisionFileUrl = new URL(BASE_PATH + version + "/" + "mesh-orientdb-" + version + "-revision.txt");
 				String hash = IOUtils.readStringFromStream(revisionFileUrl.openStream());

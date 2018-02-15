@@ -265,6 +265,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		setStopTimestamp(null);
 		setErrorDetail(null);
 		setErrorMessage(null);
+		setStatus(MigrationStatus.QUEUED);
 	}
 
 	@Override
