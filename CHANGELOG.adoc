@@ -10,6 +10,8 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 [[v0.16.1]]
 == 0.16.1 (TBD)
 
+icon:plus[] Core: Gentics Mesh can now be downgraded if the link:https://getmesh.io/docs/beta/administration-guide.html#database-revisions[database revision] matches the needed revision of Gentics Mesh.
+
 icon:plus[] Clustering: Gentics Mesh is now able to form cluster between different server versions. 
 			A database revision hash will now be used to determine which versions of Gentics Mesh can form a cluster.
 			Only instances with the same database revision hash are allowed to form a cluster.
