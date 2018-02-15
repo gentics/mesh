@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -200,7 +201,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// Assert that migration worked
 			Node node = content();
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
 			assertNull("There should no longer be a content field of type html", node.getGraphFieldContainer("en").getHtml("content"));
 		}
 	}
@@ -402,7 +403,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNotNull("The schema of the node should contain the new field schema",
 					node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
 			assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
 
 		}
@@ -485,7 +486,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				assertNotNull("The schema of the node should contain the new field schema",
 						node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
 				assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-						currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+					!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
 			}
 
 		}

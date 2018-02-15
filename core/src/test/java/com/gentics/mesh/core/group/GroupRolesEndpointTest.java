@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.gentics.mesh.core.rest.role.RoleReference;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
@@ -132,7 +133,10 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
 		GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
-		assertFalse(restGroup.getRoles().contains("extraRole"));
+		assertFalse(restGroup.getRoles().stream()
+			.map(RoleReference::getName)
+			.anyMatch("extraRole"::equals)
+		);
 
 		try (Tx tx = tx()) {
 			assertEquals(1, group().getRoles().size());

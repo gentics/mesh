@@ -149,7 +149,6 @@ public class RouterStorage {
 			Database database = db.get();
 
 			try (Tx tx = database.tx()) {
-				Set<String> projectNames = new HashSet<>();
 				// Check whether there are any projects which do not have an
 				// active project router
 				for (Project project : boot.get().projectRoot().findAllIt()) {
@@ -157,7 +156,6 @@ public class RouterStorage {
 						log.info("Mounting project {" + project.getName() + "}");
 						addProjectRouter(project.getName());
 					}
-					projectNames.add(project.getName());
 				}
 			} catch (InvalidNameException e) {
 				log.error("Could not update project routers", e);

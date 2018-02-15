@@ -142,7 +142,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				resultHandler.handle(Future.failedFuture(rh.cause()));
 			} else {
 				User user = rh.result().getUser();
-				String uuid = null;
+				String uuid;
 				if (user instanceof MeshAuthUser) {
 					uuid = ((MeshAuthUser) user).getUuid();
 				} else {

@@ -106,7 +106,6 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isEqualToComparingFieldByField(oldValue);
 					assertThat(fieldResponse.getUuid()).as("New uuid").isNotEqualTo(oldValue.getUuid());
 				}
-				container = newContainer;
 			}
 		}
 	}
