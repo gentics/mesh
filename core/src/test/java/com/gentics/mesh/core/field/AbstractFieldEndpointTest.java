@@ -27,7 +27,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
-		return call(() -> client().findNodeByUuid(PROJECT_NAME, tx(() -> node.getUuid()), parameters, new VersioningParametersImpl().draft()));
+		return call(() -> client().findNodeByUuid(PROJECT_NAME, tx(node::getUuid), parameters, new VersioningParametersImpl().draft()));
 	}
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
@@ -87,7 +87,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		nodeUpdateRequest.setVersion(tx(() -> node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
-		call(() -> client().updateNode(PROJECT_NAME, tx(() -> node.getUuid()), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),
+		call(() -> client().updateNode(PROJECT_NAME, tx(node::getUuid), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),
 				status, bodyMessageI18nKey, i18nParams);
 	}
 

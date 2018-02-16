@@ -21,7 +21,7 @@ import com.syncleus.ferma.AbstractVertexFrame;
  */
 public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements DateGraphField {
 
-	public static FieldTransformer<DateField> DATE_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	public static final FieldTransformer<DateField> DATE_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		DateGraphField graphDateField = container.getDate(fieldKey);
 		if (graphDateField == null) {
 			return null;
@@ -30,7 +30,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 		}
 	};
 
-	public static FieldUpdater DATE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater DATE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		DateGraphField dateGraphField = container.getDate(fieldKey);
 		DateField dateField = fieldMap.getDateField(fieldKey);
 		boolean isDateFieldSetToNull = fieldMap.hasField(fieldKey) && (dateField == null || dateField.getDate() == null);
@@ -61,9 +61,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 		}
 	};
 
-	public static FieldGetter DATE_GETTER = (container, fieldSchema) -> {
-		return container.getDate(fieldSchema.getName());
-	};
+	public static FieldGetter DATE_GETTER = (container, fieldSchema) -> container.getDate(fieldSchema.getName());
 
 	public DateGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

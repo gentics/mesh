@@ -287,9 +287,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Binary binary = MeshInternal.get().boot().binaryRoot().create("hashsumvalue", 1L);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
-					.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));;
+					.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
 
-			// stringList
+            // stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");
 			stringList.createString("A");
 			stringList.createString("B");

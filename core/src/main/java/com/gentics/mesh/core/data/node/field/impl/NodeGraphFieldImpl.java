@@ -99,9 +99,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 	};
 
-	public static FieldGetter NODE_GETTER = (container, fieldSchema) -> {
-		return container.getNode(fieldSchema.getName());
-	};
+	public static FieldGetter NODE_GETTER = (container, fieldSchema) -> container.getNode(fieldSchema.getName());
 
 	@Override
 	public String getFieldKey() {

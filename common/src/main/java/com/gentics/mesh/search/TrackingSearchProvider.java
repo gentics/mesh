@@ -51,9 +51,7 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable updateDocument(String index, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
-		return Completable.fromAction(() -> {
-			updateEvents.put(index + "-" + uuid, document);
-		});
+		return Completable.fromAction(() -> updateEvents.put(index + "-" + uuid, document));
 	}
 
 	public Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
@@ -62,9 +60,7 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable deleteDocument(String index, String uuid) {
-		return Completable.fromAction(() -> {
-			deleteEvents.add(index + "-" + uuid);
-		});
+		return Completable.fromAction(() -> deleteEvents.add(index + "-" + uuid));
 	}
 
 	@Override
@@ -80,9 +76,7 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
-		return Completable.fromAction(() -> {
-			storeEvents.put(index + "-" + uuid, document);
-		});
+		return Completable.fromAction(() -> storeEvents.put(index + "-" + uuid, document));
 	}
 
 	@Override

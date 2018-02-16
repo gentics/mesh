@@ -74,7 +74,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	@Override
 	public void close() {
-		clientSet.forEach(client -> client.close());
+		clientSet.forEach(HttpClient::close);
 		clientSet.clear();
 	}
 

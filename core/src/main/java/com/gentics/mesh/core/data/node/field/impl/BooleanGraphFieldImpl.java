@@ -15,8 +15,8 @@ import com.syncleus.ferma.AbstractVertexFrame;
 
 public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
 
-	public static FieldTransformer<BooleanField> BOOLEAN_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+	public static final FieldTransformer<BooleanField> BOOLEAN_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+                                                                              parentNode) -> {
 		BooleanGraphField graphBooleanField = container.getBoolean(fieldKey);
 		if (graphBooleanField == null) {
 			return null;
@@ -25,7 +25,7 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 		}
 	};
 
-	public static FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BooleanGraphField booleanGraphField = container.getBoolean(fieldKey);
 		BooleanField booleanField = fieldMap.getBooleanField(fieldKey);
 		boolean isBooleanFieldSetToNull = fieldMap.hasField(fieldKey) && (booleanField == null || booleanField.getValue() == null);
@@ -56,9 +56,7 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 		}
 	};
 
-	public static FieldGetter BOOLEAN_GETTER = (container, fieldSchema) -> {
-		return container.getBoolean(fieldSchema.getName());
-	};
+	public static FieldGetter BOOLEAN_GETTER = (container, fieldSchema) -> container.getBoolean(fieldSchema.getName());
 
 	public BooleanGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

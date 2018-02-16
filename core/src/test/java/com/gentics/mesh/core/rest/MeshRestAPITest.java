@@ -28,11 +28,7 @@ public class MeshRestAPITest extends AbstractMeshTest {
 
 		HttpClient client = Mesh.vertx().createHttpClient(options);
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(HttpMethod.POST, "/api/v1/test", rh -> {
-			rh.bodyHandler(bh -> {
-				future.complete(bh.toString());
-			});
-		});
+		HttpClientRequest request = client.request(HttpMethod.POST, "/api/v1/test", rh -> rh.bodyHandler(bh -> future.complete(bh.toString())));
 		request.end();
 
 		String response = future.get(1, TimeUnit.SECONDS);

@@ -66,13 +66,9 @@ public class ModelResponseHandler<T> extends AbstractResponseHandler<T> implemen
 		} else {
 			//TODO move regular string success handler into dedicated interface
 			if (classOfT.isAssignableFrom(String.class)) {
-				response.bodyHandler(buffer -> {
-					future.complete((T) buffer.toString());
-				});
+				response.bodyHandler(buffer -> future.complete((T) buffer.toString()));
 			} else {
-				response.bodyHandler(buffer -> {
-					future.fail(new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}"));
-				});
+				response.bodyHandler(buffer -> future.fail(new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}")));
 			}
 		}
 	}

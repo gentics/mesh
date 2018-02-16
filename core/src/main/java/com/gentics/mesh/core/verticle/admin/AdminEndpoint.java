@@ -70,9 +70,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description("Loads the cluster status information.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
-		endpoint.handler(rc -> {
-			adminHandler.handleClusterStatus(new InternalRoutingActionContextImpl(rc));
-		});
+		endpoint.handler(rc -> adminHandler.handleClusterStatus(new InternalRoutingActionContextImpl(rc)));
 
 	}
 
@@ -83,9 +81,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description("Invokes a consistency check of the graph database and returns a list of found issues");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createConsistencyCheckResponse(), "Consistency check report");
-		endpoint.handler(rc -> {
-			consistencyHandler.invokeCheck(new InternalRoutingActionContextImpl(rc));
-		});
+		endpoint.handler(rc -> consistencyHandler.invokeCheck(new InternalRoutingActionContextImpl(rc)));
 	}
 
 	private void addExportHandler() {
@@ -95,9 +91,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
-		endpoint.handler(rc -> {
-			adminHandler.handleExport(new InternalRoutingActionContextImpl(rc));
-		});
+		endpoint.handler(rc -> adminHandler.handleExport(new InternalRoutingActionContextImpl(rc)));
 	}
 
 	private void addImportHandler() {
@@ -108,9 +102,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 				"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
-		endpoint.handler(rc -> {
-			adminHandler.handleImport(new InternalRoutingActionContextImpl(rc));
-		});
+		endpoint.handler(rc -> adminHandler.handleImport(new InternalRoutingActionContextImpl(rc)));
 	}
 
 	private void addRestoreHandler() {
@@ -121,9 +113,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
-		endpoint.handler(rc -> {
-			adminHandler.handleRestore(new InternalRoutingActionContextImpl(rc));
-		});
+		endpoint.handler(rc -> adminHandler.handleRestore(new InternalRoutingActionContextImpl(rc)));
 	}
 
 	private void addBackupHandler() {
@@ -134,9 +124,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 				"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
-		endpoint.handler(rc -> {
-			adminHandler.handleBackup(new InternalRoutingActionContextImpl(rc));
-		});
+		endpoint.handler(rc -> adminHandler.handleBackup(new InternalRoutingActionContextImpl(rc)));
 	}
 
 	/**

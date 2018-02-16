@@ -359,9 +359,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 		if (imageInfo != null) {
 			return Single.just(Optional.of(imageInfo));
 		} else {
-			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> {
-				ac.put("imageInfo", ii);
-			}).map(Optional::of).onErrorReturn(e -> {
+			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> ac.put("imageInfo", ii)).map(Optional::of).onErrorReturn(e -> {
 				// suppress error
 				return Optional.empty();
 			});

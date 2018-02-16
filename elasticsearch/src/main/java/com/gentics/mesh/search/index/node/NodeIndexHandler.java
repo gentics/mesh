@@ -178,7 +178,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().ignoreElements();
+			return Observable.fromIterable(obs).map(Single::toObservable).flatMap(x -> x).distinct().ignoreElements();
 		});
 	}
 

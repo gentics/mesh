@@ -58,7 +58,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			assertNull("The microschema should not yet have any changes", microschemaContainer.getLatestVersion().getNextChange());
 			tx.success();
 		}
-		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
+		String microschemaUuid = tx(microschemaContainer::getUuid);
 		// 2. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
@@ -71,10 +71,8 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 3. Invoke migration
 		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
-		waitForJobs(() -> {
-			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+                new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion()))), COMPLETED, 1);
 
 		// 4. Assert migrated node
 		try (Tx tx = tx()) {
@@ -94,7 +92,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			beforeVersion = microschemaContainer.getLatestVersion();
 			assertNull("The microschema should not yet have any changes", beforeVersion.getNextChange());
 		}
-		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
+		String microschemaUuid = tx(microschemaContainer::getUuid);
 
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "fieldLabel");
@@ -132,10 +130,8 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
 
 		// 2. Invoke migration
-		waitForJobs(() -> {
-			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+                new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion()))), COMPLETED, 1);
 
 		try (Tx tx = tx()) {
 			assertEquals("The name of the microschema was not updated", name, beforeVersion.getNextVersion().getName());

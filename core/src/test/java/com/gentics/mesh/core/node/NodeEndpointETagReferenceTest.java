@@ -87,17 +87,13 @@ public class NodeEndpointETagReferenceTest extends AbstractMeshTest {
 
     @Test
     public void testNodeField(TestContext context) {
-        assertChangedReference("Check Node Field", (nodeToCheck, nodeToDelete) -> {
-            nodeToCheck.getFields().put("node", new NodeFieldImpl().setUuid(nodeToDelete.getUuid()));
-        }).subscribe(testSubscriber(context));
+        assertChangedReference("Check Node Field", (nodeToCheck, nodeToDelete) -> nodeToCheck.getFields().put("node", new NodeFieldImpl().setUuid(nodeToDelete.getUuid()))).subscribe(testSubscriber(context));
     }
 
     @Test
     public void testNodeListField(TestContext context) {
-        assertChangedReference("Check Node List Field", (nodeToCheck, nodeToDelete) -> {
-            nodeToCheck.getFields().put("nodeList",
-                new NodeFieldListImpl().setItems(Arrays.asList(new NodeFieldListItemImpl().setUuid(nodeToDelete.getUuid()))));
-        }).subscribe(testSubscriber(context));
+        assertChangedReference("Check Node List Field", (nodeToCheck, nodeToDelete) -> nodeToCheck.getFields().put("nodeList",
+            new NodeFieldListImpl().setItems(Arrays.asList(new NodeFieldListItemImpl().setUuid(nodeToDelete.getUuid()))))).subscribe(testSubscriber(context));
     }
 
     @Test

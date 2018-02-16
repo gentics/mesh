@@ -250,15 +250,11 @@ public class HandlerUtilities {
 	 *            Action which will be invoked once the handler has finished
 	 */
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action);
+		async(ac, () -> database.tx(handler), action);
 	}
 
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action, boolean order) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action, order);
+		async(ac, () -> database.tx(handler), action, order);
 	}
 
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction0 handler, Consumer<RM> action) {
@@ -269,9 +265,7 @@ public class HandlerUtilities {
 	}
 
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action);
+		async(ac, () -> database.tx(handler), action);
 	}
 
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction2 handler, Consumer<RM> action) {

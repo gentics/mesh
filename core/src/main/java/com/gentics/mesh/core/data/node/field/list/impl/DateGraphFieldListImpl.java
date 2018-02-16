@@ -28,8 +28,8 @@ import com.gentics.mesh.util.CompareUtils;
  */
 public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl, Long> implements DateGraphFieldList {
 
-	public static FieldTransformer<DateFieldListImpl> DATE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+	public static final FieldTransformer<DateFieldListImpl> DATE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+                                                                                     parentNode) -> {
 		DateGraphFieldList dateFieldList = container.getDateList(fieldKey);
 		if (dateFieldList == null) {
 			return null;
@@ -38,7 +38,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 		}
 	};
 
-	public static FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		DateGraphFieldList graphDateFieldList = container.getDateList(fieldKey);
 		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
@@ -77,9 +77,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 
 	};
 
-	public static FieldGetter DATE_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getDateList(fieldSchema.getName());
-	};
+	public static final FieldGetter DATE_LIST_GETTER = (container, fieldSchema) -> container.getDateList(fieldSchema.getName());
 
 	public static void init(Database database) {
 		database.addVertexType(DateGraphFieldListImpl.class, MeshVertexImpl.class);

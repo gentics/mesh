@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -178,9 +179,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 		if (addRelatedEntries) {
 			// We need to store (e.g: Update related entries)
-			element.handleRelatedEntries((relatedElement, relatedContext) -> {
-				store(relatedElement, relatedContext, false);
-			});
+			element.handleRelatedEntries((relatedElement, relatedContext) -> store(relatedElement, relatedContext, false));
 		}
 		return this;
 	}
@@ -192,9 +191,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 		if (addRelatedEntries) {
 			// We need to store (e.g: Update related entries)
-			element.handleRelatedEntries((relatedElement, relatedContext) -> {
-				this.store(relatedElement, relatedContext, false);
-			});
+			element.handleRelatedEntries((relatedElement, relatedContext) -> this.store(relatedElement, relatedContext, false));
 		}
 		return this;
 	}
@@ -220,7 +217,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public List<? extends SearchQueueEntry> getEntries() {
-		entries.sort((o1, o2) -> o1.getElementAction().compareTo(o2.getElementAction()));
+		entries.sort(Comparator.comparing(SearchQueueEntry::getElementAction));
 
 		if (log.isDebugEnabled()) {
 			for (SearchQueueEntry entry : entries) {
@@ -254,11 +251,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 					.toList());
 
 			if (!nonStoreEntries.isEmpty()) {
-				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
+				obs = Completable.concat(nonStoreEntries.stream().map(SearchQueueEntry::process).collect(Collectors.toList()));
 			}
 			AtomicLong counter = new AtomicLong();
 			if (!storeEntries.isEmpty()) {
-				List<Completable> entryList = storeEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
+				List<Completable> entryList = storeEntries.stream().map(SearchQueueEntry::process).collect(Collectors.toList());
 				// Handle all entries sequentially since some entries create entries and those need to be executed first
 				int batchSize = 8;
 				long totalBatchCount = entryList.size() / batchSize + 1;
@@ -269,7 +266,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 					if (totalBatchCount > 0) {
 						log.info("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
 					}
-				})).toList().flatMapCompletable(it -> Completable.concat(it)));
+				})).toList().flatMapCompletable(Completable::concat));
 			}
 
 			return obs.andThen(searchProvider.refreshIndex()).doOnComplete(() -> {

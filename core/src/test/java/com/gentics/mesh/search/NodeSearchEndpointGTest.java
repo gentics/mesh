@@ -108,9 +108,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// Trigger the migration
 		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, schemaUpdate)), COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Assert that the nodes were migrated and added to the new index. The data should be searchable
@@ -141,9 +139,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
 
 		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
-			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate)), COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Update the node and populate the new fields

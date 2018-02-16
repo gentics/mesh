@@ -78,12 +78,10 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Iterable<? extends Node> getNodes(String releaseUuid, User user, ContainerType type) {
-		return in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).transform(v -> v.reframeExplicit(NodeImpl.class)).filter(node -> {
-			return node.outE(HAS_FIELD_CONTAINER).filter(e -> {
-				GraphFieldContainerEdge edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-				return releaseUuid.equals(edge.getReleaseUuid()) && type == edge.getType();
-			}).hasNext() && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
-		});
+		return in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).transform(v -> v.reframeExplicit(NodeImpl.class)).filter(node -> node.outE(HAS_FIELD_CONTAINER).filter(e -> {
+            GraphFieldContainerEdge edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
+            return releaseUuid.equals(edge.getReleaseUuid()) && type == edge.getType();
+        }).hasNext() && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM));
 	}
 
 	@Override
@@ -151,9 +149,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
+		return MeshInternal.get().database().asyncTx(() -> Single.just(transformToRestSync(ac, level, languageTags)));
 	}
 
 	@Override

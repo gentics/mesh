@@ -248,9 +248,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public Single<TagResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
+		return DB.get().asyncTx(() -> Single.just(transformToRestSync(ac, level, languageTags)));
 	}
 
 }

@@ -41,10 +41,8 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 			assertEquals("Incorrect count of basic tags", basicNames.size(), basicArray.size());
 			assertEquals("Incorrect count of colors", colorNames.size(), colorArray.size());
 
-			boolean allTagsContained = basicArray.stream().map(obj -> ((JsonObject) obj).getString("name")).allMatch(name -> basicNames.contains(
-					name));
-			boolean allColorsContained = colorArray.stream().map(obj -> ((JsonObject) obj).getString("name")).allMatch(name -> colorNames.contains(
-					name));
+			boolean allTagsContained = basicArray.stream().map(obj -> ((JsonObject) obj).getString("name")).allMatch(basicNames::contains);
+			boolean allColorsContained = colorArray.stream().map(obj -> ((JsonObject) obj).getString("name")).allMatch(colorNames::contains);
 
 			assertTrue("Could not find all basic tags", allTagsContained);
 			assertTrue("Could not find all colors", allColorsContained);

@@ -207,7 +207,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				}
 				// Return buffer to written cache file
 				return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
-			}).subscribe(result -> bh.complete(result), bh::fail);
+			}).subscribe(bh::complete, bh::fail);
 		});
 
 	}

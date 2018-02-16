@@ -104,9 +104,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields());
 	};
 
-	public static FieldGetter MICRONODE_GETTER = (container, fieldSchema) -> {
-		return container.getMicronode(fieldSchema.getName());
-	};
+	public static FieldGetter MICRONODE_GETTER = (container, fieldSchema) -> container.getMicronode(fieldSchema.getName());
 
 	public static void init(Database db) {
 		db.addEdgeType(MicronodeGraphFieldImpl.class.getSimpleName());

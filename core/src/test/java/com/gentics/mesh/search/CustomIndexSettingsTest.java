@@ -259,7 +259,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 			if (log.isDebugEnabled()) {
 				log.debug("Checking found tokens against partial {" + partial + "}");
 			}
-			if (foundTokens.stream().map(e -> e.toLowerCase()).collect(Collectors.toSet()).contains(partial.toLowerCase())) {
+			if (foundTokens.stream().map(String::toLowerCase).collect(Collectors.toSet()).contains(partial.toLowerCase())) {
 				baseBuffer.append(partial);
 				foundTokens.remove(partial);
 			} else {

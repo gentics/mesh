@@ -52,9 +52,7 @@ public abstract class AbstractActionContext implements ActionContext {
 
 	@Override
 	public Map<String, String> splitQuery() {
-		data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
-			return HttpQueryUtils.splitQuery(query());
-		});
+		data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> HttpQueryUtils.splitQuery(query()));
 		return (Map<String, String>) data().get(QUERY_MAP_DATA_KEY);
 	}
 

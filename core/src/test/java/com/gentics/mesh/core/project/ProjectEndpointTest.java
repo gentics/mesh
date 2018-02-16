@@ -145,9 +145,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
-		vertx().eventBus().consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> rh) -> {
-			fut.complete(rh.body());
-		});
+		vertx().eventBus().consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> rh) -> fut.complete(rh.body()));
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
 

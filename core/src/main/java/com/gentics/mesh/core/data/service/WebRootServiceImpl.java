@@ -56,7 +56,7 @@ public class WebRootServiceImpl implements WebRootService {
 		String sanitizedPath = path.replaceAll("^/+", "");
 		String[] elements = sanitizedPath.split("\\/");
 		List<String> list = Arrays.asList(elements);
-		Stack<String> stack = new Stack<String>();
+		Stack<String> stack = new Stack<>();
 		Collections.reverse(list);
 		stack.addAll(list);
 

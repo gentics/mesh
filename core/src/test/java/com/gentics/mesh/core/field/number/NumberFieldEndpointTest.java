@@ -69,7 +69,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 			Number newValue;
 			try (Tx tx = tx()) {
 				oldValue = getNumberValue(container, FIELD_NAME);
-				newValue = Integer.valueOf(i + 42);
+				newValue = i + 42;
 			}
 
 			NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));

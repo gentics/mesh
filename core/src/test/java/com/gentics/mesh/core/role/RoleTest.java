@@ -116,9 +116,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	private long countEdges(MeshVertex vertex, String label, Direction direction) {
 		long count = 0;
-		Iterator<Edge> it = vertex.getElement().getEdges(direction, label).iterator();
-		while (it.hasNext()) {
-			it.next();
+		for (Edge edge : vertex.getElement().getEdges(direction, label)) {
 			count++;
 		}
 		return count;

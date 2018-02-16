@@ -247,11 +247,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			// TODO maybe add extra permission filtering? This would not be very costly for smaller pages and ensure perm consistency?
 			// TODO it would be good to batch the transformation of the elements to save the overhead of creating transactions and use the L1 cache.
 			return db.tx(() -> Single.just(element.v1().transformToRestSync(ac, 0, element.v2())));
-		}).collect(() -> listResponse.getData(), (x, y) -> {
-			x.add(y);
-		}).subscribe(list -> {
-			ac.send(listResponse.toJson(), OK);
-		}, error -> {
+		}).collect(listResponse::getData, List::add).subscribe(list -> ac.send(listResponse.toJson(), OK), error -> {
 			log.error("Error while processing search response items", error);
 			ac.fail(error);
 		});
@@ -318,28 +314,26 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		RequestBuilder<JsonObject> requestBuilder = client.query(queryJson, new ArrayList<>(indices));
 		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
 		Single<Page<? extends T>> result = requestBuilder.async()
-			.map(response -> {
-				return db.tx(() -> {
-					List<T> elementList = new ArrayList<>();
-					JsonObject hitsInfo = response.getJsonObject("hits");
-					JsonArray hits = hitsInfo.getJsonArray("hits");
-					for (int i = 0; i < hits.size(); i++) {
-						JsonObject hit = hits.getJsonObject(i);
-						String id = hit.getString("_id");
-						int pos = id.indexOf("-");
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
+			.map(response -> db.tx(() -> {
+                List<T> elementList = new ArrayList<>();
+                JsonObject hitsInfo = response.getJsonObject("hits");
+                JsonArray hits = hitsInfo.getJsonArray("hits");
+                for (int i = 0; i < hits.size(); i++) {
+                    JsonObject hit = hits.getJsonObject(i);
+                    String id = hit.getString("_id");
+                    int pos = id.indexOf("-");
+                    String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						// Locate the node
-						T element = indexHandler.getRootVertex().findByUuid(uuid);
-						if (element != null) {
-							elementList.add(element);
-						}
-					}
+                    // Locate the node
+                    T element = indexHandler.getRootVertex().findByUuid(uuid);
+                    if (element != null) {
+                        elementList.add(element);
+                    }
+                }
 
-					PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
-					return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
-				});
-			});
+                PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
+                return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
+            }));
 
 		// TODO make this configurable
 		return result.timeout(30, TimeUnit.SECONDS)

@@ -82,9 +82,7 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 				.add(INVALID_NAME_SPECIAL)
 				.add(new JsonArray().add("test"))
 				.add(DUMMY_OBJ)
-				.forEach(value -> {
-					schemas.add(new JsonObject().put("name", value).put("fields", new JsonArray()));
-				});
+				.forEach(value -> schemas.add(new JsonObject().put("name", value).put("fields", new JsonArray())));
 
 		// Invalid Fields-Property
 		new JsonArray()
@@ -101,9 +99,7 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 				.add(new JsonArray().add(-123))
 				.add(new JsonArray().add(123.456))
 				.add(new JsonArray().add("test"))
-				.forEach(value -> {
-					schemas.add(new JsonObject().put("name", "test").put("fields", value));
-				});
+				.forEach(value -> schemas.add(new JsonObject().put("name", "test").put("fields", value)));
 
 		// Invalid Description
 		new JsonArray()
@@ -114,10 +110,8 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 				.add(123.456)
 				.add(new JsonArray().add("test"))
 				.add(DUMMY_OBJ)
-				.forEach(value -> {
-					schemas.add(
-						new JsonObject().put("name", "test").put("fields", new JsonArray()).put("description", value));
-				});
+				.forEach(value -> schemas.add(
+                    new JsonObject().put("name", "test").put("fields", new JsonArray()).put("description", value)));
 
 		JsonObject minimalField = new JsonObject().put("name", "test").put("type", "string");
 		JsonObject listField = new JsonObject().put("name", "test").put("type", "list");
@@ -207,9 +201,7 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 				.add(minimalField.copy().put("required", new JsonArray().add(123.456)))
 				.add(minimalField.copy().put("required", new JsonArray().add(new JsonArray().add("something"))))
 				.add(minimalField.copy().put("required", new JsonArray().add(DUMMY_OBJ)))
-				.forEach(value -> {
-					schemas.add(new JsonObject().put("name", "test").put("fields", new JsonArray().add(value)));
-				});
+				.forEach(value -> schemas.add(new JsonObject().put("name", "test").put("fields", new JsonArray().add(value))));
 
 		// Duplicate field-names
 		schemas.add(new JsonObject().put("name", "test").put("fields",
@@ -227,10 +219,8 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 					.add("test")
 					.add(new JsonArray().add("test"))
 					.add(DUMMY_OBJ)
-					.forEach(value -> {
-						schemas.add(new JsonObject().put("name", "test").put("fields", new JsonArray()).put("container",
-							value));
-					});
+					.forEach(value -> schemas.add(new JsonObject().put("name", "test").put("fields", new JsonArray()).put("container",
+                        value)));
 
 			// Invalid DisplayField
 			new JsonArray()
@@ -247,12 +237,10 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 					.add("something")
 					.add(new JsonArray().add("test"))
 					.add(DUMMY_OBJ)
-					.forEach(value -> {
-						schemas.add(new JsonObject()
-								.put("name", "test")
-								.put("fields", new JsonArray().add(minimalField.copy()))
-								.put("displayField", value));
-					});
+					.forEach(value -> schemas.add(new JsonObject()
+                            .put("name", "test")
+                            .put("fields", new JsonArray().add(minimalField.copy()))
+                            .put("displayField", value)));
 
 			// Invalid SegmentField
 			new JsonArray()
@@ -269,12 +257,10 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 					.add("something")
 					.add(new JsonArray().add("test"))
 					.add(DUMMY_OBJ)
-					.forEach(value -> {
-						schemas.add(new JsonObject()
-								.put("name", "test")
-								.put("fields", new JsonArray().add(minimalField.copy()))
-								.put("segmentField", value));
-					});
+					.forEach(value -> schemas.add(new JsonObject()
+                            .put("name", "test")
+                            .put("fields", new JsonArray().add(minimalField.copy()))
+                            .put("segmentField", value)));
 
 			// Invalid URL-Fields
 			new JsonArray()
@@ -304,12 +290,10 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 					.add(new JsonArray().add("something"))
 					.add(new JsonArray().add(new JsonArray().add("something")))
 					.add(new JsonArray().add(DUMMY_OBJ))
-					.forEach(value -> {
-						schemas.add(new JsonObject()
-								.put("name", "test")
-								.put("fields", new JsonArray().add(minimalField.copy()))
-								.put("urlFields", value));
-					});
+					.forEach(value -> schemas.add(new JsonObject()
+                            .put("name", "test")
+                            .put("fields", new JsonArray().add(minimalField.copy()))
+                            .put("urlFields", value)));
 		}
 
 		// Invalid Version
@@ -329,10 +313,8 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 				.add("1.-1")
 				.add(new JsonArray().add("1.0"))
 				.add(DUMMY_OBJ)
-				.forEach(value -> {
-					schemas.add(
-						new JsonObject().put("name", "test").put("fields", new JsonArray()).put("version", value));
-				});
+				.forEach(value -> schemas.add(
+                    new JsonObject().put("name", "test").put("fields", new JsonArray()).put("version", value)));
 
 		// Execute tests
 		for (JsonObject schema : schemas) {
@@ -383,9 +365,7 @@ public class AbstractValidateSchemaTest extends AbstractMeshTest {
 				.add(minimalField.copy().put("required", false))
 				.add(minimalField.copy().put("allow", new JsonArray()))
 				.add(minimalField.copy().put("allow", new JsonArray().add("something")))
-				.forEach(field -> {
-					schemas.add(minimal.copy().put("fields", new JsonArray().add(field)));
-				});
+				.forEach(field -> schemas.add(minimal.copy().put("fields", new JsonArray().add(field))));
 
 		// Description
 		schemas.add(minimal.copy().put("description",

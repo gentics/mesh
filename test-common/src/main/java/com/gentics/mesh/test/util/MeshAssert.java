@@ -68,9 +68,7 @@ public final class MeshAssert {
 
 	public static void latchFor(MeshResponse<?> future) {
 		CountDownLatch latch = new CountDownLatch(1);
-		future.setHandler(rh -> {
-			latch.countDown();
-		});
+		future.setHandler(rh -> latch.countDown());
 		try {
 			if (!latch.await(getTimeout(), TimeUnit.SECONDS)) {
 				printAllStackTraces();

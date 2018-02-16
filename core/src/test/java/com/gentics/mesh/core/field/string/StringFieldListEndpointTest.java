@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -217,7 +218,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getStringList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();
-			List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(item -> item.getString())
+			List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(StringGraphField::getString)
 					.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("A", "B");
 

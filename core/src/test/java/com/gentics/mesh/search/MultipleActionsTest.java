@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
@@ -73,7 +74,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private Single<SchemaResponse> getSchemaByName(String schemaName) throws JSONException {
-		return client().searchSchemas(getSimpleTermQuery("name.raw", schemaName)).toObservable().flatMapIterable(it -> it.getData()).singleOrError();
+		return client().searchSchemas(getSimpleTermQuery("name.raw", schemaName)).toObservable().flatMapIterable(ListResponse::getData).singleOrError();
 	}
 
 	private Single<SchemaResponse> createTestSchema() {
@@ -98,7 +99,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private Single<NodeReference> getRootNodeReference() {
-		return client().findProjectByName(PROJECT_NAME).toSingle().map(it -> it.getRootNode());
+		return client().findProjectByName(PROJECT_NAME).toSingle().map(ProjectResponse::getRootNode);
 	}
 
 }

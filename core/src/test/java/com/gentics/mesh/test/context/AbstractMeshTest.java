@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
+import com.syncleus.ferma.tx.TxAction1;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -106,7 +107,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
-		RoutingContext rc = tx(() -> mockRoutingContext());
+		RoutingContext rc = tx((TxAction1<RoutingContext>) this::mockRoutingContext);
 
 		try (Tx tx = tx()) {
 			role().grantPermissions(element, perm);
@@ -284,9 +285,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 *            Expected status for all jobs
 	 */
 	protected JobListResponse triggerAndWaitForJob(String jobUuid, MigrationStatus status) {
-		waitForJob(() -> {
-			vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
-		}, jobUuid, status);
+		waitForJob(() -> vertx().eventBus().send(JOB_WORKER_ADDRESS, null), jobUuid, status);
 		return call(() -> client().findJobs());
 	}
 

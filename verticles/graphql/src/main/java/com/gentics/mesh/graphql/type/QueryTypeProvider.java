@@ -368,9 +368,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	private GraphQLObjectType newPageType(String pageTypeName, String elementType) {
 
 		Builder type = newObject().name(pageTypeName).description("Paged result");
-		type.field(newFieldDefinition().name("elements").type(new GraphQLList(new GraphQLTypeReference(elementType))).dataFetcher(env -> {
-			return env.getSource();
-		}));
+		type.field(newFieldDefinition().name("elements").type(new GraphQLList(new GraphQLTypeReference(elementType))).dataFetcher(DataFetchingEnvironment::getSource));
 
 		type.field(newFieldDefinition().name("totalCount").description("Return the total item count which the resource could provide.")
 			.dataFetcher(env -> {

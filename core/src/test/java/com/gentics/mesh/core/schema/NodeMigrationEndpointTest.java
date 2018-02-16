@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -374,7 +375,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		List<JsonObject> searchDocumentsOfContent = dummySearchProvider().getStoreEvents().entrySet().stream().filter(e -> e.getKey().endsWith(
-				nodeUuid + "-en")).map(e -> e.getValue()).collect(Collectors.toList());
+				nodeUuid + "-en")).map(Map.Entry::getValue).collect(Collectors.toList());
 		assertThat(searchDocumentsOfContent).isNotEmpty();
 		// Assert that the documents are correct. The teaser must have been truncated.
 		for (JsonObject doc : searchDocumentsOfContent) {
@@ -482,9 +483,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
 
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, schemaUpdate)), COMPLETED, 1);
 
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
@@ -513,9 +512,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		ListFieldSchema micronodeListFieldSchema = schemaUpdate.getField("micronode", ListFieldSchema.class);
 		micronodeListFieldSchema.setAllowedSchemas("vcard", "captionedImage");
 
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, schemaUpdate)), COMPLETED, 1);
 
 		// 3. Assert that the node still contains the micronode list contents
 		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion(
@@ -527,9 +524,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		ListFieldSchema micronodeListFieldSchema2 = schemaUpdate.getField("micronode", ListFieldSchema.class);
 		micronodeListFieldSchema2.setAllowedSchemas("vcard");
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("otherMicronode").setAllowedMicroSchemas("vcard"));
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, schemaUpdate)), COMPLETED, 1);
 
 		// 5. Assert that the node still contains the micronode list contents
 		migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion("published")));
@@ -542,9 +537,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				MicroschemaUpdateRequest.class));
 		microschemaUpdate.setName("someOtherName2");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("enemenemuh"));
-		waitForJobs(() -> {
-			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate)), COMPLETED, 1);
 
 		// 7. Verify that the node has been migrated again
 		NodeResponse migratedNode2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion(
@@ -565,10 +558,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMigrationFailureInSetup() throws Exception {
 
-		String jobUuid = tx(() -> {
-			return boot().jobRoot().enqueueMicroschemaMigration(user(), initialRelease(), microschemaContainer("vcard").getLatestVersion(),
-					microschemaContainer("vcard").getLatestVersion()).getUuid();
-		});
+		String jobUuid = tx(() -> boot().jobRoot().enqueueMicroschemaMigration(user(), initialRelease(), microschemaContainer("vcard").getLatestVersion(),
+                microschemaContainer("vcard").getLatestVersion()).getUuid());
 
 		tx(() -> microschemaContainer("vcard").getLatestVersion().remove());
 		triggerAndWaitForJob(jobUuid, FAILED);
@@ -645,9 +636,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateRequest.setDisplayField("text");
 		updateRequest.validate();
 
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest)), COMPLETED, 1);
 		// Now load the node again and verify that the draft has been migrated from 1.1 to 2.1 (2.1 since 2.0 is the new published version)
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.1").hasStringField("text",
 				"text2_value");
@@ -705,9 +694,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateRequest.setDisplayField("text");
 		updateRequest.validate();
 
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest)), COMPLETED, 1);
 
 		// Assert that the draft version stays in sync with the publish version. Both must have version 1.0 since they are using the same NGFC.
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.0").hasStringField("text", "text_value")

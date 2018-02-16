@@ -14,9 +14,9 @@ public class MeshUploadOptions implements Option {
 	public static final long DEFAULT_FILEUPLOAD_MB_LIMIT = 250; // 250 MiB
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * DEFAULT_FILEUPLOAD_MB_LIMIT;
 	public static final String DEFAULT_BINARY_DIRECTORY = "data" + File.separator + "binaryFiles";
-	public static final String DEFAULT_TEMP_DIR = "data" + File.separator + "tmp" + File.separator + "file-uploads";;
+	public static final String DEFAULT_TEMP_DIR = "data" + File.separator + "tmp" + File.separator + "file-uploads";
 
-	public static final String MESH_BINARY_DIR_ENV = "MESH_BINARY_DIR";
+    public static final String MESH_BINARY_DIR_ENV = "MESH_BINARY_DIR";
 	public static final String MESH_BINARY_UPLOAD_TEMP_DIR_ENV = "MESH_BINARY_UPLOAD_TEMP_DIR";
 
 	@JsonProperty(required = false)

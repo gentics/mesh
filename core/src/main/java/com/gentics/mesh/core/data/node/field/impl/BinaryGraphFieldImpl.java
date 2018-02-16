@@ -33,7 +33,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
 	}
 
-	public static FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	public static final FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		if (graphBinaryField == null) {
 			return null;
@@ -42,7 +42,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		}
 	};
 
-	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
@@ -114,9 +114,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
-	public static FieldGetter BINARY_GETTER = (container, fieldSchema) -> {
-		return container.getBinary(fieldSchema.getName());
-	};
+	public static FieldGetter BINARY_GETTER = (container, fieldSchema) -> container.getBinary(fieldSchema.getName());
 
 	@Override
 	public BinaryField transformToRest(ActionContext ac) {

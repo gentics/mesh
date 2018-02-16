@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
@@ -50,7 +51,7 @@ public class JobListResponseAssert extends AbstractAssert<JobListResponseAssert,
 	 * @return Fluent API
 	 */
 	public JobListResponseAssert containsJobs(String... jobUuids) {
-		List<String> list = actual.getData().stream().map(info -> info.getUuid()).collect(Collectors.toList());
+		List<String> list = actual.getData().stream().map(AbstractResponse::getUuid).collect(Collectors.toList());
 		assertThat(list).as("List of jobs").contains(jobUuids);
 		return this;
 	}

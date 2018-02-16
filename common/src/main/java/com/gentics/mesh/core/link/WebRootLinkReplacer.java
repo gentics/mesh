@@ -120,7 +120,7 @@ public class WebRootLinkReplacer {
 
 		// 3.: Buildup the new content
 		StringBuilder renderedContent = new StringBuilder(length);
-		segments.stream().forEachOrdered(obs -> renderedContent.append(obs));
+		segments.stream().forEachOrdered(renderedContent::append);
 
 		return renderedContent.toString();
 	}

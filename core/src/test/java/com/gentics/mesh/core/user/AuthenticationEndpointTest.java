@@ -88,7 +88,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client.me(), UNAUTHORIZED, "error_not_authorized");
+		call(client::me, UNAUTHORIZED, "error_not_authorized");
 	}
 
 	@Test

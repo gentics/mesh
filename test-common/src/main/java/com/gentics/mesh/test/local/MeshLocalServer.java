@@ -103,9 +103,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 			}
 		}
 
-		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {
-			waitingLatch.countDown();
-		});
+		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> waitingLatch.countDown());
 
 		if (waitForStartup) {
 			try {

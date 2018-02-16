@@ -55,9 +55,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		}
 	};
 
-	public static FieldGetter NUMBER_GETTER = (container, fieldSchema) -> {
-		return container.getNumber(fieldSchema.getName());
-	};
+	public static FieldGetter NUMBER_GETTER = (container, fieldSchema) -> container.getNumber(fieldSchema.getName());
 
 	public NumberGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

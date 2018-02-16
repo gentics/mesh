@@ -103,9 +103,7 @@ public class DemoDataProvider {
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		mappingData = loadJson("uuid-mapping");
 
-		MeshAuthUser user = db.tx(() -> {
-			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
-		});
+		MeshAuthUser user = db.tx(() -> MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin"));
 		client.setUser(user);
 
 		addBootstrappedData();
@@ -265,9 +263,7 @@ public class DemoDataProvider {
 
 	private void latchFor(MeshResponse<?> future) {
 		CountDownLatch latch = new CountDownLatch(1);
-		future.setHandler(rh -> {
-			latch.countDown();
-		});
+		future.setHandler(rh -> latch.countDown());
 		try {
 			if (!latch.await(35, TimeUnit.SECONDS)) {
 				throw new RuntimeException("Timeout reached");
@@ -594,7 +590,7 @@ public class DemoDataProvider {
 	}
 
 	@FunctionalInterface
-	protected static interface ClientHandler<T> {
+	protected interface ClientHandler<T> {
 		MeshRequest<T> handle() throws Exception;
 	}
 

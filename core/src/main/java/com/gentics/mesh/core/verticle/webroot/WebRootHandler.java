@@ -108,15 +108,13 @@ public class WebRootHandler {
 					languageTags.add(lastSegment.getLanguageTag());
 					languageTags.addAll(ac.getNodeParameters().getLanguageList());
 					ac.setWebrootResponseType("node");
-					return node.transformToRest(ac, 0, languageTags.toArray(new String[0])).map(model -> Optional.of(model));
+					return node.transformToRest(ac, 0, languageTags.toArray(new String[0])).map(Optional::of);
 				}
 			}
 
 		}).subscribe(result -> {
-			if (result.isPresent()) {
-				ac.send(JsonUtil.toJson(result.get()),
-						HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
-			}
+            result.ifPresent(o -> ac.send(JsonUtil.toJson(o),
+                    HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code()))));
 		}, ac::fail);
 
 	}

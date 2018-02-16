@@ -85,11 +85,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 			Double v2 = Double.valueOf(entry2.getKey());
 			return Double.compare(v1, v2);
 		});
-		if (maxVersion.isPresent()) {
-			return maxVersion.get().getValue();
-		} else {
-			return null;
-		}
+		return maxVersion.map(Entry::getValue).orElse(null);
 	}
 
 	@Override
@@ -137,11 +133,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 			Double v2 = Double.valueOf(entry2.getKey());
 			return Double.compare(v1, v2);
 		});
-		if (maxVersion.isPresent()) {
-			return maxVersion.get().getValue();
-		} else {
-			return null;
-		}
+		return maxVersion.map(Entry::getValue).orElse(null);
 	}
 
 	@Override

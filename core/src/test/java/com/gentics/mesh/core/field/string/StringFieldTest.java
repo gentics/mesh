@@ -195,9 +195,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	public void testRemoveFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (node) -> {
-				updateContainer(ac, node, STRING_FIELD, null);
-			});
+			invokeRemoveFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (node) -> updateContainer(ac, node, STRING_FIELD, null));
 		}
 	}
 
@@ -206,9 +204,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	public void testRemoveRequiredFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveRequiredFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
-				updateContainer(ac, container, STRING_FIELD, null);
-			});
+			invokeRemoveRequiredFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> updateContainer(ac, container, STRING_FIELD, null));
 		}
 	}
 
@@ -216,9 +212,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	public void testRemoveSegmentField() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveSegmentFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
-				updateContainer(ac, container, STRING_FIELD, null);
-			});
+			invokeRemoveSegmentFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> updateContainer(ac, container, STRING_FIELD, null));
 		}
 	}
 

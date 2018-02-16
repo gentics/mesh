@@ -11,7 +11,7 @@ import io.vertx.core.Vertx;
  */
 public interface Mesh {
 
-	static MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
+	MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
 
 	/**
 	 * Returns the initialized instance.
@@ -94,11 +94,11 @@ public interface Mesh {
 	 * 
 	 * @return Vertx instance
 	 */
-	public static Vertx vertx() {
+	static Vertx vertx() {
 		return factory.mesh().getVertx();
 	}
 
-	public static void main(String[] args) throws Exception {
+	static void main(String[] args) throws Exception {
 		Mesh.mesh().run();
 	}
 

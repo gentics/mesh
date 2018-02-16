@@ -174,7 +174,7 @@ public class BinaryFieldHandlerTest extends AbstractMeshTest {
 		AtomicReference<Object> file = new AtomicReference<>();
 		InternalActionContext context = mock(InternalActionContext.class);
 
-		when(context.getFileUploads()).thenReturn(new HashSet<FileUpload>(Arrays.asList(fileUpload)));
+		when(context.getFileUploads()).thenReturn(new HashSet<>(Arrays.asList(fileUpload)));
 		when(context.getProject()).thenReturn(project());
 		when(context.getUser()).thenReturn(getRequestUser());
 		when(context.getRelease()).thenReturn(initialRelease());

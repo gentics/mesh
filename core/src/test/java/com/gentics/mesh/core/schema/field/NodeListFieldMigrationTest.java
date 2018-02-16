@@ -54,17 +54,13 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToBinary() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATEBINARY, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATEBINARY, (container, name) -> assertThat(container.getBinary(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToBoolean() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATEBOOLEAN, (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATEBOOLEAN, (container, name) -> assertThat(container.getBoolean(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -79,9 +75,7 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToDate() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATEDATE, (container, name) -> {
-			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATEDATE, (container, name) -> assertThat(container.getDate(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -96,9 +90,7 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToHtml() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATEHTML, (container, name) -> {
-			assertThat(container.getHtml(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATEHTML, (container, name) -> assertThat(container.getHtml(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -113,17 +105,13 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToMicronode() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATEMICRONODE, (container, name) -> {
-			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATEMICRONODE, (container, name) -> assertThat(container.getMicronode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToMicronodeList() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> {
-			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -147,9 +135,7 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToNumber() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATENUMBER, (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATENUMBER, (container, name) -> assertThat(container.getNumber(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -164,9 +150,7 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToString() throws Exception {
-		changeType(CREATENODELIST, FILL, FETCH, CREATESTRING, (container, name) -> {
-			assertThat(container.getString(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATENODELIST, FILL, FETCH, CREATESTRING, (container, name) -> assertThat(container.getString(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test

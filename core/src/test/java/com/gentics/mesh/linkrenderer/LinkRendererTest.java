@@ -342,10 +342,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			int stop = content.lastIndexOf(")}}") + 3;
 			int len = stop - start;
 			System.out.println("from " + start + " to " + stop + " len " + len);
-			InputStream in = IOUtils.toInputStream(content);
-			try {
+			try (InputStream in = IOUtils.toInputStream(content)) {
 				int e = 0;
-				for (int c; (c = in.read()) != -1 /* EOF */;) {
+				for (int c; (c = in.read()) != -1 /* EOF */; ) {
 					if (e >= start && e < stop) {
 						// System.out.println("skipping");
 						in.skip(len);
@@ -356,8 +355,6 @@ public class LinkRendererTest extends AbstractMeshTest {
 					}
 					e++;
 				}
-			} finally {
-				in.close();
 			}
 		}
 	}

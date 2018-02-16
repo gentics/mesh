@@ -40,9 +40,7 @@ public class DemoAppEndpoint extends AbstractEndpoint {
 		staticHandler.setCachingEnabled(false);
 		staticHandler.setIndexPage("index.html");
 		route("/*").method(GET).handler(staticHandler);
-		route("/*").method(GET).handler(rh -> {
-			rh.response().sendFile("./demo/dist/index.html");
-		});
+		route("/*").method(GET).handler(rh -> rh.response().sendFile("./demo/dist/index.html"));
 	}
 
 	private void addRedirectionHandler() {

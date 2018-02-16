@@ -34,9 +34,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 		assertEquals(ConsistencyRating.INCONSISTENT, response.getResult());
 
 		// Now fix the inconsistency. Otherwise the asserter of the test (within @After) would fail.
-		tx(() -> {
-			user().getVertex().setProperty(UserImpl.USERNAME_PROPERTY_KEY, "blub");
-		});
+		tx(() -> user().getVertex().setProperty(UserImpl.USERNAME_PROPERTY_KEY, "blub"));
 	}
 
 }

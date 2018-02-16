@@ -247,7 +247,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		NodeListResponse listResponse = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("en")));
-		List<String> langList = listResponse.getData().stream().map(node -> node.getLanguage()).collect(Collectors.toList());
+		List<String> langList = listResponse.getData().stream().map(NodeResponse::getLanguage).collect(Collectors.toList());
 		assertThat(langList).doesNotContain(null, "de");
 	}
 

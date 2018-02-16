@@ -41,8 +41,8 @@ import io.reactivex.Single;
 public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList, Micronode>
 		implements MicronodeGraphFieldList {
 
-	public static FieldTransformer<MicronodeFieldList> MICRONODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+	public static final FieldTransformer<MicronodeFieldList> MICRONODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+																						   parentNode) -> {
 		MicronodeGraphFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
 		if (graphMicroschemaField == null) {
 			return null;
@@ -51,7 +51,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		}
 	};
 
-	public static FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
 		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
 		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
@@ -84,9 +84,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		micronodeGraphFieldList.update(ac, micronodeList).blockingGet();
 	};
 
-	public static FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getMicronodeList(fieldSchema.getName());
-	};
+	public static final FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> container.getMicronodeList(fieldSchema.getName());
 
 	public static void init(Database database) {
 		database.addVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
@@ -119,13 +117,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	@Override
 	public Single<Boolean> update(InternalActionContext ac, MicronodeFieldList list) {
 		// Transform the list of micronodes into a hashmap. This way we can lookup micronode fields faster
-		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> {
-			return field.getMicronode().getUuid();
-		}, field -> {
-			return field.getMicronode();
-		}, (a, b) -> {
-			return a;
-		}));
+		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> field.getMicronode().getUuid(), MicronodeGraphField::getMicronode, (a, b) -> a));
 
 		return Observable.<Boolean>create(subscriber -> {
 
@@ -188,22 +180,16 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					addItem(String.valueOf(counter++), micronode);
 				}
 				// Delete remaining items in order to prevent dangling micronodes
-				existing.values().stream().forEach(micronode -> {
-					micronode.delete(null);
-				});
+				existing.values().stream().forEach(micronode -> micronode.delete(null));
 				subscriber.onNext(true);
 				subscriber.onComplete();
-			}, e -> {
-				subscriber.onError(e);
-			});
+			}, subscriber::onError);
 		}).singleOrError();
 	}
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
-		getList().stream().map(MicronodeGraphField::getMicronode).forEach(micronode -> {
-			micronode.delete(null);
-		});
+		getList().stream().map(MicronodeGraphField::getMicronode).forEach(micronode -> micronode.delete(null));
 		getElement().remove();
 	}
 
@@ -223,7 +209,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			List<MicronodeField> restList = restField.getItems();
 
 			List<? extends MicronodeGraphField> graphList = getList();
-			List<Micronode> graphMicronodeList = graphList.stream().map(e -> e.getMicronode()).collect(Collectors.toList());
+			List<Micronode> graphMicronodeList = graphList.stream().map(MicronodeGraphField::getMicronode).collect(Collectors.toList());
 			return CompareUtils.equals(graphMicronodeList, restList);
 		}
 		return super.equals(obj);

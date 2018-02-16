@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
+import com.syncleus.ferma.tx.TxAction1;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -41,8 +42,8 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testPermissionInfoPerformance() {
-		User user = db().tx(() -> user());
-		Node content = db().tx(() -> content());
+		User user = db().tx(this::user);
+		Node content = db().tx((TxAction1<Node>) this::content);
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
 			try (Tx tx = db().tx()) {
 				user.getPermissionInfo(content);
@@ -57,17 +58,11 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 
 		String uuid = db().tx(() -> user().getUuid());
 
-		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
-			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100)));
-		});
+		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100))));
 
-		loggingStopWatch(logger, "user.read-page-25", 200, (step) -> {
-			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(25)));
-		});
+		loggingStopWatch(logger, "user.read-page-25", 200, (step) -> call(() -> client().findUsers(new PagingParametersImpl().setPerPage(25))));
 
-		loggingStopWatch(logger, "user.read-by-uuid", 200, (step) -> {
-			call(() -> client().findUserByUuid(uuid));
-		});
+		loggingStopWatch(logger, "user.read-by-uuid", 200, (step) -> call(() -> client().findUserByUuid(uuid)));
 
 		loggingStopWatch(logger, "user.create", 200, (step) -> {
 			UserCreateRequest request = new UserCreateRequest();

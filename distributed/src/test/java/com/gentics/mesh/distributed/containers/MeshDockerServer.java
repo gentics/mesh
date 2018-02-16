@@ -64,9 +64,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
-	private Runnable startupAction = () -> {
-		client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
-	};
+	private Runnable startupAction = () -> client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
 
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
 

@@ -208,9 +208,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
 
 		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, request));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, request)), COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
 	}

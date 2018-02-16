@@ -77,7 +77,7 @@ public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		User user = db().tx(() -> user());
+		User user = db().tx(this::user);
 
 		Runnable task2 = () -> {
 			try (Tx tx = tx()) {
@@ -128,9 +128,7 @@ public class TxTest extends AbstractMeshTest {
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
 		String result = db().asyncTx(() -> {
-			TestUtils.run(() -> {
-				TestUtils.sleep(1000);
-			});
+			TestUtils.run(() -> TestUtils.sleep(1000));
 			return Single.just("OK");
 		}).blockingGet();
 		assertEquals("OK", result);
@@ -138,9 +136,7 @@ public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = db().asyncTx(() -> {
-			return Single.just("OK");
-		}).blockingGet();
+		String result = db().asyncTx(() -> Single.just("OK")).blockingGet();
 		assertEquals("OK", result);
 	}
 

@@ -707,9 +707,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = getClient().request(GET, requestUri, handler);
-		authentication.addAuthenticationInformation(request).subscribe(() -> {
-			request.headers().add("Accept", "*/*");
-		});
+		authentication.addAuthenticationInformation(request).subscribe(() -> request.headers().add("Accept", "*/*"));
 
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 	}
@@ -995,9 +993,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
 		HttpClientRequest request = getClient().request(GET, uri, handler);
-		authentication.addAuthenticationInformation(request).subscribe(() -> {
-			request.headers().add("Accept", "application/json");
-		});
+		authentication.addAuthenticationInformation(request).subscribe(() -> request.headers().add("Accept", "application/json"));
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 	}
 

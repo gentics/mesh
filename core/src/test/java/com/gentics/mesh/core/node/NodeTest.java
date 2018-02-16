@@ -471,7 +471,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 10. assert for initial release
 			List<Node> nodes = new ArrayList<>();
 			project.getNodeRoot().findAll(mockActionContext("release=" + initialRelease.getName()), new PagingParametersImpl(1, 10000, "name",
-					SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
+					SortOrder.ASCENDING)).forEach(nodes::add);
 			assertThat(nodes).as("Nodes in initial release").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialRelease);
 

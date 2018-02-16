@@ -286,7 +286,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-				return new HashSet<GraphPermission>(Arrays.asList(GraphPermission.values()));
+				return new HashSet<>(Arrays.asList(GraphPermission.values()));
 			}
 
 			@Override
@@ -761,9 +761,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				return MeshInternal.get().database().asyncTx(() -> {
-					return Single.just(transformToRestSync(ac, level, languageTags));
-				});
+				return MeshInternal.get().database().asyncTx(() -> Single.just(transformToRestSync(ac, level, languageTags)));
 			}
 
 			@Override

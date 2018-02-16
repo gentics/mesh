@@ -64,9 +64,7 @@ public class DemoVerticle extends AbstractVerticle {
 			vertx.executeBlocking(bc -> {
 				demoDataProvider.invokeFullIndex();
 				bc.complete();
-			}, false, rh -> {
-				startFuture.complete();
-			});
+			}, false, rh -> startFuture.complete());
 		}
 
 	}

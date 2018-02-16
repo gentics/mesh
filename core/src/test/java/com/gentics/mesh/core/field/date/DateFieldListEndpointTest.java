@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.node.field.DateGraphField;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -178,7 +179,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDateList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDateList(FIELD_NAME)).isNotNull();
-			List<Number> oldValueList = latest.getPreviousVersion().getDateList(FIELD_NAME).getList().stream().map(item -> item.getDate())
+			List<Number> oldValueList = latest.getPreviousVersion().getDateList(FIELD_NAME).getList().stream().map(DateGraphField::getDate)
 					.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(42000L, 41000L);
 

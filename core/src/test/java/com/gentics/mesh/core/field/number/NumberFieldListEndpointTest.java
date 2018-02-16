@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -166,7 +167,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();
-			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber())
+			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(NumberGraphField::getNumber)
 					.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(42, 41.1);
 

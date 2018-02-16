@@ -597,9 +597,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
+		return DB.get().asyncTx(() -> Single.just(transformToRestSync(ac, level, languageTags)));
 	}
 
 }

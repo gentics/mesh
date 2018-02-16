@@ -284,7 +284,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		String uuid = tx(() -> node.getUuid());
+		String uuid = tx(node::getUuid);
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
 			tx.success();
@@ -339,7 +339,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		String uuid = tx(() -> node.getUuid());
+		String uuid = tx(node::getUuid);
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
 			tx.success();
@@ -383,11 +383,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// The test nodes
 		Node nodeA = folder("news");
-		String uuidA = tx(() -> nodeA.getUuid());
+		String uuidA = tx(nodeA::getUuid);
 		String versionA = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
 
 		Node nodeB = folder("products");
-		String uuidB = tx(() -> nodeB.getUuid());
+		String uuidB = tx(nodeB::getUuid);
 		String versionB = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
 
 		// Setup the schemas

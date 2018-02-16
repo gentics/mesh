@@ -51,7 +51,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			}
 		}
 		System.out.println("Collected: " + childrenUuids.size());
-		String uuid = tx(() -> node.getUuid());
+		String uuid = tx(node::getUuid);
 		call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParametersImpl().setRecursive(true)));
 
 		NodeResponse response = call(

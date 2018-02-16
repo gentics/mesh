@@ -256,7 +256,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (booleanList == null) {
 					return null;
 				}
-				return booleanList.getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
+				return booleanList.getList().stream().map(BooleanGraphField::getBoolean).collect(Collectors.toList());
 			case "html":
 				HtmlGraphFieldList htmlList = container.getHTMLList(schema.getName());
 				if (htmlList == null) {
@@ -282,7 +282,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (numberList == null) {
 					return null;
 				}
-				return numberList.getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
+				return numberList.getList().stream().map(NumberGraphField::getNumber).collect(Collectors.toList());
 			case "date":
 				DateGraphFieldList dateList = container.getDateList(schema.getName());
 				if (dateList == null) {
@@ -314,7 +314,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (micronodeList == null) {
 					return null;
 				}
-				return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
+				return micronodeList.getList().stream().map(MicronodeGraphField::getMicronode).collect(Collectors.toList());
 			default:
 				return null;
 			}

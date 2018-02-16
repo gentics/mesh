@@ -57,9 +57,7 @@ public final class MeshRestRequestUtil {
 			request.putHeader(MeshHeaders.ANONYMOUS_AUTHENTICATION, "disable");
 		}
 		// Let the response handler fail when an error ocures
-		request.exceptionHandler(e -> {
-			handler.getFuture().fail(e);
-		});
+		request.exceptionHandler(e -> handler.getFuture().fail(e));
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}

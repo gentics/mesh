@@ -90,7 +90,7 @@ public class TableGenerator extends AbstractRenderingGenerator {
 			Object defaultValue = null;
 			try {
 				defaultValue = field.get(instance);
-			} catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e)  {
 
 			}
 			for (Annotation annotation : field.getAnnotations()) {
@@ -137,7 +137,7 @@ public class TableGenerator extends AbstractRenderingGenerator {
 		List<Map<String, String>> list = new ArrayList<>();
 		flattenSchema(clazz, list, null, schema);
 		// Order list by field key
-		Collections.sort(list, new Comparator<Map<String, String>>() {
+		list.sort(new Comparator<Map<String, String>>() {
 			@Override
 			public int compare(Map<String, String> a1, Map<String, String> a2) {
 				return a1.get("key").compareTo(a2.get("key"));
@@ -171,7 +171,7 @@ public class TableGenerator extends AbstractRenderingGenerator {
 		}
 
 		// Order list by field parameter name
-		Collections.sort(list, new Comparator<Map<String, String>>() {
+		list.sort(new Comparator<Map<String, String>>() {
 			@Override
 			public int compare(Map<String, String> a1, Map<String, String> a2) {
 				return a1.get("name").compareTo(a2.get("name"));

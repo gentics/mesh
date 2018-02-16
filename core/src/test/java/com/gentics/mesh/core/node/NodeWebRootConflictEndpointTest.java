@@ -231,9 +231,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		String conflictingName = "filename.html";
 		String newReleaseName = "newrelease";
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
 		// 1. Create new release and migrate nodes
 		db().tx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
@@ -277,9 +275,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
 
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
 
 		// 1. Create initial content
 		String nodeUuid = db().tx(() -> {
@@ -322,9 +318,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testDuplicateWithDrafts() {
 		String initialName = "filename.html";
 		String conflictingName = "changed.html";
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
 
 		// 1. Create and publish initial content
 		String nodeUuid = db().tx(() -> {
@@ -381,9 +375,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
 
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
 
 		// 1. Create and publish initial content
 		String nodeUuid = db().tx(() -> {

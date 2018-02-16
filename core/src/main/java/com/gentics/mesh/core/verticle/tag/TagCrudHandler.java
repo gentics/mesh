@@ -81,9 +81,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.readElementList(ac, () -> {
-			return getTagFamily(ac, tagFamilyUuid);
-		});
+		utils.readElementList(ac, () -> getTagFamily(ac, tagFamilyUuid));
 	}
 
 	/**
@@ -132,9 +130,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.updateElement(ac, tagUuid, () -> {
-			return getTagFamily(ac, tagFamilyUuid);
-		});
+		utils.updateElement(ac, tagUuid, () -> getTagFamily(ac, tagFamilyUuid));
 
 	}
 
@@ -152,9 +148,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.readElement(ac, tagUuid, () -> {
-			return getTagFamily(ac, tagFamilyUuid);
-		}, READ_PERM);
+		utils.readElement(ac, tagUuid, () -> getTagFamily(ac, tagFamilyUuid), READ_PERM);
 
 	}
 
@@ -172,9 +166,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.deleteElement(ac, () -> {
-			return getTagFamily(ac, tagFamilyUuid);
-		}, tagUuid);
+		utils.deleteElement(ac, () -> getTagFamily(ac, tagFamilyUuid), tagUuid);
 
 	}
 

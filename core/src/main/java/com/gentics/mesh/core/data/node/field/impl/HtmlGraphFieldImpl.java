@@ -71,9 +71,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 		}
 	};
 
-	public static FieldGetter HTML_GETTER = (container, fieldSchema) -> {
-		return container.getHtml(fieldSchema.getName());
-	};
+	public static FieldGetter HTML_GETTER = (container, fieldSchema) -> container.getHtml(fieldSchema.getName());
 
 	public HtmlGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

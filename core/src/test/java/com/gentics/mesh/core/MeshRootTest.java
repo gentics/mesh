@@ -124,21 +124,15 @@ public class MeshRootTest extends AbstractMeshTest {
 		// Downgrade one bugfix version is not allowed if the database rev is different
 		setMeshVersions("1.0.1", "1.0.0");
 		setDatabaseRev("different");
-		expectException(() -> {
-			boot().handleMeshVersion();
-		});
+		expectException(() -> boot().handleMeshVersion());
 
 		// Upgrade from snapshot to release
 		setMeshVersions("1.0.0-SNAPSHOT", "1.0.0");
-		expectException(() -> {
-			boot().handleMeshVersion();
-		});
+		expectException(() -> boot().handleMeshVersion());
 
 		// Downgrade to snapshot version
 		setMeshVersions("1.0.0", "1.0.0-SNAPSHOT");
-		expectException(() -> {
-			boot().handleMeshVersion();
-		});
+		expectException(() -> boot().handleMeshVersion());
 
 		// Upgrade from snapshot to release - With ignore flag
 		System.setProperty("ignoreSnapshotUpgradeCheck", "true");

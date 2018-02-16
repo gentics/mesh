@@ -360,7 +360,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		String[] elements = pathToElement.split("\\/");
 		List<String> list = Arrays.asList(elements);
 		Collections.reverse(list);
-		Stack<String> stack = new Stack<String>();
+		Stack<String> stack = new Stack<>();
 		stack.addAll(list);
 
 		if (log.isDebugEnabled()) {

@@ -133,9 +133,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 
-		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
-			return handleLanguageFallback(gc, node, content);
-		}).collect(Collectors.toList());
+		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> handleLanguageFallback(gc, node, content)).collect(Collectors.toList());
 	}
 
 	public Object languagesFetcher(DataFetchingEnvironment env) {
@@ -147,9 +145,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Release release = gc.getRelease();
 		ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 
-		return content.getNode().getGraphFieldContainers(release, type).stream().map(item -> {
-			return new NodeContent(content.getNode(), item);
-		}).collect(Collectors.toList());
+		return content.getNode().getGraphFieldContainers(release, type).stream().map(item -> new NodeContent(content.getNode(), item)).collect(Collectors.toList());
 	}
 
 	/**

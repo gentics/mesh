@@ -67,9 +67,7 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 		Project project = oldRelease.getProject();
 		Iterable<? extends Node> it = project.getNodeRoot().findAllIt();
 		for (Node node : it) {
-			SearchQueueBatch sqb = db.tx(() -> {
-				return migrateNode(node, oldRelease, newRelease);
-			});
+			SearchQueueBatch sqb = db.tx(() -> migrateNode(node, oldRelease, newRelease));
 			sqb.processSync();
 			if (status != null) {
 				status.incCompleted();

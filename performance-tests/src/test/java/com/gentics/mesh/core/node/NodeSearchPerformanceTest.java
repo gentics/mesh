@@ -122,9 +122,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 		json += "			}";
 
 		String search = json;
-		loggingStopWatch(logger, "node.search-filter-schema", 200, (step) -> {
-			call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParametersImpl().draft()));
-		});
+		loggingStopWatch(logger, "node.search-filter-schema", 200, (step) -> call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParametersImpl().draft())));
 
 	}
 

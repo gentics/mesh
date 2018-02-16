@@ -46,9 +46,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		meEndpoint.produces(APPLICATION_JSON);
 		meEndpoint.description("Load your own user which is currently logged in.");
 		meEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "Currently logged in user.");
-		meEndpoint.handler(rc -> {
-			authRestHandler.handleMe(new InternalRoutingActionContextImpl(rc));
-		});
+		meEndpoint.handler(rc -> authRestHandler.handleMe(new InternalRoutingActionContextImpl(rc)));
 
 		EndpointRoute basicAuthLoginEndpoint = createEndpoint();
 		basicAuthLoginEndpoint.path("/login");
@@ -66,9 +64,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		loginEndpoint.description("Login via this dedicated login endpoint.");
 		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
 		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
-		loginEndpoint.blockingHandler(rc -> {
-			authRestHandler.handleLoginJWT(new InternalRoutingActionContextImpl(rc));
-		});
+		loginEndpoint.blockingHandler(rc -> authRestHandler.handleLoginJWT(new InternalRoutingActionContextImpl(rc)));
 
 		// Only secure logout
 		getRouter().route("/logout").handler(authHandler);
@@ -78,8 +74,6 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		logoutEndpoint.produces(APPLICATION_JSON);
 		logoutEndpoint.description("Logout and delete the currently active session.");
 		logoutEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "User was successfully logged out.");
-		logoutEndpoint.handler(rc -> {
-			authRestHandler.handleLogout(new InternalRoutingActionContextImpl(rc));
-		});
+		logoutEndpoint.handler(rc -> authRestHandler.handleLogout(new InternalRoutingActionContextImpl(rc)));
 	}
 }

@@ -199,10 +199,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testUpdate() throws Exception {
 		Tag tag = tag("vehicle");
-		String tagUuid = tx(() -> tag.getUuid());
+		String tagUuid = tx(tag::getUuid);
 
 		TagFamily parentTagFamily = tagFamily("basic");
-		String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
+		String parentTagFamilyUuid = tx(parentTagFamily::getUuid);
 
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		List<? extends Node> nodes;

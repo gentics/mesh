@@ -786,7 +786,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Load all nodes and check whether they are readable
 			List<NodeResponse> publishedNodes = nodes.stream().map(node -> {
-				String uuid = tx(() -> node.getUuid());
+				String uuid = tx(node::getUuid);
 				return call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 			}).collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
@@ -822,7 +822,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			revoked++;
 
 			// Read the given node - It should still be readable
-			String uuid = tx(() -> node.getUuid());
+			String uuid = tx(node::getUuid);
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid);
 

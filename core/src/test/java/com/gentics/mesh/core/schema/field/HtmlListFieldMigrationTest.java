@@ -47,9 +47,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToBinary() throws Exception {
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> assertThat(container.getBinary(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -65,9 +63,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
 		});
 
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEBOOLEAN, (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEBOOLEAN, (container, name) -> assertThat(container.getBoolean(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -98,9 +94,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEDATE, (container, name) -> {
-			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEDATE, (container, name) -> assertThat(container.getDate(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -139,33 +133,25 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	@Override
 	public void testChangeToMicronode() throws Exception {
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> {
-			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> assertThat(container.getMicronode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToMicronodeList() throws Exception {
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> {
-			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToNode() throws Exception {
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENODE, (container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENODE, (container, name) -> assertThat(container.getNode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToNodeList() throws Exception {
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> {
-			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> assertThat(container.getNodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -176,9 +162,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
 		});
 
-		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> assertThat(container.getNumber(name)).as(NEWFIELD).isNull());
 
 	}
 

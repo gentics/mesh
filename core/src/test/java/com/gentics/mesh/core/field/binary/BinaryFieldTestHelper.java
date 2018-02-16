@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.binary;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
@@ -12,19 +13,19 @@ import io.vertx.core.buffer.Buffer;
 
 public interface BinaryFieldTestHelper {
 
-	final static String FILECONTENTS = "This is the file contents";
+	String FILECONTENTS = "This is the file contents";
 
-	final static String FILENAME = "test.txt";
+	String FILENAME = "test.txt";
 
-	final static String MIMETYPE = "text/plain";
+	String MIMETYPE = "text/plain";
 
-	final static FieldFetcher FETCH = (container, name) -> container.getBinary(name);
+	FieldFetcher FETCH = GraphFieldContainer::getBinary;
 
-	final static DataProvider CREATE_EMPTY = (container, name) -> {
+	DataProvider CREATE_EMPTY = (container, name) -> {
 		// Empty binary fields can't be created since they need a connecting binary vertex
 	};
 
-	final DataProvider FILL_BASIC = (container, name) -> {
+	DataProvider FILL_BASIC = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
 		Binary binary = MeshInternal.get().boot().binaryRoot().create(sha512Sum, Long.valueOf(buffer.length()));

@@ -74,8 +74,8 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 
 			Page<? extends Release> page = releaseRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25));
 			assertThat(page).isNotNull();
-			ArrayList<Release> arrayList = new ArrayList<Release>();
-			page.iterator().forEachRemaining(r -> arrayList.add(r));
+			ArrayList<Release> arrayList = new ArrayList<>();
+			page.iterator().forEachRemaining(arrayList::add);
 			assertThat(arrayList).contains(initialRelease, releaseOne, releaseTwo, releaseThree);
 		}
 	}

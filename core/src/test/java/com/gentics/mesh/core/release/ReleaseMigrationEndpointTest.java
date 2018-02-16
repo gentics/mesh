@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.job.JobResponse;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,21 +72,15 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		// publish some nodes
-		published.forEach(node -> {
-			call(() -> client().publishNode(PROJECT_NAME, tx(() -> node.getUuid())));
-		});
+		published.forEach(node -> call(() -> client().publishNode(PROJECT_NAME, tx(() -> {  return node.getUuid(); }))));
 
 		try (Tx tx = tx()) {
 			newRelease = project.getReleaseRoot().create("newrelease", user());
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(false);
 			tx.success();
 		}
-		nodes.forEach(node -> {
-			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
-				assertThat(tx(() -> node.getGraphFieldContainers(newRelease, type))).as(type + " Field Containers before Migration").isNotNull()
-						.isEmpty();
-			});
-		});
+		nodes.forEach(node -> Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> assertThat(tx(() -> node.getGraphFieldContainers(newRelease, type))).as(type + " Field Containers before Migration").isNotNull()
+                    .isEmpty()));
 
 		triggerAndWaitForJob(requestReleaseMigration(newRelease));
 
@@ -93,10 +88,8 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
 
 			nodes.forEach(node -> {
-				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
-					assertThat(node.getGraphFieldContainers(newRelease, type)).as(type + " Field Containers after Migration").isNotNull()
-							.isNotEmpty();
-				});
+				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> assertThat(node.getGraphFieldContainers(newRelease, type)).as(type + " Field Containers after Migration").isNotNull()
+                        .isNotEmpty());
 
 				if (published.contains(node)) {
 					assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("Published field containers after migration")
@@ -140,7 +133,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		// The second job should fail because the release has already been migrated.
 		String jobUuidB = requestReleaseMigration(newRelease);
 		JobListResponse response = triggerAndWaitForJob(jobUuidB, FAILED);
-		List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+		List<MigrationStatus> status = response.getData().stream().map(JobResponse::getStatus).collect(Collectors.toList());
 		assertThat(status).contains(COMPLETED, FAILED);
 
 	}
@@ -161,11 +154,11 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			triggerAndWaitForJob(requestReleaseMigration(newestRelease), FAILED);
 
 			JobListResponse response = triggerAndWaitForJob(requestReleaseMigration(newRelease), COMPLETED);
-			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			List<MigrationStatus> status = response.getData().stream().map(JobResponse::getStatus).collect(Collectors.toList());
 			assertThat(status).contains(FAILED, COMPLETED);
 
 			response = triggerAndWaitForJob(requestReleaseMigration(newestRelease), COMPLETED);
-			status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			status = response.getData().stream().map(JobResponse::getStatus).collect(Collectors.toList());
 			assertThat(status).contains(FAILED, COMPLETED, COMPLETED);
 		}
 	}

@@ -87,9 +87,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 
 	};
 
-	public static FieldGetter STRING_GETTER = (container, fieldSchema) -> {
-		return container.getString(fieldSchema.getName());
-	};
+	public static FieldGetter STRING_GETTER = (container, fieldSchema) -> container.getString(fieldSchema.getName());
 
 	public StringGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

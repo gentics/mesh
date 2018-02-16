@@ -24,9 +24,9 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 
 	private static final String BASE_PATH = "https://maven.gentics.com/maven2/com/gentics/mesh/mesh-orientdb/";
 
-	private static final String DB_REV_TABLE_TEMPLATE_NAME = "db-revs-table.hbs";;
+	private static final String DB_REV_TABLE_TEMPLATE_NAME = "db-revs-table.hbs";
 
-	public DatabaseRevisionTableGenerator(File outputFolder) throws IOException {
+    public DatabaseRevisionTableGenerator(File outputFolder) throws IOException {
 		super(new File(outputFolder, "tables"), false);
 	}
 

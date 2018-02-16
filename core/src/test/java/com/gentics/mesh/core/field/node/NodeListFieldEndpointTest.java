@@ -160,8 +160,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		Node targetNode2 = folder("deals");
 
 		NodeFieldListImpl list = new NodeFieldListImpl();
-		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
-		list.add(new NodeFieldListItemImpl(tx(() -> targetNode2.getUuid())));
+		list.add(new NodeFieldListItemImpl(tx(targetNode::getUuid)));
+		list.add(new NodeFieldListItemImpl(tx(targetNode2::getUuid)));
 		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
 		String oldVersion = firstResponse.getVersion();
 
@@ -193,8 +193,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		Node targetNode2 = folder("deals");
 
 		NodeFieldListImpl list = new NodeFieldListImpl();
-		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
-		list.add(new NodeFieldListItemImpl(tx(() -> targetNode2.getUuid())));
+		list.add(new NodeFieldListItemImpl(tx(targetNode::getUuid)));
+		list.add(new NodeFieldListItemImpl(tx(targetNode2::getUuid)));
 		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
 		String oldVersion = firstResponse.getVersion();
 

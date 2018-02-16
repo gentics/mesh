@@ -10,7 +10,7 @@ import com.gentics.mesh.Mesh;
  */
 public interface MeshInternal {
 
-	static AtomicReference<MeshComponent> applicationComponent = new AtomicReference<>(null);
+	AtomicReference<MeshComponent> applicationComponent = new AtomicReference<>(null);
 
 	/**
 	 * Create a new mesh dagger context if non existed and return it. This method will only create the context once and otherwise return the previously created

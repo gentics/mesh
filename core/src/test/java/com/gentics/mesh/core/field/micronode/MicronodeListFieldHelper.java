@@ -1,22 +1,19 @@
 package com.gentics.mesh.core.field.micronode;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
 public interface MicronodeListFieldHelper {
 
-	public static final FieldFetcher FETCH = (container, name) -> container.getMicronodeList(name);
+	FieldFetcher FETCH = GraphFieldContainer::getMicronodeList;
 
-	public final DataProvider FILL = (container, name) -> {
-		container.createMicronodeFieldList(name);
-		//		field.addItem(field.createMicronode(field));
+    //		field.addItem(field.createMicronode(field));
+// TestDataProvider.getInstance().getMicroschemaContainers().get("vcard").getLatestVersion());
+//Micronode micronode = field.getMicronode();
+//		micronode.createString("firstName").setString("Donald");
+//		micronode.createString("lastName").setString("Duck");
+    DataProvider FILL = GraphFieldContainer::createMicronodeFieldList;
 
-		// TestDataProvider.getInstance().getMicroschemaContainers().get("vcard").getLatestVersion());
-
-		//Micronode micronode = field.getMicronode();
-		//		micronode.createString("firstName").setString("Donald");
-		//		micronode.createString("lastName").setString("Duck");
-	};
-
-	public static final DataProvider CREATE_EMPTY = (container, name) -> container.createMicronodeFieldList(name);
+	DataProvider CREATE_EMPTY = GraphFieldContainer::createMicronodeFieldList;
 }

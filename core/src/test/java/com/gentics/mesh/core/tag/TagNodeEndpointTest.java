@@ -120,13 +120,13 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		String nodeUuid = contentUuid();
 		TagListResponse list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 
-		List<String> names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());
+		List<String> names = list.getData().stream().map(TagResponse::getName).collect(Collectors.toList());
 		assertThat(names).containsExactly("test1", "test3", "test2");
 
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagResponse.getUuid()));
 
 		list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
-		names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());
+		names = list.getData().stream().map(TagResponse::getName).collect(Collectors.toList());
 		assertThat(names).containsExactly("test1", "test3", "test2", "test4");
 
 	}

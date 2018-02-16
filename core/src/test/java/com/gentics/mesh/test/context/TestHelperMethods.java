@@ -212,7 +212,7 @@ public interface TestHelperMethods {
 		return getTestContext().getPort();
 	}
 
-	default public Node folder(String key) {
+	default Node folder(String key) {
 		return data().getFolder(key);
 	}
 
@@ -321,63 +321,63 @@ public interface TestHelperMethods {
 		call(() -> client().deleteUser(uuid));
 	}
 
-	default public GroupResponse createGroup(String groupName) {
+	default GroupResponse createGroup(String groupName) {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(groupName);
 		return call(() -> client().createGroup(request));
 	}
 
-	default public GroupResponse readGroup(String uuid) {
+	default GroupResponse readGroup(String uuid) {
 		return call(() -> client().findGroupByUuid(uuid));
 	}
 
-	default public GroupResponse updateGroup(String uuid, String newGroupName) {
+	default GroupResponse updateGroup(String uuid, String newGroupName) {
 		GroupUpdateRequest groupUpdateRequest = new GroupUpdateRequest();
 		groupUpdateRequest.setName(newGroupName);
 		return call(() -> client().updateGroup(uuid, groupUpdateRequest));
 	}
 
-	default public void deleteGroup(String uuid) {
+	default void deleteGroup(String uuid) {
 		call(() -> client().deleteGroup(uuid));
 	}
 
-	default public RoleResponse createRole(String roleName, String groupUuid) {
+	default RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
 		return call(() -> client().createRole(roleCreateRequest));
 	}
 
-	default public RoleResponse readRole(String uuid) {
+	default RoleResponse readRole(String uuid) {
 		return call(() -> client().findRoleByUuid(uuid));
 	}
 
-	default public void deleteRole(String uuid) {
+	default void deleteRole(String uuid) {
 		call(() -> client().deleteRole(uuid));
 	}
 
-	default public RoleResponse updateRole(String uuid, String newRoleName) {
+	default RoleResponse updateRole(String uuid, String newRoleName) {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName(newRoleName);
 		return call(() -> client().updateRole(uuid, request));
 	}
 
-	default public TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
+	default TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setName(tagName);
 		return call(() -> client().createTag(projectName, tagFamilyUuid, tagCreateRequest));
 	}
 
-	default public TagResponse readTag(String projectName, String tagFamilyUuid, String uuid) {
+	default TagResponse readTag(String projectName, String tagFamilyUuid, String uuid) {
 		return call(() -> client().findTagByUuid(projectName, tagFamilyUuid, uuid));
 	}
 
-	default public TagResponse updateTag(String projectName, String tagFamilyUuid, String uuid, String newTagName) {
+	default TagResponse updateTag(String projectName, String tagFamilyUuid, String uuid, String newTagName) {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setName(newTagName);
 		return call(() -> client().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
 	}
 
-	default public MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
+	default MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
@@ -389,7 +389,7 @@ public interface TestHelperMethods {
 		return client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en"));
 	}
 
-	default public NodeResponse createNode(String fieldKey, Field field) {
+	default NodeResponse createNode(String fieldKey, Field field) {
 		NodeResponse response = call(() -> createNodeAsync(fieldKey, field));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		if (fieldKey != null) {
@@ -398,36 +398,36 @@ public interface TestHelperMethods {
 		return response;
 	}
 
-	default public NodeResponse readNode(String projectName, String uuid) {
+	default NodeResponse readNode(String projectName, String uuid) {
 		return call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().draft()));
 	}
 
-	default public void deleteNode(String projectName, String uuid) {
+	default void deleteNode(String projectName, String uuid) {
 		call(() -> client().deleteNode(projectName, uuid));
 	}
 
-	default public NodeResponse updateNode(String projectName, String uuid, String nameFieldValue) {
+	default NodeResponse updateNode(String projectName, String uuid, String nameFieldValue) {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		return call(() -> client().updateNode(projectName, uuid, nodeUpdateRequest));
 	}
 
-	default public TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
+	default TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
 		TagFamilyCreateRequest tagFamilyCreateRequest = new TagFamilyCreateRequest();
 		tagFamilyCreateRequest.setName(tagFamilyName);
 		return call(() -> client().createTagFamily(projectName, tagFamilyCreateRequest));
 	}
 
-	default public TagFamilyResponse readTagFamily(String projectName, String uuid) {
+	default TagFamilyResponse readTagFamily(String projectName, String uuid) {
 		return call(() -> client().findTagFamilyByUuid(projectName, uuid));
 	}
 
-	default public TagFamilyResponse updateTagFamily(String projectName, String uuid, String newTagFamilyName) {
+	default TagFamilyResponse updateTagFamily(String projectName, String uuid, String newTagFamilyName) {
 		TagFamilyUpdateRequest tagFamilyUpdateRequest = new TagFamilyUpdateRequest();
 		tagFamilyUpdateRequest.setName(newTagFamilyName);
 		return call(() -> client().updateTagFamily(projectName, uuid, tagFamilyUpdateRequest));
 	}
 
-	default public void deleteTagFamily(String projectName, String uuid) {
+	default void deleteTagFamily(String projectName, String uuid) {
 		call(() -> client().deleteTagFamily(projectName, uuid));
 	}
 
@@ -444,7 +444,7 @@ public interface TestHelperMethods {
 	 *            target release name
 	 * @return migrated node
 	 */
-	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
+	default NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
 		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName)
 				.draft()));
@@ -459,54 +459,54 @@ public interface TestHelperMethods {
 		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setRelease(targetReleaseName)));
 	}
 
-	default public ProjectResponse createProject(String projectName) {
+	default ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
 		projectCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 		return call(() -> client().createProject(projectCreateRequest));
 	}
 
-	default public ProjectResponse readProject(String uuid) {
+	default ProjectResponse readProject(String uuid) {
 		return call(() -> client().findProjectByUuid(uuid));
 	}
 
-	default public ProjectResponse updateProject(String uuid, String projectName) {
+	default ProjectResponse updateProject(String uuid, String projectName) {
 		ProjectUpdateRequest projectUpdateRequest = new ProjectUpdateRequest();
 		projectUpdateRequest.setName(projectName);
 		return call(() -> client().updateProject(uuid, projectUpdateRequest));
 	}
 
-	default public void deleteProject(String uuid) {
+	default void deleteProject(String uuid) {
 		call(() -> client().deleteProject(uuid));
 	}
 
-	default public SchemaResponse createSchema(String schemaName) {
+	default SchemaResponse createSchema(String schemaName) {
 		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().createSchema(schema));
 	}
 
-	default public Schema readSchema(String uuid) {
+	default Schema readSchema(String uuid) {
 		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
-	default public GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
+	default GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
 		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
 	}
 
-	default public void deleteSchema(String uuid) {
+	default void deleteSchema(String uuid) {
 		call(() -> client().deleteSchema(uuid));
 	}
 
-	default public MicroschemaResponse createMicroschema(String microschemaName) {
+	default MicroschemaResponse createMicroschema(String microschemaName) {
 		MicroschemaCreateRequest microschema = new MicroschemaCreateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().createMicroschema(microschema));
 	}
 
-	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
+	default GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
 		MicroschemaUpdateRequest microschema = FieldUtil.createMinimalValidMicroschemaUpdateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().updateMicroschema(uuid, microschema, parameters));
@@ -520,7 +520,7 @@ public interface TestHelperMethods {
 	 * @param binaryFieldName
 	 * @throws IOException
 	 */
-	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
+	default void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
@@ -529,18 +529,18 @@ public interface TestHelperMethods {
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
-			String fileName) {
+	default MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
+                                                       String fileName) {
 
 		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
-		String uuid = tx(() -> node.getUuid());
+		String uuid = tx(node::getUuid);
 
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
-	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
+	default NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
 		try (Tx tx = tx()) {
@@ -557,7 +557,7 @@ public interface TestHelperMethods {
 				contentType));
 	}
 
-	default public UserResponse createUser(String username) {
+	default UserResponse createUser(String username) {
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);
 		request.setPassword("test1234");
@@ -574,11 +574,11 @@ public interface TestHelperMethods {
 		return meshDagger().searchProvider();
 	}
 
-	default public int getNodeCount() {
+	default int getNodeCount() {
 		return data().getNodeCount();
 	}
 
-	default public HttpClient createHttpClient() {
+	default HttpClient createHttpClient() {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost("localhost");
 		options.setDefaultPort(port());
@@ -586,20 +586,20 @@ public interface TestHelperMethods {
 		return client;
 	}
 
-	default public SchemaContainer getSchemaContainer() {
+	default SchemaContainer getSchemaContainer() {
 		SchemaContainer container = data().getSchemaContainer("content");
 		return container;
 	}
 
-	default public Vertx vertx() {
+	default Vertx vertx() {
 		return getTestContext().getVertx();
 	}
 
-	default public SearchQueueBatch createBatch() {
+	default SearchQueueBatch createBatch() {
 		return MeshInternal.get().searchQueue().create();
 	}
 
-	default public Map<String, User> users() {
+	default Map<String, User> users() {
 		return data().getUsers();
 	}
 

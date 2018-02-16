@@ -3,6 +3,7 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.test.ClientHelper.call;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -27,8 +28,8 @@ public abstract class AbstractClusterTest {
 		String folderUuid = projectResponse.getRootNode().getUuid();
 
 		// Node A: Find the content schema
-		SchemaListResponse schemaListResponse = call(() -> client.findSchemas());
-		String contentSchemaUuid = schemaListResponse.getData().stream().filter(sr -> sr.getName().equals("content")).map(sr -> sr.getUuid())
+		SchemaListResponse schemaListResponse = call(client::findSchemas);
+		String contentSchemaUuid = schemaListResponse.getData().stream().filter(sr -> sr.getName().equals("content")).map(AbstractResponse::getUuid)
 				.findAny().get();
 
 		// Node A: Assign content schema to project

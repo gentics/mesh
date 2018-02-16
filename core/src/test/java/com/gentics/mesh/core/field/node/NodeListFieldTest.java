@@ -202,9 +202,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testRemoveFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (node) -> {
-				updateContainer(ac, node, NODE_LIST, null);
-			});
+			invokeRemoveFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (node) -> updateContainer(ac, node, NODE_LIST, null));
 		}
 	}
 
@@ -213,9 +211,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testRemoveRequiredFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveRequiredFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (container) -> {
-				updateContainer(ac, container, NODE_LIST, null);
-			});
+			invokeRemoveRequiredFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (container) -> updateContainer(ac, container, NODE_LIST, null));
 		}
 	}
 

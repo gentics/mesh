@@ -185,12 +185,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
-		when(tagFamily.findAllIt()).then(answer -> {
-			return tagList;
-		});
-		when(tagFamily.findAllIt()).then(answer -> {
-			return tagList;
-		});
+		when(tagFamily.findAllIt()).then(answer -> tagList);
+		when(tagFamily.findAllIt()).then(answer -> tagList);
 
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
 		UpdateDocumentEntry entry = mockUpdateDocumentEntry();

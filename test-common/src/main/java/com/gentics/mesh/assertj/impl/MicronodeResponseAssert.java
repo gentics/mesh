@@ -64,9 +64,7 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 				Field field = actual.getFields().getField(key, fieldSchema);
 				if (field instanceof NodeFieldList) {
 					// compare list of nodes by comparing their uuids
-					assertThat(((NodeFieldList) field).getItems()).usingElementComparator((a, b) -> {
-						return a.getUuid().compareTo(b.getUuid());
-					}).containsExactlyElementsOf(expected.getFields().getNodeFieldList(key).getItems());
+					assertThat(((NodeFieldList) field).getItems()).usingElementComparator((a, b) -> a.getUuid().compareTo(b.getUuid())).containsExactlyElementsOf(expected.getFields().getNodeFieldList(key).getItems());
 				} else if (field instanceof FieldList) {
 					//TODO handle lists
 //					assertThat(((FieldList<?>) field).getItems())

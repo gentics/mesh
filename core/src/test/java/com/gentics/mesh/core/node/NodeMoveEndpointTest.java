@@ -97,8 +97,8 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		Node sourceNode = folder("deals");
 		Node targetNode = folder("2015");
 		String releaseUuid = initialReleaseUuid();
-		String sourceNodeUuid = tx(() -> sourceNode.getUuid());
-		String targetNodeUuid = tx(() -> targetNode.getUuid());
+		String sourceNodeUuid = tx(sourceNode::getUuid);
+		String targetNodeUuid = tx(targetNode::getUuid);
 		String oldSourceParentId = tx(() -> sourceNode.getParentNode(releaseUuid).getUuid());
 		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(releaseUuid).getUuid()));
 		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));

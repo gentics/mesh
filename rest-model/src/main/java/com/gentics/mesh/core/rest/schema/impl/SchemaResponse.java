@@ -164,7 +164,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	@Override
 	public String toString() {
-		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
+		String fields = getFields().stream().map(FieldSchema::getName).collect(Collectors.joining(","));
 		return getName() + " fields: {" + fields + "}";
 	}
 }

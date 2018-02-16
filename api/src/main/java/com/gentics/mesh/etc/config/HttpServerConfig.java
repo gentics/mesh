@@ -126,7 +126,7 @@ public class HttpServerConfig implements Option {
 	 */
 	@JsonIgnore
 	public boolean isCorsEnabled() {
-		return this.enableCors != null && this.enableCors == true;
+		return this.enableCors != null && this.enableCors;
 	}
 
 	/**

@@ -540,9 +540,7 @@ public class FieldMapImpl implements FieldMap {
 	@Override
 	public FieldMap putAll(Map<String, Field> fieldMap) {
 		ObjectNode objectNode = ((ObjectNode) node);
-		fieldMap.forEach((key, field) -> {
-			objectNode.putPOJO(key, field);
-		});
+		fieldMap.forEach(objectNode::putPOJO);
 		return this;
 	}
 

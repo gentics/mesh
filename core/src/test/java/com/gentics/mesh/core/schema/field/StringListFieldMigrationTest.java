@@ -47,9 +47,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	@Override
 	@Test
 	public void testChangeToBinary() throws Exception {
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> assertThat(container.getBinary(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
@@ -65,9 +63,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
 		});
 
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEBOOLEAN, (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEBOOLEAN, (container, name) -> assertThat(container.getBoolean(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
@@ -98,9 +94,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEDATE, (container, name) -> {
-			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEDATE, (container, name) -> assertThat(container.getDate(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
@@ -139,33 +133,25 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	@Override
 	@Test
 	public void testChangeToMicronode() throws Exception {
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> {
-			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> assertThat(container.getMicronode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToMicronodeList() throws Exception {
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> {
-			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToNode() throws Exception {
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENODE, (container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENODE, (container, name) -> assertThat(container.getNode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToNodeList() throws Exception {
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> {
-			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> assertThat(container.getNodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
@@ -176,9 +162,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
 		});
 
-		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> assertThat(container.getNumber(name)).as(NEWFIELD).isNull());
 
 	}
 

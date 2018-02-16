@@ -38,9 +38,7 @@ public interface JsonObjectSuccessHandler extends ResponseHandler<JsonObject> {
 				}
 			});
 		} else {
-			response.bodyHandler(buffer -> {
-				getFuture().fail(new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}"));
-			});
+			response.bodyHandler(buffer -> getFuture().fail(new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}")));
 		}
 	}
 

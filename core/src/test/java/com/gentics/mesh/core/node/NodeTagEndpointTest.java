@@ -51,9 +51,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddTagToNode() throws Exception {
 		Node node = folder("2015");
-		String nodeUuid = tx(() -> node.getUuid());
+		String nodeUuid = tx(node::getUuid);
 		Tag tag = tag("red");
-		String tagUuid = tx(() -> tag.getUuid());
+		String tagUuid = tx(tag::getUuid);
 
 		try (Tx tx = tx()) {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -122,8 +122,8 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	public void testRemoveTagFromNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
-		String nodeUuid = tx(() -> node.getUuid());
-		String tagUuid = tx(() -> tag.getUuid());
+		String nodeUuid = tx(node::getUuid);
+		String tagUuid = tx(tag::getUuid);
 		try (Tx tx = tx()) {
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 		}

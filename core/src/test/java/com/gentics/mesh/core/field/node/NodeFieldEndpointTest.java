@@ -145,11 +145,11 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
 		Node node = folder("news");
-		String nodeUuid = tx(() -> node.getUuid());
+		String nodeUuid = tx(node::getUuid);
 		Node node2 = folder("deals");
-		String node2Uuid = tx(() -> node2.getUuid());
+		String node2Uuid = tx(node2::getUuid);
 		Node updatedNode = folder("2015");
-		String updatedNodeUuid = tx(() -> updatedNode.getUuid());
+		String updatedNodeUuid = tx(updatedNode::getUuid);
 
 		// Load the node so that we can use it to prepare the update request
 		NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().draft()));

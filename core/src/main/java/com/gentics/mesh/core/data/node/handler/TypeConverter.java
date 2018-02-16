@@ -10,10 +10,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import io.vertx.core.logging.Logger;
@@ -29,7 +26,7 @@ public class TypeConverter {
 
 	private static final Logger log = LoggerFactory.getLogger(TypeConverter.class);
 
-	private NumberFormat format = NumberFormat.getInstance();
+	private final NumberFormat format = NumberFormat.getInstance();
 
 	/**
 	 * Convert the given value into a binary value.
@@ -52,7 +49,7 @@ public class TypeConverter {
 			return null;
 		}
 		if (isJSArray(value)) {
-			String combined = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null)
+			String combined = getJSArray(value).stream().map(this::toString).filter(Objects::nonNull)
 					.collect(Collectors.joining(","));
 			return combined.length() > 0 ? combined : null;
 		} else {
@@ -73,7 +70,7 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<String> list = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null)
+			List<String> list = getJSArray(value).stream().map(this::toString).filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			return list.toArray(new String[list.size()]);
 		} else {
@@ -99,7 +96,7 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().map(e -> toBoolean(e)).orElse(null);
+			return getJSArray(value).stream().findFirst().map(this::toBoolean).orElse(null);
 		} else if (Arrays.asList("true", "1").contains(value.toString().toLowerCase())) {
 			return true;
 		} else if (Arrays.asList("false", "0").contains(value.toString().toLowerCase())) {
@@ -122,7 +119,7 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<Boolean> list = getJSArray(value).stream().map(e -> toBoolean(e)).filter(b -> b != null)
+			List<Boolean> list = getJSArray(value).stream().map(this::toBoolean).filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			return list.toArray(new Boolean[list.size()]);
 		} else {
@@ -148,7 +145,7 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().map(e -> toDate(e)).orElse(null);
+			return getJSArray(value).stream().findFirst().map(this::toDate).orElse(null);
 		} else if (value instanceof Number) {
 			// We assume that the input string is timestamp in seconds. Thus we need to multiple by 1000
 			return toISO8601(((Number) value).longValue() * 1000);
@@ -187,7 +184,7 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<String> list = getJSArray(value).stream().map(e -> toDate(e)).filter(d -> d != null)
+			List<String> list = getJSArray(value).stream().map(this::toDate).filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			return list.toArray(new String[list.size()]);
 		} else {
@@ -213,7 +210,7 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().map(e -> toNumber(e)).orElse(null);
+			return getJSArray(value).stream().findFirst().map(this::toNumber).orElse(null);
 		} else if (value instanceof Number) {
 			return (Number) value;
 		} else if (value instanceof Boolean) {
@@ -252,7 +249,7 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<Number> list = getJSArray(value).stream().map(e -> toNumber(e)).filter(n -> n != null)
+			List<Number> list = getJSArray(value).stream().map(this::toNumber).filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			return list.toArray(new Number[list.size()]);
 		} else {
@@ -276,7 +273,7 @@ public class TypeConverter {
 		if (isMicronode(value)) {
 			return ScriptUtils.unwrap(value);
 		} else if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().filter(o -> isMicronode(o)).map(o -> ScriptUtils.unwrap(o))
+			return getJSArray(value).stream().findFirst().filter(this::isMicronode).map(ScriptUtils::unwrap)
 					.orElse(null);
 		} else {
 			return null;
@@ -293,8 +290,8 @@ public class TypeConverter {
 	public Object[] toMicronodeList(Object value) {
 		if (isMicronode(value)) {
 			return new Object[] { ScriptUtils.unwrap(value) };
-		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(o -> isMicronode(o))) {
-			List<Object> list = getJSArray(value).stream().map(e -> toMicronode(e)).filter(s -> s != null)
+		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(this::isMicronode)) {
+			List<Object> list = getJSArray(value).stream().map(this::toMicronode).filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			return list.toArray(new Object[list.size()]);
 		} else {
@@ -313,7 +310,7 @@ public class TypeConverter {
 		if (isNode(value)) {
 			return ScriptUtils.unwrap(value);
 		} else if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().filter(o -> isNode(o)).map(o -> ScriptUtils.unwrap(o))
+			return getJSArray(value).stream().findFirst().filter(this::isNode).map(ScriptUtils::unwrap)
 					.orElse(null);
 		} else {
 			return null;
@@ -330,8 +327,8 @@ public class TypeConverter {
 	public Object[] toNodeList(Object value) {
 		if (isNode(value)) {
 			return new Object[] { ScriptUtils.unwrap(value) };
-		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(o -> isNode(o))) {
-			List<Object> list = getJSArray(value).stream().map(e -> toNode(e)).filter(s -> s != null)
+		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(this::isNode)) {
+			List<Object> list = getJSArray(value).stream().map(this::toNode).filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			return list.toArray(new Object[list.size()]);
 		} else {

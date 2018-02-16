@@ -42,34 +42,24 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 	public void testReadNav() {
 		addNodes();
 		String baseUuid = db().tx(() -> project().getBaseNode().getUuid());
-		loggingStopWatch(logger, "node.read-nav-expanded-full-4", 200, (step) -> {
-			call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL),
-					new NavigationParametersImpl().setMaxDepth(4)));
-		});
+		loggingStopWatch(logger, "node.read-nav-expanded-full-4", 200, (step) -> call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL),
+                new NavigationParametersImpl().setMaxDepth(4))));
 	}
 
 	@Test
 	public void testReadPage() {
 		addNodes();
-		loggingStopWatch(logger, "node.read-page-100", 200, (step) -> {
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(100)));
-		});
+		loggingStopWatch(logger, "node.read-page-100", 200, (step) -> call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(100))));
 
-		loggingStopWatch(logger, "node.read-page-25", 200, (step) -> {
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(25)));
-		});
+		loggingStopWatch(logger, "node.read-page-25", 200, (step) -> call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(25))));
 	}
 
 	@Test
 	public void testReadSingle() {
 		String uuid = db().tx(() -> folder("news").getUuid());
-		loggingStopWatch(logger, "node.read-by-uuid", 7000, (step) -> {
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-		});
+		loggingStopWatch(logger, "node.read-by-uuid", 7000, (step) -> call(() -> client().findNodeByUuid(PROJECT_NAME, uuid)));
 
-		loggingStopWatch(logger, "node.read-by-uuid-full", 800, (step) -> {
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL)));
-		});
+		loggingStopWatch(logger, "node.read-by-uuid-full", 800, (step) -> call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL))));
 	}
 
 	@Test

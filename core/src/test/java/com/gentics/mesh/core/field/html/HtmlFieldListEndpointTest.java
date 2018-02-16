@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -194,7 +195,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHTMLList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHTMLList(FIELD_NAME)).isNotNull();
-			List<String> oldValueList = latest.getPreviousVersion().getHTMLList(FIELD_NAME).getList().stream().map(item -> item.getHTML())
+			List<String> oldValueList = latest.getPreviousVersion().getHTMLList(FIELD_NAME).getList().stream().map(HtmlGraphField::getHTML)
 					.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("A", "B");
 

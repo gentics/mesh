@@ -240,11 +240,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			info.setMigrationStatus(edge.getMigrationStatus());
 			info.setJobUuid(edge.getJobUuid());
 			return info;
-		}).collect(() -> {
-			return new ReleaseInfoSchemaList();
-		}, (x, y) -> {
-			x.getSchemas().add(y);
-		});
+		}).collect(ReleaseInfoSchemaList::new, (x, y) -> x.getSchemas().add(y));
 	}
 
 	/**
@@ -261,11 +257,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			info.setMigrationStatus(edge.getMigrationStatus());
 			info.setJobUuid(edge.getJobUuid());
 			return info;
-		}).collect(() -> {
-			return new ReleaseInfoMicroschemaList();
-		}, (x, y) -> {
-			x.getMicroschemas().add(y);
-		});
+		}).collect(ReleaseInfoMicroschemaList::new, (x, y) -> x.getMicroschemas().add(y));
 	}
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {

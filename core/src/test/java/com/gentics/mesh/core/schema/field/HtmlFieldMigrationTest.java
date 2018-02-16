@@ -54,9 +54,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Test
 	@Override
 	public void testChangeToBinary() throws Exception {
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> assertThat(container.getBinary(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -82,9 +80,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
 		});
 
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBOOLEAN, (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBOOLEAN, (container, name) -> assertThat(container.getBoolean(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -110,9 +106,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).containsExactly(false);
 		});
 
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBOOLEANLIST, (container, name) -> assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -129,9 +123,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEDATE, (container, name) -> {
-			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEDATE, (container, name) -> assertThat(container.getDate(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -148,9 +140,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1000L);
 		});
 
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> assertThat(container.getDateList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -174,33 +164,25 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Test
 	@Override
 	public void testChangeToMicronode() throws Exception {
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> {
-			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> assertThat(container.getMicronode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToMicronodeList() throws Exception {
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> {
-			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToNode() throws Exception {
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENODE, (container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENODE, (container, name) -> assertThat(container.getNode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
 	@Override
 	public void testChangeToNodeList() throws Exception {
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> {
-			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> assertThat(container.getNodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -216,9 +198,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
 		});
 
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> assertThat(container.getNumber(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test
@@ -234,9 +214,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1);
 		});
 
-		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> assertThat(container.getNumberList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Test

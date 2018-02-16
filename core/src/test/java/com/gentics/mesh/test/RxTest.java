@@ -27,7 +27,7 @@ public class RxTest {
 		}
 
 		long start = System.currentTimeMillis();
-		List<String> finalList = Observable.fromIterable(list).concatMapEager(s -> s.toObservable()).toList().blockingGet();
+		List<String> finalList = Observable.fromIterable(list).concatMapEager(Single::toObservable).toList().blockingGet();
 		for (String value : finalList) {
 			System.out.println(value);
 		}
@@ -36,16 +36,14 @@ public class RxTest {
 	}
 
 	private Single<String> createSingle(int i) {
-		return Single.create(sub -> {
-			new Thread(() -> {
-				try {
-					Thread.sleep(800);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				sub.onSuccess("test_" + i);
-			}).start();
-		});
+		return Single.create(sub -> new Thread(() -> {
+            try {
+                Thread.sleep(800);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            sub.onSuccess("test_" + i);
+        }).start());
 	}
 
 	@Test

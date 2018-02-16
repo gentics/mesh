@@ -31,17 +31,11 @@ public class RoleEndpointPerformanceTest extends AbstractMeshTest {
 
 		String uuid = db().tx(() -> role().getUuid());
 
-		loggingStopWatch(logger, "role.read-page-100", 200, (step) -> {
-			call(() -> client().findRoles(new PagingParametersImpl().setPerPage(100)));
-		});
+		loggingStopWatch(logger, "role.read-page-100", 200, (step) -> call(() -> client().findRoles(new PagingParametersImpl().setPerPage(100))));
 
-		loggingStopWatch(logger, "role.read-page-25", 200, (step) -> {
-			call(() -> client().findRoles(new PagingParametersImpl().setPerPage(25)));
-		});
+		loggingStopWatch(logger, "role.read-page-25", 200, (step) -> call(() -> client().findRoles(new PagingParametersImpl().setPerPage(25))));
 
-		loggingStopWatch(logger, "role.read-by-uuid", 200, (step) -> {
-			call(() -> client().findRoleByUuid(uuid));
-		});
+		loggingStopWatch(logger, "role.read-by-uuid", 200, (step) -> call(() -> client().findRoleByUuid(uuid)));
 
 		loggingStopWatch(logger, "role.create", 200, (step) -> {
 			RoleCreateRequest request = new RoleCreateRequest();

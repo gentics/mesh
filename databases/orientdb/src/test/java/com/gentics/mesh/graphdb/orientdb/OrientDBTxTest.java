@@ -63,31 +63,27 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		CyclicBarrier b = new CyclicBarrier(3);
 		AtomicInteger i = new AtomicInteger(0);
 
-		run(() -> {
-			db.tx((tx) -> {
-				i.incrementAndGet();
+		run(() -> db.tx((tx) -> {
+            i.incrementAndGet();
 
-				System.out.println("Tx1");
-				addFriend(tx.getGraph(), p);
-				if (i.get() <= 2) {
-					b.await();
-				}
-				return null;
-			});
-		});
+            System.out.println("Tx1");
+            addFriend(tx.getGraph(), p);
+            if (i.get() <= 2) {
+                b.await();
+            }
+            return null;
+        }));
 
-		run(() -> {
-			db.tx((tx) -> {
-				i.incrementAndGet();
+		run(() -> db.tx((tx) -> {
+            i.incrementAndGet();
 
-				System.out.println("Tx2");
-				addFriend(tx.getGraph(), p);
-				if (i.get() <= 2) {
-					b.await();
-				}
-				return null;
-			});
-		});
+            System.out.println("Tx2");
+            addFriend(tx.getGraph(), p);
+            if (i.get() <= 2) {
+                b.await();
+            }
+            return null;
+        }));
 
 		b.await();
 		Thread.sleep(1000);

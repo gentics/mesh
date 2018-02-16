@@ -88,11 +88,11 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 			BooleanGraphFieldImpl field = new BooleanGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
 			assertNull(container.getProperty("test-boolean"));
-			field.setBoolean(new Boolean(true));
+			field.setBoolean(true);
 
 			assertEquals("true", container.getProperty("test-boolean"));
 			// assertEquals(5, container.getPropertyKeys().size());
-			field.setBoolean(new Boolean(false));
+			field.setBoolean(false);
 			assertEquals("false", container.getProperty("test-boolean"));
 			field.setBoolean(null);
 			assertNull(container.getProperty("test-boolean"));
@@ -219,9 +219,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	public void testRemoveFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> {
-				updateContainer(ac, node, BOOLEAN_FIELD, null);
-			});
+			invokeRemoveFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> updateContainer(ac, node, BOOLEAN_FIELD, null));
 		}
 	}
 
@@ -230,9 +228,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	public void testRemoveRequiredFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
-				updateContainer(ac, container, BOOLEAN_FIELD, null);
-			});
+			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> updateContainer(ac, container, BOOLEAN_FIELD, null));
 		}
 	}
 

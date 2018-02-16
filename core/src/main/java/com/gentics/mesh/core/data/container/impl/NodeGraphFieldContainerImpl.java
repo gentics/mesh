@@ -274,7 +274,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 					@SuppressWarnings("unchecked")
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
-					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
+					String paths = conflictingValues.stream().map(String::toString).collect(Collectors.joining(","));
 
 					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
 							.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),

@@ -559,7 +559,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String userUuid = userUuid();
 		User user = user();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		String username = tx(() -> user.getUsername());
+		String username = tx(user::getUsername);
 		try (Tx tx = tx()) {
 			updateRequest.setEmailAddress("t.stark@stark-industries.com");
 			updateRequest.setFirstname("Tony Awesome");

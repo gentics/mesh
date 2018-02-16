@@ -25,12 +25,10 @@ public class RestIntegrationTest extends AbstractIntegrationTest {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		final Mesh mesh = Mesh.mesh();
-		mesh.setCustomLoader((vertx) -> {
-			vertx.eventBus().consumer("mesh-startup-complete", mh -> {
-				log.info("Received startup event..");
-				latch.countDown();
-			});
-		});
+		mesh.setCustomLoader((vertx) -> vertx.eventBus().consumer("mesh-startup-complete", mh -> {
+            log.info("Received startup event..");
+            latch.countDown();
+        }));
 
 		new Thread(() -> {
 			try {

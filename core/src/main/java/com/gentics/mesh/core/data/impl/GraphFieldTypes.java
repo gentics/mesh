@@ -86,8 +86,8 @@ public enum GraphFieldTypes {
 	private FieldUpdater updater;
 	private FieldGetter getter;
 
-	private GraphFieldTypes(String combinedType, FieldTransformer transformer, FieldUpdater updater,
-			FieldGetter getter) {
+	GraphFieldTypes(String combinedType, FieldTransformer transformer, FieldUpdater updater,
+					FieldGetter getter) {
 		this.combinedType = combinedType;
 		this.transformer = transformer;
 		this.updater = updater;

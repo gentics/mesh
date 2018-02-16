@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface MeshVersion {
 
-	static AtomicReference<BuildInfo> buildInfo = new AtomicReference<BuildInfo>(null);
+	static AtomicReference<BuildInfo> buildInfo = new AtomicReference<>(null);
 
 	/**
 	 * Return the mesh build information.

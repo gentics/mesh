@@ -213,9 +213,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Finally construct the path from all segments
 			StringBuilder builder = new StringBuilder();
-			Iterator<String> it = segments.iterator();
-			while (it.hasNext()) {
-				String fragment = it.next();
+			for (String fragment : segments) {
 				builder.append("/").append(URIUtils.encodeFragment(fragment));
 			}
 			return builder.toString();
@@ -468,7 +466,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Iterator<VertexFrame> it = in(HAS_PARENT_NODE).iterator();
 		Iterable<VertexFrame> iterable = () -> it;
 		Stream<Node> stream = StreamSupport.stream(iterable.spliterator(), false).map(frame -> frame.reframe(NodeImpl.class));
-		return () -> stream.iterator();
+		return stream::iterator;
 	}
 
 	@Override
@@ -484,7 +482,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Vertex vertex = edge.getVertex(OUT);
 			return graph.frameElementExplicit(vertex, NodeImpl.class);
 		});
-		return () -> nstream.iterator();
+		return nstream::iterator;
 	}
 
 	@Override
@@ -955,7 +953,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
-			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(Single::toObservable).collect(Collectors.toList());
 			return Observable.merge(obsList).lastOrError();
 		}
 		NavigationParameters parameters = new NavigationParametersImpl(ac);
@@ -981,7 +979,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, releaseUuid, type));
 			}
 		}
-		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(Single::toObservable).collect(Collectors.toList());
 		return Observable.merge(obsList).lastOrError();
 	}
 
@@ -1402,13 +1400,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Object indexKey = DB.get().createComposedIndexKey(getId(), releaseUuid);
 
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		return new DynamicTransformablePageImpl<NodeImpl>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+		return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
 
-			// Filter out nodes which do not provide one of the specified language tags and type
-			if (languageTags != null) {
-				Iterator<Edge> edgeIt = item.getEdges(OUT, HAS_FIELD_CONTAINER).iterator();
-				while (edgeIt.hasNext()) {
-					Edge edge = edgeIt.next();
+            // Filter out nodes which do not provide one of the specified language tags and type
+            if (languageTags != null) {
+				for (Edge edge : item.getEdges(OUT, HAS_FIELD_CONTAINER)) {
 					String currentType = edge.getProperty(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY);
 					if (!type.getCode().equals(currentType)) {
 						continue;
@@ -1418,10 +1414,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 						return true;
 					}
 				}
-				return false;
-			}
-			return true;
-		}, true);
+                return false;
+            }
+            return true;
+        }, true);
 	}
 
 	@Override
@@ -1572,7 +1568,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove
 			// unaffected fields from the rest request in order to prevent duplicate references. We don't want to touch field that have not been changed.
 			// Otherwise the graph field references would no longer point to older revisions of the same field.
-			Set<String> fieldsToKeepForUpdate = requestVersionDiff.stream().map(e -> e.getFieldKey()).collect(Collectors.toSet());
+			Set<String> fieldsToKeepForUpdate = requestVersionDiff.stream().map(FieldContainerChange::getFieldKey).collect(Collectors.toSet());
 			for (String fieldKey : requestModel.getFields().keySet()) {
 				if (fieldsToKeepForUpdate.contains(fieldKey)) {
 					continue;
@@ -1677,15 +1673,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		setParentNode(releaseUuid, targetNode);
 
 		// Update published graph field containers
-		getGraphFieldContainers(releaseUuid, PUBLISHED).stream().forEach(container -> {
-			container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move");
-		});
+		getGraphFieldContainers(releaseUuid, PUBLISHED).stream().forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 		batch.store(this, releaseUuid, PUBLISHED, false);
 
 		// Update draft graph field containers
-		getGraphFieldContainers(releaseUuid, DRAFT).stream().forEach(container -> {
-			container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move");
-		});
+		getGraphFieldContainers(releaseUuid, DRAFT).stream().forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 		batch.store(this, releaseUuid, DRAFT, false);
 
 		assertPublishConsistency(ac, release);
@@ -2007,9 +1999,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Single<NodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
+		return MeshInternal.get().database().asyncTx(() -> Single.just(transformToRestSync(ac, level, languageTags)));
 	}
 
 }

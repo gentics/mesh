@@ -65,11 +65,7 @@ public class JobWorkerVerticle extends AbstractVerticle {
 		registerJobHandler();
 
 		// The verticle has been deployed. Now wait a few seconds and schedule the periodic execution of jobs
-		timerId = vertx.setTimer(30_000, rh -> {
-			periodicTimerId = vertx.setPeriodic(15_000, th -> {
-				processJobs();
-			});
-		});
+		timerId = vertx.setTimer(30_000, rh -> periodicTimerId = vertx.setPeriodic(15_000, th -> processJobs()));
 
 		super.start();
 	}
@@ -89,9 +85,7 @@ public class JobWorkerVerticle extends AbstractVerticle {
 					jobRoot.process();
 				});
 			}
-		}, error -> {
-			log.error("Error while processing jobs", error);
-		});
+		}, error -> log.error("Error while processing jobs", error));
 	}
 
 	@Override

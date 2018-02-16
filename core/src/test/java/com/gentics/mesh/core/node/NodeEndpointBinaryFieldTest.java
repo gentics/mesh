@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+import io.reactivex.Single;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -144,9 +145,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
 
 		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, schemaRequest));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, schemaRequest)), COMPLETED, 1);
 
 		// Upload some binary data
 		String contentType = "application/octet-stream";
@@ -171,7 +170,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		assertEquals("The binary uuid should match up", binaryUuid, createResponse.getFields().getBinaryField("binary").getBinaryUuid());
 
 		// Now delete the original node which provided the binary data
-		call(() -> client().deleteNode(PROJECT_NAME, tx(() -> node.getUuid()), new DeleteParametersImpl().setRecursive(true)));
+		call(() -> client().deleteNode(PROJECT_NAME, tx(node::getUuid), new DeleteParametersImpl().setRecursive(true)));
 
 		// Assert that deletion did not affect the created node
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, createResponse.getUuid()));
@@ -247,7 +246,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		assertEquals("#737042", response.getFields().getBinaryField("image1").getDominantColor());
 		assertEquals("#737042", response.getFields().getBinaryField("image2").getDominantColor());
 
-		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.blockingGet()).map(e -> assertSum)
+		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(Single::blockingGet).map(e -> assertSum)
 			.ignoreElements().blockingAwait();
 	}
 

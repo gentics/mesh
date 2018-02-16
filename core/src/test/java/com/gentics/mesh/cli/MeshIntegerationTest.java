@@ -31,12 +31,8 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 20;
 		final CountDownLatch latch = new CountDownLatch(2);
 		final Mesh mesh = Mesh.mesh();
-		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {
-			latch.countDown();
-		});
-		mesh.setCustomLoader((vertx) -> {
-			latch.countDown();
-		});
+		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> latch.countDown());
+		mesh.setCustomLoader((vertx) -> latch.countDown());
 
 		new Thread(() -> {
 			try {

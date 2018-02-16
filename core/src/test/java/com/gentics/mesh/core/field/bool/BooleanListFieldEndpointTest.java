@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -168,7 +169,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBooleanList(FIELD_NAME)).isNotNull();
-			List<Boolean> oldValueList = latest.getPreviousVersion().getBooleanList(FIELD_NAME).getList().stream().map(item -> item.getBoolean())
+			List<Boolean> oldValueList = latest.getPreviousVersion().getBooleanList(FIELD_NAME).getList().stream().map(BooleanGraphField::getBoolean)
 					.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(true, false);
 

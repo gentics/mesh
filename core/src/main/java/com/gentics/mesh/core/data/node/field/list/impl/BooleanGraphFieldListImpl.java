@@ -27,8 +27,8 @@ import com.gentics.mesh.util.CompareUtils;
 public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
 		implements BooleanGraphFieldList {
 
-	public static FieldTransformer<BooleanFieldListImpl> BOOLEAN_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+	public static final FieldTransformer<BooleanFieldListImpl> BOOLEAN_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+                                                                                           parentNode) -> {
 		BooleanGraphFieldList booleanFieldList = container.getBooleanList(fieldKey);
 		if (booleanFieldList == null) {
 			return null;
@@ -37,7 +37,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 		}
 	};
 
-	public static FieldUpdater BOOLEAN_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater BOOLEAN_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BooleanGraphFieldList graphBooleanFieldList = container.getBooleanList(fieldKey);
 		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
 		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
@@ -77,9 +77,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 
 	};
 
-	public static FieldGetter BOOLEAN_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getBooleanList(fieldSchema.getName());
-	};
+	public static final FieldGetter BOOLEAN_LIST_GETTER = (container, fieldSchema) -> container.getBooleanList(fieldSchema.getName());
 
 	public static void init(Database database) {
 		database.addVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
@@ -132,7 +130,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 			BooleanFieldListImpl restField = (BooleanFieldListImpl) obj;
 			List<Boolean> restList = restField.getItems();
 			List<? extends BooleanGraphField> graphList = getList();
-			List<Boolean> graphStringList = graphList.stream().map(e -> e.getBoolean()).collect(Collectors.toList());
+			List<Boolean> graphStringList = graphList.stream().map(BooleanGraphField::getBoolean).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}
 		return super.equals(obj);

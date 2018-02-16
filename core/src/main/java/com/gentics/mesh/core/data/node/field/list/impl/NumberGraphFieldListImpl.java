@@ -27,8 +27,8 @@ import com.gentics.mesh.util.CompareUtils;
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl, Number>
 		implements NumberGraphFieldList {
 
-	public static FieldTransformer<NumberFieldListImpl> NUMBER_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+	public static final FieldTransformer<NumberFieldListImpl> NUMBER_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+																						 parentNode) -> {
 		NumberGraphFieldList numberFieldList = container.getNumberList(fieldKey);
 		if (numberFieldList == null) {
 			return null;
@@ -37,7 +37,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 		}
 	};
 
-	public static FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NumberFieldListImpl numberList = fieldMap.getNumberFieldList(fieldKey);
 
 		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
@@ -77,9 +77,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 
 	};
 
-	public static FieldGetter NUMBER_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getNumberList(fieldSchema.getName());
-	};
+	public static FieldGetter NUMBER_LIST_GETTER = (container, fieldSchema) -> container.getNumberList(fieldSchema.getName());
 
 	public static void init(Database database) {
 		database.addVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
@@ -132,7 +130,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 			NumberFieldListImpl restField = (NumberFieldListImpl) obj;
 			List<Number> restList = restField.getItems();
 			List<? extends NumberGraphField> graphList = getList();
-			List<Number> graphStringList = graphList.stream().map(e -> e.getNumber()).collect(Collectors.toList());
+			List<Number> graphStringList = graphList.stream().map(NumberGraphField::getNumber).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}
 		return super.equals(obj);

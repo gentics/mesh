@@ -34,7 +34,7 @@ public final class RxUtil {
 	 */
 	@Deprecated
 	public static Single<Buffer> readEntireData(Observable<Buffer> stream) {
-		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
+		return stream.reduce(Buffer::appendBuffer).toSingle();
 	}
 
 	/**
@@ -78,7 +78,7 @@ public final class RxUtil {
 	}
 
 	public static Observable<Buffer> toBufferObs(io.vertx.reactivex.core.file.AsyncFile file) {
-		return file.toObservable().map(io.vertx.reactivex.core.buffer.Buffer::getDelegate).doOnTerminate(() -> file.close());
+		return file.toObservable().map(io.vertx.reactivex.core.buffer.Buffer::getDelegate).doOnTerminate(file::close);
 	}
 
 }

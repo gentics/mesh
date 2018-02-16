@@ -227,16 +227,13 @@ public class MeshImpl implements Mesh {
 	}
 
 	private void registerShutdownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				try {
-					shutdown();
-				} catch (Exception e) {
-					log.error("Error while shutting down mesh.", e);
-				}
-			}
-		});
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                shutdown();
+            } catch (Exception e) {
+                log.error("Error while shutting down mesh.", e);
+            }
+        }));
 	}
 
 	private void dontExit() throws InterruptedException {

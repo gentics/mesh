@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.tinkerpop.blueprints.Element;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
@@ -182,7 +183,7 @@ public class ChangeTVCMigration extends AbstractChange {
 				Vertex tag = tagEdge.getVertex(Direction.IN);
 				tagEdge.remove();
 				tagRoot.addEdge("HAS_TAG", tag);
-				tag.getEdges(Direction.OUT, "HAS_TAGFAMILY_ROOT").forEach(edge -> edge.remove());
+				tag.getEdges(Direction.OUT, "HAS_TAGFAMILY_ROOT").forEach(Element::remove);
 				tag.addEdge("HAS_TAGFAMILY_ROOT", tagFamily);
 				if (!tag.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
 					log.error("Tag {" + tag.getProperty("uuid") + " has no project assigned to it. Fixing it...");

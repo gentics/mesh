@@ -259,9 +259,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					log.debug("Get object {" + uuid + "} from index {" + index + "}");
 				}
 				return response;
-			}).timeout(getOptions().getTimeout(), TimeUnit.MILLISECONDS).doOnError(error -> {
-				log.error("Could not get object {" + uuid + "} from index {" + index + "}", error);
-			});
+			}).timeout(getOptions().getTimeout(), TimeUnit.MILLISECONDS).doOnError(error -> log.error("Could not get object {" + uuid + "} from index {" + index + "}", error));
 	}
 
 	@Override

@@ -151,7 +151,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	private void initialRequest() {
 
 		Node node = getTestNode();
-		String nodeUuid = tx(() -> node.getUuid());
+		String nodeUuid = tx(node::getUuid);
 
 		NodeGraphFieldContainer oldContainer = tx(() -> node.findVersion("en", project().getLatestRelease().getUuid(), "1.0"));
 		NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");

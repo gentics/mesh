@@ -30,8 +30,8 @@ import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
-	public static FieldTransformer<NodeFieldList> NODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+	public static final FieldTransformer<NodeFieldList> NODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+                                                                                 parentNode) -> {
 		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
 		if (nodeFieldList == null) {
 			return null;
@@ -40,7 +40,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		}
 	};
 
-	public static FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
@@ -90,9 +90,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	};
 
-	public static FieldGetter NODE_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getNodeList(fieldSchema.getName());
-	};
+	public static final FieldGetter NODE_LIST_GETTER = (container, fieldSchema) -> container.getNodeList(fieldSchema.getName());
 
 	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldListImpl.class, MeshVertexImpl.class);

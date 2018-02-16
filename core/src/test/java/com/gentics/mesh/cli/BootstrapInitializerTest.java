@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(testSize = PROJECT)
 public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test

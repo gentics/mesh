@@ -48,9 +48,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Override
 	@Test
 	public void testChangeToBinary() throws Exception {
-		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEBINARY, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEBINARY, (container, name) -> assertThat(container.getBinary(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
@@ -74,9 +72,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Override
 	@Test
 	public void testChangeToDate() throws Exception {
-		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEDATE, (container, name) -> {
-			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEDATE, (container, name) -> assertThat(container.getDate(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
@@ -109,33 +105,25 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Override
 	@Test
 	public void testChangeToMicronode() throws Exception {
-		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEMICRONODE, (container, name) -> {
-			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEMICRONODE, (container, name) -> assertThat(container.getMicronode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToMicronodeList() throws Exception {
-		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> {
-			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToNode() throws Exception {
-		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATENODE, (container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATENODE, (container, name) -> assertThat(container.getNode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToNodeList() throws Exception {
-		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATENODELIST, (container, name) -> {
-			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATENODELIST, (container, name) -> assertThat(container.getNodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override

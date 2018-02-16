@@ -73,9 +73,7 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 			int index1 = Integer.parseInt(key1.substring("item-".length(), key1.lastIndexOf("-")));
 			int index2 = Integer.parseInt(key2.substring("item-".length(), key2.lastIndexOf("-")));
 			return index1 - index2;
-		}).forEachOrdered(itemKey -> {
-			list.add(convertBasicValue(itemKey));
-		});
+		}).forEachOrdered(itemKey -> list.add(convertBasicValue(itemKey)));
 		return list;
 	}
 

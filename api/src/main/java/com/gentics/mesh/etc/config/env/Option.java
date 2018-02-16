@@ -9,7 +9,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 public interface Option {
 
-	static final Logger log = LoggerFactory.getLogger(Option.class);
+	Logger log = LoggerFactory.getLogger(Option.class);
 
 	default void overrideWithEnv() {
 		for (Field field : getClass().getDeclaredFields()) {

@@ -1,33 +1,34 @@
 package com.gentics.mesh.core.field.number;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
 public interface NumberListFieldTestHelper {
 
-	static final int NUMBERVALUE = 4711;
+	int NUMBERVALUE = 4711;
 
-	static final int OTHERNUMBERVALUE = 8150;
+	int OTHERNUMBERVALUE = 8150;
 
-	static final long ONE = 1L;
+	long ONE = 1L;
 
-	static final long ZERO = 0L;
+	long ZERO = 0L;
 
-	static final DataProvider FILLNUMBERS = (container, name) -> {
+	DataProvider FILLNUMBERS = (container, name) -> {
 		NumberGraphFieldList field = container.createNumberList(name);
 		field.createNumber(NUMBERVALUE);
 		field.createNumber(OTHERNUMBERVALUE);
 	};
 
-	static final DataProvider FILLONEZERO = (container, name) -> {
+	DataProvider FILLONEZERO = (container, name) -> {
 		NumberGraphFieldList field = container.createNumberList(name);
 		field.createNumber(ONE);
 		field.createNumber(ZERO);
 	};
 
-	static final DataProvider CREATE_EMPTY = (container, name) -> container.createNumberList(name);
+	DataProvider CREATE_EMPTY = GraphFieldContainer::createNumberList;
 
-	static final FieldFetcher FETCH = (container, name) -> container.getNumberList(name);
+	FieldFetcher FETCH = GraphFieldContainer::getNumberList;
 
 }

@@ -100,9 +100,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Release release = ac.getRelease();
 		String releaseUuid = release.getUuid();
 
-		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return matchesReleaseAndType(item.getId(), releaseUuid, type.getCode());
-		}, true);
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> matchesReleaseAndType(item.getId(), releaseUuid, type.getCode()), true);
 	}
 
 	/**
@@ -170,9 +168,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return vertex traversal
 	 */
 	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type, GraphPermission permission) {
-		return out(getRootLabel()).filter(vertex -> {
-			return requestUser.hasPermissionForId(vertex.getId(), permission);
-		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+		return out(getRootLabel()).filter(vertex -> requestUser.hasPermissionForId(vertex.getId(), permission)).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 	}
 

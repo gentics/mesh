@@ -27,5 +27,5 @@ public enum MeshStatus {
 	/**
 	 * Status which indicates that a blocking backup is currently running.
 	 */
-	BACKUP;
+	BACKUP
 }

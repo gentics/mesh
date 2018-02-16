@@ -79,7 +79,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertArrayEquals(new String[] { "firstField", "secondField", "thirdField", "stringField" },
-					updatedSchema.getFields().stream().map(field -> field.getName()).toArray());
+					updatedSchema.getFields().stream().map(FieldSchema::getName).toArray());
 			assertThat(updatedSchema).hasField("stringField");
 			assertTrue("The created field was not of the string string field.", updatedSchema.getField("stringField") instanceof StringFieldSchema);
 		}

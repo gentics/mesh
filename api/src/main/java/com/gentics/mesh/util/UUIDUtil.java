@@ -13,7 +13,7 @@ public final class UUIDUtil {
 
 	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
-	private static Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
+	private static final Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
 
 	private UUIDUtil() {
 

@@ -347,9 +347,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Single<ProjectResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
+		return DB.get().asyncTx(() -> Single.just(transformToRestSync(ac, level, languageTags)));
 	}
 
 	@Override

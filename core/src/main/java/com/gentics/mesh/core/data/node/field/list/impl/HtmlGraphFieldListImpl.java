@@ -26,8 +26,8 @@ import com.gentics.mesh.util.CompareUtils;
  */
 public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
 
-	public static FieldTransformer<HtmlFieldListImpl> HTML_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+	public static final FieldTransformer<HtmlFieldListImpl> HTML_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+                                                                                     parentNode) -> {
 		HtmlGraphFieldList htmlFieldList = container.getHTMLList(fieldKey);
 		if (htmlFieldList == null) {
 			return null;
@@ -36,7 +36,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 		}
 	};
 
-	public static FieldUpdater HTML_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	public static final FieldUpdater HTML_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		HtmlGraphFieldList graphHtmlFieldList = container.getHTMLList(fieldKey);
 		HtmlFieldListImpl htmlList = fieldMap.getHtmlFieldList(fieldKey);
 		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
@@ -73,9 +73,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 		}
 	};
 
-	public static FieldGetter HTML_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getHTMLList(fieldSchema.getName());
-	};
+	public static final FieldGetter HTML_LIST_GETTER = (container, fieldSchema) -> container.getHTMLList(fieldSchema.getName());
 
 	public static void init(Database database) {
 		database.addVertexType(HtmlGraphFieldListImpl.class, MeshVertexImpl.class);
@@ -128,7 +126,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 			HtmlFieldListImpl restField = (HtmlFieldListImpl) obj;
 			List<String> restList = restField.getItems();
 			List<? extends HtmlGraphField> graphList = getList();
-			List<String> graphStringList = graphList.stream().map(e -> e.getHTML()).collect(Collectors.toList());
+			List<String> graphStringList = graphList.stream().map(HtmlGraphField::getHTML).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}
 		return super.equals(obj);

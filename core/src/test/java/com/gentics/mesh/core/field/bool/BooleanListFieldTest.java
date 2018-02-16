@@ -179,9 +179,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testRemoveFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (node) -> {
-				updateContainer(ac, node, BOOLEAN_LIST, null);
-			});
+			invokeRemoveFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (node) -> updateContainer(ac, node, BOOLEAN_LIST, null));
 		}
 	}
 
@@ -190,9 +188,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testRemoveRequiredFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> {
-				updateContainer(ac, container, BOOLEAN_LIST, null);
-			});
+			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> updateContainer(ac, container, BOOLEAN_LIST, null));
 		}
 	}
 

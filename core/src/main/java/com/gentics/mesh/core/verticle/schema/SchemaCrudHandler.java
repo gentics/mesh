@@ -261,9 +261,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			// TODO check whether schema is assigned to project
 
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			db.tx(() -> {
-				project.getSchemaContainerRoot().removeSchemaContainer(schema);
-			});
+			db.tx(() -> project.getSchemaContainerRoot().removeSchemaContainer(schema));
 			return Single.just(Optional.empty());
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}

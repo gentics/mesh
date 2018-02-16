@@ -51,57 +51,43 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testChangeToBinary() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATEBINARY, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEBINARY, (container, name) -> assertThat(container.getBinary(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToBoolean() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATEBOOLEAN, (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEBOOLEAN, (container, name) -> assertThat(container.getBoolean(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToBooleanList() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToDate() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATEDATE, (container, name) -> {
-			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEDATE, (container, name) -> assertThat(container.getDate(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToDateList() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEDATELIST, (container, name) -> assertThat(container.getDateList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToHtml() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATEHTML, (container, name) -> {
-			assertThat(container.getHtml(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEHTML, (container, name) -> assertThat(container.getHtml(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToHtmlList() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
-			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEHTMLLIST, (container, name) -> assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
@@ -128,49 +114,37 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testChangeToNode() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATENODE, (container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATENODE, (container, name) -> assertThat(container.getNode(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToNodeList() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATENODELIST, (container, name) -> {
-			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATENODELIST, (container, name) -> assertThat(container.getNodeList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToNumber() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATENUMBER, (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATENUMBER, (container, name) -> assertThat(container.getNumber(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToNumberList() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATENUMBERLIST, (container, name) -> assertThat(container.getNumberList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToString() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATESTRING, (container, name) -> {
-			assertThat(container.getString(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATESTRING, (container, name) -> assertThat(container.getString(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override
 	@Test
 	public void testChangeToStringList() throws Exception {
-		changeType(CREATEMICRONODE, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
-			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
-		});
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATESTRINGLIST, (container, name) -> assertThat(container.getStringList(name)).as(NEWFIELD).isNull());
 	}
 
 	@Override

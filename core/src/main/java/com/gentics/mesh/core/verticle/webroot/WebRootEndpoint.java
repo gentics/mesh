@@ -48,9 +48,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 				"Header value which identifies the type of the webroot response. The response can either be a node or binary response.");
 		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
 		endpoint.addQueryParameters(ImageManipulationParametersImpl.class);
-		endpoint.handler(rc -> {
-			handler.handleGetPath(rc);
-		});
+		endpoint.handler(rc -> handler.handleGetPath(rc));
 	}
 
 	private void addErrorHandlers() {

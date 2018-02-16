@@ -43,12 +43,9 @@ public class KeyStoreHelper {
 
 		// This call throws an exception
 		keystore.setKeyEntry("HS256", key, keystorePassword.toCharArray(), null);
-		FileOutputStream fos = new FileOutputStream(keystoreFile);
-		try {
+		try (FileOutputStream fos = new FileOutputStream(keystoreFile)) {
 			keystore.store(fos, keystorePassword.toCharArray());
 			fos.flush();
-		} finally {
-			fos.close();
 		}
 
 		// SecretKey keyRetrieved = (SecretKey) keystore.getKey("theKey", keystorePassword.toCharArray());

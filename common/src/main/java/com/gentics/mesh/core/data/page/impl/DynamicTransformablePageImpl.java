@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
@@ -124,9 +125,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	private void init(Class<? extends T> clazz, VertexTraversal<?, ?, ?> traversal, GraphPermission perm) {
 		// Iterate over all vertices that are managed by this root vertex
-		Stream<Vertex> stream = StreamSupport.stream(traversal.spliterator(), false).map(item -> {
-			return item.getElement();
-		});
+		Stream<Vertex> stream = StreamSupport.stream(traversal.spliterator(), false).map(VertexFrame::getElement);
 		applyPagingAndPermChecks(stream, clazz, perm);
 	}
 
@@ -212,9 +211,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
 
 				// Get the vertex from the edge
-				.map(itemEdge -> {
-					return itemEdge.getVertex(vertexDirection);
-				});
+				.map(itemEdge -> itemEdge.getVertex(vertexDirection));
 		applyPagingAndPermChecks(stream, clazz, perm);
 
 	}

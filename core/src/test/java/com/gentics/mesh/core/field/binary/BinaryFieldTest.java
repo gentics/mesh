@@ -237,9 +237,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testRemoveFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
-				updateContainer(ac, node, BINARY_FIELD, null);
-			});
+			invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> updateContainer(ac, node, BINARY_FIELD, null));
 		}
 	}
 
@@ -248,9 +246,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testRemoveRequiredFieldViaNull() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			invokeRemoveRequiredFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
-				updateContainer(ac, container, BINARY_FIELD, null);
-			});
+			invokeRemoveRequiredFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> updateContainer(ac, container, BINARY_FIELD, null));
 		}
 	}
 
@@ -290,9 +286,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 		Single<String> store = localStorage.store(obs, "bogus").toSingleDefault("null");
 
-		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
-			return new TransformationResult(hashV, 0, infoV, null);
-		}).blockingGet();
+		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> new TransformationResult(hashV, 0, infoV, null)).blockingGet();
 
 		assertNotNull(result.getHash());
 		assertEquals(1376, result.getImageInfo().getHeight().intValue());

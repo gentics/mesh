@@ -109,7 +109,7 @@ public interface ConsistencyCheck {
 	 * Interface for an edge follower.
 	 */
 	@FunctionalInterface
-	public static interface Edge {
+	interface Edge {
 		MeshVertex follow(MeshVertex v);
 	}
 }

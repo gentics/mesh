@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -21,7 +22,7 @@ public class TagListResponseAssert extends AbstractAssert<TagListResponseAssert,
 	 * @param tagNames
 	 */
 	public void containsExactly(String... tagNames) {
-		List<String> tags = actual.getData().stream().map(t -> t.getName()).collect(Collectors.toList());
+		List<String> tags = actual.getData().stream().map(TagResponse::getName).collect(Collectors.toList());
 		assertThat(tags).containsExactly(tagNames);
 	}
 

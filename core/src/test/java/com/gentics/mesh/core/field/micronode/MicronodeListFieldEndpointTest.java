@@ -246,7 +246,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 		FieldList<MicronodeField> reorderedField = new MicronodeFieldListImpl();
-		initialField.getItems().stream().forEachOrdered(item -> reorderedField.add(item));
+		initialField.getItems().stream().forEachOrdered(reorderedField::add);
 
 		Collections.sort(reorderedField.getItems(), new Comparator<MicronodeField>() {
 			@Override
@@ -275,7 +275,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
-		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
+		initialField.getItems().stream().forEachOrdered(changedField::add);
 		changedField.getItems().add(1, createItem("Four", "Four"));
 
 		NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
@@ -297,7 +297,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
-		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
+		initialField.getItems().stream().forEachOrdered(changedField::add);
 		changedField.getItems().remove(1);
 
 		NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
@@ -326,7 +326,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 			FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
-			initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
+			initialField.getItems().stream().forEachOrdered(changedField::add);
 			changedField.getItems().add(createItem("Four", "Four"));
 			changedField.getItems().remove(1);
 			Collections.sort(changedField.getItems(), new Comparator<MicronodeField>() {

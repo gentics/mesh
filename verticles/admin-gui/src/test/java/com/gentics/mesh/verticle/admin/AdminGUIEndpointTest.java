@@ -42,15 +42,13 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 
 		HttpClient client = createHttpClient();
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(GET, "/mesh-ui/mesh-ui-config.js", rh -> {
-			rh.bodyHandler(bh -> {
-				if (rh.statusCode() == 200) {
-					future.complete(bh.toString());
-				} else {
-					future.completeExceptionally(new Exception("Status code wrong {" + rh.statusCode() + "}"));
-				}
-			});
-		});
+		HttpClientRequest request = client.request(GET, "/mesh-ui/mesh-ui-config.js", rh -> rh.bodyHandler(bh -> {
+            if (rh.statusCode() == 200) {
+                future.complete(bh.toString());
+            } else {
+                future.completeExceptionally(new Exception("Status code wrong {" + rh.statusCode() + "}"));
+            }
+        }));
 		request.end();
 
 		String response = future.get(10, TimeUnit.SECONDS);
@@ -66,9 +64,7 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 	public void testRedirect() throws InterruptedException, ExecutionException {
 		HttpClient client = createHttpClient();
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(GET, "/", rh -> {
-			future.complete(rh.getHeader("Location"));
-		});
+		HttpClientRequest request = client.request(GET, "/", rh -> future.complete(rh.getHeader("Location")));
 		request.end();
 		assertEquals("/mesh-ui/", future.get());
 	}

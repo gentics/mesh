@@ -251,9 +251,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
 
 		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(uuid, request));
-		}, MigrationStatus.COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(uuid, request)), MigrationStatus.COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Load the previous version
@@ -340,9 +338,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setUrlFields("slug");
 
 		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(uuid, request));
-		}, COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(uuid, request)), COMPLETED, 1);
 	}
 
 	/**
@@ -372,9 +368,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 
 		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, MigrationStatus.COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, schemaUpdate)), MigrationStatus.COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(microschema -> microschema.getUuid().equals(
