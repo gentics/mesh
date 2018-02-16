@@ -664,4 +664,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	Deque<Node> getBreadcrumbNodes(InternalActionContext ac);
 
+	/**
+	 * Handle the node specific on deleted event.
+	 * @param uuid
+	 * @param name
+	 * @param schema
+	 * @param languageTag
+	 */
+	void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag);
 }

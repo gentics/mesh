@@ -1,5 +1,7 @@
+
 package com.gentics.mesh.core.eventbus;
 
+import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
 import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
 import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -12,7 +14,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.concurrent.CountDownLatch;
 
+import io.vertx.ext.unit.Async;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
@@ -22,7 +26,10 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+@RunWith(VertxUnitRunner.class)
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class EventbusEndpointTest extends AbstractMeshTest {
 
@@ -57,6 +64,50 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		failingLatch(latch);
 	}
 
+	@Test(timeout = 10_000)
+	public void testNodeDeleteEvent(TestContext context) throws Exception {
+		Async async = context.async();
+		client().eventbus(ws -> {
+			// Register
+			JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_DELETED);
+			ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+
+			// Handle msgs
+			ws.handler(buff -> {
+				String str = buff.toString();
+				JsonObject received = new JsonObject(str);
+				context.assertNotNull(received.getJsonObject("body").getString("uuid"));
+				context.assertEquals("content", received.getJsonObject("body").getString("schemaName"));
+				context.assertNull(received.getJsonObject("body").getString("languageTag"));
+				async.complete();
+			});
+		});
+
+		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));
+	}
+
+	@Test(timeout = 10_000)
+	public void testNodeDeleteLanguageEvent(TestContext context) throws Exception {
+		Async async = context.async();
+		client().eventbus(ws -> {
+			// Register
+			JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_DELETED);
+			ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+
+			// Handle msgs
+			ws.handler(buff -> {
+				String str = buff.toString();
+				JsonObject received = new JsonObject(str);
+				context.assertNotNull(received.getJsonObject("body").getString("uuid"));
+				context.assertEquals("content", received.getJsonObject("body").getString("schemaName"));
+				context.assertEquals("en", received.getJsonObject("body").getString("languageTag"));
+				async.complete();
+			});
+		});
+
+		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(),"en"));
+	}
+
 	@Test
 	public void testNodeUpdateEvent() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
@@ -85,7 +136,6 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		NodeResponse response2 = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 		assertNotEquals(response.getVersion(), response2.getVersion());
 		failingLatch(latch);
-
 	}
 
 	@Test

@@ -129,6 +129,7 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * @see Node
@@ -1974,6 +1975,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Mesh.vertx().eventBus().publish(address, json);
 			if (log.isDebugEnabled()) {
 				log.debug("Updated event sent {" + address + "}");
+			}
+		}
+	}
+
+	@Override
+	public void onDeleted(String uuid, String name) {
+		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
+	}
+
+	@Override
+	public void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag) {
+		String address = getTypeInfo().getOnDeletedAddress();
+		if (address != null) {
+			JsonObject json = new JsonObject();
+			if (this instanceof NamedElement) {
+				json.put("name", name);
+			}
+			if (languageTag != null) {
+				json.put("languageTag", languageTag);
+			}
+			json.put("schemaName", schema.getName());
+			json.put("schemaUuid", schema.getUuid());
+			json.put("uuid", uuid);
+			Mesh.vertx().eventBus().publish(address, json);
+			if (log.isDebugEnabled()) {
+				log.debug("Deleted event sent {" + address + "}");
 			}
 		}
 	}

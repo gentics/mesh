@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import com.gentics.mesh.core.rest.schema.*;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -17,15 +18,6 @@ import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -70,7 +62,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	}
 
 	@Test
-	public void testApplayStringFieldAtEndPosition() {
+	public void testApplyStringFieldAtEndPosition() {
 		try (Tx tx = tx()) {
 			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModel schema = new SchemaModelImpl();
@@ -111,7 +103,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertArrayEquals(new String[] { "firstField", "stringField", "secondField", "thirdField" },
-					updatedSchema.getFields().stream().map(field -> field.getName()).toArray());
+					updatedSchema.getFields().stream().map(FieldSchema::getName).toArray());
 			assertThat(updatedSchema).hasField("stringField");
 			assertTrue("The created field was not of the string string field.", updatedSchema.getField("stringField") instanceof StringFieldSchema);
 		}

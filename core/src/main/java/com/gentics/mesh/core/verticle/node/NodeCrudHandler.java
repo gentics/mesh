@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.sun.org.apache.bcel.internal.generic.InstructionConstants.bla;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -79,6 +81,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 			}
+			String name = node.getDisplayName(ac);
+			SchemaContainer schema = node.getSchemaContainer();
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
@@ -86,6 +90,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.deleteFromRelease(ac, ac.getRelease(), batch, false);
 				return batch;
 			}).processSync();
+			node.onDeleted(uuid, name, schema, null);
+
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}
@@ -109,13 +115,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
-
+			String name = node.getDisplayName(ac);
+			SchemaContainer schema = node.getSchemaContainer();
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				node.deleteLanguageContainer(ac, ac.getRelease(), language, batch, true);
 				return batch;
 			}).processSync();
+			node.onDeleted(uuid, name, schema, languageTag);
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}
