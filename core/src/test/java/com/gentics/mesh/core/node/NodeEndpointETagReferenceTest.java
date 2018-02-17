@@ -163,7 +163,7 @@ public class NodeEndpointETagReferenceTest extends AbstractMeshTest {
             new NodeFieldSchemaImpl().setName("node"),
             new ListFieldSchemaImpl().setListType("node").setName("nodeList"),
             new MicronodeFieldSchemaImpl().setAllowedMicroSchemas("RefMicroschema").setName("micronode"),
-            new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas("RefMicroschema").setName("micronodeList")
+            new ListFieldSchemaImpl().setListType("micronode").setName("micronodeList")
         ));
         return client().createSchema(req).toSingle()
             .flatMap(schema ->
