@@ -87,7 +87,7 @@ node("docker") {
 									unstash 'project'
 									sshagent(["git"]) {
 										try {
-											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dsurefire.forkcount=4 -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!performance-tests' clean package"
+											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dsurefire.forkcount=3 -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!performance-tests' clean package"
 										} finally {
 											step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 										}
