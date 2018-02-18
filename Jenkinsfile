@@ -59,135 +59,127 @@ node("docker") {
 				], 
 				workspaceVolume: emptyDirWorkspaceVolume(false)) {
 					node("mesh") {
-						stage("Checkout") {
-							checkout scm
-						}
-
-						def branchName = GitHelper.fetchCurrentBranchName()
-						def version = MavenHelper.getVersion()
-
-						stage("Set Version") {
-							if (Boolean.valueOf(params.runDeploy)) {
-								if (version) {
-									echo "Building version " + version
-									version = MavenHelper.transformSnapshotToReleaseVersion(version)
-									MavenHelper.setVersion(version)
-								}
-								//TODO only add pom.xml files
-								sh 'git add .'
-								sh "git commit -m 'Raise version'"
-								GitHelper.addTag(version, 'Release of version ' + version)
+						sshagent(["git"]) {
+							stage("Checkout") {
+								checkout scm
 							}
-						}
 
-						stage("Test") {
-							if (Boolean.valueOf(params.runTests)) {
-								stash includes: '**', name: 'project'
-								node('mesh') {
-									unstash 'project'
-									sshagent(["git"]) {
-										try {
-											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dsurefire.forkcount=3 -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!performance-tests' clean package"
-										} finally {
-											step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-										}
+							def branchName = GitHelper.fetchCurrentBranchName()
+							def version = MavenHelper.getVersion()
+
+							stage("Set Version") {
+								if (Boolean.valueOf(params.runDeploy)) {
+									if (version) {
+										echo "Building version " + version
+										version = MavenHelper.transformSnapshotToReleaseVersion(version)
+										MavenHelper.setVersion(version)
 									}
+									//TODO only add pom.xml files
+									sh 'git add .'
+									sh "git commit -m 'Raise version'"
+									GitHelper.addTag(version, 'Release of version ' + version)
 								}
-							} else {
-								echo "Tests skipped.."
 							}
-						}
 
-						stage("Maven Build") {
-							if (Boolean.valueOf(params.runMavenBuild)) {
-								sshagent(["git"]) {
+							stage("Test") {
+								if (Boolean.valueOf(params.runTests)) {
+									try {
+										sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dsurefire.forkcount=3 -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!performance-tests' clean package"
+									} finally {
+										step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+									}
+								} else {
+									echo "Tests skipped.."
+								}
+							}
+
+							stage("Maven Build") {
+								if (Boolean.valueOf(params.runMavenBuild)) {
 									if (Boolean.valueOf(params.runDeploy)) {
 										sh "mvn -U -B -DskipTests clean deploy"
 									} else {
 										sh "mvn -B -DskipTests clean package"
 									}
+								} else {
+									echo "Maven build skipped.."
 								}
-							} else {
-								echo "Maven build skipped.."
 							}
-						}
 
-						stage("Cluster Tests") {
-							if (Boolean.valueOf(params.runTests)) {
-								try {
+							stage("Cluster Tests") {
+								if (Boolean.valueOf(params.runTests)) {
 									sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
-									sh "mvn -B test -pl distributed"
-								} finally {
-									step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
-								}
-							} else {
-								echo "Cluster tests skipped.."
-							}
-						}
-
-						stage("Docker Build") {
-							if (Boolean.valueOf(params.runDocker)) {
-								// demo
-								sh "rm demo/target/*sources.jar"
-								sh "cd demo ; docker build -t gentics/mesh-demo:latest -t gentics/mesh-demo:" + version + " . "
-								
-								// server
-								sh "rm server/target/*sources.jar"
-								sh "cd server ; docker build -t gentics/mesh:latest -t gentics/mesh:" + version + " . "
-							} else {
-								echo "Docker build skipped.."
-							}
-						}
-
-						stage("Performance Tests") {
-							if (Boolean.valueOf(params.runPerformanceTests)) {
-								try {
-									sh "mvn -B -U clean package -pl '!doc,!demo,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
-								} finally {
-									step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
-								}
-							} else {
-								echo "Performance tests skipped.."
-							}
-						}
-
-						stage("Integration Tests") {
-							if (Boolean.valueOf(params.runIntegrationTests)) {
-								withEnv(["MESH_VERSION=" + version]) {
-									sh "integration-tests/test.sh"
-								}
-							} else {
-								echo "Performance tests skipped.."
-							}
-						}
-
-						stage("Deploy") {
-							if (Boolean.valueOf(params.runDeploy)) {
-								if (Boolean.valueOf(params.runDocker)) {
-									withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
-										sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
-										sh 'docker push gentics/mesh-demo:latest'
-										sh 'docker push gentics/mesh-demo:' + version
-										sh 'docker push gentics/mesh:latest'
-										sh 'docker push gentics/mesh:' + version
+									try {
+										sh "mvn -fae -Dmaven.test.failure.ignore=true -B test -pl distributed"
+									} finally {
+										step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
 									}
+								} else {
+									echo "Cluster tests skipped.."
 								}
-							} else {
-								echo "Deploy skipped.."
 							}
-						}
 
-						stage("Git push") {
-							if (Boolean.valueOf(params.runDeploy)) {
-								sshagent(["git"]) {
+							stage("Docker Build") {
+								if (Boolean.valueOf(params.runDocker)) {
+									// demo
+									sh "rm demo/target/*sources.jar"
+									sh "cd demo ; docker build -t gentics/mesh-demo:latest -t gentics/mesh-demo:" + version + " . "
+
+									// server
+									sh "rm server/target/*sources.jar"
+									sh "cd server ; docker build -t gentics/mesh:latest -t gentics/mesh:" + version + " . "
+								} else {
+									echo "Docker build skipped.."
+								}
+							}
+
+							stage("Performance Tests") {
+								if (Boolean.valueOf(params.runPerformanceTests)) {
+									try {
+										sh "mvn -B -U clean package -pl '!doc,!demo,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
+									} finally {
+										step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
+									}
+								} else {
+									echo "Performance tests skipped.."
+								}
+							}
+
+							stage("Integration Tests") {
+								if (Boolean.valueOf(params.runIntegrationTests)) {
+									withEnv(["MESH_VERSION=" + version]) {
+										sh "integration-tests/test.sh"
+									}
+								} else {
+									echo "Performance tests skipped.."
+								}
+							}
+
+							stage("Deploy") {
+								if (Boolean.valueOf(params.runDeploy)) {
+									if (Boolean.valueOf(params.runDocker)) {
+										withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
+											sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
+											sh 'docker push gentics/mesh-demo:latest'
+											sh 'docker push gentics/mesh-demo:' + version
+											sh 'docker push gentics/mesh:latest'
+											sh 'docker push gentics/mesh:' + version
+										}
+									}
+								} else {
+									echo "Deploy skipped.."
+								}
+							}
+
+							stage("Git push") {
+								if (Boolean.valueOf(params.runDeploy)) {
 									def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
 									MavenHelper.setVersion(snapshotVersion)
 									GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + snapshotVersion + ')')
 									GitHelper.pushBranch(branchName)
 									GitHelper.pushTag(version)
+								} else {
+									echo "Push skipped.."
 								}
-							} else {
-								echo "Push skipped.."
 							}
 						}
 					}
