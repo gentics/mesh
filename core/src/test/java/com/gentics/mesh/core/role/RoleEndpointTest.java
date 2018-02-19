@@ -68,8 +68,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setName("new_role");
 
 		RoleResponse restRole = call(() -> client().createRole(request));
-		assertThat(dummySearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
@@ -428,11 +428,11 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		}
 
-		dummySearchProvider().clear().blockingAwait();
+		trackingSearchProvider().clear().blockingAwait();
 		call(() -> client().deleteRole(extraRoleUuid));
-		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
-		assertThat(dummySearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);
-		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
+		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
+		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);
+		assertThat(trackingSearchProvider()).hasEvents(1, 1, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);

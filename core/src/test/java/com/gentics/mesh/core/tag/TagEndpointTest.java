@@ -224,7 +224,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
-			dummySearchProvider().clear().blockingAwait();
+			trackingSearchProvider().clear().blockingAwait();
 			nodes = tag.getNodes(project().getLatestRelease());
 			tx.success();
 		}
@@ -232,22 +232,22 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
 		try (Tx tx = tx()) {
 			assertThat(tag2).matches(tag);
-			assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeDocumentId(tag2.getUuid()));
+			assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeDocumentId(tag2.getUuid()));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
 			String releaseUuid = project().getLatestRelease().getUuid();
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
 							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
-					assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
 							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
-			assertThat(dummySearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
+			assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
 					.getUuid()));
-			assertThat(dummySearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
 			TagResponse reloadedTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -336,14 +336,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			String uuid = tag.getUuid();
 			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
 
-			assertThat(dummySearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(uuid));
+			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(uuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
-				assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+				assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
 						schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
-			assertThat(dummySearchProvider()).hasEvents(4, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(4, 1, 0, 0);
 
 			tag = boot().tagRoot().findByUuid(uuid);
 			assertNull("The tag should have been deleted", tag);
@@ -401,11 +401,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 		String projectUuid = db().tx(() -> project().getUuid());
 
-		dummySearchProvider().clear().blockingAwait();
+		trackingSearchProvider().clear().blockingAwait();
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getName());
-		assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 		}

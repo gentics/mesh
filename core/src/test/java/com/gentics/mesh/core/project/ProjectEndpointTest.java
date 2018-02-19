@@ -201,7 +201,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			request.setName("New Name");
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
-			assertThat(dummySearchProvider()).hasNoStoreEvents();
+			assertThat(trackingSearchProvider()).hasNoStoreEvents();
 			ProjectResponse restProject = call(() -> client().createProject(uuid, request));
 
 			assertThat(restProject).hasUuid(uuid);
@@ -221,7 +221,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			request.setName("New Name");
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
-			assertThat(dummySearchProvider()).hasNoStoreEvents();
+			assertThat(trackingSearchProvider()).hasNoStoreEvents();
 			call(() -> client().createProject(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
 		}
 	}
@@ -503,7 +503,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String newName = "New Name";
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName(newName);
-		assertThat(dummySearchProvider()).hasNoStoreEvents();
+		assertThat(trackingSearchProvider()).hasNoStoreEvents();
 		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 
 		// Assert that the routerstorage was updates
@@ -522,8 +522,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			expectedCount += meshRoot().getTagRoot().computeCount();
 			expectedCount += project.getTagFamilyRoot().computeCount();
 
-			assertThat(dummySearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
-			assertThat(dummySearchProvider()).hasEvents(expectedCount, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
+			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertEquals(newName, reloadedProject.getName());
@@ -590,13 +590,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// 3. Assert that the indices have been dropped and the project has been
 		// deleted from the project index
-		assertThat(dummySearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
-		assertThat(dummySearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
-		assertThat(dummySearchProvider()).hasDrop(Tag.composeIndexName(uuid));
+		assertThat(trackingSearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
+		assertThat(trackingSearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
+		assertThat(trackingSearchProvider()).hasDrop(Tag.composeIndexName(uuid));
 		for (String index : indices) {
-			assertThat(dummySearchProvider()).hasDrop(index);
+			assertThat(trackingSearchProvider()).hasDrop(index);
 		}
-		assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
@@ -615,7 +615,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 
 		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);

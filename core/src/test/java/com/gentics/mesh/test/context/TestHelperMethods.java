@@ -190,8 +190,8 @@ public interface TestHelperMethods {
 		return getTestContext().getClient();
 	}
 
-	default TrackingSearchProvider dummySearchProvider() {
-		return getTestContext().getDummySearchProvider();
+	default TrackingSearchProvider trackingSearchProvider() {
+		return getTestContext().getTrackingSearchProvider();
 	}
 
 	/**

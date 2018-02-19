@@ -51,15 +51,15 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			// 3. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
 			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft"))
-					.invoke();
-			latchFor(response); 
+				.invoke();
+			latchFor(response);
 			assertSuccess(response);
 			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
 			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
 
 			params.setHeight(103);
 			String newETag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag,
-					false, 200);
+				false, 200);
 			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), newETag, false, 304);
 
 		}
@@ -88,8 +88,8 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
 			MeshResponse<WebRootResponse> response = client()
-					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL))
-					.invoke();
+				.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL))
+				.invoke();
 
 			latchFor(response);
 			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
@@ -97,7 +97,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 			// Check whether 304 is returned for correct etag
 			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-					new NodeParametersImpl().setResolveLinks(LinkType.FULL)), etag, false, 304));
+				new NodeParametersImpl().setResolveLinks(LinkType.FULL)), etag, false, 304));
 
 		}
 
@@ -105,26 +105,29 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
+		String path = "/News/2015/News_2015.en.html";
 		try (Tx tx = tx()) {
-			String path = "/News/2015/News_2015.en.html";
 			Node node = content("news_2015");
-
 			// Inject the reference node field
 			SchemaModel schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
 			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
 			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));
+			tx.success();
+		}
 
-			MeshResponse<WebRootResponse> response = client()
-					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke();
-			latchFor(response);
+		MeshResponse<WebRootResponse> response = client()
+			.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke();
+		latchFor(response);
+
+		try (Tx tx = tx()) {
+			Node node = content("news_2015");
 			String etag = node.getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getRawResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-					new NodeParametersImpl().setLanguages("en", "de")), etag, true, 304));
-
+				new NodeParametersImpl().setLanguages("en", "de")), etag, true, 304));
 		}
 
 	}

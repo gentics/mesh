@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -11,6 +12,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -156,4 +158,13 @@ public class TrackingSearchProvider implements SearchProvider {
 		return null;
 	}
 
+	public void printStoreEvents(boolean withJson) {
+		for (Entry<String, JsonObject> entry : getStoreEvents().entrySet()) {
+			System.out.println("Store event {" + entry.getKey() + "}");
+			if (withJson) {
+				System.out.println("Json:\n" + entry.getValue().encodePrettily());
+			}
+		}
+
+	}
 }

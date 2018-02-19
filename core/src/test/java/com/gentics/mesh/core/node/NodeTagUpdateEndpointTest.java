@@ -29,7 +29,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("green").setTagFamily(""));
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), BAD_REQUEST, "tag_error_tagfamily_not_set");
-		assertThat(dummySearchProvider()).hasNoStoreEvents();
+		assertThat(trackingSearchProvider()).hasNoStoreEvents();
 	}
 
 	@Test
@@ -38,7 +38,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("green").setTagFamily("blub123"));
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), NOT_FOUND, "object_not_found_for_name", "blub123");
-		assertThat(dummySearchProvider()).hasNoStoreEvents();
+		assertThat(trackingSearchProvider()).hasNoStoreEvents();
 	}
 
 	@Test
@@ -47,7 +47,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("").setTagFamily("colors"));
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), BAD_REQUEST, "tag_error_name_or_uuid_missing");
-		assertThat(dummySearchProvider()).hasNoStoreEvents();
+		assertThat(trackingSearchProvider()).hasNoStoreEvents();
 	}
 
 	@Test
@@ -63,7 +63,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
 
 	}
@@ -81,10 +81,10 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de");
-			assertThat(dummySearchProvider()).stored(tagFamily("colors"));
-			assertThat(dummySearchProvider()).stored(tagFamily("colors").findByName("purple"));
-			assertThat(dummySearchProvider()).hasEvents(6, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de");
+			assertThat(trackingSearchProvider()).stored(tagFamily("colors"));
+			assertThat(trackingSearchProvider()).stored(tagFamily("colors").findByName("purple"));
+			assertThat(trackingSearchProvider()).hasEvents(6, 0, 0, 0);
 		}
 	}
 
@@ -102,10 +102,10 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals(4, response.getMetainfo().getTotalCount());
 		try (Tx tx = tx()) {
 			// 4 Node containers need to be updated and two tag families and 4 new tags
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
 		}
 
-		dummySearchProvider().clear().blockingAwait();
+		trackingSearchProvider().clear().blockingAwait();
 		request.getTags().clear();
 		request.getTags().add(new TagReference().setName("bla2").setTagFamily("basic"));
 		request.getTags().add(new TagReference().setName("blub3").setTagFamily("colors"));
@@ -113,7 +113,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals(2, response.getMetainfo().getTotalCount());
 		try (Tx tx = tx()) {
 			// No tag family is modified - no Tag is created
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
 
 	}
@@ -150,7 +150,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		request.getTags().add(new TagReference().setName("blub1").setTagFamily("colors"));
 		// 2. Invoke the tag request
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), FORBIDDEN, "error_missing_perm", nodeUuid);
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 	}
 
@@ -168,6 +168,6 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		// 2. Invoke the tag request
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), FORBIDDEN, "tag_error_missing_perm_on_tag_family", "colors",
 				tagFamilyUuid, "blub1");
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 	}
 }

@@ -341,4 +341,13 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return builder.toString();
 	}
 
+	/**
+	 * Check whether any resize or crop param has been set.
+	 * 
+	 * @return
+	 */
+	default boolean hasResizeParams() {
+		return getHeight() != null || getWidth() != null || getCropMode() != null;
+	}
+
 }

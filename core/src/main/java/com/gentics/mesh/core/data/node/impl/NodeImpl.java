@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -129,7 +131,6 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * @see Node
@@ -137,8 +138,6 @@ import org.apache.commons.lang3.NotImplementedException;
 public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
-
-	public static final String RELEASE_UUID_KEY = "releaseUuid";
 
 	public static void init(Database database) {
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);

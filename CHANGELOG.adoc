@@ -10,6 +10,10 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 [[v0.16.1]]
 == 0.16.1 (TBD)
 
+icon:plus[] Demo: The AngularJS version of the link:https://demo.getmesh.io/demo[demo application] was updated.
+
+icon:check[] Events: The `mesh.node.deleted` event was not handled correctly. This has been fixed now.
+
 icon:check[] Core: After resetting a job via rest (admin/jobs/::uuid::/error) the job was not processed again.
                     This has been fixed now.
 

@@ -512,9 +512,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertSuccess(downloadFuture);
 			NodeDownloadResponse downloadResponse = downloadFuture.result();
 			assertNotNull(downloadResponse);
+			assertEquals(size, downloadResponse.getBuffer().length());
 			assertNotNull("The first byte of the response could not be loaded.", downloadResponse.getBuffer().getByte(1));
 			assertNotNull("The last byte of the response could not be loaded.", downloadResponse.getBuffer().getByte(size));
-			assertEquals(size, downloadResponse.getBuffer().length());
 			assertEquals(contentType, downloadResponse.getContentType());
 			assertEquals(fileName, downloadResponse.getFilename());
 		}

@@ -47,7 +47,7 @@ public class MeshTestContext extends TestWatcher {
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
-	private TrackingSearchProvider dummySearchProvider;
+	private TrackingSearchProvider trackingSearchProvider;
 	private Vertx vertx;
 
 	protected int port;
@@ -155,8 +155,8 @@ public class MeshTestContext extends TestWatcher {
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().blockingGet();
 		}
-		if (dummySearchProvider != null) {
-			dummySearchProvider.clear().blockingAwait();
+		if (trackingSearchProvider != null) {
+			trackingSearchProvider.clear().blockingAwait();
 		}
 	}
 
@@ -220,8 +220,8 @@ public class MeshTestContext extends TestWatcher {
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
-		if (dummySearchProvider != null) {
-			dummySearchProvider.reset();
+		if (trackingSearchProvider != null) {
+			trackingSearchProvider.reset();
 		}
 	}
 
@@ -236,8 +236,8 @@ public class MeshTestContext extends TestWatcher {
 		return dataProvider;
 	}
 
-	public TrackingSearchProvider getDummySearchProvider() {
-		return dummySearchProvider;
+	public TrackingSearchProvider getTrackingSearchProvider() {
+		return trackingSearchProvider;
 	}
 
 	/**
@@ -343,7 +343,7 @@ public class MeshTestContext extends TestWatcher {
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
-			dummySearchProvider = meshDagger.trackingSearchProvider();
+			trackingSearchProvider = meshDagger.trackingSearchProvider();
 		}
 		try {
 			meshDagger.boot().init(Mesh.mesh(), false, options, null);
