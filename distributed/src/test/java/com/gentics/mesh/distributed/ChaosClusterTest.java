@@ -57,12 +57,15 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private void printTopology() {
 		System.err.println("-----------------------------------");
-		System.err.println("- Nodes in the cluster");
 		System.err.println("- Action: " + nAction);
 		System.err.println("- Uuids:  " + userUuids.size());
+		System.err.println("- Nodes in the cluster:");
+		System.err.println("-----------------------------------");
+		System.err.println("- ID, Nodename, Running, IP");
 		System.err.println("-----------------------------------");
 		for (MeshDockerServer server : servers) {
-			System.err.println("- " + server.getNodeName() + "\t" + server.isRunning() +  "\t" + server.getContainerIpAddress());
+			System.err.println(
+				"- " + server.getContainerId() + "\t" + server.getNodeName() + "\t" + server.isRunning() + "\t" + server.getContainerIpAddress());
 		}
 		System.err.println("-----------------------------------");
 	}
@@ -125,6 +128,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		System.err.println("Starting server: " + s.getNodeName());
 		String name = s.getNodeName();
 		String dataPrefix = s.getDataPathPostfix();
+		s.close();
 		servers.remove(s);
 
 		MeshDockerServer server = addSlave(CLUSTERNAME, name, dataPrefix, false);
