@@ -20,6 +20,8 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private static Random random = new Random();
 
+	private static final int STARTUP_TIMEOUT = 40;
+
 	private static final int TOTAL_ACTIONS = 30;
 
 	private static final String CLUSTERNAME = "dummy";
@@ -60,7 +62,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		System.err.println("- Uuids:  " + userUuids.size());
 		System.err.println("-----------------------------------");
 		for (MeshDockerServer server : servers) {
-			System.err.println("- " + server.getNodeName() + "\t" + server.isRunning());
+			System.err.println("- " + server.getNodeName() + "\t" + server.isRunning() +  "\t" + server.getContainerIpAddress());
 		}
 		System.err.println("-----------------------------------");
 	}
@@ -75,7 +77,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 			.waitForStartup();
 
 		server.start();
-		server.awaitStartup(30);
+		server.awaitStartup(STARTUP_TIMEOUT);
 		server.login();
 		servers.add(server);
 	}
@@ -84,32 +86,35 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		while (true) {
 			switch (Actions.random()) {
 			case ADD:
-				addServer();
-				return;
+				if (runningServers().size() < TOTAL_ACTIONS) {
+					addServer();
+					return;
+				}
+				break;
 			case REMOVE:
-				if (!allowStopRemove()) {
-					continue;
+				if (allowStopOrRemoval()) {
+					removeServer();
+					return;
 				}
-				removeServer();
-				return;
+				break;
 			case UTILIZE:
-				if (runningServers().isEmpty()) {
-					continue;
+				if (!runningServers().isEmpty()) {
+					utilizeServer();
+					return;
 				}
-				utilizeServer();
-				return;
+				break;
 			case STOP:
-				if (!allowStopRemove()) {
-					continue;
+				if (allowStopOrRemoval()) {
+					stopServer();
+					return;
 				}
-				stopServer();
-				return;
+				break;
 			case START:
-				if (stoppedServers().isEmpty()) {
-					continue;
+				if (!stoppedServers().isEmpty()) {
+					startServer();
+					return;
 				}
-				startServer();
-				return;
+				break;
 			}
 		}
 	}
@@ -123,7 +128,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		servers.remove(s);
 
 		MeshDockerServer server = addSlave(CLUSTERNAME, name, dataPrefix, false);
-		server.awaitStartup(20);
+		server.awaitStartup(STARTUP_TIMEOUT);
 		server.login();
 		servers.add(server);
 	}
@@ -132,7 +137,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		String name = randomName();
 		System.err.println("Adding server: " + name);
 		MeshDockerServer server = addSlave(CLUSTERNAME, name, name, false);
-		server.awaitStartup(20);
+		server.awaitStartup(STARTUP_TIMEOUT);
 		server.login();
 		servers.add(server);
 	}
@@ -159,11 +164,11 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	 * 
 	 * @return
 	 */
-	private boolean allowStopRemove() {
+	private boolean allowStopOrRemoval() {
 		boolean isAlone = servers.size() <= 1;
 		boolean firstHalf = nAction < (TOTAL_ACTIONS / 2);
-		boolean reachedLlimit = servers.size() >= SERVER_LIMIT;
-		return reachedLlimit || (!isAlone && !firstHalf);
+		boolean reachedLimit = servers.size() >= SERVER_LIMIT;
+		return reachedLimit || (!isAlone && !firstHalf);
 	}
 
 	private void removeServer() {
