@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -367,6 +368,36 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		assertFalse("The binary file should have been removed.", binaryFile.exists());
 
 	}
+
+
+	/**
+	 * Assert that a binary cannot be uploaded if the filename or content type is empty.
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void testUploadBinaryWithEmptyProperties() throws IOException {
+		String binaryFieldName = "binary";
+		// The test nodes
+		Node node = folder("news");
+		// Setup the schemas
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", binaryFieldName);;
+			tx.success();
+		}
+		// 1. Upload some binary data without filename
+		call(() -> uploadRandomData(node, "en", binaryFieldName, 8000, "application/octet-stream", ""), BAD_REQUEST, "field_binary_error_emptyfilename", binaryFieldName);
+
+		// 2. Upload some binary data without content type
+		try {
+			MeshResponse<?> mr = uploadRandomData(node, "en", binaryFieldName, 8000, "", "filename.dat").invoke();
+			latchFor(mr);
+			fail("Uploading data without contentype should cause an exception");
+		} catch (Exception e) {
+			assertThat(e).isInstanceOf(IllegalArgumentException.class);
+		}
+	}
+
 
 	/**
 	 * Assert that deleting one node will not affect the binary of another node which uses the same binary (binary of the binaryfield).
