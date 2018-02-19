@@ -126,8 +126,13 @@ public class MeshImpl implements Mesh {
 		File keystoreFile = new File(keyStorePath);
 		// Copy the demo keystore file to the destination
 		if (!keystoreFile.exists()) {
-			keystoreFile.getParentFile().mkdirs();
 			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you..");
+			if (keystoreFile.getParentFile() == null) {
+				log.debug("No parent directory for keystore found. Trying to create the keystore in the mesh root directory.");
+			} else {
+				log.debug("Ensure the keystore parent directory exists " + keyStorePath);
+				keystoreFile.getParentFile().mkdirs();
+			}
 			KeyStoreHelper.gen(keyStorePath, options.getAuthenticationOptions().getKeystorePassword());
 			log.info("Keystore {" + keyStorePath + "} created. The keystore password is listed in your {" + MESH_CONF_FILENAME + "} file.");
 		}

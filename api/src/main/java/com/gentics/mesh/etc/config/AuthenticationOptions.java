@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
 
+import java.util.Objects;
+
 /**
  * Authentication options POJO.
  */
@@ -131,7 +133,9 @@ public class AuthenticationOptions {
 	}
 
 	public void validate(MeshOptions meshOptions) {
-		// TODO Auto-generated method stub
-
+		Objects.requireNonNull(keystorePath, "The keystore path cannot be null.");
+		if (keystorePath.trim().isEmpty()) {
+			throw new IllegalArgumentException("The keystore path cannot be empty");
+		}
 	}
 }
