@@ -52,7 +52,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.util.TestUtils;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -62,7 +61,6 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicClusterTest.class);
 
-	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
 	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
