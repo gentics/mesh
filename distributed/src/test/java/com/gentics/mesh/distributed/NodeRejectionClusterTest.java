@@ -39,7 +39,6 @@ public class NodeRejectionClusterTest {
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
 		.withClearFolders()
-		.waitForStartup()
 		.withExtraOpts("-Dmesh.internal.version=0.10.1 -Dmesh.internal.dbrev=ABC");
 
 	@ClassRule
