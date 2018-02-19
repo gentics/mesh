@@ -1,7 +1,7 @@
 {
   "autoDeploy": true,
   "hotAlignment": true,
-  "executionMode": "undefined",
+  "executionMode": "synchronous",
   "readQuorum": 1,
   "writeQuorum": 1,
   "failureAvailableNodesLessQuorum": false,

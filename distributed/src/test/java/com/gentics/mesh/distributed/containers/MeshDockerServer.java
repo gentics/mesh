@@ -44,10 +44,8 @@ import io.vertx.core.Vertx;
 
 /**
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
- * 
- * @param <SELF>
  */
-public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends GenericContainer<SELF> {
+public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -134,16 +132,21 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 			}
 		}
 		new File(dataPath).mkdirs();
-
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
+		// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
+
+		changeUserInContainer();
 		if (initCluster) {
 			addEnv("MESHARGS", "-" + MeshCLI.INIT_CLUSTER);
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
 		addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
+
+		// Don't run the embedded ES
 		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
 		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
+
 		String javaOpts = null;
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
@@ -170,6 +173,17 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
 		// setContainerName("mesh-test-" + nodeName);
 		setStartupAttempts(1);
+	}
+
+	private void changeUserInContainer() {
+		int uid = 1000;
+		try {
+			uid = UnixUtils.getUid();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		final int id = uid;
+		withCreateContainerCmdModifier(it -> it.withUser(id + ":" + id));
 	}
 
 	@Override
@@ -288,7 +302,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		startupConsumer.await(timeoutInSeconds, SECONDS);
 	}
 
-	public MeshRestClient getMeshClient() {
+	public MeshRestClient client() {
 		return client;
 	}
 
@@ -338,6 +352,10 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		logger().trace("stdout: " + result.getStdout());
 		logger().trace("stderr: " + result.getStderr());
 		return result;
+	}
+
+	public void login() {
+		client().setLogin("admin", "admin").login().blockingGet();
 	}
 
 }

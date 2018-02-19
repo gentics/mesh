@@ -16,6 +16,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -65,10 +66,10 @@ public class BasicClusterTest extends AbstractClusterTest {
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
 	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
-			null, null);
+		null, null);
 
 	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeB", randomToken(), false, false, true, vertx,
-			null, null);
+		null, null);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -81,8 +82,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 	public static void waitForNodes() throws InterruptedException {
 		LoggingConfigurator.init();
 		serverB.awaitStartup(200);
-		clientA = serverA.getMeshClient();
-		clientB = serverB.getMeshClient();
+		clientA = serverA.client();
+		clientB = serverB.client();
 	}
 
 	@Before
@@ -191,11 +192,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 		request.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Mahlzeit!"));
 		NodeResponse updateResponse = call(() -> clientB.updateNode(projectName, response.getUuid(), request, new NodeParametersImpl().setLanguages(
-				"de")));
+			"de")));
 		assertEquals("new-page.de.html", updateResponse.getFields().getStringField("slug").getString());
 
 		NodeResponse responseFromNodeA = call(() -> clientA.findNodeByUuid(projectName, response.getUuid(), new NodeParametersImpl().setLanguages(
-				"de")));
+			"de")));
 		assertEquals("new-page.de.html", responseFromNodeA.getFields().getStringField("slug").getString());
 
 	}
@@ -224,7 +225,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 		// NodeA - Assert that the node is offline
 		call(() -> clientA.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
-				"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
+			"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
 
 		call(() -> clientB.findNodeByUuid(projectName, uuid));
 
@@ -388,6 +389,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
+	@Ignore("Elasticsearch will not be started. Thus no searching is supported.")
 	public void testNodeSearch() throws IOException, InterruptedException {
 		String projectName = randomName();
 		NodeResponse response = createProjectAndNode(clientA, projectName);

@@ -412,6 +412,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public String getDatabaseRevision() {
+		String overrideRev = System.getProperty("mesh.internal.dbrev");
+		if (overrideRev != null) {
+			return overrideRev;
+		}
 		StringBuilder builder = new StringBuilder();
 		for (Change change : ChangesList.getList()) {
 			builder.append(change.getUuid());
