@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -155,12 +156,13 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	private void utilizeServer() {
 		List<MeshDockerServer> list = runningServers();
 		MeshDockerServer s = list.get(random.nextInt(list.size()));
-		System.err.println("Using server: " + s.getNodeName());
 		UserCreateRequest request = new UserCreateRequest();
 		request.setPassword("somepass");
 		request.setUsername(randomName());
 		UserResponse response = call(() -> s.client().createUser(request));
-		userUuids.add(response.getUuid());
+		String uuid = response.getUuid();
+		System.err.println("Using server: " + s.getNodeName() + " - Created user {" + uuid + "}");
+		userUuids.add(uuid);
 	}
 
 	/**
@@ -200,7 +202,12 @@ public class ChaosClusterTest extends AbstractClusterTest {
 			if (server.isRunning()) {
 				// Verify that all created users can be found on the server
 				for (String uuid : userUuids) {
-					call(() -> server.client().findUserByUuid(uuid));
+					try {
+						call(() -> server.client().findUserByUuid(uuid));
+					} catch (AssertionError e) {
+						e.printStackTrace();
+						fail("Error while checking server {" + server.getNodeName() + "} and user {" + uuid + "}");
+					}
 				}
 			}
 		}
