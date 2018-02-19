@@ -12,7 +12,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
-import com.gentics.mesh.rest.client.MeshRestClient;
 
 /**
  * Tests various interacts with the cluster. (e.g.: Adding new nodes, Removing nodes)
@@ -22,8 +21,13 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 	private static String clusterPostFix = randomUUID();
 
 	@ClassRule
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
-		8000, null);
+	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeA")
+		.withDataPathPostfix(randomToken())
+		.withInitCluster()
+		.waitForStartup()
+		.withClearFolders();
 
 	@BeforeClass
 	public static void setupClient() {

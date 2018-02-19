@@ -65,11 +65,19 @@ public class BasicClusterTest extends AbstractClusterTest {
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
-		null, null);
+	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeA")
+		.withDataPathPostfix(randomToken())
+		.withInitCluster()
+		.waitForStartup()
+		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeB", randomToken(), false, false, true, vertx,
-		null, null);
+	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeB")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;

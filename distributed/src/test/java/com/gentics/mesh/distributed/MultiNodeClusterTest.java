@@ -25,17 +25,31 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
-			null, null);
+	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeA")
+		.withDataPathPostfix(randomToken())
+		.withInitCluster()
+		.waitForStartup()
+		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeB", randomToken(), false, false, true, vertx,
-			null, null);
+	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeB")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
-	public static MeshDockerServer serverC = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeC", randomToken(), false, false, true, vertx,
-			null, null);
+	public static MeshDockerServer serverC = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeC")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
-	public static MeshDockerServer serverD = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeD", randomToken(), false, false, true, vertx,
-			null, null);
+	public static MeshDockerServer serverD = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeD")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
 	@ClassRule
 	public static RuleChain chain = RuleChain.outerRule(serverD).around(serverC).around(serverB).around(serverA);
@@ -49,23 +63,22 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 		serverD.awaitStartup(200);
 		serverD.login();
 	}
+
 	/**
 	 * Test that a cluster with multiple nodes can form and that changes are distributed.
 	 */
 	@Test
 	public void testCluster() throws InterruptedException {
 		ProjectResponse response = call(
-				() -> serverA.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
+			() -> serverA.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
 		Thread.sleep(1000);
-
-	
 
 		call(() -> serverB.client().findProjectByUuid(response.getUuid()));
 		call(() -> serverC.client().findProjectByUuid(response.getUuid()));
 		call(() -> serverD.client().findProjectByUuid(response.getUuid()));
 
 		ProjectResponse response2 = call(
-				() -> serverD.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
+			() -> serverD.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
 
 		Thread.sleep(1000);
 		call(() -> serverA.client().findProjectByUuid(response2.getUuid()));

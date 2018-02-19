@@ -25,11 +25,22 @@ public class NodeRejectionClusterTest {
 
 	private static Vertx vertx = Vertx.vertx();
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
-		null, "-Dmesh.internal.version=0.10.0 -Dmesh.internal.dbrev=EFG");
+	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeA")
+		.withDataPathPostfix(randomToken())
+		.withInitCluster()
+		.withClearFolders()
+		.waitForStartup()
+		.withExtraOpts("-Dmesh.internal.version=0.10.0 -Dmesh.internal.dbrev=EFG");
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeB", randomToken(), false, false, true, vertx,
-		null, "-Dmesh.internal.version=0.10.1 -Dmesh.internal.dbrev=ABC");
+	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeB")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders()
+		.waitForStartup()
+		.withExtraOpts("-Dmesh.internal.version=0.10.1 -Dmesh.internal.dbrev=ABC");
 
 	@ClassRule
 	public static RuleChain chain = RuleChain.outerRule(serverB).around(serverA);
