@@ -93,7 +93,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchWithManySchemas() {
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 45; i++) {
 			SchemaCreateRequest request = new SchemaCreateRequest();
 			request.setName("dummy" + i);
 			request.addField(FieldUtil.createHtmlFieldSchema("content"));

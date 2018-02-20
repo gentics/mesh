@@ -7,8 +7,12 @@
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for binary data.
+
 [[v0.16.1]]
 == 0.16.1 (TBD)
+
+icon:check[] Elasticsearch: Search requests failed on systems with many schemas. This has been fixed now.
 
 icon:plus[] Demo: The AngularJS version of the link:https://demo.getmesh.io/demo[demo application] was updated.
 

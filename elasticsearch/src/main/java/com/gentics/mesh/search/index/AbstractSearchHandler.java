@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.RequestBuilder;
+import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
@@ -143,7 +145,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		// Setup the request
-		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
+		RequestBuilder<JsonObject> requestBuilder = client.search(request, new ArrayList<>(indices));
 		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
 		requestBuilder.async().subscribe(response -> {
 			// Directly relay the response to the requester without converting it.
@@ -205,10 +207,15 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + request.encodePrettily() + "}");
 		}
 
-		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
-		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
+		JsonObject queryOption = new JsonObject();
+		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("search_type", "dfs_query_then_fetch");
+		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
+		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().flatMapObservable(response -> {
-			JsonObject hitsInfo = response.getJsonObject("hits");
+			JsonArray responses = response.getJsonArray("responses");
+			JsonObject hitsInfo = responses.getJsonObject(0).getJsonObject("hits");
 			JsonArray hits = hitsInfo.getJsonArray("hits");
 
 			List<Tuple<T, String>> list = new ArrayList<>();
@@ -315,7 +322,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		// Prepare the request
-		RequestBuilder<JsonObject> requestBuilder = client.query(queryJson, new ArrayList<>(indices));
+		RequestBuilder<JsonObject> requestBuilder = client.search(queryJson, new ArrayList<>(indices));
 		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
 		Single<Page<? extends T>> result = requestBuilder.async()
 			.map(response -> {

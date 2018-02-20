@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.RequestBuilder;
+import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -89,7 +89,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
 		try {
-			RequestBuilder<JsonObject> scrollRequest = client.query(queryJson, new ArrayList<>(indices));
+			RequestBuilder<JsonObject> scrollRequest = client.search(queryJson, new ArrayList<>(indices));
 			JsonObject scrollResp = scrollRequest.sync();
 			JsonObject hitsInfo = scrollResp.getJsonObject("hits");
 
