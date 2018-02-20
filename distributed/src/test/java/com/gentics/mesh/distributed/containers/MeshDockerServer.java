@@ -341,7 +341,8 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	}
 
 	public void login() {
-		client().setLogin("admin", "admin").login().blockingGet();
+		client().setLogin("admin", "admin");
+		client().login().blockingGet();
 	}
 
 	/**
@@ -439,6 +440,18 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	public MeshDockerServer withDataPathPostfix(String postfix) {
 		this.dataPathPostfix = postfix;
 		return this;
+	}
+
+	public String getNodeName() {
+		return nodeName;
+	}
+
+	public String getDataPathPostfix() {
+		return dataPathPostfix;
+	}
+
+	public String getClusterName() {
+		return clusterName;
 	}
 
 }

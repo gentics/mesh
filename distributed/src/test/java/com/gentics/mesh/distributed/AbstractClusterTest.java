@@ -60,7 +60,8 @@ public abstract class AbstractClusterTest {
 		MeshDockerServer server = new MeshDockerServer(vertx)
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
-			.withNodeName(nodeName);
+			.withNodeName(nodeName)
+			.waitForStartup();
 		if (clearFolders) {
 			server.withClearFolders();
 		}
