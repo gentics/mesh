@@ -237,6 +237,14 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable refreshIndex(String... indices) {
+		if (indices.length == 0) {
+			return client.refresh().async()
+				.doOnError(error -> {
+					log.error("Refreshing of all indices failed.", error);
+					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
+				}).toCompletable()
+				.compose(withTimeoutAndLog("Refreshing all indices", true));
+		}
 		// Segment the array into chunks which are smaller 2000 bytes
 		Set<String[]> segments = segmentIndices(indices);
 		return Observable.fromIterable(segments).flatMapCompletable(segment -> {
@@ -248,33 +256,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				}).toCompletable()
 				.compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}", true));
 		});
-	}
-
-	/**
-	 * Split the provided array into a set of arrays which each hold at max 2000 bytes of strings.
-	 * 
-	 * @param indices
-	 * @return
-	 */
-	private Set<String[]> segmentIndices(String... indices) {
-		Set<String[]> segments = new HashSet<>();
-		List<String> s = new ArrayList<>();
-		int nLen = 0;
-		for (String index : indices) {
-			nLen += index.length();
-			if (nLen < 2000) {
-				s.add(index);
-			} else {
-				segments.add(s.stream().toArray(String[]::new));
-				s.clear();
-				s.add(index);
-				nLen = +index.length();
-			}
-		}
-		if (s.size() > 0) {
-			segments.add(s.stream().toArray(String[]::new));
-		}
-		return segments;
 	}
 
 	@Override
@@ -499,6 +480,33 @@ public class ElasticSearchProvider implements SearchProvider {
 				return t;
 			}
 		};
+	}
+
+	/**
+	 * Split the provided array into a set of arrays which each hold at max 2000 bytes of strings.
+	 * 
+	 * @param indices
+	 * @return
+	 */
+	private Set<String[]> segmentIndices(String... indices) {
+		Set<String[]> segments = new HashSet<>();
+		List<String> s = new ArrayList<>();
+		int nLen = 0;
+		for (String index : indices) {
+			nLen += index.length();
+			if (nLen < 2000) {
+				s.add(index);
+			} else {
+				segments.add(s.stream().toArray(String[]::new));
+				s.clear();
+				s.add(index);
+				nLen = +index.length();
+			}
+		}
+		if (s.size() > 0) {
+			segments.add(s.stream().toArray(String[]::new));
+		}
+		return segments;
 	}
 
 }

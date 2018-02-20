@@ -29,4 +29,5 @@ public class UserRawSearchEndpointTest extends AbstractMeshTest {
 		assertNotNull(response);
 		assertThat(response).has("hits.hits[0]._id", userResponse.getUuid(), "The correct element was not found.");
 	}
+
 }

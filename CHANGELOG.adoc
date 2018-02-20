@@ -9,8 +9,10 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for binary data.
 
-[[v0.16.1]]
-== 0.16.1 (TBD)
+[[v0.17.0]]
+== 0.17.0 (TBD)
+
+CAUTION: Search: The raw search endpoints now wraps a multisearch request. The endpoint response will now include the elasticsearch responses array. The query stays the same.
 
 icon:check[] Elasticsearch: Search requests failed on systems with many schemas. This has been fixed now.
 

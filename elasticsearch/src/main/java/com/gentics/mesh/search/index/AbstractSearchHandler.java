@@ -144,9 +144,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + request.encodePrettily() + "}");
 		}
 
-		// Setup the request
-		RequestBuilder<JsonObject> requestBuilder = client.search(request, new ArrayList<>(indices));
-		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
+		JsonObject queryOption = new JsonObject();
+		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("search_type", "dfs_query_then_fetch");
+		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
+		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().subscribe(response -> {
 			// Directly relay the response to the requester without converting it.
 			ac.send(response.toString(), OK);
@@ -321,14 +324,19 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
 
+		JsonObject queryOption = new JsonObject();
+		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("search_type", "dfs_query_then_fetch");
+		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
 		// Prepare the request
-		RequestBuilder<JsonObject> requestBuilder = client.search(queryJson, new ArrayList<>(indices));
-		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
+		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, queryJson);
 		Single<Page<? extends T>> result = requestBuilder.async()
 			.map(response -> {
 				return db.tx(() -> {
 					List<T> elementList = new ArrayList<>();
-					JsonObject hitsInfo = response.getJsonObject("hits");
+					JsonArray responses = response.getJsonArray("responses");
+					JsonObject hitsInfo = responses.getJsonObject(0).getJsonObject("hits");
 					JsonArray hits = hitsInfo.getJsonArray("hits");
 					for (int i = 0; i < hits.size(); i++) {
 						JsonObject hit = hits.getJsonObject(i);
