@@ -10,9 +10,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -33,12 +36,12 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Completable;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.Vertx;
 import joptsimple.internal.Strings;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -194,18 +197,29 @@ public class ElasticSearchProvider implements SearchProvider {
 				List<String> indices = Collections.emptyList();
 				indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
 				if (indices.isEmpty()) {
+					log.debug("No indices with prefix {" + INDEX_PREFIX + "} were found.");
 					return Maybe.empty();
 				} else {
+					if (log.isDebugEnabled()) {
+						for (String idx : indices) {
+							log.debug("Found index {" + idx + "}");
+						}
+					}
 					return Maybe.just(indices);
 				}
 			});
 
-		// Now delete the found indices
-		return indexInfo.flatMapCompletable(result -> {
-			log.debug("Deleting indices {" + StringUtils.join(result.toArray(), ","));
-			String[] indices = result.toArray(new String[result.size()]);
-			return deleteIndex(indices);
-		}).compose(withTimeoutAndLog("Clearing mesh indices.", true));
+		Observable<String[]> segmentObs = indexInfo.flatMapObservable(list -> {
+			// Segment the array into chunks which are smaller 2000 bytes
+			Set<String[]> segments = segmentIndices(list.stream().toArray(String[]::new));
+			return Observable.fromIterable(segments);
+		});
+		return segmentObs.flatMapCompletable(segment -> {
+			// Now delete the found indices
+			log.debug("Deleting indices {" + StringUtils.join(segment, ","));
+			return deleteIndex(segment).compose(withTimeoutAndLog("Clearing mesh indices.", true));
+		});
+
 	}
 
 	@Override
@@ -223,13 +237,44 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable refreshIndex(String... indices) {
-		String indicesStr = Strings.join(indices, ",");
-		return client.refresh(indices).async()
-			.doOnError(error -> {
-				log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
-				throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
-			}).toCompletable()
-			.compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}", true));
+		// Segment the array into chunks which are smaller 2000 bytes
+		Set<String[]> segments = segmentIndices(indices);
+		return Observable.fromIterable(segments).flatMapCompletable(segment -> {
+			String indicesStr = Strings.join(segment, ",");
+			return client.refresh(segment).async()
+				.doOnError(error -> {
+					log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
+					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
+				}).toCompletable()
+				.compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}", true));
+		});
+	}
+
+	/**
+	 * Split the provided array into a set of arrays which each hold at max 2000 bytes of strings.
+	 * 
+	 * @param indices
+	 * @return
+	 */
+	private Set<String[]> segmentIndices(String... indices) {
+		Set<String[]> segments = new HashSet<>();
+		List<String> s = new ArrayList<>();
+		int nLen = 0;
+		for (String index : indices) {
+			nLen += index.length();
+			if (nLen < 2000) {
+				s.add(index);
+			} else {
+				segments.add(s.stream().toArray(String[]::new));
+				s.clear();
+				s.add(index);
+				nLen = +index.length();
+			}
+		}
+		if (s.size() > 0) {
+			segments.add(s.stream().toArray(String[]::new));
+		}
+		return segments;
 	}
 
 	@Override
@@ -445,7 +490,7 @@ public class ElasticSearchProvider implements SearchProvider {
 						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 					} else {
 						error.printStackTrace();
-						log.error(error);
+						log.error("Request failed {" + msg + "}", error);
 					}
 				});
 			if (ignoreError) {

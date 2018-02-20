@@ -16,9 +16,12 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -82,12 +85,24 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("fields.content", "the"), new PagingParametersImpl().setPage(1)
-				.setPerPage(2)));
-			assertEquals(0, response.getData().size());
-			assertEquals(0, response.getMetainfo().getTotalCount());
+		NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("fields.content", "the"), new PagingParametersImpl().setPage(1)
+			.setPerPage(2)));
+		assertEquals(0, response.getData().size());
+		assertEquals(0, response.getMetainfo().getTotalCount());
+	}
+
+	@Test
+	public void testSearchWithManySchemas() {
+		for (int i = 0; i < 20; i++) {
+			SchemaCreateRequest request = new SchemaCreateRequest();
+			request.setName("dummy" + i);
+			request.addField(FieldUtil.createHtmlFieldSchema("content"));
+			SchemaResponse response = call(() -> client().createSchema(request));
+			call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
 		}
+
+		call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
+			.setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 	}
 
 }

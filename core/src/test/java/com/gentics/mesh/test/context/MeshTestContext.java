@@ -300,8 +300,10 @@ public class MeshTestContext extends TestWatcher {
 			options.getSearchOptions().setStartEmbedded(false);
 			options.getSearchOptions().setUrl(null);
 			if (settings.useElasticsearch()) {
-				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2").withEnv("discovery.type", "single-node")
-					.withExposedPorts(9200).waitingFor(Wait.forHttp("/"));
+				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2")
+					.withEnv("discovery.type", "single-node")
+					.withExposedPorts(9200)
+					.waitingFor(Wait.forHttp("/"));
 				if (!elasticsearch.isRunning()) {
 					elasticsearch.start();
 				}
