@@ -182,6 +182,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		}
 	}
 
+	@Override
+	public void stop() {
+		super.stop();
+	}
+
 	/**
 	 * Ensures that an empty folder exists for the given path.
 	 * 

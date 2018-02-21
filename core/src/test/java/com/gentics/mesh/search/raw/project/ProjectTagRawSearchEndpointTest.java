@@ -38,8 +38,8 @@ public class ProjectTagRawSearchEndpointTest extends AbstractMeshTest {
 
 		JsonObject response = call(() -> client().searchTagsRaw("projectA", query));
 		assertNotNull(response);
-		assertThat(response).has("hits.hits[0]._id", tagA.getUuid(), "The correct element was not found.");
-		assertThat(response).has("hits.total", "1", "Not exactly one item was found");
+		assertThat(response).has("responses[0].hits.hits[0]._id", tagA.getUuid(), "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.total", "1", "Not exactly one item was found");
 
 	}
 }
