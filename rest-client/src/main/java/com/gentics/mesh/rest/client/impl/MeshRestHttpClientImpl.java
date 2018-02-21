@@ -956,6 +956,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(fileName, "fileName must not be null");
 		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(contentType, "contentType must not be null");
+		if (contentType.isEmpty()) {
+			throw new IllegalArgumentException("The contentType of the binary field cannot be empty.");
+		}
 
 		// TODO handle escaping of filename
 		String boundary = "--------Geg2Oob";

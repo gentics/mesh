@@ -124,6 +124,26 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}).doOnError(ac::fail).subscribe();
 	}
 
+	private void validateFileUpload(FileUpload ul, String fieldName) {
+		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		long byteLimit = uploadOptions.getByteLimit();
+
+		if (ul.size() > byteLimit) {
+			if (log.isDebugEnabled()) {
+				log.debug("Upload size of {" + ul.size() + "} exceeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+			}
+			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
+		}
+
+		if (isEmpty(ul.fileName())) {
+			throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldName);
+		}
+		if (isEmpty(ul.contentType())) {
+			throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldName);
+		}
+	}
 	/**
 	 * Handle a request to create a new field.
 	 * 
@@ -149,7 +169,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
 
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		Set<FileUpload> fileUploads = ac.getFileUploads();
 		if (fileUploads.isEmpty()) {
 			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
@@ -160,17 +179,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
 		}
 		FileUpload ul = fileUploads.iterator().next();
-		long byteLimit = uploadOptions.getByteLimit();
-
-		if (ul.size() > byteLimit) {
-			if (log.isDebugEnabled()) {
-				log.debug("Upload size of {" + ul.size() + "} exceeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
-			}
-			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-		}
-
+		validateFileUpload(ul, fieldName);
 		// This the name and path of the file to be moved to a new location.
 		// This will be changed because it is possible that the file has to be moved multiple times
 		// (if the transaction failed and has to be repeated).
