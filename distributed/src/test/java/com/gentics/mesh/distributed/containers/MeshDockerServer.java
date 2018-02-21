@@ -93,7 +93,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * Create a new docker server
 	 * 
 	 * @param vertx
-	 *            Vertx instances used to create the rest client
+	 *            Vert.x instances used to create the rest client
 	 */
 	public MeshDockerServer(Vertx vertx) {
 		super(image);
@@ -103,7 +103,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	@Override
 	protected void configure() {
-		String dataPath = "/opt/jenkins-slave/" + nodeName + "-data-" + dataPathPostfix;
+		String dataPath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName + "-data-" + dataPathPostfix;
 		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
 		// Otherwise the folder would be created by docker using root.
 
@@ -154,10 +154,8 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		exposedPorts.add(8600);
 		exposedPorts.add(8080);
 
-		// setPrivilegedMode(true);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
-		// setContainerName("mesh-test-" + nodeName);
 		setStartupAttempts(1);
 	}
 

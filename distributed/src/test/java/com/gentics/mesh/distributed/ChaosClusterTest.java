@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -19,6 +20,8 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
  * A test which will randomly add, remove, utilize and stop nodes in a mesh cluster.
  */
 public class ChaosClusterTest extends AbstractClusterTest {
+
+	private static String clusterPostFix = randomUUID();
 
 	private static Random random = new Random();
 
@@ -80,7 +83,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		@SuppressWarnings("resource")
 		MeshDockerServer server = new MeshDockerServer(vertx)
 			.withInitCluster()
-			.withClusterName(CLUSTERNAME)
+			.withClusterName(CLUSTERNAME + clusterPostFix)
 			.withNodeName("master")
 			.withClearFolders()
 			.withDataPathPostfix("master")
@@ -137,7 +140,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		String dataPrefix = s.getDataPathPostfix();
 		servers.remove(s);
 
-		MeshDockerServer server = addSlave(CLUSTERNAME, name, dataPrefix, false);
+		MeshDockerServer server = addSlave(CLUSTERNAME + clusterPostFix, name, dataPrefix, false);
 		server.awaitStartup(STARTUP_TIMEOUT);
 		server.login();
 		servers.add(server);
@@ -146,7 +149,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	private void addServer() throws InterruptedException {
 		String name = randomName();
 		System.err.println("Adding server: " + name);
-		MeshDockerServer server = addSlave(CLUSTERNAME, name, name, false);
+		MeshDockerServer server = addSlave(CLUSTERNAME + clusterPostFix, name, name, false);
 		server.awaitStartup(STARTUP_TIMEOUT);
 		server.login();
 		servers.add(server);
