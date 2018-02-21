@@ -250,9 +250,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertEquals("The contentType was correctly set in the response.", mimeType, binaryField.getMimeType());
 			assertEquals("The binary length was not correctly set in the response.", size, binaryField.getFileSize());
 			assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
-			assertNull("The data did contain image information.", binaryField.getDominantColor());
 			assertNull("The data did contain image information.", binaryField.getWidth());
 			assertNull("The data did contain image information.", binaryField.getHeight());
+			assertNull("The data did contain image information.", binaryField.getDominantColor());
 		}
 
 	}
