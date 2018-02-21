@@ -47,7 +47,6 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	private ImgscalrImageManipulator manipulator;
 
-
 	@Before
 	public void setup() {
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
@@ -62,16 +61,16 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			log.debug("Handling " + imageName);
 
 			Single<Buffer> obs = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180)).map(
-					PropReadFileStream::getFile).map(RxUtil::toBufferObs).flatMap(RxUtil::readEntireData);
+				PropReadFileStream::getFile).map(RxUtil::toBufferObs).flatMap(RxUtil::readEntireData);
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {
 					assertNotNull(buffer);
 					byte[] data = buffer.getBytes();
-					ByteArrayInputStream bis = new ByteArrayInputStream(data);
-					BufferedImage resizedImage = ImageIO.read(bis);
-					bis.close();
-					assertThat(resizedImage).hasSize(150, 180).matches(refImage);
+					try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
+						BufferedImage resizedImage = ImageIO.read(bis);
+						assertThat(resizedImage).hasSize(150, 180).matches(refImage);
+					}
 					// FileUtils.writeByteArrayToFile(new File("/tmp/" + imageName + "reference.jpg"), data);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -80,7 +79,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 				latch.countDown();
 			});
 			try {
-				if (!latch.await(10, TimeUnit.SECONDS)) {
+				if (!latch.await(20, TimeUnit.SECONDS)) {
 					fail("Timeout reached");
 				}
 			} catch (Exception e) {
@@ -102,7 +101,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	}
 
 	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Observable<Buffer>> action) throws JSONException,
-			IOException {
+		IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), Charset.defaultCharset()));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
@@ -144,7 +143,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
-				.hashCode());
+			.hashCode());
 
 		// Height only
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
@@ -158,7 +157,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
-				.hashCode());
+			.hashCode());
 
 		// Height and Width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
@@ -179,7 +178,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
-				.hashCode());
+			.hashCode());
 
 	}
 

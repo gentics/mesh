@@ -30,7 +30,7 @@ public class ProjectRawSearchEndpointImpl extends AbstractProjectEndpoint implem
 
 	@Override
 	public String getDescription() {
-		return "Provides endpoints which allow project wide search which return the raw search result.";
+		return "Provides endpoints which allow project wide search which return the unmodified Elasticsearch response.";
 	}
 
 	@Override

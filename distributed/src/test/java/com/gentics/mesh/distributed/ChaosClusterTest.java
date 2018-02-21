@@ -3,6 +3,7 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -44,13 +45,17 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	};
 
 	@Test
-	public void runTest() throws InterruptedException {
+	public void runTest() throws InterruptedException, IOException {
 		startInitialServer();
 
 		while (nAction < TOTAL_ACTIONS) {
 			printTopology();
+			System.out.println("Press any key to continue");
+			System.in.read();
+			System.out.println("\n\n\nApplying action...");
 			applyAction();
-			Thread.sleep(450);
+			Thread.sleep(5_000);
+			System.out.println("\n\n\nChecking cluster...");
 			assertCluster();
 			nAction++;
 		}
@@ -72,6 +77,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	}
 
 	private void startInitialServer() throws InterruptedException {
+		@SuppressWarnings("resource")
 		MeshDockerServer server = new MeshDockerServer(vertx)
 			.withInitCluster()
 			.withClusterName(CLUSTERNAME)
@@ -129,7 +135,6 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		System.err.println("Starting server: " + s.getNodeName());
 		String name = s.getNodeName();
 		String dataPrefix = s.getDataPathPostfix();
-		s.close();
 		servers.remove(s);
 
 		MeshDockerServer server = addSlave(CLUSTERNAME, name, dataPrefix, false);
@@ -150,10 +155,11 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	private void stopServer() {
 		MeshDockerServer s = randomServer();
 		System.err.println("Stopping server: " + s.getNodeName());
-		s.stop();
+		s.close();
 	}
 
 	private void utilizeServer() {
+		System.err.println("Utilize server...");
 		List<MeshDockerServer> list = runningServers();
 		MeshDockerServer s = list.get(random.nextInt(list.size()));
 		UserCreateRequest request = new UserCreateRequest();
@@ -199,7 +205,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private void assertCluster() {
 		for (MeshDockerServer server : servers) {
-			if (server.isRunning()) {
+			if (server.getContainerId() != null) {
 				// Verify that all created users can be found on the server
 				for (String uuid : userUuids) {
 					try {

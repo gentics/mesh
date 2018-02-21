@@ -81,6 +81,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 				context.assertNull(received.getJsonObject("body").getString("languageTag"));
 				async.complete();
 			});
+			async.handler(ch -> {
+				ws.close();
+			});
 		});
 
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));

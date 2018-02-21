@@ -27,6 +27,6 @@ public class RoleRawSearchEndpointTest extends AbstractMeshTest {
 		String query = getSimpleTermQuery("name.raw", roleName);
 
 		JsonObject response = call(() -> client().searchRolesRaw(query));
-		assertThat(response).has("hits.hits[0]._id", role.getUuid(), "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.hits[0]._id", role.getUuid(), "The correct element was not found.");
 	}
 }
