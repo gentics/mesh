@@ -8,6 +8,8 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+import java.util.Objects;
+
 /**
  * Authentication options POJO.
  */
@@ -144,7 +146,9 @@ public class AuthenticationOptions implements Option {
 	}
 
 	public void validate(MeshOptions meshOptions) {
-		// TODO Auto-generated method stub
-
+		Objects.requireNonNull(keystorePath, "The keystore path cannot be null.");
+		if (keystorePath.trim().isEmpty()) {
+			throw new IllegalArgumentException("The keystore path cannot be empty");
+		}
 	}
 }

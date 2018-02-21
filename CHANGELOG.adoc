@@ -12,6 +12,8 @@ icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for
 [[v0.17.0]]
 == 0.17.0 (TBD)
 
+icon:check[] Core: If the keystore path was only a file name without a directory a NPE was thrown on startup. This has been fixed now.
+
 CAUTION: Search: The raw search endpoints now wraps a multisearch request. The endpoint response will now include the elasticsearch responses array. The query stays the same.
 
 icon:check[] Elasticsearch: Search requests failed on systems with many schemas. This has been fixed now.
