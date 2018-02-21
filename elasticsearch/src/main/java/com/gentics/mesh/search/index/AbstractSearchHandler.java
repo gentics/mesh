@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -217,8 +218,17 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().flatMapObservable(response -> {
+			System.out.println(response.encodePrettily());
 			JsonArray responses = response.getJsonArray("responses");
-			JsonObject hitsInfo = responses.getJsonObject(0).getJsonObject("hits");
+			JsonObject firstResponse = responses.getJsonObject(0);
+
+			// Process the nested error
+			JsonObject errorInfo = firstResponse.getJsonObject("error");
+			if (errorInfo != null) {
+				return Observable.error(mapError(errorInfo));
+			}
+
+			JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 			JsonArray hits = hitsInfo.getJsonArray("hits");
 
 			List<Tuple<T, String>> list = new ArrayList<>();
@@ -250,6 +260,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 			return Observable.fromIterable(list);
 		}).onErrorResumeNext(error -> {
+			if (error instanceof GenericRestException) {
+				return Observable.error(error);
+			}
 			return Observable.error(mapToMeshError(error));
 		}).flatMapSingle(element -> {
 			// TODO add resume next to omit the item if it can't be transformed for some reason.
@@ -333,10 +346,18 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, queryJson);
 		Single<Page<? extends T>> result = requestBuilder.async()
 			.map(response -> {
+				JsonArray responses = response.getJsonArray("responses");
+				JsonObject firstResponse = responses.getJsonObject(0);
+
+				// Process the nested error
+				JsonObject errorInfo = firstResponse.getJsonObject("error");
+				if (errorInfo != null) {
+					throw mapError(errorInfo);
+				}
+
 				return db.tx(() -> {
 					List<T> elementList = new ArrayList<>();
-					JsonArray responses = response.getJsonArray("responses");
-					JsonObject hitsInfo = responses.getJsonObject(0).getJsonObject("hits");
+					JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 					JsonArray hits = hitsInfo.getJsonArray("hits");
 					for (int i = 0; i < hits.size(); i++) {
 						JsonObject hit = hits.getJsonObject(i);
@@ -360,6 +381,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		return result.timeout(30, TimeUnit.SECONDS)
 			.onErrorResumeNext(error -> {
 				log.error("Search query failed", error);
+				if (error instanceof GenericRestException) {
+					return Single.error(error);
+				}
 				return Single.error(mapToMeshError(error));
 			}).blockingGet();
 	}
