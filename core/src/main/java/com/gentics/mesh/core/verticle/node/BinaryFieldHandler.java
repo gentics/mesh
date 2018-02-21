@@ -259,6 +259,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// Reuse the existing properties
 			if (oldField != null) {
 				oldField.copyTo(field);
+
+				// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
+				if (oldField.hasImage() && !ul.contentType().startsWith("image/")) {
+					field.setImageDominantColor(null);
+				}
 			}
 
 			// Process the upload which will update the binary field

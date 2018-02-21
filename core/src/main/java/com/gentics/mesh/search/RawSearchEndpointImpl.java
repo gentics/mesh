@@ -57,7 +57,7 @@ public class RawSearchEndpointImpl extends AbstractEndpoint implements SearchEnd
 
 	@Override
 	public String getDescription() {
-		return "Provides search endpoints which can be used to invoke global searches which return the raw search result.";
+		return "Provides search endpoints which can be used to invoke global searches which return the unmodified Elasticsearch response.";
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
 
 import java.util.ArrayList;
@@ -101,7 +102,15 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 			RequestBuilder<JsonObject> searchRequest = client.multiSearch(queryOption, queryJson);
 			JsonObject response = searchRequest.sync();
 			JsonArray responses = response.getJsonArray("responses");
-			JsonObject hitsInfo = responses.getJsonObject(0).getJsonObject("hits");
+			JsonObject firstResponse = responses.getJsonObject(0);
+
+			// Process the nested error
+			JsonObject errorInfo = firstResponse.getJsonObject("error");
+			if (errorInfo != null) {
+				throw mapError(errorInfo);
+			}
+
+			JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(() -> {

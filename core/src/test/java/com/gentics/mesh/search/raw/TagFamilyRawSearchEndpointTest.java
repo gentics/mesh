@@ -29,6 +29,6 @@ public class TagFamilyRawSearchEndpointTest extends AbstractMeshTest {
 
 		JsonObject response = call(() -> client().searchTagFamiliesRaw(query));
 		assertNotNull(response);
-		assertThat(response).has("hits.hits[0]._id", tagFamily.getUuid(), "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.hits[0]._id", tagFamily.getUuid(), "The correct element was not found.");
 	}
 }

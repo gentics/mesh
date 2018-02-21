@@ -64,9 +64,9 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 		// search in old project
 		JsonObject response = call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue)));
-		assertThat(response).has("hits.total", "2", "Not exactly two item was found.");
-		String uuid1 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
-		String uuid2 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");
+		assertThat(response).has("responses[0].hits.total", "2", "Not exactly two item was found.");
+		String uuid1 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
+		String uuid2 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");
 		assertThat(Arrays.asList(uuid1, uuid2)).containsExactlyInAnyOrder(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
 
 	}

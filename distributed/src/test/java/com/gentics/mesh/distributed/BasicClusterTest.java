@@ -145,7 +145,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
-	public void testElementCreation() {
+	public void testElementCreation() throws InterruptedException {
 		// Node A: Create user
 		UserCreateRequest createRequest = new UserCreateRequest();
 		createRequest.setUsername("clusterdUser");
@@ -160,6 +160,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 		// Node A: Verify update of user
 		assertEquals("clusteredUserChanged", call(() -> clientA.findUserByUuid(response.getUuid())).getUsername());
+		Thread.sleep(250);
 
 		// Node B: Create user
 		createRequest.setUsername("clusterdUser2");
@@ -177,12 +178,14 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
-	public void testElementDeletion() {
+	public void testElementDeletion() throws InterruptedException {
 		String projectName = randomName();
 		NodeResponse response = createProjectAndNode(clientA, projectName);
+		Thread.sleep(250);
 
 		String uuid = response.getUuid();
 		call(() -> clientB.deleteNode(projectName, uuid));
+		Thread.sleep(250);
 
 		call(() -> clientA.findNodeByUuid(projectName, response.getUuid()), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
@@ -407,9 +410,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	/**
 	 * Verify that the project is deleted and the routes are removed on the other instances.
+	 * 
+	 * @throws InterruptedException
 	 */
 	@Test
-	public void testProjectDeletion() {
+	public void testProjectDeletion() throws InterruptedException {
 		String newProjectName = randomName();
 		// Node A: Create Project
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -417,9 +422,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 		String uuid = response.getUuid();
+		Thread.sleep(250);
 
 		// Node B: Delete the project
 		call(() -> clientB.deleteProject(uuid));
+		Thread.sleep(250);
 
 		// Node A: Assert that the project can't be found
 		call(() -> clientA.findProjectByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);

@@ -48,8 +48,8 @@ public class ProjectNodeRawSearchEndpointTest extends AbstractMeshTest {
 		// search in old project
 		JsonObject response = call(() -> client().searchNodesRaw("projectA", getSimpleQuery("fields.content", contentFieldValue)));
 		assertNotNull(response);
-		assertThat(response).has("hits.hits[0]._id", nodeA.getUuid() + "-en", "The correct element was not found.");
-		assertThat(response).has("hits.total", "1", "Not exactly one item was found");
+		assertThat(response).has("responses[0].hits.hits[0]._id", nodeA.getUuid() + "-en", "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.total", "1", "Not exactly one item was found");
 
 	}
 }

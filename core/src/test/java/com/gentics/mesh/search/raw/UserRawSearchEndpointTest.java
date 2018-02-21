@@ -27,7 +27,7 @@ public class UserRawSearchEndpointTest extends AbstractMeshTest {
 
 		JsonObject response = call(() -> client().searchUsersRaw(json));
 		assertNotNull(response);
-		assertThat(response).has("hits.hits[0]._id", userResponse.getUuid(), "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.hits[0]._id", userResponse.getUuid(), "The correct element was not found.");
 	}
 
 }
