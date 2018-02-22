@@ -85,7 +85,6 @@ NOTE: The Gentics Mesh UI currently requires the Elasticsearch support to functi
 
 We currently run and test against Elasticsearch version 6.1.2. Other versions have not yet been tested.
 
-
 [[endpoints]]
 == REST endpoints
 
@@ -292,8 +291,8 @@ The paging query parameters are `perPage` and `page` . It is important to note t
 
 Additionally it is also possible to use the ```/api/v1/rawSearch``` or ```/api/v1/:projectName/rawSearch``` endpoints.
 
-These endpoints will accept the same query but return the regular Elasticsearch response instead of the typical Gentics Mesh list response.
-This is useful if you want to use for example the Elasticsearch highlighing and aggregation features. 
+These endpoints will accept the same query but return a Elasticsearch multi search response instead of the typical Gentics Mesh list response.
+This is useful if you want to use for example the Elasticsearch highlighing and aggregation features.
 The endpoint will automatically select the needed indices and modify the query in order to add needed permission checks.
 
 ==== Reindex
