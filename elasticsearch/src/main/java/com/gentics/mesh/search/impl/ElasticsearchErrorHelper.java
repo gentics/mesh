@@ -65,6 +65,9 @@ public final class ElasticsearchErrorHelper {
 	 * @return
 	 */
 	public static GenericRestException mapToMeshError(Throwable error) {
+		if (error instanceof GenericRestException) {
+			return (GenericRestException) error;
+		}
 		if (error instanceof TimeoutException || error instanceof SocketTimeoutException) {
 			return error(INTERNAL_SERVER_ERROR, "search_error_timeout");
 		} else if (error instanceof HttpErrorException) {

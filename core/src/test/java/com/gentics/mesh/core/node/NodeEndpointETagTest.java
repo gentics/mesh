@@ -9,8 +9,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -24,8 +22,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointETagTest extends AbstractMeshTest {

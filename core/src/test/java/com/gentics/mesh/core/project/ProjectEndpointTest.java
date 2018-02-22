@@ -65,7 +65,6 @@ import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;

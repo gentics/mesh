@@ -10,19 +10,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.Mesh;
@@ -35,7 +30,6 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableTransformer;
-import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
@@ -192,33 +186,25 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable clear() {
 		// Read all indices and locate indices which have been created for/by mesh.
-		Maybe<List<String>> indexInfo = client.readIndex("_all").async()
-			.flatMapMaybe(response -> {
+		return client.readIndex("_all").async()
+			.flatMapObservable(response -> {
 				List<String> indices = Collections.emptyList();
 				indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
 				if (indices.isEmpty()) {
 					log.debug("No indices with prefix {" + INDEX_PREFIX + "} were found.");
-					return Maybe.empty();
 				} else {
 					if (log.isDebugEnabled()) {
 						for (String idx : indices) {
 							log.debug("Found index {" + idx + "}");
 						}
 					}
-					return Maybe.just(indices);
 				}
-			});
-
-		Observable<String[]> segmentObs = indexInfo.flatMapObservable(list -> {
-			// Segment the array into chunks which are smaller 2000 bytes
-			Set<String[]> segments = segmentIndices(list.stream().toArray(String[]::new));
-			return Observable.fromIterable(segments);
-		});
-		return segmentObs.flatMapCompletable(segment -> {
-			// Now delete the found indices
-			log.debug("Deleting indices {" + StringUtils.join(segment, ","));
-			return deleteIndex(segment).compose(withTimeoutAndLog("Clearing mesh indices.", true));
-		});
+				return Observable.fromIterable(indices);
+			}).flatMapCompletable(index -> {
+				// Now delete the found indices
+				log.debug("Deleting index {" + index + "}");
+				return deleteIndex(index).compose(withTimeoutAndLog("Deleting mesh index {" + index + "}", true));
+			}).compose(withTimeoutAndLog("Clearing mesh indices failed", true));
 
 	}
 
@@ -245,16 +231,13 @@ public class ElasticSearchProvider implements SearchProvider {
 				}).toCompletable()
 				.compose(withTimeoutAndLog("Refreshing all indices", true));
 		}
-		// Segment the array into chunks which are smaller 2000 bytes
-		Set<String[]> segments = segmentIndices(indices);
-		return Observable.fromIterable(segments).flatMapCompletable(segment -> {
-			String indicesStr = Strings.join(segment, ",");
-			return client.refresh(segment).async()
+		return Observable.fromArray(indices).flatMapCompletable(index -> {
+			return client.refresh(index).async()
 				.doOnError(error -> {
-					log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
+					log.error("Refreshing of indices {" + index + "} failed.", error);
 					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
 				}).toCompletable()
-				.compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}", true));
+				.compose(withTimeoutAndLog("Refreshing indices {" + index + "}", true));
 		});
 	}
 
@@ -480,33 +463,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				return t;
 			}
 		};
-	}
-
-	/**
-	 * Split the provided array into a set of arrays which each hold at max 2000 bytes of strings.
-	 * 
-	 * @param indices
-	 * @return
-	 */
-	private Set<String[]> segmentIndices(String... indices) {
-		Set<String[]> segments = new HashSet<>();
-		List<String> s = new ArrayList<>();
-		int nLen = 0;
-		for (String index : indices) {
-			nLen += index.length();
-			if (nLen < 2000) {
-				s.add(index);
-			} else {
-				segments.add(s.stream().toArray(String[]::new));
-				s.clear();
-				s.add(index);
-				nLen = +index.length();
-			}
-		}
-		if (s.size() > 0) {
-			segments.add(s.stream().toArray(String[]::new));
-		}
-		return segments;
 	}
 
 }

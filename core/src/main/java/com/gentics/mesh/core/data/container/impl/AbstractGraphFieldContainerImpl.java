@@ -60,7 +60,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.google.common.collect.Sets;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 /**

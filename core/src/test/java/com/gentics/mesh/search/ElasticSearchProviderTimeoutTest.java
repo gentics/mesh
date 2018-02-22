@@ -30,7 +30,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProviderTimeoutTest.class);
 
 	/**
-	 * Use the vert.x server which answers requests after 12s instead.
+	 * Use the vert.x server which answers requests after 16s instead.
 	 * 
 	 * @throws IOException
 	 */

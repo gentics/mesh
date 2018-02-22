@@ -14,7 +14,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;

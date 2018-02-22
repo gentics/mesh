@@ -12,7 +12,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 /**

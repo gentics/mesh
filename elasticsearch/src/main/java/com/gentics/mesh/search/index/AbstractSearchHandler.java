@@ -152,6 +152,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().subscribe(response -> {
+			//JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
 			ac.send(response.toString(), OK);
 		}, error -> {
@@ -260,9 +261,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 			return Observable.fromIterable(list);
 		}).onErrorResumeNext(error -> {
-			if (error instanceof GenericRestException) {
-				return Observable.error(error);
-			}
 			return Observable.error(mapToMeshError(error));
 		}).flatMapSingle(element -> {
 			// TODO add resume next to omit the item if it can't be transformed for some reason.

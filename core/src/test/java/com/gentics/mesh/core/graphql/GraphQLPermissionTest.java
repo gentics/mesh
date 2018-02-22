@@ -16,7 +16,6 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
