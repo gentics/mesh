@@ -7,6 +7,12 @@
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+[[v0.17.1]]
+== 0.17.1 (tba)
+
+icon:check[] Core: It was not possible to change the listType of a list field in a schema via the Rest-API.
+
+
 [[v0.16.0]]
 == 0.16.0 (07.02.2015)
 

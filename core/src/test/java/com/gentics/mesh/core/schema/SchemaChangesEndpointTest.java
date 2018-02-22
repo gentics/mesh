@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -168,6 +170,46 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("The name of the schema was updated", originalSchemaName, schema.getLatestVersion().getName());
 		}
 	}
+
+	private SchemaUpdateRequest buildListFieldUpdateRequest(SchemaResponse schema) {
+		SchemaUpdateRequest req = new SchemaUpdateRequest();
+		req.setName(schema.getName());
+		req.setFields(schema.getFields());
+		return req;
+	}
+
+	@Test
+	public void testListTypeChange() throws Exception {
+		SchemaContainer schemaContainer = schemaContainer("content");
+		String schemaUuid = tx(() -> schemaContainer.getUuid());
+		SchemaResponse schema = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		ListFieldSchema listField = new ListFieldSchemaImpl();
+		listField.setListType("string");
+		listField.setName("testListType");
+		listField.setLabel("testListTypeLabel");
+		schema.getFields().add(listField);
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+		call(() -> client().updateSchema(schemaUuid, this.buildListFieldUpdateRequest(schema)));
+		// Wait for event
+		failingLatch(latch);
+
+		SchemaResponse updated = call(() -> client().findSchemaByUuid(schemaUuid));
+		assertNotNull("The new field should have been added to the schema.", updated.getField("testListType"));
+		listField = (ListFieldSchema) updated.getField("testListType");
+		assertEquals("The list type should be string.", "string", listField.getListType());
+		listField.setListType("micronode");
+		latch = TestUtils.latchForMigrationCompleted(client());
+		call(() -> client().updateSchema(schemaUuid, this.buildListFieldUpdateRequest(updated)));
+		// Wait for event
+		failingLatch(latch);
+
+		SchemaResponse changed = call(() -> client().findSchemaByUuid(schemaUuid));
+		assertNotNull("The new field should still be in the schema.", changed.getField("testListType"));
+		listField = (ListFieldSchema) changed.getField("testListType");
+		assertEquals("The list type should have changed to micronode.", "micronode", listField.getListType());
+	}
+
 
 	@Test
 	public void testFieldTypeChange() throws Exception {
