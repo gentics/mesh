@@ -50,6 +50,9 @@ public class EventbusEndpoint extends AbstractEndpoint {
 			handler.bridge(bridgeOptions, event -> {
 				if (log.isDebugEnabled()) {
 					if (event.type() == BridgeEventType.SOCKET_CREATED) {
+						// TODO maybe it would be useful to send a reply to the user. 
+						// This way the user knows when mesh is ready to relay events. 
+						// Use REGISTER for those cases. 
 						log.debug("A websocket was created");
 					}
 				}
