@@ -7,6 +7,13 @@
 
 icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
+[[v0.16.2]]
+== 0.16.2
+
+icon:check[] Search: When calling reindex via the `/api/v1/search/reindex` reindexing stopped after a certain amount of
+  time because of a timeout in the database transaction. This has been fixed now.
+
+
 [[v0.16.0]]
 == 0.16.0 (07.02.2015)
 
