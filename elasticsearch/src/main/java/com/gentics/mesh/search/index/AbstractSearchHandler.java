@@ -219,7 +219,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().flatMapObservable(response -> {
-			System.out.println(response.encodePrettily());
 			JsonArray responses = response.getJsonArray("responses");
 			JsonObject firstResponse = responses.getJsonObject(0);
 

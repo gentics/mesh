@@ -14,7 +14,6 @@ icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for
 
 CAUTION: Search: The raw search endpoints now wraps a multisearch request. The endpoint response will now include the elasticsearch responses array. The query stays the same.
 
-icon:plus[] REST: It is now possible use custom `HttpClientOptions` upon instantiation of a `MeshRestHttpClient`.
 
 icon:plus[] Demo: The AngularJS version of the link:https://demo.getmesh.io/demo[demo application] was updated.
 
@@ -50,6 +49,8 @@ icon:check[] Core: When the migration for multiple nodes faild during a schema m
 
 icon:check[] Core: Image transformation calls previously did not copy the image properties of the binary field. 
                    Instead the filename and other properties were not copied to the new binary image field. This has been fixed now.
+
+icon:plus[] REST: It is now possible use custom `HttpClientOptions` upon instantiation of a `MeshRestHttpClient`.
 
 icon:check[] REST: The node response ETag now incorporates the uuids of all node references.
 
