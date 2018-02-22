@@ -12,6 +12,8 @@ icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for
 [[v0.17.0]]
 == 0.17.0 (TBD)
 
+icon:plus[] REST: It is now possible use custom HttpClientOptions upon instantiation of a MeshRestHttpClient.
+
 icon:check[] Core: It was possible to upload binaries with empty filenames. This has been fixed now: it is enfored that
 				  a binary upload has a filename and content type which are not empty.
 
