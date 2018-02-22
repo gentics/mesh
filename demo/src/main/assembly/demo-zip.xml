@@ -15,8 +15,9 @@
 				<include>**/*</include>
 			</includes>
 			<excludes>
-				<exclude>node_modules</exclude>
-				<exclude>node</exclude>
+				<exclude>**/node_modules</exclude>
+				<exclude>**/node</exclude>
+				<exclude>**/.git</exclude>
 			</excludes>
 		</fileSet>
 	</fileSets>
