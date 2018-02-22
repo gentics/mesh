@@ -242,7 +242,15 @@
 								<requireJavaVersion>
 									<version>1.8.0</version>
 								</requireJavaVersion>
+								<requireReleaseDeps>
+									<message>No Snapshots Allowed!</message>
+									<excludes>
+										<exclude>org.apache.maven:maven-core</exclude>
+										<exclude>org.apache.maven.plugins:*</exclude>
+									</excludes>
+								</requireReleaseDeps>
 							</rules>
+			                <fail>true</fail>
 						</configuration>
 					</execution>
 				</executions>
