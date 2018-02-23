@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.codehaus.jettison.json.JSONArray;
@@ -71,7 +72,6 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 						BufferedImage resizedImage = ImageIO.read(bis);
 						assertThat(resizedImage).hasSize(150, 180).matches(refImage);
 					}
-					// FileUtils.writeByteArrayToFile(new File("/tmp/" + imageName + "reference.jpg"), data);
 				} catch (Exception e) {
 					e.printStackTrace();
 					fail("Error occured");
@@ -92,7 +92,13 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	@Test
 	public void testExtractImageInfo() throws IOException, JSONException {
 		checkImages((imageName, width, height, color, refImage, stream) -> {
-			Single<ImageInfo> obs = manipulator.readImageInfo(stream);
+			String path = RxUtil.readEntireData(stream).map(data -> {
+				File file = new File("/tmp/" + imageName + "reference.jpg");
+				FileUtils.writeByteArrayToFile(file, data.getBytes());
+				return file.getAbsolutePath();
+			}).blockingGet();
+
+			Single<ImageInfo> obs = manipulator.readImageInfo(path);
 			ImageInfo info = obs.blockingGet();
 			assertEquals("The width or image {" + imageName + "} did not match.", width, info.getWidth());
 			assertEquals("The height or image {" + imageName + "} did not match.", height, info.getHeight());

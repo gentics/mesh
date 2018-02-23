@@ -193,12 +193,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}).lastOrError().toCompletable().blockingAwait();
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-		System.out.println(response.toJson());
 		for (String field : fields) {
 			BinaryField binaryField = response.getFields().getBinaryField(field);
-			assertNull(binaryField.getDominantColor());
-			assertNull(binaryField.getWidth());
-			assertNull(binaryField.getHeight());
+			assertNotNull(binaryField.getDominantColor());
+			assertNotNull(binaryField.getWidth());
+			assertNotNull(binaryField.getHeight());
 			assertEquals("image/jpeg", binaryField.getMimeType());
 		}
 	}
@@ -436,7 +435,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Setup the schemas
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", binaryFieldName);
-			;
 			tx.success();
 		}
 		// 1. Upload some binary data without filename

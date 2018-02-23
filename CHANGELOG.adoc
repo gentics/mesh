@@ -9,6 +9,11 @@ icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
 
 icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for binary data.
 
+[[v0.17.1]]
+== 0.17.1 (TBD)
+
+icon:check[] REST: In some cases parallel fileuploads of multiple images could cause the upload process to never finish. This has been fixed now. 
+
 [[v0.17.0]]
 == 0.17.0 (22.02.2018)
 

@@ -39,12 +39,12 @@ public interface ImageManipulator {
 	File getCacheFile(String sha512sum, ImageManipulationParameters parameters);
 
 	/**
-	 * Read the image information from the given image data stream.
+	 * Read the image information from image file.
 	 * 
-	 * @param stream
+	 * @param ins
 	 * @return
 	 */
-	Single<ImageInfo> readImageInfo(Observable<Buffer> stream);
+	Single<ImageInfo> readImageInfo(String file);
 
 	/**
 	 * Return the dominant color in the image.

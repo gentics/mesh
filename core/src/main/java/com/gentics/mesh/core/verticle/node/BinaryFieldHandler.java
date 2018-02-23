@@ -144,6 +144,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldName);
 		}
 	}
+
 	/**
 	 * Handle a request to create a new field.
 	 * 
@@ -304,7 +305,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 *            Whether to store the data in the binary store
 	 */
 	private void processUpload(ActionContext ac, FileUpload ul, BinaryGraphField field, boolean storeBinary) {
-		AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(ul.uploadedFileName(), new OpenOptions());
+		String uploadFile = ul.uploadedFileName();
+
 		Binary binary = field.getBinary();
 		String hash = binary.getSHA512Sum();
 		String binaryUuid = binary.getUuid();
@@ -321,17 +323,17 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}
 
 		if (neededDataStreams > 0) {
-			Observable<Buffer> stream = RxUtil.toBufferObs(asyncFile).publish().autoConnect(neededDataStreams);
-
 			// Only gather image info for actual images. Otherwise return an empty image info object.
 			Single<Optional<ImageInfo>> imageInfo = Single.just(Optional.empty());
 			if (isImage) {
-				imageInfo = processImageInfo(ac, stream);
+				imageInfo = processImageInfo(ac, uploadFile);
 			}
 
 			// Store the data
 			Single<Long> store = Single.just(ul.size());
 			if (storeBinary) {
+				AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
+				Observable<Buffer> stream = RxUtil.toBufferObs(asyncFile);
 				store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size()));
 			}
 
@@ -362,17 +364,17 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * tx retry). In that case the previously loaded image info is returned.
 	 * 
 	 * @param ac
-	 * @param stream
+	 * @param file
 	 * @return
 	 */
-	private Single<Optional<ImageInfo>> processImageInfo(ActionContext ac, Observable<Buffer> stream) {
+	private Single<Optional<ImageInfo>> processImageInfo(ActionContext ac, String file) {
 		// Caches the image info in the action context so that it does not need to be
 		// calculated again if the transaction failed
 		ImageInfo imageInfo = ac.get("imageInfo");
 		if (imageInfo != null) {
 			return Single.just(Optional.of(imageInfo));
 		} else {
-			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> {
+			return imageManipulator.readImageInfo(file).doOnSuccess(ii -> {
 				ac.put("imageInfo", ii);
 			}).map(Optional::of).onErrorReturn(e -> {
 				// suppress error
@@ -472,7 +474,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 						Single<String> hash = FileUtils.hash(resizedImageData);
 
 						// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-						Single<ImageInfo> info = imageManipulator.readImageInfo(resizedImageData);
+						Single<ImageInfo> info = imageManipulator.readImageInfo(file.getPath());
 
 						return Single.zip(hash, info, (hashV, infoV) -> {
 							// Return a POJO which hold all information that is needed to update the field
