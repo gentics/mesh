@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -45,10 +46,12 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
 import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
@@ -275,6 +278,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// .nodes
 		root.field(newFieldDefinition().name("nodes").description("Load a page of nodes via the regular nodes list or via a search.")
 			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
+			.argument(NodeFilter.filter(project).createFilterArgument())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
 				PagingParameters pagingInfo = getPagingInfo(env);
@@ -282,6 +286,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 				// Check whether we need to load the nodes via a query or regular project-wide paging
 				if (query != null) {
+					// TODO add filtering for query nodes
 					return nodeTypeProvider.handleContentSearch(gc, query, pagingInfo);
 				} else {
 					NodeRoot nodeRoot = gc.getProject().getNodeRoot();
@@ -289,11 +294,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 					// Now lets try to load the containers for those found nodes - apply the language fallback
 					List<String> languageTags = getLanguageArgument(env);
-					List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
+					Stream<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
 						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 						return new NodeContent(node, container);
-					}).collect(Collectors.toList());
-					return new WrappedPageImpl<NodeContent>(contents, nodes);
+					});
+					return new DynamicStreamPageImpl<>(contents, pagingInfo, NodeFilter.filter(project).createPredicate(env.getArgument("filter")));
 				}
 			}));
 
@@ -428,7 +433,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		Set<GraphQLType> additionalTypes = new HashSet<>();
 
-		additionalTypes.add(schemaTypeProvider.createType());
+		additionalTypes.add(schemaTypeProvider.createType(project));
 		additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
 
 		additionalTypes.add(microschemaTypeProvider.createType());

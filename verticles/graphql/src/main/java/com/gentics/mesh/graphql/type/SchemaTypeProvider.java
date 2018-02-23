@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -23,6 +24,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.json.JsonUtil;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -51,7 +53,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 	public SchemaTypeProvider() {
 	}
 
-	public GraphQLObjectType createType() {
+	public GraphQLObjectType createType(Project project) {
 		Builder schemaType = newObject().name(SCHEMA_TYPE_NAME).description("Node schema");
 		interfaceTypeProvider.addCommonFields(schemaType);
 
@@ -85,7 +87,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return model != null ? model.getSegmentField() : null;
 		}));
 
-		schemaType.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
+		schemaType
+			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 			GraphQLContext gc = env.getContext();
 			List<String> languageTags = getLanguageArgument(env);
 
@@ -99,8 +102,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				return new NodeContent(node, container);
 			});
 
-			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env));
-		}, NODE_PAGE_TYPE_NAME));
+			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env), NodeFilter.filter(project).createPredicate(env.getArgument("filter")));
+		}, NODE_PAGE_TYPE_NAME).argument(NodeFilter.filter(project).createFilterArgument()));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 
