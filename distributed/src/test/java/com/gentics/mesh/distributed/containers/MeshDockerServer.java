@@ -30,7 +30,6 @@ import org.testcontainers.utility.TestEnvironment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
@@ -120,7 +119,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 		changeUserInContainer();
 		if (initCluster) {
-			addEnv("MESHARGS", "-" + MeshCLI.INIT_CLUSTER);
+			addEnv(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
@@ -184,7 +183,19 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	@Override
 	public void stop() {
+		log.info("Stopping node {" + getNodeName() + "} of cluster {" + getClusterName() + "} Id: {" + getContainerId() + "}");
+		dockerClient.stopContainerCmd(getContainerId()).exec();
 		super.stop();
+	}
+
+	public void killContainer() {
+		dockerClient.killContainerCmd(containerId).withSignal("SIGTERM").exec();
+		super.stop();
+	}
+
+	@Override
+	public void close() {
+		stop();
 	}
 
 	/**
@@ -244,14 +255,13 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 			// Add sudoers
 			dockerImage.withFileFromString("sudoers", "root ALL=(ALL) ALL\n%mesh ALL=(ALL) NOPASSWD: ALL\n");
 
-			// Add run script which executes mesh
-			dockerImage.withFileFromString("run.sh", generateRunScript(classPathArg));
-
 			// Add docker file which contains the build instructions
 			String dockerFile = IOUtils.toString(MeshDockerServer.class.getResourceAsStream("/Dockerfile.local"));
+
 			// We need to keep the uid of the docker container env and the local test execution env in sync to be able to access the data of the mounted volume.
 			int uid = UnixUtils.getUid();
-			dockerFile = dockerFile.replaceAll("%UID%", String.valueOf(uid));
+			dockerFile = dockerFile.replace("%UID%", String.valueOf(uid));
+			dockerFile = dockerFile.replace("%CMD%", generateCommand(classPathArg));
 			dockerImage.withFileFromString("Dockerfile", dockerFile);
 
 			// Add custom mesh.yml
@@ -271,13 +281,19 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
 	}
 
-	private static String generateRunScript(String classpath) {
-		// TODO Add an automatic shutdown timer to prevent dangling docker containers
+	private static String generateCommand(String classpath) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("#!/bin/sh\n");
-		builder.append("java $JAVAOPTS -cp " + classpath
-			+ " com.gentics.mesh.server.ServerRunner  $MESHARGS\n");
-		builder.append("\n\n");
+		builder.append("exec");
+		builder.append(" ");
+		builder.append("java");
+		builder.append(" ");
+		builder.append("$JAVAOPTS");
+		builder.append(" ");
+		builder.append("-cp");
+		builder.append(" ");
+		builder.append(classpath);
+		builder.append(" ");
+		builder.append("com.gentics.mesh.server.ServerRunner");
 		return builder.toString();
 	}
 
@@ -286,25 +302,29 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * 
 	 * @param timeoutInSeconds
 	 * @throws InterruptedException
+	 * @return Fluent API
 	 */
-	public void awaitStartup(int timeoutInSeconds) throws InterruptedException {
+	public MeshDockerServer awaitStartup(int timeoutInSeconds) throws InterruptedException {
 		startupConsumer.await(timeoutInSeconds, SECONDS);
+		return this;
 	}
 
 	public MeshRestClient client() {
 		return client;
 	}
 
-	public void dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
+	public MeshDockerServer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
 		execRootInContainer("apk", "--update", "add", "iptables");
 		Thread.sleep(1000);
 		execRootInContainer("iptables", "-P", "INPUT", "DROP");
 		execRootInContainer("iptables", "-P", "OUTPUT", "DROP");
 		execRootInContainer("iptables", "-P", "FORWARD", "DROP");
+		return this;
 	}
 
-	public void resumeTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
+	public MeshDockerServer resumeTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
 		execRootInContainer("iptables", "-F");
+		return this;
 	}
 
 	public ExecResult execRootInContainer(String... command) throws UnsupportedOperationException, IOException, InterruptedException {
@@ -343,9 +363,10 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		return result;
 	}
 
-	public void login() {
+	public MeshDockerServer login() {
 		client().setLogin("admin", "admin");
 		client().login().blockingGet();
+		return this;
 	}
 
 	/**

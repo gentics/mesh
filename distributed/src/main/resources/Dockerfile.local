@@ -9,10 +9,8 @@ RUN echo "mesh:mesh" | chpasswd
 USER mesh
 WORKDIR /mesh
 ADD bin /mesh/bin
-ADD run.sh /mesh/run.sh
 
 USER root
-RUN chmod +x /mesh/run.sh && chown mesh: /mesh/run.sh
 RUN mkdir /data && mkdir /config && ln -s /data /mesh/data && chown mesh: /data 
 ADD mesh.yml /config/mesh.yml
 RUN chown mesh: /config -R && ln -s /config /mesh/config
@@ -23,4 +21,4 @@ VOLUME /config
 
 USER mesh
 EXPOSE 8080
-CMD  ["/mesh/run.sh"]
+CMD %CMD% 

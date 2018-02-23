@@ -49,6 +49,7 @@ public class DemoRunner {
 		// options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
+
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setStartServer(true);
 		// options.getSearchOptions().setHttpEnabled(true);

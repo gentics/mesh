@@ -97,14 +97,14 @@ public class MeshImpl implements Mesh {
 			createLockFile();
 		}
 
-//		// Also trigger the reindex if the index folder could not be found.
-//		String indexDir = options.getSearchOptions().getDirectory();
-//		if (indexDir != null) {
-//			File folder = new File(indexDir);
-//			if (!folder.exists() || folder.listFiles().length == 0) {
-//				forceReindex = true;
-//			}
-//		}
+		// // Also trigger the reindex if the index folder could not be found.
+		// String indexDir = options.getSearchOptions().getDirectory();
+		// if (indexDir != null) {
+		// File folder = new File(indexDir);
+		// if (!folder.exists() || folder.listFiles().length == 0) {
+		// forceReindex = true;
+		// }
+		// }
 
 		if (isFirstApril()) {
 			printAprilFoolJoke();
@@ -161,7 +161,7 @@ public class MeshImpl implements Mesh {
 			getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.ClassFilter");
 		} catch (ClassNotFoundException e) {
 			log.error(
-					"The nashorn classfilter could not be found. You are most likely using an outdated JRE 8. Please update to at least JRE 1.8.0_40");
+				"The nashorn classfilter could not be found. You are most likely using an outdated JRE 8. Please update to at least JRE 1.8.0_40");
 			System.exit(10);
 		}
 	}
@@ -173,31 +173,31 @@ public class MeshImpl implements Mesh {
 		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
 		HttpClientRequest request = Mesh.vertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
-				"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
-					int code = rh.statusCode();
-					if (code < 200 || code >= 299) {
-						log.error("Update check failed with status code {" + code + "}");
-					} else {
-						rh.bodyHandler(bh -> {
-							JsonObject info = bh.toJsonObject();
-							String latestVersion = info.getString("latest");
+			"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
+				int code = rh.statusCode();
+				if (code < 200 || code >= 299) {
+					log.error("Update check failed with status code {" + code + "}");
+				} else {
+					rh.bodyHandler(bh -> {
+						JsonObject info = bh.toJsonObject();
+						String latestVersion = info.getString("latest");
 
-							if (currentVersion.contains("-SNAPSHOT")) {
-								log.warn("You are using a SNAPSHOT version {" + currentVersion
-										+ "}. This is potentially dangerous because this version has never been officially released.");
-								log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
-							} else {
-								int result = VersionUtil.compareVersions(latestVersion, currentVersion);
-								if (result == 0) {
-									log.info("Great! You are using the latest version");
-								} else if (result > 0) {
-									log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {"
-											+ latestVersion + "} is available.");
-								}
+						if (currentVersion.contains("-SNAPSHOT")) {
+							log.warn("You are using a SNAPSHOT version {" + currentVersion
+								+ "}. This is potentially dangerous because this version has never been officially released.");
+							log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
+						} else {
+							int result = VersionUtil.compareVersions(latestVersion, currentVersion);
+							if (result == 0) {
+								log.info("Great! You are using the latest version");
+							} else if (result > 0) {
+								log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {"
+									+ latestVersion + "} is available.");
 							}
-						});
-					}
-				});
+						}
+					});
+				}
+			});
 
 		MultiMap headers = request.headers();
 		headers.set("content-type", "application/json");
@@ -232,16 +232,15 @@ public class MeshImpl implements Mesh {
 	}
 
 	private void registerShutdownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				try {
-					shutdown();
-				} catch (Exception e) {
-					log.error("Error while shutting down mesh.", e);
-				}
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			try {
+				shutdown();
+			} catch (Exception e) {
+				// Use system out since logging system may have been shutdown
+				System.err.println("Error while shutting down mesh.");
+				e.printStackTrace();
 			}
-		});
+		}));
 	}
 
 	private void dontExit() throws InterruptedException {

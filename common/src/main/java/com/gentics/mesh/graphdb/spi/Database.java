@@ -506,4 +506,9 @@ public interface Database extends TxFactory {
 	 */
 	String getDatabaseRevision();
 
+	/**
+	 * Register event handlers which are used to invoke operations on the database server.
+	 */
+	void registerEventHandlers();
+
 }

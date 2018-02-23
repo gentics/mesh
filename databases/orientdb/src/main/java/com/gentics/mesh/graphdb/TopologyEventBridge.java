@@ -36,16 +36,12 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		return Mesh.vertx().eventBus();
 	}
 
-	boolean isVertxReady() {
-		return Mesh.vertx() != null;
-	}
-
 	@Override
 	public boolean onNodeJoining(String nodeName) {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + nodeName + "} is joining the cluster.");
 		}
-		if (isVertxReady()) {
+		if (Mesh.isVertxReady()) {
 			getEventBus().send(EVENT_CLUSTER_NODE_JOINING, nodeName);
 		}
 		String currentVersion = Mesh.getPlainVersion();
@@ -65,7 +61,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + iNode + "} joined the cluster.");
 		}
-		if (isVertxReady()) {
+		if (Mesh.isVertxReady()) {
 			getEventBus().send(EVENT_CLUSTER_NODE_JOINED, iNode);
 		}
 	}
@@ -75,7 +71,8 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + iNode + "} left the cluster");
 		}
-		if (isVertxReady()) {
+//		db.removeNode(iNode);
+		if (Mesh.isVertxReady()) {
 			getEventBus().send(EVENT_CLUSTER_NODE_LEFT, iNode);
 		}
 	}
@@ -83,7 +80,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	@Override
 	public void onDatabaseChangeStatus(String iNode, String iDatabaseName, DB_STATUS iNewStatus) {
 		log.info("Node {" + iNode + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
-		if (isVertxReady()) {
+		if (Mesh.isVertxReady()) {
 			JsonObject statusInfo = new JsonObject();
 			statusInfo.put("node", iNode);
 			statusInfo.put("database", iDatabaseName);

@@ -42,12 +42,14 @@ public class OptionsLoaderTest {
 		envMap.put(MeshOptions.MESH_UPDATECHECK_ENV, "false");
 		envMap.put(HttpServerConfig.MESH_HTTP_PORT_ENV, "8100");
 		envMap.put(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "https://somewhere.com");
+		envMap.put(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
 		set(envMap);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
 		assertEquals("ru", options.getDefaultLanguage());
 		assertFalse(options.isUpdateCheckEnabled());
 		assertEquals("https://somewhere.com", options.getSearchOptions().getUrl());
+		assertTrue(options.isInitClusterMode());
 	}
 
 	@Test

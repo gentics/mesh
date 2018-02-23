@@ -121,4 +121,13 @@ public interface Mesh {
 		return MeshVersion.getPlainVersion();
 	}
 
+	/**
+	 * Check whether Vert.x ready to be used.
+	 * 
+	 * @return
+	 */
+	static boolean isVertxReady() {
+		return vertx() != null;
+	}
+
 }
