@@ -336,7 +336,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Handle the data in parallel
-
 			TransformationResult info = Single.zip(imageInfo, store, (imageinfoOpt, size) -> {
 				ImageInfo iinfo = null;
 				if (imageinfoOpt.isPresent()) {
