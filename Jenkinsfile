@@ -187,7 +187,7 @@ node("docker") {
 							} catch (Exception e) {
 								echo "RESULT: ${currentBuild.result}"
 								echo "CRESULT: ${currentBuild.currentResult}"
-						        currentBuild.result = 'FAILURE'
+						        //currentBuild.result = 'FAILURE'
 								throw e
 							} finally {
 							    echo "RESULT: ${currentBuild.result}"
