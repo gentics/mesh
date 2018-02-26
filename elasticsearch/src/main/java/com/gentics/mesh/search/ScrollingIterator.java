@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.RequestBuilder;
+import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.search.impl.SearchClient;
 
 import io.vertx.core.json.JsonObject;
@@ -59,7 +59,7 @@ public class ScrollingIterator implements Iterator<JsonObject> {
 		json.put("scroll_id", currentResponse.getString("_scroll_id"));
 		json.put("scroll", "1m");
 		try {
-			RequestBuilder<JsonObject> scrollRequest = client.queryScroll(json, null);
+			RequestBuilder<JsonObject> scrollRequest = client.searchScroll(json, null);
 			currentResponse = scrollRequest.sync();
 		} catch (HttpErrorException e) {
 			System.out.println(e.toString());

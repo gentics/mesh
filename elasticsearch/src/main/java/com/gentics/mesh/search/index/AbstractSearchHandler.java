@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -15,8 +16,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.RequestBuilder;
+import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
@@ -142,10 +145,14 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + request.encodePrettily() + "}");
 		}
 
-		// Setup the request
-		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
-		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
+		JsonObject queryOption = new JsonObject();
+		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("search_type", "dfs_query_then_fetch");
+		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
+		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().subscribe(response -> {
+			//JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
 			ac.send(response.toString(), OK);
 		}, error -> {
@@ -205,10 +212,23 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + request.encodePrettily() + "}");
 		}
 
-		RequestBuilder<JsonObject> requestBuilder = client.query(request, new ArrayList<>(indices));
-		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
+		JsonObject queryOption = new JsonObject();
+		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("search_type", "dfs_query_then_fetch");
+		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
+		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().flatMapObservable(response -> {
-			JsonObject hitsInfo = response.getJsonObject("hits");
+			JsonArray responses = response.getJsonArray("responses");
+			JsonObject firstResponse = responses.getJsonObject(0);
+
+			// Process the nested error
+			JsonObject errorInfo = firstResponse.getJsonObject("error");
+			if (errorInfo != null) {
+				return Observable.error(mapError(errorInfo));
+			}
+
+			JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 			JsonArray hits = hitsInfo.getJsonArray("hits");
 
 			List<Tuple<T, String>> list = new ArrayList<>();
@@ -310,35 +330,53 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
 
+		JsonObject queryOption = new JsonObject();
+		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("search_type", "dfs_query_then_fetch");
+		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
 		// Prepare the request
-		RequestBuilder<JsonObject> requestBuilder = client.query(queryJson, new ArrayList<>(indices));
-		requestBuilder.addQueryParameter("search_type", "dfs_query_then_fetch");
+		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, queryJson);
 		Single<Page<? extends T>> result = requestBuilder.async()
-			.map(response -> db.tx(() -> {
-                List<T> elementList = new ArrayList<>();
-                JsonObject hitsInfo = response.getJsonObject("hits");
-                JsonArray hits = hitsInfo.getJsonArray("hits");
-                for (int i = 0; i < hits.size(); i++) {
-                    JsonObject hit = hits.getJsonObject(i);
-                    String id = hit.getString("_id");
-                    int pos = id.indexOf("-");
-                    String uuid = pos > 0 ? id.substring(0, pos) : id;
+			.map(response -> {
+				JsonArray responses = response.getJsonArray("responses");
+				JsonObject firstResponse = responses.getJsonObject(0);
 
-                    // Locate the node
-                    T element = indexHandler.getRootVertex().findByUuid(uuid);
-                    if (element != null) {
-                        elementList.add(element);
-                    }
-                }
+				// Process the nested error
+				JsonObject errorInfo = firstResponse.getJsonObject("error");
+				if (errorInfo != null) {
+					throw mapError(errorInfo);
+				}
 
-                PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
-                return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
-            }));
+				return db.tx(() -> {
+					List<T> elementList = new ArrayList<>();
+					JsonObject hitsInfo = firstResponse.getJsonObject("hits");
+					JsonArray hits = hitsInfo.getJsonArray("hits");
+					for (int i = 0; i < hits.size(); i++) {
+						JsonObject hit = hits.getJsonObject(i);
+						String id = hit.getString("_id");
+						int pos = id.indexOf("-");
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
+
+						// Locate the node
+						T element = indexHandler.getRootVertex().findByUuid(uuid);
+						if (element != null) {
+							elementList.add(element);
+						}
+					}
+
+					PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
+					return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
+				});
+			});
 
 		// TODO make this configurable
 		return result.timeout(30, TimeUnit.SECONDS)
 			.onErrorResumeNext(error -> {
 				log.error("Search query failed", error);
+				if (error instanceof GenericRestException) {
+					return Single.error(error);
+				}
 				return Single.error(mapToMeshError(error));
 			}).blockingGet();
 	}

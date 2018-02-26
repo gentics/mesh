@@ -108,7 +108,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 					sourceNode.getParentNode(releaseUuid).getUuid());
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 					targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider().getStoreEvents().size());
+			assertEquals("A store event for each language variation per version should occure", 4, trackingSearchProvider().getStoreEvents().size());
 		}
 		// TODO assert entries
 	}

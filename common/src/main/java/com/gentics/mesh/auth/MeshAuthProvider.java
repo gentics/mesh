@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.AsyncResult;

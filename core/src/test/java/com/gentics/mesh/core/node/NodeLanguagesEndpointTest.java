@@ -49,14 +49,14 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// Check the deletion
-			assertThat(dummySearchProvider()).recordedDeleteEvents(2);
+			assertThat(trackingSearchProvider()).recordedDeleteEvents(2);
 			assertFalse(node.getAvailableLanguageNames().contains("en"));
 			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
 		}
 
 		// Now delete the remaining german version
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "de", new DeleteParametersImpl().setRecursive(true)));
-		assertThat(dummySearchProvider()).recordedDeleteEvents(2 + 2);
+		assertThat(trackingSearchProvider()).recordedDeleteEvents(2 + 2);
 		// The node was removed since the node only existed in a single release and had no other languages
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
 				"object_not_found_for_uuid", contentUuid());

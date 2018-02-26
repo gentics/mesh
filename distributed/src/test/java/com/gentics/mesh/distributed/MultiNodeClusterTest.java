@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -24,20 +25,44 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
-			null, null);
+	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeA")
+		.withDataPathPostfix(randomToken())
+		.withInitCluster()
+		.waitForStartup()
+		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeB", randomToken(), false, false, true, vertx,
-			null, null);
+	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeB")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
-	public static MeshDockerServer serverC = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeC", randomToken(), false, false, true, vertx,
-			null, null);
+	public static MeshDockerServer serverC = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeC")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
-	public static MeshDockerServer serverD = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeD", randomToken(), false, false, true, vertx,
-			null, null);
+	public static MeshDockerServer serverD = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeD")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
 	@ClassRule
 	public static RuleChain chain = RuleChain.outerRule(serverD).around(serverC).around(serverB).around(serverA);
+
+	@BeforeClass
+	public static void login() throws InterruptedException {
+		serverB.awaitStartup(200);
+		serverB.login();
+		serverC.awaitStartup(200);
+		serverC.login();
+		serverD.awaitStartup(200);
+		serverD.login();
+	}
 
 	/**
 	 * Test that a cluster with multiple nodes can form and that changes are distributed.
@@ -45,24 +70,20 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 	@Test
 	public void testCluster() throws InterruptedException {
 		ProjectResponse response = call(
-				() -> serverA.getMeshClient().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
+			() -> serverA.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
 		Thread.sleep(1000);
 
-		serverB.awaitStartup(200);
-		serverC.awaitStartup(200);
-		serverD.awaitStartup(200);
-
-		call(() -> serverB.getMeshClient().findProjectByUuid(response.getUuid()));
-		call(() -> serverC.getMeshClient().findProjectByUuid(response.getUuid()));
-		call(() -> serverD.getMeshClient().findProjectByUuid(response.getUuid()));
+		call(() -> serverB.client().findProjectByUuid(response.getUuid()));
+		call(() -> serverC.client().findProjectByUuid(response.getUuid()));
+		call(() -> serverD.client().findProjectByUuid(response.getUuid()));
 
 		ProjectResponse response2 = call(
-				() -> serverD.getMeshClient().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
+			() -> serverD.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
 
 		Thread.sleep(1000);
-		call(() -> serverA.getMeshClient().findProjectByUuid(response2.getUuid()));
-		call(() -> serverB.getMeshClient().findProjectByUuid(response2.getUuid()));
-		call(() -> serverC.getMeshClient().findProjectByUuid(response2.getUuid()));
-		call(() -> serverD.getMeshClient().findProjectByUuid(response2.getUuid()));
+		call(() -> serverA.client().findProjectByUuid(response2.getUuid()));
+		call(() -> serverB.client().findProjectByUuid(response2.getUuid()));
+		call(() -> serverC.client().findProjectByUuid(response2.getUuid()));
+		call(() -> serverD.client().findProjectByUuid(response2.getUuid()));
 	}
 }

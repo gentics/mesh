@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class TestUnixUtils {
+public class UnixUtilsTest {
 
 	@Test
 	public void testGetUid() throws IOException {

@@ -27,7 +27,7 @@
 		<handler class="com.orientechnologies.orient.server.handler.OAutomaticBackup">
 			<parameters>
 				<parameter name="enabled" value="false" />
-				<parameter name="config" value="${ORIENTDB_HOME}/config/automatic-backup.json" />
+				<parameter name="config" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/automatic-backup.json" />
 			</parameters>
 		</handler>
 	</handlers>

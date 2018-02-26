@@ -3,6 +3,8 @@ package com.gentics.mesh.search;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -52,6 +54,31 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	public void testVersion() {
 		ElasticSearchProvider provider = getProvider();
 		assertEquals("6.1.2", provider.getVersion());
+	}
+
+	/**
+	 * Assert that the indices in the request path never exceed 4096 bytes. Otherwise the request would fail.
+	 */
+	@Test
+	public void testIndexSegmentation() {
+		ElasticSearchProvider provider = getProvider();
+		List<String> indices = new ArrayList<>();
+		for (int i = 0; i < 50; i++) {
+			StringBuilder builder = new StringBuilder();
+			builder.append("mesh-test");
+			for (int e = 0; e < 4; e++) {
+				builder.append(UUIDUtil.randomUUID());
+			}
+			String name = builder.toString();
+			indices.add(name);
+			provider.createIndex(new IndexInfo(name, new JsonObject(), new JsonObject())).blockingAwait();
+		}
+
+		String names[] = indices.stream().toArray(String[]::new);
+		provider.refreshIndex(names).blockingAwait();
+		provider.refreshIndex(names).blockingAwait();
+		provider.clear().blockingAwait();
+		provider.clear().blockingAwait();
 	}
 
 	@Test

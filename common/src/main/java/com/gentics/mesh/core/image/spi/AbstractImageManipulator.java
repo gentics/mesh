@@ -5,18 +5,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.util.RxUtil;
 
-import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -59,30 +54,23 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(Observable<Buffer> stream) {
-		Single<BufferedImage> obs = vertx.rxExecuteBlocking(bc -> {
-			InputStream pis = null;
-			try {
-				pis = RxUtil.toInputStream(stream, vertx);
-				BufferedImage image = ImageIO.read(pis);
-				if (image == null) {
-					bc.fail(error(BAD_REQUEST, "image_error_reading_failed"));
-				} else {
-					bc.complete(image);
-				}
-			} catch (IOException e) {
-				bc.fail(e);
-			} finally {
-				if (pis != null) {
-					try {
-						pis.close();
-					} catch (IOException e) {
-					}
-				}
+	public Single<ImageInfo> readImageInfo(String file) {
+		return vertx.rxExecuteBlocking(bh -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Reading image information from stream");
 			}
-		}, false);
-		return obs.map(this::toImageInfo);
-
+			try {
+				BufferedImage image = ImageIO.read(new File(file));
+				if (image == null) {
+					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
+				} else {
+					bh.complete(toImageInfo(image));
+				}
+			} catch (Exception e) {
+				log.error("Reading image information failed", e);
+				bh.fail(e);
+			}
+		});
 	}
 
 	/**

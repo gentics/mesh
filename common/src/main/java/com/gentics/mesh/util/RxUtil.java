@@ -11,10 +11,14 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 
 public final class RxUtil {
+
+	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
 
 	private RxUtil() {
 	}
@@ -69,6 +73,8 @@ public final class RxUtil {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+		}, error -> {
+			log.error("Error while reading stream", error);
 		});
 		return pis;
 	}

@@ -93,7 +93,6 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
-
 		String username = "testuser42a";
 		try (Tx tx = tx()) {
 			createUser(username);
@@ -101,12 +100,10 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("username.raw", username)));
 		assertEquals(1, list.getData().size());
-
 	}
 
 	@Test
 	public void testTokenzierIssueQuery() throws Exception {
-
 		String impossibleName = "Jöhä@sRe2";
 		try (Tx tx = tx()) {
 			UserUpdateRequest updateRequest = new UserUpdateRequest();

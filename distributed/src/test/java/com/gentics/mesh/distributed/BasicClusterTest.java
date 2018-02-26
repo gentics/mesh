@@ -16,6 +16,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -51,7 +52,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.util.TestUtils;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -61,14 +61,21 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicClusterTest.class);
 
-	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
-			null, null);
+	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeA")
+		.withDataPathPostfix(randomToken())
+		.withInitCluster()
+		.waitForStartup()
+		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeB", randomToken(), false, false, true, vertx,
-			null, null);
+	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeB")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -81,8 +88,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 	public static void waitForNodes() throws InterruptedException {
 		LoggingConfigurator.init();
 		serverB.awaitStartup(200);
-		clientA = serverA.getMeshClient();
-		clientB = serverB.getMeshClient();
+		clientA = serverA.client();
+		clientB = serverB.client();
 	}
 
 	@Before
@@ -138,7 +145,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
-	public void testElementCreation() {
+	public void testElementCreation() throws InterruptedException {
 		// Node A: Create user
 		UserCreateRequest createRequest = new UserCreateRequest();
 		createRequest.setUsername("clusterdUser");
@@ -153,6 +160,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 		// Node A: Verify update of user
 		assertEquals("clusteredUserChanged", call(() -> clientA.findUserByUuid(response.getUuid())).getUsername());
+		Thread.sleep(250);
 
 		// Node B: Create user
 		createRequest.setUsername("clusterdUser2");
@@ -170,12 +178,14 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
-	public void testElementDeletion() {
+	public void testElementDeletion() throws InterruptedException {
 		String projectName = randomName();
 		NodeResponse response = createProjectAndNode(clientA, projectName);
+		Thread.sleep(250);
 
 		String uuid = response.getUuid();
 		call(() -> clientB.deleteNode(projectName, uuid));
+		Thread.sleep(250);
 
 		call(() -> clientA.findNodeByUuid(projectName, response.getUuid()), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
@@ -191,11 +201,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 		request.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Mahlzeit!"));
 		NodeResponse updateResponse = call(() -> clientB.updateNode(projectName, response.getUuid(), request, new NodeParametersImpl().setLanguages(
-				"de")));
+			"de")));
 		assertEquals("new-page.de.html", updateResponse.getFields().getStringField("slug").getString());
 
 		NodeResponse responseFromNodeA = call(() -> clientA.findNodeByUuid(projectName, response.getUuid(), new NodeParametersImpl().setLanguages(
-				"de")));
+			"de")));
 		assertEquals("new-page.de.html", responseFromNodeA.getFields().getStringField("slug").getString());
 
 	}
@@ -224,7 +234,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 		// NodeA - Assert that the node is offline
 		call(() -> clientA.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
-				"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
+			"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
 
 		call(() -> clientB.findNodeByUuid(projectName, uuid));
 
@@ -388,6 +398,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
+	@Ignore("Elasticsearch will not be started. Thus no searching is supported.")
 	public void testNodeSearch() throws IOException, InterruptedException {
 		String projectName = randomName();
 		NodeResponse response = createProjectAndNode(clientA, projectName);
@@ -399,9 +410,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	/**
 	 * Verify that the project is deleted and the routes are removed on the other instances.
+	 * 
+	 * @throws InterruptedException
 	 */
 	@Test
-	public void testProjectDeletion() {
+	public void testProjectDeletion() throws InterruptedException {
 		String newProjectName = randomName();
 		// Node A: Create Project
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -409,9 +422,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 		String uuid = response.getUuid();
+		Thread.sleep(250);
 
 		// Node B: Delete the project
 		call(() -> clientB.deleteProject(uuid));
+		Thread.sleep(250);
 
 		// Node A: Assert that the project can't be found
 		call(() -> clientA.findProjectByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);

@@ -80,10 +80,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreate() throws GenericRestException, Exception {
 		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
-		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
@@ -125,19 +125,19 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 			SchemaResponse restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
 
-			dummySearchProvider().clear().blockingAwait();
+			trackingSearchProvider().clear().blockingAwait();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
 			// Only schemas which are not in use can be delete and also removed from the index
-			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
 		}
 
 	}

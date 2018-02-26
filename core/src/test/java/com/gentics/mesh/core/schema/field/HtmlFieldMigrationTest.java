@@ -241,7 +241,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 				(container, name) -> {
 					HtmlGraphField htmlField = container.getHtml(name);
 					assertEquals("The html field should not be truncted.", 40_000, htmlField.getHTML().length());
-					assertThat(dummySearchProvider()).recordedStoreEvents(1);
+					assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 				});
 	}
 

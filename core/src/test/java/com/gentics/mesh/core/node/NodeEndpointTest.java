@@ -101,9 +101,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setSchema(schemaReference);
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_no_languagecode_specified");
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 	}
 
@@ -124,9 +124,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(folderUuid);
 
-		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "language_not_found", "BOGUS");
-		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 	}
 
 	@Test
@@ -143,10 +143,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(folderUuid);
 
-		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		assertThat(restNode).matches(request);
-		assertThat(dummySearchProvider()).recordedStoreEvents(1);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 
 	@Test
@@ -160,10 +160,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("slug", FieldUtil.createStringField("some slug"));
 		request.setParentNodeUuid(folderUuid);
 
-		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		assertThat(restNode).matches(request);
-		assertThat(dummySearchProvider()).recordedStoreEvents(1);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 
 	@Test
@@ -177,7 +177,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			long start = System.currentTimeMillis();
 			for (int i = 1; i < 100; i++) {
-				dummySearchProvider().reset();
+				trackingSearchProvider().reset();
 				NodeCreateRequest request = new NodeCreateRequest();
 				request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
 				request.setLanguage("en");
@@ -211,10 +211,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 			assertThat(restNode).matches(request);
-			assertThat(dummySearchProvider()).recordedStoreEvents(1);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
 	}
 
@@ -257,10 +257,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(nodeUuid, PROJECT_NAME, request));
 			assertThat(restNode).matches(request).hasUuid(nodeUuid);
-			assertThat(dummySearchProvider()).recordedStoreEvents(1);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
 	}
 
@@ -306,7 +306,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			call(() -> client().createNode(nodeUuid, PROJECT_NAME, request), INTERNAL_SERVER_ERROR, "error_internal");
 		}
 	}
@@ -452,10 +452,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setLanguages("de"),
 					new VersioningParametersImpl().draft()));
-			assertThat(dummySearchProvider()).recordedStoreEvents(1);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
 			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid());
@@ -538,9 +538,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", uuid);
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 	}
 
@@ -1553,11 +1553,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parameters.setLanguages("blabla", "edgsdg");
 			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 	}
 
@@ -1628,9 +1628,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String releaseUuid = tx(() -> project().getLatestRelease().getUuid());
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
-		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
+		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
 				ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("slug", newSlug).hasStringField(
@@ -1659,8 +1659,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String indexName = NodeGraphFieldContainer.composeIndexName(project().getUuid(), project().getLatestRelease().getUuid(), origContainer
 					.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
 			String documentId = NodeGraphFieldContainer.composeDocumentId(uuid, "en");
-			assertThat(dummySearchProvider()).hasStore(indexName, documentId);
-			assertThat(dummySearchProvider()).recordedStoreEvents(1);
+			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
 
 	}
@@ -1684,10 +1684,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
 		assertEquals("de", restNode.getLanguage());
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
-		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
+		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
 				ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
 
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 	}
 
 	@Test
@@ -1837,7 +1837,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
-			assertThat(dummySearchProvider()).hasEvents(0, 4, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 4, 0, 0);
 		}
 	}
 

@@ -9,6 +9,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,7 +37,6 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.TransformationResult;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
@@ -101,8 +102,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Binary binary = meshRoot().getBinaryRoot().create(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
-					0L);
+				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
+				0L);
 			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.getBinary().setSize(220);
 			assertNotNull(field);
@@ -125,8 +126,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			assertEquals(133, loadedField.getBinary().getImageHeight().intValue());
 			assertEquals(7, loadedField.getBinary().getImageWidth().intValue());
 			assertEquals(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
-					loadedBinary.getSHA512Sum());
+				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
+				loadedBinary.getSHA512Sum());
 		}
 	}
 
@@ -137,8 +138,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			Binary binary = meshRoot().getBinaryRoot().create(
-					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
-					0L);
+				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
+				0L);
 			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.getBinary().setSize(220);
 			assertNotNull(field);
@@ -205,14 +206,14 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			// graph set - rest set - same value - different type
 			fieldA.setFileName("someText");
 			assertFalse("The field should not be equal to a string rest field. Even if it has the same value", fieldA.equals(new StringFieldImpl()
-					.setString("someText")));
+				.setString("someText")));
 			// graph set - rest set - different value
 			assertFalse("The field should not be equal to the rest field since the rest field has a different value.", fieldA.equals(
-					new BinaryFieldImpl().setFileName("blub")));
+				new BinaryFieldImpl().setFileName("blub")));
 
 			// graph set - rest set - same value
 			assertTrue("The binary field filename value should be equal to a rest field with the same value", fieldA.equals(new BinaryFieldImpl()
-					.setFileName("someText")));
+				.setFileName("someText")));
 		}
 	}
 
@@ -276,15 +277,17 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testMultiStreamHandling() throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
-		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(3);
+		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
+		File file = new File("target", "file" + System.currentTimeMillis());
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+			IOUtils.write(bytes, fos);
+			fos.flush();
+		}
 
+		Single<ImageInfo> info = MeshInternal.get().imageManipulator().readImageInfo(file.getAbsolutePath());
+		// Two obs handler
 		Single<String> hash = FileUtils.hash(obs);
-
-		Single<ImageInfo> info = MeshInternal.get().imageManipulator().readImageInfo(obs);
-
-		BinaryStorage localStorage = MeshInternal.get().binaryStorage();
-
-		Single<String> store = localStorage.store(obs, "bogus").toSingleDefault("null");
+		Single<String> store = MeshInternal.get().binaryStorage().store(obs, "bogus").toSingleDefault("null");
 
 		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> new TransformationResult(hashV, 0, infoV, null)).blockingGet();
 

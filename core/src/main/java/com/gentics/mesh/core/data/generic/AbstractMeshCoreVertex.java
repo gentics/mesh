@@ -149,7 +149,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (address != null) {
 			JsonObject json = new JsonObject();
 			if (this instanceof NamedElement) {
-				json.put("name", ((NamedElement) this).getName());
+				json.put("name", name);
 			}
 			json.put("origin", Mesh.mesh().getOptions().getNodeName());
 			json.put("uuid", getUuid());

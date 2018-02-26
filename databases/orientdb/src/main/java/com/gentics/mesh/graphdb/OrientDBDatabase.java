@@ -96,6 +96,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String ORIENTDB_SERVER_CONFIG = "orientdb-server-config.xml";
 
+	private static final String ORIENTDB_BACKUP_CONFIG = "automatic-backup.json";
+
 	private static final String ORIENTDB_SECURITY_SERVER_CONFIG = "security.json";
 
 	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
@@ -258,6 +260,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 			writeOrientServerConfig(serverConfigFile);
 		}
 
+		File backupConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_BACKUP_CONFIG);
+		// Check whether the initial configuration needs to be written
+		if (!backupConfigFile.exists()) {
+			log.info("Creating orientdb backup configuration file {" + backupConfigFile + "}");
+			writeOrientBackupConfig(backupConfigFile);
+		}
+
 		File securityConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SECURITY_SERVER_CONFIG);
 		// Check whether the initial configuration needs to be written
 		if (!securityConfigFile.exists()) {
@@ -357,6 +366,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return name;
 	}
 
+	private void writeOrientBackupConfig(File configFile) throws IOException {
+		String resourcePath = "/config/automatic-backup.json";
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configFile == null) {
+			throw new RuntimeException("Could not find default orientdb backup configuration template file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(configFile, configString);
+	}
+
 	private void writeOrientServerConfig(File configFile) throws IOException {
 		String resourcePath = "/config/orientdb-server-config.xml";
 		InputStream configIns = getClass().getResourceAsStream(resourcePath);
@@ -412,6 +433,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public String getDatabaseRevision() {
+		String overrideRev = System.getProperty("mesh.internal.dbrev");
+		if (overrideRev != null) {
+			return overrideRev;
+		}
 		StringBuilder builder = new StringBuilder();
 		for (Change change : ChangesList.getList()) {
 			builder.append(change.getUuid());

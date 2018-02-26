@@ -15,6 +15,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
 import com.gentics.mesh.util.UUIDUtil;
@@ -22,12 +23,11 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.vertx.core.Vertx;
 
 /**
- * Test container for a mesh instance which uses local class files. The image
- * for the container will automatically be rebuild during each startup.
+ * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
  * 
  * @param <SELF>
  */
-public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends GenericContainer<SELF> implements MeshTestServer {
+public class MeshDockerServer extends GenericContainer<MeshDockerServer> implements MeshTestServer {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshDockerServer.class);
 
@@ -45,12 +45,13 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		client.setLogin("admin", "admin");
 		client.login().blockingGet();
 	};
+
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
 
 	/**
-	 * Name of the node.
+	 * Name of the node. Default: dummy
 	 */
-	private String nodeName;
+	private String nodeName = "dummy";
 
 	private boolean waitForStartup;
 
@@ -58,25 +59,17 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	private String extraOpts;
 
+	private boolean startEmbeddedES = false;
+
 	/**
 	 * Create a new docker server
 	 * 
-	 * @param nodeName
-	 * @param waitForStartup
 	 * @param vertx
 	 *            Vertx instances used to create the rest client
-	 * @param debugPort
-	 *            JNLP debug port. No debugging is enabled when set to null.
-	 * @param extraOpts
-	 *            Additional JVM options
 	 */
-	public MeshDockerServer(String meshImage, String nodeName, boolean waitForStartup, Vertx vertx, Integer debugPort, String extraOpts) {
+	public MeshDockerServer(String meshImage, Vertx vertx) {
 		super(meshImage);
 		this.vertx = vertx;
-		this.nodeName = nodeName;
-		this.waitForStartup = waitForStartup;
-		this.debugPort = debugPort;
-		this.extraOpts = extraOpts;
 		setWaitStrategy(new NoWaitStrategy());
 	}
 
@@ -85,25 +78,34 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv("NODENAME", nodeName);
 		String javaOpts = null;
+
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
 			exposedPorts.add(8000);
 			setPortBindings(Arrays.asList("8000:8000"));
 		}
+
 		if (extraOpts != null) {
 			if (javaOpts == null) {
 				javaOpts = "";
 			}
 			javaOpts += extraOpts + " ";
 		}
+
 		if (javaOpts != null) {
 			addEnv("JAVAOPTS", javaOpts);
 		}
 
-		exposedPorts.add(8080);
-		exposedPorts.add(9200);
-		exposedPorts.add(9300);
+		if (startEmbeddedES) {
+			exposedPorts.add(9200);
+			exposedPorts.add(9300);
+		} else {
+			// Don't run the embedded ES
+			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
+			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
+		}
 
+		exposedPorts.add(8080);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
 		setStartupAttempts(1);
@@ -139,8 +141,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	}
 
 	/**
-	 * Block until the startup message has been seen in the container log
-	 * output.
+	 * Block until the startup message has been seen in the container log output.
 	 * 
 	 * @param timeoutInSeconds
 	 * @throws InterruptedException
@@ -161,6 +162,61 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	@Override
 	public int getPort() {
 		return getMappedPort(8080);
+	}
+
+	/**
+	 * Expose the debug port to connect to.
+	 * 
+	 * @param debugPort
+	 *            JNLP debug port. No debugging is enabled when set to null.
+	 * @return Fluent API
+	 */
+	public MeshDockerServer withDebug(int debugPort) {
+		this.debugPort = debugPort;
+		return this;
+	}
+
+	/**
+	 * Wait until the mesh instance is ready.
+	 * 
+	 * @return
+	 */
+	public MeshDockerServer waitForStartup() {
+		waitForStartup = true;
+		return this;
+	}
+
+	/**
+	 * Use the provided JVM arguments.
+	 * 
+	 * @param opts
+	 *            Additional JVM options }
+	 * @return
+	 */
+	public MeshDockerServer withExtraOpts(String opts) {
+		extraOpts = opts;
+		return this;
+	}
+
+	/**
+	 * Set the name of the node.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public MeshDockerServer withNodeName(String name) {
+		this.nodeName = name;
+		return this;
+	}
+
+	/**
+	 * Start the embedded ES
+	 * 
+	 * @return
+	 */
+	public MeshDockerServer withES() {
+		this.startEmbeddedES = true;
+		return this;
 	}
 
 }

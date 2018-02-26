@@ -33,7 +33,7 @@ public class ProjectTagFamilyRawSearchEndpointTest extends AbstractMeshTest {
 		String query = getSimpleTermQuery("name.raw", tagFamilyName);
 		JsonObject response = call(() -> client().searchTagFamiliesRaw(PROJECT_NAME, query));
 		assertNotNull(response);
-		assertThat(response).has("hits.hits[0]._id", tagFamily2.getUuid(), "The correct element was not found.");
-		assertThat(response).has("hits.total", "1", "Not exactly one item was found");
+		assertThat(response).has("responses[0].hits.hits[0]._id", tagFamily2.getUuid(), "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.total", "1", "Not exactly one item was found");
 	}
 }

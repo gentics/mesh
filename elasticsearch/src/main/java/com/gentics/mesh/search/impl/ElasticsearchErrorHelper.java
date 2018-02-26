@@ -58,7 +58,16 @@ public final class ElasticsearchErrorHelper {
 		return false;
 	}
 
+	/**
+	 * Extract the error from the throwable and return a user friendly error.
+	 * 
+	 * @param error
+	 * @return
+	 */
 	public static GenericRestException mapToMeshError(Throwable error) {
+		if (error instanceof GenericRestException) {
+			return (GenericRestException) error;
+		}
 		if (error instanceof TimeoutException || error instanceof SocketTimeoutException) {
 			return error(INTERNAL_SERVER_ERROR, "search_error_timeout");
 		} else if (error instanceof HttpErrorException) {
@@ -69,19 +78,29 @@ public final class ElasticsearchErrorHelper {
 			}
 			JsonObject errorInfo = errorResponse.getJsonObject("error");
 			if (errorInfo != null) {
-				String reason = errorInfo.getString("reason");
-				GenericRestException restError = error(BAD_REQUEST, "search_error_query", reason);
-				JsonArray causes = errorInfo.getJsonArray("root_cause");
-				if (causes != null) {
-					for (int i = 0; i < causes.size(); i++) {
-						JsonObject cause = causes.getJsonObject(i);
-						restError.getProperties().put("cause-" + i, cause.getString("reason"));
-					}
-				}
-				return restError;
+				return mapError(errorInfo);
 			}
 		}
 		return error(INTERNAL_SERVER_ERROR, "search_error", error);
+	}
+
+	/**
+	 * Transform the Elasticsearch error into a mesh error exception.
+	 * 
+	 * @param errorInfo
+	 * @return
+	 */
+	public static GenericRestException mapError(JsonObject errorInfo) {
+		String reason = errorInfo.getString("reason");
+		GenericRestException restError = error(BAD_REQUEST, "search_error_query", reason);
+		JsonArray causes = errorInfo.getJsonArray("root_cause");
+		if (causes != null) {
+			for (int i = 0; i < causes.size(); i++) {
+				JsonObject cause = causes.getJsonObject(i);
+				restError.getProperties().put("cause-" + i, cause.getString("reason"));
+			}
+		}
+		return restError;
 	}
 
 }

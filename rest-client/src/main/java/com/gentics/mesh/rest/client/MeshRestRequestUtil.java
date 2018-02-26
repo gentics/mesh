@@ -4,7 +4,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
 import com.gentics.mesh.rest.client.handler.ResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.ModelResponseHandler;

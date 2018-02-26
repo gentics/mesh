@@ -44,10 +44,8 @@ import io.vertx.core.Vertx;
 
 /**
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
- * 
- * @param <SELF>
  */
-public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends GenericContainer<SELF> {
+public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -73,11 +71,11 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 */
 	private String nodeName;
 
-	private boolean initCluster;
+	private boolean initCluster = false;
 
 	private boolean waitForStartup;
 
-	private boolean clearDataFolders;
+	private boolean clearDataFolders = false;
 
 	private Integer debugPort;
 
@@ -87,40 +85,23 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	private String dataPathPostfix;
 
+	private boolean startEmbeddedES = false;
+
 	/**
 	 * Create a new docker server
 	 * 
-	 * @param clusterName
-	 * @param nodeName
-	 * @param dataPathPostfix
-	 *            Postfix of the data folder
-	 * @param initCluster
-	 * @param waitForStartup
 	 * @param vertx
-	 *            Vertx instances used to create the rest client
-	 * @param debugPort
-	 *            JNLP debug port. No debugging is enabled when set to null.
-	 * @param extraOpts
-	 *            Additional JVM options
+	 *            Vert.x instances used to create the rest client
 	 */
-	public MeshDockerServer(String clusterName, String nodeName, String dataPathPostfix, boolean initCluster, boolean waitForStartup,
-		boolean clearDataFolders, Vertx vertx, Integer debugPort, String extraOpts) {
+	public MeshDockerServer(Vertx vertx) {
 		super(image);
 		this.vertx = vertx;
-		this.clusterName = clusterName;
-		this.nodeName = nodeName;
-		this.dataPathPostfix = dataPathPostfix;
-		this.initCluster = initCluster;
-		this.clearDataFolders = clearDataFolders;
-		this.waitForStartup = waitForStartup;
-		this.debugPort = debugPort;
-		this.extraOpts = extraOpts;
 		setWaitStrategy(new NoWaitStrategy());
 	}
 
 	@Override
 	protected void configure() {
-		String dataPath = "/opt/jenkins-slave/" + nodeName + "-data-" + dataPathPostfix;
+		String dataPath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName + "-data-" + dataPathPostfix;
 		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
 		// Otherwise the folder would be created by docker using root.
 
@@ -132,16 +113,26 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 			}
 		}
 		new File(dataPath).mkdirs();
-
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
+		// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
+
+		changeUserInContainer();
 		if (initCluster) {
 			addEnv("MESHARGS", "-" + MeshCLI.INIT_CLUSTER);
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
 		addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
-		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
-		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
+
+		if (startEmbeddedES) {
+			exposedPorts.add(9200);
+			exposedPorts.add(9300);
+		} else {
+			// Don't run the embedded ES
+			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
+			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
+		}
+
 		String javaOpts = null;
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
@@ -160,14 +151,21 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 		exposedPorts.add(8600);
 		exposedPorts.add(8080);
-		exposedPorts.add(9200);
-		exposedPorts.add(9300);
 
-		// setPrivilegedMode(true);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
-		// setContainerName("mesh-test-" + nodeName);
 		setStartupAttempts(1);
+	}
+
+	private void changeUserInContainer() {
+		int uid = 1000;
+		try {
+			uid = UnixUtils.getUid();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		final int id = uid;
+		withCreateContainerCmdModifier(it -> it.withUser(id + ":" + id));
 	}
 
 	@Override
@@ -180,6 +178,11 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 				throw new ContainerLaunchException("Container did not not startup on-time", e);
 			}
 		}
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
 	}
 
 	/**
@@ -286,7 +289,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		startupConsumer.await(timeoutInSeconds, SECONDS);
 	}
 
-	public MeshRestClient getMeshClient() {
+	public MeshRestClient client() {
 		return client;
 	}
 
@@ -336,6 +339,120 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		logger().trace("stdout: " + result.getStdout());
 		logger().trace("stderr: " + result.getStderr());
 		return result;
+	}
+
+	public void login() {
+		client().setLogin("admin", "admin");
+		client().login().blockingGet();
+	}
+
+	/**
+	 * Expose the debug port to connect to.
+	 * 
+	 * @param debugPort
+	 *            JNLP debug port. No debugging is enabled when set to null.
+	 * @return Fluent API
+	 */
+	public MeshDockerServer withDebug(int debugPort) {
+		this.debugPort = debugPort;
+		return this;
+	}
+
+	/**
+	 * Wait until the mesh instance is ready.
+	 * 
+	 * @return
+	 */
+	public MeshDockerServer waitForStartup() {
+		waitForStartup = true;
+		return this;
+	}
+
+	/**
+	 * Use the provided JVM arguments.
+	 * 
+	 * @param opts
+	 *            Additional JVM options }
+	 * @return
+	 */
+	public MeshDockerServer withExtraOpts(String opts) {
+		extraOpts = opts;
+		return this;
+	}
+
+	/**
+	 * Set the name of the node.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public MeshDockerServer withNodeName(String name) {
+		this.nodeName = name;
+		return this;
+	}
+
+	/**
+	 * Set the name of the cluster.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public MeshDockerServer withClusterName(String name) {
+		this.clusterName = name;
+		return this;
+	}
+
+	/**
+	 * Start the embedded ES
+	 * 
+	 * @return
+	 */
+	public MeshDockerServer withES() {
+		this.startEmbeddedES = true;
+		return this;
+	}
+
+	/**
+	 * Set the init cluster flag.
+	 * 
+	 * @return
+	 */
+	public MeshDockerServer withInitCluster() {
+		this.initCluster = true;
+		return this;
+	}
+
+	/**
+	 * Clear the data folder during startup.
+	 * 
+	 * @return
+	 */
+	public MeshDockerServer withClearFolders() {
+		this.clearDataFolders = true;
+		return this;
+	}
+
+	/**
+	 * Set the data path postfix.
+	 * 
+	 * @param postfix
+	 * @return
+	 */
+	public MeshDockerServer withDataPathPostfix(String postfix) {
+		this.dataPathPostfix = postfix;
+		return this;
+	}
+
+	public String getNodeName() {
+		return nodeName;
+	}
+
+	public String getDataPathPostfix() {
+		return dataPathPostfix;
+	}
+
+	public String getClusterName() {
+		return clusterName;
 	}
 
 }

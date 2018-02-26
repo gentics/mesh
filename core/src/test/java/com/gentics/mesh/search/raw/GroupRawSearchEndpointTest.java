@@ -26,6 +26,6 @@ public class GroupRawSearchEndpointTest extends AbstractMeshTest {
 
 		JsonObject response = call(() -> client().searchGroupsRaw(query));
 		assertNotNull(response);
-		assertThat(response).has("hits.hits[0]._id", uuid, "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.hits[0]._id", uuid, "The correct element was not found.");
 	}
 }

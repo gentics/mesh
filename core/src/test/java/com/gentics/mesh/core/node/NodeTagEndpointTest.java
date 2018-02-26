@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -18,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -52,21 +55,25 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	public void testAddTagToNode() throws Exception {
 		Node node = folder("2015");
 		String nodeUuid = tx(node::getUuid);
+		String schemaVersionUuid = tx(() -> node.getSchemaContainer().getLatestVersion().getUuid());
 		Tag tag = tag("red");
 		String tagUuid = tx(tag::getUuid);
 
 		try (Tx tx = tx()) {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
-		assertThat(dummySearchProvider())
+		assertThat(trackingSearchProvider())
 				.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
 				.recordedStoreEvents(2);
-		// node-[:nodeUuid]-[draft/published]-[schemaname]-[schemaversion]-[release_uuid]
-		assertTrue(dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-published-folder-1-" + initialReleaseUuid()));
-		assertTrue(dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-draft-folder-1-" + initialReleaseUuid()));
+		trackingSearchProvider().printStoreEvents(false);
+		// Document Index: [node-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
+		String draftIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), schemaVersionUuid, DRAFT);
+		String publishedIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), schemaVersionUuid, PUBLISHED);
+		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(draftIndexName + "-"+ nodeUuid + "-en"));
+		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(publishedIndexName + "-"+ nodeUuid + "-en"));
 
 		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
 

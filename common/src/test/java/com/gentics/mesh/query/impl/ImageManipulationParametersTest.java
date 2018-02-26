@@ -148,13 +148,13 @@ public class ImageManipulationParametersTest {
 	@Test
 	public void testCacheKey() {
 		String cacheKey = new ImageManipulationParametersImpl().getCacheKey();
-		assertEquals("", cacheKey);
+		assertEquals("fp0.5-0.5", cacheKey);
 
 		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).getCacheKey();
-		assertEquals("rw100rh200", cacheKey);
+		assertEquals("rw100rh200fp0.5-0.5", cacheKey);
 
 		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).setRect(10, 22, 20, 21).getCacheKey();
-		assertEquals("rect10,22,21,20rw100rh200", cacheKey);
+		assertEquals("rect10,22,21,20rw100rh200fp0.5-0.5", cacheKey);
 	}
 
 }

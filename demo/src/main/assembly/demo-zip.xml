@@ -11,13 +11,14 @@
 		<fileSet>
 			<outputDirectory>/</outputDirectory>
 			<directory>${basedir}/target/mesh-angular-demo</directory>
+			<excludes>
+				<exclude>node_modules/**</exclude>
+				<exclude>node/**</exclude>
+				<exclude>.git/**</exclude>
+			</excludes>
 			<includes>
 				<include>**/*</include>
 			</includes>
-			<excludes>
-				<exclude>node_modules</exclude>
-				<exclude>node</exclude>
-			</excludes>
 		</fileSet>
 	</fileSets>
 	<includeBaseDirectory>false</includeBaseDirectory>

@@ -1,32 +1,5 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import com.gentics.mesh.core.data.node.field.DisplayField;
-import org.apache.commons.collections.CollectionUtils;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -39,6 +12,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.DisplayField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
@@ -72,9 +46,35 @@ import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.traversals.EdgeTraversal;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 /**
  * @see NodeGraphFieldContainer
@@ -601,8 +601,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid());
+		Stream<String> referencedUuids = StreamSupport.stream(getReferencedNodes().spliterator(), false)
+			.map(Node::getUuid);
+
+		int hashcode = Stream.concat(Stream.of(getUuid()), referencedUuids)
+			.collect(Collectors.toSet())
+			.hashCode();
+
+		return ETag.hash(hashcode);
 	}
+
 
 	@Override
 	public User getEditor() {

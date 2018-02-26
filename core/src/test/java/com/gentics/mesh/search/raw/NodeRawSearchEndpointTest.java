@@ -2,6 +2,7 @@ package com.gentics.mesh.search.raw;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import java.util.Arrays;
@@ -12,7 +13,11 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
@@ -59,10 +64,24 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 		// search in old project
 		JsonObject response = call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue)));
-		assertThat(response).has("hits.total", "2", "Not exactly two item was found.");
-		String uuid1 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
-		String uuid2 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");
+		assertThat(response).has("responses[0].hits.total", "2", "Not exactly two item was found.");
+		String uuid1 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
+		String uuid2 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");
 		assertThat(Arrays.asList(uuid1, uuid2)).containsExactlyInAnyOrder(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
 
+	}
+
+	@Test
+	public void testManySchemaSearch() {
+		for (int i = 0; i < 45; i++) {
+			SchemaCreateRequest request = new SchemaCreateRequest();
+			request.setName("dummy" + i);
+			request.addField(FieldUtil.createHtmlFieldSchema("content"));
+			SchemaResponse response = call(() -> client().createSchema(request));
+			call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
+		}
+
+		call(() -> client().searchNodesRaw(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
+			.setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 	}
 }

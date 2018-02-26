@@ -499,9 +499,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setUsername("dummy_user_changed");
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
-		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), uuid);
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
-		dummySearchProvider().clear().blockingAwait();
+		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
 			assertThat(restUser).matches(updateRequest);
@@ -1159,7 +1159,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			dummySearchProvider().clear().blockingAwait();
+			trackingSearchProvider().clear().blockingAwait();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -1169,9 +1169,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
-			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), restUser.getUuid());
-			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
-			dummySearchProvider().clear();
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), restUser.getUuid());
+			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
+			trackingSearchProvider().clear();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
@@ -1188,8 +1188,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Load the user again and check whether it is disabled
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
-			assertThat(dummySearchProvider()).hasDelete(User.composeIndexName(), uuid);
-			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasDelete(User.composeIndexName(), uuid);
+			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
 		}
 
 	}

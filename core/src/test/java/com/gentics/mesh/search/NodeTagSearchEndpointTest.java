@@ -38,7 +38,6 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
-
 		String query = getESText("failing-query.es");
 		MeshRestClientMessageException error = call(() -> client().searchNodes(PROJECT_NAME, query), BAD_REQUEST, "search_error_query");
 		GenericMessageResponse message = error.getResponseMessage();

@@ -119,9 +119,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertTrue("The assignment should be active.", edge1.isActive());
 		}
 		assertThat(call(() -> client().findJobs())).isEmpty();
-		assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
 				DRAFT));
-		assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
 				PUBLISHED));
 
 		/**
@@ -152,9 +152,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertNotNull(edge2.getJobUuid());
 			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
 			assertTrue("The assignment should be active.", edge2.isActive());
-			assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
+			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
 					DRAFT)).hasNoDropEvents();
-			assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
+			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
 					PUBLISHED)).hasNoDropEvents();
 			assertThat(call(() -> client().findJobs())).hasInfos(1);
 		}
@@ -174,15 +174,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		// The initial index should have been removed
-		assertThat(dummySearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, DRAFT));
-		assertThat(dummySearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, DRAFT));
+		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
 				PUBLISHED));
 
 		/**
 		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
 		 * must be recorded for the new index.
 		 */
-		dummySearchProvider().clear().blockingAwait();
+		trackingSearchProvider().clear().blockingAwait();
 		MeshInternal.get().jobWorkerVerticle().stop();
 
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
@@ -193,7 +193,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		nodeCreateRequest.getFields().put("text2", new StringFieldImpl().setString("text2_value"));
 		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
-		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT),
+		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT),
 				response.getUuid() + "-en");
 
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
@@ -215,9 +215,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertFalse("The previous assignment should be inactive.", edge1.isActive());
 			assertTrue("The previous assignment should be active since it has not yet been migrated.", edge2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
-			assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid,
+			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid,
 					DRAFT)).hasNoDropEvents();
-			assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid,
+			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid,
 					PUBLISHED)).hasNoDropEvents();
 			assertThat(call(() -> client().findJobs())).hasInfos(2);
 		}
@@ -241,14 +241,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		// The old index should have been removed
-		assertThat(dummySearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
-		assertThat(dummySearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
+		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
+		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
 				PUBLISHED));
 
 		// The node should have been removed from the old index and placed in the new one
-		assertThat(dummySearchProvider()).hasDelete(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
+		assertThat(trackingSearchProvider()).hasDelete(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
 				DRAFT), response.getUuid() + "-en");
-		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT),
+		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT),
 				response.getUuid() + "-en");
 
 	}
@@ -272,9 +272,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertEquals(0, TestUtils.toList(boot().jobRoot().findAllIt()).size());
 		}
 
-		assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
 				DRAFT));
-		assertThat(dummySearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
 				PUBLISHED));
 
 	}
@@ -332,7 +332,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// The old indices are dropped -> 2 Deleted
 			// The new indices are created -> 2 Creates
 			// The mappings of the new indices are created -> 2 Mappings
-			assertThat(dummySearchProvider()).hasEvents(2, 2, 2, 2);
+			assertThat(trackingSearchProvider()).hasEvents(2, 2, 2, 2);
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -366,16 +366,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
-		assertThat(dummySearchProvider()).hasEvents(size + size + 1, size + size, 2, 2);
-		for (JsonObject mapping : dummySearchProvider().getCreateIndexEvents().values()) {
+		assertThat(trackingSearchProvider()).hasEvents(size + size + 1, size + size, 2, 2);
+		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
 			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "keyword",
 					"The mapping should include a raw field for the teaser field");
 			assertThat(mapping).hasNot("$.mapping.default.properties.fields.properties.title.fields.raw",
 					"The mapping should not include a raw field for the title field");
 		}
 
-		List<JsonObject> searchDocumentsOfContent = dummySearchProvider().getStoreEvents().entrySet().stream().filter(e -> e.getKey().endsWith(
-				nodeUuid + "-en")).map(Map.Entry::getValue).collect(Collectors.toList());
+		List<JsonObject> searchDocumentsOfContent = trackingSearchProvider().getStoreEvents().entrySet().stream().filter(e -> e.getKey().endsWith(
+				nodeUuid + "-en")).map(e -> e.getValue()).collect(Collectors.toList());
 		assertThat(searchDocumentsOfContent).isNotEmpty();
 		// Assert that the documents are correct. The teaser must have been truncated.
 		for (JsonObject doc : searchDocumentsOfContent) {

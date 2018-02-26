@@ -8,6 +8,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import java.util.Objects;
 
+import io.vertx.core.http.HttpClientOptions;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -104,6 +105,11 @@ import io.vertx.core.json.JsonObject;
  * HTTP based REST client implementation.
  */
 public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
+
+	public MeshRestHttpClientImpl(HttpClientOptions options, Vertx vertx) {
+		super(options, vertx);
+		setAuthenticationProvider(new JWTAuthentication());
+	}
 
 	public MeshRestHttpClientImpl(String host, Vertx vertx) {
 		this(host, DEFAULT_PORT, false, vertx);
@@ -954,6 +960,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(fileName, "fileName must not be null");
 		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(contentType, "contentType must not be null");
+		if (contentType.isEmpty()) {
+			throw new IllegalArgumentException("The contentType of the binary field cannot be empty.");
+		}
 
 		// TODO handle escaping of filename
 		String boundary = "--------Geg2Oob";

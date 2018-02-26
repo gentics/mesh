@@ -20,13 +20,13 @@ public class NodeIndexHandlerTest extends AbstractMeshTest {
 			assertTrue(meshRoot().getNodeRoot().findAllIt().iterator().hasNext());
 			searchProvider().reset();
 			assertEquals("Initially no store event should have been recorded.", 0,
-				dummySearchProvider().getStoreEvents().size());
+				trackingSearchProvider().getStoreEvents().size());
 			meshDagger().nodeContainerIndexHandler().reindexAll().blockingAwait();
 			assertTrue("We expected to see more than one store event.",
-				dummySearchProvider().getStoreEvents().size() > 1);
+				trackingSearchProvider().getStoreEvents().size() > 1);
 		}
 
-		for (String key : dummySearchProvider().getStoreEvents().keySet()) {
+		for (String key : trackingSearchProvider().getStoreEvents().keySet()) {
 			if (!key.startsWith("mesh-node")) {
 				fail("We found a document which was does not represent a node. Only nodes should have been reindexed. {"
 					+ key + "}");

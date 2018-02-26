@@ -28,9 +28,9 @@ public abstract class AbstractClusterTest {
 		String folderUuid = projectResponse.getRootNode().getUuid();
 
 		// Node A: Find the content schema
-		SchemaListResponse schemaListResponse = call(client::findSchemas);
-		String contentSchemaUuid = schemaListResponse.getData().stream().filter(sr -> sr.getName().equals("content")).map(AbstractResponse::getUuid)
-				.findAny().get();
+		SchemaListResponse schemaListResponse = call(() -> client.findSchemas());
+		String contentSchemaUuid = schemaListResponse.getData().stream().filter(sr -> sr.getName().equals("content")).map(sr -> sr.getUuid())
+			.findAny().get();
 
 		// Node A: Assign content schema to project
 		call(() -> client.assignSchemaToProject(projectName, contentSchemaUuid));
@@ -58,7 +58,14 @@ public abstract class AbstractClusterTest {
 	}
 
 	protected MeshDockerServer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders) {
-		MeshDockerServer server = new MeshDockerServer(clusterName, nodeName, dataPathPostfix, false, true, clearFolders, vertx, null, null);
+		MeshDockerServer server = new MeshDockerServer(vertx)
+			.withDataPathPostfix(dataPathPostfix)
+			.withClusterName(clusterName)
+			.withNodeName(nodeName)
+			.waitForStartup();
+		if (clearFolders) {
+			server.withClearFolders();
+		}
 		server.start();
 		return server;
 	}

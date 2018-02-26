@@ -18,7 +18,6 @@ import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;

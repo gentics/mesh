@@ -55,7 +55,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * <p>
 	 * <ul>
-	 * <li>Document Index: [node-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
+	 * <li>Document Index: [:indexPrefixnode-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
 	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
 	 * </ul>
 	 * <p>

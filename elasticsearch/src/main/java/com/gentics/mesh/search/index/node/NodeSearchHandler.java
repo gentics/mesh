@@ -1,6 +1,8 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -10,8 +12,10 @@ import java.util.concurrent.TimeoutException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.RequestBuilder;
+import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -88,10 +92,25 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		if (log.isDebugEnabled()) {
 			log.debug("Using parsed query {" + queryJson.encodePrettily() + "}");
 		}
+
+		JsonObject queryOption = new JsonObject();
+		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("search_type", "dfs_query_then_fetch");
+		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
 		try {
-			RequestBuilder<JsonObject> scrollRequest = client.query(queryJson, new ArrayList<>(indices));
-			JsonObject scrollResp = scrollRequest.sync();
-			JsonObject hitsInfo = scrollResp.getJsonObject("hits");
+			RequestBuilder<JsonObject> searchRequest = client.multiSearch(queryOption, queryJson);
+			JsonObject response = searchRequest.sync();
+			JsonArray responses = response.getJsonArray("responses");
+			JsonObject firstResponse = responses.getJsonObject(0);
+
+			// Process the nested error
+			JsonObject errorInfo = firstResponse.getJsonObject("error");
+			if (errorInfo != null) {
+				throw mapError(errorInfo);
+			}
+
+			JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(() -> {
