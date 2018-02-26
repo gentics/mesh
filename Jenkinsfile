@@ -185,9 +185,10 @@ node("docker") {
 									}
 								}
 							} catch (Exception e) {
-								echo "RESULT: ${currentBuild.result}"
-								echo "CRESULT: ${currentBuild.currentResult}"
-						        //currentBuild.result = 'FAILURE'
+								if (currentBuild.result == null || currentBuild.currentResult == "STABLE") {
+						        	currentBuild.result = 'FAILURE'
+									currentBuild.currentResult = 'FAILURE'
+								}
 								throw e
 							} finally {
 							    echo "RESULT: ${currentBuild.result}"
