@@ -184,7 +184,15 @@ node("docker") {
 										echo "Push skipped.."
 									}
 								}
+							} catch (Exception e) {
+								if (currentBuild.result == null || currentBuild.currentResult == "STABLE") {
+						        	currentBuild.result = 'FAILURE'
+									currentBuild.currentResult = 'FAILURE'
+								}
+								throw e
 							} finally {
+							    echo "RESULT: ${currentBuild.result}"
+								echo "CRESULT: ${currentBuild.currentResult}"
 								githubBuildEnded()
 								notifyMattermostUsers()
 							}
