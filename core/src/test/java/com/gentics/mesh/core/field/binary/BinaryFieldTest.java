@@ -37,7 +37,6 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.TransformationResult;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
@@ -282,19 +281,17 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testMultiStreamHandling() throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
-		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(3);
-
-		Single<String> hash = FileUtils.hash(obs);
-
+		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
 		File file = new File("target", "file" + System.currentTimeMillis());
-		FileOutputStream fos = new FileOutputStream(file);
-		IOUtils.copy(ins, fos);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+			IOUtils.write(bytes, fos);
+			fos.flush();
+		}
 
 		Single<ImageInfo> info = MeshInternal.get().imageManipulator().readImageInfo(file.getAbsolutePath());
-
-		BinaryStorage localStorage = MeshInternal.get().binaryStorage();
-
-		Single<String> store = localStorage.store(obs, "bogus").toSingleDefault("null");
+		// Two obs handler
+		Single<String> hash = FileUtils.hash(obs);
+		Single<String> store = MeshInternal.get().binaryStorage().store(obs, "bogus").toSingleDefault("null");
 
 		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
 			return new TransformationResult(hashV, 0, infoV, null);
