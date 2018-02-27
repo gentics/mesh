@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.job;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
@@ -18,9 +19,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
@@ -39,12 +44,25 @@ public class JobEndpointTest extends AbstractMeshTest {
 		JobListResponse jobList = call(() -> client().findJobs());
 		assertThat(jobList.getData()).isEmpty();
 
-		tx(() -> {
+		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
+		String uuid = tx(() -> schemaContainer("folder").getUuid());
+		waitForJobs(() -> {
+			SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+			schema.setName("folder2");
+			call(() -> client().updateSchema(uuid, schema));
+		}, COMPLETED, 1);
+
+		tx((tx) -> {
 			boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
 		});
 
 		jobList = call(() -> client().findJobs());
-		assertThat(jobList.getData()).hasSize(1);
+		JobResponse job = jobList.getData().get(1);
+		assertThat(job.getProperties()).doesNotContainKey("microschemaUuid");
+		assertThat(job.getProperties()).doesNotContainKey("microschemaName");
+		assertThat(job.getProperties()).containsKey("schemaName");
+		assertThat(job.getProperties()).containsKey("schemaUuid");
+		assertThat(jobList.getData()).hasSize(2);
 	}
 
 	@Test
@@ -52,7 +70,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		String jobUuid = tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), initialRelease()).getUuid());
 		tx(() -> group().addRole(roles().get("admin")));
 		assertEquals(QUEUED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
-		
+
 		// Wait the initial startup delay and after that the periodic delay
 		TestUtils.sleep(30_000 + 30_000);
 

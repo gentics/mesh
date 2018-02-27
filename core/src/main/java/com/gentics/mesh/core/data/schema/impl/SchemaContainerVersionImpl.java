@@ -50,8 +50,8 @@ import io.reactivex.Single;
  * @see SchemaContainerVersion
  */
 public class SchemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
-		SchemaContainerVersion {
+	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
+	SchemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
@@ -90,7 +90,7 @@ public class SchemaContainerVersionImpl extends
 	public Iterator<NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
 		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
 		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
-				.filter(e -> e.getParentNode(releaseUuid) != null).map(e -> (NodeGraphFieldContainer) e);
+			.filter(e -> e.getParentNode(releaseUuid) != null).map(e -> (NodeGraphFieldContainer) e);
 		return stream.iterator();
 	}
 

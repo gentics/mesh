@@ -154,7 +154,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					SchemaContainerVersion assignedVersion = release.findLatestSchemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
-								version.getVersion());
+							version.getVersion());
 					}
 					release.assignSchemaVersion(ac.getUser(), version);
 				}
@@ -213,7 +213,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					MicroschemaContainerVersion assignedVersion = release.findLatestMicroschemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
-								version.getVersion());
+							version.getVersion());
 					}
 					release.assignMicroschemaVersion(user, version);
 				}
@@ -289,7 +289,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					try (Tx tx = db.tx()) {
 						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(release.getUuid());
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
-								+ currentVersion.getUuid() + "=" + it.hasNext());
+							+ currentVersion.getUuid() + "=" + it.hasNext());
 					}
 				}
 
@@ -324,10 +324,10 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						job.process();
 						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid());
 						log.info("After migration " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - " + currentVersion.getUuid()
-								+ " has unmigrated containers: " + it.hasNext());
+							+ " has unmigrated containers: " + it.hasNext());
 					} catch (Exception e) {
 						log.error("Migration failed of " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
-								+ currentVersion.getUuid() + " failed with error", e);
+							+ currentVersion.getUuid() + " failed with error", e);
 					}
 
 				}

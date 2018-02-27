@@ -57,4 +57,5 @@ public interface SchemaContainerVersion
 	 * @return
 	 */
 	Iterable<? extends Node> getNodes(String releaseUuid, User user, ContainerType type);
+
 }

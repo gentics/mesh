@@ -44,8 +44,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	private static final Logger log = LoggerFactory.getLogger(JobImpl.class);
 
 	private static final String ERROR_DETAIL_MAX_LENGTH_MSG = "..." + System.lineSeparator() +
-			"For further details concerning this error please refer to the logs.";
-
+		"For further details concerning this error please refer to the logs.";
 
 	@Override
 	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
@@ -96,7 +95,6 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 			props.put("fromVersion", getFromSchemaVersion().getVersion());
 			props.put("toVersion", getToSchemaVersion().getVersion());
 		}
-
 		if (getToMicroschemaVersion() != null) {
 			MicroschemaContainer container = getToMicroschemaVersion().getSchemaContainer();
 			props.put("microschemaName", container.getName());
@@ -170,7 +168,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public SchemaContainerVersion getFromSchemaVersion() {
-		return out(HAS_FROM_VERSION).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return out(HAS_FROM_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -180,7 +178,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public SchemaContainerVersion getToSchemaVersion() {
-		return out(HAS_TO_VERSION).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return out(HAS_TO_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -190,7 +188,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public MicroschemaContainerVersion getFromMicroschemaVersion() {
-		return out(HAS_FROM_VERSION).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return out(HAS_FROM_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -200,7 +198,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public MicroschemaContainerVersion getToMicroschemaVersion() {
-		return out(HAS_TO_VERSION).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return out(HAS_TO_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
