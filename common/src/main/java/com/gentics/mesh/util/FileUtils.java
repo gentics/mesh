@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -45,7 +45,7 @@ public final class FileUtils {
 		}
 	}
 
-	public static Single<String> hash(Observable<Buffer> stream) {
+	public static Single<String> hash(Flowable<Buffer> stream) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
 			return stream.reduce(md, (digest, buffer) -> {
@@ -65,7 +65,7 @@ public final class FileUtils {
 	 * @return Observable returning the SHA 512 checksum
 	 */
 	public static Single<String> hash(Buffer buffer) {
-		return hash(Observable.just(buffer));
+		return hash(Flowable.just(buffer));
 	}
 
 	/**

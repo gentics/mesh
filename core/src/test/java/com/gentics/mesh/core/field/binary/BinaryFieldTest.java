@@ -43,7 +43,7 @@ import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
@@ -281,7 +281,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testMultiStreamHandling() throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
-		Observable<Buffer> obs = Observable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
+		Flowable<Buffer> obs = Flowable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
 		File file = new File("target", "file" + System.currentTimeMillis());
 		try (FileOutputStream fos = new FileOutputStream(file)) {
 			IOUtils.write(bytes, fos);

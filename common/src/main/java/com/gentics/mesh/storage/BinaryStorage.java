@@ -3,7 +3,7 @@ package com.gentics.mesh.storage;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
 import io.reactivex.Completable;
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -19,7 +19,7 @@ public interface BinaryStorage {
 	 *            Uuid of the binary to be stored
 	 * @return
 	 */
-	Completable store(Observable<Buffer> stream, String uuid);
+	Completable store(Flowable<Buffer> stream, String uuid);
 
 	/**
 	 * Checks whether the binary data for the given field exists
@@ -35,7 +35,7 @@ public interface BinaryStorage {
 	 * @param uuid
 	 * @return
 	 */
-	Observable<Buffer> read(String uuid);
+	Flowable<Buffer> read(String uuid);
 
 	/**
 	 * Delete the binary with the given uuid.

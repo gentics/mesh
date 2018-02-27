@@ -8,7 +8,7 @@ import java.util.Map;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.PropReadFileStream;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
@@ -27,7 +27,7 @@ public interface ImageManipulator {
 	 * @param imageRequestParameter
 	 * @return
 	 */
-	Single<PropReadFileStream> handleResize(Observable<Buffer> stream, String cacheKey, ImageManipulationParameters imageRequestParameter);
+	Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters imageRequestParameter);
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.

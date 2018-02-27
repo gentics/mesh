@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -14,7 +15,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
@@ -31,7 +32,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable store(Observable<Buffer> stream, String uuid) {
+	public Completable store(Flowable<Buffer> stream, String uuid) {
 		return Completable.defer(() -> {
 			FileSystem fileSystem = FileSystem.newInstance(Mesh.vertx().fileSystem());
 			String path = getFilePath(uuid);
@@ -81,10 +82,12 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Observable<Buffer> read(String binaryUuid) {
+	public Flowable<Buffer> read(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
-		Observable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem()).rxOpen(path, new OpenOptions()).toObservable()
-				.flatMap(RxUtil::toBufferObs);
+		Flowable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem())
+			.rxOpen(path, new OpenOptions())
+			.toFlowable()
+			.flatMap(RxUtil::toBufferFlow);
 		return obs;
 	}
 

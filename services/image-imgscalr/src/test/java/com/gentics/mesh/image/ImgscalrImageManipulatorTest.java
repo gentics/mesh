@@ -35,7 +35,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -62,7 +62,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			log.debug("Handling " + imageName);
 
 			Single<Buffer> obs = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180)).map(
-				PropReadFileStream::getFile).map(RxUtil::toBufferObs).flatMap(RxUtil::readEntireData);
+				PropReadFileStream::getFile).map(RxUtil::toBufferFlow).flatMap(RxUtil::readEntireData);
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {
@@ -106,7 +106,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		});
 	}
 
-	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Observable<Buffer>> action) throws JSONException,
+	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Flowable<Buffer>> action) throws JSONException,
 		IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), Charset.defaultCharset()));
 		JSONArray array = json.getJSONArray("images");
@@ -120,7 +120,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 				throw new RuntimeException("Could not find image {" + path + "}");
 			}
 			byte[] bytes = IOUtils.toByteArray(ins);
-			Observable<Buffer> bs = Observable.just(Buffer.buffer(bytes));
+			Flowable<Buffer> bs = Flowable.just(Buffer.buffer(bytes));
 			int width = image.getInt("w");
 			int height = image.getInt("h");
 			String color = image.getString("dominantColor");

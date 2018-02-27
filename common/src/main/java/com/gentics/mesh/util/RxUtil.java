@@ -7,6 +7,7 @@ import java.io.PipedOutputStream;
 import java.util.function.Function;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
@@ -37,7 +38,7 @@ public final class RxUtil {
 	 * @deprecated Try to avoid this method in order to prevent memory issues.
 	 */
 	@Deprecated
-	public static Single<Buffer> readEntireData(Observable<Buffer> stream) {
+	public static Single<Buffer> readEntireData(Flowable<Buffer> stream) {
 		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
 	}
 
@@ -58,7 +59,7 @@ public final class RxUtil {
 	// .subscribe(wstream::write);
 	// return wstream.createInputStream();
 	// }
-	public static InputStream toInputStream(Observable<Buffer> stream, Vertx vertx) throws IOException {
+	public static InputStream toInputStream(Flowable<Buffer> stream, Vertx vertx) throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		PipedOutputStream pos = new PipedOutputStream(pis);
 		stream.map(Buffer::getBytes).observeOn(RxHelper.blockingScheduler(vertx.getDelegate(), false)).doOnComplete(() -> {
@@ -79,12 +80,15 @@ public final class RxUtil {
 		return pis;
 	}
 
-	public static Observable<Buffer> toBufferObs(AsyncFile file) {
-		return toBufferObs(new io.vertx.reactivex.core.file.AsyncFile(file));
+	public static Flowable<Buffer> toBufferFlow(AsyncFile file) {
+		return toBufferFlow(new io.vertx.reactivex.core.file.AsyncFile(file));
 	}
 
-	public static Observable<Buffer> toBufferObs(io.vertx.reactivex.core.file.AsyncFile file) {
-		return file.toObservable().map(io.vertx.reactivex.core.buffer.Buffer::getDelegate).doOnTerminate(() -> file.close());
+	public static Flowable<Buffer> toBufferFlow(io.vertx.reactivex.core.file.AsyncFile file) {
+		return file.toFlowable()
+			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
+			.doOnTerminate(file::close)
+			.doOnCancel(file::close);
 	}
 
 }
