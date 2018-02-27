@@ -12,6 +12,9 @@ icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for
 [[v0.17.1]]
 == 0.17.1 (TBD)
 
+icon:check[] Search: When calling reindex via the `/api/v1/search/reindex` reindexing stopped after a certain amount of
+  time because of a timeout in the database transaction. This has been fixed now.
+
 icon:check[] REST: In some cases parallel fileuploads of multiple images could cause the upload process to never finish. This has been fixed now. 
 
 [[v0.17.0]]
