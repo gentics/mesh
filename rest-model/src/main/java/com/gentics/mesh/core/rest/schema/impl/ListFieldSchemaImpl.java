@@ -98,12 +98,12 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 		super.apply(fieldProperties);
 
 		Object listType = fieldProperties.get(SchemaChangeModel.LIST_TYPE_KEY);
-		if (listType!=null) {
+		if (listType != null && listType instanceof String) {
 			setListType((String) listType);
 		}
 
 		Object allowedSchemas = fieldProperties.get(SchemaChangeModel.ALLOW_KEY);
-		if (allowedSchemas != null) {
+		if (allowedSchemas != null && allowedSchemas instanceof String[]) {
 			setAllowedSchemas((String[]) allowedSchemas);
 		}
 	}
