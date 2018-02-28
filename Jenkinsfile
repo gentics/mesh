@@ -37,7 +37,7 @@ node("docker") {
 
 			containerTemplate(alwaysPullImage: false, 
 				command: '-G 117',
-				image: 'docker:18-dind',
+				image: 'docker:dind',
 				name: 'dind',
 				privileged: true,
 				ttyEnabled: true,
