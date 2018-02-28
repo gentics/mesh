@@ -57,7 +57,7 @@ import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -333,7 +333,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			Single<Long> store = Single.just(ul.size());
 			if (storeBinary) {
 				AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
-				Observable<Buffer> stream = RxUtil.toBufferObs(asyncFile);
+				Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
 				store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size()));
 			}
 
@@ -456,7 +456,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 						true);
 
 					String binaryUuid = initialField.getBinary().getUuid();
-					Observable<Buffer> stream = binaryStorage.read(binaryUuid);
+					Flowable<Buffer> stream = binaryStorage.read(binaryUuid);
 
 					// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
 					// Otherwise the query parameter focal point will be used and thus override the stored focal point.
@@ -467,7 +467,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					// Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, parameters).flatMap(file -> {
-						Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
+						Flowable<Buffer> obs = RxUtil.toBufferFlow(file.getFile());
 
 						// Hash the resized image data and store it using the computed fieldUuid + hash
 						Single<String> hash = FileUtils.hash(obs);
@@ -491,7 +491,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// Check whether the binary was already stored.
 					if (binary == null) {
 						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
-						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).flatMapObservable(RxUtil::toBufferObs);
+						Flowable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toFlowable().flatMap(RxUtil::toBufferFlow);
 						binary = binaryRoot.create(hash, result.getSize());
 						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
 					} else {

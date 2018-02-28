@@ -32,7 +32,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
@@ -51,7 +51,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		meshDagger().binaryStorage().store(Observable.just(buffer), binary.getUuid()).blockingAwait();
+		meshDagger().binaryStorage().store(Flowable.just(buffer), binary.getUuid()).blockingAwait();
 	};
 
 	@Test

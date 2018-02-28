@@ -13,7 +13,7 @@ import org.testcontainers.containers.wait.Wait;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 
@@ -55,7 +55,7 @@ public class S3BinaryStorageTest {
 		Mockito.when(mockField.getBinary()).thenReturn(binary);
 		Mockito.when(binary.getSHA512Sum()).thenReturn("test");
 //		assertFalse(storage.exists(mockField));
-		storage.store(Observable.just(Buffer.buffer("test")), "test").blockingAwait();
+		storage.store(Flowable.just(Buffer.buffer("test")), "test").blockingAwait();
 		assertTrue(storage.exists(mockField));
 		storage.read("test").ignoreElements().blockingAwait();
 	}

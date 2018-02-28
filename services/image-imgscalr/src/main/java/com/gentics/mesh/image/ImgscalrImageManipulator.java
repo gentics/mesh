@@ -35,7 +35,7 @@ import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -135,7 +135,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<PropReadFileStream> handleResize(Observable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
+	public Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		try {
 			parameters.validate();
@@ -222,7 +222,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param stream
 	 * @return
 	 */
-	private Single<BufferedImage> readImage(Observable<Buffer> stream) {
+	private Single<BufferedImage> readImage(Flowable<Buffer> stream) {
 		return workerPool.rxExecuteBlocking(bc -> {
 			try (InputStream ins = RxUtil.toInputStream(stream, vertx)) {
 				if (log.isDebugEnabled()) {
