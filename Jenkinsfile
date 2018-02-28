@@ -51,6 +51,7 @@ node("docker") {
 				label: 'mesh',
 				name: 'jenkins-slave-mesh',
 				namespace: 'default', 
+				nodeSelector: 'jenkins_worker=true',
 				serviceAccount: 'jenkins',
 				volumes: [
 					emptyDirVolume(memory: false, mountPath: '/var/run'),
