@@ -314,13 +314,10 @@
 					<skip>${skip.unit.tests}</skip>
 					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
-					<runOrder>filesystem</runOrder>
+					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
-					<!-- Don't execute more than one test per jvm fork! -->
-					<threadCount>1</threadCount>
-					<threadCountClasses>1</threadCountClasses>
 					<excludes>
 						<include>**/*AbstractTest.java</include>
 						<include>**/*Abstract*Test.java</include>
