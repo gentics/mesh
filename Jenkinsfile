@@ -36,8 +36,8 @@ node("docker") {
 				workingDir: '/home/jenkins/workspace'),
 
 			containerTemplate(alwaysPullImage: false, 
-				command: '',
-				image: 'docker:17-dind',
+				command: '-G 117',
+				image: 'docker:18-dind',
 				name: 'dind',
 				privileged: true,
 				ttyEnabled: true,
