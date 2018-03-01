@@ -21,9 +21,9 @@ public class LocalServerTest {
 
 	@Test
 	public void testServer() {
-		serverA.getMeshClient().setLogin("admin", "admin");
-		serverA.getMeshClient().login().blockingGet();
-		UserListResponse users = call(() -> serverA.getMeshClient().findUsers());
+		serverA.client().setLogin("admin", "admin");
+		serverA.client().login().blockingGet();
+		UserListResponse users = call(() -> serverA.client().findUsers());
 		assertNotNull(users);
 	}
 

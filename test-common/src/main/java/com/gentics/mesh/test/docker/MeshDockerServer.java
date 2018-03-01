@@ -12,13 +12,10 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
 
@@ -55,11 +52,15 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 
 	private boolean waitForStartup;
 
+	private int waitTimeout = 200;
+
 	private Integer debugPort;
 
 	private String extraOpts;
 
 	private boolean startEmbeddedES = false;
+
+	private boolean useFilesystem = false;
 
 	/**
 	 * Create a new docker server
@@ -69,6 +70,17 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 */
 	public MeshDockerServer(String meshImage, Vertx vertx) {
 		super(meshImage);
+		this.vertx = vertx;
+		setWaitStrategy(new NoWaitStrategy());
+	}
+
+	public MeshDockerServer(Vertx vertx) {
+		String version = MeshRestClient.getPlainVersion();
+		if (version.endsWith("-SNAPSHOT")) {
+			throw new RuntimeException(
+				"It is not possible to run snapshot docker versions. Please use a final version of Gentics Mesh or manually specify a version.");
+		}
+		this.setDockerImageName("gentics/mesh:" + version);
 		this.vertx = vertx;
 		setWaitStrategy(new NoWaitStrategy());
 	}
@@ -105,6 +117,10 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 		}
 
+		if (!useFilesystem) {
+			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
+		}
+
 		exposedPorts.add(8080);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
@@ -116,28 +132,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 		super.start();
 		if (waitForStartup) {
 			try {
-				awaitStartup(200);
+				awaitStartup(waitTimeout);
 			} catch (InterruptedException e) {
 				throw new ContainerLaunchException("Container did not not startup on-time", e);
 			}
 		}
-	}
-
-	private static String generateMeshYML(boolean enableClustering) throws JsonProcessingException {
-		MeshOptions options = new MeshOptions();
-		options.getClusterOptions().setEnabled(enableClustering);
-		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
-		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
-	}
-
-	private static String generateRunScript(String classpath) {
-		// TODO Add an automatic shutdown timer to prevent dangling docker
-		// containers
-		StringBuilder builder = new StringBuilder();
-		builder.append("#!/bin/sh\n");
-		builder.append("java $JAVAOPTS -cp " + classpath + " com.gentics.mesh.server.ServerRunner");
-		builder.append("\n\n");
-		return builder.toString();
 	}
 
 	/**
@@ -150,7 +149,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 		startupConsumer.await(timeoutInSeconds, SECONDS);
 	}
 
-	public MeshRestClient getMeshClient() {
+	public MeshRestClient client() {
 		return client;
 	}
 
@@ -187,6 +186,18 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	}
 
 	/**
+	 * Wait until the mesh instance is ready.
+	 * 
+	 * @param waitTimeout
+	 * @return
+	 */
+	public MeshDockerServer waitForStartup(int waitTimeout) {
+		this.waitForStartup = true;
+		this.waitTimeout = waitTimeout;
+		return this;
+	}
+
+	/**
 	 * Use the provided JVM arguments.
 	 * 
 	 * @param opts
@@ -210,12 +221,22 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	}
 
 	/**
-	 * Start the embedded ES
+	 * Start the embedded ES.
 	 * 
 	 * @return
 	 */
 	public MeshDockerServer withES() {
 		this.startEmbeddedES = true;
+		return this;
+	}
+
+	/**
+	 * Run the mesh server with file system persistation enabled.
+	 * 
+	 * @return
+	 */
+	public MeshDockerServer withFilesystem() {
+		this.useFilesystem = true;
 		return this;
 	}
 

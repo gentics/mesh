@@ -13,14 +13,13 @@ import io.vertx.core.Vertx;
 public class MeshDockerServerTest {
 
 	@ClassRule
-	public static MeshDockerServer server = new MeshDockerServer("gentics/mesh:0.16.0", Vertx.vertx())
+	public static MeshDockerServer server = new MeshDockerServer("gentics/mesh:0.17.0", Vertx.vertx())
 		.withDebug(9200)
-		.withNodeName("dummy")
 		.waitForStartup();
 
 	@Test
 	public void testDockerImage() {
-		UserListResponse response = call(() -> server.getMeshClient().findUsers());
+		UserListResponse response = call(() -> server.client().findUsers());
 		assertEquals(2, response.getData().size());
 	}
 

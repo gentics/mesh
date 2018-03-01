@@ -149,7 +149,8 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		waitingLatch.await(timeoutInSeconds, TimeUnit.SECONDS);
 	}
 
-	public MeshRestClient getMeshClient() {
+	@Override
+	public MeshRestClient client() {
 		if (client == null) {
 			client = MeshRestClient.create("localhost", httpPort, false, Mesh.vertx());
 			client.setLogin("admin", "admin");

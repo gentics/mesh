@@ -25,6 +25,6 @@ public interface MeshTestServer extends TestRule {
 	 * 
 	 * @return
 	 */
-	MeshRestClient getMeshClient();
+	MeshRestClient client();
 
 }
