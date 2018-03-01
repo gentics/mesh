@@ -31,7 +31,7 @@ node("docker") {
 				name: 'jnlp',
 				privileged: false,
 				ttyEnabled: true,
-				resourceRequestCpu: '2000m',
+				resourceRequestCpu: '3000m',
 				resourceRequestMemory: '6048Mi',
 				workingDir: '/home/jenkins/workspace'),
 
