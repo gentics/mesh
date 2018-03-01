@@ -12,6 +12,8 @@ icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for
 [[v0.17.1]]
 == 0.17.1 (TBD)
 
+icon:plus[] Core: The core Vert.x library was updated to version 3.5.1
+
 icon:check[] REST: Fixed an error which lead to inconsistent properties being shown within the job endpoint response.
 
 icon:check[] Search: When calling reindex via the `/api/v1/search/reindex` reindexing stopped after a certain amount of

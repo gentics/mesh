@@ -18,7 +18,7 @@ public class AuthenticationOptions implements Option {
 
 	public static final String DEFAULT_ALGORITHM = "HS256";
 
-	public static final long DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; // 1 hour
+	public static final int DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; // 1 hour
 
 	public static final String DEFAULT_KEYSTORE_PATH = CONFIG_FOLDERNAME + "/keystore.jceks";
 
@@ -31,7 +31,7 @@ public class AuthenticationOptions implements Option {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Time in minutes which an issued token stays valid.")
 	@EnvironmentVariable(name = MESH_AUTH_TOKEN_EXP_ENV, description = "Override the configured JWT expiration time.")
-	private long tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
+	private int tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The Java keystore password for the keystore file.")
@@ -58,7 +58,7 @@ public class AuthenticationOptions implements Option {
 	 * 
 	 * @return The expiration time in seconds
 	 */
-	public long getTokenExpirationTime() {
+	public int getTokenExpirationTime() {
 		return tokenExpirationTime;
 	}
 
@@ -69,7 +69,7 @@ public class AuthenticationOptions implements Option {
 	 *            The expiration time in seconds
 	 * @return Fluent API
 	 */
-	public AuthenticationOptions setTokenExpirationTime(long tokenExpirationTime) {
+	public AuthenticationOptions setTokenExpirationTime(int tokenExpirationTime) {
 		this.tokenExpirationTime = tokenExpirationTime;
 		return this;
 	}
