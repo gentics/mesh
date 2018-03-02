@@ -16,6 +16,8 @@ icon:plus[] Core: The core Vert.x library was updated to version 3.5.1
 
 icon:plus[] Config: It is now possible to configure the elasticsearch startup timeout via the `search.startupTimeout` field in the `mesh.yml` or via the `MESH_ELASTICSEARCH_STARTUP_TIMEOUT` environment variable.
 
+icon:check[] Core: It was not possible to change the listType of a list field in a schema via the Rest-API.
+
 icon:check[] Core: The server will now shutdown if an error has been detected during startup.
 
 icon:check[] REST: Fixed an error which lead to inconsistent properties being shown within the job endpoint response.
