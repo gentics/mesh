@@ -34,7 +34,7 @@ import io.vertx.core.logging.LoggerFactory;
  *            Type of the core vertex which is used to determine type of chained vertices
  */
 public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
-		implements MeshCoreVertex<T, R> {
+	implements MeshCoreVertex<T, R> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
@@ -60,7 +60,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			}
 		}
 	}
-	
 
 	@Override
 	public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {
@@ -140,6 +139,23 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			Mesh.vertx().eventBus().publish(address, json);
 			if (log.isDebugEnabled()) {
 				log.debug("Created event sent {" + address + "}");
+			}
+		}
+	}
+
+	@Override
+	public void onDeleted(String uuid, String name) {
+		String address = getTypeInfo().getOnDeletedAddress();
+		if (address != null) {
+			JsonObject json = new JsonObject();
+			if (this instanceof NamedElement) {
+				json.put("name", name);
+			}
+			json.put("origin", Mesh.mesh().getOptions().getNodeName());
+			json.put("uuid", getUuid());
+			Mesh.vertx().eventBus().publish(address, json);
+			if (log.isDebugEnabled()) {
+				log.debug("Deleted event sent {" + address + "}");
 			}
 		}
 	}

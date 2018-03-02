@@ -68,7 +68,7 @@ public class FocalPoint implements RestModel {
 
 	@Override
 	public String toString() {
-		return x + ":" + y;
+		return x + "-" + y;
 	}
 
 }

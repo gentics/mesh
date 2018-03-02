@@ -28,6 +28,6 @@ public class ProjectRawSearchEndpointTest extends AbstractMeshTest {
 
 		JsonObject response = call(() -> client().searchProjectsRaw(query));
 		assertNotNull(response);
-		assertThat(response).has("hits.hits[0]._id", project.getUuid(), "The correct element was not found.");
+		assertThat(response).has("responses[0].hits.hits[0]._id", project.getUuid(), "The correct element was not found.");
 	}
 }

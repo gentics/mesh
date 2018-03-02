@@ -4,7 +4,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
 import com.gentics.mesh.rest.client.handler.ResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.ModelResponseHandler;
@@ -88,7 +87,7 @@ public final class MeshRestRequestUtil {
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel,
 			MeshRestClient meshRestClient, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess) {
 		Buffer buffer = Buffer.buffer();
-		String json = JsonUtil.toJson(restModel);
+		String json = restModel.toJson();
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}

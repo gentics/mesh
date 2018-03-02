@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -12,20 +12,20 @@ import io.vertx.core.buffer.Buffer;
  */
 public interface Binary extends MeshVertex {
 
-	static final String SHA512SUM_KEY = "sha512sum";
+	String SHA512SUM_KEY = "sha512sum";
 
-	static final String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
+	String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
 
-	static final String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
+	String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
 
-	static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
+	String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
 	/**
 	 * Return the binary data stream.
 	 * 
 	 * @return
 	 */
-	Observable<Buffer> getStream();
+	Flowable<Buffer> getStream();
 
 	/**
 	 * Return the sha512 checksum.

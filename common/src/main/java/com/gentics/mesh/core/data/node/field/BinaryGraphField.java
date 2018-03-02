@@ -10,17 +10,17 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
  */
 public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge, DisplayField {
 
-	static final String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
+	String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
 
-	static final String BINARY_SHA512SUM_PROPERTY_KEY = "binarySha512Sum";
+	String BINARY_SHA512SUM_PROPERTY_KEY = "binarySha512Sum";
 
-	static final String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
+	String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
 
-	static final String BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "binaryImageDominantColor";
+	String BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "binaryImageDominantColor";
 
-	static final String BINARY_IMAGE_FOCAL_POINT_X = "binaryImageFocalPointX";
+	String BINARY_IMAGE_FOCAL_POINT_X = "binaryImageFocalPointX";
 
-	static final String BINARY_IMAGE_FOCAL_POINT_Y = "binaryImageFocalPointY";
+	String BINARY_IMAGE_FOCAL_POINT_Y = "binaryImageFocalPointY";
 
 	/**
 	 * Return the binary filename.

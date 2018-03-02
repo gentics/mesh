@@ -135,7 +135,7 @@ public class ChangeTVCMigration extends AbstractChange {
 	}
 
 	private Vertex getOrFixUserReference(Vertex element, String edge) {
-		Vertex creator = null;
+		Vertex creator;
 		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
 		if (!creatorIterator.hasNext()) {
 			log.error("The element {" + element.getProperty("uuid") + "} has no {" + edge + "}. Using admin instead.");

@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public interface FieldTypeChange extends SchemaFieldChange {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
+	SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
 
 	/**
 	 * Return the new field type value.

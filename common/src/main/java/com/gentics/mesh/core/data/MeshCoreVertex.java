@@ -69,4 +69,12 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 */
 	void onUpdated();
 
+	/**
+	 * Method which is being invoked once the element has been deleted.
+	 * 
+	 * @param uuid UUID of the element which was deleted
+	 * @param name Name of the element which was deleted
+	 */
+	void onDeleted(String uuid, String name);
+
 }

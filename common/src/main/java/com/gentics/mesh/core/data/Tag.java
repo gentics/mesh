@@ -25,9 +25,9 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "tag";
+	String TYPE = "tag";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_CREATED, EVENT_TAG_UPDATED, EVENT_TAG_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_CREATED, EVENT_TAG_UPDATED, EVENT_TAG_DELETED);
 
 	/**
 	 * Compose the index name for tags. Use the projectUuid in order to create a project specific index.

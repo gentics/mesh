@@ -56,7 +56,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	static final String TYPE = "node";
 
+	String RELEASE_UUID_KEY = "releaseUuid";
+
 	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_NODE_CREATED, EVENT_NODE_UPDATED, EVENT_NODE_DELETED);
+
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -664,4 +667,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	Deque<Node> getBreadcrumbNodes(InternalActionContext ac);
 
+	/**
+	 * Handle the node specific on deleted event.
+	 * @param uuid
+	 * @param name
+	 * @param schema
+	 * @param languageTag
+	 */
+	void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag);
 }

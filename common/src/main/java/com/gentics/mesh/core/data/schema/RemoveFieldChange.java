@@ -7,6 +7,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public interface RemoveFieldChange extends SchemaFieldChange {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.REMOVEFIELD;
+	SchemaChangeOperation OPERATION = SchemaChangeOperation.REMOVEFIELD;
 
 }

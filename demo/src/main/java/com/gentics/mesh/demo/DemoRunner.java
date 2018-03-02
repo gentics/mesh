@@ -54,6 +54,9 @@ public class DemoRunner {
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
 		// options.setClusterMode(true);
+		// Disable ES
+		// options.getSearchOptions().setStartEmbedded(false);
+		// options.getSearchOptions().setUrl(null);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {

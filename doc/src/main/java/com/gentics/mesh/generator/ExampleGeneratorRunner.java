@@ -46,6 +46,14 @@ public class ExampleGeneratorRunner {
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
 		searchModelGen.run();
 
+		// Generate environment variable table
+		EnvHelpGenerator envGen = new EnvHelpGenerator(OUTPUT_ROOT_FOLDER);
+		envGen.run();
+
+		// Generate database revision table
+		DatabaseRevisionTableGenerator revTable = new DatabaseRevisionTableGenerator(OUTPUT_ROOT_FOLDER);
+		revTable.run();
+
 		// Generate CLI info
 		CLIHelpGenerator cliGenerator = new CLIHelpGenerator(OUTPUT_ROOT_FOLDER);
 		cliGenerator.run();

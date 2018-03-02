@@ -164,7 +164,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 					// Only add elements to the list if those elements are part of selected the page
 					long elementsInPage = pageCounter.get();
 					if (elementsInPage < perPage) {
-						T element = null;
+						T element;
 
 						// Check how we need to frame the found element
 						if (frameExplicitly) {

@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -32,7 +30,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableTransformer;
-import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -88,10 +86,18 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		try {
 			URL url = new URL(searchOptions.getUrl());
-			client = new SearchClient(url.getProtocol(), url.getHost(), url.getPort());
+			int port = url.getPort();
+			String proto = url.getProtocol();
+			if ("http".equals(proto) && port == -1) {
+				port = 80;
+			}
+			if ("https".equals(proto) && port == -1) {
+				port = 443;
+			}
+			client = new SearchClient(proto, url.getHost(), port);
 
 			if (waitForCluster) {
-				waitForCluster(client, 45);
+				waitForCluster(client, searchOptions.getStartupTimeout());
 				if (log.isDebugEnabled()) {
 					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 				}
@@ -180,23 +186,26 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable clear() {
 		// Read all indices and locate indices which have been created for/by mesh.
-		Maybe<List<String>> indexInfo = client.readIndex("_all").async()
-			.flatMapMaybe(response -> {
+		return client.readIndex("_all").async()
+			.flatMapObservable(response -> {
 				List<String> indices = Collections.emptyList();
 				indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
 				if (indices.isEmpty()) {
-					return Maybe.empty();
+					log.debug("No indices with prefix {" + INDEX_PREFIX + "} were found.");
 				} else {
-					return Maybe.just(indices);
+					if (log.isDebugEnabled()) {
+						for (String idx : indices) {
+							log.debug("Found index {" + idx + "}");
+						}
+					}
 				}
-			});
+				return Observable.fromIterable(indices);
+			}).flatMapCompletable(index -> {
+				// Now delete the found indices
+				log.debug("Deleting index {" + index + "}");
+				return deleteIndex(index).compose(withTimeoutAndLog("Deleting mesh index {" + index + "}", true));
+			}).compose(withTimeoutAndLog("Clearing mesh indices failed", true));
 
-		// Now delete the found indices
-		return indexInfo.flatMapCompletable(result -> {
-			log.debug("Deleting indices {" + StringUtils.join(result.toArray(), ","));
-			String[] indices = result.toArray(new String[result.size()]);
-			return deleteIndex(indices);
-		}).compose(withTimeoutAndLog("Clearing mesh indices.", true));
 	}
 
 	@Override
@@ -214,13 +223,22 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable refreshIndex(String... indices) {
-		String indicesStr = Strings.join(indices, ",");
-		return client.refresh(indices).async()
-			.doOnError(error -> {
-				log.error("Refreshing of indices {" + indicesStr + "} failed.", error);
-				throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
-			}).toCompletable()
-			.compose(withTimeoutAndLog("Refreshing indices {" + indicesStr + "}", true));
+		if (indices.length == 0) {
+			return client.refresh().async()
+				.doOnError(error -> {
+					log.error("Refreshing of all indices failed.", error);
+					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
+				}).toCompletable()
+				.compose(withTimeoutAndLog("Refreshing all indices", true));
+		}
+		return Observable.fromArray(indices).flatMapCompletable(index -> {
+			return client.refresh(index).async()
+				.doOnError(error -> {
+					log.error("Refreshing of indices {" + index + "} failed.", error);
+					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
+				}).toCompletable()
+				.compose(withTimeoutAndLog("Refreshing indices {" + index + "}", true));
+		});
 	}
 
 	@Override
@@ -436,7 +454,7 @@ public class ElasticSearchProvider implements SearchProvider {
 						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 					} else {
 						error.printStackTrace();
-						log.error(error);
+						log.error("Request failed {" + msg + "}", error);
 					}
 				});
 			if (ignoreError) {

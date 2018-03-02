@@ -147,7 +147,7 @@ public class FieldMapTest {
 		assertNull("The nulled Value should be returned with null value", fieldMap.getField("nulled", FieldTypes.STRING, null, false));
 
 		// Validate transformation
-		String json = JsonUtil.toJson(fieldMap);
+		String json = fieldMap.toJson();
 		JsonObject jsonObject = new JsonObject(json);
 
 		// Check json null values

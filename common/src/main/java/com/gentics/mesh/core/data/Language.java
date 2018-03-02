@@ -8,9 +8,9 @@ import com.gentics.mesh.core.rest.lang.LanguageResponse;
  */
 public interface Language extends MeshCoreVertex<LanguageResponse, Language>, NamedElement {
 
-	static final String TYPE = "language";
+	String TYPE = "language";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, null, null, null);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, null, null, null);
 
 	@Override
 	default TypeInfo getTypeInfo() {

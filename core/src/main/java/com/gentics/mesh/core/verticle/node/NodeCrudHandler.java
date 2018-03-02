@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -79,6 +80,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 			}
+			String name = node.getDisplayName(ac);
+			SchemaContainer schema = node.getSchemaContainer();
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
@@ -86,6 +89,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.deleteFromRelease(ac, ac.getRelease(), batch, false);
 				return batch;
 			}).processSync();
+			node.onDeleted(uuid, name, schema, null);
+
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}
@@ -109,13 +114,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
-
+			String name = node.getDisplayName(ac);
+			SchemaContainer schema = node.getSchemaContainer();
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				node.deleteLanguageContainer(ac, ac.getRelease(), language, batch, true);
 				return batch;
 			}).processSync();
+			node.onDeleted(uuid, name, schema, languageTag);
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}

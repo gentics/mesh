@@ -1,4 +1,4 @@
-package com.gentics.mesh.changelog;
+package com.gentics.mesh.graphdb.orientdb.changelog;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,13 +23,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.changelog.changes.ChangeDummy;
-import com.gentics.mesh.changelog.changes.ChangeDummy2;
-import com.gentics.mesh.changelog.changes.ChangeDummyFailing;
+import com.gentics.mesh.changelog.Change;
+import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.maven.MavenMetadata;
+import com.gentics.mesh.maven.MavenUtilities;
+import com.gentics.mesh.maven.VersionNumber;
 import com.tinkerpop.blueprints.Vertex;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -63,12 +65,12 @@ public class ChangelogSystemTest {
 	public static Collection<Object[]> data() throws Exception {
 
 		MavenMetadata metadata = MavenUtilities
-				.getMavenMetadata(new URL("https://repo.gentics.com/artifactory/lan.releases/com/gentics/mesh/mesh-demo/maven-metadata.xml"));
+			.getMavenMetadata(new URL("https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/maven-metadata.xml"));
 
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
 			// Only test mesh release dumps since a specific version
-			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.10.0")) >= 0) {
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.14.0")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -78,7 +80,8 @@ public class ChangelogSystemTest {
 	@Before
 	public void downloadDump() throws IOException, ZipException {
 		// TODO use released version of demo dump
-		URL website = new URL("https://repo.gentics.com/artifactory/lan.releases/com/gentics/mesh/mesh-demo/0.6.18/mesh-demo-0.6.18-dump.zip");
+		URL website = new URL(
+			"https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/" + version + "/mesh-demo-" + version + "-dump.zip");
 
 		FileUtils.deleteDirectory(targetDir);
 

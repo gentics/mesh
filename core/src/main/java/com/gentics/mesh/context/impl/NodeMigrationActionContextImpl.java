@@ -186,7 +186,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-					Set<GraphPermission> permissionsToRevoke) {
+				Set<GraphPermission> permissionsToRevoke) {
 
 			}
 
@@ -817,6 +817,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void onUpdated() {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void onDeleted(String uuid, String name) {
 				// TODO Auto-generated method stub
 			}
 		};

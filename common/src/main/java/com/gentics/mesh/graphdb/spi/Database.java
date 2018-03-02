@@ -32,7 +32,7 @@ import io.reactivex.Single;
  */
 public interface Database extends TxFactory {
 
-	static final Logger log = LoggerFactory.getLogger(Database.class);
+	Logger log = LoggerFactory.getLogger(Database.class);
 
 	/**
 	 * Stop the graph database.
@@ -498,5 +498,12 @@ public interface Database extends TxFactory {
 	 * @return Found element or null if no element was found
 	 */
 	<T extends MeshElement> T findVertex(String propertyKey, Object propertyValue, Class<T> clazz);
+
+	/**
+	 * Generate the database revision change by generating a hash over all database changes and the database vendor version.
+	 * 
+	 * @return
+	 */
+	String getDatabaseRevision();
 
 }

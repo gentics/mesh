@@ -14,7 +14,7 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public interface NodeGraphField extends ListableReferencingGraphField, MicroschemaListableGraphField {
 
-	static final Logger log = LoggerFactory.getLogger(NodeGraphField.class);
+	Logger log = LoggerFactory.getLogger(NodeGraphField.class);
 
 	/**
 	 * Returns the node for this field.

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.16.0</version>
+	<version>0.17.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -18,13 +19,13 @@
 		<spring.security.version>4.2.3.RELEASE</spring.security.version>
 		<ferma.version>2.4.0</ferma.version>
 		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
-		<elasticsearch.client.version>0.1.0</elasticsearch.client.version>
+		<elasticsearch.client.version>0.2.0</elasticsearch.client.version>
 		<orientdb.version>2.2.32</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
 		<jackson.version>2.9.0</jackson.version>
 
-		<surefire.forkcount>2</surefire.forkcount>
+		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
@@ -43,7 +44,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.5.0</version>
+		<version>3.5.1</version>
 	</parent>
 
 	<developers>
@@ -88,9 +89,9 @@
 		<module>test-common</module>
 		<module>elasticsearch</module>
 		<module>rest-client</module>
+		<module>changelog-system</module>
 		<module>databases</module>
 		<module>services</module>
-		<module>changelog-system</module>
 		<module>core</module>
 		<module>performance-tests</module>
 		<module>verticles</module>
@@ -177,6 +178,18 @@
 				<version>${spring.security.version}</version>
 			</dependency>
 
+			<!-- Jackson -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.9.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.9.0</version>
+			</dependency>
+
 			<!-- Test dependencies -->
 			<dependency>
 				<groupId>org.assertj</groupId>
@@ -215,6 +228,35 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.0.0-M1</version>
+				<executions>
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>1.8.0</version>
+								</requireJavaVersion>
+								<requireReleaseDeps>
+							        <onlyWhenRelease>true</onlyWhenRelease>
+									<message>No Snapshots Allowed!</message>
+									<excludes>
+										<exclude>org.apache.maven:maven-core</exclude>
+										<exclude>org.apache.maven.plugins:*</exclude>
+									</excludes>
+								</requireReleaseDeps>
+							</rules>
+			                <fail>true</fail>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.1</version>
@@ -226,7 +268,8 @@
 					<tag>${project.artifactId}-${project.version}</tag>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> <executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> 
+				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
 				<goal>sign</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -252,17 +295,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<javadocExecutable>${JAVA_1_8_HOME}/bin/javadoc</javadocExecutable>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<verbose>true</verbose>
-					<fork>true</fork>
-					<executable>${JAVA_1_8_HOME}/bin/javac</executable>
 					<compilerVersion>1.8</compilerVersion>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -274,16 +312,12 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
-					<jvm>${JAVA_1_8_HOME}/bin/java${surefire.jvm.postfix}</jvm>
 					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
-					<runOrder>filesystem</runOrder>
+					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
-					<!-- Don't execute more than one test per jvm fork! -->
-					<threadCount>1</threadCount>
-					<threadCountClasses>1</threadCountClasses>
 					<excludes>
 						<include>**/*AbstractTest.java</include>
 						<include>**/*Abstract*Test.java</include>

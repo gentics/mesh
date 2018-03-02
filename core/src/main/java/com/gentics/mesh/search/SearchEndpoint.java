@@ -21,7 +21,7 @@ public interface SearchEndpoint extends Endpoint {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
-		endpoint.description("Invoke a search query for " + typeName + " and return the raw response.");
+		endpoint.description("Invoke a search query for " + typeName + " and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createSearchResponse(), "Raw search response.");

@@ -40,7 +40,6 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -417,7 +416,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertNotNull(response);
 				long dur = System.currentTimeMillis() - start;
 				log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
-				JsonUtil.toJson(response);
+				response.toJson();
 			}
 			// assertEquals(2, response.getChildTags().size());
 			// assertEquals(4, response.getPerms().length);

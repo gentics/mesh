@@ -19,6 +19,7 @@ import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -34,6 +35,9 @@ import io.vertx.core.logging.LoggerFactory;
 public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProvider.class);
+
+	@Inject
+	public BootstrapInitializer boot;
 
 	@Inject
 	public NodeContainerMappingProvider() {
@@ -203,6 +207,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 					fieldInfo.put("type", NESTED);
 					fieldInfo.put("dynamic", true);
 
+					
 					// TODO
 					// for(String microschema : listFieldSchema.getAllowedSchemas()) {
 					// 1. Load the microschema version by name from the release to which this schema belongs

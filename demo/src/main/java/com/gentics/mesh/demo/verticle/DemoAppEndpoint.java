@@ -35,11 +35,14 @@ public class DemoAppEndpoint extends AbstractEndpoint {
 	public void registerEndPoints() {
 		addRedirectionHandler();
 
-		StaticHandler staticHandler = StaticHandler.create("demo");
+		StaticHandler staticHandler = StaticHandler.create("demo/dist");
 		staticHandler.setDirectoryListing(false);
 		staticHandler.setCachingEnabled(false);
 		staticHandler.setIndexPage("index.html");
 		route("/*").method(GET).handler(staticHandler);
+		route("/*").method(GET).handler(rh -> {
+			rh.response().sendFile("./demo/dist/index.html");
+		});
 	}
 
 	private void addRedirectionHandler() {

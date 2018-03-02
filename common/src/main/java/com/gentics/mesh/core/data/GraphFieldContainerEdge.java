@@ -6,11 +6,11 @@ package com.gentics.mesh.core.data;
  */
 public interface GraphFieldContainerEdge {
 
-	public static final String LANGUAGE_TAG_KEY = "languageTag";
+	String LANGUAGE_TAG_KEY = "languageTag";
 
-	public static final String RELEASE_UUID_KEY = "releaseUuid";
+	String RELEASE_UUID_KEY = "releaseUuid";
 
-	public static final String EDGE_TYPE_KEY = "edgeType";
+	String EDGE_TYPE_KEY = "edgeType";
 
 	/**
 	 * Get the language tag

@@ -76,9 +76,9 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
 
 		// 3. Publish the created node - It should fail since the parentfolder is not published
-		dummySearchProvider().clear().blockingAwait();
+		trackingSearchProvider().clear().blockingAwait();
 		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid);
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 		// 4. Publish the parent folder
 		call(() -> client().publishNode(PROJECT_NAME, subFolderUuid));
@@ -149,10 +149,10 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 			assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
-			assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), releaseUuid,
+			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), releaseUuid,
 					schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
-			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 
 		}
 	}

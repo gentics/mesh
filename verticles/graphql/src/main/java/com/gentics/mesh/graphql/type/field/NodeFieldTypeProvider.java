@@ -3,9 +3,7 @@ package com.gentics.mesh.graphql.type.field;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -75,7 +73,6 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	 */
 	private Map<String, GraphQLObjectType> generateSchemaFieldType(Project project) {
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
-		List<GraphQLObjectType> list = new ArrayList<>();
 		for (SchemaContainer container : project.getSchemaContainerRoot().findAllIt()) {
 			SchemaContainerVersion version = container.getLatestVersion();
 			Schema schema = version.getSchema();
@@ -119,7 +116,6 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 				}
 			}
 			GraphQLObjectType type = root.build();
-			list.add(type);
 			schemaTypes.put(schema.getName(), type);
 		}
 		return schemaTypes;

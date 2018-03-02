@@ -35,9 +35,11 @@ import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
 
@@ -45,6 +47,8 @@ import io.vertx.reactivex.core.WorkerExecutor;
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
  */
 public class ImgscalrImageManipulator extends AbstractImageManipulator {
+
+	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulator.class);
 
 	private FocalPointModifier focalPointModifier = new FocalPointModifier();
 
@@ -72,7 +76,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			cropArea.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
 				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(),
-						cropArea.getHeight());
+					cropArea.getHeight());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -131,7 +135,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<PropReadFileStream> handleResize(Observable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
+	public Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		try {
 			parameters.validate();
@@ -218,22 +222,19 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param stream
 	 * @return
 	 */
-	private Single<BufferedImage> readImage(Observable<Buffer> stream) {
+	private Single<BufferedImage> readImage(Flowable<Buffer> stream) {
 		return workerPool.rxExecuteBlocking(bc -> {
-			InputStream ins = null;
-			try {
-				ins = RxUtil.toInputStream(stream, vertx);
+			try (InputStream ins = RxUtil.toInputStream(stream, vertx)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Reading image from stream.." + stream.hashCode());
+				}
 				BufferedImage image = ImageIO.read(ins);
+				if (log.isDebugEnabled()) {
+					log.debug("Read image from stream.." + stream.hashCode());
+				}
 				bc.complete(image);
 			} catch (IOException e) {
 				bc.fail(e);
-			} finally {
-				if (ins != null) {
-					try {
-						ins.close();
-					} catch (Exception e) {
-					}
-				}
 			}
 		}, false);
 	}

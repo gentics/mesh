@@ -216,7 +216,7 @@ public class WebRootLinkReplacer {
 			edgeType = ContainerType.DRAFT;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Resolving link to " + node.getUuid() + " in language " + languageTags + " with type " + type);
+			log.debug("Resolving link to " + node.getUuid() + " in language " + Arrays.toString(languageTags) + " with type " + type.name());
 		}
 		String path = node.getPath(ac, releaseUuid, edgeType, languageTags);
 		if (path == null) {

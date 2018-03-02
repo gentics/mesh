@@ -29,7 +29,6 @@ RUN mkdir -p /usr/lib/jvm/ && \
    tar xfz jdk-8-x64.tar.gz && \
    rm *.gz && \
    mv jdk1.8.0_151 java-8-oracle
-ENV JAVA_1_8_HOME /usr/lib/jvm/java-8-oracle
 
 # Install Java 9
 #RUN \

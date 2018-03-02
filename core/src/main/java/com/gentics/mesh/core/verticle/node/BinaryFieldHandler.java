@@ -57,7 +57,7 @@ import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -124,6 +124,27 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}).doOnError(ac::fail).subscribe();
 	}
 
+	private void validateFileUpload(FileUpload ul, String fieldName) {
+		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		long byteLimit = uploadOptions.getByteLimit();
+
+		if (ul.size() > byteLimit) {
+			if (log.isDebugEnabled()) {
+				log.debug("Upload size of {" + ul.size() + "} exceeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+			}
+			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
+		}
+
+		if (isEmpty(ul.fileName())) {
+			throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldName);
+		}
+		if (isEmpty(ul.contentType())) {
+			throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldName);
+		}
+	}
+
 	/**
 	 * Handle a request to create a new field.
 	 * 
@@ -149,7 +170,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
 
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		Set<FileUpload> fileUploads = ac.getFileUploads();
 		if (fileUploads.isEmpty()) {
 			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
@@ -160,17 +180,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
 		}
 		FileUpload ul = fileUploads.iterator().next();
-		long byteLimit = uploadOptions.getByteLimit();
-
-		if (ul.size() > byteLimit) {
-			if (log.isDebugEnabled()) {
-				log.debug("Upload size of {" + ul.size() + "} exceeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
-			}
-			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-		}
-
+		validateFileUpload(ul, fieldName);
 		// This the name and path of the file to be moved to a new location.
 		// This will be changed because it is possible that the file has to be moved multiple times
 		// (if the transaction failed and has to be repeated).
@@ -256,6 +266,16 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// Create the new field
 			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
+			// Reuse the existing properties
+			if (oldField != null) {
+				oldField.copyTo(field);
+
+				// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
+				if (oldField.hasImage() && !ul.contentType().startsWith("image/")) {
+					field.setImageDominantColor(null);
+				}
+			}
+
 			// Process the upload which will update the binary field
 			processUpload(ac, ul, field, storeBinary);
 
@@ -285,7 +305,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 *            Whether to store the data in the binary store
 	 */
 	private void processUpload(ActionContext ac, FileUpload ul, BinaryGraphField field, boolean storeBinary) {
-		AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(ul.uploadedFileName(), new OpenOptions());
+		String uploadFile = ul.uploadedFileName();
+
 		Binary binary = field.getBinary();
 		String hash = binary.getSHA512Sum();
 		String binaryUuid = binary.getUuid();
@@ -302,22 +323,21 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}
 
 		if (neededDataStreams > 0) {
-			Observable<Buffer> stream = RxUtil.toBufferObs(asyncFile).publish().autoConnect(neededDataStreams);
-
 			// Only gather image info for actual images. Otherwise return an empty image info object.
 			Single<Optional<ImageInfo>> imageInfo = Single.just(Optional.empty());
 			if (isImage) {
-				imageInfo = processImageInfo(ac, stream);
+				imageInfo = processImageInfo(ac, uploadFile);
 			}
 
 			// Store the data
 			Single<Long> store = Single.just(ul.size());
 			if (storeBinary) {
+				AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
+				Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
 				store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size()));
 			}
 
 			// Handle the data in parallel
-
 			TransformationResult info = Single.zip(imageInfo, store, (imageinfoOpt, size) -> {
 				ImageInfo iinfo = null;
 				if (imageinfoOpt.isPresent()) {
@@ -344,17 +364,17 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * tx retry). In that case the previously loaded image info is returned.
 	 * 
 	 * @param ac
-	 * @param stream
+	 * @param file
 	 * @return
 	 */
-	private Single<Optional<ImageInfo>> processImageInfo(ActionContext ac, Observable<Buffer> stream) {
+	private Single<Optional<ImageInfo>> processImageInfo(ActionContext ac, String file) {
 		// Caches the image info in the action context so that it does not need to be
 		// calculated again if the transaction failed
 		ImageInfo imageInfo = ac.get("imageInfo");
 		if (imageInfo != null) {
 			return Single.just(Optional.of(imageInfo));
 		} else {
-			return imageManipulator.readImageInfo(stream).doOnSuccess(ii -> {
+			return imageManipulator.readImageInfo(file).doOnSuccess(ii -> {
 				ac.put("imageInfo", ii);
 			}).map(Optional::of).onErrorReturn(e -> {
 				// suppress error
@@ -423,9 +443,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 				if (parameters.getRect() != null) {
 					parameters.setCropMode(CropMode.RECT);
 				}
-				if (!parameters.isSet()) {
-					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
-				}
+
+				parameters.validate();
 
 				// Update the binary field with the new information
 				SearchQueueBatch sqb = db.tx(() -> {
@@ -437,7 +456,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 						true);
 
 					String binaryUuid = initialField.getBinary().getUuid();
-					Observable<Buffer> stream = binaryStorage.read(binaryUuid);
+					Flowable<Buffer> stream = binaryStorage.read(binaryUuid);
 
 					// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
 					// Otherwise the query parameter focal point will be used and thus override the stored focal point.
@@ -448,14 +467,13 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					// Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, parameters).flatMap(file -> {
-						Observable<Buffer> obs = RxUtil.toBufferObs(file.getFile());
-						Observable<Buffer> resizedImageData = obs.publish().autoConnect(2);
+						Flowable<Buffer> obs = RxUtil.toBufferFlow(file.getFile());
 
 						// Hash the resized image data and store it using the computed fieldUuid + hash
-						Single<String> hash = FileUtils.hash(resizedImageData);
+						Single<String> hash = FileUtils.hash(obs);
 
 						// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-						Single<ImageInfo> info = imageManipulator.readImageInfo(resizedImageData);
+						Single<ImageInfo> info = imageManipulator.readImageInfo(file.getPath());
 
 						return Single.zip(hash, info, (hashV, infoV) -> {
 							// Return a POJO which hold all information that is needed to update the field
@@ -473,7 +491,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// Check whether the binary was already stored.
 					if (binary == null) {
 						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
-						Observable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).flatMapObservable(RxUtil::toBufferObs);
+						Flowable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toFlowable().flatMap(RxUtil::toBufferFlow);
 						binary = binaryRoot.create(hash, result.getSize());
 						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
 					} else {
@@ -484,6 +502,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 					if (oldField != null) {
+						oldField.copyTo(field);
 						oldField.remove();
 					}
 					field.getBinary().setSize(result.getSize());

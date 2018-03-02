@@ -1,4 +1,4 @@
-package com.gentics.mesh.changelog;
+package com.gentics.mesh.maven;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -2,7 +2,6 @@ package com.gentics.mesh.generator;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -12,11 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.parameter.QueryParameter;
 import org.reflections.Reflections;
@@ -27,8 +23,6 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.AbstractParameters;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
 
 import io.vertx.core.json.JsonObject;
 
@@ -36,7 +30,7 @@ import io.vertx.core.json.JsonObject;
  * Generator tool which extracts the schema field description from all models. The extracted information will be converted in tabular form to be included in the
  * documentation. The generator will also generate tables for query parameter information.
  */
-public class TableGenerator extends AbstractGenerator {
+public class TableGenerator extends AbstractRenderingGenerator {
 
 	public static final String MODEL_TABLE_TEMPLATE_NAME = "model-props-table.hbs";
 	public static final String PARAM_TABLE_TEMPLATE_NAME = "param-props-table.hbs";
@@ -45,7 +39,7 @@ public class TableGenerator extends AbstractGenerator {
 	private final String paramTableTemplateSource;
 
 	public TableGenerator(File outputFolder) throws IOException {
-		super(new File(outputFolder, "tables"));
+		super(new File(outputFolder, "tables"), false);
 		this.modelTableTemplateSource = getTemplate(MODEL_TABLE_TEMPLATE_NAME);
 		this.paramTableTemplateSource = getTemplate(PARAM_TABLE_TEMPLATE_NAME);
 	}
@@ -190,25 +184,6 @@ public class TableGenerator extends AbstractGenerator {
 	}
 
 	/**
-	 * Load the template which is used to render the json data.
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	public String getTemplate(String templateName) throws IOException {
-		InputStream ins = TableGenerator.class.getResourceAsStream("/" + templateName);
-		Objects.requireNonNull(ins, "Could not find template file {" + templateName + "}");
-		return IOUtils.toString(ins);
-	}
-
-	private String renderTable(Map<String, Object> context, String templateSource) throws IOException {
-		Handlebars handlebars = new Handlebars();
-		Template template = handlebars.compileInline(templateSource);
-		String output = template.apply(context);
-		return output;
-	}
-
-	/**
 	 * Flatten the schema down and add found properties to the list.
 	 * 
 	 * @param list
@@ -255,21 +230,6 @@ public class TableGenerator extends AbstractGenerator {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Save the string content to the given file in the output folder.
-	 * 
-	 * @param filename
-	 *            Name of the file to be written to
-	 * @param content
-	 *            Content to be written
-	 * @throws IOException
-	 */
-	public void writeFile(String filename, String content) throws IOException {
-		File outputFile = new File(outputFolder, filename);
-		System.out.println("Wrote: " + outputFile.getAbsolutePath());
-		FileUtils.writeStringToFile(outputFile, content);
 	}
 
 	/**

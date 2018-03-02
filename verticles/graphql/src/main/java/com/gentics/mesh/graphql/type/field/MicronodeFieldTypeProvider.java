@@ -5,9 +5,7 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -71,7 +69,6 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
 	private Map<String, GraphQLObjectType> generateMicroschemaFieldType(Project project) {
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
-		List<GraphQLObjectType> list = new ArrayList<>();
 		for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAllIt()) {
 			MicroschemaContainerVersion version = container.getLatestVersion();
 			Microschema microschema = version.getSchema();
@@ -112,7 +109,6 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
 			}
 			GraphQLObjectType type = microschemaType.build();
-			list.add(type);
 			schemaTypes.put(microschema.getName(), type);
 		}
 		return schemaTypes;

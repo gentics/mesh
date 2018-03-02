@@ -19,9 +19,6 @@ import com.gentics.mesh.example.VersioningExamples;
 
 /**
  * An endpoint represents a specific path in the REST API which exposes various endpoint routes.
- * 
- * @author johannes2
- *
  */
 public interface Endpoint {
 
@@ -32,21 +29,21 @@ public interface Endpoint {
 	 */
 	EndpointRoute createEndpoint();
 
-	static NodeExamples nodeExamples = new NodeExamples();
-	static TagExamples tagExamples = new TagExamples();
-	static TagFamilyExamples tagFamilyExamples = new TagFamilyExamples();
-	static GroupExamples groupExamples = new GroupExamples();
-	static RoleExamples roleExamples = new RoleExamples();
-	static MiscExamples miscExamples = new MiscExamples();
-	static VersioningExamples versioningExamples = new VersioningExamples();
-	static SchemaExamples schemaExamples = new SchemaExamples();
-	static ProjectExamples projectExamples = new ProjectExamples();
-	static UserExamples userExamples = new UserExamples();
-	static MicroschemaExamples microschemaExamples = new MicroschemaExamples();
-	static GraphQLExamples graphqlExamples = new GraphQLExamples();
-	static AdminExamples adminExamples = new AdminExamples();
-	static JobExamples jobExamples = new JobExamples();
-	static ReleaseExamples releaseExamples = new ReleaseExamples();
-	static UtilityExamples utilityExamples = new UtilityExamples();
+	NodeExamples nodeExamples = new NodeExamples();
+	TagExamples tagExamples = new TagExamples();
+	TagFamilyExamples tagFamilyExamples = new TagFamilyExamples();
+	GroupExamples groupExamples = new GroupExamples();
+	RoleExamples roleExamples = new RoleExamples();
+	MiscExamples miscExamples = new MiscExamples();
+	VersioningExamples versioningExamples = new VersioningExamples();
+	SchemaExamples schemaExamples = new SchemaExamples();
+	ProjectExamples projectExamples = new ProjectExamples();
+	UserExamples userExamples = new UserExamples();
+	MicroschemaExamples microschemaExamples = new MicroschemaExamples();
+	GraphQLExamples graphqlExamples = new GraphQLExamples();
+	AdminExamples adminExamples = new AdminExamples();
+	JobExamples jobExamples = new JobExamples();
+	ReleaseExamples releaseExamples = new ReleaseExamples();
+	UtilityExamples utilityExamples = new UtilityExamples();
 
 }

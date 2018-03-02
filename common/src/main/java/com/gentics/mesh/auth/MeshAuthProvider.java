@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.AsyncResult;
@@ -30,7 +29,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.auth.jwt.JWTOptions;
+import io.vertx.ext.jwt.JWTOptions;
 import io.vertx.ext.web.Cookie;
 
 /**
@@ -142,7 +141,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				resultHandler.handle(Future.failedFuture(rh.cause()));
 			} else {
 				User user = rh.result().getUser();
-				String uuid = null;
+				String uuid;
 				if (user instanceof MeshAuthUser) {
 					uuid = ((MeshAuthUser) user).getUuid();
 				} else {
@@ -289,7 +288,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			} else {
 				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
 					.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
-				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
+				ac.send(new TokenResponse(rh.result()).toJson());
 			}
 		});
 	}

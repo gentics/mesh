@@ -27,35 +27,35 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	// Webroot index
 
-	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
+	String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
-	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
+	String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
 
-	public static final String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
+	String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
 
-	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
+	String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
 
 	// Url Field index
 
-	public static final String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
+	String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
 
-	public static final String WEBROOT_URLFIELD_INDEX_NAME = "webrootUrlInfoIndex";
+	String WEBROOT_URLFIELD_INDEX_NAME = "webrootUrlInfoIndex";
 
-	public static final String PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY = "publishedWebrootUrlInfo";
+	String PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY = "publishedWebrootUrlInfo";
 
-	public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootInfoIndex";
+	String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootInfoIndex";
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "nodeContainer";
+	String TYPE = "nodeContainer";
 
 	/**
 	 * Construct the index name using the provided information.
 	 * 
 	 * <p>
 	 * <ul>
-	 * <li>Document Index: [node-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
+	 * <li>Document Index: [:indexPrefixnode-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
 	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
 	 * </ul>
 	 * <p>

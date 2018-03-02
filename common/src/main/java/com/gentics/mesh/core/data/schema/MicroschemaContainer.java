@@ -21,9 +21,9 @@ public interface MicroschemaContainer extends
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "microschema";
+	String TYPE = "microschema";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_MICROSCHEMA_CREATED, EVENT_MICROSCHEMA_UPDATED, EVENT_MICROSCHEMA_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_MICROSCHEMA_CREATED, EVENT_MICROSCHEMA_UPDATED, EVENT_MICROSCHEMA_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

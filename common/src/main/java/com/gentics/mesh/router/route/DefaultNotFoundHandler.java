@@ -4,8 +4,6 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.json.JsonUtil;
-
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
@@ -50,7 +48,7 @@ public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 		rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 		rc.response().setStatusCode(404);
 		rc.response().setStatusMessage("Not Found");
-		rc.response().end(JsonUtil.toJson(msg));
+		rc.response().end(msg.toJson());
 
 	}
 

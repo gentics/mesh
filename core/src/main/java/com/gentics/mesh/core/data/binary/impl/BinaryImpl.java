@@ -11,7 +11,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -30,7 +30,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public Observable<Buffer> getStream() {
+	public Flowable<Buffer> getStream() {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
 		return storage.read(getUuid());
 	}

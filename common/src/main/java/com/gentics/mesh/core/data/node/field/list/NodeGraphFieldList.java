@@ -9,10 +9,10 @@ import io.vertx.core.logging.LoggerFactory;
 
 public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeFieldList, Node> {
 
-	final Logger log = LoggerFactory.getLogger(NodeGraphFieldList.class);
+	Logger log = LoggerFactory.getLogger(NodeGraphFieldList.class);
 
 	String TYPE = "node";
-	
+
 	NodeGraphField createNode(String key, Node node);
 
 }

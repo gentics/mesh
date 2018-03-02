@@ -2,9 +2,11 @@ package com.gentics.mesh.changelog;
 
 import java.util.List;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -17,6 +19,10 @@ import io.vertx.core.logging.LoggerFactory;
 public class ChangelogSystem {
 
 	private static final Logger log = LoggerFactory.getLogger(ChangelogSystem.class);
+
+	public static final String MESH_VERSION = "meshVersion";
+
+	public static final String MESH_DB_REV = "meshDatabaseRevision";
 
 	private Database db;
 
@@ -100,5 +106,25 @@ public class ChangelogSystem {
 	 */
 	public void markAllAsApplied() {
 		markAllAsApplied(ChangesList.getList());
+		setCurrentVersionAndRev();
+	}
+
+	/**
+	 * Update the internally stored database version and mesh version in the mesh root vertex.
+	 */
+	public void setCurrentVersionAndRev() {
+		log.info("Updating stored database revision and mesh version.");
+		// Version is okay. So lets store the version and the updated revision.
+		String currentVersion = Mesh.getPlainVersion();
+		TransactionalGraph graph = db.rawTx();
+		try {
+			Vertex root = MeshGraphHelper.getMeshRootVertex(graph);
+			String rev = db.getDatabaseRevision();
+			root.setProperty(MESH_VERSION, currentVersion);
+			root.setProperty(MESH_DB_REV, rev);
+			graph.commit();
+		} finally {
+			graph.shutdown();
+		}
 	}
 }

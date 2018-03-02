@@ -16,7 +16,6 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
@@ -63,7 +62,7 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 		// 3. Invoke the query and assert that the nodes can still be loaded (due to read published)
 		GraphQLResponse response = call(
 				() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion("published")));
-		JsonObject json = new JsonObject(JsonUtil.toJson(response));
+		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
 		assertThat(json).compliesToAssertions(queryName);
 	}

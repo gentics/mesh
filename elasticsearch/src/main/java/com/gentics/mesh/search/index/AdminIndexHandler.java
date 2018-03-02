@@ -16,9 +16,12 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class AdminIndexHandler {
+	private static final Logger log = LoggerFactory.getLogger(AdminIndexHandler.class);
 
 	private IndexHandlerRegistry registry;
 
@@ -40,18 +43,23 @@ public class AdminIndexHandler {
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
+	private void doReindex() {
+		searchProvider.clear().andThen(Observable.fromIterable(registry.getHandlers())
+				.flatMapCompletable(handler -> handler.init().andThen(handler.reindexAll()))
+				.andThen(searchProvider.refreshIndex()))
+				.subscribe(() -> log.info("Reindex complete"), log::error);
+	}
+
 	public void handleReindex(InternalActionContext ac) {
-		db.asyncTx(() -> {
-			if (ac.getUser().hasAdminRole()) {
-				return searchProvider.clear().andThen(Observable.fromIterable(registry.getHandlers())
-
-						.flatMapCompletable(handler -> handler.init().andThen(handler.reindexAll()))
-
-						.andThen(searchProvider.refreshIndex()).andThen(Single.just(message(ac, "search_admin_reindex_invoked"))));
-			} else {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-		}).subscribe(message -> ac.send(message, OK), ac::fail);
+		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole()))
+			.subscribe(hasAdminRole -> {
+				if (hasAdminRole) {
+					ac.send(message(ac, "search_admin_reindex_invoked"), OK);
+					doReindex();
+				} else {
+					ac.fail(error(FORBIDDEN, "error_admin_permission_required"));
+				}
+			}, ac::fail);
 	}
 
 }

@@ -23,7 +23,7 @@ public class SchemaModelTest {
 		stringField.setLabel("someLabel");
 		stringField.setElasticsearch(new JsonObject().put("key", "value"));
 		model.addField(stringField);
-		String json = JsonUtil.toJson(model);
+		String json = model.toJson();
 		System.out.println(json);
 
 		SchemaModel readModel = JsonUtil.readValue(json, SchemaModelImpl.class);

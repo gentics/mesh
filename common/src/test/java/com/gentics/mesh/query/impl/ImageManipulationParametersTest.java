@@ -4,9 +4,7 @@ import static com.gentics.mesh.parameter.ImageManipulationParameters.HEIGHT_QUER
 import static com.gentics.mesh.parameter.ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Map.Entry;
@@ -51,26 +49,21 @@ public class ImageManipulationParametersTest {
 				+ WIDTH_QUERY_PARAM_KEY + "=142"));
 		assertEquals(112, parameter.getHeight().intValue());
 		assertEquals(142, parameter.getWidth().intValue());
-		assertTrue(parameter.isSet());
 
 		ImageManipulationParametersImpl param = new ImageManipulationParametersImpl();
 		ImageManipulationParametersImpl paramsFromQuery = new ImageManipulationParametersImpl(getActionContext(param.getQueryParameters()));
 		assertNull("No rectangular was specified.", param.getRect());
 		assertEquals(param.getWidth(), paramsFromQuery.getWidth());
 		assertEquals(param.getHeight(), paramsFromQuery.getHeight());
-		assertFalse(param.isSet());
-		assertFalse(paramsFromQuery.isSet());
 
 		param = new ImageManipulationParametersImpl();
 		param.setRect(105, 106, 100, 101);
 		param.setWidth(103);
 		param.setHeight(104);
-		assertTrue(param.isSet());
 		paramsFromQuery = new ImageManipulationParametersImpl(getActionContext(param.getQueryParameters()));
 		assertEquals(param.getRect(), paramsFromQuery.getRect());
 		assertEquals(param.getWidth(), paramsFromQuery.getWidth());
 		assertEquals(param.getHeight(), paramsFromQuery.getHeight());
-		assertTrue(paramsFromQuery.isSet());
 	}
 
 	@Test
@@ -155,13 +148,13 @@ public class ImageManipulationParametersTest {
 	@Test
 	public void testCacheKey() {
 		String cacheKey = new ImageManipulationParametersImpl().getCacheKey();
-		assertEquals("", cacheKey);
+		assertEquals("fp0.5-0.5", cacheKey);
 
 		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).getCacheKey();
-		assertEquals("rw100rh200", cacheKey);
+		assertEquals("rw100rh200fp0.5-0.5", cacheKey);
 
 		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).setRect(10, 22, 20, 21).getCacheKey();
-		assertEquals("rect10,22,21,20rw100rh200", cacheKey);
+		assertEquals("rect10,22,21,20rw100rh200fp0.5-0.5", cacheKey);
 	}
 
 }

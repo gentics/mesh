@@ -19,6 +19,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -77,11 +78,18 @@ public class HandlerUtilities {
 	 *            Uuid of the element which should be deleted
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
-			String uuid) {
+		String uuid) {
 		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+
+			// Load the name and uuid of the element. We need this info after deletion.
 			String elementUuid = element.getUuid();
+			String name = null;
+			if (element instanceof NamedElement) {
+				name = ((NamedElement) element).getName();
+			}
+
 			database.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
@@ -92,6 +100,7 @@ public class HandlerUtilities {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}
 			}).processSync();
+			element.onDeleted(uuid, name);
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
 			return (RM) null;
 		}, model -> ac.send(NO_CONTENT));
@@ -108,7 +117,7 @@ public class HandlerUtilities {
 	 * 
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-			TxAction1<RootVertex<T>> handler) {
+		TxAction1<RootVertex<T>> handler) {
 		createOrUpdateElement(ac, uuid, handler);
 	}
 
@@ -122,7 +131,7 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-			TxAction1<RootVertex<T>> handler) {
+		TxAction1<RootVertex<T>> handler) {
 		AtomicBoolean created = new AtomicBoolean(false);
 		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
@@ -191,7 +200,7 @@ public class HandlerUtilities {
 	 *            Permission to check against when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-			TxAction1<RootVertex<T>> handler, GraphPermission perm) {
+		TxAction1<RootVertex<T>> handler, GraphPermission perm) {
 		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, perm);

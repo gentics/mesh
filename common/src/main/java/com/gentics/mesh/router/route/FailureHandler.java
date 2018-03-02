@@ -63,7 +63,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String msg = I18NUtil.get(ac, "error_not_authorized");
-			rc.response().setStatusCode(401).end(JsonUtil.toJson(new GenericMessageResponse(msg)));
+			rc.response().setStatusCode(401).end(new GenericMessageResponse(msg).toJson());
 			return;
 		} else {
 			Throwable failure = rc.failure();
@@ -110,7 +110,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				rc.response().setStatusCode(400);
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				String msg = I18NUtil.get(ac, "error_parse_request_json_error");
-				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
+				rc.response().end(new GenericMessageResponse(msg, failure.getMessage()).toJson());
 			}
 			if (failure != null && failure instanceof AbstractRestException) {
 				AbstractRestException error = (AbstractRestException) failure;

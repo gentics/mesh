@@ -50,7 +50,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	public void handleLogout(InternalActionContext ac) {
 		ac.logout();
 		GenericMessageResponse message = new GenericMessageResponse("OK");
-		ac.send(JsonUtil.toJson(message), OK);
+		ac.send(message.toJson(), OK);
 	}
 
 	/**

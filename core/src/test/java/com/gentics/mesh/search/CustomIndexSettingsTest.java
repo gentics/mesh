@@ -220,7 +220,12 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	private Map<String, Object> parseResult(JsonObject result, String query) {
 		List<String> partials = Arrays.asList(query.split(" "));
 		Map<String, Object> map = new HashMap<>();
-		JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
+		JsonArray hits = result
+			.getJsonArray("responses")
+			.getJsonObject(0)
+			.getJsonObject("hits")
+			.getJsonArray("hits");
+
 		for (int i = 0; i < hits.size(); i++) {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonArray highlights = hit.getJsonObject("highlight").getJsonArray("fields.content.auto");

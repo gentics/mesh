@@ -33,7 +33,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.test.TestDataProvider;
@@ -47,13 +46,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
+import okhttp3.OkHttpClient;
 
-public abstract class AbstractMeshTest implements TestHelperMethods {
+public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMethods {
 
 	static {
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
+	
+	private OkHttpClient httpClient;
 
 	@Rule
 	@ClassRule
@@ -75,6 +77,13 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
 		}
 	}
+	
+	public OkHttpClient httpClient() {
+		if (this.httpClient == null) {
+			this.httpClient = new OkHttpClient.Builder().build();
+		}
+		return this.httpClient;
+	}
 
 	/**
 	 * Drop all indices and create a new index using the current data.
@@ -93,7 +102,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	public String getJson(Node node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return JsonUtil.toJson(node.transformToRest(ac, 0).blockingGet());
+		return node.transformToRest(ac, 0).blockingGet().toJson();
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {

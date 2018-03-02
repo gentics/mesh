@@ -18,7 +18,7 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.RxUtil;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
@@ -60,7 +60,7 @@ public class BinaryFieldResponseHandler {
 
 			// Check the etag
 			String etagKey = sha512sum;
-			if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
+			if (binaryField.hasImage()) {
 				etagKey += ac.getImageParameters().getQueryParameters();
 			}
 
@@ -71,10 +71,11 @@ public class BinaryFieldResponseHandler {
 
 			if (requestETag != null && requestETag.equals(etagHeaderValue)) {
 				response.setStatusCode(NOT_MODIFIED.code()).end();
-			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
+			} else if (binaryField.hasImage() && ac.getImageParameters().hasResizeParams()) {
 				// Resize the image if needed
-				Observable<Buffer> data = binary.getStream();
-				Observable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters()).toObservable()
+				Flowable<Buffer> data = binary.getStream();
+				Flowable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters())
+					.toFlowable()
 					.map(fileWithProps -> {
 						response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
 						response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
@@ -83,7 +84,7 @@ public class BinaryFieldResponseHandler {
 						// TODO encode filename?
 						response.putHeader("content-disposition", "inline; filename=" + fileName);
 						return fileWithProps.getFile();
-					}).flatMap(RxUtil::toBufferObs);
+					}).flatMap(RxUtil::toBufferFlow);
 				resizedData.subscribe(response::write, rc::fail, response::end);
 			} else {
 				response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);

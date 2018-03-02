@@ -91,11 +91,11 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), tx(() -> extraUser.getUuid())));
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(group());
-			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), user().getUuid());
-			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), extraUser.getUuid());
-			assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), group().getUuid());
-			assertThat(dummySearchProvider()).hasEvents(3, 0, 0, 0);
-			dummySearchProvider().clear().blockingAwait();
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), user().getUuid());
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUser.getUuid());
+			assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), group().getUuid());
+			assertThat(trackingSearchProvider()).hasEvents(3, 0, 0, 0);
+			trackingSearchProvider().clear().blockingAwait();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
 

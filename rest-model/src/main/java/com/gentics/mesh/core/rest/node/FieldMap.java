@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -28,7 +29,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 /**
  * A field map stores all fields of a node or micronode.
  */
-public interface FieldMap {
+public interface FieldMap extends RestModel {
 
 	/**
 	 * Add or update the field with the given key in the map.

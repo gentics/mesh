@@ -16,7 +16,7 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public interface MicronodeGraphField extends ListableReferencingGraphField, MeshEdge {
 
-	static final Logger log = LoggerFactory.getLogger(MicronodeGraphField.class);
+	Logger log = LoggerFactory.getLogger(MicronodeGraphField.class);
 
 	/**
 	 * Returns the micronode for this field.

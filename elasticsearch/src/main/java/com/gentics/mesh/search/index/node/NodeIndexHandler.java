@@ -121,6 +121,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "");
 							log.debug("Adding index to map of known idices {" + publishIndexName + "");
 						}
+						release.findAllMicroschemaVersions();
 						// Load the index mapping information for the index
 						SchemaModel schema = containerVersion.getSchema();
 						JsonObject mapping = getMappingProvider().getMapping(schema);

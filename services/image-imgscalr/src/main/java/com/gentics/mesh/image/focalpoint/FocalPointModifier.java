@@ -103,20 +103,13 @@ public class FocalPointModifier {
 			targetSize = new Point(x, y);
 		}
 
-		double targetRatio = targetSize.getRatio();
-		boolean alignX = targetRatio > 1;
-
 		// We zoom by creating a sub image of the original image. The section size will be defined by the zoom factor and the target size.
-		int zw = Math.round(x / zoomFactor);
-		int zh = Math.round(y / zoomFactor);
+		int zw = Math.round(targetSize.getX() / zoomFactor);
+		int zh = Math.round(targetSize.getY() / zoomFactor);
 
-		// The sub image size dimension needs to be calculated via the target size aspect ratio
-		if (!alignX) {
-			double c = Math.floor((double) zw * targetRatio);
-			zw = (int) c;
-		} else {
-			double c = Math.floor((double) zh / targetRatio);
-			zh = (int) c;
+		// If the calculated sub image size is bigger than the original image, the zoom factor is not enough for target size.
+		if (zw > x || zh > y) {
+			throw error(BAD_REQUEST, "image_error_target_too_large_for_zoom");
 		}
 
 		Point zstart = calculateZoomStart(focalPoint, new Point(x, y), zw, zh);
@@ -148,8 +141,8 @@ public class FocalPointModifier {
 		int zx = absFocalPoint.getX() - (zoomWidth / 2);
 
 		// Clamp the bounds so that the start point will not exceed the image bounds in relation to the sub image width
-		if (zx < 1) {
-			zx = 1;
+		if (zx < 0) {
+			zx = 0;
 		} else if (zx > x - zoomWidth) {
 			zx = x - zoomWidth;
 		}
@@ -157,8 +150,8 @@ public class FocalPointModifier {
 		int zy = absFocalPoint.getY() - (zoomHeight / 2);
 
 		// Clamp the bounds so that the start point will not exceed the image bounds in relation to the sub image height
-		if (zy < 1) {
-			zy = 1;
+		if (zy < 0) {
+			zy = 0;
 		} else if (zy > y - zoomHeight) {
 			zy = y - zoomHeight;
 		}

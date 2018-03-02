@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -156,4 +157,13 @@ public class TrackingSearchProvider implements SearchProvider {
 		return null;
 	}
 
+	public void printStoreEvents(boolean withJson) {
+		for (Entry<String, JsonObject> entry : getStoreEvents().entrySet()) {
+			System.out.println("Store event {" + entry.getKey() + "}");
+			if (withJson) {
+				System.out.println("Json:\n" + entry.getValue().encodePrettily());
+			}
+		}
+
+	}
 }

@@ -7,7 +7,7 @@ import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.util.FileUtils;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 public interface BinaryFieldTestHelper {
@@ -28,7 +28,7 @@ public interface BinaryFieldTestHelper {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
 		Binary binary = MeshInternal.get().boot().binaryRoot().create(sha512Sum, Long.valueOf(buffer.length()));
-		MeshInternal.get().binaryStorage().store(Observable.just(buffer), binary.getUuid()).blockingAwait();
+		MeshInternal.get().binaryStorage().store(Flowable.just(buffer), binary.getUuid()).blockingAwait();
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);

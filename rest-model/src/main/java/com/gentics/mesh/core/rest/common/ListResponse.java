@@ -48,8 +48,6 @@ public class ListResponse<T> implements RestModel {
 	 * 
 	 * @return List data
 	 */
-	// @JsonTypeInfo(use = Id.CLASS)
-	// @JsonTypeInfo(use = Id.NONE )
 	public List<T> getData() {
 		return data;
 	}

@@ -38,7 +38,7 @@ public class UserRestTest {
 		nodeResponse.setUuid(UUIDUtil.randomUUID());
 		nodeResponse.setSchema(new SchemaReferenceImpl().setName("content"));
 		response.setNodeResponse(nodeResponse);
-		String json = JsonUtil.toJson(response);
+		String json = response.toJson();
 		assertNotNull(json);
 
 		UserResponse deserializedResponse = JsonUtil.readValue(json, UserResponse.class);
@@ -53,7 +53,7 @@ public class UserRestTest {
 		reference.setProjectName("project123");
 		reference.setDisplayName("123");
 		response.setNodeReference(reference);
-		json = JsonUtil.toJson(response);
+		json = response.toJson();
 		assertNotNull(json);
 
 		deserializedResponse = JsonUtil.readValue(json, UserResponse.class);

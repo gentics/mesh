@@ -11,9 +11,8 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
 
 import io.netty.buffer.ByteBuf;
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -117,8 +116,8 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Observable<Buffer> read(String hashsum) {
-		return Observable.create(sub -> {
+	public Flowable<Buffer> read(String hashsum) {
+		return Flowable.generate(sub -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Loading data for hash {" + hashsum + "}");
 			}
@@ -156,7 +155,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable store(Observable<Buffer> stream, String hashsum) {
+	public Completable store(Flowable<Buffer> stream, String hashsum) {
 		return Completable.create(sub -> {
 			PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(options.getBucketName())
@@ -166,7 +165,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 			client.putObject(request, new AsyncRequestProvider() {
 				@Override
 				public void subscribe(Subscriber<? super ByteBuffer> s) {
-					stream.toFlowable(BackpressureStrategy.BUFFER).map(Buffer::getByteBuf).map(ByteBuf::nioBuffer).subscribe(s);
+					stream.map(Buffer::getByteBuf).map(ByteBuf::nioBuffer).subscribe(s);
 				}
 
 				@Override

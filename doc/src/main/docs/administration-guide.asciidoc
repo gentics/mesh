@@ -11,7 +11,7 @@
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
 | http://vertx.io/[Vert.x]                                     | Core Framework       | 3.5.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
-| https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
+| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.6.x
 |======
 
 TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
@@ -39,6 +39,12 @@ Various command line arguments can be used to override or supplement previously 
 ----
 include::examples/models/mesh-cli-help.txt[]
 ----
+
+=== Environment Variables
+
+Settings within the `mesh.yml` file can be override via these environment variables.
+
+include::examples/tables/mesh-env.adoc[]
 
 == Run with Docker
 
@@ -240,8 +246,27 @@ The ```/api/v1/admin/graphdb/backup``` and ```/api/v1/admin/graphdb/restore``` e
 The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
 It is advised to restart Gentics Mesh once a backup has been restored.
 
-
 == link:changelog.html[Changelog]
+
+== Update handling
+
+Updating Gentics Mesh is very simple. You stop the current instance and start it again using the new version. 
+A process is invoked which will check whether any automatic changes need to be applied.
+
+=== Downgrading
+
+Downgrading is possible but not recommended. You can however downgrade your Gentics Mesh instance 
+if the database revision hash of the current database matches up with the revision which is required 
+by the version which is being started. You can check your current database revision via the `/api/v1` endpoint.
+
+[[database-revisions]]
+=== Database Revisions
+
+This list contains an overview over Gentics Mesh releases and the their database revisions.
+The database revision is different if the used Graph Database version was updated or if the database 
+structure was altered due to an automatic change.
+
+include::examples/tables/mesh-db-revs.adoc[]
 
 == License
 

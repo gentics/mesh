@@ -379,7 +379,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(release, containerType)) {
 								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
-								assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release
+								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release
 										.getUuid(), schema.getUuid(), containerType), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
 												fieldContainer.getLanguage().getLanguageTag()));
 							}
@@ -388,7 +388,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				}
 			}
 
-			assertThat(dummySearchProvider()).hasEvents(storeCount + 1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(storeCount + 1, 0, 0, 0);
 		}
 	}
 

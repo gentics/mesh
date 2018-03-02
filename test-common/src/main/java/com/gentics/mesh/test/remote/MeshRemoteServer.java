@@ -47,7 +47,7 @@ public class MeshRemoteServer extends TestWatcher implements MeshTestServer {
 	}
 
 	@Override
-	public MeshRestClient getMeshClient() {
+	public MeshRestClient client() {
 		return client;
 	}
 

@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.json.JsonUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -24,7 +23,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 	@Override
 	public void send(RestModel restModel, HttpResponseStatus status) {
-		send(JsonUtil.toJson(restModel), status);
+		send(restModel.toJson(), status);
 	}
 
 	@Override

@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -136,8 +138,6 @@ import io.vertx.core.logging.LoggerFactory;
 public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
-
-	public static final String RELEASE_UUID_KEY = "releaseUuid";
 
 	public static void init(Database database) {
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
@@ -1076,7 +1076,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				.isPublished(releaseUuid)).collect(Collectors.toList());
 
 		// publish all unpublished containers and handle recursion
-		unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser())).collect(Collectors.toList());
+		unpublishedContainers.stream().forEach(c -> publish(c.getLanguage(), release, ac.getUser()));
 
 		PublishParameters parameters = ac.getPublishParameters();
 		if (parameters.isRecursive()) {
@@ -1939,7 +1939,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					humanNames.add(permission.getRestPerm().getName());
 				}
 				String[] names = humanNames.toArray(new String[humanNames.size()]);
-				keyBuilder.append(names);
+				keyBuilder.append(Arrays.toString(names));
 			}
 
 		}
@@ -1974,6 +1974,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Mesh.vertx().eventBus().publish(address, json);
 			if (log.isDebugEnabled()) {
 				log.debug("Updated event sent {" + address + "}");
+			}
+		}
+	}
+
+	@Override
+	public void onDeleted(String uuid, String name) {
+		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
+	}
+
+	@Override
+	public void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag) {
+		String address = getTypeInfo().getOnDeletedAddress();
+		if (address != null) {
+			JsonObject json = new JsonObject();
+			if (this instanceof NamedElement) {
+				json.put("name", name);
+			}
+			if (languageTag != null) {
+				json.put("languageTag", languageTag);
+			}
+			json.put("schemaName", schema.getName());
+			json.put("schemaUuid", schema.getUuid());
+			json.put("uuid", uuid);
+			Mesh.vertx().eventBus().publish(address, json);
+			if (log.isDebugEnabled()) {
+				log.debug("Deleted event sent {" + address + "}");
 			}
 		}
 	}
