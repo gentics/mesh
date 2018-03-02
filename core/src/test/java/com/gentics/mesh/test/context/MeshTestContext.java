@@ -2,6 +2,7 @@ package com.gentics.mesh.test.context;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -303,6 +304,7 @@ public class MeshTestContext extends TestWatcher {
 				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2")
 					.withEnv("discovery.type", "single-node")
 					.withExposedPorts(9200)
+					.withStartupTimeout(Duration.ofSeconds(250L))
 					.waitingFor(Wait.forHttp("/"));
 				if (!elasticsearch.isRunning()) {
 					elasticsearch.start();
