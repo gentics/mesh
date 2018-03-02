@@ -5,6 +5,8 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.error.PermissionException;
 
+import java.util.function.Supplier;
+
 /**
  * Extended context for GraphQL handling.
  */
@@ -21,4 +23,12 @@ public interface GraphQLContext extends InternalActionContext {
 	 */
 	<T extends MeshCoreVertex<?, ?>> T requiresPerm(T vertex, GraphPermission... permission);
 
+	default <T> T getOrStore(String key, Supplier<T> supplier) {
+		T value = get(key);
+		if (value == null) {
+			value = supplier.get();
+			put(key, value);
+		}
+		return value;
+	}
 }

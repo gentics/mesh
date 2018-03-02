@@ -53,7 +53,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 	public SchemaTypeProvider() {
 	}
 
-	public GraphQLObjectType createType(Project project) {
+	public GraphQLObjectType createType(GraphQLContext context) {
 		Builder schemaType = newObject().name(SCHEMA_TYPE_NAME).description("Node schema");
 		interfaceTypeProvider.addCommonFields(schemaType);
 
@@ -102,8 +102,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				return new NodeContent(node, container);
 			});
 
-			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env), NodeFilter.filter(project).createPredicate(env.getArgument("filter")));
-		}, NODE_PAGE_TYPE_NAME).argument(NodeFilter.filter(project).createFilterArgument()));
+			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env), NodeFilter.filter(context).createPredicate(env.getArgument("filter")));
+		}, NODE_PAGE_TYPE_NAME).argument(NodeFilter.filter(context).createFilterArgument()));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 

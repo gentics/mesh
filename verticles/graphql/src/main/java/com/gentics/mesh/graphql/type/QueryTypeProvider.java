@@ -251,10 +251,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	/**
 	 * Construct the query/root type for the current project.
 	 * 
-	 * @param project
+	 * @param context
 	 * @return
 	 */
-	public GraphQLObjectType getRootType(Project project) {
+	public GraphQLObjectType getRootType(GraphQLContext context) {
+		Project project = context.getProject();
 		Builder root = newObject();
 		root.name("Query");
 
@@ -278,7 +279,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// .nodes
 		root.field(newFieldDefinition().name("nodes").description("Load a page of nodes via the regular nodes list or via a search.")
 			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
-			.argument(NodeFilter.filter(project).createFilterArgument())
+			.argument(NodeFilter.filter(context).createFilterArgument())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
 				PagingParameters pagingInfo = getPagingInfo(env);
@@ -298,7 +299,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 						return new NodeContent(node, container);
 					});
-					return new DynamicStreamPageImpl<>(contents, pagingInfo, NodeFilter.filter(project).createPredicate(env.getArgument("filter")));
+					return new DynamicStreamPageImpl<>(contents, pagingInfo, NodeFilter.filter(context).createPredicate(env.getArgument("filter")));
 				}
 			}));
 
@@ -425,15 +426,16 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	/**
 	 * Construct the root schema.
 	 * 
-	 * @param project
+	 * @param context
 	 * @return
 	 */
-	public GraphQLSchema getRootSchema(Project project) {
+	public GraphQLSchema getRootSchema(GraphQLContext context) {
+		Project project = context.getProject();
 		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
 
 		Set<GraphQLType> additionalTypes = new HashSet<>();
 
-		additionalTypes.add(schemaTypeProvider.createType(project));
+		additionalTypes.add(schemaTypeProvider.createType(context));
 		additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
 
 		additionalTypes.add(microschemaTypeProvider.createType());
@@ -473,7 +475,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		additionalTypes.add(createLinkEnumType());
 
-		GraphQLSchema schema = builder.query(getRootType(project)).build(additionalTypes);
+		GraphQLSchema schema = builder.query(getRootType(context)).build(additionalTypes);
 		return schema;
 	}
 

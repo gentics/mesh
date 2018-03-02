@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphqlfilter.filter.FilterField;
 import com.gentics.mesh.graphqlfilter.filter.MainFilter;
 import com.gentics.mesh.graphqlfilter.filter.MappedFilter;
@@ -15,23 +16,22 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class SchemaFilter extends MainFilter<SchemaContainer> {
-    private static SchemaFilter instance;
 
-    public static SchemaFilter filter(Project project) {
-        SchemaFilter.project = project;
-        if (instance == null) {
-            instance = new SchemaFilter();
-        }
-        return instance;
+    private static final String NAME = "SchemaFilter";
+
+    public static SchemaFilter filter(GraphQLContext context) {
+        return context.getOrStore(NAME, () -> new SchemaFilter(context));
     }
 
-    private static Project project;
+    private final GraphQLContext context;
 
-    public SchemaFilter() {
-        super("SchemaFilter", "Filters Schemas");
+    private SchemaFilter(GraphQLContext context) {
+        super(NAME, "Filters schemas");
+        this.context = context;
     }
 
     private GraphQLEnumType schemaEnum() {
+        Project project = context.getProject();
         List<GraphQLEnumValueDefinition> values = StreamSupport.stream(project.getSchemaContainerRoot().findAllIt().spliterator(), false)
             .map(schema -> {
                 String name = schema.getName();
