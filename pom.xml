@@ -85,6 +85,7 @@
 	<modules>
 		<module>rest-model</module>
 		<module>api</module>
+		<module>plugin-api</module>
 		<module>common</module>
 		<module>test-common</module>
 		<module>elasticsearch</module>
