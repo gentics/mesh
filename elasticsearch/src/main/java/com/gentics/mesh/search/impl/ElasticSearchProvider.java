@@ -97,7 +97,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			client = new SearchClient(proto, url.getHost(), port);
 
 			if (waitForCluster) {
-				waitForCluster(client, 45);
+				waitForCluster(client, searchOptions.getStartupTimeout());
 				if (log.isDebugEnabled()) {
 					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 				}

@@ -18,10 +18,14 @@ public class ElasticSearchOptions implements Option {
 	 */
 	public static final String DEFAULT_URL = "http://localhost:9200";
 	public static final long DEFAULT_TIMEOUT = 8000L;
+
+	public static final int DEFAULT_STARTUP_TIMEOUT = 45;
+
 	public static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
 
 	public static final String MESH_ELASTICSEARCH_URL_ENV = "MESH_ELASTICSEARCH_URL";
 	public static final String MESH_ELASTICSEARCH_TIMEOUT_ENV = "MESH_ELASTICSEARCH_TIMEOUT";
+	public static final String MESH_ELASTICSEARCH_STARTUP_TIMEOUT_ENV = "MESH_ELASTICSEARCH_STARTUP_TIMEOUT";
 	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
 
 	@JsonProperty(required = false)
@@ -33,6 +37,11 @@ public class ElasticSearchOptions implements Option {
 	@JsonPropertyDescription("Timeout for Elasticsearch operations. Default: " + DEFAULT_TIMEOUT + "ms")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_TIMEOUT_ENV, description = "Override the configured elasticsearch server timeout.")
 	private Long timeout = DEFAULT_TIMEOUT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Timeout for Elasticsearch startup. Default: " + DEFAULT_STARTUP_TIMEOUT + "sec")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_STARTUP_TIMEOUT_ENV, description = "Override the configured elasticsearch server timeout.")
+	private Integer startupTimeout = DEFAULT_STARTUP_TIMEOUT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether to deploy and start the included Elasticsearch server.")
@@ -106,6 +115,14 @@ public class ElasticSearchOptions implements Option {
 
 	public void validate(MeshOptions meshOptions) {
 
+	}
+
+	public long getStartupTimeout() {
+		return startupTimeout;
+	}
+
+	public void setStartupTimeout(Integer startupTimeout) {
+		this.startupTimeout = startupTimeout;
 	}
 
 }
