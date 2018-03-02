@@ -21,9 +21,12 @@ icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for
 [[v0.17.1]]
 == 0.17.1 (TBD)
 
+
 icon:plus[] Core: The core Vert.x library was updated to version 3.5.1
 
 icon:plus[] Config: It is now possible to configure the elasticsearch startup timeout via the `search.startupTimeout` field in the `mesh.yml` or via the `MESH_ELASTICSEARCH_STARTUP_TIMEOUT` environment variable.
+
+icon:check[] Config: Fixed a bug which prevented optional boolean environment variables (e.g.: `MESH_HTTP_CORS_ENABLE_ENV`) from being handled correctly.
 
 icon:check[] Core: It is now possible to change the listType of a list field in a schema via the Rest-API.
 

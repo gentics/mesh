@@ -33,14 +33,35 @@ public interface Option {
 							field.setBoolean(this, Boolean.valueOf(value));
 							continue;
 						}
+						if (typeClazz.equals(Boolean.class)) {
+							field.set(this, Boolean.valueOf(value));
+							continue;
+						}
 						if (typeClazz.equals(long.class)) {
 							field.setLong(this, Long.valueOf(value));
+							continue;
+						}
+						if (typeClazz.equals(Long.class)) {
+							field.set(this, Long.valueOf(value));
 							continue;
 						}
 						if (typeClazz.equals(int.class)) {
 							field.setInt(this, Integer.valueOf(value));
 							continue;
 						}
+						if (typeClazz.equals(Integer.class)) {
+							field.set(this, Integer.valueOf(value));
+							continue;
+						}
+						if (typeClazz.equals(float.class)) {
+							field.setFloat(this, Float.valueOf(value));
+							continue;
+						}
+						if (typeClazz.equals(Float.class)) {
+							field.set(this, Float.valueOf(value));
+							continue;
+						}
+
 					}
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					throw new RuntimeException("Could not set environment variable {" + name + "} with value {" + value + "}", e);
