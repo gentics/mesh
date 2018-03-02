@@ -1,5 +1,14 @@
 :icons: font
 
+////
+* Write changelog entries in present tense
+* Include github issue or PR if possible using link:http://...[#123] format
+* Review your changelog entries
+* Don't include security sensitive information in the changelog
+* Include links to documentation if possible
+////
+
+
 = Gentics Mesh Changelog
 
 [[vNextMajorRelease]]
