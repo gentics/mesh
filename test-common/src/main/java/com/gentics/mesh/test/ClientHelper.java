@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
 import com.gentics.mesh.core.data.i18n.I18NUtil;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -114,7 +113,8 @@ public final class ClientHelper {
 	 *            parameters of the expected response message
 	 * @return
 	 */
-	public static <T> MeshRestClientMessageException call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+	public static <T> MeshRestClientMessageException call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey,
+		String... i18nParams) {
 		MeshResponse<T> future;
 		try {
 			future = handler.handle().invoke();
@@ -170,12 +170,6 @@ public final class ClientHelper {
 	public static void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
 		String sanitizedJson = unsanitizedResponseJson.replaceAll("uuid\":\"[^\"]*\"", "uuid\":\"uuid-value\"");
 		assertEquals(msg, expectedJson, sanitizedJson);
-	}
-
-	public static void assertMessage(GenericMessageResponse response, String i18nKey, String... i18nParams) {
-		Locale en = Locale.ENGLISH;
-		String message = I18NUtil.get(en, i18nKey, i18nParams);
-		assertEquals("The response message does not match.", message, response.getMessage());
 	}
 
 	public static void expectFailureMessage(MeshResponse<?> future, HttpResponseStatus status, String message) {

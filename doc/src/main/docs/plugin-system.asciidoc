@@ -1,0 +1,256 @@
+= Plugin System
+
+The Gentics Mesh plugin system allows you to write and deploy custom plugins which can enrich the existing REST API.
+
+Typical example plugins are:
+
+* Comment plugin - A plugin to provide a commenting feature.
+* Like plugin    - A plugin to store likes to specific nodes.
+* Sitemap plugin - A plugin which generates a sitemap xml file.
+
+A plugin can access the filesystem or use the Gentics Mesh REST Client to interact with the Mesh server.
+
+== Plugins
+
+Check the link:https://github.com/gentics/mesh-awesome[Gentics Mesh Awesome List] for plugins.
+
+== Plugin System
+
+=== Configuration
+
+The plugin directory can be configured within the `mesh.yml` configuration file. Each plugin may place its own configuration file within its own plugin directory.
+
+=== Plugin Lifecycle
+
+A plugin has a specific lifecyle.
+
+Start:
+
+* Plugin verticle deployment - The plugin verticle gets loaded and deployed by Vert.x
+* Plugin validation          - Plugin manifest will be validated. Plugins which fail the validation will be directly undeployed
+* Plugin initialization      - The plugin can initialize itself and setup needed data.
+* Plugin registration        - The plugin is finally registered and the endpoint are setup. Now the plugin routes can be reached.
+
+Stop:
+
+* Plugin de-registration       - The plugin gets deregistered. The plugin routes can no longer be reached.
+* Plugin prepare stop          - The plugin can now prepare itself from being stopped.
+* Plugin verticle undeployment - The plugin verticle gets undeploy and stopped by Vert.x
+
+=== Deployment
+
+Plugin verticles can be deployed in various ways.
+
+==== Automatically during start-up
+
+Any plugin `jar` file which was found in the configured `plugins` folder will automatically be deployed during server startup.
+
+==== Deployment via REST API
+
+Plugins can be managed via the `/api/v1/admin/plugins` endpoint. It is possible to deploy, undeploy and read plugin information.
+
+Plugin jar files which have been copied to the configured `plugins` folder can be deployed via the `POST /api/v1/admin/plugins` endpoint.
+
+[source,json]
+----
+include::examples/api/request/api/v1/admin/plugins/request-body.json[]
+----
+
+Any deployed plugin will get a deployment UUID and can be loaded via the `GET /api/v1/admin/plugins/:uuid`.
+
+[source,json]
+----
+include::examples/api/response/api/v1/admin/plugins/\{uuid\}/200/example.json[]
+----
+
+You can undeploy a plugin via the `DELETE /api/v1/admin/plugins/:uuid` endpoint.
+
+
+==== Programmatically deployment
+
+You can deploy plugins programmatically in your IDE of choice via the Java API.
+This is useful for integration testing or when creating custom Gentics Mesh server bundles.
+
+```java
+Mesh mesh = Mesh.mesh();
+mesh.run();
+
+# Embedded in your IDE
+mesh.getVertx().deployVerticle(new YourPlugin());
+
+# Via a jar in your filesystem
+mesh.getVertx().deployVerticle("filesystem:your-plugin.jar");
+
+# Via Maven
+mesh.getVertx().deployVerticle("maven:tld.your.company:your-plugin:1.0");
+```
+
+== Plugin Development
+
+Plugins which add custom endpoints are written in Java and are packaged as regular `jar` files.
+
+A plugin is in essence a Vert.x verticle. Verticles are deployment units which contain the plugin code.
+
+=== Integration Testing
+
+Plugins can be directly tested in your IDE by starting an embedded Gentics Mesh instance. 
+We provide a JUnit class rule which can be used to quickly startup Gentics Mesh.
+
+```
+@ClassRule
+public static final MeshLocalServer server = new MeshLocalServer()
+    .withInMemoryMode()
+    .waitForStartup();
+```
+
+You need to following test dependencies in order to use the class rule.
+
+```xml
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.12</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-test-common</artifactId>
+    <version>${mesh.version}</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-core</artifactId>
+    <version>${mesh.version}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+== Hello World Plugin 
+
+The link:https://github.com/gentics/mesh-hello-world-plugin[Hello World Plugin] demonstrates a basic plugin and how to setup tests.
+
+The `HelloWorldPlugin` class contains the plugin code.
+
+* The `initialize()` method can be used to setup the initial data of the plugin. The counterpart is the `prepareStop()` method.
+* Once a plugin has been deployed by Vert.x it will register itself at the Gentics Mesh plugin manager.
+* The manager will invoke the `registerEndpoints()` method in order to add the endpoints to the REST API.
+
+link:https://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x routers] will be used to process the requests and direct them to registered endpoints/routes.
+
+There are two routers to which new endpoints can be added.
+
+* The globalRouter can be used to add endpoints to URLs like ```/api/v1/plugins/helloworld/```.
+
+* The projectRouter on the other hand can be used to add project specific endpoints like ```/api/v1/your-project/plugins/helloworld/```.
+
+NOTE: The registerEndpoints method will be invoked multiple times in order to register the routes on all Gentics Mesh REST verticles which will internally process the requests.
+
+Full sources:
+
+```java
+package com.gentics.mesh.plugin;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
+import java.io.File;
+
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.rest.client.MeshRestClient;
+
+import io.reactivex.Completable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.reactivex.core.buffer.Buffer;
+
+public class HelloWorldPlugin extends AbstractPluginVerticle {
+
+	private static final Logger log = LoggerFactory.getLogger(HelloWorldPlugin.class);
+
+	public static final String PROJECT_NAME = "HelloWorld";
+	
+	public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
+
+	@Override
+	public Completable initialize() {
+		// The initialize method can be used to setup initial data which is needed by the plugin.
+		// You can use the admin client to setup initial data or access the filesystem to read/write data.
+		String path = new File(getStorageDir(), "dummyFile.txt").getAbsolutePath();
+		return getRxVertx().fileSystem()
+			.rxWriteFile(path, Buffer.buffer("test"))
+			.andThen(createProject());
+	}
+
+	@Override
+	public void registerEndpoints(Router globalRouter, Router projectRouter) {
+		log.info("Registering routes for {" + getName() + "}");
+
+		// Route which demonstrates that the API can be directly extended
+		// Path: /api/v1/plugins/helloworld/hello
+		globalRouter.route("/hello").handler(rc -> {
+			rc.response().end("world");
+		});
+
+		// Route which demonstrates that plugins can also have project specific routes.
+		// Path: /api/v1/:projectName/plugins/helloworld/hello
+		// It is possible to access the project information via the context project() method.
+		projectRouter.route("/hello").handler(rc -> {
+			PluginContext context = wrap(rc);
+			rc.response().end("world-project-" + context.project().getString("name"));
+		});
+
+		// Route which will use the admin client to load the previously created project and return it.
+		// Path: /api/v1/plugins/helloworld/project
+		globalRouter.route("/project").handler(rc -> {
+			PluginContext context = wrap(rc);
+			adminClient().findProjectByName(PROJECT_NAME).toSingle().subscribe(project -> {
+				context.send(project, OK);
+			}, rc::fail);
+		});
+		
+		// Route to serve static contents from the webroot resources folder of the plugin.
+		// Path: /api/v1/plugins/helloworld/static
+		globalRouter.route("/static/*").handler(staticHandler);
+
+	}
+
+	/**
+	 * Utilize the admin client and create a project.
+	 * 
+	 * @return
+	 */
+	private Completable createProject() {
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(PROJECT_NAME);
+		request.setSchemaRef("folder");
+		MeshRestClient client = adminClient();
+		return client.createProject(request).toCompletable();
+	}
+
+}
+```
+
+== Contributing
+
+You wrote a plugin? Great! Share it with the community via the link:https://github.com/gentics/mesh-awesome[Gentics Mesh Awesome List]
+
+== FAQ
+
+* Can I access the Gentics Mesh Graph in order to add custom elements to it?
+
+No this is not possible. Using the Graph API could potentially alter the Graph structure and cause data inconsistencies.
+
+* Using a REST client to interact with the Mesh Server seems inefficient. Is there maybe a direct way to interact with Gentics Mesh?
+
+We are aware of this limitation and are working on a local client which would work without involving the HTTP stack.
+
+== Future
+
+* UI
+In the future we will also support UI plugins.
+A plugin will be able to hook into the Gentics Mesh UI in order to add additional custom UI elements.
+
+* GraphQL
+In the future it will also be possible to extend the GraphQL API with custom types and fields.

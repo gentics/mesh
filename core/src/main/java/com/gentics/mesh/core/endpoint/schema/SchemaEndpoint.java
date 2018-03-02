@@ -13,18 +13,17 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle for /api/v1/schemas endpoint
  */
-public class SchemaEndpoint extends AbstractEndpoint {
+public class SchemaEndpoint extends AbstractInternalEndpoint {
 
 	private SchemaCrudHandler crudHandler;
 
@@ -66,7 +65,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		// crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
 		// });
 
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:schemaUuid/changes");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -75,14 +74,14 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Schema changes have been applied.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
 		});
 	}
 
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new schema.");
@@ -91,13 +90,13 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
 		endpoint.exampleResponse(CREATED, schemaExamples.getSchemaResponse(), "Created schema.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});
 	}
 
 	private void addDiffHandler() {
-		EndpointRoute diffEndpoint = createEndpoint();
+		InternalEndpointRoute diffEndpoint = createRoute();
 		diffEndpoint.path("/:schemaUuid/diff");
 		diffEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		diffEndpoint.method(POST);
@@ -108,7 +107,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		diffEndpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(),
 				"List of schema changes that were detected by comparing the posted schema and the current version.");
 		diffEndpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDiff(ac, uuid);
 		});
@@ -117,7 +116,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	private static Object mutex = new Object();
 
 	private void addUpdateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -131,7 +130,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
 			synchronized (mutex) {
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				InternalActionContext ac = wrap(rc);
 				String uuid = ac.getParameter("schemaUuid");
 				crudHandler.handleUpdate(ac, uuid);
 			}
@@ -139,7 +138,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -147,14 +146,14 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addReadHandlers() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:schemaUuid");
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
@@ -167,12 +166,12 @@ public class SchemaEndpoint extends AbstractEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple schemas and return a paged list response.");
@@ -180,7 +179,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
 

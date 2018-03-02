@@ -72,6 +72,7 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.plugin.factory.PluginVerticleFactory;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -127,6 +128,10 @@ public interface TestHelperMethods {
 
 	default BootstrapInitializer boot() {
 		return MeshInternal.get().boot();
+	}
+
+	default PluginVerticleFactory pluginFactory() {
+		return MeshInternal.get().pluginFactory();
 	}
 
 	default TestDataProvider data() {
@@ -451,7 +456,7 @@ public interface TestHelperMethods {
 	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
 		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName)
-				.draft()));
+			.draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
@@ -534,14 +539,14 @@ public interface TestHelperMethods {
 	}
 
 	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
-			String fileName) {
+		String fileName) {
 
 		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
 		String uuid = tx(() -> node.getUuid());
 
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
-				new NodeParametersImpl().setResolveLinks(LinkType.FULL));
+			new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
@@ -558,7 +563,7 @@ public interface TestHelperMethods {
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 
 		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName, buffer, fileName,
-				contentType));
+			contentType));
 	}
 
 	default public UserResponse createUser(String username) {
@@ -609,6 +614,14 @@ public interface TestHelperMethods {
 
 	default void disableAnonymousAccess() {
 		Mesh.mesh().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
+	}
+
+	default void grantAdminRole() {
+		tx(() -> group().addRole(roles().get("admin")));
+	}
+
+	default void revokeAdminRole() {
+		tx(() -> group().removeRole(roles().get("admin")));
 	}
 
 }

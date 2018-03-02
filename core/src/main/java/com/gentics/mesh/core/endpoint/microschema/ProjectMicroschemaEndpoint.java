@@ -11,8 +11,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -47,20 +46,20 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addReadHandlers() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Read all microschemas which are assigned to the project.");
 		endpoint.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadMicroschemaList(ac);
 		});
 	}
 
 	private void addAssignHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -68,14 +67,14 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Add the microschema to the project.");
 		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Microschema was added to the project.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleAddMicroschemaToProject(ac, uuid);
 		});
 	}
 
 	private void addDeleteHandlers() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -83,7 +82,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Remove the microschema from the project.");
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was removed from project.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleRemoveMicroschemaFromProject(ac, uuid);
 		});

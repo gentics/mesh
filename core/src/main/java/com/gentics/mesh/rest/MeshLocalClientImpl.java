@@ -12,6 +12,7 @@ import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
@@ -52,6 +53,9 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
+import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
+import com.gentics.mesh.core.rest.plugin.PluginListResponse;
+import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -172,6 +176,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Inject
 	public ReleaseCrudHandler releaseCrudHandler;
+
+	@Inject
+	public PluginHandler pluginHandler;
 
 	@Inject
 	public MeshLocalClientImpl() {
@@ -1418,6 +1425,39 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<SchemaValidationResponse> validateMicroschema(Microschema microschema) {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<PluginResponse> deployPlugin(PluginDeploymentRequest request) {
+		LocalActionContextImpl<PluginResponse> ac = createContext(PluginResponse.class);
+		pluginHandler.handleDeploy(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> undeployPlugin(String uuid) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		pluginHandler.handleUndeploy(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<PluginListResponse> findPlugins(ParameterProvider... parameters) {
+		LocalActionContextImpl<PluginListResponse> ac = createContext(PluginListResponse.class, parameters);
+		pluginHandler.handleReadList(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<PluginResponse> findPlugin(String uuid) {
+		LocalActionContextImpl<PluginResponse> ac = createContext(PluginResponse.class);
+		pluginHandler.handleRead(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public JWTAuthentication getAuthentication() {
 		return null;
 	}
 

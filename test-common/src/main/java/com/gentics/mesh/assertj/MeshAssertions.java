@@ -8,6 +8,7 @@ import com.gentics.mesh.assertj.impl.BufferedImageAssert;
 import com.gentics.mesh.assertj.impl.DummySearchProviderAssert;
 import com.gentics.mesh.assertj.impl.FieldMapAssert;
 import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
+import com.gentics.mesh.assertj.impl.GenericMessageResponseAssert;
 import com.gentics.mesh.assertj.impl.GenericRestExceptionAssert;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
 import com.gentics.mesh.assertj.impl.JobListResponseAssert;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -197,5 +199,9 @@ public class MeshAssertions extends Assertions {
 
 	public static WebRootResponseAssert assertThat(WebRootResponse actual) {
 		return new WebRootResponseAssert(actual);
+	}
+
+	public static GenericMessageResponseAssert assertThat(GenericMessageResponse actual) {
+		return new GenericMessageResponseAssert(actual);
 	}
 }

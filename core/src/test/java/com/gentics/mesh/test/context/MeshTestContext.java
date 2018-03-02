@@ -43,7 +43,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
-	public static GenericContainer elasticsearch;
+	public static GenericContainer<?> elasticsearch;
 
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
@@ -251,6 +251,9 @@ public class MeshTestContext extends TestWatcher {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
+		if (settings == null) {
+			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
+		}
 		// Clustering options
 		if (settings.clusterMode()) {
 			options.getClusterOptions().setEnabled(true);

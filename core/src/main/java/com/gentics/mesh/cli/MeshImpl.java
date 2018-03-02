@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,9 +24,11 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.vertx.core.MultiMap;
+import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
@@ -62,6 +65,8 @@ public class MeshImpl implements Mesh {
 
 	private MetricsService metricsService;
 
+	private static PluginManager pluginManager = ServiceHelper.loadFactory(PluginManager.class);
+
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
@@ -94,12 +99,13 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public void run() throws Exception {
+	public Mesh run() throws Exception {
 		run(true);
+		return this;
 	}
 
 	@Override
-	public void run(boolean block) throws Exception {
+	public Mesh run(boolean block) throws Exception {
 		checkSystemRequirements();
 
 		setupKeystore(options);
@@ -147,6 +153,7 @@ public class MeshImpl implements Mesh {
 		if (block) {
 			dontExit();
 		}
+		return this;
 	}
 
 	private void setupKeystore(MeshOptions options) throws Exception {
@@ -267,7 +274,8 @@ public class MeshImpl implements Mesh {
 		}));
 	}
 
-	private void dontExit() throws InterruptedException {
+	@Override
+	public void dontExit() throws InterruptedException {
 		latch.await();
 	}
 
@@ -339,10 +347,18 @@ public class MeshImpl implements Mesh {
 	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
+		try {
+			pluginManager.stop().blockingAwait(10, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			log.error("One of the plugins could not be undeployed in the allotted time.", e);
+		}
 		MeshComponent meshInternal = MeshInternal.get();
-		// meshInternal.searchQueue().blockUntilEmpty(120);
 		meshInternal.database().stop();
-		meshInternal.searchProvider().stop();
+		try {
+			meshInternal.searchProvider().stop();
+		} catch (Exception e) {
+			log.error("The search provider did encounter an error while stopping", e);
+		}
 		Vertx vertx = getVertx();
 		if (vertx != null) {
 			vertx.close();

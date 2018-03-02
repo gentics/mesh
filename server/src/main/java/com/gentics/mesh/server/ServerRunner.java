@@ -27,7 +27,7 @@ public class ServerRunner {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
-		options.setAdminPassword("admin");
+		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setEnableCors(true);

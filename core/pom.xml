@@ -51,6 +51,20 @@
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-maven-service-factory</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.vertx</groupId>
+			<artifactId>vertx-filesystem-service-factory</artifactId>
+			<version>3.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-http-service-factory</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
 
 		<!-- Common Tools -->
 		<dependency>
@@ -191,6 +205,30 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>maven-invoker-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>build-test-projects</id>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<!-- Before the test phase -->
+						<phase>process-test-classes</phase>
+						<configuration>
+							<projectsDirectory>src/test/plugins</projectsDirectory>
+							<cloneProjectsTo>${project.build.directory}/test-plugins</cloneProjectsTo>
+							<filterProperties>
+								<mesh.version>${project.version}</mesh.version>
+							</filterProperties>
+							<pomIncludes>
+								<pomInclude>pom.xml</pomInclude>
+							</pomIncludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

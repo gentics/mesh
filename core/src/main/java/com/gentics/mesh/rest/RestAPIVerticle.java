@@ -31,7 +31,7 @@ import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
 import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.RawSearchEndpointImpl;
@@ -49,7 +49,7 @@ import io.vertx.ext.web.Router;
 @Singleton
 public class RestAPIVerticle extends AbstractVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractEndpoint.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractInternalEndpoint.class);
 
 	protected HttpServer server;
 
@@ -168,8 +168,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
 		RouterStorage storage = routerStorage.get();
-		Router router = storage.getRootRouter();
-		server.requestHandler(router::accept);
+		Router rootRouter = storage.root().getRouter();
+		server.requestHandler(rootRouter::accept);
 
 		server.listen(rh -> {
 			if (rh.failed()) {
@@ -209,7 +209,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	 */
 	private void registerEndPoints(RouterStorage storage) throws Exception {
 
-		List<AbstractEndpoint> endpoints = new ArrayList<>();
+		List<AbstractInternalEndpoint> endpoints = new ArrayList<>();
 		endpoints.add(restInfoEndpoint.get());
 		// verticles.add(projectInfoVerticle());
 
@@ -242,7 +242,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(utilityEndpoint.get());
 		endpoints.add(projectInfoEndpoint.get());
 
-		for (AbstractEndpoint endpoint : endpoints) {
+		for (AbstractInternalEndpoint endpoint : endpoints) {
 			endpoint.init(storage);
 			endpoint.registerEndPoints();
 		}

@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -59,6 +60,8 @@ import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.PluginTypeProvider.PLUGIN_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.PluginTypeProvider.PLUGIN_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -148,6 +151,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public TagSearchHandler tagSearchHandler;
+
+	@Inject
+	public PluginTypeProvider pluginProvider;
 
 	@Inject
 	public QueryTypeProvider() {
@@ -341,6 +347,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), USER_PAGE_TYPE_NAME, userSearchHandler,
 			userTypeProvider));
 
+		// .plugin
+		root.field(pluginProvider.createPluginField());
+
+		// .plugins
+		root.field(pluginProvider.createPluginPageField());
+
 		// .mesh
 		root.field(meshTypeProvider.createMeshFieldType());
 
@@ -453,6 +465,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(newPageType(ROLE_PAGE_TYPE_NAME, ROLE_TYPE_NAME));
 
 		additionalTypes.add(releaseTypeProvider.createType());
+
+		additionalTypes.add(pluginProvider.createType());
+		additionalTypes.add(newPageType(PLUGIN_PAGE_TYPE_NAME, PLUGIN_TYPE_NAME));
 
 		additionalTypes.add(meshTypeProvider.createType());
 		additionalTypes.add(interfaceTypeProvider.createPermInfoType());

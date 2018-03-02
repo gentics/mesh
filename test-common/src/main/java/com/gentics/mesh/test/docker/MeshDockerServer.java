@@ -178,7 +178,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	/**
 	 * Wait until the mesh instance is ready.
 	 * 
-	 * @return
+	 * @return Fluent API
 	 */
 	public MeshDockerServer waitForStartup() {
 		waitForStartup = true;

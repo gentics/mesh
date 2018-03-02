@@ -20,6 +20,26 @@ public final class UUIDUtil {
 	}
 
 	/**
+	 * Convert a shortened uuid into a uuid which includes dashes
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	public static String toFullUuid(String uuid) {
+		return uuid.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5");
+	}
+
+	/**
+	 * Convert a uuid with dashes to a uuid without dashes.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	public static String toShortUuid(String uuid) {
+		return uuid.replaceAll("-", "");
+	}
+
+	/**
 	 * Create a random UUID string which does not include dashes.
 	 * 
 	 * @return
@@ -27,8 +47,8 @@ public final class UUIDUtil {
 	public static String randomUUID() {
 		final UUID uuid = UUID_GENERATOR.generate();
 		return (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
-				+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
-				+ digits(uuid.getLeastSignificantBits(), 12));
+			+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
+			+ digits(uuid.getLeastSignificantBits(), 12));
 	}
 
 	/**

@@ -23,7 +23,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Simple wrapper for vert.x routes. The wrapper is commonly used to generate RAML descriptions for the route.
  */
-public interface EndpointRoute extends Comparable<EndpointRoute> {
+public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute> {
 
 	/**
 	 * Wrapper for {@link Route#path(String)}.
@@ -31,7 +31,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param path
 	 * @return Fluent API
 	 */
-	EndpointRoute path(String path);
+	InternalEndpointRoute path(String path);
 
 	/**
 	 * Set the http method of the endpoint.
@@ -39,7 +39,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param method
 	 * @return Fluent API
 	 */
-	EndpointRoute method(HttpMethod method);
+	InternalEndpointRoute method(HttpMethod method);
 
 	/**
 	 * Add a content type consumed by this endpoint. Used for content based routing.
@@ -48,7 +48,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            the content type
 	 * @return Fluent API
 	 */
-	EndpointRoute consumes(String contentType);
+	InternalEndpointRoute consumes(String contentType);
 
 	/**
 	 * Set the request handler for the endpoint.
@@ -56,14 +56,14 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param requestHandler
 	 * @return Fluent API
 	 */
-	EndpointRoute handler(Handler<RoutingContext> requestHandler);
+	InternalEndpointRoute handler(Handler<RoutingContext> requestHandler);
 
 	/**
 	 * Wrapper for {@link Route#last()}
 	 * 
 	 * @return Fluent API
 	 */
-	EndpointRoute last();
+	InternalEndpointRoute last();
 
 	/**
 	 * Wrapper for {@link Route#order(int)}
@@ -71,35 +71,35 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param order
 	 * @return Fluent API
 	 */
-	EndpointRoute order(int order);
+	InternalEndpointRoute order(int order);
 
 	/**
 	 * Validate that all mandatory fields have been set.
 	 * 
 	 * @return Fluent API
 	 */
-	EndpointRoute validate();
+	InternalEndpointRoute validate();
 
 	/**
 	 * Wrapper for {@link Route#remove()}
 	 * 
 	 * @return Fluent API
 	 */
-	EndpointRoute remove();
+	InternalEndpointRoute remove();
 
 	/**
 	 * Wrapper for {@link Route#disable()}
 	 * 
 	 * @return Fluent API
 	 */
-	EndpointRoute disable();
+	InternalEndpointRoute disable();
 
 	/**
 	 * Wrapper for {@link Route#enable()}
 	 * 
 	 * @return Fluent API
 	 */
-	EndpointRoute enable();
+	InternalEndpointRoute enable();
 
 	/**
 	 * Wrapper for {@link Route#useNormalisedPath(boolean)}.
@@ -107,7 +107,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param useNormalisedPath
 	 * @return
 	 */
-	EndpointRoute useNormalisedPath(boolean useNormalisedPath);
+	InternalEndpointRoute useNormalisedPath(boolean useNormalisedPath);
 
 	/**
 	 * Wrapper for {@link Route#getPath()}
@@ -139,7 +139,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            Description of the response
 	 * @return Fluent API
 	 */
-	EndpointRoute exampleResponse(HttpResponseStatus status, String description);
+	InternalEndpointRoute exampleResponse(HttpResponseStatus status, String description);
 
 	/**
 	 * Add the given response to the example responses.
@@ -152,7 +152,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            Description of the example response
 	 * @return Fluent API
 	 */
-	EndpointRoute exampleResponse(HttpResponseStatus status, Object model, String description);
+	InternalEndpointRoute exampleResponse(HttpResponseStatus status, Object model, String description);
 
 	/**
 	 * Add the given response to the example responses.
@@ -169,7 +169,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            Description of the header
 	 * @return
 	 */
-	EndpointRoute exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription);
+	InternalEndpointRoute exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription);
 
 	/**
 	 * Create a blocking handler for the endpoint.
@@ -177,7 +177,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param requestHandler
 	 * @return Fluent API
 	 */
-	EndpointRoute blockingHandler(Handler<RoutingContext> requestHandler);
+	InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler);
 
 	/**
 	 * Create a blocking handler for the endpoint.
@@ -186,7 +186,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param ordered
 	 * @return Fluent API
 	 */
-	EndpointRoute blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered);
+	InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered);
 
 	/**
 	 * Create a failure handler for the endpoint.
@@ -194,7 +194,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param failureHandler
 	 * @return Fluent API
 	 */
-	EndpointRoute failureHandler(Handler<RoutingContext> failureHandler);
+	InternalEndpointRoute failureHandler(Handler<RoutingContext> failureHandler);
 
 	/**
 	 * Parse the RAML path and return a list of all segment name variables.
@@ -209,7 +209,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param contentType
 	 * @return Fluent API
 	 */
-	EndpointRoute produces(String contentType);
+	InternalEndpointRoute produces(String contentType);
 
 	/**
 	 * Set the path using a regex.
@@ -217,7 +217,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param path
 	 * @return Fluent API
 	 */
-	EndpointRoute pathRegex(String path);
+	InternalEndpointRoute pathRegex(String path);
 
 	/**
 	 * Return the path used for RAML. If non null the path which was previously set using {@link #setRAMLPath(String)} will be returned. Otherwise the converted
@@ -233,7 +233,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param name
 	 * @return Fluent API
 	 */
-	EndpointRoute displayName(String name);
+	InternalEndpointRoute displayName(String name);
 
 	/**
 	 * Set the endpoint description.
@@ -242,7 +242,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            Description of the endpoint.
 	 * @return Fluent API
 	 */
-	EndpointRoute description(String description);
+	InternalEndpointRoute description(String description);
 
 	/**
 	 * Add an uri parameter with description and example to the endpoint.
@@ -253,7 +253,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param example
 	 *            Example URI parameter value
 	 */
-	EndpointRoute addUriParameter(String key, String description, String example);
+	InternalEndpointRoute addUriParameter(String key, String description, String example);
 
 	/**
 	 * Return the uri parameters for the endpoint.
@@ -267,7 +267,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * 
 	 * @param path
 	 */
-	EndpointRoute setRAMLPath(String path);
+	InternalEndpointRoute setRAMLPath(String path);
 
 	/**
 	 * Add a query parameter provider to the endpoint. The query parameter provider will in turn provide examples, descriptions for all query parameters which
@@ -277,7 +277,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            Class which provides the parameters
 	 * @return Fluent API
 	 */
-	EndpointRoute addQueryParameters(Class<? extends ParameterProvider> clazz);
+	InternalEndpointRoute addQueryParameters(Class<? extends ParameterProvider> clazz);
 
 	/**
 	 * Return the list of query parameters for the endpoint.
@@ -328,7 +328,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            Traits which the endpoint should inherit
 	 * @return Fluent API
 	 */
-	EndpointRoute traits(String... traits);
+	InternalEndpointRoute traits(String... traits);
 
 	/**
 	 * Set the endpoint json example request via the provided json object. The JSON schema will not be generated.
@@ -336,7 +336,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param jsonObject
 	 * @return Fluent API
 	 */
-	EndpointRoute exampleRequest(JSONObject jsonObject);
+	InternalEndpointRoute exampleRequest(JSONObject jsonObject);
 
 	/**
 	 * Set the endpoint example request via a JSON example model. The json schema will automatically be generated.
@@ -345,7 +345,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 *            Example Rest Model
 	 * @return Fluent API
 	 */
-	EndpointRoute exampleRequest(RestModel model);
+	InternalEndpointRoute exampleRequest(RestModel model);
 
 	/**
 	 * Set the endpoint request example via a form parameter list.
@@ -353,7 +353,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param parameters
 	 * @return Fluent API
 	 */
-	EndpointRoute exampleRequest(Map<String, List<FormParameter>> parameters);
+	InternalEndpointRoute exampleRequest(Map<String, List<FormParameter>> parameters);
 
 	/**
 	 * Set the endpoint request example via a plain text body.
@@ -361,7 +361,7 @@ public interface EndpointRoute extends Comparable<EndpointRoute> {
 	 * @param bodyText
 	 * @return Fluent API
 	 */
-	EndpointRoute exampleRequest(String bodyText);
+	InternalEndpointRoute exampleRequest(String bodyText);
 
 	/**
 	 * Return map with status code and the response class.

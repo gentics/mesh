@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
-import static com.gentics.mesh.test.ClientHelper.assertMessage;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
@@ -55,7 +55,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndexSyncLock() throws Exception {
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdminRole();
 		tx(() -> {
 			for (int i = 0; i < 900; i++) {
 				boot().groupRoot().create("group_" + i, user(), null);
@@ -69,19 +69,19 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoPermSync() {
-		tx(() -> group().removeRole(roles().get("admin")));
+		revokeAdminRole();
 		call(() -> client().invokeIndexSync(), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
 	public void testResync() throws Exception {
 		// Add the user to the admin group - this way the user is in fact an admin.
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdminRole();
 		searchProvider().refreshIndex().blockingAwait();
 
 		waitForEvent(INDEX_SYNC_EVENT, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertMessage(message, "search_admin_index_sync_invoked");
+			assertThat(message).matches("search_admin_index_sync_invoked");
 		});
 
 	}

@@ -22,13 +22,15 @@
 			</pattern>
 		</encoder>
 	</appender>
-	<logger name="com.gentics.mesh.search.index.AbstractIndexHandler" level="DEBUG" />
+	
 	<!-- <logger name="io.vertx" level="INFO"/> <logger name="com.gentics.mesh" level="INFO"/> <logger name="org.elasticsearch" level="INFO"/> <logger name="com.gentics.mesh.rest.MeshResponseHandler" 
 		level="TRACE"/> -->
 	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
 <!-- 
+	<logger name="com.gentics.mesh.router" level="DEBUG"/>
 	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
-	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
+	<logger name="com.gentics.mesh.search.index.AbstractSearchHandler" level="DEBUG" />
+	
 	<logger name="com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler" level="DEBUG"/>
 	<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
 	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>

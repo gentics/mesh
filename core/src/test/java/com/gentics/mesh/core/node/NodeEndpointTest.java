@@ -1445,7 +1445,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
-
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 			assertNotNull(response);
 			assertEquals("folder", response.getSchema().getName());

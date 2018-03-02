@@ -47,7 +47,7 @@ public class UserTypeProvider extends AbstractTypeProvider implements Filterable
 	public GraphQLObjectType createType() {
 		Builder root = newObject();
 		root.name(USER_TYPE_NAME);
-		root.description("User description");
+		root.description("Gentics Mesh User");
 		interfaceTypeProvider.addCommonFields(root);
 
 		// .username

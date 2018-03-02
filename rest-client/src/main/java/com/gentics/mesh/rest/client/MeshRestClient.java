@@ -4,6 +4,7 @@ import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
+import com.gentics.mesh.rest.client.method.AdminPluginClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
 import com.gentics.mesh.rest.client.method.AuthClientMethods;
 import com.gentics.mesh.rest.client.method.EventbusClientMethods;
@@ -30,9 +31,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
-		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
-		MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
-		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
+	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
+	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
+	NavRootClientMethods, EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
 
 	/**
 	 * The default base URI path to the Mesh-API.
@@ -142,4 +143,11 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	public static String getPlainVersion() {
 		return MeshVersion.getPlainVersion();
 	}
+
+	/**
+	 * Return the JWT Authentication provider.
+	 * 
+	 * @return
+	 */
+	JWTAuthentication getAuthentication();
 }

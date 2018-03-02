@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
-import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
@@ -108,7 +108,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	public String getJson(Node node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		ac.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return node.transformToRest(ac, 0).blockingGet().toJson();
 	}
 

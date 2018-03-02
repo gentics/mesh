@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -22,6 +23,7 @@ import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.plugin.factory.PluginVerticleFactory;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
@@ -113,4 +115,7 @@ public interface MeshComponent {
 
 	RestAPIVerticle restApiVerticle();
 
+	PluginVerticleFactory pluginFactory();
+
+	MeshAuthProvider authProvider();
 }

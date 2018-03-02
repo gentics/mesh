@@ -1,5 +1,6 @@
 package com.gentics.mesh.test.context;
 
+import java.io.IOException;
 import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
@@ -20,14 +21,14 @@ import okhttp3.RequestBody;
 public interface TestHttpMethods extends TestHelperMethods {
 
 	OkHttpClient httpClient();
-	
+
 	default HttpUrl prepareUrl(@NotNull String path, ParameterProvider... params) {
 		HttpUrl.Builder url = new HttpUrl.Builder();
 		url.scheme("http");
 		url.host("localhost");
 		url.port(port());
 		url.encodedPath(path);
-		
+
 		if (params != null) {
 			for (ParameterProvider param : params) {
 				for (Entry<String, String> entry : param.getParameters()) {
@@ -35,45 +36,49 @@ public interface TestHttpMethods extends TestHelperMethods {
 				}
 			}
 		}
-		
+
 		return url.build();
 	}
-	
+
+	default String httpGetNow(String path, ParameterProvider... params) throws IOException {
+		return httpGet(path, params).execute().body().string();
+	}
+
 	default Call httpGet(@NotNull String path, ParameterProvider... params) {
 		HttpUrl url = this.prepareUrl(path, params);
-		
+
 		Request.Builder b = new Request.Builder();
 		b.url(url);
 		b.method("GET", null);
-		
+
 		return this.httpClient().newCall(b.build());
 	}
-	
-	default Call httpPost(@NotNull String path, RequestBody body, ParameterProvider... params) {	
+
+	default Call httpPost(@NotNull String path, RequestBody body, ParameterProvider... params) {
 		HttpUrl url = this.prepareUrl(path, params);
-		
+
 		Request.Builder b = new Request.Builder();
 		b.url(url);
 		b.method("POST", body);
-		
+
 		return this.httpClient().newCall(b.build());
 	}
-	
+
 	default Call httpPost(@NotNull String path, String body, ParameterProvider... params) {
 		return this.httpPost(path, RequestBody.create(MediaType.parse("application/json"), body), params);
 	}
-	
+
 	default Call httpPost(@NotNull String path, JsonObject json, ParameterProvider... params) {
 		return this.httpPost(path, RequestBody.create(MediaType.parse("application/json"), json.encode()), params);
 	}
-	
+
 	default Call httpDelete(@NotNull String path, ParameterProvider... params) {
 		HttpUrl url = this.prepareUrl(path, params);
-		
+
 		Request.Builder b = new Request.Builder();
 		b.url(url);
 		b.method("DELETE", null);
-		
+
 		return this.httpClient().newCall(b.build());
 	}
 }

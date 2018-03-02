@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_REL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;

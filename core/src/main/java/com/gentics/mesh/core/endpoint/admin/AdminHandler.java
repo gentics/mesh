@@ -36,7 +36,6 @@ import io.vertx.core.logging.LoggerFactory;
  * Handler for admin request methods.
  */
 @Singleton
-
 public class AdminHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
@@ -102,7 +101,7 @@ public class AdminHandler extends AbstractHandler {
 			// Now clear the cached references and cached permissions
 			MeshRootImpl.clearReferences();
 			PermissionStore.invalidate(false);
-			routerStorage.getProjectRouters().clear();
+			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
 			boot.initProjects();
 
 			return Single.just(message(ac, "restore_finished"));
@@ -119,7 +118,9 @@ public class AdminHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
+			String exportDir = Mesh.mesh().getOptions().getStorageOptions().getExportDirectory();
+			log.debug("Exporting graph to {" + exportDir + "}");
+			db.exportGraph(exportDir);
 			return Single.just(message(ac, "export_finished"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

@@ -13,14 +13,13 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class ProjectEndpoint extends AbstractEndpoint {
+public class ProjectEndpoint extends AbstractInternalEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 
@@ -50,7 +49,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		EndpointRoute updateEndpoint = createEndpoint();
+		InternalEndpointRoute updateEndpoint = createRoute();
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint
 				.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
@@ -61,7 +60,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
 		updateEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
 		updateEndpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
@@ -70,7 +69,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
 	// cases. They must show up in any case.
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new project.");
@@ -79,13 +78,13 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project"));
 		endpoint.exampleResponse(CREATED, projectExamples.getProjectResponse("New Project"), "Created project.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:projectUuid");
 		readOne.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		readOne.description("Load the project with the given uuid.");
@@ -98,12 +97,12 @@ public class ProjectEndpoint extends AbstractEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple projects and return a paged response.");
@@ -112,13 +111,13 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:projectUuid");
 		endpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -126,7 +125,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Project was deleted.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});

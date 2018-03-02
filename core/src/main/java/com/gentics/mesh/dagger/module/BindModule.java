@@ -26,4 +26,5 @@ public abstract class BindModule {
 
 	@Binds
 	abstract WebRootService bindWebrootService(WebRootServiceImpl e);
+
 }

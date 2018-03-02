@@ -7,7 +7,7 @@ import com.gentics.mesh.router.RouterStorage;
  * A endpoint which provides more REST endpoints for all registered projects. The router for this endpoint will automatically be mounted for all registered
  * projects. E.g: /api/v1/yourproject/endpoint_basePath
  */
-public abstract class AbstractProjectEndpoint extends AbstractEndpoint {
+public abstract class AbstractProjectEndpoint extends AbstractInternalEndpoint {
 
 	protected BootstrapInitializer boot;
 
@@ -18,7 +18,7 @@ public abstract class AbstractProjectEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void init(RouterStorage rs) {
-		localRouter = rs.getProjectSubRouter(basePath);
+		localRouter = rs.root().apiRouter().projectsRouter().projectRouter().getOrCreate(basePath);
 	}
 
 }

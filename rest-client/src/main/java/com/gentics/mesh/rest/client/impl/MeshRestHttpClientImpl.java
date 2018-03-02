@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.vertx.core.MultiMap;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -40,6 +39,9 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
+import com.gentics.mesh.core.rest.plugin.PluginListResponse;
+import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -98,6 +100,7 @@ import com.gentics.mesh.rest.client.handler.impl.WebRootResponseHandler;
 import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
@@ -1238,7 +1241,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/migrateMicroschemas", GenericMessageResponse.class);
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/migrateMicroschemas",
+			GenericMessageResponse.class);
 	}
 
 	@Override
@@ -1279,4 +1283,26 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		return prepareRequest(POST, "/admin/processJobs", GenericMessageResponse.class);
 	}
 
+	@Override
+	public MeshRequest<PluginResponse> deployPlugin(PluginDeploymentRequest request) {
+		Objects.requireNonNull(request, "The deployment request must not be null");
+		return prepareRequest(POST, "/admin/plugins", PluginResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> undeployPlugin(String id) {
+		Objects.requireNonNull(id, "id must not be null");
+		return prepareRequest(DELETE, "/admin/plugins/" + id, GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<PluginListResponse> findPlugins(ParameterProvider... parameters) {
+		return prepareRequest(GET, "/admin/plugins" + getQuery(parameters), PluginListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<PluginResponse> findPlugin(String id) {
+		Objects.requireNonNull(id, "id must not be null");
+		return prepareRequest(GET, "/admin/plugins/" + id, PluginResponse.class);
+	}
 }

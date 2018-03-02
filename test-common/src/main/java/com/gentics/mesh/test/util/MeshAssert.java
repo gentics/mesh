@@ -40,7 +40,6 @@ public final class MeshAssert {
 		} else {
 			assertNull("The element should not exist.", element);
 		}
-
 	}
 
 	public static int getTimeout() throws UnknownHostException {

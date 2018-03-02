@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
@@ -163,7 +164,7 @@ public final class OptionsLoader {
 			try {
 				// Generate default config
 				options = generateDefaultConfig();
-				FileUtils.writeStringToFile(confFile, mapper.writeValueAsString(options));
+				FileUtils.writeStringToFile(confFile, mapper.writeValueAsString(options), Charset.defaultCharset(), false);
 				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
 			} catch (IOException e) {
 				log.error("Error while saving default configuration to file {" + confFile.getAbsolutePath() + "}.", e);

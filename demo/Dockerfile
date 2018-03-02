@@ -1,4 +1,4 @@
-FROM    java:openjdk-8-jre-alpine
+FROM    openjdk:10-slim
 
 ENV ESVERSION 6.1.2
 

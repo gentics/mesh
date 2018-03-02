@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
-import static com.gentics.mesh.test.ClientHelper.assertMessage;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
@@ -33,7 +33,7 @@ public class IndexClearTest extends AbstractMeshTest {
 		tx(() -> group().addRole(roles().get("admin")));
 
 		GenericMessageResponse message = call(() -> client().invokeIndexClear());
-		assertMessage(message, "search_admin_index_clear");
+		assertThat(message).matches("search_admin_index_clear");
 
 		try {
 			getProvider().getDocument(User.composeIndexName(), userUuid()).blockingGet();
