@@ -31,8 +31,8 @@ node("docker") {
 				name: 'jnlp',
 				privileged: false,
 				ttyEnabled: true,
-				resourceRequestCpu: '1000m',
-				resourceRequestMemory: '2048Mi',
+				resourceRequestCpu: '2000m',
+				resourceRequestMemory: '4048Mi',
 				workingDir: '/home/jenkins/workspace'),
 
 			containerTemplate(alwaysPullImage: false, 
@@ -42,7 +42,7 @@ node("docker") {
 				name: 'dind',
 				privileged: true,
 				ttyEnabled: true,
-				resourceRequestCpu: '250m',
+				resourceRequestCpu: '800m',
 				resourceRequestMemory: '1024Mi',
 				workingDir: '/root')
 			],
