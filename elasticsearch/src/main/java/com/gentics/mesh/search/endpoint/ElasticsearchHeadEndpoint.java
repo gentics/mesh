@@ -4,12 +4,12 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-public class ElasticsearchHeadEndpoint extends AbstractEndpoint {
+public class ElasticsearchHeadEndpoint extends AbstractInternalEndpoint {
 
 	public ElasticsearchHeadEndpoint() {
 		super("elastichead");
@@ -23,7 +23,7 @@ public class ElasticsearchHeadEndpoint extends AbstractEndpoint {
 	@Override
 	public void init(RouterStorage rs) {
 		Router router = Router.router(Mesh.vertx());
-		rs.getRootRouter().mountSubRouter("/" + basePath, router);
+		rs.root().getRouter().mountSubRouter("/" + basePath, router);
 		this.routerStorage = rs;
 		this.localRouter = router;
 	}
@@ -35,7 +35,7 @@ public class ElasticsearchHeadEndpoint extends AbstractEndpoint {
 	}
 
 	private void addRedirectionHandler() {
-		routerStorage.getRootRouter().route("/").method(GET).handler(rc -> {
+		routerStorage.root().getRouter().route("/").method(GET).handler(rc -> {
 			rc.response().setStatusCode(302);
 			rc.response().headers().set("Location", "/" + basePath + "/");
 			rc.response().end();

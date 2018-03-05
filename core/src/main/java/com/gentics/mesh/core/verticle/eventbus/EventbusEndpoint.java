@@ -4,8 +4,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -19,7 +19,7 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 /**
  * The eventbus endpoint provides a SockJS compliant websocket eventbus bridge.
  */
-public class EventbusEndpoint extends AbstractEndpoint {
+public class EventbusEndpoint extends AbstractInternalEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusEndpoint.class);
 
@@ -64,7 +64,7 @@ public class EventbusEndpoint extends AbstractEndpoint {
 		}
 
 		secureAll();
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.setRAMLPath("/");
 		endpoint.description("This endpoint provides a sockjs complient websocket which can be used to interface with the vert.x eventbus.");
 		endpoint.path("/*").handler(handler);

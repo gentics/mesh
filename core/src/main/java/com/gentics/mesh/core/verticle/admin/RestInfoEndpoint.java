@@ -15,16 +15,16 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.ext.web.Router;
 
-public class RestInfoEndpoint extends AbstractEndpoint {
+public class RestInfoEndpoint extends AbstractInternalEndpoint {
 
 	private SearchProvider searchProvider;
 
@@ -59,7 +59,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/raml");
 		endpoint.method(GET);
 		endpoint.description("Endpoint which provides a RAML document for all registed endpoints.");
@@ -73,7 +73,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			rc.response().end(raml);
 		}, false);
 
-		EndpointRoute infoEndpoint = createEndpoint();
+		InternalEndpointRoute infoEndpoint = createRoute();
 		infoEndpoint.path("/");
 		infoEndpoint.description("Endpoint which returns version information");
 		infoEndpoint.displayName("Version Information");
@@ -97,7 +97,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 
 	@Override
 	public Router getRouter() {
-		return routerStorage.getAPIRouter();
+		return routerStorage.root().apiRouter().getRouter();
 	}
 
 }

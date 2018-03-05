@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
@@ -27,7 +27,7 @@ import com.github.jknack.handlebars.context.MapValueResolver;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-public class AdminGUIEndpoint extends AbstractEndpoint {
+public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIEndpoint.class);
 
@@ -48,7 +48,7 @@ public class AdminGUIEndpoint extends AbstractEndpoint {
 	@Override
 	public void init(RouterStorage rs) {
 		Router router = Router.router(Mesh.vertx());
-		rs.getRootRouter().mountSubRouter("/" + basePath, router);
+		rs.root().getRouter().mountSubRouter("/" + basePath, router);
 		this.routerStorage = rs;
 		this.localRouter = router;
 	}
@@ -65,7 +65,7 @@ public class AdminGUIEndpoint extends AbstractEndpoint {
 	}
 
 	private void addRedirectionHandler() {
-		routerStorage.getRootRouter().route("/").method(GET).handler(rc -> {
+		routerStorage.root().getRouter().route("/").method(GET).handler(rc -> {
 			rc.response().setStatusCode(302);
 			rc.response().headers().set("Location", "/" + basePath + "/");
 			rc.response().end();

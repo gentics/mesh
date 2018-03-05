@@ -20,14 +20,7 @@ import com.gentics.mesh.example.VersioningExamples;
 /**
  * An endpoint represents a specific path in the REST API which exposes various endpoint routes.
  */
-public interface Endpoint {
-
-	/**
-	 * Create a new endpoint. Internally a new route will be wrapped.
-	 * 
-	 * @return Created endpoint
-	 */
-	EndpointRoute createEndpoint();
+public interface InternalEndpoint {
 
 	NodeExamples nodeExamples = new NodeExamples();
 	TagExamples tagExamples = new TagExamples();
@@ -45,5 +38,12 @@ public interface Endpoint {
 	JobExamples jobExamples = new JobExamples();
 	ReleaseExamples releaseExamples = new ReleaseExamples();
 	UtilityExamples utilityExamples = new UtilityExamples();
+
+	/**
+	 * Create a new endpoint. Internally a new route will be wrapped.
+	 * 
+	 * @return Created endpoint
+	 */
+	InternalEndpointRoute createRoute();
 
 }

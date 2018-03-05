@@ -88,6 +88,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.UUIDUtil;
@@ -420,7 +421,7 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedInternalActionContext(String query, User user, Project project) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, project);
+		ac.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, project);
 		return ac;
 	}
 	
@@ -458,7 +459,7 @@ public final class Mocks {
 		when(rc.session()).thenReturn(session);
 
 		if (project != null) {
-			when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project);
+			when(rc.get(ProjectsRouter.PROJECT_CONTEXT_KEY)).thenReturn(project);
 		}
 		return rc;
 

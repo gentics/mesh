@@ -9,10 +9,10 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
-public class AuthenticationEndpoint extends AbstractEndpoint {
+public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 
 	private AuthenticationRestHandler authRestHandler;
 
@@ -40,7 +40,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		// Only secure /me
 		getRouter().route("/me").handler(authHandler);
 
-		EndpointRoute meEndpoint = createEndpoint();
+		InternalEndpointRoute meEndpoint = createRoute();
 		meEndpoint.path("/me");
 		meEndpoint.method(GET);
 		meEndpoint.produces(APPLICATION_JSON);
@@ -50,7 +50,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 			authRestHandler.handleMe(new InternalRoutingActionContextImpl(rc));
 		});
 
-		EndpointRoute basicAuthLoginEndpoint = createEndpoint();
+		InternalEndpointRoute basicAuthLoginEndpoint = createRoute();
 		basicAuthLoginEndpoint.path("/login");
 		basicAuthLoginEndpoint.method(GET);
 		//basicAuthLoginEndpoint.produces(APPLICATION_JSON);
@@ -58,7 +58,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		basicAuthLoginEndpoint.exampleResponse(OK, "Login was sucessful");
 		basicAuthLoginEndpoint.handler(basicAuthLoginHandler);
 
-		EndpointRoute loginEndpoint = createEndpoint();
+		InternalEndpointRoute loginEndpoint = createRoute();
 		loginEndpoint.path("/login");
 		loginEndpoint.method(POST);
 		loginEndpoint.consumes(APPLICATION_JSON);
@@ -72,7 +72,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 
 		// Only secure logout
 		getRouter().route("/logout").handler(authHandler);
-		EndpointRoute logoutEndpoint = createEndpoint();
+		InternalEndpointRoute logoutEndpoint = createRoute();
 		logoutEndpoint.path("/logout");
 		logoutEndpoint.method(GET);
 		logoutEndpoint.produces(APPLICATION_JSON);

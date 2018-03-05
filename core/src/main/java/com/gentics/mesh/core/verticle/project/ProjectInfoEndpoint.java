@@ -7,13 +7,13 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.http.HttpMethod;
 
-public class ProjectInfoEndpoint extends AbstractEndpoint {
+public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 
@@ -29,13 +29,13 @@ public class ProjectInfoEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void init(RouterStorage rs) {
-		localRouter = rs.getAPIRouter();
+		localRouter = rs.root().apiRouter().getRouter();
 	}
 
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:project");
 		endpoint.method(HttpMethod.GET);
 		endpoint.addUriParameter("project", "Name of the project.", "demo");

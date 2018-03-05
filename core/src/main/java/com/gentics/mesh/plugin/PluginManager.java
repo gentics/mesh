@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -20,6 +21,7 @@ public class PluginManager {
 
 	private String pluginFolder;
 
+	@Inject
 	public PluginManager() {
 	}
 

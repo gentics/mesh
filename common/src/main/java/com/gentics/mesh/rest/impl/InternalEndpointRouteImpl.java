@@ -24,7 +24,7 @@ import org.raml.model.parameter.UriParameter;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
@@ -36,11 +36,11 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * @see EndpointRoute
+ * @see InternalEndpointRoute
  */
-public class EndpointImpl implements EndpointRoute {
+public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
-	private static final Logger log = LoggerFactory.getLogger(EndpointRoute.class);
+	private static final Logger log = LoggerFactory.getLogger(InternalEndpointRoute.class);
 
 	private Route route;
 
@@ -82,18 +82,18 @@ public class EndpointImpl implements EndpointRoute {
 	 * 
 	 * @param router
 	 */
-	public EndpointImpl(Router router) {
+	public InternalEndpointRouteImpl(Router router) {
 		this.route = router.route();
 	}
 
 	@Override
-	public EndpointRoute path(String path) {
+	public InternalEndpointRoute path(String path) {
 		route.path(path);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute method(HttpMethod method) {
+	public InternalEndpointRoute method(HttpMethod method) {
 		if (this.method != null) {
 			throw new RuntimeException(
 					"The method for the endpoint was already set. The endpoint wrapper currently does not support more than one method per route.");
@@ -104,47 +104,47 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute pathRegex(String path) {
+	public InternalEndpointRoute pathRegex(String path) {
 		this.pathRegex = path;
 		route.pathRegex(path);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute produces(String contentType) {
+	public InternalEndpointRoute produces(String contentType) {
 		produces.add(contentType);
 		route.produces(contentType);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute consumes(String contentType) {
+	public InternalEndpointRoute consumes(String contentType) {
 		consumes.add(contentType);
 		route.consumes(contentType);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute order(int order) {
+	public InternalEndpointRoute order(int order) {
 		route.order(order);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute last() {
+	public InternalEndpointRoute last() {
 		route.last();
 		return this;
 	}
 
 	@Override
-	public EndpointRoute handler(Handler<RoutingContext> requestHandler) {
+	public InternalEndpointRoute handler(Handler<RoutingContext> requestHandler) {
 		validate();
 		route.handler(requestHandler);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute validate() {
+	public InternalEndpointRoute validate() {
 		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
@@ -179,43 +179,43 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute blockingHandler(Handler<RoutingContext> requestHandler) {
+	public InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler) {
 		route.blockingHandler(requestHandler);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered) {
+	public InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered) {
 		route.blockingHandler(requestHandler, ordered);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute failureHandler(Handler<RoutingContext> failureHandler) {
+	public InternalEndpointRoute failureHandler(Handler<RoutingContext> failureHandler) {
 		route.failureHandler(failureHandler);
 		return this;
 	}
 
 	@Override
-	public EndpointRoute remove() {
+	public InternalEndpointRoute remove() {
 		route.remove();
 		return this;
 	}
 
 	@Override
-	public EndpointRoute disable() {
+	public InternalEndpointRoute disable() {
 		route.disable();
 		return this;
 	}
 
 	@Override
-	public EndpointRoute enable() {
+	public InternalEndpointRoute enable() {
 		route.enable();
 		return this;
 	}
 
 	@Override
-	public EndpointRoute useNormalisedPath(boolean useNormalisedPath) {
+	public InternalEndpointRoute useNormalisedPath(boolean useNormalisedPath) {
 		route.useNormalisedPath(useNormalisedPath);
 		return this;
 	}
@@ -234,13 +234,13 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute displayName(String name) {
+	public InternalEndpointRoute displayName(String name) {
 		this.displayName = name;
 		return this;
 	}
 
 	@Override
-	public EndpointRoute description(String description) {
+	public InternalEndpointRoute description(String description) {
 		this.description = description;
 		return this;
 	}
@@ -256,7 +256,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription) {
+	public InternalEndpointRoute exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription) {
 		Response response = new Response();
 		response.setDescription(description);
 		exampleResponses.put(status.code(), response);
@@ -272,12 +272,12 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute exampleResponse(HttpResponseStatus status, String description) {
+	public InternalEndpointRoute exampleResponse(HttpResponseStatus status, String description) {
 		return exampleResponse(status, description, null, null, null);
 	}
 
 	@Override
-	public EndpointRoute exampleResponse(HttpResponseStatus status, Object model, String description) {
+	public InternalEndpointRoute exampleResponse(HttpResponseStatus status, Object model, String description) {
 		Response response = new Response();
 		response.setDescription(description);
 
@@ -306,7 +306,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute exampleRequest(String bodyText) {
+	public InternalEndpointRoute exampleRequest(String bodyText) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		mimeType.setExample(bodyText);
@@ -316,7 +316,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute exampleRequest(Map<String, List<FormParameter>> parameters) {
+	public InternalEndpointRoute exampleRequest(Map<String, List<FormParameter>> parameters) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		mimeType.setFormParameters(parameters);
@@ -326,7 +326,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute exampleRequest(RestModel model) {
+	public InternalEndpointRoute exampleRequest(RestModel model) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		String json = model.toJson();
@@ -339,7 +339,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute exampleRequest(JSONObject jsonObject) {
+	public InternalEndpointRoute exampleRequest(JSONObject jsonObject) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		String json = jsonObject.toString();
@@ -350,7 +350,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute traits(String... traits) {
+	public InternalEndpointRoute traits(String... traits) {
 		this.traits = traits;
 		return this;
 	}
@@ -386,7 +386,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute addQueryParameters(Class<? extends ParameterProvider> clazz) {
+	public InternalEndpointRoute addQueryParameters(Class<? extends ParameterProvider> clazz) {
 		try {
 			ParameterProvider provider = clazz.newInstance();
 			parameters.putAll(provider.getRAMLParameters());
@@ -397,7 +397,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute setRAMLPath(String path) {
+	public InternalEndpointRoute setRAMLPath(String path) {
 		this.ramlPath = path;
 		return this;
 	}
@@ -408,7 +408,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public EndpointRoute addUriParameter(String key, String description, String example) {
+	public InternalEndpointRoute addUriParameter(String key, String description, String example) {
 		UriParameter param = new UriParameter(key);
 		param.setDescription(description);
 		param.setExample(example);
@@ -417,7 +417,7 @@ public class EndpointImpl implements EndpointRoute {
 	}
 
 	@Override
-	public int compareTo(EndpointRoute o) {
+	public int compareTo(InternalEndpointRoute o) {
 		return getRamlPath().compareTo(o.getRamlPath());
 	}
 

@@ -10,7 +10,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 /**
@@ -42,7 +42,7 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addPathHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.method(GET);
 		endpoint.description("Return a navigation for the node which is located using the given path.");
