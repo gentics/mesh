@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import com.gentics.mesh.plugin.Plugin;
@@ -12,7 +13,7 @@ import com.gentics.mesh.plugin.PluginManifest;
 /**
  * Abstract implementation for a Gentics Mesh plugin.
  */
-public abstract class AbstractPlugin implements Plugin {
+public abstract class AbstractPlugin implements Plugin, BundleActivator {
 
 	private PluginManifest manifest;
 
