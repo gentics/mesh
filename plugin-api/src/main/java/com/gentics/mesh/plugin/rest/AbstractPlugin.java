@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.osgi.framework.BundleContext;
+
 import com.gentics.mesh.plugin.Plugin;
 import com.gentics.mesh.plugin.PluginManifest;
 
@@ -27,9 +29,11 @@ public abstract class AbstractPlugin implements Plugin {
 		this.manifest = manifest;
 	}
 
-	public abstract void start();
+	@Override
+	public abstract void start(BundleContext context) throws Exception;
 
-	public abstract void stop();
+	@Override
+	public abstract void stop(BundleContext context) throws Exception;
 
 	public List<Callable<RestExtension>> getExtensions() {
 		return endpoints;

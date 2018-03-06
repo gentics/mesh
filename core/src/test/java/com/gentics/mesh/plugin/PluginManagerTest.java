@@ -10,5 +10,6 @@ public class PluginManagerTest {
 	public void testManager() {
 		PluginManager manager = new PluginManager();
 		manager.init(new MeshOptions());
+		System.out.println("Done");
 	}
 }
