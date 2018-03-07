@@ -1,16 +1,12 @@
 package com.gentics.mesh.plugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -21,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
@@ -58,9 +55,10 @@ public class PluginManager {
 		List<Bundle> installedBundles = new LinkedList<Bundle>();
 
 		try {
-			installedBundles.add(context.installBundle("file:org.apache.felix.shell-1.4.3.jar"));
-			installedBundles.add(context.installBundle(
-				"file:org.apache.felix.shell.tui-1.4.1.jar"));
+			// installedBundles.add(context.installBundle("file:org.apache.felix.shell-1.4.3.jar"));
+			// installedBundles.add(context.installBundle("file:org.apache.felix.shell.tui-1.4.1.jar"));
+
+			installedBundles.add(context.installBundle("file:mesh-hello-world-plugin-0.18.0-SNAPSHOT.jar"));
 			for (Bundle bundle : installedBundles) {
 				bundle.start();
 			}
@@ -69,25 +67,30 @@ public class PluginManager {
 			e1.printStackTrace();
 		}
 
-//		this.pluginFolder = options.getPluginDirectory();
-//		try {
-//			// Search for installed plugins
-//			Stream<File> zipFiles = Files.list(Paths.get(pluginFolder)).filter(Files::isRegularFile).filter((f) -> {
-//				return f.getFileName().toString().endsWith(".zip");
-//			}).map(p -> p.toFile());
-//			zipFiles.forEach(file -> {
-//				registerPlugin(file);
-//			});
-//		} catch (IOException e) {
-//			log.error("Error while reading plugins from plugin folder {" + pluginFolder + "}", e);
-//		}
+		// this.pluginFolder = options.getPluginDirectory();
+		// try {
+		// // Search for installed plugins
+		// Stream<File> zipFiles = Files.list(Paths.get(pluginFolder)).filter(Files::isRegularFile).filter((f) -> {
+		// return f.getFileName().toString().endsWith(".zip");
+		// }).map(p -> p.toFile());
+		// zipFiles.forEach(file -> {
+		// registerPlugin(file);
+		// });
+		// } catch (IOException e) {
+		// log.error("Error while reading plugins from plugin folder {" + pluginFolder + "}", e);
+		// }
 	}
 
 	private Framework startFramework() throws BundleException {
 		FrameworkFactory frameworkFactory = ServiceLoader.load(
 			FrameworkFactory.class).iterator().next();
 		Map<String, String> config = new HashMap<String, String>();
-		// TODO: add some config properties
+		StringBuilder frameworkPackages = new StringBuilder();
+		frameworkPackages.append("com.gentics.mesh.plugin.rest,");
+		frameworkPackages.append("io.vertx.core;version=3.5.1,");
+		frameworkPackages.append("io.vertx.core.http;version=3.5.1,");
+		frameworkPackages.append("io.vertx.ext.web;version=3.5.1");
+		config.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, frameworkFactory.toString());
 		Framework framework = frameworkFactory.newFramework(config);
 		framework.start();
 		return framework;
