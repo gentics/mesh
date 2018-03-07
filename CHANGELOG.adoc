@@ -21,6 +21,7 @@ icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for
 [[v0.17.1]]
 == 0.17.1 (TBD)
 
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.33
 
 icon:plus[] Core: The core Vert.x library was updated to version 3.5.1
 

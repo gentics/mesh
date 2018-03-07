@@ -246,10 +246,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// handles the clustering.
 				db.setupConnectionPool();
 				boolean setupData = initLocalData(false);
-				// db.closeConnectionPool();
 				db.startServer();
-				// db.setupConnectionPool();
 				initVertx(options, isClustered);
+				db.registerEventHandlers();
 				searchProvider.init(options);
 				searchProvider.start();
 				if (setupData) {
@@ -261,6 +260,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				initVertx(options, isClustered);
 				Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 				db.joinCluster();
+				db.registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
 				searchProvider.init(options);
@@ -278,7 +278,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				Thread.sleep(1000);
 			}
 		} else {
-
 			initVertx(options, isClustered);
 			searchProvider.init(options);
 			searchProvider.start();
@@ -288,7 +287,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			if (startOrientServer) {
 				db.startServer();
 			}
-
 		}
 
 		eventManager.registerHandlers();

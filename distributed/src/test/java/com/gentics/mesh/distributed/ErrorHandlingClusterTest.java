@@ -3,6 +3,10 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -65,9 +69,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 	@Test
 	public void testRestartingSlave() throws Exception {
 		// Node A: Create Project
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setName(randomName());
-		request.setSchemaRef("folder");
+		ProjectCreateRequest request = new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder");
 		ProjectResponse response = call(() -> serverA.client().createProject(request));
 
 		String dataPathPostfix = randomToken();
@@ -76,28 +78,83 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		serverB1.stop();
 
 		// Node A: Create another project
-		ProjectCreateRequest request2 = new ProjectCreateRequest();
-		request2.setName(randomName());
-		request2.setSchemaRef("folder");
+		ProjectCreateRequest request2 = new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder");
 		ProjectResponse response2 = call(() -> serverA.client().createProject(request2));
 
 		// Now start the stopped instance again
 		Thread.sleep(2000);
-		MeshDockerServer serverB2 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false);
-		serverB2.awaitStartup(20);
-		serverB2.login();
+		MeshDockerServer serverB2 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false)
+			.awaitStartup(20)
+			.login();
 
-		ProjectCreateRequest request3 = new ProjectCreateRequest();
-		request3.setName(randomName());
-		request3.setSchemaRef("folder");
+		ProjectCreateRequest request3 = new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder");
 		ProjectResponse response3 = call(() -> serverA.client().createProject(request3));
 
-		// Both projects should be found
-		call(() -> serverB2.client().findProjectByUuid(response.getUuid()));
-		call(() -> serverA.client().findProjectByUuid(response3.getUuid()));
-		call(() -> serverB2.client().findProjectByUuid(response3.getUuid()));
-		call(() -> serverA.client().findProjectByUuid(response2.getUuid()));
-		call(() -> serverB2.client().findProjectByUuid(response2.getUuid()));
+		List<MeshDockerServer> servers = Arrays.asList(serverA, serverB2);
+		List<ProjectResponse> projects = Arrays.asList(response, response2, response3);
+		// All projects should be found
+		for (MeshDockerServer server : servers) {
+			for (ProjectResponse project : projects) {
+				call(() -> server.client().findProjectByUuid(project.getUuid()));
+			}
+		}
+	}
+
+	/**
+	 * Same as {@link #testRestartingSlave()} but with multiple slaves being stopped and started.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testRestartingMultipleSlaves() throws Exception {
+		// Node A: Create Project
+		ProjectCreateRequest request = new ProjectCreateRequest().setName("onNodeA").setSchemaRef("folder");
+		ProjectResponse response = call(() -> serverA.client().createProject(request));
+
+		// Start slave NodeB
+		String dataPathPostfix = randomToken();
+		MeshDockerServer serverB1 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, true)
+			.awaitStartup(20);
+
+		// Start slave NodeC
+		MeshDockerServer serverC1 = addSlave("dockerCluster" + clusterPostFix, "nodeC", dataPathPostfix, true)
+			.awaitStartup(20);
+
+		// Now stop NodeB and a bit later NodeC
+		serverB1.stop();
+		Thread.sleep(14000);
+		serverC1.stop();
+
+		// Node A: Create another project
+		ProjectCreateRequest request2 = new ProjectCreateRequest().setName("onNodeA2").setSchemaRef("folder");
+		ProjectResponse response2 = call(() -> serverA.client().createProject(request2));
+
+		// Now start the stopped NodeC again
+		Thread.sleep(2000);
+		MeshDockerServer serverC2 = addSlave("dockerCluster" + clusterPostFix, "nodeC", dataPathPostfix, false).awaitStartup(30).login();
+		ProjectCreateRequest request3 = new ProjectCreateRequest().setName("onNodeC").setSchemaRef("folder");
+		ProjectResponse response3 = call(() -> serverC2.client().createProject(request3));
+
+		Thread.sleep(2000);
+		MeshDockerServer serverB2 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false).awaitStartup(30).login();
+		ProjectCreateRequest request4 = new ProjectCreateRequest().setName("onNodeB").setSchemaRef("folder");
+		ProjectResponse response4 = call(() -> serverB2.client().createProject(request4));
+
+		Thread.sleep(1000);
+		List<MeshDockerServer> servers = Arrays.asList(serverA, serverB2, serverC2);
+		List<ProjectResponse> projects = Arrays.asList(response, response2, response3, response4);
+
+		// All projects should be found
+		for (MeshDockerServer server : servers) {
+			for (ProjectResponse project : projects) {
+				try {
+					call(() -> server.client().findProjectByUuid(project.getUuid()));
+				} catch (AssertionError e) {
+					e.printStackTrace();
+					fail("Could not load project {" + project.getName() + "} from server {" + server.getNodeName() + "}");
+				}
+			}
+		}
 	}
 
 }

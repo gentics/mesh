@@ -31,6 +31,11 @@ public final class Events {
 	public static final String EVENT_CLUSTER_NODE_JOINED = "mesh.cluster.node.joined";
 
 	/**
+	 * Event which is send once a node is about to leave the cluster.
+	 */
+	public static final String EVENT_CLUSTER_NODE_LEAVING = "mesh.cluster.node.leaving";
+
+	/**
 	 * Event which is send once a node left the cluster.
 	 */
 	public static final String EVENT_CLUSTER_NODE_LEFT = "mesh.cluster.node.left";

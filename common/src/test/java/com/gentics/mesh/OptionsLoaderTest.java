@@ -42,6 +42,7 @@ public class OptionsLoaderTest {
 		envMap.put(MeshOptions.MESH_UPDATECHECK_ENV, "false");
 		envMap.put(HttpServerConfig.MESH_HTTP_PORT_ENV, "8100");
 		envMap.put(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "https://somewhere.com");
+		envMap.put(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
 		envMap.put(HttpServerConfig.MESH_HTTP_CORS_ORIGIN_PATTERN_ENV, "*");
 		envMap.put(HttpServerConfig.MESH_HTTP_CORS_ENABLE_ENV, "true");
 		set(envMap);
@@ -50,6 +51,7 @@ public class OptionsLoaderTest {
 		assertEquals("ru", options.getDefaultLanguage());
 		assertFalse(options.isUpdateCheckEnabled());
 		assertEquals("https://somewhere.com", options.getSearchOptions().getUrl());
+		assertTrue(options.isInitClusterMode());
 		assertTrue(options.getHttpServerOptions().getEnableCors());
 		assertEquals("*", options.getHttpServerOptions().getCorsAllowedOriginPattern());
 	}

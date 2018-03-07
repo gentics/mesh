@@ -108,7 +108,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String DB_NAME = "storage";
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.31.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.33.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -126,6 +126,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void stop() {
+//		// TODO let other nodes know we are stopping the instance?
+//		if (options.getClusterOptions().isEnabled()) {
+//			Mesh.vertx().eventBus().publish(Events.EVENT_CLUSTER_NODE_LEAVING, new JsonObject().put("node", getNodeName()));
+//			try {
+//				Thread.sleep(2000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 		if (factory != null) {
 			factory.close();
 			Orient.instance().shutdown();
@@ -366,6 +376,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return name;
 	}
 
+	public String getClusterName() {
+		return options.getClusterOptions().getClusterName();
+	}
+
 	private void writeOrientBackupConfig(File configFile) throws IOException {
 		String resourcePath = "/config/automatic-backup.json";
 		InputStream configIns = getClass().getResourceAsStream(resourcePath);
@@ -429,6 +443,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
 			postStartupDBEventHandling();
 		}
+	}
+
+	@Override
+	public void registerEventHandlers() {
+//		Mesh.vertx().eventBus().consumer(Events.EVENT_CLUSTER_NODE_LEAVING, (Message<JsonObject> rh) -> {
+//			String nodeName = rh.body().getString("node");
+//			log.info("Received {" + Events.EVENT_CLUSTER_NODE_LEAVING + "} for node {" + nodeName + "}. Removing node from config.");
+//			removeNode(nodeName);
+//		});
 	}
 
 	@Override
@@ -1072,4 +1095,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 		return response;
 	}
+
+//	/**
+//	 * Removes the server/node from the distributed configuration.
+//	 * 
+//	 * @param iNode
+//	 */
+//	public void removeNode(String iNode) {
+//		log.info(
+//			"Removing server {" + iNode + "} from distributed configuration on server {" + getNodeName() + "} in cluster {" + getClusterName() + "}");
+//		server.getDistributedManager().removeServer(iNode, true);
+//	}
+
 }
