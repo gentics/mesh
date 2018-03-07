@@ -16,15 +16,22 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 
+import java.util.Set;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
+import com.google.common.collect.Sets;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -38,7 +45,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	@Inject
 	public BootstrapInitializer boot;
-
+	
 	@Inject
 	public NodeContainerMappingProvider() {
 	}
@@ -51,11 +58,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	/**
 	 * Return the type specific mapping which is constructed using the provided schema.
 	 * 
-	 * @param schema
-	 * @param type
-	 * @return
+	 * @param schema Schema from which the mapping should be constructed
+	 * @param release The release-version which should be used for the construction
+	 * @return An ES-Mapping for the given Schema in the Release
 	 */
-	public JsonObject getMapping(Schema schema) {
+	public JsonObject getMapping(Schema schema, Release release) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
 
@@ -129,7 +136,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		mapping.put(DEFAULT_TYPE, typeMapping);
 
 		for (FieldSchema field : schema.getFields()) {
-			JsonObject fieldInfo = getFieldMapping(field);
+			JsonObject fieldInfo = getFieldMapping(field, release);
 			fieldProps.put(field.getName(), fieldInfo);
 		}
 		return mapping;
@@ -143,7 +150,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            Field schema which will be used to construct the mapping info
 	 * @return JSON object which contains the mapping info
 	 */
-	public JsonObject getFieldMapping(FieldSchema fieldSchema) {
+	public JsonObject getFieldMapping(FieldSchema fieldSchema, Release release) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		JsonObject customIndexOptions = fieldSchema.getElasticsearch();
 		JsonObject fieldInfo = new JsonObject();
@@ -205,15 +212,12 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 					break;
 				case "micronode":
 					fieldInfo.put("type", NESTED);
-					fieldInfo.put("dynamic", true);
-
 					
-					// TODO
-					// for(String microschema : listFieldSchema.getAllowedSchemas()) {
-					// 1. Load the microschema version by name from the release to which this schema belongs
-					// 2. Add the fields for the microschema to the mapping using the microschema name as a prefix for the fields
-					// }
-					// TODO Also add index creation to MicronodeMigrationHandler
+					// All allowed microschemas
+					String[] allowed = listFieldSchema.getAllowedSchemas();
+
+					// Merge the options into the info
+					fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, release));
 
 					// fieldProps.put(field.getName(), fieldInfo);
 					break;
@@ -237,31 +241,71 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			break;
 		case MICRONODE:
 			fieldInfo.put("type", OBJECT);
-			JsonObject micronodeMappingProperties = new JsonObject();
-
-			// microschema
-			JsonObject microschemaMapping = new JsonObject();
-			micronodeMappingProperties.put("microschema", microschemaMapping);
-
-			JsonObject microschemaMappingProperties = new JsonObject();
-			microschemaMappingProperties.put(NAME_KEY, trigramTextType());
-			microschemaMappingProperties.put(UUID_KEY, notAnalyzedType(KEYWORD));
-			microschemaMapping.put("properties", microschemaMappingProperties);
-			fieldInfo.put("dynamic", true);
-
-			// TODO
-			// for(String microschema : ((MicronodeFieldSchema)fieldSchema).getAllowedMicroSchemas()) {
-			// 1. Load the microschema version by name from the release to which this schema belongs
-			// 2. Add the fields for the microschema to the mapping using the microschema name as a prefix for the fields
-			// }
-			// TODO Also add index creation to MicronodeMigrationHandler
-
-			// TODO add version
-			fieldInfo.put("properties", micronodeMappingProperties);
+			
+			// Cast to MicronodeFieldSchema should be safe as it's a Micronode-Field
+			String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();	
+			
+			// Merge the options into the info
+			fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, release));
 			break;
 		default:
 			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
 		}
 		return fieldInfo;
+	}
+	
+	/**
+	 * Creates an Elasticsearch mapping for all allowed microschemas in the given release.
+	 * When the allowed are empty/null, it'll generate the mapping for all microschemas in the release.
+	 * 
+	 * @param allowed Restriction to which microschemas are allowed to be saved in the field
+	 * @param release The release for which the mapping should be created
+	 * @return An Properties-mapping for a microschema field.
+	 */
+	public JsonObject getMicroschemaMappingOptions(String[] allowed, Release release) {
+		// Properties-Settings
+		JsonObject properties = new JsonObject();
+		properties.put(NAME_KEY, trigramTextType());
+		properties.put(UUID_KEY, notAnalyzedType(KEYWORD));
+		properties.put("version", notAnalyzedType(KEYWORD));
+		
+		// Final Object which will be returned
+		JsonObject options = new JsonObject().put("properties", properties);
+		
+		// A Set-Instance of the allowed microschema-names
+		Set<String> whitelist = Sets.newHashSet(allowed);
+		
+		// If the release is given and the whitelist has entries.
+		// Otherwise indexing doesn't make any sense and therefore has to be
+		// made dynamically like before.
+		boolean shouldFilter = release != null && !whitelist.isEmpty();
+		
+		if (shouldFilter) {			
+			for (MicroschemaContainerVersion version : release.findAllMicroschemaVersions()) {
+				MicroschemaModel model = version.getSchema();
+				String name = model.getName();
+				
+				// Check if the model is contained in the whitelist (if it exists)
+				// if not, ignore it
+				if (!whitelist.contains(name)) {
+					continue;
+				}
+				
+				JsonObject fields = new JsonObject();
+				for (FieldSchema field : model.getFields()) {
+					String fieldName = field.getName();
+					// Check if the type is a micronode, and if it is, then skip it
+					if (!FieldTypes.valueByName(fieldName).equals(FieldTypes.MICRONODE)) {
+						continue;
+					}
+					fields.put(fieldName, this.getFieldMapping(field, release));
+				}
+				properties.put("fields-" + name, fields);
+			}
+		}
+		
+		options.put("dynamic", shouldFilter);
+		
+		return options;
 	}
 }
