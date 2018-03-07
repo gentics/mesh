@@ -263,11 +263,18 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 * @return An Properties-mapping for a microschema field.
 	 */
 	public JsonObject getMicroschemaMappingOptions(String[] allowed, Release release) {
-		// Properties-Settings
+		// General options
 		JsonObject properties = new JsonObject();
-		properties.put(NAME_KEY, trigramTextType());
-		properties.put(UUID_KEY, notAnalyzedType(KEYWORD));
-		properties.put("version", notAnalyzedType(KEYWORD));
+		
+		// Microschema options
+		properties.put("microschema", new JsonObject()
+			.put("type", OBJECT)
+			.put("properties", new JsonObject()
+				.put(NAME_KEY, trigramTextType())
+				.put(UUID_KEY, notAnalyzedType(KEYWORD))
+				.put("version", notAnalyzedType(KEYWORD))
+			)
+		);
 		
 		// Final Object which will be returned
 		JsonObject options = new JsonObject().put("properties", properties);
@@ -276,35 +283,43 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		Set<String> whitelist = Sets.newHashSet(allowed);
 		
 		// If the release is given and the whitelist has entries.
-		// Otherwise indexing doesn't make any sense and therefore has to be
-		// made dynamically like before.
+		// Otherwise the index would be empty and not dynamic which prevents every
+		// kind of proper search.
 		boolean shouldFilter = release != null && !whitelist.isEmpty();
 		
 		if (shouldFilter) {			
 			for (MicroschemaContainerVersion version : release.findAllMicroschemaVersions()) {
-				MicroschemaModel model = version.getSchema();
-				String name = model.getName();
+				MicroschemaModel microschema = version.getSchema();
+				String microschemaName = microschema.getName();
 				
-				// Check if the model is contained in the whitelist (if it exists)
-				// if not, ignore it
-				if (!whitelist.contains(name)) {
+				// Check if the microschema is contained in the whitelist
+				// and ignore it if it isn't
+				if (!whitelist.contains(microschemaName)) {
 					continue;
 				}
 				
+				// Create and save a mapping for all microschema fields
 				JsonObject fields = new JsonObject();
-				for (FieldSchema field : model.getFields()) {
-					String fieldName = field.getName();
+				for (FieldSchema field : microschema.getFields()) {
 					// Check if the type is a micronode, and if it is, then skip it
-					if (!FieldTypes.valueByName(fieldName).equals(FieldTypes.MICRONODE)) {
+					FieldTypes type = FieldTypes.valueByName(field.getType());
+					if (type == null || type.equals(FieldTypes.MICRONODE)) {
 						continue;
 					}
-					fields.put(fieldName, this.getFieldMapping(field, release));
+					
+					fields.put(field.getName(), this.getFieldMapping(field, release));
 				}
-				properties.put("fields-" + name, fields);
+				
+				// Save the created mapping to the properties
+				properties.put("fields-" + microschemaName, new JsonObject()
+					.put("type", OBJECT)
+					.put("properties", fields)
+				);
 			}
+		} else {
+			// Set the options to dynamic as no proper mapping could be generated
+			options.put("dynamic", true);
 		}
-		
-		options.put("dynamic", shouldFilter);
 		
 		return options;
 	}
