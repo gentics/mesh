@@ -21,6 +21,7 @@ final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 node("docker") {
 	stage("Setup Build Environment") {
 		checkout scm
+		sh "docker pull registry.gentics.com/jenkins-slave-mesh"
 		sh "cd .jenkins && docker build -t registry.gentics.com/jenkins-slave-mesh ."
 		sh "cd .jenkins && docker push registry.gentics.com/jenkins-slave-mesh"
 
