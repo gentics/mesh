@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +55,27 @@ public final class TestUtils {
 				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
 					latch.countDown();
 				}
+			});
+			registerLatch.countDown();
+
+		});
+
+		failingLatch(registerLatch);
+		return latch;
+	}
+
+	public static CompletableFuture<Void> latchForEvent(MeshRestClient client, String event) throws Exception {
+		// Construct latch in order to wait until the migration completed event was received
+		CompletableFuture<Void> latch = new CompletableFuture<>();
+		CountDownLatch registerLatch = new CountDownLatch(1);
+		client.eventbus(ws -> {
+			// Register to events
+			JsonObject msg = new JsonObject().put("type", "register").put("address", event);
+			ws.writeFinalTextFrame(msg.encode());
+
+			// Handle the event
+			ws.handler(buff -> {
+				latch.complete(null);
 			});
 			registerLatch.countDown();
 

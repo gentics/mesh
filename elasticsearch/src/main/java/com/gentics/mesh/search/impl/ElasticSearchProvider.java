@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -25,9 +26,11 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
+import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
@@ -51,12 +54,15 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
+	private Lazy<IndexHandlerRegistry> registry;
+
 	private ElasticsearchProcessManager processManager;
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	public ElasticSearchProvider() {
-
+	@Inject
+	public ElasticSearchProvider(Lazy<IndexHandlerRegistry> registry) {
+		this.registry = registry;
 	}
 
 	@Override
@@ -463,6 +469,13 @@ public class ElasticSearchProvider implements SearchProvider {
 				return t;
 			}
 		};
+	}
+
+	@Override
+	public Completable invokeReindex() {
+		return clear().andThen(Observable.fromIterable(registry.get().getHandlers())
+			.flatMapCompletable(handler -> handler.init().andThen(handler.reindexAll()))
+			.andThen(refreshIndex()));
 	}
 
 }

@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
-import com.gentics.mesh.core.data.service.I18NUtil;
+import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;

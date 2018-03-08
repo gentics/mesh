@@ -16,7 +16,7 @@ public class SearchProviderModule {
 
 	@Provides
 	@Singleton
-	public static SearchProvider searchProvider() {
+	public static SearchProvider searchProvider(ElasticSearchProvider elasticsearchProvider) {
 		MeshOptions options = Mesh.mesh().getOptions();
 		SearchProvider searchProvider = null;
 		// Automatically select the dummy search provider if no directory or
@@ -25,8 +25,9 @@ public class SearchProviderModule {
 			// searchProvider = new TrackingSearchProvider();
 			searchProvider = new DevNullSearchProvider();
 		} else {
-			searchProvider = new ElasticSearchProvider();
+			searchProvider = elasticsearchProvider;
 		}
 		return searchProvider;
 	}
+
 }

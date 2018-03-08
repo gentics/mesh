@@ -211,4 +211,11 @@ public interface SearchProvider {
 	 */
 	Completable validateCreateViaTemplate(IndexInfo info);
 
+	/**
+	 * Invoke the reindex process. Note that this will temporarily clear all indices.
+	 * 
+	 * @return
+	 */
+	Completable invokeReindex();
+
 }

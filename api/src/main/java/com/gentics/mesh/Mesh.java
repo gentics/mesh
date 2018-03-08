@@ -90,12 +90,28 @@ public interface Mesh {
 	Vertx getVertx();
 
 	/**
+	 * Return the RX variant of the vertx instance for mesh.
+	 * 
+	 * @return
+	 */
+	io.vertx.reactivex.core.Vertx getRxVertx();
+
+	/**
 	 * Returns the used vertx instance for mesh.
 	 * 
 	 * @return Vertx instance
 	 */
 	public static Vertx vertx() {
 		return factory.mesh().getVertx();
+	}
+
+	/**
+	 * Return the used vertx (rx variant) instance for mesh.
+	 * 
+	 * @return Rx Vertx instance
+	 */
+	public static io.vertx.reactivex.core.Vertx rxVertx() {
+		return factory.mesh().getRxVertx();
 	}
 
 	public static void main(String[] args) throws Exception {

@@ -8,6 +8,7 @@ import java.util.MissingResourceException;
 import org.junit.Test;
 
 import com.gentics.mesh.context.AbstractActionContext;
+import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;

@@ -164,6 +164,10 @@ public class TrackingSearchProvider implements SearchProvider {
 				System.out.println("Json:\n" + entry.getValue().encodePrettily());
 			}
 		}
+	}
 
+	@Override
+	public Completable invokeReindex() {
+		return Completable.complete();
 	}
 }

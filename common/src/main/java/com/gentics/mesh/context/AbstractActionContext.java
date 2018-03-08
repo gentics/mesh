@@ -5,7 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Locale;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.service.I18NUtil;
+import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;

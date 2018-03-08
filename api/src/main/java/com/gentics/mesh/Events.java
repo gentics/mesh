@@ -130,6 +130,12 @@ public final class Events {
 
 	public static final String EVENT_RELEASE_DELETED = "mesh.release.deleted";
 
+	/* Search index related */
+
+	public static final String EVENT_REINDEX_COMPLETED = "mesh.search.reindex.completed";
+
+	public static final String EVENT_REINDEX_FAILED = "mesh.search.reindex.failed";
+
 	/**
 	 * Returns a list of all events which are publicly exposed via the eventbus websocket bridge.
 	 * 
@@ -230,6 +236,12 @@ public final class Events {
 		events.add(EVENT_RELEASE_UPDATED);
 
 		events.add(EVENT_RELEASE_DELETED);
+
+		/* Search Index */
+
+		events.add(EVENT_REINDEX_FAILED);
+
+		events.add(EVENT_REINDEX_COMPLETED);
 
 		return events;
 	}

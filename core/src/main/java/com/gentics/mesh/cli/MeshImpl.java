@@ -50,7 +50,11 @@ public class MeshImpl implements Mesh {
 	private MeshCustomLoader<Vertx> verticleLoader;
 
 	private MeshOptions options;
+
 	private Vertx vertx;
+
+	private io.vertx.reactivex.core.Vertx rxVertx;
+
 	private CountDownLatch latch = new CountDownLatch(1);
 
 	private MeshStatus status = MeshStatus.STARTING;
@@ -68,8 +72,18 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Vertx getVertx() {
-		// Objects.requireNonNull(vertx, "Vert.x has not yet been initalized");
 		return vertx;
+	}
+
+	@Override
+	public io.vertx.reactivex.core.Vertx getRxVertx() {
+		if (vertx == null) {
+			return null;
+		}
+		if (rxVertx == null) {
+			rxVertx = new io.vertx.reactivex.core.Vertx(vertx);
+		}
+		return rxVertx;
 	}
 
 	public void setVertx(Vertx vertx) {

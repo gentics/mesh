@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.service;
+package com.gentics.mesh.core.data.i18n;
 
 import java.text.MessageFormat;
 import java.util.Locale;
@@ -34,7 +34,7 @@ public class I18NUtil {
 		if (locale == null) {
 			locale = DEFAULT_LOCALE;
 		}
-		ResourceBundle labels = ResourceBundle.getBundle("i18n." + bundleName, locale);
+		ResourceBundle labels = ResourceBundle.getBundle("i18n." + bundleName, locale, new UTF8Control());
 		return labels.getString(key);
 	}
 
@@ -85,7 +85,7 @@ public class I18NUtil {
 		}
 		String i18nMessage = "";
 		try {
-			ResourceBundle labels = ResourceBundle.getBundle("i18n." + bundleName, locale);
+			ResourceBundle labels = ResourceBundle.getBundle("i18n." + bundleName, locale, new UTF8Control());
 			MessageFormat formatter = new MessageFormat("");
 			formatter.setLocale(locale);
 			formatter.applyPattern(labels.getString(key));
