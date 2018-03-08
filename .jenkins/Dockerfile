@@ -8,8 +8,8 @@ RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C2518248EEA14886
 
 # APT
-RUN echo 'deb http://ftp.at.debian.org/debian stretch main contrib non-free' > /etc/apt/sources.list
-RUN echo 'deb http://ftp.at.debian.org/debian stretch-backports main' >> /etc/apt/sources.list
+RUN echo 'deb http://debian.apa.at/debian stretch main contrib non-free' > /etc/apt/sources.list
+RUN echo 'deb http://debian.apa.at/debian stretch-backports main' >> /etc/apt/sources.list
 RUN echo 'deb http://security.debian.org/ stretch/updates main contrib' >> /etc/apt/sources.list
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y git-core gawk sed wget curl sudo \
