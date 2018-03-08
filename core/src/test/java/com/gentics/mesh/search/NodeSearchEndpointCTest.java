@@ -8,12 +8,17 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static com.gentics.mesh.test.util.TestUtils.latchForEvent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.junit.Test;
 
+import com.gentics.mesh.Events;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
@@ -192,8 +197,10 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		tx(() -> user().addGroup(groups().get("admin")));
 		searchProvider().refreshIndex().blockingAwait();
 
+		CompletableFuture<Void> latch = latchForEvent(client(), Events.EVENT_REINDEX_COMPLETED);
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		assertMessage(message, "search_admin_reindex_invoked");
+		latch.get(20, TimeUnit.SECONDS);
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
@@ -241,7 +248,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newPlain), new PagingParametersImpl().setPage(1)
 			.setPerPage(2), new VersioningParametersImpl().draft()));
-		assertEquals("Check hits for '" + newPlain+ "' after update", 1, response.getData().size());
+		assertEquals("Check hits for '" + newPlain + "' after update", 1, response.getData().size());
 	}
 
 	@Test
