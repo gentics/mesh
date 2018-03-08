@@ -11,13 +11,6 @@
 
 = Gentics Mesh Changelog
 
-[[vNextMajorRelease]]
-== Next Major Release
-
-icon:plus[] Core: The OrientDB graph database will be updated to version 3.0
-
-icon:plus[] Storage: It will be possible to use an AWS S3 compatible storage for binary data.
-
 [[v0.17.1]]
 == 0.17.1 (TBD)
 
@@ -31,17 +24,17 @@ icon:plus[] Search: The reindex endpoint will now execute the reindex operation 
 
 icon:plus[] Search: Two new reindex specific events have been added: `mesh.search.reindex.failed`, `mesh.search.reindex.completed`.
 
-icon:plus[] REST: The `GET /api/v1/search/status` endpoint response has been updated.
+icon:plus[] REST: The `GET /api/v1/search/status` endpoint response has been updated. The `reindexRunning` flag has been added.
 
-icon:check[] Config: Fixed a bug which prevented optional boolean environment variables (e.g.: `MESH_HTTP_CORS_ENABLE_ENV`) from being handled correctly.
+icon:check[] Config: Fixed a bug which prevented optional boolean environment variables (e.g. `MESH_HTTP_CORS_ENABLE_ENV`) from being handled correctly.
 
 icon:check[] Core: It is now possible to change the listType of a list field in a schema via the Rest-API.
 
 icon:check[] Core: The server will now shutdown if an error has been detected during startup.
 
-icon:check[] REST: Fixed an error which lead to inconsistent properties being shown in the job endpoint response.
+icon:check[] REST: Fixed an error which led to inconsistent properties being shown in the job endpoint response.
 
-icon:check[] Search: When calling reindex via the `POST /api/v1/search/reindex` reindexing stopped after a certain amount of
+icon:check[] Search: When calling reindex via the `POST /api/v1/search/reindex` endpoint the reindexing stopped after a certain amount of
   time because of a timeout in the database transaction. This has been fixed now.
 
 icon:check[] REST: In some cases parallel fileuploads of multiple images could cause the upload process to never finish. This has been fixed now. 
@@ -807,7 +800,7 @@ icon:plus[] Core: Various bugs for node migrations have been fixed.
 
 icon:plus[] Core: The allow property for micronode schema fields will now correctly be handled.
 
-icon:plus[] Core: Microschemas will now be assigned to projects during a schema update. This only applies for microschemas which are referenced by the schema (e.g.: via a micronode field).
+icon:plus[] Core: Microschemas will now be assigned to projects during a schema update. This only applies for microschemas which are referenced by the schema (e.g. via a micronode field).
 
 icon:plus[] Core: The OrientDB graph database was updated to version 2.2.19.
 
@@ -1215,7 +1208,7 @@ icon:plus[] Database migration/changelog system.
 
 icon:plus[] The *published* flag can now be referenced within an elasticsearch query.
 
-icon:check[] It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
+icon:check[] It was not possible to update the *allow* flag for schema lists (e.g. micronode lists). This has been fixed now.
 
 icon:check[] The schema migration process did not update the node search index correctly. 
        In some cases duplicate nodes would be returned (the old node and the migrated one).
