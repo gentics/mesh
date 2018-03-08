@@ -197,7 +197,7 @@ The following optional properties may be applied to any type of field:
 
 In addition to the above, certain types expose additional properties with which to configure the field. Such additional properties are defined in the <<Schema Field Types>> section.
 
-==== Elasticsearch integeration
+==== Elasticsearch integration
 
 The `elasticsearch` property of a schema field can be used to fine-tune the elasticsearch integration. The property can contain additional options which can be used to influence how the field information is added to the search index.
 
