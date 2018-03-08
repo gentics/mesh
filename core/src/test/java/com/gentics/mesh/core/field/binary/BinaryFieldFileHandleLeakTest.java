@@ -76,7 +76,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 			NodeResponse response = atomicResponse.get();
 			for (int i = 0; i < 100; i++) {
 				client().transformNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response.getVersion(), fieldName,
-						new ImageManipulationParametersImpl().setWidth(100 + i)).toSingle().blockingGet();
+					new ImageManipulationParametersImpl().setWidth(100 + i)).toSingle().blockingGet();
 			}
 		});
 	}
@@ -103,7 +103,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		assertClosedFileHandleDifference(5, () -> {
 			for (int i = 0; i < 10; i++) {
 				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(100 + i))
-						.toSingle().blockingGet();
+					.toSingle().blockingGet();
 			}
 		});
 	}
@@ -130,7 +130,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		assertClosedFileHandleDifference(5, () -> {
 			for (int i = 0; i < 10; i++) {
 				client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(100))
-						.toSingle().blockingGet();
+					.toSingle().blockingGet();
 			}
 		});
 	}
@@ -154,7 +154,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		assertClosedFileHandleDifference(5, () -> {
 			for (int i = 0; i < 40; i++) {
 				call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName, new ImageManipulationParametersImpl().setWidth(
-						100)), BAD_REQUEST, "image_error_reading_failed");
+					100)), BAD_REQUEST, "image_error_reading_failed");
 			}
 		});
 	}
@@ -185,7 +185,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 				Buffer buffer = Buffer.buffer("Testbuffer" + i);
 				NodeResponse response = atomicResponse.get();
 				atomicResponse.set(call(() -> client().updateNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response
-						.getVersion(), fieldName, buffer, fileName, contentType)));
+					.getVersion(), fieldName, buffer, fileName, contentType)));
 			}
 		});
 	}

@@ -218,7 +218,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("New Name");
-			request.setSchema(new SchemaReferenceImpl().setName("folder"));
+			request.setSchemaRef("folder");
 
 			assertThat(trackingSearchProvider()).hasNoStoreEvents();
 			call(() -> client().createProject(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");

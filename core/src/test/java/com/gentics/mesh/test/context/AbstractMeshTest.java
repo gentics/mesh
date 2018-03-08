@@ -13,7 +13,12 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -37,7 +42,6 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
-import com.sun.management.UnixOperatingSystemMXBean;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.functions.Action;
@@ -54,7 +58,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
-	
+
 	private OkHttpClient httpClient;
 
 	@Rule
@@ -77,7 +81,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
 		}
 	}
-	
+
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
 			this.httpClient = new OkHttpClient.Builder().build();
@@ -115,9 +119,9 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 		try (Tx tx = tx()) {
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
-					+ "} although we granted those permissions.", role().hasPermission(perm, element));
+				+ "} although we granted those permissions.", role().hasPermission(perm, element));
 			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/" + element.getClass()
-					.getSimpleName() + "}", getRequestUser().hasPermission(element, perm));
+				.getSimpleName() + "}", getRequestUser().hasPermission(element, perm));
 		}
 
 		try (Tx tx = tx()) {
@@ -129,11 +133,11 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		try (Tx tx = tx()) {
 			boolean hasPerm = role().hasPermission(perm, element);
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {" + element
-					.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
+				.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 
 			hasPerm = getRequestUser().hasPermission(element, perm);
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
-					+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
+				+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 		}
 	}
 
@@ -327,26 +331,47 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 *            Action to be called
 	 */
 	protected void assertClosedFileHandleDifference(int maximumDifference, Action action) throws Exception {
-		long countBefore = getFileHandleCount();
+		Set<String> before = getOpenFiles();
 		action.run();
-		long countAfter = getFileHandleCount();
-		if (countAfter - countBefore > maximumDifference) {
-			throw new RuntimeException(String.format("File handles were not closed properly: Expected max. %d additional handles, got %d",
-					maximumDifference, countAfter - countBefore));
+		Set<String> after = getOpenFiles();
+		if (after.size() - before.size() > maximumDifference) {
+			String info = after.stream().filter(e -> !before.contains(e)).reduce("", (a, b) -> a += "\n" + b);
+			throw new RuntimeException(String.format(
+				"File handles were not closed properly: Expected max. %d additional handles, got %d Encountered the following new open files\n %s",
+				maximumDifference, after.size() - before.size(), info));
 		}
 	}
 
 	/**
-	 * Counts how many files are currently opened by this JVM.
+	 * Returns a set of open files.
 	 * 
-	 * @return File handle count
+	 * @return Set of open files
+	 * @throws IOException
 	 */
-	private long getFileHandleCount() {
-		OperatingSystemMXBean osStats = ManagementFactory.getOperatingSystemMXBean();
-		if (osStats instanceof UnixOperatingSystemMXBean) {
-			return ((UnixOperatingSystemMXBean) osStats).getOpenFileDescriptorCount();
+	public Set<String> getOpenFiles() throws IOException {
+		String name = ManagementFactory.getRuntimeMXBean().getName();
+		int i = name.indexOf("@");
+		if (i > 0) {
+			String pid = name.substring(0, i);
+			String path = "/proc/" + pid + "/fd";
+			Set<String> openFiles = Files
+				.list(Paths.get(path))
+				.map(this::resolvePath)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(Collectors.toSet());
+			return openFiles;
 		} else {
 			throw new RuntimeException("Could not get file handle count");
+		}
+	}
+
+	private Optional<String> resolvePath(Path path) {
+		try {
+			return Optional.of(path.toRealPath().toString());
+		} catch (IOException e) {
+			Optional<String> o = Optional.empty();
+			return o;
 		}
 	}
 
@@ -361,7 +386,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		String uuid = node.getUuid();
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer,
-				filename, contentType));
+			filename, contentType));
 		assertNotNull(response);
 		return buffer.length();
 
