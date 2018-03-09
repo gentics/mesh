@@ -5,9 +5,10 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphqlfilter.filter.BooleanFilter;
+import com.gentics.mesh.graphqlfilter.filter.DateFilter;
 import com.gentics.mesh.graphqlfilter.filter.FilterField;
 import com.gentics.mesh.graphqlfilter.filter.MainFilter;
-import com.gentics.mesh.graphqlfilter.filter.MappedFilter;
 import com.gentics.mesh.graphqlfilter.filter.StringFilter;
 
 import java.util.List;
@@ -45,13 +46,15 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
             case HTML:
                 return new FieldMappedFilter<>(name, description, StringFilter.filter(), node -> node.getHtml(name).getHTML(), schemaName);
             case DATE:
-            case NUMBER:
+                return new FieldMappedFilter<>(name, description, DateFilter.filter(), node -> node.getDate(name).getDate(), schemaName);
             case BOOLEAN:
+                return new FieldMappedFilter<>(name, description, BooleanFilter.filter(), node -> node.getBoolean(name).getBoolean(), schemaName);
+            // TODO correctly implement other types OR HIDE THEM
+            case NUMBER:
             case BINARY:
             case LIST:
             case NODE:
             case MICRONODE:
-                // TODO correctly implement other types
                 return new FieldMappedFilter<>(name, description, StringFilter.filter(), node -> "bogus", schemaName);
             default:
                 throw new RuntimeException("Unexpected type " + type);
