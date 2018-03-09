@@ -19,6 +19,7 @@ import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -139,6 +140,17 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		assertThat(microschemaResponse.getPermissions()).hasPerm(READ, CREATE, DELETE, UPDATE);
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
+	}
+
+	@Test
+	public void testCreateWithConflictingName() {
+		String name = "new_microschema_name";
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+		request.getFields().add(FieldUtil.createStringFieldSchema("name").setRequired(true));
+		request.setName(name);
+		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(request));
+		assertEquals("The microschema with the given name should haven been created.", microschemaResponse.getName(), name);
+		call(() -> client().createMicroschema(request), CONFLICT, "schema_conflicting_name", name);
 	}
 
 	@Test
