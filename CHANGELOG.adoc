@@ -11,6 +11,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.17.2]]
+== 0.17.2 (TBD)
+
+icon:plus[] Docker: A new volume location for the config directory has been added. You can now use the `/config` folder to mount your configuration files.
+
 [[v0.17.1]]
 == 0.17.1 (08.03.2018)
 

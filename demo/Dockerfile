@@ -8,10 +8,10 @@ WORKDIR /mesh
 ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
 
 USER root
-RUN mkdir /data
-RUN chown mesh: /data -R
-RUN ln -s /data /mesh/data
+RUN mkdir /data   && chown mesh: /data -R   && ln -s /data /mesh/data
+RUN mkdir /config && chown mesh: /config -R && ln -s /config /mesh/config
 
 USER mesh
 VOLUME /data
+VOLUME /config
 CMD [ "java", "-jar" , "meshdemo.jar" ]
