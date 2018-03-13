@@ -61,8 +61,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 		if (ac.getUser() == null && !isEmpty(token)) {
 
 			MeshAuthUser lastEditor = db.tx(() -> {
-				// 1. Load the element from the root element using the given
-				// uuid
+				// 1. Load the element from the root element using the given uuid
 				UserRoot root = boot.userRoot();
 				User element = root.findByUuid(uuid);
 

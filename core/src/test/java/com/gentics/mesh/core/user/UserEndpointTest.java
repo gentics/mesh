@@ -118,7 +118,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setPassword("newPass");
 		call(() -> client().updateUser(uuid, request, new UserParametersImpl(response.getToken())), UNAUTHORIZED,
-				"user_error_provided_token_invalid");
+			"user_error_provided_token_invalid");
 
 		// 4. Assert that the password was not updated
 		String newHash = tx(() -> user().getPasswordHash());
@@ -140,6 +140,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 2. Logout the current client user
 		client().logout().blockingGet();
+		tx(() -> {
+			role().revokePermissions(user(), UPDATE_PERM);
+		});
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -147,6 +150,33 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(uuid, request, new UserParametersImpl(response.getToken())));
 
 		// 4. Assert that the password was updated
+		String newHash = tx(() -> user().getPasswordHash());
+		assertNull("The token code should have been set to null since it is now used up", tx(() -> user().getResetToken()));
+
+		assertNotEquals("The password hash has not been updated.", oldHash, newHash);
+	}
+
+	@Test
+	public void testUpdateUsingTokenWithoutLogout() {
+		String uuid = tx(() -> user().getUuid());
+		String oldHash = tx(() -> user().getPasswordHash());
+		assertNull("Initially the token code should have been set to null", tx(() -> user().getResetToken()));
+
+		// 1. Get new token
+		UserResetTokenResponse response = call(() -> client().getUserResetToken(uuid));
+		assertNotNull("The user token code should now be set to a non-null value but it was not", tx(() -> user().getResetToken()));
+
+		// Make sure the user has no actual update perm anymore
+		tx(() -> {
+			role().revokePermissions(user(), UPDATE_PERM);
+		});
+
+		// 2. Update the user using the token code
+		UserUpdateRequest request = new UserUpdateRequest();
+		request.setPassword("newPass");
+		call(() -> client().updateUser(uuid, request, new UserParametersImpl(response.getToken())));
+
+		// 3. Assert that the password was updated
 		String newHash = tx(() -> user().getPasswordHash());
 		assertNull("The token code should have been set to null since it is now used up", tx(() -> user().getResetToken()));
 
@@ -416,7 +446,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
 		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage
-				+ "}", totalPages, restResponse.getMetainfo().getPageCount());
+			+ "}", totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(currentPerPage, restResponse.getMetainfo().getPerPage());
 		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
 
@@ -435,7 +465,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Verify that the invisible is not part of the response
 		final String extra3Username = "should_not_be_listed";
 		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username)).collect(
-				Collectors.toList());
+			Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 		call(() -> client().findUsers(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
@@ -446,7 +476,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("The requested page should be set in the response but it was not", 4242, listResponse.getMetainfo().getCurrentPage());
 		assertEquals("The page count value was not correct.", 1, listResponse.getMetainfo().getPageCount());
 		assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount, listResponse.getMetainfo()
-				.getTotalCount());
+			.getTotalCount());
 		assertEquals(25, listResponse.getMetainfo().getPerPage());
 
 	}
@@ -639,7 +669,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			Node node = folder("news");
 			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100), new NodeParametersImpl()
-					.setExpandedFieldNames("nodeReference").setLanguages("en")));
+				.setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
 
 			UserResponse foundUser = userResponse.getData().stream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst().get();
@@ -672,7 +702,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		UserResponse userResponse = call(() -> client().createUser(newUser));
 		UserResponse userResponse2 = call(() -> client().findUserByUuid(userResponse.getUuid(), new NodeParametersImpl().setExpandedFieldNames(
-				"nodeReference").setLanguages("en")));
+			"nodeReference").setLanguages("en")));
 		assertNotNull(userResponse2);
 		assertNotNull(userResponse2.getNodeReference());
 		assertEquals(folderUuid, userResponse2.getNodeReference().getUuid());
