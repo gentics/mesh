@@ -16,6 +16,8 @@
 
 icon:plus[] Docker: A new volume location for the config directory has been added. You can now use the `/config` folder to mount your configuration files.
 
+icon:plus[] Core: The Vert.x library has been downgraded to 3.5.0 due to a regression which could cause requests to not be handled by the HTTP Server.
+
 [[v0.17.1]]
 == 0.17.1 (08.03.2018)
 

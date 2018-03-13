@@ -29,7 +29,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.jwt.JWTOptions;
+import io.vertx.ext.auth.jwt.JWTOptions;
 import io.vertx.ext.web.Cookie;
 
 /**
@@ -149,7 +149,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				}
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
 				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
-					new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
+					new JWTOptions().setExpiresInSeconds(Long.valueOf(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())))));
 			}
 		});
 	}
@@ -209,7 +209,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, ((MeshAuthUser) user).getUuid());
-			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm()).setExpiresInSeconds(options.getTokenExpirationTime());
+			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm()).setExpiresInSeconds(Long.valueOf(options.getTokenExpirationTime()));
 			return jwtProvider.generateToken(tokenData, jwtOptions);
 		} else {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
