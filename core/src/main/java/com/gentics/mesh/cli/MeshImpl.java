@@ -141,7 +141,9 @@ public class MeshImpl implements Mesh {
 			shutdown();
 		}
 		setStatus(MeshStatus.READY);
-		dontExit();
+		if (block) {
+			dontExit();
+		}
 	}
 
 	private void setupKeystore(MeshOptions options) throws Exception {
