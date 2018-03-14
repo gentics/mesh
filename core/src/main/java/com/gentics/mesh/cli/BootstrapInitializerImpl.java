@@ -79,7 +79,7 @@ import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.plugin.PluginManager;
+import com.gentics.mesh.plugin.PluginManagerImpl;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -114,7 +114,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public SearchProvider searchProvider;
 	
 	@Inject
-	public PluginManager pluginManager;
+	public PluginManagerImpl pluginManager;
 
 	@Inject
 	public BCryptPasswordEncoder encoder;

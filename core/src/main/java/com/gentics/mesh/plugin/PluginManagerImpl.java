@@ -18,30 +18,33 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.manager.api.PluginManager;
 
+import ch.qos.logback.core.Context;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class PluginManager {
+public class PluginManagerImpl implements PluginManager {
 
 	private static final String PLUGIN_MANIFEST_FILENAME = "mesh-plugin.json";
 
 	private static final String PLUGIN_JAR_FILENAME = "plugin.jar";
 
-	private static final Logger log = LoggerFactory.getLogger(PluginManager.class);
+	private static final Logger log = LoggerFactory.getLogger(PluginManagerImpl.class);
 
 	private String pluginFolder;
 
 	private Framework framework;
 
 	@Inject
-	public PluginManager() {
+	public PluginManagerImpl() {
 	}
 
 	public void init(MeshOptions options) {
@@ -52,6 +55,7 @@ public class PluginManager {
 		}
 
 		BundleContext context = framework.getBundleContext();
+
 		List<Bundle> installedBundles = new LinkedList<Bundle>();
 
 		try {
@@ -61,7 +65,11 @@ public class PluginManager {
 			installedBundles.add(context.installBundle("file:mesh-hello-world-plugin-0.18.0-SNAPSHOT.jar"));
 			for (Bundle bundle : installedBundles) {
 				bundle.start();
+				ServiceReference<Plugin> ref = bundle.getBundleContext().getServiceReference(Plugin.class);
+				Plugin plugin = bundle.getBundleContext().getService(ref);
+				System.out.println("pppppppppp " + plugin.getName());
 			}
+
 		} catch (BundleException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -89,11 +97,27 @@ public class PluginManager {
 		frameworkPackages.append("com.gentics.mesh.plugin.rest,");
 		frameworkPackages.append("io.vertx.core;version=3.5.1,");
 		frameworkPackages.append("io.vertx.core.http;version=3.5.1,");
-		frameworkPackages.append("io.vertx.ext.web;version=3.5.1");
-		config.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, frameworkFactory.toString());
+		frameworkPackages.append("io.vertx.ext.web;version=3.5.1,");
+		frameworkPackages.append("com.fasterxml.jackson.annotation;version=2.9.0");
+		config.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, frameworkPackages.toString());
 		Framework framework = frameworkFactory.newFramework(config);
 		framework.start();
+		BundleContext context = framework.getBundleContext();
+		context.addBundleListener(b -> {
+			System.out.println("Bundle: " + b.getType());
+		});
+		context.addServiceListener(event -> {
+			System.out.println("Event" + event.getType());
+			System.out.println("Type: " + event.getSource().getClass().getName());
+			// Plugin manager = (PluginManager) context.getService(event.getServiceReference());
+			// manager.registerPlugin(this);
+		});
 		return framework;
+	}
+
+	@Override
+	public void registerPlugin(Plugin plugin) {
+		System.out.println("REGISTER Plugin " + plugin.getName());
 	}
 
 	private void registerPlugin(File file) {
