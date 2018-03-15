@@ -1,0 +1,288 @@
+:icons: font
+
+= Contribution Guide
+
+This document is for developers which are interested in contributing to the Gentics Mesh project.
+It aims to provide you with a big picture and starting points to get your bearings within the Gentics Mesh codebase.
+
+== Contributing
+
+=== Where to start
+
+A good source for tasks to contribute to is the https://github.com/gentics/mesh/issues?q=is%3Aissue+is%3Aopen+label%3A%22quick+win%22[quick wins] list.
+These tasks have been labelled to indicate that the implementation is fairly easy.
+
+=== Contribution format
+
+The contribution format is described in the https://github.com/gentics/mesh/blob/master/.github/CONTRIBUTING.md[CONTRIBUTING.md]
+
+=== Legal stuff
+In order for any contributions to be accepted you MUST sign the https://www.clahub.com/agreements/gentics/mesh[Gentics Mesh's Contributor License Agreement].
+
+The purpose of this agreement is to protect users of this codebase by ensuring that all code is free to use under the stipulations of the Apache2 license.
+
+== Components
+
+The main components which are used to build Gentics Mesh are:
+
+.Components
+[options="header"]
+|======
+| Component | Usage
+| http://vertx.io[Vert.x]                       | Provides HTTP server, Authentication, Upload handling, Eventbus and request routing.
+| http://orientdb.com/[OrientDB]                | Embedded Graph Database       
+| https://github.com/Syncleus/Ferma[Ferma]      | OGM which forms an access layer ontop of the Graph Database.
+| https://google.github.io/dagger/[Dagger 2]    | Dependency injection library
+| https://github.com/ReactiveX/RxJava[RxJava2]  | Library which is used to composing asynchronous requests/processes.
+|======
+
+== Big Picture
+
+Since you are most likely already familiar with the Gentics Mesh link:raml[REST API] I assume it is best to start there.
+
+We'll start on how the REST API is setup and continue how requests are handled. 
+After that I will explain how data is being handled by the graph database and how the graph is structured.
+
+== REST API Setup
+
+All REST API endpoints are provided by the `RestAPIVerticle` which as the name suggests is a http://vertx.io/docs/vertx-core/java/#_verticles[Vert.x Verticle].
+
+NOTE: Verticles are deployment units which are registered by Vert.x and contain application code. 
+      Gentics Mesh only uses a few verticles one of which is the RestAPIVerticle.
+      Verticles are *not* used to modularize or extend the REST API.
+
+The `RestAPIVerticle` will setup the actual Http server which accepts the requests and use http://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x Routers] to process the Http request and direct it to the registered endpoints.
+
+The `RouterStorage` is the main class which manages all the REST API routes. A storage will be assigned to each `RestAPIVerticle` instance. 
+The storage is used organize routes by its purpose and to also make routes re-usable.
+There are for example core routes (e.g. /api/v1/users) and project specific routes (e.g. /api/v1/:projectName/nodes).
+
+The `RestAPIVerticle` pulls Endpoints from various Endpoint classes like `UserEndpoint`, `RoleEndpoint`, `NodeEndpoint`. 
+Each of those Endpoint classes will be assigned a dedicated router to which the `EndpointRoutes` can be registered. 
+These in turn handle the actual Http request.
+
+How a request is being processed will be described in the next section.
+
+== Request Routing
+
+Lets follow the following request:
+
+```
+GET /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+```
+
+1. The request is accepted by the `HttpServer` request handler and directed to the `RootRouter` (_/_).
+2. This router which is part of the `RouterStorage` will direct the request to the `APIRouter` (_/api/v1_).
+3. Next the request is routed to the `ProjectRouter` (_/api/v1/demo/)_ During this step the reference to the `demo` project is loaded and added to the `RoutingContext` for later use.
+4. After that to the `Router` which was assigned to the `NodeEndpoint` instance (_/api/v1/demo/nodes/_).
+5. Finally the request is being directed to the `Route` which matches the remaining path and Http method. (GET _/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6_)
+
+== Request Handling
+
+Each class for REST Endpoint  (e.g. NodeEndpoint) also usually has a dedicated CRUDHandler which provides the actual code which processes the request.
+For the NodeEndpoint this would be the `NodeCrudHandler`. The `NodeCrudHandler#handleRead` method accepts the request and processes it.
+The CRUDHandler loads the graph vertex which is used to aggregate the elements. 
+
+In order to load nodes the `RootVertex` would be the `NodeRoot` which is connected to the `Project` vertex which has been loaded before within the ProjectRouter.
+
+Next the selected element will be:
+
+* loaded using the `NodeRoot` and the given `uuid`
+* checked against needed permissions
+* transformed to JSON via the `Node#transformToRestSync` method
+
+==  Domain Model
+
+We already hinted that Projects and Nodes are vertices. In fact all elements in Gentics Mesh are models within a Graph Model. 
+The graph has a root element which is used as an entry point for Gentics Mesh.
+During startup this vertex will be loaded and all further interacts will use this vertex to load more and more of the graph.
+References to some of these vertices will be kept in memory to speed things up.
+
+The graph database structure is documented within this interactive https://portal.graphgist.org/graph_gists/6c8712b8-d741-45f9-beb4-84ebca278bfa[graph gist].
+
+NOTE: The gist may be a bit outdated in some places but the general structure is still valid.
+
+== Graph database handling
+
+Gentics Mesh uses OrientDB to store its data in a graph. Instead of connecting to a remote database the database is directly embedded within Gentics Mesh.
+
+This in turn provides many benefits:
+
+* Direct access to indices
+* No connection overhead
+* Ease of use (No dedicated DB setup needed)
+* Low level control over Transactions
+* Native database speed
+
+Downside should not be left unmentioned:
+
+* Garbage collector pauses due to the DB may also affect the application server
+* Each Gentics Mesh instance brings its own dedicated db. 
+  There is currently no way to use a central larger DB for multiple Gentics Mesh instances.
+
+The low level API is provided via a driver implementation of the http://tinkerpop.apache.org/[Apache TinkerPop] graph framework.
+This provides the classes for Vertex, Element, Edge. Gentics Mesh is not directly using these elements.
+Instead https://github.com/Syncleus/Ferma[Ferma] is being used to provide a layer on top of the OrientDB Apache Tinkerpop API.
+
+NOTE: Ferma is an object graph mapper which makes it possible to create dedicated Java classes for specific types of vertices and edges called `Frames`.
+
+Gentics Mesh contains various Ferma frames for all kinds of types. There are for example:
+
+.Examples
+[options="header"]
+|======
+| Type         | Description
+| MeshRootImpl | Root of the whole graph
+| UserImpl     | Represents a user
+| NodeRootImpl | Represents a node root which aggregates all nodes
+| NodeImpl     | Represents a node
+| ProjectImpl  | Represents a project
+| TagImpl      | Represents a tag 
+|======
+
+NOTE: Accessing these vertices always requires an active transaction.
+
+== Project structure
+
+.Modules
+[options="header"]
+|======
+| Name                        | Description
+| mesh-api                    | Contains API classes like Configuration POJOs and constants.
+| mesh-core                   | Contains the Graph model and the main codebase
+| mesh-demo                   | Contains the Gentics Demo which can be run via the `DemoRunner` main class.
+| mesh-rest-client            | Contains the Vert.x based REST client.
+| mesh-rest-model             | Contains the POJOs for the REST API models.
+| mesh-doc                    | Contains sources for the getmesh.io documentation and tools to generate tables and examples from sources.             
+| mesh-server                 | Contains the Gentics Mesh server which can be run via `ServerRunner` main class.
+| mesh-orientdb               | Contains the OrientDB database provider code.
+| mesh-changelog-system       | Contains the Gentics Mesh database changelog system. The system is graph model class agnostic.
+| mesh-distributed            | Contains code which take care of event handling and event processing in an cluster environment.
+| mesh-service-local-storage  | Contains code for the binary storage system which stores data locally on disk.
+| mesh-graphql                | Contains code for the GraphQL endpoint and GraphQL types.
+| mesh-service-image-imgscalr | Contains an image resizer implementation based on https://github.com/rkalla/imgscalr[imgscalr].
+| mesh-performance-tests      | Contains dedicated performance tests.
+| mesh-common                 | Contains common classes and interfaces which are shared among internal maven modules.
+| mesh-elasticsearch          | Contains classes needed for the Elasticsearch integration.
+| mesh-integration-tests      | Contains integration tests for Gentics Mesh and the UI.
+| mesh-test-common            | Contains classes which provide e.g. testcontainer testrules to make it easy to setup integration tests.
+|======
+
+== Startup Sequence
+ 
+Understanding the startup sequence of Gentics Mesh helps also to get an idea of the components involved.
+
+.Startup sequence
+[options="header"]
+|======
+| Location                                 | Description
+| `ServeRunner#main`                       | Load the Mesh options and run mesh via `Mesh.mesh(options).run()`
+| `Mesh#mesh()`                            | Use the Mesh factory to get the `MeshImpl` singleton.
+| `MeshImpl#run()`                         | Initialize dagger context via `MeshInternal#create()` and invoke `BootstrapInitializer#init()`.
+| `MeshInternal#create()`                  | Setup the dagger context using the `MeshModule` module.
+| `BootstrapInitializer#init()`            | Initialize the graph database, setup mandatory (admin role, user, group) data.
+| `BootstrapInitializer#handleLocalData()` | Setup routes for project endpoints and invoke `CoreVerticleLoader#loadVerticles()`
+| `CoreVerticleLoader#loadVerticles()`     | Load verticles (e.g. `RestAPIVerticle`)
+|======
+
+Deploying the verticles will start the REST API Http server and Mesh is ready to be used.
+
+== Elasticsearch Integration
+
+Elasticsearch (ES) stores searchable documents in a flat format since ES is not able to handle relationships to other documents. 
+The AbstractIndexHandler implementations flatten mesh elements to the ES document format in order to provide the Search Models.
+
+The node search model document contains also tags for the node.
+It is mandatory to update the node document when one of the referenced tags is renamed, removed or even when a new tag is added. 
+This pattern applies to various elements and actions within mesh.
+Every CRUD operation may also provide a search queue batch (SQB) which contains the information what ES documents need to be updated, removed or added.
+The SQB is persisted within the graph and is only stored when the same transaction that is updating the element succeeds.
+
+The SQB is directly processed after the modifying transaction has been committed.
+
+== Authentication
+
+The `MeshAuthProvider` is used to authenticate the user credentials. The `MeshAuthHandler` is using this provider in order to authenticate the user.
+
+== Authorization
+
+Instead of Vert.x's User.isAuthorised the `UserImpl#hasPermission` methods must be used since Vert.x's authorization code is not compatible with document level permission systems that use objects instead of string to validate permissions.
+
+== Error Handling
+
+The HttpStatusCodeErrorException should be used whenever an exception needs to be thrown/returned. Static methods for constructor calls can be used. It is not required to manually translate the exception message. Instead exceptions of this type will automatically be translated if possible. This way only an i18n key needs to be set for the message.
+
+The RouterStorage contains the last failure handler that catches all exceptions which have not yet been handled.
+
+== Transaction Handling
+
+Transactions can be started using the currently registered Database provider class.
+
+.Transaction Method
+[options="header"]
+|======
+| Method                         | Description
+| asyncNoTrx()                   | Autocommit async transaction. This method should only be used for read only operations. (Non blocking)
+| noTrx(TrxHandler<T> txHandler) | Autocommit transaction. This method should only be used for read only operations. (Blocking)
+| asyncTrx()                     | Regular async transaction. (non-blocking)
+| trx(TrxHandler<T> txHandler)   | Regular transaction. (blocking)
+|======
+
+NOTE: Transactions should not be nested. Nesting transactions will just result in the inner transaction to utilize the previously opened outer transaction.
+
+== Pitfalls
+
+It is very important to understand that OrientDB is using MVCC in order to handle transaction concurrency control. This has important implications on how to design methods. Due to MVCC it may be required to retry a TrxHandler. Thus sideeffects that would otherwise change the outcome of the transaction must be avoided. Most problems can occur when modifying shared collections.Collections.unmodifiableList and other methods may help to secure the code.
+
+== Testing
+
+Each of the endpoints has one or more `JUnit` test classes which test the routes. (e.g. NodeEndpointTest, UserEndpointTest).
+
+NOTE: Avoid wrapping transactions in your tests around code which invokes REST calls. 
+      Otherwise you may not be able assert the changes made by REST calls since the transaction still references the old data.
+
+=== AssertJ
+
+Additional to `Mockito` and `JUnit` the `AssertJ` tool is used to create fluent readable custom assertions. 
+The `MeshAssertions`` class should be used to add new custom assertions.
+
+== Database Changelog
+
+The `mesh-changelog-system` module contains the https://github.com/gentics/mesh/tree/master/changelog-system[database changelog system]. Sometimes the graph database structure needs to be altered. This can be done by adding a changelog entry to the https://github.com/gentics/mesh/tree/master/changelog-system[mesh-changelog-system].
+
+NOTE: These kind of changes will alter the database structure and thus not be able to be executed online.
+      A cluster of Gentics Mesh instances is required to split and later to reform. 
+      An entry should be added to the `CHANGELOG.adoc` file which informs the users about this change.
+
+== IDE Setup
+
+=== Eclipse 
+
+Make sure that you use at least Eclipse Neon.
+
+Install the following Maven m2e workshop plugins:
+
+* m2e-apt-plugin
+
+NOTE: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". If you don't find this option, you most likely need to install the M2E APT Plugin for eclipse.
+
+Import all Maven modules in your IDE.
+
+Please note that this project is using Google Dagger for dependency injection. 
+Adding new dependencies or beans may require a fresh build (via Project->Clean) of the mesh-core and mesh-api modules.
+
+== TL;DR
+
+The short form for the inpatient:
+
+* `RestAPIVerticle` contains all EndpointRouters
+* `NodeEndpoint` contains the routes for `/api/v1/:projectName/nodes`
+* Elements in Mesh have each dedicated classes which directly represent the graph data (e.g. `NodeImpl`, `UserImpl`)
+* Endpoint classes like `NodeEndpoint` also have a CRUD class (e.g. `NodeCrudHandler`)
+
+== The good the bad and the ugly
+
+Graph elements which Ferma instantiates can not request dependencies via dagger. 
+It is not possible to inject dependencies inside of such objects because of this reason.
+
+Currently most of the dagger dependencies can be accessed via `MeshInternal().get()`
