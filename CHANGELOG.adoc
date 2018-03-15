@@ -11,6 +11,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.17.3]]
+== 0.17.3 (15.03.2018)
+
+icon:check[] UI: Restrict nodes to certain schema if allow is set in node list fields.
+
 [[v0.17.2]]
 == 0.17.2 (13.03.2018)
 
