@@ -2,12 +2,11 @@
 
 ////
 * Write changelog entries in present tense
-* Include github issue or PR if possible using link:http://...[#123] format
+* Include GitHub issue or PR if possible using link:http://...[#123] format
 * Review your changelog entries
 * Don't include security sensitive information in the changelog
 * Include links to documentation if possible
 ////
-
 
 = Gentics Mesh Changelog
 
@@ -30,7 +29,7 @@ icon:plus[] OrientDB: The included OrientDB version has been updated to version 
 
 icon:plus[] Core: The core Vert.x library was updated to version 3.5.1
 
-icon:plus[] Config: It is now possible to configure the elasticsearch startup timeout via the `search.startupTimeout` field in the `mesh.yml` or via the `MESH_ELASTICSEARCH_STARTUP_TIMEOUT` environment variable.
+icon:plus[] Config: It is now possible to configure the elasticsearch start-up timeout via the `search.startupTimeout` field in the `mesh.yml` or via the `MESH_ELASTICSEARCH_STARTUP_TIMEOUT` environment variable.
 
 icon:plus[] Search: The reindex endpoint will now execute the reindex operation asynchronously.
 
@@ -42,14 +41,14 @@ icon:check[] Config: Fixed a bug which prevented optional boolean environment va
 
 icon:check[] Core: It is now possible to change the listType of a list field in a schema via the Rest-API.
 
-icon:check[] Core: The server will now shutdown if an error has been detected during startup.
+icon:check[] Core: The server will now shutdown if an error has been detected during start-up.
 
 icon:check[] REST: Fixed an error which led to inconsistent properties being shown in the job endpoint response.
 
 icon:check[] Search: When calling reindex via the `POST /api/v1/search/reindex` endpoint the reindexing stopped after a certain amount of
   time because of a timeout in the database transaction. This has been fixed now.
 
-icon:check[] REST: In some cases parallel fileuploads of multiple images could cause the upload process to never finish. This has been fixed now. 
+icon:check[] REST: In some cases parallel file uploads of multiple images could cause the upload process to never finish. This has been fixed now. 
 
 [[v0.17.0]]
 == 0.17.0 (22.02.2018)
@@ -65,7 +64,7 @@ icon:plus[] Clustering: Gentics Mesh is now able to form cluster between differe
 			Only instances with the same database revision hash are allowed to form a cluster.
 			The current revision hash info is included in the `/api/v1` endpoint response.
 
-icon:plus[] Various settings can now be overriden via link:https://getmesh.io/docs/beta/administration-guide.html#_environment_variables[environment variables]. This is useful when dealing with docker based deployments.
+icon:plus[] Various settings can now be overridden via link:https://getmesh.io/docs/beta/administration-guide.html#_environment_variables[environment variables]. This is useful when dealing with docker based deployments.
 
 icon:check[] Elasticsearch: Search requests failed on systems with many schemas. link:https://github.com/gentics/mesh/issues/303[#303]
 
@@ -80,7 +79,7 @@ icon:check[] Events: The `mesh.node.deleted` event was not handled correctly. Th
 icon:check[] Core: It was possible to upload binaries with empty filenames. This has been fixed now: it is enforced that
 				  a binary upload has a filename and content type which are not empty. link:https://github.com/gentics/mesh/issues/299[#299]
 
-icon:check[] Core: If the keystore path was only a file name without a directory a NPE was thrown on startup. This has been fixed now.
+icon:check[] Core: If the keystore path was only a file name without a directory a NPE was thrown on start-up. This has been fixed now.
 
 icon:check[] Core: After resetting a job via rest (admin/jobs/::uuid::/error) the job was not processed again.
                   This has been fixed now. link:https://github.com/gentics/mesh/issues/295[#295]
@@ -213,7 +212,7 @@ icon:plus[] UI: The admin UI has been updated to use the renamed image parameter
 
 icon:check[] Core: Optimized concurrency when handling binary data streams (e.g: downloading, image resizing)
 
-icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
+icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lock-up of the system in some cases.
 
 [[v0.13.2]]
 == 0.13.2 (11.01.2018)
@@ -222,7 +221,7 @@ icon:plus[] Java Rest Client: It is now possible to retrieve the client version 
 
 icon:check[] Core: The consistency checks have been enhanced.
 
-icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
+icon:check[] Core: Fixed some bugs which left file handles open and thus clogged the system. This could lead a lock-up of the system in some cases.
 
 [[v0.13.1]]
 == 0.13.1 (05.01.2018)
@@ -251,11 +250,11 @@ icon:plus[] Core: The internal server routing system has been overhauled.
 
 == 0.11.8 (18.12.2017)
 
-icon:check[] Image: Fixed a bug which left file handles open and thus clogged the system. This could lead a lockup of the system in some cases.
+icon:check[] Image: Fixed a bug which left file handles open and thus clogged the system. This could lead a lock-up of the system in some cases.
 
 == 0.11.7 (17.12.2017)
 
-icon:check[] UI: Fixed an issue where the name in the explorer content list in always shown in english. link:https://github.com/gentics/mesh/issues/23[#23]
+icon:check[] UI: Fixed an issue where the name in the explorer content list in always shown in English. link:https://github.com/gentics/mesh/issues/23[#23]
 
 icon:check[] Storage: Binary field deletion has been made more resilient and will no longer fail if the referenced binary data is not stored within used binary storage. link:https://github.com/gentics/mesh/issues/235[#235]
 
@@ -283,11 +282,11 @@ icon:check[] Image: Image handling has been optimized. Previously resizing large
 
 == 0.11.5 (14.12.2017)
 
-icon:plus[] UI: Add multi binary upload dialog. Users can now upload multiple files at once by clicking the button next to the create node button.
+icon:plus[] UI: Add multi binary upload dialogue. Users can now upload multiple files at once by clicking the button next to the create node button.
 
 icon:plus[] UI: Binary fields can now be used as display fields. The filename is used as the display name for the node. link:https://github.com/gentics/mesh-ui/issues/11[#11]
 
-icon:plus[] UI: It is now possible to specify the URL to the frontend of a system. This allows users to quickly go to the page that represents the node in the system.
+icon:plus[] UI: It is now possible to specify the URL to the front end of a system. This allows users to quickly go to the page that represents the node in the system.
   See the default `mesh-ui-config.js` or the link:https://getmesh.io/docs/beta/user-interface.html#_configuration[online documentation] for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
 
 icon:plus[] Upload: The upload handling code has been refactored in order to process the uploaded data in-parallel.
@@ -304,9 +303,9 @@ icon:plus[] REST: The display name has been added to the node response. It can b
 
 icon:plus[] GraphQL: The display name can now be fetched from a node via the `displayName` field.
 
-icon:check[] UI: Nodes in the "Select Node..." dialog are now sorted by their display name. link:https://github.com/gentics/mesh-ui/issues/15[#15]
+icon:check[] UI: Nodes in the "Select Node..." dialogue are now sorted by their display name. link:https://github.com/gentics/mesh-ui/issues/15[#15]
 
-icon:check[] UI: The "Select Node..." dialog now remembers the last position it was opened. link:https://github.com/gentics/mesh-ui/issues/12[#12]
+icon:check[] UI: The "Select Node..." dialogue now remembers the last position it was opened. link:https://github.com/gentics/mesh-ui/issues/12[#12]
 
 icon:check[] UI: The dropdown for list types in the schema editor now only shows valid list types.
 
@@ -316,7 +315,7 @@ icon:check[] Core: A bug has been fixed which prevented node updates. The issue 
 
 icon:check[] Search: The search index will now automatically be recreated if the search index folder could not be found.
 
-icon:check[] Core: The values of number-fields where stored as strings in the db which caused issues when converting numbers to and from string. 
+icon:check[] Core: The values of number-fields where stored as strings in the database which caused issues when converting numbers to and from string. 
                    This has been fixed: the values of number-fields will now be stored as numbers.
 
 icon:check[] Schema: The schema deletion process will now also include all schema versions, referenced changes and jobs.
@@ -360,7 +359,7 @@ icon:check[] Core: Fixed a bug which caused unusual high CPU usage. link:https:/
 
 icon:plus[] Elasticsearch: Add support for inline queries.
 
-icon:check[] Elasticsearch: In some cases the connection to Elasticsearch was not directly ready during startup. This caused various issues. A startup check has been added in order to prevent this.
+icon:check[] Elasticsearch: In some cases the connection to Elasticsearch was not directly ready during start up. This caused various issues. A start-up check has been added in order to prevent this.
 
 icon:check[] Schema: A bug within the schema update mechanism which removed the urlField property value has been fixed.
 
@@ -525,7 +524,7 @@ icon:check[] Fixed handling "required" and "allow" properties of schema fields w
 
 == 0.10.1 (08.09.2017)
 
-icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IPs instead of multicast discovery.
+icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IP adresses instead of multicast discovery.
 
 icon:plus[] Node Migration: The node migration performance has been increased.
 
@@ -555,7 +554,7 @@ icon:check[] Java REST Client: Various missing request parameter implementations
 
 icon:check[] Node Migration: A bug has been fixed which prevented node migrations with more then 5000 elements from completing.
 
-icon:check[] GraphQL: Updated graphiql browser to latest version to fix various issues when using aliases.
+icon:check[] GraphQL: Updated GraphiQL browser to latest version to fix various issues when using aliases.
 
 == 0.10.0 (04.09.2017)
 
@@ -653,7 +652,7 @@ icon:plus[] Rest-Client: It is now possible to configure the base uri for the re
 
 icon:plus[] GraphQL: It is now possible to get the reference of all projects from schemas and microschemas.
 
-icon:check[] UI: Date fields now work with ISO 8601 strings rather than unix timestamps.
+icon:check[] UI: Date fields now work with ISO 8601 strings rather than Unix timestamps.
 
 icon:check[] UI: Fixed bugs with lists of microschemas. (SUP-4712)
 
@@ -731,7 +730,7 @@ icon:check[] GraphQL: Fixed loading tags for nodes.
 
 icon:check[] WebRoot: Bugs within the permission handling have been fixed. It is now possible to load nodes using only the *read_published* permission. This permission was previously ignored.
 
-icon:check[] GraphQL: An introspection bug which prevented graphiql browser autocompletion from working correctly has been fixed. The bug did not occur on systems which already used microschemas. 
+icon:check[] GraphQL: An introspection bug which prevented graphiql browser auto completion from working correctly has been fixed. The bug did not occur on systems which already used microschemas. 
 
 == 0.9.13 (08.06.2017)
 
@@ -878,7 +877,7 @@ icon:check[] A bug which could lead to concurrent request failing was fixed.
 
 icon:check[] Error handling: A much more verbose error will be returned when creating a schema which lacks the type field for certain schema fields.
 
-icon:check[] GraphQL: A bug which lead to incorrect column values for graphql errors was fixed.
+icon:check[] GraphQL: A bug which lead to incorrect column values for GraphQL errors was fixed.
 
 icon:plus[] The OrientDB dependency was updated to version 2.2.18.
 
@@ -890,11 +889,11 @@ icon:plus[] GraphQL: It is no longer possible to resolve nodes using the provide
 
 icon:plus[] The `/api/v1/admin/backup`, `/api/v1/admin/restore`, `/api/v1/admin/import`, `/api/v1/admin/export` endpoints were added to the REST API. These endpoint allow the creation of backup dumps.
 
-icon:plus[] GraphQL: It is now possible to execute elasticsearch queries. within the graphql query.
+icon:plus[] GraphQL: It is now possible to execute elasticsearch queries. within the GraphQL query.
 
 icon:plus[]  GraphQL: It is now possible to resolve a partial web root path using the `child` field of a node.
 
-icon:plus[]  GraphQL: It is now possible to resolve information about the running mesh instance via graphql.
+icon:plus[]  GraphQL: It is now possible to resolve information about the running mesh instance via GraphQL.
 
 icon:check[] Various issues with the linkType argument within the GraphQL API have been fixed.
 
@@ -1099,7 +1098,7 @@ icon:plus[] The used Vert.x version was bumped to 3.3.3.
 
 icon:plus[] The Gentics Mesh admin ui has been updated. The UI will no longer send basic auth information for succeeding requests which were invoked after the login action had been invoked. Instead the basic auth login information will only be send directly during login.
 
-icon:check[] A bug within the breadcrumb resolver has been fixed. Previouly breadcrumbs did not account for language fallback options and thus returned a 404 path for nodes which used a different language compared to the language of the retrieved node. This has been fixed.
+icon:check[] A bug within the breadcrumb resolver has been fixed. Previously breadcrumbs did not account for language fallback options and thus returned a 404 path for nodes which used a different language compared to the language of the retrieved node. This has been fixed.
 
 == 0.6.23 (14.09.2016)
 
@@ -1229,7 +1228,7 @@ icon:check[] The schema migration process did not update the node search index c
 icon:check[] A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
 
 icon:check[] A typo within the search model document for users was fixed.
-       The property emailadress was renamed to emailaddress. 
+       The property `emailadress` was renamed to `emailaddress`. 
 
 == 0.6.2 (15.03.2016)
 
@@ -1265,8 +1264,8 @@ icon:plus[] Navigation Endpoint
 icon:plus[] Added docker support
   It is now possible to start mesh using the gentics/mesh or gentics/mesh-demo docker image.
 
-icon:plus[] Vertx update
-  The Vertx dependency was updated to version 3.2.1
+icon:plus[] Vert.x update
+  The Vert.x dependency was updated to version 3.2.1
 
 icon:check[] Fixed paging issue for nested tags
 
