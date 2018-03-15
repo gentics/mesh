@@ -14,8 +14,6 @@ The purpose of this agreement is to protect users of this codebase by ensuring t
 * Create a new branch for your changes
 * Make your changes
 * Make sure you include tests
-* Make sure the Test Suite hasn't been broken by running:
- * `mvn clean test`
 * Commit your changes into that branch
 * Use descriptive and meaningful commit messages
 * If you have a lot of commits squash them into a single commit
