@@ -12,10 +12,17 @@ import com.gentics.mesh.graphqlfilter.filter.MainFilter;
 import com.gentics.mesh.graphqlfilter.filter.StringFilter;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FieldFilter extends MainFilter<GraphFieldContainer> {
     private static final String NAME_PREFIX = "FieldFilter.";
+
+    // TODO Remove this after all types are supported
+    private static final Set<String> availableTypes = Stream.of(
+        FieldTypes.STRING, FieldTypes.HTML, FieldTypes.DATE, FieldTypes.BOOLEAN
+    ).map(FieldTypes::toString).collect(Collectors.toSet());
 
     public static FieldFilter filter(GraphQLContext context, SchemaModel container) {
         return context.getOrStore(NAME_PREFIX + container.getName(), () -> new FieldFilter(container));
@@ -31,6 +38,9 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
     @Override
     protected List<FilterField<GraphFieldContainer, ?>> getFilters() {
         return schema.getFields().stream()
+            // filters fields where the Filter is not implemented
+            // TODO remove this after all types are supported
+            .filter(field -> availableTypes.contains(field.getType()))
             .map(this::createFieldFilter)
             .collect(Collectors.toList());
     }
@@ -49,7 +59,7 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
                 return new FieldMappedFilter<>(name, description, DateFilter.filter(), node -> node.getDate(name).getDate(), schemaName);
             case BOOLEAN:
                 return new FieldMappedFilter<>(name, description, BooleanFilter.filter(), node -> node.getBoolean(name).getBoolean(), schemaName);
-            // TODO correctly implement other types OR HIDE THEM
+            // TODO correctly implement other types
             case NUMBER:
             case BINARY:
             case LIST:
