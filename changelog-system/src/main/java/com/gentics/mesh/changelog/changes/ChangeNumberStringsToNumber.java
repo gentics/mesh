@@ -58,7 +58,8 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 			Schema schema = new Schema();
 			schema.type = className;
 			schema.uuid = uuid;
-			schema.version = schemaVertex.getProperty("version");
+			Object val = schemaVertex.getProperty("version");
+			schema.version = String.valueOf(val);
 
 			String json = schemaVertex.getProperty(JSON_FIELD);
 			if (json == null) {
