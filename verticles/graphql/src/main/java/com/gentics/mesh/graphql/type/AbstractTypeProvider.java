@@ -1,12 +1,31 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLLong;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.GraphQLEnumType.newEnum;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.error.MeshConfigurationException;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.search.SearchHandler;
+import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLFieldDefinition.Builder;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLTypeReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,30 +37,13 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.search.SearchHandler;
-
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLEnumType;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLFieldDefinition.Builder;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLTypeReference;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static graphql.Scalars.GraphQLInt;
+import static graphql.Scalars.GraphQLLong;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLEnumType.newEnum;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 public abstract class AbstractTypeProvider {
 
@@ -358,4 +360,31 @@ public abstract class AbstractTypeProvider {
 		return parameters;
 	}
 
+    /**
+     * Fetches nodes and applies filters
+     */
+	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
+        GraphQLContext gc = env.getContext();
+        NodeRoot nodeRoot = gc.getProject().getNodeRoot();
+
+        List<String> languageTags = getLanguageArgument(env);
+
+        Stream<NodeContent> contents = nodeRoot.findAllStream(gc)
+            // Now lets try to load the containers for those found nodes - apply the language fallback
+            .map(node -> new NodeContent(node, node.findVersion(gc, languageTags)));
+
+        return applyNodeFilter(env, contents);
+	}
+
+	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream) {
+		Map<String, ?> filterArgument = env.getArgument("filter");
+		PagingParameters pagingInfo = getPagingInfo(env);
+		GraphQLContext gc = env.getContext();
+
+		if (filterArgument != null) {
+			return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
+		} else {
+			return new DynamicStreamPageImpl<>(stream, pagingInfo);
+		}
+	}
 }

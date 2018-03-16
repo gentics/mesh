@@ -1,26 +1,5 @@
 package com.gentics.mesh.graphql.type.field;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
-import static graphql.Scalars.GraphQLBigDecimal;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLFloat;
-import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLLong;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -48,16 +27,38 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.util.DateUtils;
-
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
+import static graphql.Scalars.GraphQLBigDecimal;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLFloat;
+import static graphql.Scalars.GraphQLInt;
+import static graphql.Scalars.GraphQLLong;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
 
 @Singleton
 public class FieldDefinitionProvider extends AbstractTypeProvider {
@@ -233,16 +234,20 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param schema
 	 * @return
 	 */
-	public GraphQLFieldDefinition createListDef(ListFieldSchema schema) {
+	public GraphQLFieldDefinition createListDef(GraphQLContext context, ListFieldSchema schema) {
 		GraphQLType type = getElementTypeOfList(schema);
 		graphql.schema.GraphQLFieldDefinition.Builder fieldType = newFieldDefinition().name(schema.getName()).description(schema.getLabel())
 			.type(new GraphQLList(type)).argument(createPagingArgs());
+		NodeFilter nodeFilter = NodeFilter.filter(context);
 
 		// Add link resolving arg to html and string lists
 		switch (schema.getListType()) {
 		case "html":
 		case "string":
 			fieldType.argument(createLinkTypeArg());
+			break;
+		case "node":
+			fieldType.argument(nodeFilter.createFilterArgument());
 			break;
 		}
 
@@ -294,7 +299,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (nodeList == null) {
 					return null;
 				}
-				return nodeList.getList().stream().map(item -> {
+				Map<String, ?> filterArgument = env.getArgument("filter");
+				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
 					Node node = item.getNode();
 					List<String> languageTags = Collections.emptyList();
 					if (container instanceof NodeGraphFieldContainer) {
@@ -308,7 +314,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags);
 					return new NodeContent(node, itemContainer);
-				}).collect(Collectors.toList());
+				});
+				if (filterArgument != null) {
+					nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
+				}
+				return nodes.collect(Collectors.toList());
 			case "micronode":
 				MicronodeGraphFieldList micronodeList = container.getMicronodeList(schema.getName());
 				if (micronodeList == null) {
