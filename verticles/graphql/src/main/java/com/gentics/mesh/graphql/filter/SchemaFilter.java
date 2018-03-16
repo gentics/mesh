@@ -3,6 +3,7 @@ package com.gentics.mesh.graphql.filter;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphqlfilter.filter.DateFilter;
 import com.gentics.mesh.graphqlfilter.filter.FilterField;
 import com.gentics.mesh.graphqlfilter.filter.MainFilter;
 import com.gentics.mesh.graphqlfilter.filter.MappedFilter;
@@ -46,7 +47,9 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
         return Arrays.asList(
             new MappedFilter<>("uuid", "Filters by uuid", StringFilter.filter(), SchemaContainer::getUuid),
             new MappedFilter<>("name", "Filters by name", StringFilter.filter(), SchemaContainer::getName),
-            FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid))
+            FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid)),
+            new MappedFilter<>("created", "Filters by schema creation timestamp", DateFilter.filter(), SchemaContainer::getCreationTimestamp),
+            new MappedFilter<>("edited", "Filters by schema update timestamp", DateFilter.filter(), SchemaContainer::getLastEditedTimestamp)
         );
     }
 }
