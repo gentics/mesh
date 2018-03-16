@@ -13,8 +13,10 @@ import com.gentics.mesh.graphqlfilter.filter.BooleanFilter;
 import com.gentics.mesh.graphqlfilter.filter.DateFilter;
 import com.gentics.mesh.graphqlfilter.filter.FilterField;
 import com.gentics.mesh.graphqlfilter.filter.MainFilter;
+import com.gentics.mesh.graphqlfilter.filter.NumberFilter;
 import com.gentics.mesh.graphqlfilter.filter.StringFilter;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -26,7 +28,7 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
 
     // TODO Remove this after all types are supported
     private static final Set<String> availableTypes = Stream.of(
-        FieldTypes.STRING, FieldTypes.HTML, FieldTypes.DATE, FieldTypes.BOOLEAN
+        FieldTypes.STRING, FieldTypes.HTML, FieldTypes.DATE, FieldTypes.BOOLEAN, FieldTypes.NUMBER
     ).map(FieldTypes::toString).collect(Collectors.toSet());
 
     public static FieldFilter filter(GraphQLContext context, SchemaModel container) {
@@ -57,20 +59,25 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
         FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
         switch (type) {
             case STRING:
-                return new FieldMappedFilter<>(name, description, StringFilter.filter(), node -> getOrNull(node.getString(name), StringGraphField::getString), schemaName);
+                return new FieldMappedFilter<>(name, description, StringFilter.filter(),
+                    node -> getOrNull(node.getString(name), StringGraphField::getString), schemaName);
             case HTML:
-                return new FieldMappedFilter<>(name, description, StringFilter.filter(), node -> getOrNull(node.getHtml(name), HtmlGraphField::getHTML), schemaName);
+                return new FieldMappedFilter<>(name, description, StringFilter.filter(),
+                    node -> getOrNull(node.getHtml(name), HtmlGraphField::getHTML), schemaName);
             case DATE:
-                return new FieldMappedFilter<>(name, description, DateFilter.filter(), node -> getOrNull(node.getDate(name), DateGraphField::getDate), schemaName);
+                return new FieldMappedFilter<>(name, description, DateFilter.filter(),
+                    node -> getOrNull(node.getDate(name), DateGraphField::getDate), schemaName);
             case BOOLEAN:
-                return new FieldMappedFilter<>(name, description, BooleanFilter.filter(), node -> getOrNull(node.getBoolean(name), BooleanGraphField::getBoolean), schemaName);
-            // TODO correctly implement other types
+                return new FieldMappedFilter<>(name, description, BooleanFilter.filter(),
+                    node -> getOrNull(node.getBoolean(name), BooleanGraphField::getBoolean), schemaName);
             case NUMBER:
+                return new FieldMappedFilter<>(name, description, NumberFilter.filter(),
+                    node -> getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schemaName);
+            // TODO correctly implement other types
             case BINARY:
             case LIST:
             case NODE:
             case MICRONODE:
-                return new FieldMappedFilter<>(name, description, StringFilter.filter(), node -> "bogus", schemaName);
             default:
                 throw new RuntimeException("Unexpected type " + type);
         }
