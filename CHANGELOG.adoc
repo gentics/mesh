@@ -10,6 +10,13 @@
 
 = Gentics Mesh Changelog
 
+[[v0.17.4]]
+== 0.17.4 (TBD)
+
+icon:check[] REST: Fix ETag generation for nodes.
+                   Previously taking a node offline did not alter the ETag and this also lead to inconsistent status
+                   information being displayed in the Mesh UI link:https://github.com/gentics/mesh/issues/345[#345]
+
 [[v0.17.3]]
 == 0.17.3 (15.03.2018)
 

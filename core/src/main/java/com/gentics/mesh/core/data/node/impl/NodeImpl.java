@@ -1873,15 +1873,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
-		// editor etag - (can be omitted since update would also affect the
-		// NGFC)
-		// creator etag
-		// keyBuilder.append("-");
-		// keyBuilder.append(getCreator().getETag(ac));
-
-		// availableLanguages
-		keyBuilder.append("-");
-		keyBuilder.append(Arrays.toString(getAvailableLanguageNames(release, type).toArray()));
+		// Publish state & availableLanguages
+		for (NodeGraphFieldContainer c : getGraphFieldContainers(release, PUBLISHED)) {
+			keyBuilder.append(c.getLanguage().getLanguageTag() + "published");
+		}
+		for (NodeGraphFieldContainer c : getGraphFieldContainers(release, DRAFT)) {
+			keyBuilder.append(c.getLanguage().getLanguageTag() + "draft");
+		}
 
 		// breadcrumb
 		keyBuilder.append("-");
