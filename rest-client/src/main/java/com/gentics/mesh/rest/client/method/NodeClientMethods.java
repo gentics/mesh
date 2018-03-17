@@ -265,7 +265,7 @@ public interface NodeClientMethods {
 	 * @param languageTag
 	 * @param parameters
 	 * @return Mesh request which can be invoked
-	 * @deprecated {@link #takeNodeLanguageOffline(String, String, String, ParameterProvider...)
+	 * @deprecated Use {@link #takeNodeLanguageOffline(String, String, String, ParameterProvider...)} instead.
 	 */
 	@Deprecated
 	default MeshRequest<Void> takeNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
