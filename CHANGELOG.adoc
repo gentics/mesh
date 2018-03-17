@@ -13,6 +13,9 @@
 [[v0.17.4]]
 == 0.17.4 (TBD)
 
+icon:plus[] Docker: A new volume location for the data directory of the embedded elasticsearch has been added.
+                    You can now use the `/elasticsearch/data` folder to mount your elasticsearch data files. link:https://github.com/gentics/mesh/issues/348[#348]
+
 icon:plus[] Logging: The logging verbosity has been further decreased.
 
 icon:check[] REST: Fix ETag generation for nodes.
@@ -27,7 +30,8 @@ icon:check[] UI: Restrict nodes to certain schema if allow is set in node list f
 [[v0.17.2]]
 == 0.17.2 (13.03.2018)
 
-icon:plus[] Docker: A new volume location for the `config` directory has been added. You can now use the `/config` folder to mount your configuration files.
+icon:plus[] Docker: A new volume location for the `config` directory has been added. 
+            You can now use the `/config` folder to mount your configuration files.
 
 icon:plus[] Core: The Vert.x library has been downgraded to 3.5.0 due to a regression which could cause requests to not be handled by the HTTP Server.
 
