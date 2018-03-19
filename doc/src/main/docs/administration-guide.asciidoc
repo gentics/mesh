@@ -40,12 +40,6 @@ Various command line arguments can be used to override or supplement previously 
 include::examples/models/mesh-cli-help.txt[]
 ----
 
-=== Environment Variables
-
-Settings within the `mesh.yml` file can be override via these environment variables.
-
-include::examples/tables/mesh-env.adoc[]
-
 == Run with Docker
 
 Alternatively you can start Gentics Mesh using Docker via:
@@ -234,6 +228,12 @@ By default all specified directories are relative to the installation directory.
 | ```security.algorithm```             | String  | HS256                 | Hashing algorithm used to sign, verify and generate tokens.
 | ```security.enableAnonymousAccess``` | Boolean | true                  | Flag to be used to enable the anonymous access feature.
 |======
+
+=== Environment Variables
+
+Settings within the `mesh.yml` file can be override via these environment variables.
+
+include::examples/tables/mesh-env.adoc[]
 
 === Cache Options
 
