@@ -28,6 +28,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTransformer.class);
 
+	public static final String VERSION_KEY = "version";
 	public static final int MAX_RAW_FIELD_LEN = 32_700;
 
 	/**
@@ -145,6 +146,5 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 			document.put("project", projectFields);
 		}
 	}
-
 
 }

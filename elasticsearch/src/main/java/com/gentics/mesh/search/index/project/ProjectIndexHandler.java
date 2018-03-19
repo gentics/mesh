@@ -17,6 +17,9 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
+import com.gentics.mesh.search.index.metric.SyncMetric;
+
+import io.reactivex.Completable;
 
 /**
  * Handler for the project specific search index.
@@ -33,6 +36,11 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	@Inject
 	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
+	}
+
+	@Override
+	public String getType() {
+		return "project";
 	}
 
 	@Override
@@ -58,6 +66,13 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	@Override
 	public ProjectMappingProvider getMappingProvider() {
 		return mappingProvider;
+	}
+
+	@Override
+	public Completable syncIndices() {
+		return Completable.defer(() -> {
+			return diffAndSync(Project.composeIndexName(), null, new SyncMetric(getType()));
+		});
 	}
 
 	@Override

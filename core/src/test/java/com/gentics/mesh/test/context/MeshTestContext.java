@@ -303,6 +303,7 @@ public class MeshTestContext extends TestWatcher {
 			if (settings.useElasticsearch()) {
 				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2")
 					.withEnv("discovery.type", "single-node")
+					.withEnv("xpack.security.enabled", "false")
 					.withExposedPorts(9200)
 					.withStartupTimeout(Duration.ofSeconds(250L))
 					.waitingFor(Wait.forHttp("/"));

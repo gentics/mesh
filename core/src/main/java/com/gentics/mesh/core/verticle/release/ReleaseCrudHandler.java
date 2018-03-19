@@ -322,7 +322,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					Job job = jobRoot.enqueueSchemaMigration(user, release, currentVersion, latestVersion);
 					try {
 						job.process();
-						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid());
+						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid()).iterator();
 						log.info("After migration " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - " + currentVersion.getUuid()
 							+ " has unmigrated containers: " + it.hasNext());
 					} catch (Exception e) {

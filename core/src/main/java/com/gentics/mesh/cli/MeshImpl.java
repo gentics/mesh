@@ -34,6 +34,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import io.vertx.ext.dropwizard.MetricsService;
 
 /**
  * @see Mesh
@@ -58,6 +59,8 @@ public class MeshImpl implements Mesh {
 	private CountDownLatch latch = new CountDownLatch(1);
 
 	private MeshStatus status = MeshStatus.STARTING;
+
+	private MetricsService metricsService;
 
 	static {
 		// Use slf4j instead of jul
@@ -357,7 +360,6 @@ public class MeshImpl implements Mesh {
 	 */
 	private void createLockFile() throws IOException {
 		new File(LOCK_FILENAME).createNewFile();
-
 	}
 
 	/**
@@ -385,6 +387,16 @@ public class MeshImpl implements Mesh {
 	public Mesh setStatus(MeshStatus status) {
 		this.status = status;
 		return this;
+	}
+
+	public void setMetricsService(MetricsService metricsService) {
+		this.metricsService = metricsService;
+	}
+
+	@Override
+	public MetricsService metrics() {
+		Objects.requireNonNull(metricsService, "The metrics service can only be used once Gentics Mesh has been setup.");
+		return metricsService;
 	}
 
 }

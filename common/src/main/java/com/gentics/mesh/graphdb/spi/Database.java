@@ -511,4 +511,12 @@ public interface Database extends TxFactory {
 	 */
 	void registerEventHandlers();
 
+	/**
+	 * Return the element version.
+	 * 
+	 * @param vertex
+	 * @return
+	 */
+	String getElementVersion(Element element);
+
 }

@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.IndexableElement;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -101,4 +102,7 @@ public class IndexHandlerRegistry {
 		return null;
 	}
 
+	public NodeIndexHandler getNodeIndexHandler() {
+		return nodeIndexHandler;
+	}
 }

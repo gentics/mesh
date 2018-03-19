@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.search.index.AbstractTransformer;
+import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.json.JsonObject;
 
@@ -36,7 +37,19 @@ public class UserTransformer extends AbstractTransformer<User> {
 	}
 
 	@Override
-	public JsonObject toDocument(User user) {
+	public String generateVersion(User user) {
+		return ETag.hash(toDocument(user, false).encode());
+	}
+
+	/**
+	 * Transform the user to the document which can be stored in ES.
+	 * 
+	 * @param user
+	 * @param withVersion
+	 *            Whether to include the version number.
+	 * @return
+	 */
+	private JsonObject toDocument(User user, boolean withVersion) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, user);
 		document.put(USERNAME_KEY, user.getUsername());
@@ -45,12 +58,20 @@ public class UserTransformer extends AbstractTransformer<User> {
 		document.put(LASTNAME_KEY, user.getLastname());
 		addGroups(document, user.getGroups());
 		addPermissionInfo(document, user);
+		// TODO add disabled / enabled flag
 		Node referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}
-		// TODO add disabled / enabled flag
+		if (withVersion) {
+			document.put(VERSION_KEY, generateVersion(user));
+		}
 		return document;
+	}
+
+	@Override
+	public JsonObject toDocument(User user) {
+		return toDocument(user, true);
 	}
 
 	/**

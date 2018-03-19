@@ -106,9 +106,4 @@ public class DevNullSearchProvider implements SearchProvider {
 		return null;
 	}
 
-	@Override
-	public Completable invokeReindex() {
-		return Completable.complete();
-	}
-
 }

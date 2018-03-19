@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -9,6 +10,7 @@ import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
@@ -66,6 +68,12 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	public MeshEdgeImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public String getElementVersion() {
+		Edge edge = getElement();
+		return MeshInternal.get().database().getElementVersion(edge);
 	}
 
 }

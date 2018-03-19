@@ -29,4 +29,11 @@ public interface MeshElement {
 	 */
 	Element getElement();
 
+	/**
+	 * Return the internal element version.
+	 * 
+	 * @return
+	 */
+	String getElementVersion();
+
 }

@@ -60,7 +60,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_NODE_CREATED, EVENT_NODE_UPDATED, EVENT_NODE_DELETED);
 
-
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
@@ -177,20 +176,24 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return Created container
 	 */
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor, NodeGraphFieldContainer original,
-			boolean handleDraftEdge);
+		boolean handleDraftEdge);
 
 	/**
 	 * Return a list of draft graph field containers for the node in the latest release.
 	 * 
 	 * @return
+	 * @deprecated A new method should be used since loading lists is expensive
 	 */
+	@Deprecated
 	List<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers();
 
 	/**
 	 * Return a list of all initial graph field containers for the node (in any release).
 	 *
 	 * @return
+	 * @deprecated A new method should be used since loading lists is expensive
 	 */
+	@Deprecated
 	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
@@ -199,8 +202,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param release
 	 * @param type
 	 * @return
+	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, ContainerType type);
+	@Deprecated
+	default List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, ContainerType type) {
+		return getGraphFieldContainers(release.getUuid(), type);
+	}
 
 	/**
 	 * Return a list of graph field containers of given type for the node in the given release.
@@ -208,8 +215,30 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param releaseUuid
 	 * @param type
 	 * @return
+	 * @deprecated A new method should be used since loading lists is expensive. Use {@link #getGraphFieldContainersIt(String, ContainerType)}
 	 */
+	@Deprecated
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type);
+
+	/**
+	 * Return containers of the given type and release.
+	 * 
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
+	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String releaseUuid, ContainerType type);
+
+	/**
+	 * Return containers of the given type and release.
+	 * 
+	 * @param release
+	 * @param type
+	 * @return
+	 */
+	default Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Release release, ContainerType type) {
+		return getGraphFieldContainersIt(release.getUuid(), type);
+	}
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release.
@@ -345,7 +374,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String releaseUuid, ContainerType type,
-			PagingParameters pagingParameter);
+		PagingParameters pagingParameter);
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -669,10 +698,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Handle the node specific on deleted event.
+	 * 
 	 * @param uuid
 	 * @param name
 	 * @param schema
 	 * @param languageTag
 	 */
 	void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag);
+
 }

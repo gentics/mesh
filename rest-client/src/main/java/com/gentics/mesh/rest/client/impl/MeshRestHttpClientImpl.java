@@ -8,7 +8,6 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import java.util.Objects;
 
-import io.vertx.core.http.HttpClientOptions;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -64,6 +63,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -96,6 +96,7 @@ import com.gentics.mesh.rest.client.handler.impl.WebRootResponseHandler;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.WebSocket;
@@ -147,21 +148,21 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeCreateRequest, "nodeCreateRequest must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + uuid + getQuery(parameters), NodeResponse.class,
-				nodeCreateRequest);
+			nodeCreateRequest);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUpdateRequest, "nodeUpdateRequest must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + uuid + getQuery(parameters), NodeResponse.class,
-				nodeUpdateRequest);
+			nodeUpdateRequest);
 	}
 
 	@Override
@@ -177,7 +178,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
 		return prepareRequest(DELETE, "/" + encodeFragment(projectName) + "/nodes/" + uuid + "/languages/" + languageTag + getQuery(parameters),
-				Void.class);
+			Void.class);
 	}
 
 	@Override
@@ -186,7 +187,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(targetFolderUuid, "targetFolderUuid must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/moveTo/" + targetFolderUuid + getQuery(parameters),
-				Void.class);
+			Void.class);
 	}
 
 	@Override
@@ -200,7 +201,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags" + getQuery(parameters),
-				TagListResponse.class);
+			TagListResponse.class);
 	}
 
 	@Override
@@ -212,11 +213,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<TagListResponse> updateTagsForNode(String projectName, String nodeUuid, TagListUpdateRequest request,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/tags" + getQuery(parameters), TagListResponse.class,
-				request);
+			request);
 	}
 
 	@Override
@@ -224,7 +225,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(parentNodeUuid, "parentNodeUuid must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/nodes/" + parentNodeUuid + "/children" + getQuery(parameters),
-				NodeListResponse.class);
+			NodeListResponse.class);
 	}
 
 	@Override
@@ -232,7 +233,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/nodes/" + uuid + "/navigation" + getQuery(parameters),
-				NavigationResponse.class);
+			NavigationResponse.class);
 	}
 
 	@Override
@@ -241,7 +242,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		Objects.requireNonNull(tagCreateRequest, "tagCreateRequest must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags", TagResponse.class,
-				tagCreateRequest);
+			tagCreateRequest);
 	}
 
 	@Override
@@ -249,7 +250,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + getQuery(parameters),
-				TagResponse.class);
+			TagResponse.class);
 	}
 
 	@Override
@@ -257,7 +258,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagUpdateRequest, "tagUpdateRequest must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid, TagResponse.class,
-				tagUpdateRequest);
+			tagUpdateRequest);
 	}
 
 	@Override
@@ -287,7 +288,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid + "/nodes" + getQuery(
-				parameters), NodeListResponse.class);
+			parameters), NodeListResponse.class);
 	}
 
 	@Override
@@ -418,7 +419,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		Objects.requireNonNull(tagFamilyUpdateRequest, "tagFamilyUpdateRequest must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid, TagFamilyResponse.class,
-				tagFamilyUpdateRequest);
+			tagFamilyUpdateRequest);
 	}
 
 	@Override
@@ -556,7 +557,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/tags/" + tagUuid + getQuery(parameters),
-				NodeResponse.class);
+			NodeResponse.class);
 	}
 
 	@Override
@@ -565,7 +566,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return prepareRequest(DELETE, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/tags/" + tagUuid + getQuery(parameters),
-				Void.class);
+			Void.class);
 	}
 
 	@Override
@@ -573,7 +574,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/published" + getQuery(parameters),
-				PublishStatusResponse.class);
+			PublishStatusResponse.class);
 	}
 
 	@Override
@@ -581,7 +582,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/published" + getQuery(parameters),
-				PublishStatusResponse.class);
+			PublishStatusResponse.class);
 	}
 
 	@Override
@@ -593,22 +594,22 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published" + getQuery(
-				parameters), PublishStatusModel.class);
+			parameters), PublishStatusModel.class);
 	}
 
 	@Override
 	public MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published" + getQuery(
-				parameters), PublishStatusModel.class);
+			parameters), PublishStatusModel.class);
 	}
 
 	@Override
@@ -617,7 +618,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
 		return prepareRequest(DELETE, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published"
-				+ getQuery(parameters), Void.class);
+			+ getQuery(parameters), Void.class);
 	}
 
 	@Override
@@ -903,7 +904,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/" + encodeFragment(projectName) + "/search/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class,
-				json);
+			json);
 	}
 
 	@Override
@@ -914,8 +915,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeReindex() {
-		return prepareRequest(POST, "/search/reindex", GenericMessageResponse.class);
+	public MeshRequest<GenericMessageResponse> invokeIndexSync() {
+		return prepareRequest(POST, "/search/sync", GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<SearchStatusResponse> searchStatus() {
+		return prepareRequest(GET, "/search/status", SearchStatusResponse.class);
 	}
 
 	@Override
@@ -955,7 +961,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-			Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
+		Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(fileData, "fileData must not be null");
@@ -990,12 +996,12 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
-				NodeResponse.class, multiPartFormData, bodyContentType);
+			NodeResponse.class, multiPartFormData, bodyContentType);
 	}
 
 	@Override
 	public MeshRequest<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
@@ -1012,7 +1018,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
-			String fieldKey, ImageManipulationParameters parameters) {
+		String fieldKey, ImageManipulationParameters parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "language must not be null");
@@ -1026,7 +1032,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		transformRequest.setLanguage(languageTag).setVersion(version);
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
-				transformRequest);
+			transformRequest);
 	}
 
 	@Override
@@ -1097,23 +1103,23 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases" + getQuery(parameters), ReleaseResponse.class,
-				releaseCreateRequest);
+			releaseCreateRequest);
 	}
 
 	@Override
 	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + uuid + getQuery(parameters), ReleaseResponse.class,
-				releaseCreateRequest);
+			releaseCreateRequest);
 	}
 
 	@Override
@@ -1147,7 +1153,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<String> getRAML() {
 		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, this, authentication, disableAnonymousAccess,
-				APPLICATION_YAML_UTF8);
+			APPLICATION_YAML_UTF8);
 	}
 
 	@Override
@@ -1160,17 +1166,17 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-			ReleaseInfoSchemaList schemaVersionReferences) {
+		ReleaseInfoSchemaList schemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/schemas", ReleaseInfoSchemaList.class,
-				schemaVersionReferences);
+			schemaVersionReferences);
 	}
 
 	@Override
 	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-			SchemaReference... schemaVersionReferences) {
+		SchemaReference... schemaVersionReferences) {
 		ReleaseInfoSchemaList info = new ReleaseInfoSchemaList();
 		info.add(schemaVersionReferences);
 		return assignReleaseSchemaVersions(projectName, releaseUuid, info);
@@ -1182,22 +1188,22 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/microschemas",
-				ReleaseInfoMicroschemaList.class);
+			ReleaseInfoMicroschemaList.class);
 	}
 
 	@Override
 	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-			ReleaseInfoMicroschemaList microschemaVersionReferences) {
+		ReleaseInfoMicroschemaList microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/microschemas",
-				ReleaseInfoMicroschemaList.class, microschemaVersionReferences);
+			ReleaseInfoMicroschemaList.class, microschemaVersionReferences);
 	}
 
 	@Override
 	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-			MicroschemaReference... microschemaVersionReferences) {
+		MicroschemaReference... microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 

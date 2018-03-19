@@ -87,11 +87,11 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterator<NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
+	public Stream<NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
 		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
 		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
 			.filter(e -> e.getParentNode(releaseUuid) != null).map(e -> (NodeGraphFieldContainer) e);
-		return stream.iterator();
+		return stream;
 	}
 
 	@Override

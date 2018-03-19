@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -197,10 +198,10 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		tx(() -> user().addGroup(groups().get("admin")));
 		searchProvider().refreshIndex().blockingAwait();
 
-		CompletableFuture<Void> latch = latchForEvent(client(), Events.EVENT_REINDEX_COMPLETED);
-		GenericMessageResponse message = call(() -> client().invokeReindex());
-		assertMessage(message, "search_admin_reindex_invoked");
-		latch.get(20, TimeUnit.SECONDS);
+		waitForEvent(INDEX_SYNC_EVENT, () -> {
+			GenericMessageResponse message = call(() -> client().invokeIndexSync());
+			assertMessage(message, "search_admin_reindex_invoked");
+		});
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));

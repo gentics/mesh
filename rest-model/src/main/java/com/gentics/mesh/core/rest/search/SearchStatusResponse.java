@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.search;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -10,17 +13,30 @@ import com.gentics.mesh.core.rest.common.RestModel;
 public class SearchStatusResponse implements RestModel {
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether a reindex operation is currently running.")
-	boolean reindexRunning = false;
+	@JsonPropertyDescription("Flag which indicates whether a index synchronization is currently running.")
+	boolean indexSyncRunning = false;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Map which contains various metric values.")
+	Map<String, Object> metrics = new HashMap<>();
 
 	public SearchStatusResponse() {
 	}
 
-	public boolean isReindexRunning() {
-		return reindexRunning;
+	public boolean isIndexSyncRunning() {
+		return indexSyncRunning;
 	}
 
-	public void setReindexRunning(boolean reindexRunning) {
-		this.reindexRunning = reindexRunning;
+	public void setIndexSyncRunning(boolean indexSyncRunning) {
+		this.indexSyncRunning = indexSyncRunning;
 	}
+
+	public Map<String, Object> getMetrics() {
+		return metrics;
+	}
+
+	public void setMetrics(Map<String, Object> metrics) {
+		this.metrics = metrics;
+	}
+
 }

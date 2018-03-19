@@ -5,6 +5,7 @@ import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.ContainerType;
@@ -32,13 +33,13 @@ public interface SchemaContainerVersion
 	}
 
 	/**
-	 * Return an iterator for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given release.
+	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given release.
 	 *
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @return
 	 */
-	Iterator<NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
+	Stream<NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
 
 	/**
 	 * Returns an iterator for those {@link NodeGraphFieldContainer}'s which can be edited by users. Those are draft and publish versions.

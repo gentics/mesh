@@ -2,6 +2,7 @@ package com.gentics.mesh.search.index.tag;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
+import com.gentics.mesh.search.index.metric.SyncMetric;
 
 import io.reactivex.Completable;
 
@@ -43,6 +45,11 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Inject
 	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
+	}
+
+	@Override
+	public String getType() {
+		return "tag";
 	}
 
 	@Override
@@ -87,6 +94,23 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 				indexInfo.put(indexName, info);
 			}
 			return indexInfo;
+		});
+	}
+
+	@Override
+	public Completable syncIndices() {
+		return Completable.defer(() -> {
+			return db.tx(() -> {
+				ProjectRoot root = boot.meshRoot().getProjectRoot();
+				Set<Completable> actions = new HashSet<>();
+				SyncMetric metric = new SyncMetric(getType());
+				for (Project project : root.findAllIt()) {
+					String uuid = project.getUuid();
+					actions.add(diffAndSync(Tag.composeIndexName(uuid), uuid, metric));
+				}
+
+				return Completable.merge(actions);
+			});
 		});
 	}
 

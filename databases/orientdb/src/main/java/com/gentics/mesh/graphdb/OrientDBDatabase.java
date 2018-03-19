@@ -80,6 +80,7 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
+import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
@@ -126,16 +127,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void stop() {
-//		// TODO let other nodes know we are stopping the instance?
-//		if (options.getClusterOptions().isEnabled()) {
-//			Mesh.vertx().eventBus().publish(Events.EVENT_CLUSTER_NODE_LEAVING, new JsonObject().put("node", getNodeName()));
-//			try {
-//				Thread.sleep(2000);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
+		// // TODO let other nodes know we are stopping the instance?
+		// if (options.getClusterOptions().isEnabled()) {
+		// Mesh.vertx().eventBus().publish(Events.EVENT_CLUSTER_NODE_LEAVING, new JsonObject().put("node", getNodeName()));
+		// try {
+		// Thread.sleep(2000);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
 		if (factory != null) {
 			factory.close();
 			Orient.instance().shutdown();
@@ -447,11 +448,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void registerEventHandlers() {
-//		Mesh.vertx().eventBus().consumer(Events.EVENT_CLUSTER_NODE_LEAVING, (Message<JsonObject> rh) -> {
-//			String nodeName = rh.body().getString("node");
-//			log.info("Received {" + Events.EVENT_CLUSTER_NODE_LEAVING + "} for node {" + nodeName + "}. Removing node from config.");
-//			removeNode(nodeName);
-//		});
+		// Mesh.vertx().eventBus().consumer(Events.EVENT_CLUSTER_NODE_LEAVING, (Message<JsonObject> rh) -> {
+		// String nodeName = rh.body().getString("node");
+		// log.info("Received {" + Events.EVENT_CLUSTER_NODE_LEAVING + "} for node {" + nodeName + "}. Removing node from config.");
+		// removeNode(nodeName);
+		// });
 	}
 
 	@Override
@@ -1039,6 +1040,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public String getElementVersion(Element element) {
+		if (element instanceof WrappedVertex) {
+			element = ((WrappedVertex) element).getBaseElement();
+		}
+		OrientElement e = (OrientElement) element;
+		String uuid = element.getProperty("uuid");
+		return ETag.hash(uuid + e.getRecord().getVersion());
+	}
+
+	@Override
 	public String getVendorName() {
 		return "orientdb";
 	}
@@ -1096,15 +1107,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return response;
 	}
 
-//	/**
-//	 * Removes the server/node from the distributed configuration.
-//	 * 
-//	 * @param iNode
-//	 */
-//	public void removeNode(String iNode) {
-//		log.info(
-//			"Removing server {" + iNode + "} from distributed configuration on server {" + getNodeName() + "} in cluster {" + getClusterName() + "}");
-//		server.getDistributedManager().removeServer(iNode, true);
-//	}
+	// /**
+	// * Removes the server/node from the distributed configuration.
+	// *
+	// * @param iNode
+	// */
+	// public void removeNode(String iNode) {
+	// log.info(
+	// "Removing server {" + iNode + "} from distributed configuration on server {" + getNodeName() + "} in cluster {" + getClusterName() + "}");
+	// server.getDistributedManager().removeServer(iNode, true);
+	// }
 
 }
