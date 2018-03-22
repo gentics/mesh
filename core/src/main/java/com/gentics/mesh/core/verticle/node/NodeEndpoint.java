@@ -26,7 +26,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -90,7 +90,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		NavigationResponse responseExample = new NavigationResponse();
 		responseExample.setUuid(UUIDUtil.randomUUID());
 
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/navigation");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		endpoint.method(GET);
@@ -107,7 +107,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addLanguageHandlers() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/languages/:language");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("language", "Language tag of the content which should be deleted.", "en");
@@ -124,7 +124,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addBinaryHandlers() {
-		EndpointRoute fieldUpdate = createEndpoint();
+		InternalEndpointRoute fieldUpdate = createRoute();
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
@@ -141,7 +141,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			binaryFieldHandler.handleUpdateField(ac, uuid, fieldName, attributes);
 		}, false);
 
-		EndpointRoute imageTransform = createEndpoint();
+		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
 		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		imageTransform.addUriParameter("fieldName", "Name of the field", "image");
@@ -157,7 +157,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			binaryFieldHandler.handleTransformImage(rc, uuid, fieldName);
 		});
 
-		EndpointRoute fieldGet = createEndpoint();
+		InternalEndpointRoute fieldGet = createRoute();
 		fieldGet.path("/:nodeUuid/binary/:fieldName");
 		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
@@ -174,7 +174,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addMoveHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/moveTo/:toUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node which should be moved.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("toUuid", "Uuid of target the node.", UUIDUtil.randomUUID());
@@ -192,7 +192,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addChildrenHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/children");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		endpoint.method(GET);
@@ -211,7 +211,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	// TODO filtering, sorting
 	private void addTagsHandler() {
-		EndpointRoute getTags = createEndpoint();
+		InternalEndpointRoute getTags = createRoute();
 		getTags.path("/:nodeUuid/tags");
 		getTags.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		getTags.method(GET);
@@ -225,7 +225,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.readTags(ac, uuid);
 		});
 
-		EndpointRoute bulkUpdate = createEndpoint();
+		InternalEndpointRoute bulkUpdate = createRoute();
 		bulkUpdate.path("/:nodeUuid/tags");
 		bulkUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		bulkUpdate.method(POST);
@@ -239,7 +239,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleBulkTagUpdate(ac, nodeUuid);
 		});
 
-		EndpointRoute addTag = createEndpoint();
+		InternalEndpointRoute addTag = createRoute();
 		addTag.path("/:nodeUuid/tags/:tagUuid");
 		addTag.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		addTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
@@ -256,7 +256,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		});
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
-		EndpointRoute removeTag = createEndpoint();
+		InternalEndpointRoute removeTag = createRoute();
 		removeTag.path("/:nodeUuid/tags/:tagUuid");
 		removeTag.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		removeTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
@@ -276,7 +276,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	// TODO handle schema by name / by uuid - move that code in a separate
 	// handler
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new node.");
@@ -291,7 +291,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:nodeUuid");
 		readOne.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		readOne.method(GET);
@@ -311,7 +311,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.description("Read all nodes and return a paged list response.");
 		readAll.method(GET);
@@ -329,7 +329,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		endpoint.description("Delete the node with the given uuid.");
@@ -351,7 +351,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	// TODO use schema and only handle those i18n properties that were specified
 	// within the schema.
 	private void addUpdateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Update the node with the given uuid. It is mandatory to specify the version within the update request. "
 				+ "Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. "
 				+ "Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.");
@@ -373,7 +373,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private void addPublishHandlers() {
 
-		EndpointRoute getEndpoint = createEndpoint();
+		InternalEndpointRoute getEndpoint = createRoute();
 		getEndpoint.description("Return the published status of the node.");
 		getEndpoint.path("/:nodeUuid/published");
 		getEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
@@ -386,7 +386,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleGetPublishStatus(ac, uuid);
 		});
 
-		EndpointRoute putEndpoint = createEndpoint();
+		InternalEndpointRoute putEndpoint = createRoute();
 		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
 		putEndpoint.path("/:nodeUuid/published");
 		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
@@ -400,7 +400,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handlePublish(ac, uuid);
 		});
 
-		EndpointRoute deleteEndpoint = createEndpoint();
+		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.description("Unpublish the given node.");
 		deleteEndpoint.path("/:nodeUuid/published");
 		deleteEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
@@ -416,7 +416,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 		// Language specific
 
-		EndpointRoute getLanguageRoute = createEndpoint();
+		InternalEndpointRoute getLanguageRoute = createRoute();
 		getLanguageRoute.description("Return the publish status for the given language of the node.");
 		getLanguageRoute.path("/:nodeUuid/languages/:language/published");
 		getLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
@@ -431,7 +431,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleGetPublishStatus(ac, uuid, lang);
 		});
 
-		EndpointRoute putLanguageRoute = createEndpoint();
+		InternalEndpointRoute putLanguageRoute = createRoute();
 		putLanguageRoute.path("/:nodeUuid/languages/:language/published").method(POST).produces(APPLICATION_JSON);
 		putLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		putLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
@@ -446,7 +446,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handlePublish(ac, uuid, lang);
 		});
 
-		EndpointRoute deleteLanguageRoute = createEndpoint();
+		InternalEndpointRoute deleteLanguageRoute = createRoute();
 		deleteLanguageRoute.description("Take the language of the node offline.");
 		deleteLanguageRoute.path("/:nodeUuid/languages/:language/published").method(DELETE).produces(APPLICATION_JSON);
 		deleteLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());

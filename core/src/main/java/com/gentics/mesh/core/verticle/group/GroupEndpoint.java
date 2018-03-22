@@ -14,11 +14,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class GroupEndpoint extends AbstractEndpoint {
+public class GroupEndpoint extends AbstractInternalEndpoint {
 
 	private GroupCrudHandler crudHandler;
 
@@ -51,7 +51,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 	}
 
 	private void addGroupRoleHandlers() {
-		EndpointRoute readRoles = createEndpoint();
+		InternalEndpointRoute readRoles = createRoute();
 		readRoles.path("/:groupUuid/roles");
 		readRoles.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		readRoles.description("Load multiple roles that are assigned to the group. Return a paged list response.");
@@ -66,7 +66,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 			crudHandler.handleGroupRolesList(ac, groupUuid);
 		});
 
-		EndpointRoute addRole = createEndpoint();
+		InternalEndpointRoute addRole = createRoute();
 		addRole.path("/:groupUuid/roles/:roleUuid");
 		addRole.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		addRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
@@ -81,7 +81,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 			crudHandler.handleAddRoleToGroup(ac, groupUuid, roleUuid);
 		});
 
-		EndpointRoute removeRole = createEndpoint();
+		InternalEndpointRoute removeRole = createRoute();
 		removeRole.path("/:groupUuid/roles/:roleUuid");
 		removeRole.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		removeRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
@@ -97,7 +97,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 	}
 
 	private void addGroupUserHandlers() {
-		EndpointRoute readUsers = createEndpoint();
+		InternalEndpointRoute readUsers = createRoute();
 		readUsers.path("/:groupUuid/users");
 		readUsers.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		readUsers.method(GET);
@@ -110,7 +110,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 			crudHandler.handleGroupUserList(ac, groupUuid);
 		});
 
-		EndpointRoute addUser = createEndpoint();
+		InternalEndpointRoute addUser = createRoute();
 		addUser.path("/:groupUuid/users/:userUuid");
 		addUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		addUser.addUriParameter("userUuid", "Uuid of the user which should be added to the group.", UUIDUtil.randomUUID());
@@ -125,7 +125,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 			crudHandler.handleAddUserToGroup(ac, groupUuid, userUuid);
 		});
 
-		EndpointRoute removeUser = createEndpoint();
+		InternalEndpointRoute removeUser = createRoute();
 		removeUser.path("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		removeUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		removeUser.addUriParameter("userUuid", "Uuid of the user which should be removed from the group.", UUIDUtil.randomUUID());
@@ -140,7 +140,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute deleteGroup = createEndpoint();
+		InternalEndpointRoute deleteGroup = createRoute();
 		deleteGroup.path("/:groupUuid");
 		deleteGroup.addUriParameter("groupUuid", "Uuid of the group which should be deleted.", UUIDUtil.randomUUID());
 		deleteGroup.description("Delete the given group.");
@@ -157,7 +157,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 	// TODO Determine what we should do about conflicting group names. Should we let neo4j handle those cases?
 	// TODO update timestamps
 	private void addUpdateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:groupUuid");
 		endpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", UUIDUtil.randomUUID());
 		endpoint.description("Update the group with the given uuid. The group is created if no group with the specified uuid could be found.");
@@ -175,7 +175,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:groupUuid");
 		readOne.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		readOne.description("Read the group with the given uuid.");
@@ -192,7 +192,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		/*
 		 * List all groups when no parameter was specified
 		 */
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple groups and return a paged list response.");
@@ -208,7 +208,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 
 	// TODO handle conflicting group name: group_conflicting_name
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new group.");

@@ -8,14 +8,14 @@ import javax.inject.Inject;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle providing endpoints for various utilities.
  */
-public class UtilityEndpoint extends AbstractEndpoint {
+public class UtilityEndpoint extends AbstractInternalEndpoint {
 
 	private UtilityHandler utilityHandler;
 
@@ -44,7 +44,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	}
 
 	private void addSchemaValidationHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/validateSchema");
 		endpoint.method(POST);
 		endpoint.description("Validate the posted schema and report errors.");
@@ -57,7 +57,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	}
 
 	private void addMicroschemaValidationHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/validateMicroschema");
 		endpoint.method(POST);
 		endpoint.description("Validate the posted microschema and report errors.");
@@ -73,7 +73,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	 * Add the handler for link resolving.
 	 */
 	private void addResolveLinkHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/linkResolver");
 		endpoint.method(POST);
 		endpoint.description("Return the posted text and resolve and replace all found mesh links. "

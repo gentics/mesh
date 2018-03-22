@@ -12,14 +12,14 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The admin verticle provides core administration rest endpoints.
  */
-public class AdminEndpoint extends AbstractEndpoint {
+public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private AdminHandler adminHandler;
 
@@ -64,7 +64,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addClusterStatusHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cluster/status");
 		endpoint.method(GET);
 		endpoint.description("Loads the cluster status information.");
@@ -77,7 +77,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addConsistencyCheckHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
 		endpoint.description("Invokes a consistency check of the graph database and returns a list of found issues");
@@ -89,7 +89,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addExportHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/export");
 		endpoint.method(POST);
 		endpoint.description("Invoke a orientdb graph database export.");
@@ -101,7 +101,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addImportHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/import");
 		endpoint.method(POST);
 		endpoint.description(
@@ -114,7 +114,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addRestoreHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/restore");
 		endpoint.description(
 				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
@@ -127,7 +127,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addBackupHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/backup");
 		endpoint.method(POST);
 		endpoint.description(
@@ -143,7 +143,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	 * Handler that reacts onto status requests.
 	 */
 	private void addMeshStatusHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Return the Gentics Mesh server status.");
 		endpoint.path("/status");
 		endpoint.method(GET);
@@ -191,7 +191,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private void addJobHandler() {
 
-		EndpointRoute invokeJobWorker = createEndpoint();
+		InternalEndpointRoute invokeJobWorker = createRoute();
 		invokeJobWorker.path("/processJobs");
 		invokeJobWorker.method(POST);
 		invokeJobWorker.description("Invoke the processing of remaining jobs.");
@@ -202,7 +202,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleInvokeJobWorker(ac);
 		});
 
-		EndpointRoute readJobList = createEndpoint();
+		InternalEndpointRoute readJobList = createRoute();
 		readJobList.path("/jobs");
 		readJobList.method(GET);
 		readJobList.description("List all currently queued jobs.");
@@ -213,7 +213,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleReadList(ac);
 		});
 
-		EndpointRoute readJob = createEndpoint();
+		InternalEndpointRoute readJob = createRoute();
 		readJob.path("/jobs/:jobUuid");
 		readJob.method(GET);
 		readJob.description("Load a specific job.");
@@ -226,7 +226,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleRead(ac, uuid);
 		});
 
-		EndpointRoute deleteJob = createEndpoint();
+		InternalEndpointRoute deleteJob = createRoute();
 		deleteJob.path("/jobs/:jobUuid");
 		deleteJob.method(DELETE);
 		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
@@ -237,7 +237,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleDelete(ac, uuid);
 		});
 
-		EndpointRoute resetJob = createEndpoint();
+		InternalEndpointRoute resetJob = createRoute();
 		resetJob.path("/jobs/:jobUuid/error");
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");

@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -47,7 +47,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addReadHandlers() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
@@ -60,7 +60,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addAssignHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -75,7 +75,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addDeleteHandlers() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);

@@ -16,11 +16,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class ProjectEndpoint extends AbstractEndpoint {
+public class ProjectEndpoint extends AbstractInternalEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 
@@ -50,7 +50,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		EndpointRoute updateEndpoint = createEndpoint();
+		InternalEndpointRoute updateEndpoint = createRoute();
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint
 				.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
@@ -70,7 +70,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
 	// cases. They must show up in any case.
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new project.");
@@ -85,7 +85,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:projectUuid");
 		readOne.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		readOne.description("Load the project with the given uuid.");
@@ -103,7 +103,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple projects and return a paged response.");
@@ -118,7 +118,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:projectUuid");
 		endpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);

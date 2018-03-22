@@ -17,11 +17,11 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class UserEndpoint extends AbstractEndpoint {
+public class UserEndpoint extends AbstractInternalEndpoint {
 
 	private UserCrudHandler crudHandler;
 
@@ -57,7 +57,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addAPITokenHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -72,7 +72,7 @@ public class UserEndpoint extends AbstractEndpoint {
 			crudHandler.handleIssueAPIToken(ac, uuid);
 		});
 
-		EndpointRoute deleteEndpoint = createEndpoint();
+		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.path("/:userUuid/token");
 		deleteEndpoint.setRAMLPath("/{userUuid}/token");
 		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -88,7 +88,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadPermissionHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -106,7 +106,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addResetTokenHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/reset_token");
 		endpoint.setRAMLPath("/{userUuid}/reset_token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -122,7 +122,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:userUuid");
 		readOne.description("Read the user with the given uuid");
 		readOne.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -141,7 +141,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		/*
 		 * List all users when no parameter was specified
 		 */
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.description("Load multiple users and return a paged list response.");
 		readAll.method(GET);
@@ -158,7 +158,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -180,7 +180,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
 		getRouter().route("/:userUuid").method(POST).handler(authHandler);
 
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
@@ -198,7 +198,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.description("Create a new user.");
 		endpoint.method(POST);

@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.http.MeshHeaders;
+import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
 
@@ -189,7 +190,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	@Override
 	public Project getProject() {
 		if (project == null) {
-			project = get(RouterStorage.PROJECT_CONTEXT_KEY);
+			project = get(ProjectsRouter.PROJECT_CONTEXT_KEY);
 		}
 		return project;
 	}

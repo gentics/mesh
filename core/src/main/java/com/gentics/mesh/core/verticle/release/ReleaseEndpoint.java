@@ -14,7 +14,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -54,7 +54,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addMicroschemaInfoHandler() {
-		EndpointRoute readMicroschemas = createEndpoint();
+		InternalEndpointRoute readMicroschemas = createRoute();
 		readMicroschemas.path("/:releaseUuid/microschemas");
 		readMicroschemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readMicroschemas.method(GET);
@@ -72,7 +72,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addSchemaInfoHandler() {
-		EndpointRoute readSchemas = createEndpoint();
+		InternalEndpointRoute readSchemas = createRoute();
 		readSchemas.path("/:releaseUuid/schemas");
 		readSchemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readSchemas.method(GET);
@@ -88,7 +88,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addNodeMigrationHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:releaseUuid/migrateSchemas");
 		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
@@ -103,7 +103,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addMicronodeMigrationHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:releaseUuid/migrateMicroschemas");
 		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
@@ -118,7 +118,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new release and automatically invoke a node migration.");
@@ -132,7 +132,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:releaseUuid");
 		readOne.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readOne.description("Load the release with the given uuid.");
@@ -149,7 +149,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple releases and return a paged list response.");
@@ -163,7 +163,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		EndpointRoute addSchema = createEndpoint();
+		InternalEndpointRoute addSchema = createRoute();
 		addSchema.path("/:releaseUuid/schemas");
 		addSchema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		addSchema.method(POST);
@@ -178,7 +178,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleAssignSchemaVersion(ac, uuid);
 		});
 
-		EndpointRoute addMicroschema = createEndpoint();
+		InternalEndpointRoute addMicroschema = createRoute();
 		addMicroschema.path("/:releaseUuid/microschemas");
 		addMicroschema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		addMicroschema.method(POST);
@@ -193,7 +193,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleAssignMicroschemaVersion(ac, uuid);
 		});
 
-		EndpointRoute updateRelease = createEndpoint();
+		InternalEndpointRoute updateRelease = createRoute();
 		updateRelease.path("/:releaseUuid");
 		updateRelease.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		updateRelease

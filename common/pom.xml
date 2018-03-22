@@ -19,6 +19,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-plugin-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
 		</dependency>

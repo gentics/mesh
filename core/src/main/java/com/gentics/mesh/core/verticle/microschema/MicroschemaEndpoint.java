@@ -17,11 +17,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class MicroschemaEndpoint extends AbstractEndpoint {
+public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;
 
@@ -55,7 +55,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDiffHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid/diff");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -85,7 +85,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		// crudHandler.handleGetSchemaChanges(ac, schemaUuid);
 		// });
 
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid/changes");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -103,7 +103,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandlers() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:microschemaUuid");
 		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		readOne.addQueryParameters(VersioningParametersImpl.class);
@@ -121,7 +121,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple microschemas and return a paged list response.");
@@ -135,7 +135,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -150,7 +150,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -168,7 +168,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new microschema.");

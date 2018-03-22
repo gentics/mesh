@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 public class WebRootEndpoint extends AbstractProjectEndpoint {
@@ -39,7 +39,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addPathHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.setRAMLPath("/{path}");
 		endpoint.method(GET);
@@ -54,7 +54,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addErrorHandlers() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/error/404");
 		endpoint.description("Fallback endpoint for unresolvable links which returns 404.");
 		endpoint.handler(rc -> {

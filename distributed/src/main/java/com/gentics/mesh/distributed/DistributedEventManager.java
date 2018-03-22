@@ -110,13 +110,13 @@ public class DistributedEventManager {
 
 		try (Tx tx = cdb.tx()) {
 			for (RouterStorage rs : RouterStorage.getInstances()) {
-				Map<String, Router> registeredProjectRouters = rs.getProjectRouters();
+				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
 				for (Project project : cboot.meshRoot().getProjectRoot().findAllIt()) {
 					if (registeredProjectRouters.containsKey(project.getName())) {
 						continue;
 					} else {
-						rs.addProjectRouter(project.getName());
+						rs.root().apiRouter().projectsRouter().addProjectRouter(project.getName());
 					}
 				}
 			}

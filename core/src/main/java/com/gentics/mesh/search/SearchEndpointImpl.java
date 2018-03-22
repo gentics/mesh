@@ -25,8 +25,8 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
@@ -40,7 +40,7 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import dagger.Lazy;
 
-public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoint {
+public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -124,7 +124,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	}
 
 	private void addAdminHandlers() {
-		EndpointRoute statusEndpoint = createEndpoint();
+		InternalEndpointRoute statusEndpoint = createRoute();
 		statusEndpoint.path("/status");
 		statusEndpoint.method(GET);
 		statusEndpoint.description("Returns the search index status.");
@@ -146,7 +146,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 		// adminHandler.createMappings(ac);
 		// });
 
-		EndpointRoute reindexEndpoint = createEndpoint();
+		InternalEndpointRoute reindexEndpoint = createRoute();
 		reindexEndpoint.path("/reindex");
 		reindexEndpoint.method(POST);
 		reindexEndpoint.produces(APPLICATION_JSON);
@@ -172,7 +172,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse, boolean filterByLanguage) {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
