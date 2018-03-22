@@ -26,7 +26,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.api.PluginManager;
 
-import ch.qos.logback.core.Context;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -67,7 +66,7 @@ public class PluginManagerImpl implements PluginManager {
 				bundle.start();
 				ServiceReference<Plugin> ref = bundle.getBundleContext().getServiceReference(Plugin.class);
 				Plugin plugin = bundle.getBundleContext().getService(ref);
-				System.out.println("pppppppppp " + plugin.getName());
+				System.out.println("Plugin" + plugin.getName());
 			}
 
 		} catch (BundleException e1) {
