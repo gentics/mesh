@@ -280,15 +280,17 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				PagingParameters pagingInfo = getPagingInfo(env);
 				String query = env.getArgument("query");
 
+				List<String> languageTags = getLanguageArgument(env);
 				// Check whether we need to load the nodes via a query or regular project-wide paging
 				if (query != null) {
+					// set the languageTags as context parameters for the search
+					gc.getNodeParameters().setLanguages(languageTags.stream().toArray(String[]::new));
 					return nodeTypeProvider.handleContentSearch(gc, query, pagingInfo);
 				} else {
 					NodeRoot nodeRoot = gc.getProject().getNodeRoot();
 					TransformablePage<? extends Node> nodes = nodeRoot.findAll(gc, pagingInfo);
 
-					// Now lets try to load the containers for those found nodes - apply the language fallback
-					List<String> languageTags = getLanguageArgument(env);
+					// Now lets try to load the containers for those found nodes and apply the language fallback
 					List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
 						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 						return new NodeContent(node, container);

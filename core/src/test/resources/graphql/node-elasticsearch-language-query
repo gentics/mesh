@@ -1,0 +1,42 @@
+{
+	# [$.data.german.elements.length()=1]
+	german: nodes(query: "{\"query\":{\"query_string\":{\"query\":\"mealtime\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}", perPage: 1, lang: ["de"]) {
+		elements {
+			uuid
+			# [$.data.german.elements[0].language=de]
+			language
+		}
+		# [$.data.german.totalCount=1]
+		totalCount
+	}
+	# [$.data.english.elements.length()=1]
+    english: nodes(query: "{\"query\":{\"query_string\":{\"query\":\"mealtime\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}", perPage: 1, lang: ["en"]) {
+        elements {
+            uuid
+            # [$.data.english.elements[0].language=en]
+            language
+        }
+        # [$.data.english.totalCount=1]
+        totalCount
+    }
+    # [$.data.default.elements.length()=1]
+    default: nodes(query: "{\"query\":{\"query_string\":{\"query\":\"mealtime\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}", perPage: 1) {
+        elements {
+            uuid
+            # [$.data.default.elements[0].language=en]
+            language
+        }
+        # [$.data.default.totalCount=1]
+        totalCount
+    }
+    # [$.data.both.elements.length()=2]
+    both: nodes(query: "{\"query\":{\"query_string\":{\"query\":\"mealtime\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}", perPage: 2, lang: ["de", "en"]) {
+        elements {
+            uuid
+        }
+        # [$.data.both.totalCount=2]
+        totalCount
+    }
+
+}
+# [$.errors=<is-undefined>]
