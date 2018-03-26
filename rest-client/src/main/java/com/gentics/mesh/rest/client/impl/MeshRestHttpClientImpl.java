@@ -6,8 +6,11 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import com.gentics.mesh.util.URIUtils;
 import io.vertx.core.http.HttpClientOptions;
 import org.apache.commons.lang.NotImplementedException;
 
@@ -704,12 +707,23 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<WebRootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
 		if (!path.startsWith("/")) {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
-		// TODO encode path?
+		return webroot(projectName, path.split("/"), parameters);
+	}
+
+	@Override
+	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
+
+		String path = Arrays.stream(pathSegments)
+				.filter(segment -> segment != null && !segment.isEmpty())
+				.map(URIUtils::encodeFragment)
+				.collect(Collectors.joining("/", "/", ""));
+
 		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = getClient().request(GET, requestUri, handler);
@@ -718,21 +732,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		});
 
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
-	}
-
-	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
-		StringBuilder path = new StringBuilder();
-		path.append("/");
-		for (String segment : pathSegments) {
-			if (path.length() > 0) {
-				path.append("/");
-			}
-			path.append(encodeFragment(segment));
-		}
-		return webroot(projectName, path.toString(), parameters);
 	}
 
 	@Override
