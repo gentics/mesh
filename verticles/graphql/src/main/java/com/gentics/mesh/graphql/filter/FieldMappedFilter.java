@@ -7,9 +7,16 @@ import com.gentics.mesh.graphqlfilter.filter.MappedFilter;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
+ */
 public class FieldMappedFilter<T, Q> extends MappedFilter<GraphFieldContainer, T, Q> {
     private final String schemaName;
 
+    /**
+     * Creates a new FieldMappedFilter.
+     * Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
+     */
     public FieldMappedFilter(String name, String description, Filter<T, Q> delegate, Function<GraphFieldContainer, T> mapper, String schemaName) {
         super(name, description, delegate, mapper);
         this.schemaName = schemaName;

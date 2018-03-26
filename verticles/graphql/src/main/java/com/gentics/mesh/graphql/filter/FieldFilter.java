@@ -23,6 +23,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Filters by the fields of a node with a certain schema.
+ */
 public class FieldFilter extends MainFilter<GraphFieldContainer> {
     private static final String NAME_PREFIX = "FieldFilter.";
 
@@ -31,6 +34,11 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
         FieldTypes.STRING, FieldTypes.HTML, FieldTypes.DATE, FieldTypes.BOOLEAN, FieldTypes.NUMBER
     ).map(FieldTypes::toString).collect(Collectors.toSet());
 
+    /**
+     * Creates a new filter for the provided schema
+     * @param context The context of the current query
+     * @param container The schema model to create the filter for
+     */
     public static FieldFilter filter(GraphQLContext context, SchemaModel container) {
         return context.getOrStore(NAME_PREFIX + container.getName(), () -> new FieldFilter(container));
     }
@@ -52,6 +60,10 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Creates a filter for a single field of a schema. Currently not all field types are supported.
+     * @param fieldSchema The field schema to create the filter for
+     */
     private FilterField<GraphFieldContainer, ?> createFieldFilter(FieldSchema fieldSchema) {
         String schemaName = schema.getName();
         String name = fieldSchema.getName();

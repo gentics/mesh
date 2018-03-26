@@ -1,31 +1,25 @@
 package com.gentics.mesh.core.data.page.impl;
 
-import java.util.Optional;
+import com.gentics.mesh.parameter.PagingParameters;
+
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.parameter.PagingParameters;
-
 public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
-
-	private final Optional<Predicate<T>> filter;
 
 	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo) {
 		super(pagingInfo);
-		this.filter = Optional.empty();
 		init(stream);
 	}
 
 	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<T> filter) {
 		super(pagingInfo);
-		this.filter = Optional.of(filter);
-		init(stream);
+		init(stream.filter(filter));
 	}
 
 	private void init(Stream<? extends T> stream) {
 		AtomicLong pageCounter = new AtomicLong();
-		stream = filter.map(stream::filter).orElse((Stream)stream);
 		visibleItems = stream
 				.map(item -> {
 					totalCounter.incrementAndGet();

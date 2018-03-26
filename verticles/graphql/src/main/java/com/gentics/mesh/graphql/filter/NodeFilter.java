@@ -16,6 +16,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+/**
+ * Filters nodes.
+ */
 public class NodeFilter extends StartMainFilter<NodeContent> {
 
     private static final String NAME = "NodeFilter";

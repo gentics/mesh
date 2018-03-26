@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+/**
+ * Filter schemas.
+ */
 public class SchemaFilter extends MainFilter<SchemaContainer> {
 
     private static final String NAME = "SchemaFilter";
