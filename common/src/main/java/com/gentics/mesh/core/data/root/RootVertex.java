@@ -77,7 +77,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
 	 * This also checks permissions.
 	 *
-	 * @return
+	 * @param ac The context of the request
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
@@ -116,7 +116,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 	/**
 	 * Find the visible elements and return a paged result.
-	 * 
+	 *
 	 * @param ac
 	 *            action context
 	 * @param pagingInfo

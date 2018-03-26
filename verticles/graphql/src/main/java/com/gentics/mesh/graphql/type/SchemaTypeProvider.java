@@ -99,7 +99,6 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			});
 
 			return applyNodeFilter(env, nodes);
-//			return new DynamicStreamPageImpl<>(nodes, getPagingInfo(env), NodeFilter.filter(context).createPredicate(env.getArgument("filter")));
 		}, NODE_PAGE_TYPE_NAME).argument(NodeFilter.filter(context).createFilterArgument()));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");

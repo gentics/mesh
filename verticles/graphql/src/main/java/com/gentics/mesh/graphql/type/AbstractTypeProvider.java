@@ -360,9 +360,12 @@ public abstract class AbstractTypeProvider {
 		return parameters;
 	}
 
-    /**
-     * Fetches nodes and applies filters
-     */
+	/**
+	 * Fetches nodes and applies filters
+	 *
+	 * @param env the environment of the request
+	 * @return the filtered nodes
+	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
         GraphQLContext gc = env.getContext();
         NodeRoot nodeRoot = gc.getProject().getNodeRoot();
