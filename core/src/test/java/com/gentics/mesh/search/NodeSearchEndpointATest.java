@@ -32,49 +32,6 @@ import com.syncleus.ferma.tx.Tx;
 public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
-	public void testReindexNodeIndex() throws Exception {
-
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
-
-		String oldContent = "supersonic";
-		String newContent = "urschnell";
-
-		// "urschnell" not found in published nodes
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent)));
-		assertThat(response.getData()).as("Published search result").isEmpty();
-
-		String uuid = db().tx(() -> content("concorde").getUuid());
-
-		// publish the Concorde
-		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
-		call(() -> client().publishNode(PROJECT_NAME, uuid));
-
-		// "supersonic" found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
-		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
-
-		// // Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = tx()) {
-			user().addGroup(data().getGroups().get("admin"));
-			tx.success();
-		}
-
-		// Now clear all data
-		searchProvider().clear().blockingAwait();
-
-		waitForEvent(Events.INDEX_SYNC_EVENT, () -> {
-			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertMessage(message, "search_admin_reindex_invoked");
-		});
-
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
-		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
-
-	}
-
-	@Test
 	public void testSearchPublishedNodes() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();

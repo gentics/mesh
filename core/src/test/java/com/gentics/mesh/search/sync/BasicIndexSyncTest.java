@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -36,7 +35,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
  * Test differential sync of elasticsearch.
  */
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
-public class ElasticsearchIndexSyncTest extends AbstractMeshTest {
+public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	private ElasticSearchProvider getProvider() {
 		return ((ElasticSearchProvider) searchProvider());
