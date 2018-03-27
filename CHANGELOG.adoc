@@ -27,6 +27,8 @@ icon:plus[] REST: The `/api/v1/search/status` endpoint has been enhanced. The en
 
 icon:plus[] Logging: The logging verbosity has been further decreased.
 
+icon:plus[] GraphQL: It is now possible to link:https://getmesh.io/docs/beta/graphql.html#_filtering[filter lists of nodes].
+
 icon:check[] REST: Fix ETag generation for nodes.
                    Previously taking a node offline did not alter the ETag and this also lead to inconsistent status
                    information being displayed in the Mesh UI link:https://github.com/gentics/mesh/issues/345[#345]
