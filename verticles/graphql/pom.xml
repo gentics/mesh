@@ -29,9 +29,9 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
+			<groupId>com.gentics.graphqlfilter</groupId>
 			<artifactId>graphql-java-filter</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
