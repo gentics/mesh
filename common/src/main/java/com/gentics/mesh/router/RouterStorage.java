@@ -3,7 +3,7 @@ package com.gentics.mesh.router;
 import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.URIUtils.encodeFragment;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -325,7 +325,7 @@ public class RouterStorage {
 	 * @throws InvalidNameException
 	 */
 	public Router addProjectRouter(String name) throws InvalidNameException {
-		String encodedName = encodeFragment(name);
+		String encodedName = encodeSegment(name);
 		assertProjectNameValid(name);
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter == null) {
@@ -428,7 +428,7 @@ public class RouterStorage {
 	 *            Project name to be checked
 	 */
 	private void assertProjectNameValid(String name) {
-		String encodedName = encodeFragment(name);
+		String encodedName = encodeSegment(name);
 		if (coreRouters.containsKey(name) || coreRouters.containsKey(encodedName)) {
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", name);
 		}

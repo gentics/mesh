@@ -12,7 +12,7 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLET
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
-import static com.gentics.mesh.util.URIUtils.encodeFragment;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -386,7 +386,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/" + encodeFragment(getProject().getName()) + "/releases/" + getUuid();
+		return "/api/v1/" + encodeSegment(getProject().getName()) + "/releases/" + getUuid();
 	}
 
 	@Override

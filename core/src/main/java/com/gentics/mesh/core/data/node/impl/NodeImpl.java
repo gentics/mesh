@@ -121,7 +121,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.URIUtils.encodeFragment;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -213,7 +213,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Iterator<String> it = segments.iterator();
 			while (it.hasNext()) {
 				String fragment = it.next();
-				builder.append("/").append(URIUtils.encodeFragment(fragment));
+				builder.append("/").append(URIUtils.encodeSegment(fragment));
 			}
 			return builder.toString();
 		});
@@ -1965,7 +1965,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/" + encodeFragment(getProject().getName()) + "/nodes/" + getUuid();
+		return "/api/v1/" + encodeSegment(getProject().getName()) + "/nodes/" + getUuid();
 	}
 
 	@Override

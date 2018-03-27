@@ -10,17 +10,17 @@ import org.junit.Test;
 public class URIUtilsTest {
 
 	@Test
-	public void testFragmentEncoder() {
+	public void testSegmentEncoder() {
 		// Assert that RFC3986 Sub-delims are not escaped
 		List<String> mustNotEscape = Arrays.asList("!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "=");
 		for (String input : mustNotEscape) {
-			assertEquals("The string should not have been escaped", input, URIUtils.encodeFragment(input));
+			assertEquals("The string should not have been escaped", input, URIUtils.encodeSegment(input));
 		}
 		// Check other chars
-		assertEquals("slash", "%2F", URIUtils.encodeFragment("/"));
-		assertEquals("questionmark", "%3F", URIUtils.encodeFragment("?"));
-		assertEquals("space", "%20", URIUtils.encodeFragment(" "));
-		assertEquals("character ä","%C3%A4",  URIUtils.encodeFragment("ä"));
-		assertEquals("character ü","%C3%BC", URIUtils.encodeFragment("ü"));
+		assertEquals("slash", "%2F", URIUtils.encodeSegment("/"));
+		assertEquals("questionmark", "%3F", URIUtils.encodeSegment("?"));
+		assertEquals("space", "%20", URIUtils.encodeSegment(" "));
+		assertEquals("character ä","%C3%A4",  URIUtils.encodeSegment("ä"));
+		assertEquals("character ü","%C3%BC", URIUtils.encodeSegment("ü"));
 	}
 }
