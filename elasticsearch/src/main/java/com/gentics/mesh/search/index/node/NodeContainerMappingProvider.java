@@ -17,12 +17,14 @@ import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
@@ -53,6 +55,16 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	@Override
 	public JsonObject getMappingProperties() {
 		return new JsonObject();
+	}
+	
+	/**
+	 * Return the type specific mapping which is constructed using the provided schema.
+	 * 
+	 * @param schema Schema from which the mapping should be constructed
+	 * @return An ES-Mapping for the given Schema
+	 */
+	public JsonObject getMapping(Schema schema) {
+		return getMapping(schema, null);
 	}
 
 	/**
@@ -288,7 +300,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		boolean shouldFilter = release != null && !whitelist.isEmpty();
 		
 		if (shouldFilter) {			
-			for (MicroschemaContainerVersion version : release.findAllMicroschemaVersions()) {
+			for (ReleaseMicroschemaEdge edge : release.findAllLatestMicroschemaVersionEdges()) {
+				MicroschemaContainerVersion version = edge.getMicroschemaContainerVersion();
 				MicroschemaModel microschema = version.getSchema();
 				String microschemaName = microschema.getName();
 				
@@ -299,16 +312,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				}
 				
 				// Create and save a mapping for all microschema fields
-				JsonObject fields = new JsonObject();
-				for (FieldSchema field : microschema.getFields()) {
-					// Check if the type is a micronode, and if it is, then skip it
-					FieldTypes type = FieldTypes.valueByName(field.getType());
-					if (type == null || type.equals(FieldTypes.MICRONODE)) {
-						continue;
-					}
-					
-					fields.put(field.getName(), this.getFieldMapping(field, release));
-				}
+				JsonObject fields = new JsonObject(microschema
+					.getFields()
+					.stream()
+					.collect(Collectors.toMap(FieldSchema::getName, field -> this.getFieldMapping(field, release)))
+				);
 				
 				// Save the created mapping to the properties
 				properties.put("fields-" + microschemaName, new JsonObject()
