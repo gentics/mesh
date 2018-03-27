@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.search.index.AbstractTransformer;
+import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.json.JsonObject;
 
@@ -21,16 +22,25 @@ public class SchemaTransformer extends AbstractTransformer<SchemaContainer> {
 	public SchemaTransformer() {
 	}
 
-	@Override
-	public JsonObject toDocument(SchemaContainer container) {
+	public String generateVersion(SchemaContainer container) {
+		return ETag.hash(toDocument(container, false).encode());
+	}
+
+	private JsonObject toDocument(SchemaContainer container, boolean withVersion) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, container.getName());
 		document.put(DESCRIPTION_KEY, container.getLatestVersion().getSchema().getDescription());
 		addBasicReferences(document, container);
 		addPermissionInfo(document, container);
+		if (withVersion) {
+			document.put(VERSION_KEY, generateVersion(container));
+		}
 		return document;
 	}
 
-	
+	@Override
+	public JsonObject toDocument(SchemaContainer container) {
+		return toDocument(container, true);
+	}
 
 }

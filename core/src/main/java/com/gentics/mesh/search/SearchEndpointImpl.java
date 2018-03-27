@@ -146,15 +146,15 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 		// adminHandler.createMappings(ac);
 		// });
 
-		EndpointRoute reindexEndpoint = createEndpoint();
-		reindexEndpoint.path("/reindex");
-		reindexEndpoint.method(POST);
-		reindexEndpoint.produces(APPLICATION_JSON);
-		reindexEndpoint.description("Invokes a full reindex of the search indices. This operation may take some time to complete.");
-		reindexEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked reindex command for all elements.");
-		reindexEndpoint.handler(rc -> {
+		EndpointRoute indexSyncEndpoint = createEndpoint();
+		indexSyncEndpoint.path("/sync");
+		indexSyncEndpoint.method(POST);
+		indexSyncEndpoint.produces(APPLICATION_JSON);
+		indexSyncEndpoint.description("Invokes the manual synchronisation of the search indices. This operation may take some time to complete and is performed asynchronously. When clustering is enabled it will be executed on any free instance.");
+		indexSyncEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked index synchronisation on all indices.");
+		indexSyncEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			adminHandler.handleReindex(ac);
+			adminHandler.handleSync(ac);
 		});
 	}
 

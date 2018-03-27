@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.search.index.AbstractTransformer;
+import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.json.JsonObject;
 
@@ -20,13 +21,25 @@ public class ProjectTransformer extends AbstractTransformer<Project> {
 	public ProjectTransformer() {
 	}
 
-	@Override
-	public JsonObject toDocument(Project project) {
+	public String generateVersion(Project project) {
+		return ETag.hash(toDocument(project, false).encode());
+	}
+
+	private JsonObject toDocument(Project project, boolean withVersion) {
+
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, project.getName());
 		addBasicReferences(document, project);
 		addPermissionInfo(document, project);
+		if (withVersion) {
+			document.put(VERSION_KEY, generateVersion(project));
+		}
 		return document;
+	}
+
+	@Override
+	public JsonObject toDocument(Project project) {
+		return toDocument(project, true);
 	}
 
 }

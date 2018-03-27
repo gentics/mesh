@@ -23,7 +23,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoPermReIndex() {
-		call(() -> client().invokeReindex(), FORBIDDEN, "error_admin_permission_required");
+		call(() -> client().invokeIndexSync(), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
@@ -35,7 +35,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 		}
 		searchProvider().refreshIndex().blockingAwait();
 
-		GenericMessageResponse message = call(() -> client().invokeReindex());
+		GenericMessageResponse message = call(() -> client().invokeIndexSync());
 		assertMessage(message, "search_admin_reindex_invoked");
 	}
 

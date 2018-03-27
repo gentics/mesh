@@ -2,6 +2,7 @@ package com.gentics.mesh.search.index.tagfamily;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
+import com.gentics.mesh.search.index.metric.SyncMetric;
 
 import io.reactivex.Completable;
 
@@ -35,6 +37,11 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	@Inject
 	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
+	}
+
+	@Override
+	public String getType() {
+		return "tagfamily";
 	}
 
 	@Override
@@ -79,6 +86,25 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 				indexInfo.put(indexName, info);
 			}
 			return indexInfo;
+		});
+	}
+
+	@Override
+	public Completable syncIndices() {
+		return Completable.defer(() -> {
+			return db.tx(() -> {
+				ProjectRoot root = boot.meshRoot().getProjectRoot();
+				SyncMetric metric = new SyncMetric(getType());
+
+				Set<Completable> actions = new HashSet<>();
+				for (Project project : root.findAllIt()) {
+					String uuid = project.getUuid();
+					String indexName = TagFamily.composeIndexName(uuid);
+					actions.add(diffAndSync(indexName, uuid, metric));
+				}
+
+				return Completable.merge(actions);
+			});
 		});
 	}
 

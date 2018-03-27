@@ -132,9 +132,20 @@ public final class Events {
 
 	/* Search index related */
 
-	public static final String EVENT_REINDEX_COMPLETED = "mesh.search.reindex.completed";
+	/**
+	 * Address for the handler which will process index sync requests.
+	 */
+	public final static String INDEX_SYNC_WORKER_ADDRESS = "index-sync.worker";
 
-	public static final String EVENT_REINDEX_FAILED = "mesh.search.reindex.failed";
+	/**
+	 * Address to which index sync results will be published (failed, succeeded)
+	 */
+	public static final String INDEX_SYNC_EVENT = "mesh.search.index.sync";
+
+//	/**
+//	 * Address to query the index sync status.
+//	 */
+//	public static final String INDEX_SYNC_STATUS_EVENT = "mesh.search.index.sync.status";
 
 	/**
 	 * Returns a list of all events which are publicly exposed via the eventbus websocket bridge.
@@ -239,9 +250,9 @@ public final class Events {
 
 		/* Search Index */
 
-		events.add(EVENT_REINDEX_FAILED);
+		events.add(INDEX_SYNC_EVENT);
 
-		events.add(EVENT_REINDEX_COMPLETED);
+//		events.add(INDEX_SYNC_STATUS_EVENT);
 
 		return events;
 	}

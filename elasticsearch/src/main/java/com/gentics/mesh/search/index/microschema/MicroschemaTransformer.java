@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.search.index.AbstractTransformer;
+import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.json.JsonObject;
 
@@ -20,15 +21,25 @@ public class MicroschemaTransformer extends AbstractTransformer<MicroschemaConta
 	public MicroschemaTransformer() {
 	}
 
-	@Override
-	public JsonObject toDocument(MicroschemaContainer microschema) {
+	public String generateVersion(MicroschemaContainer microschema) {
+		return ETag.hash(toDocument(microschema, false).encode());
+	}
+
+	private JsonObject toDocument(MicroschemaContainer microschema, boolean withVersion) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, microschema);
 		document.put(NAME_KEY, microschema.getName());
 		addPermissionInfo(document, microschema);
 		// map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
+		if (withVersion) {
+			document.put(VERSION_KEY, generateVersion(microschema));
+		}
 		return document;
 	}
 
+	@Override
+	public JsonObject toDocument(MicroschemaContainer microschema) {
+		return toDocument(microschema, true);
+	}
 
 }

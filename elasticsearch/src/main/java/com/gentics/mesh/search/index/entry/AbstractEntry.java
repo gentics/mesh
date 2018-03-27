@@ -4,6 +4,8 @@ import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 
+import io.reactivex.functions.Action;
+
 /**
  * Abstract implementation for {@link SearchQueueEntry}'s. Please use this class if you want to build your own entry types.
  */
@@ -11,6 +13,8 @@ public abstract class AbstractEntry<T extends EntryContext> implements SearchQue
 
 	protected SearchQueueEntryAction elementAction;
 	protected T context;
+	protected Action onProcessAction = () -> {
+	};
 
 	public AbstractEntry(SearchQueueEntryAction action) {
 		this.elementAction = action;
@@ -24,6 +28,11 @@ public abstract class AbstractEntry<T extends EntryContext> implements SearchQue
 	@Override
 	public String toString() {
 		return "action: {" + getElementAction().name() + "}";
+	}
+
+	@Override
+	public void setOnProcessAction(Action onProcessAction) {
+		this.onProcessAction = onProcessAction;
 	}
 
 	@Override

@@ -48,6 +48,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractTransformer;
+import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
@@ -411,15 +412,29 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		return document;
 	}
 
+	public String generateVersion(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
+		return ETag.hash(toDocument(container, releaseUuid, type, false).encode());
+	}
+
 	/**
-	 * Transform the given container into a indexable document.
+	 * @deprecated Use generateVersion(container, releaseUuid) instead
+	 */
+	@Override
+	@Deprecated
+	public String generateVersion(NodeGraphFieldContainer element) {
+		throw new NotImplementedException("Use generateVersion(container, releaseUuid) instead");
+	}
+
+	/**
+	 * Transform the role to the document which can be stored in ES.
 	 * 
 	 * @param container
 	 * @param releaseUuid
 	 * @param type
+	 * @param withVersion
 	 * @return
 	 */
-	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
+	private JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean withVersion) {
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -454,7 +469,24 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 		displayField.put("value", container.getDisplayFieldValue());
 		document.put("displayField", displayField);
+		if (withVersion) {
+			document.put(VERSION_KEY, generateVersion(container, releaseUuid, type));
+		}
 		return document;
 	}
+
+	/**
+	 * Transform the given container into a indexable document.
+	 * 
+	 * @param container
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
+	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
+		return toDocument(container, releaseUuid, type, true);
+	}
+	
+	
 
 }

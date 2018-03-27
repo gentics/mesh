@@ -18,6 +18,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
+import com.gentics.mesh.search.index.metric.SyncMetric;
+
+import io.reactivex.Completable;
 
 @Singleton
 public class UserIndexHandler extends AbstractIndexHandler<User> {
@@ -33,6 +36,11 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	@Inject
 	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
+	}
+
+	@Override
+	public String getType() {
+		return "user";
 	}
 
 	@Override
@@ -58,6 +66,13 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	@Override
 	protected MappingProvider getMappingProvider() {
 		return mappingProvider;
+	}
+
+	@Override
+	public Completable syncIndices() {
+		return Completable.defer(() -> {
+			return diffAndSync(User.composeIndexName(), null, new SyncMetric(getType()));
+		});
 	}
 
 	@Override

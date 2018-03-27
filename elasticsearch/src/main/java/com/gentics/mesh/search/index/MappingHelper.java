@@ -9,6 +9,7 @@ public final class MappingHelper {
 
 	// Common keys
 	public static final String UUID_KEY = "uuid";
+	public static final String VERSION_KEY = "version";
 	public static final String NAME_KEY = "name";
 	public static final String DESCRIPTION_KEY = "description";
 

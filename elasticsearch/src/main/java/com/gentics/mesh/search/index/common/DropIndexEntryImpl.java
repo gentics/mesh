@@ -38,7 +38,7 @@ public class DropIndexEntryImpl extends AbstractEntry<GenericEntryContext> imple
 
 	@Override
 	public Completable process() {
-		return handler.dropIndex(this);
+		return handler.dropIndex(this).doOnComplete(onProcessAction);
 	}
 
 	@Override

@@ -463,19 +463,8 @@ public class ElasticSearchProvider implements SearchProvider {
 						log.error("Request failed {" + msg + "}", error);
 					}
 				});
-			if (ignoreError) {
-				return t.onErrorComplete();
-			} else {
-				return t;
-			}
+			return ignoreError ? t.onErrorComplete() : t;
 		};
-	}
-
-	@Override
-	public Completable invokeReindex() {
-		return clear().andThen(Observable.fromIterable(registry.get().getHandlers())
-			.flatMapCompletable(handler -> handler.init().andThen(handler.reindexAll()))
-			.andThen(refreshIndex()));
 	}
 
 }

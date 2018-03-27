@@ -353,7 +353,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 
-		int size = tx(() -> TestUtils.size(node.getSchemaContainer().getLatestVersion().getFieldContainers(initialReleaseUuid()))).intValue();
+		int size = tx(() -> {
+			return Long.valueOf(node.getSchemaContainer().getLatestVersion().getFieldContainers(initialReleaseUuid()).count()).intValue();	
+		});
 
 		// Update the schema and enable the addRaw field
 		waitForJobs(() -> {

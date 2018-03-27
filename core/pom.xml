@@ -136,13 +136,6 @@
 			<artifactId>dagger</artifactId>
 		</dependency>
 
-		<!-- Metrics -->
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-dropwizard-metrics</artifactId>
-			<version>${vertx.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>

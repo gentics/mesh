@@ -18,6 +18,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -99,7 +102,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		MeshInternal.get().searchProvider().clear().blockingAwait();
 		for (IndexHandler<?> handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
 			handler.init().blockingAwait();
-			handler.reindexAll().blockingAwait();
+			handler.syncIndices().blockingAwait();
 		}
 	}
 
@@ -389,6 +392,21 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 			filename, contentType));
 		assertNotNull(response);
 		return buffer.length();
+	}
 
+	/**
+	 * Wait until the given event has been received.
+	 * 
+	 * @param address
+	 * @param code
+	 * @throws TimeoutException
+	 */
+	protected void waitForEvent(String address, Runnable code) throws Exception {
+		CompletableFuture<Void> fut = new CompletableFuture<>();
+		vertx().eventBus().consumer(address, handler -> {
+			fut.complete(null);
+		});
+		code.run();
+		fut.get(2000, TimeUnit.SECONDS);
 	}
 }

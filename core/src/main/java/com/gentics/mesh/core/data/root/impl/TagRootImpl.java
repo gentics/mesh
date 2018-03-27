@@ -79,7 +79,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public Tag create(String name, Project project, TagFamily tagFamily, User creator) {
-		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+		Tag tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);

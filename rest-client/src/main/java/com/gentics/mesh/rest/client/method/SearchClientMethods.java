@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -243,10 +244,17 @@ public interface SearchClientMethods {
 	MeshRequest<JsonObject> searchMicroschemasRaw(String json);
 
 	/**
-	 * Trigger a reindex action which will rebuild the index for all elements. This is useful when you want to sync the search index after restoring a backup.
+	 * Trigger the index sync action which will synchronize the index for all elements. This is useful when you want to sync the search index after restoring a
+	 * backup.
 	 * 
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> invokeReindex();
+	MeshRequest<GenericMessageResponse> invokeIndexSync();
 
+	/**
+	 * Return the elasticsearch status. This will also contain information about the progress of running index sync operations.
+	 * 
+	 * @return
+	 */
+	MeshRequest<SearchStatusResponse> searchStatus();
 }

@@ -4,6 +4,7 @@ import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.VERSION_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 
 import io.vertx.core.json.JsonObject;
@@ -17,6 +18,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 		// Enhance mappings with generic/common field types
 		JsonObject mappingProperties = getMappingProperties();
 		mappingProperties.put(UUID_KEY, notAnalyzedType(KEYWORD));
+		mappingProperties.put(VERSION_KEY, notAnalyzedType(KEYWORD));
 		mappingProperties.put("created", notAnalyzedType(DATE));
 		mappingProperties.put("edited", notAnalyzedType(DATE));
 		mappingProperties.put("editor", getUserReferenceMapping());

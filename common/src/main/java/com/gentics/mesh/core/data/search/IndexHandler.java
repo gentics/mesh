@@ -27,6 +27,13 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Completable init();
 
 	/**
+	 * Shortname of the type which is handled by the handler. The name must not contain spaces.
+	 * 
+	 * @return
+	 */
+	String getType();
+
+	/**
 	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
 	 * 
 	 * @return
@@ -59,11 +66,11 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Completable store(UpdateDocumentEntry entry);
 
 	/**
-	 * Reindex all documents for the type which the handler is capable of.
+	 * Diff the elements within all indices that are handled by the index handler and synchronize the data.
 	 * 
 	 * @return
 	 */
-	Completable reindexAll();
+	Completable syncIndices();
 
 	/**
 	 * Load a map which contains the applicable indices. The key of the map is the index name.
@@ -118,5 +125,20 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * @return
 	 */
 	Completable updatePermission(UpdateDocumentEntry entry);
+
+	/**
+	 * Generate the version for the given element.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	String generateVersion(T element);
+
+	/**
+	 * Returns a map of metrics which the handler is aware of.
+	 * 
+	 * @return
+	 */
+	Map<String, Object> getMetrics();
 
 }

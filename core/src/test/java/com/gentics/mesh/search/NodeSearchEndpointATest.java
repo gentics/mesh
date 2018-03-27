@@ -7,11 +7,9 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.test.util.TestUtils.latchForEvent;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.junit.Test;
 
@@ -66,10 +64,10 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		// Now clear all data
 		searchProvider().clear().blockingAwait();
 
-		CompletableFuture<Void> fut = latchForEvent(client(), Events.EVENT_REINDEX_COMPLETED);
-		GenericMessageResponse message = call(() -> client().invokeReindex());
-		assertMessage(message, "search_admin_reindex_invoked");
-		fut.get();
+		waitForEvent(Events.INDEX_SYNC_EVENT, () -> {
+			GenericMessageResponse message = call(() -> client().invokeIndexSync());
+			assertMessage(message, "search_admin_reindex_invoked");
+		});
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
