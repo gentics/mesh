@@ -5,7 +5,7 @@ Internally, Gentics Mesh will resolve your query and traverse your content graph
 
 The GraphQL API can thus be used to prepare a single request which returns all data needed to render a specific page. 
 
-Possible usecases are:
+Possible use cases are:
 
 * Loading multiple nodes using the webroot path.
 * Generating a custom navigation which only includes the information you need.
@@ -60,6 +60,52 @@ The node will automatically be loaded in the language which matches up with the 
 It is possible to load a found node in a different language using the `node` field as shown in the example.
 
 include::examples/graphql/node-multilang-query[]
+
+== Filtering
+Any time a node list is requested, you can provide a filter object as a parameter to narrow down the result.
+
+Here are a few examples:
+
+=== Loading nodes from a specific schema
+The `SchemaFilter` matches nodes with a specific schema name.
+include::examples/graphql/filtering/root-folders[]
+
+=== Filter nodes with regular expressions
+The `StringFilter` offers various ways to filter strings. One example is regular expressions.
+In this example we get all nodes with the schema `vehicle`. We check if their name field ends with a number.
+include::examples/graphql/filtering/vehicles-regex[]
+
+=== Combining different filters
+Combine multiple filters to further narrow down your results. One example is the `OrFilter`.
+We get the same nodes as in the previous example. Additionally we also get all vehicles that have a price lower than 200.000.
+include::examples/graphql/filtering/vehicles-or[]
+
+=== Filtering limitations
+When filtering by fields of a node, it is currently only possible to filter by fields of the following types:
+
+* `string`
+* `html`
+* `number`
+* `date`
+* `boolean`
+
+.A note on GraphiQL
+[TIP]
+Edit the above examples and experiment with the API.
+Use the GraphiQL autocompletion (press `ctrl`+`space` while typing your query) to see what options are available.
+Check the documentation explorer (in the top-right corner) to find out more details.
+
+.Try it in your own installation
+[TIP]
+Your instance of Gentics Mesh comes with the <<_graphiql_browser>> as well.
+
+=== Comparison to Elasticsearch
+Many tasks can be done by both the search and the filtering feature. Here are a few tips that help you decide which technology is suited best for your needs:
+
+* GraphQL filtering is independent of Elasticsearch. If you don't want to use Elasticsearch, GraphQL filtering is still available.
+* GraphQL filtering is faster when dealing with small datasets. There is less overhead compared to Elasticsearch. GraphQL filtering iterates over the source set of elements and applies the filter until enough nodes have been found for the response.
+* Elasticsearch is faster when dealing with large datasets, because it uses an index to access its documents.
+* Elasticsearch is better suited for full text search queries from an end user because you can precisely tune the index to your requirements.
 
 == GraphiQL Browser
 

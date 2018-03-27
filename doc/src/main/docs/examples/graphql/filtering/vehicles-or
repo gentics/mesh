@@ -1,0 +1,37 @@
+++++
+<div class="graphql-example" style="height: 41em">
+{
+  # Get all nodes and apply filter
+  nodes(filter: {
+    # Get nodes from schema "vehicle"
+    schema: { is: vehicle }
+    # Filter by fields
+    fields: {
+      # If item in result is a "vehicle",
+      # apply this filter
+      vehicle: {
+        # Test if any of the following filters apply
+        or: [
+          # Filter the field "name" with a
+          # regular expression
+          {name: { regex: "[0-9]$" }}
+          # Get vehicles that have a price
+          # less than 200.000
+          {price: { lt:200000 }}
+        ]
+      }
+    }
+  }) {
+    elements {
+      uuid
+      fields {
+        ... on vehicle {
+          name
+          price
+        }
+      }
+    }
+  }
+}
+</div>
+++++

@@ -1,26 +1,5 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
@@ -31,22 +10,41 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
-
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * Type provider for the node type. Internally this will map partially to {@link Node} and {@link NodeGraphFieldContainer} vertices.
@@ -177,7 +175,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return new NodeContent(node, node.findVersion(gc, languageTags));
 	}
 
-	public GraphQLObjectType createType(Project project) {
+	public GraphQLObjectType createType(GraphQLContext context) {
+		Project project = context.getProject();
 		Builder nodeType = newObject();
 		nodeType.name(NODE_TYPE_NAME);
 		nodeType.description(
@@ -265,19 +264,16 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 
-			ContainerType selectedType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
-			Node node = content.getNode();
 			List<String> languageTags = getLanguageArgument(env);
 
-			TransformablePage<? extends Node> page = node.getChildren(gc, languageTags, gc.getRelease().getUuid(), selectedType, getPagingInfo(env));
+			Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
+				.map(item -> new NodeContent(item, item.findVersion(gc, languageTags)))
+				.filter(item -> item.getContainer() != null);
 
-			// Transform the found nodes into contents
-			List<NodeContent> contents = page.getWrappedList().stream().map(item -> {
-				NodeGraphFieldContainer container = item.findVersion(gc, languageTags);
-				return new NodeContent(item, container);
-			}).collect(Collectors.toList());
-			return new WrappedPageImpl<NodeContent>(contents, page);
-		}, NODE_PAGE_TYPE_NAME).argument(createLanguageTagArg()));
+			return applyNodeFilter(env, nodes);
+		}, NODE_PAGE_TYPE_NAME)
+			.argument(createLanguageTagArg())
+			.argument(NodeFilter.filter(context).createFilterArgument()));
 
 		// .parent
 		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(
@@ -397,7 +393,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .fields
 		nodeType.field(newFieldDefinition().name("fields").description("Contains the fields of the content.").type(nodeFieldTypeProvider
-			.getSchemaFieldsType(project)).dataFetcher(env -> {
+			.getSchemaFieldsType(context)).dataFetcher(env -> {
 				// The fields can be accessed via the container so we can directly pass it along.
 				NodeContent content = env.getSource();
 				return content.getContainer();

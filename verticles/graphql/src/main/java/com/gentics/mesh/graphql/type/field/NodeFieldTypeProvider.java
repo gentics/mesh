@@ -1,14 +1,5 @@
 package com.gentics.mesh.graphql.type.field;
 
-import static graphql.schema.GraphQLObjectType.newObject;
-import static graphql.schema.GraphQLUnionType.newUnionType;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -17,12 +8,20 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
-
 import graphql.GraphQLException;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLUnionType;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.HashMap;
+import java.util.Map;
+
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLUnionType.newUnionType;
 
 /**
  * This class contains all field specific type code. It provides methods which can be used to generate field types for a specific project. This is done by
@@ -40,8 +39,8 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	public NodeFieldTypeProvider() {
 	}
 
-	public GraphQLUnionType getSchemaFieldsType(Project project) {
-		Map<String, GraphQLObjectType> types = generateSchemaFieldType(project);
+	public GraphQLUnionType getSchemaFieldsType(GraphQLContext context) {
+		Map<String, GraphQLObjectType> types = generateSchemaFieldType(context);
 
 		GraphQLObjectType[] typeArray = types.values().toArray(new GraphQLObjectType[types.values().size()]);
 
@@ -71,7 +70,8 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	 * @param project
 	 * @return
 	 */
-	private Map<String, GraphQLObjectType> generateSchemaFieldType(Project project) {
+	private Map<String, GraphQLObjectType> generateSchemaFieldType(GraphQLContext context) {
+		Project project = context.getProject();
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		for (SchemaContainer container : project.getSchemaContainerRoot().findAllIt()) {
 			SchemaContainerVersion version = container.getLatestVersion();
@@ -108,7 +108,7 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					root.field(fields.createListDef(listFieldSchema));
+					root.field(fields.createListDef(context, listFieldSchema));
 					break;
 				case MICRONODE:
 					root.field(fields.createMicronodeDef(fieldSchema, project));
