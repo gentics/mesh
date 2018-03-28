@@ -18,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -402,11 +402,11 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @throws TimeoutException
 	 */
 	protected void waitForEvent(String address, Runnable code) throws Exception {
-		CompletableFuture<Void> fut = new CompletableFuture<>();
+		CountDownLatch latch = new CountDownLatch(1);
 		vertx().eventBus().consumer(address, handler -> {
-			fut.complete(null);
+			latch.countDown();
 		});
 		code.run();
-		fut.get(2000, TimeUnit.SECONDS);
+		latch.await(2000, TimeUnit.SECONDS);
 	}
 }

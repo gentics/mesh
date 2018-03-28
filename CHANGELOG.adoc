@@ -24,6 +24,9 @@ CAUTION: Search: The  `/api/v1/search/reindex` endpoint was replaced by `/api/v1
 icon:plus[] The `/api/v1/search/sync` endpoint can now be used to trigger the differential synchronization of search indices. 
             The indices will no longer be dropped and re-populated. Instead only needed actions will be executed to sync the index with the Gentics Mesh data.
 
+icon:plus[] The `/api/v1/search/clear` endpoint has been added. It can be used to re-create all Elasticsearch indices which are managed by Gentics Mesh. 
+            Note that this operation does not invoke the index sync.
+
 icon:plus[] Docker: A new volume location for the data directory of the embedded elasticsearch has been added.
                     You can now use the `/elasticsearch/data` folder to mount your elasticsearch data files. link:https://github.com/gentics/mesh/issues/348[#348]
 

@@ -11,6 +11,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.vertx.core.eventbus.Message;
 
 /**
@@ -76,10 +77,12 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 	}
 
 	@Override
-	public void executeJob(Message<Object> message) {
-		db.tx(() -> {
-			JobRoot jobRoot = boot.get().jobRoot();
-			jobRoot.process();
+	public Completable executeJob(Message<Object> message) {
+		return Completable.fromAction(() -> {
+			db.tx(() -> {
+				JobRoot jobRoot = boot.get().jobRoot();
+				jobRoot.process();
+			});
 		});
 	}
 

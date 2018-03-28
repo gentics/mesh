@@ -12,6 +12,7 @@ import com.gentics.mesh.search.index.metric.SyncMetric;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -25,7 +26,7 @@ public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchSyncVerticle.class);
 
-	private static final String GLOBAL_SYNC_LOCK_NAME = "mesh.internal.synclock";
+	public static final String GLOBAL_SYNC_LOCK_NAME = "mesh.internal.synclock";
 
 	private Lazy<IndexHandlerRegistry> registry;
 
@@ -53,19 +54,22 @@ public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
 		return GLOBAL_SYNC_LOCK_NAME;
 	}
 
-	public void executeJob(Message<Object> message) {
-		log.info("Got index sync request.");
-		SyncMetric.reset();
-
-		Observable.fromIterable(registry.get().getHandlers())
+	/**
+	 * Execute the index sync job.
+	 */
+	public Completable executeJob(Message<Object> message) {
+		return Completable.fromAction(() -> {
+			log.info("Processing index sync job.");
+			SyncMetric.reset();
+		}).andThen(Observable.fromIterable(registry.get().getHandlers())
 			.flatMapCompletable(handler -> handler.init().andThen(handler.syncIndices()))
-			.andThen(provider.refreshIndex()).subscribe(() -> {
+			.andThen(provider.refreshIndex()).doOnComplete(() -> {
 				vertx.eventBus().publish(Events.INDEX_SYNC_EVENT, new JsonObject().put("status", "completed"));
 				log.info("Sync completed");
-			}, error -> {
+			}).doOnError(error -> {
 				log.error("Sync failed", error);
 				vertx.eventBus().publish(Events.INDEX_SYNC_EVENT, new JsonObject().put("status", "failed"));
-			});
+			}));
 	}
 
 }

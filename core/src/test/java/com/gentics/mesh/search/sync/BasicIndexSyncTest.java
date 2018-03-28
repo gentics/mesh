@@ -2,6 +2,7 @@ package com.gentics.mesh.search.sync;
 
 import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
@@ -45,6 +46,12 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	public void setup() throws Exception {
 		getProvider().clear().blockingAwait();
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
+	}
+
+	@Test
+	public void testIndexSyncLock() {
+		call(() -> client().invokeIndexSync());
+		call(() -> client().invokeIndexSync(), SERVICE_UNAVAILABLE, "search_admin_index_sync_already_in_progress");
 	}
 
 	@Test

@@ -244,6 +244,13 @@ public interface SearchClientMethods {
 	MeshRequest<JsonObject> searchMicroschemasRaw(String json);
 
 	/**
+	 * Clear all search indices by removing and re-creating them.
+	 * 
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invokeIndexClear();
+
+	/**
 	 * Trigger the index sync action which will synchronize the index for all elements. This is useful when you want to sync the search index after restoring a
 	 * backup.
 	 * 

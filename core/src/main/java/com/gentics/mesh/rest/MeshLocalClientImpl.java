@@ -160,7 +160,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Inject
 	public AdminHandler adminHandler;
-	
+
 	@Inject
 	public AdminIndexHandler adminIndexHandler;
 
@@ -902,6 +902,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<JsonObject> searchMicroschemasRaw(String json) {
 		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeIndexClear() {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		adminIndexHandler.handleClear(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

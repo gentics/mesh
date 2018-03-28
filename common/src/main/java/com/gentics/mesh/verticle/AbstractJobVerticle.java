@@ -1,10 +1,10 @@
 package com.gentics.mesh.verticle;
 
-import java.util.function.Consumer;
-
+import io.reactivex.Completable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.Lock;
@@ -16,6 +16,10 @@ import io.vertx.core.shareddata.Lock;
 public abstract class AbstractJobVerticle extends AbstractVerticle {
 
 	public static final Logger log = LoggerFactory.getLogger(AbstractJobVerticle.class);
+
+	public static final String STATUS_ACCEPTED = "accepted";
+
+	public static final String STATUS_REJECTED = "rejected";
 
 	protected boolean stopped = false;
 
@@ -58,16 +62,11 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	 */
 	public void invokeJobAction(Message<Object> message) {
 		log.info("Got job processing request. Getting lock to execute the request.");
-		executeLocked(() -> {
-			if (!stopped) {
-				executeJob(message);
-			}
-		}, error -> {
-			log.error("Error while processing jobs", error);
-		});
+		Completable job = stopped ? Completable.error(new Throwable("Processing was stopped.")) : executeJob(message);
+		executeLocked(job, message);
 	}
 
-	public abstract void executeJob(Message<Object> message);
+	public abstract Completable executeJob(Message<Object> message);
 
 	@Override
 	public void stop() throws Exception {
@@ -82,33 +81,36 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	 * acquired by then.
 	 * 
 	 * @param action
-	 *            Action which will be invoked when the lock has been obtained
-	 * @param errorAction
-	 *            Action which will be invoked when the lock could not be obtained or the action failed.
+	 *            Completable action which will be invoked when the lock has been obtained
+	 * @param message
 	 */
-	protected void executeLocked(Runnable action, Consumer<Throwable> errorAction) {
+	protected void executeLocked(Completable action, Message<Object> message) {
 		String lockName = getLockName();
 		try {
 			vertx.sharedData().getLock(lockName, rh -> {
 				if (rh.failed()) {
 					Throwable cause = rh.cause();
 					log.error("Error while acquiring global lock {" + lockName + "}", cause);
-					errorAction.accept(cause);
+					message.reply(new JsonObject().put("status", STATUS_REJECTED));
 				} else {
 					Lock lock = rh.result();
-					try {
-						action.run();
-					} catch (Exception e) {
-						log.error("Error while executing locked action", e);
-						errorAction.accept(e);
-					} finally {
+					action.doOnSubscribe((s) -> {
+						message.reply(new JsonObject().put("status", STATUS_ACCEPTED));
+					}).doOnDispose(() -> {
+						log.debug("Releasing lock {" + lockName + "}");
 						lock.release();
-					}
+					}).doFinally(() -> {
+						log.debug("Releasing lock {" + lockName + "}");
+						lock.release();
+					}).subscribe(() -> {
+						log.debug("Action completed");
+					}, error -> {
+						log.error("Error while executing locked action", error);
+					});
 				}
 			});
 		} catch (Exception e) {
 			log.error("Error while waiting for global lock {" + lockName + "}", e);
-			errorAction.accept(e);
 		}
 	}
 

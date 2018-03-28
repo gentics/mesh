@@ -1,8 +1,11 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,14 +19,18 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
+import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.eventbus.Message;
 
 @Singleton
 public class AdminIndexHandler {
+
 	private static final Logger log = LoggerFactory.getLogger(AdminIndexHandler.class);
 
 	private Database db;
@@ -59,30 +66,19 @@ public class AdminIndexHandler {
 	}
 
 	private void triggerSync(InternalActionContext ac) {
-
-		Mesh.mesh().getVertx().eventBus().send(Events.INDEX_SYNC_WORKER_ADDRESS, null);
-		// return searchProvider.in.invokeReindex();
-		// .doAfterTerminate(lock::release)
-		// .doOnDispose(lock::release);
-
-		// Mesh.rxVertx().sharedData().rxGetLockWithTimeout(REINDEX_LOCK, 2000).doOnError(error -> {
-		// ac.send(message(ac, "search_admin_reindex_already_in_progress"), SERVICE_UNAVAILABLE);
-		// }).flatMapCompletable(lock -> {
-		// ac.send(message(ac, "search_admin_reindex_invoked"), OK);
-		// REINDEX_FLAG.set(true);
-		// return searchProvider.invokeReindex()
-		// .doAfterTerminate(lock::release)
-		// .doOnDispose(lock::release);
-		// }).subscribe(() -> {
-		// REINDEX_FLAG.set(false);
-		// Mesh.vertx().eventBus().publish(Events.EVENT_REINDEX_COMPLETED, null);
-		// log.info("Reindex complete");
-		// }, error -> {
-		// REINDEX_FLAG.set(false);
-		// Mesh.vertx().eventBus().publish(Events.EVENT_REINDEX_FAILED, null);
-		// log.error(error);
-		// });
-
+		Single<Message<JsonObject>> reply = Mesh.mesh().getRxVertx().eventBus().rxSend(Events.INDEX_SYNC_WORKER_ADDRESS, null);
+		reply.subscribe(msg -> {
+			JsonObject info = msg.body();
+			String status = info.getString("status");
+			if (AbstractJobVerticle.STATUS_ACCEPTED.equals(status)) {
+				ac.send(message(ac, "search_admin_index_sync_invoked"), OK);
+			} else {
+				ac.send(message(ac, "search_admin_index_sync_already_in_progress"), SERVICE_UNAVAILABLE);
+			}
+		}, error -> {
+			log.error("Error while handling event", error);
+			ac.send(message(ac, "search_admin_index_sync_already_in_progress"), SERVICE_UNAVAILABLE);
+		});
 	}
 
 	public void handleSync(InternalActionContext ac) {
@@ -94,6 +90,16 @@ public class AdminIndexHandler {
 					ac.fail(error(FORBIDDEN, "error_admin_permission_required"));
 				}
 			}, ac::fail);
+	}
+
+	public void handleClear(InternalActionContext ac) {
+		searchProvider.clear().andThen(Observable.fromIterable(registry.getHandlers()).flatMapCompletable(handler -> handler.init()))
+			.subscribe(() -> {
+				ac.send(message(ac, "search_admin_index_clear"), OK);
+			}, error -> {
+				log.error("Error while clearing all indices.", error);
+				ac.send(message(ac, "search_admin_index_clear_error"), INTERNAL_SERVER_ERROR);
+			});
 	}
 
 }

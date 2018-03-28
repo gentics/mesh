@@ -915,6 +915,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> invokeIndexClear() {
+		return prepareRequest(POST, "/search/clear", GenericMessageResponse.class);
+	}
+
+	@Override
 	public MeshRequest<GenericMessageResponse> invokeIndexSync() {
 		return prepareRequest(POST, "/search/sync", GenericMessageResponse.class);
 	}
