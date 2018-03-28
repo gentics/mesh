@@ -138,7 +138,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						release.findAllMicroschemaVersions();
 						// Load the index mapping information for the index
 						SchemaModel schema = containerVersion.getSchema();
-						JsonObject mapping = getMappingProvider().getMapping(schema);
+						JsonObject mapping = getMappingProvider().getMapping(schema, release);
 						JsonObject settings = schema.getElasticsearch();
 						indexInfo.put(draftIndexName, new IndexInfo(draftIndexName, settings, mapping));
 						indexInfo.put(publishIndexName, new IndexInfo(publishIndexName, settings, mapping));
@@ -501,7 +501,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public Completable validate(Schema schema) {
 		String indexName = "validationDummy";
-		JsonObject mapping = getMappingProvider().getMapping(schema);
+		JsonObject mapping = getMappingProvider().getMapping(schema, null);
 		JsonObject settings = schema.getElasticsearch();
 		IndexInfo info = new IndexInfo(indexName, settings, mapping);
 		return Completable.create(sub -> {
@@ -521,7 +521,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	public JsonObject createIndexSettings(Schema schema) {
-		JsonObject mapping = getMappingProvider().getMapping(schema);
+		JsonObject mapping = getMappingProvider().getMapping(schema, null);
 		JsonObject settings = schema.getElasticsearch();
 		IndexInfo info = new IndexInfo("validationDummy", settings, mapping);
 		JsonObject fullSettings = searchProvider.createIndexSettings(info);
