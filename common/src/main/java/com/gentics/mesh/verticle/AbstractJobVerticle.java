@@ -30,6 +30,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 		if (log.isDebugEnabled()) {
 			log.debug("Starting verticle {" + getClass().getName() + "}");
 		}
+		stopped = false;
 		registerJobHandler();
 		super.start();
 
