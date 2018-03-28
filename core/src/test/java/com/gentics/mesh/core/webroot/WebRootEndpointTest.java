@@ -214,7 +214,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
 		assertEquals(uuid, response.getNodeResponse().getUuid());
-		assertEquals("/News/" + URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
+		assertEquals("/News/" + URIUtils.encodeSegment(newName), response.getNodeResponse().getPath());
 	}
 
 	@Test

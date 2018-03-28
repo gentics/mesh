@@ -9,6 +9,10 @@
 ////
 
 = Gentics Mesh Changelog
+[[v0.17.4]]
+== 0.17.4 (TBD)
+
+icon:check[] GraphQL: Fixed language parameter in nodes query method was ignored in some cases. link:https://github.com/gentics/mesh/issues/365[#365]
 
 
 
