@@ -10,8 +10,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.util.URIUtils;
-import io.vertx.core.http.HttpClientOptions;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -96,6 +94,7 @@ import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import com.gentics.mesh.rest.client.handler.ResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.WebRootResponseHandler;
+import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -723,11 +722,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
 
 		String path = Arrays.stream(pathSegments)
-				.filter(segment -> segment != null && !segment.isEmpty())
-				.map(URIUtils::encodeFragment)
-				.collect(Collectors.joining("/", "/", ""));
+			.filter(segment -> segment != null && !segment.isEmpty())
+			.map(URIUtils::encodeSegment)
+			.collect(Collectors.joining("/", "/", ""));
 
-		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
+		String requestUri = getBaseUri() + "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = getClient().request(GET, requestUri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
@@ -735,21 +734,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		});
 
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
-	}
-
-	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
-		StringBuilder path = new StringBuilder();
-		path.append("/");
-		for (String segment : pathSegments) {
-			if (path.length() > 0) {
-				path.append("/");
-			}
-			path.append(encodeSegment(segment));
-		}
-		return webroot(projectName, path.toString(), parameters);
 	}
 
 	@Override

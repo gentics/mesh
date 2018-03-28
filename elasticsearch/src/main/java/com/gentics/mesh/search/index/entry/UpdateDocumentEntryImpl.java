@@ -10,7 +10,6 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 
 import io.reactivex.Completable;
-import io.reactivex.functions.Action;
 
 /**
  * Basic implementation for most indexable elements.

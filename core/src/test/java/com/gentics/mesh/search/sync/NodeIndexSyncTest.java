@@ -22,7 +22,7 @@ import com.syncleus.ferma.tx.Tx;
 public class NodeIndexSyncTest extends AbstractMeshTest {
 
 	@Test
-	public void testReindexNodeIndex() throws Exception {
+	public void testNodeSync() throws Exception {
 
 		try (Tx tx = tx()) {
 			recreateIndices();
