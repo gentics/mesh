@@ -9,12 +9,6 @@
 ////
 
 = Gentics Mesh Changelog
-[[v0.17.4]]
-== 0.17.4 (TBD)
-
-icon:check[] GraphQL: Fixed language parameter in nodes query method was ignored in some cases. link:https://github.com/gentics/mesh/issues/365[#365]
-
-
 
 [[v0.18.0]]
 == 0.18.0 (TBD)
@@ -40,10 +34,9 @@ icon:check[] REST: Fix ETag generation for nodes.
                    Previously taking a node offline did not alter the ETag and this also lead to inconsistent status
                    information being displayed in the Mesh UI link:https://github.com/gentics/mesh/issues/345[#345]
 
-[[v0.17.4]]
-== 0.17.4 (tba)
-
 icon:check[] Java Rest Client: Fix webroot requests never returns when containing whitespaces.
+
+icon:check[] GraphQL: Fixed language parameter in nodes query method was ignored in some cases. link:https://github.com/gentics/mesh/issues/365[#365]
 
 [[v0.17.3]]
 == 0.17.3 (15.03.2018)

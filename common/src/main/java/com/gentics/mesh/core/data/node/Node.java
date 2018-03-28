@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import static com.gentics.mesh.Events.EVENT_NODE_CREATED;
 import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
 import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 
 /**
  * The Node Domain Model interface.
@@ -179,13 +180,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 		boolean handleDraftEdge);
 
 	/**
-	 * Return a list of draft graph field containers for the node in the latest release.
+	 * Return the draft field containers of the node in the latest release.
 	 * 
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers();
+	default Iterable<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
+		//FIX ME: We should not rely on specific releases.
+		return getGraphFieldContainersIt(getProject().getLatestRelease(), DRAFT);
+	}
 
 	/**
 	 * Return a list of all initial graph field containers for the node (in any release).
