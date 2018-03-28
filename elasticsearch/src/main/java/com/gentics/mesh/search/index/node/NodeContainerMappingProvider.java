@@ -47,7 +47,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	@Inject
 	public BootstrapInitializer boot;
-	
+
 	@Inject
 	public NodeContainerMappingProvider() {
 	}
@@ -56,7 +56,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	public JsonObject getMappingProperties() {
 		return new JsonObject();
 	}
-	
+
 	/**
 	 * Return the type specific mapping which is constructed using the provided schema.
 	 * 

@@ -267,7 +267,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 	public void testNestedMicroschemaCustomMappingSearch() {
 		String searchPath = "fields." + MICRONODE_LIST_FIELD_NAME + ".fields-" + MICROSCHEMA_NAME + "."
 				+ DYNAMIC_FIELD_NAME;
-		;
+
 		tx(() -> {
 			// Create a node with the newly created (Micro-)Schema
 			NodeCreateRequest createNode = new NodeCreateRequest();
@@ -278,16 +278,18 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 				FieldUtil.createMicronodeField(MICROSCHEMA_NAME, new Tuple<>(DYNAMIC_FIELD_NAME, this.nodeField))));
 			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, createNode));
 
-			// Search for the node
-			NodeListResponse response = call(
-				() -> client()
-						.searchNodes(project().getName(),
+			JsonObject query = new JsonObject().put(
+					"query",
+					new JsonObject().put(
+							"nested",
 							new JsonObject()
-									.put("query",
-										new JsonObject().put("nested",
-											new JsonObject().put("path", "fields." + MICRONODE_LIST_FIELD_NAME).put(
-												"query", this.searchQuery.apply(searchPath))))
-									.encode()));
+									.put("path", "fields." + MICRONODE_LIST_FIELD_NAME)
+									.put("query", this.searchQuery.apply(searchPath))
+					)
+			);
+
+			// Search for the node
+			NodeListResponse response = call(() -> client().searchNodes(project().getName(), query.encode()));
 
 			// Expect the search to return a single element
 			assertEquals(response.getMetainfo().getTotalCount(), 1);
