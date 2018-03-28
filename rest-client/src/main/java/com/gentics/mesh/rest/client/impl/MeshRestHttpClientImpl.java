@@ -6,8 +6,12 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import com.gentics.mesh.util.URIUtils;
+import io.vertx.core.http.HttpClientOptions;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -710,8 +714,20 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		if (!path.startsWith("/")) {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
-		// TODO encode path?
-		String requestUri = getBaseUri() + "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters);
+		return webroot(projectName, path.split("/"), parameters);
+	}
+
+	@Override
+	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
+
+		String path = Arrays.stream(pathSegments)
+				.filter(segment -> segment != null && !segment.isEmpty())
+				.map(URIUtils::encodeFragment)
+				.collect(Collectors.joining("/", "/", ""));
+
+		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = getClient().request(GET, requestUri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
