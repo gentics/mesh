@@ -1,7 +1,9 @@
-package com.gentics.mesh.search.sync;
+package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static org.junit.Assert.assertEquals;
 
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -50,8 +53,30 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndexSyncLock() {
+		tx(() -> group().addRole(roles().get("admin")));
+		tx(() -> {
+			for (int i = 0; i < 900; i++) {
+				boot().groupRoot().create("group_" + i, user(), null);
+			}
+		});
 		call(() -> client().invokeIndexSync());
 		call(() -> client().invokeIndexSync(), SERVICE_UNAVAILABLE, "search_admin_index_sync_already_in_progress");
+	}
+
+	@Test
+	public void testNoPermReIndex() {
+		tx(() -> group().removeRole(roles().get("admin")));
+		call(() -> client().invokeIndexSync(), FORBIDDEN, "error_admin_permission_required");
+	}
+
+	@Test
+	public void testReindex() {
+		// Add the user to the admin group - this way the user is in fact an admin.
+		tx(() -> group().addRole(roles().get("admin")));
+		searchProvider().refreshIndex().blockingAwait();
+
+		GenericMessageResponse message = call(() -> client().invokeIndexSync());
+		assertMessage(message, "search_admin_index_sync_invoked");
 	}
 
 	@Test

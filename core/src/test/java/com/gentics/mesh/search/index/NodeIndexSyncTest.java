@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.sync;
+package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;

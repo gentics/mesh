@@ -1,5 +1,7 @@
 package com.gentics.mesh.verticle;
 
+import com.gentics.mesh.Mesh;
+
 import io.reactivex.Completable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
@@ -8,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.Lock;
+import io.vertx.reactivex.RxHelper;
 
 /**
  * Basic implementation for a job verticle. These kinds of verticles can be used to process specific tasks in a modular fashion. Jobs can be triggered via a
@@ -88,16 +91,19 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	protected void executeLocked(Completable action, Message<Object> message) {
 		String lockName = getLockName();
 		try {
-			vertx.sharedData().getLock(lockName, rh -> {
+			vertx.sharedData().getLockWithTimeout(lockName, 1000, rh -> {
 				if (rh.failed()) {
 					Throwable cause = rh.cause();
 					log.error("Error while acquiring global lock {" + lockName + "}", cause);
-					message.reply(new JsonObject().put("status", STATUS_REJECTED));
+					if (message != null) {
+						message.reply(new JsonObject().put("status", STATUS_REJECTED));
+					}
 				} else {
 					Lock lock = rh.result();
-					action.doOnSubscribe((s) -> {
+					if (message != null) {
 						message.reply(new JsonObject().put("status", STATUS_ACCEPTED));
-					}).doOnDispose(() -> {
+					}
+					action.doOnDispose(() -> {
 						log.debug("Releasing lock {" + lockName + "}");
 						lock.release();
 					}).doFinally(() -> {
