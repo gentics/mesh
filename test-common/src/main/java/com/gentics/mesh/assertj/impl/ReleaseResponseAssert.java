@@ -34,6 +34,28 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 	}
 
 	/**
+	 * Assert that the release response has the given hostname
+	 * 
+	 * @param hostname
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert hasHostname(String hostname) {
+		assertThat(actual.getHostname()).as(descriptionText() + " hostname").isEqualTo(hostname);
+		return this;
+	}
+
+	/**
+	 * Assert that the release response has the given SSL setting
+	 * 
+	 * @param ssl
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert hasSsl(Boolean ssl) {
+		assertThat(actual.getSsl()).as(descriptionText() + " SSL").isEqualTo(ssl);
+		return this;
+	}
+
+	/**
 	 * Assert that the release response is marked active
 	 * 
 	 * @return fluent API

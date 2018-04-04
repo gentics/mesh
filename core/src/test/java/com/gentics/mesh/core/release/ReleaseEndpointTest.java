@@ -282,6 +282,33 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
+	public void testCreateWithHostname() {
+		String releaseName = "MyRelease";
+		String hostname = "my.host";
+		ReleaseCreateRequest request = new ReleaseCreateRequest();
+		request.setName(releaseName);
+		request.setHostname(hostname);
+
+		ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
+
+		assertThat(response).as("Created release").hasName(releaseName).hasHostname(hostname);
+	}
+
+	@Test
+	public void testCreateWithSsl() {
+		String releaseName = "MyRelease";
+		Boolean ssl = true;
+
+		ReleaseCreateRequest request = new ReleaseCreateRequest();
+		request.setName(releaseName);
+		request.setSsl(ssl);
+
+		ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
+
+		assertThat(response).as("Created release").hasName(releaseName).hasSsl(ssl);
+	}
+
+	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
 
@@ -452,6 +479,26 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 		// request.setActive(false);
 		call(() -> client().createRelease(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+	}
+
+	@Test
+	public void testUpdateHostname() {
+		String hostname = "new.hostname";
+
+		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+		request.setHostname(hostname);
+		ReleaseResponse response = call(() -> client().updateRelease(PROJECT_NAME, initialReleaseUuid(), request));
+		assertThat(response).as("Updated release").hasHostname(hostname);
+	}
+
+	@Test
+	public void testUpdateSsl() {
+		Boolean ssl = true;
+
+		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+		request.setSsl(ssl);
+		ReleaseResponse response = call(() -> client().updateRelease(PROJECT_NAME, initialReleaseUuid(), request));
+		assertThat(response).as("Updated release").hasSsl(ssl);
 	}
 
 	@Override
