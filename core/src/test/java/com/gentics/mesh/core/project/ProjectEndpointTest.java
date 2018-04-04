@@ -479,6 +479,20 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
+	public void testUpdateByAppendingToName() {
+		String uuid = projectUuid();
+
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("abc");
+		call(() -> client().updateProject(uuid, request));
+		call(() -> client().findNodes(request.getName()));
+
+		request.setName("abcd");
+		call(() -> client().updateProject(uuid, request));
+		call(() -> client().findNodes(request.getName()));
+	}
+
+	@Test
 	public void testUpdateWithEndpointName() {
 		List<String> names = Arrays.asList("users", "groups", "projects");
 		for (String name : names) {
