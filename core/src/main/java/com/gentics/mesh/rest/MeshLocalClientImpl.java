@@ -1256,6 +1256,18 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> migrateReleaseSchemas(String projectName, String releaseUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> migrateReleaseMicroschemas(String projectName, String releaseUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;

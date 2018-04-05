@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
@@ -126,4 +127,22 @@ public interface ReleaseClientMethods {
 	 */
 	MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
 			MicroschemaReference... microschemaVersionReferences);
+
+	/**
+	 * Invoke the node migration for not yet migrated nodes of schemas that are assigned to the release.
+	 * 
+	 * @param projectName
+	 * @param releaseUuid
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> migrateReleaseSchemas(String projectName, String releaseUuid);
+
+	/**
+	 * Invoke the micronode migration for not yet migrated micronodes of microschemas that are assigned to the release.
+	 * 
+	 * @param projectName
+	 * @param releaseUuid
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> migrateReleaseMicroschemas(String projectName, String releaseUuid);
 }

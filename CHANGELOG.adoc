@@ -38,6 +38,8 @@ icon:check[] Java Rest Client: Fix webroot requests never returns when containin
 
 icon:check[] GraphQL: Fixed language parameter in nodes query method was ignored in some cases. link:https://github.com/gentics/mesh/issues/365[#365]
 
+icon:check[] Java Rest Client: Missing methods to start schema/microschema migrations for a release have been added.
+
 [[v0.17.3]]
 == 0.17.3 (15.03.2018)
 
