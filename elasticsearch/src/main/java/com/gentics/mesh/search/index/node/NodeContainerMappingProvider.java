@@ -275,6 +275,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 * @return An Properties-mapping for a microschema field.
 	 */
 	public JsonObject getMicroschemaMappingOptions(String[] allowed, Release release) {
+		// Prevent Null-Pointers
+		if (allowed == null) {
+			allowed = new String[0];
+		}
+
 		// General options
 		JsonObject properties = new JsonObject();
 		
@@ -290,7 +295,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		
 		// Final Object which will be returned
 		JsonObject options = new JsonObject().put("properties", properties);
-		
+
 		// A Set-Instance of the allowed microschema-names
 		Set<String> whitelist = Sets.newHashSet(allowed);
 		
