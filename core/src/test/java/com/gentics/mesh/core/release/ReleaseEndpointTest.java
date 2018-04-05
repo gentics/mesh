@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
@@ -54,6 +55,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -177,6 +179,9 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
 			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
+
+		ReleaseListResponse releases = call(() -> client().findReleases(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
+		releases.getData().forEach(release -> assertThat(release).as("Release " + release.getName()).isMigrated());
 	}
 
 	@Override
@@ -198,15 +203,17 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testCreateWithUuid() throws Exception {
 		String releaseName = "Release V1";
 		String uuid = UUIDUtil.randomUUID();
-		try (Tx tx = db().tx()) {
-			Project project = project();
 
-			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
-			request.setName(releaseName);
+		ReleaseCreateRequest request = new ReleaseCreateRequest();
+		request.setName(releaseName);
 
-			ReleaseResponse response = call(() -> client().updateRelease(project.getName(), uuid, request));
+		waitForJobs(() -> {
+			ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, uuid, request));
 			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated().hasUuid(uuid);
-		}
+		}, COMPLETED, 1);
+
+		ReleaseListResponse releases = call(() -> client().findReleases(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
+		releases.getData().forEach(release -> assertThat(release).as("Release " + release.getName()).isMigrated());
 	}
 
 	@Test
