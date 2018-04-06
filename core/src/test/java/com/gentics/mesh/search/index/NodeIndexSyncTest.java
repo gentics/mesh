@@ -56,7 +56,7 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 
 		waitForEvent(Events.INDEX_SYNC_EVENT, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertMessage(message, "search_admin_reindex_invoked");
+			assertMessage(message, "search_admin_index_sync_invoked");
 		});
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));

@@ -182,7 +182,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testSearchStringFieldRawAfterReindex() throws Exception {
+	public void testSearchStringFieldRawAfterIndexSync() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
@@ -195,7 +195,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 		waitForEvent(INDEX_SYNC_EVENT, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertMessage(message, "search_admin_reindex_invoked");
+			assertMessage(message, "search_admin_index_sync_invoked");
 		});
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),

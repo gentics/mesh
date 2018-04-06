@@ -52,19 +52,21 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testIndexSyncLock() {
+	public void testIndexSyncLock() throws Exception {
 		tx(() -> group().addRole(roles().get("admin")));
 		tx(() -> {
 			for (int i = 0; i < 900; i++) {
 				boot().groupRoot().create("group_" + i, user(), null);
 			}
 		});
-		call(() -> client().invokeIndexSync());
-		call(() -> client().invokeIndexSync(), SERVICE_UNAVAILABLE, "search_admin_index_sync_already_in_progress");
+		waitForEvent(INDEX_SYNC_EVENT, () -> {
+			call(() -> client().invokeIndexSync());
+			call(() -> client().invokeIndexSync(), SERVICE_UNAVAILABLE, "search_admin_index_sync_already_in_progress");
+		});
 	}
 
 	@Test
-	public void testNoPermReIndex() {
+	public void testNoPermSync() {
 		tx(() -> group().removeRole(roles().get("admin")));
 		call(() -> client().invokeIndexSync(), FORBIDDEN, "error_admin_permission_required");
 	}
