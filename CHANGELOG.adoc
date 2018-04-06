@@ -24,6 +24,8 @@ ____
 
 CAUTION: Search: The  `/api/v1/search/reindex` endpoint was replaced by `/api/v1/search/sync`.
 
+icon:plus[] Docs: The link:contributing.html[Contribution Guide] has been added.
+
 icon:plus[] The `/api/v1/search/sync` endpoint can now be used to trigger the differential synchronization of search indices. 
             The indices will no longer be dropped and re-populated. Instead only needed actions will be executed to sync the index with the Gentics Mesh data.
 

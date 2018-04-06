@@ -91,7 +91,7 @@ Next the selected element will be:
 * checked against needed permissions
 * transformed to JSON via the `Node#transformToRestSync` method
 
-==  Domain Model
+== Domain Model
 
 We already hinted that Projects and Nodes are vertices. In fact all elements in Gentics Mesh are models within a Graph Model. 
 The graph has a root element which is used as an entry point for Gentics Mesh.
