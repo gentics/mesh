@@ -1,7 +1,5 @@
 package com.gentics.mesh.verticle;
 
-import com.gentics.mesh.Mesh;
-
 import io.reactivex.Completable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
@@ -10,7 +8,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.Lock;
-import io.vertx.reactivex.RxHelper;
 
 /**
  * Basic implementation for a job verticle. These kinds of verticles can be used to process specific tasks in a modular fashion. Jobs can be triggered via a
@@ -65,7 +62,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	 * @param message
 	 */
 	public void invokeJobAction(Message<Object> message) {
-		log.info("Got job processing request. Getting lock to execute the request.");
+		log.debug("Got job processing request. Getting lock to execute the request.");
 		Completable job = stopped ? Completable.error(new Throwable("Processing was stopped.")) : executeJob(message);
 		executeLocked(job, message);
 	}
