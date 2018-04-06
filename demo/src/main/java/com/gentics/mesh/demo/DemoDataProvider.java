@@ -100,7 +100,7 @@ public class DemoDataProvider {
 		this.boot = boot;
 	}
 
-	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
+	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		mappingData = loadJson("uuid-mapping");
 
 		MeshAuthUser user = db.tx(() -> {
@@ -127,7 +127,9 @@ public class DemoDataProvider {
 
 		// Update the uuids and index all contents.
 		updateUuids();
-		invokeFullIndex();
+		if (syncIndex) {
+			invokeFullIndex();
+		}
 		log.info("Demo data setup completed");
 	}
 
