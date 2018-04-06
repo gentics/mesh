@@ -488,13 +488,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		FramedGraph graph = Tx.getActive().getGraph();
 		MeshAuthUser user = ac.getUser();
 
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release", db.createComposedIndexKey(getId(), ac.getRelease().getUuid()));
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release",
+			db.createComposedIndexKey(getId(), ac.getRelease().getUuid()));
 		Iterator<Edge> it = edges.iterator();
 		Iterable<Edge> iterable = () -> it;
 		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
 		return stream
 			.map(edge -> edge.getVertex(OUT))
-			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))
+			.filter(vertex -> {
+				Object id = vertex.getId();
+				return user.hasPermissionForId(id, READ_PERM) || user.hasPermissionForId(id, READ_PUBLISHED_PERM);
+			})
 			.map(vertex -> graph.frameElementExplicit(vertex, NodeImpl.class));
 	}
 
