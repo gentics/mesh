@@ -12,12 +12,16 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.RestAPIVerticle;
+import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Central loader for core verticles. Needed verticles will be listed and deployed here.
+ */
 @Singleton
 public class CoreVerticleLoader {
 
@@ -33,6 +37,9 @@ public class CoreVerticleLoader {
 
 	@Inject
 	public JobWorkerVerticle jobWorkerVerticle;
+
+	@Inject
+	public ElasticsearchSyncVerticle indexSyncVerticle;
 
 	@Inject
 	public CoreVerticleLoader() {
@@ -53,7 +60,7 @@ public class CoreVerticleLoader {
 				for (int i = 0; i < DEFAULT_VERTICLE_DEPLOYMENTS; i++) {
 					if (log.isInfoEnabled()) {
 						log.info("Deploying mandatory verticle {" + verticle.getClass().getName() + "} " + i + " of " + DEFAULT_VERTICLE_DEPLOYMENTS
-								+ " instances");
+							+ " instances");
 					}
 					deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
 				}
@@ -86,13 +93,14 @@ public class CoreVerticleLoader {
 	}
 
 	/**
-	 * Get the map of mandatory worker verticle classes
+	 * Get the map of mandatory worker verticle classes.
 	 * 
 	 * @return
 	 */
 	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
+		verticles.add(indexSyncVerticle);
 		return verticles;
 	}
 

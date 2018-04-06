@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-verticles</artifactId>
-		<version>0.17.4-SNAPSHOT</version>
+		<version>0.18.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -27,6 +27,11 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-elasticsearch</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.graphqlfilter</groupId>
+			<artifactId>graphql-java-filter</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 

@@ -1,3 +1,4 @@
+
 package com.gentics.mesh;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -5,6 +6,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
+import io.vertx.ext.dropwizard.MetricsService;
 
 /**
  * The main mesh interface which exposes various methods that can be used to initialize mesh and startup a new instance.
@@ -145,5 +147,12 @@ public interface Mesh {
 	static boolean isVertxReady() {
 		return vertx() != null;
 	}
+
+	/**
+	 * The metrics service can be used to retrieve metric snapshots.
+	 * 
+	 * @return
+	 */
+	MetricsService metrics();
 
 }

@@ -824,6 +824,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public void onDeleted(String uuid, String name) {
 				// TODO Auto-generated method stub
 			}
+
+			@Override
+			public String getElementVersion() {
+				// TODO Auto-generated method stub
+				return null;
+			}
 		};
 		return user;
 	}

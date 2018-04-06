@@ -30,10 +30,26 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 	 * @param context
 	 * @param action
 	 */
-	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, IndexableElement element, GenericEntryContext context, SearchQueueEntryAction action) {
+	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, IndexableElement element, GenericEntryContext context,
+		SearchQueueEntryAction action) {
 		super(action);
 		this.context = context;
 		this.elementUuid = element.getUuid();
+		this.indexHandler = indexHandler;
+	}
+
+	/**
+	 * Create a new batch entry.
+	 * 
+	 * @param indexHandler
+	 * @param element
+	 * @param context
+	 * @param action
+	 */
+	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, String uuid, GenericEntryContext context, SearchQueueEntryAction action) {
+		super(action);
+		this.context = context;
+		this.elementUuid = uuid;
 		this.indexHandler = indexHandler;
 	}
 
@@ -46,13 +62,14 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 	public Completable process() {
 		switch (elementAction) {
 		case STORE_ACTION:
-			return indexHandler.store(this);
+			return indexHandler.store(this).doOnComplete(onProcessAction);
 
 		case DELETE_ACTION:
-			return indexHandler.delete(this);
+			return indexHandler.delete(this).doOnComplete(onProcessAction);
 
 		case UPDATE_ROLE_PERM_ACTION:
-			return indexHandler.updatePermission(this);
+			return indexHandler.updatePermission(this).doOnComplete(onProcessAction);
+
 		default:
 			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
 		}
@@ -66,7 +83,8 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 
 	@Override
 	public String toString() {
+		String context = getContext() != null ? getContext().toString() : "null";
 		return "Update Entry {" + getElementAction() + "} for {" + elementUuid + "} and handler {" + indexHandler.getClass().getSimpleName()
-				+ "} with context {" + getContext().toString() + "}";
+			+ "} with context {" + context + "}";
 	}
 }

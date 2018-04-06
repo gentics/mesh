@@ -267,7 +267,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				// First ensure that the non-store events are processed before handling the store batches
 				obs = obs.andThen(buffers.map(i -> Completable.merge(i).doOnComplete(() -> {
 					if (totalBatchCount > 0) {
-						log.info("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
+						log.debug("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
 					}
 				})).toList().flatMapCompletable(it -> Completable.concat(it)));
 			}

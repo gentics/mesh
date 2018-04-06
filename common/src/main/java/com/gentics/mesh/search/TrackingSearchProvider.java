@@ -166,8 +166,4 @@ public class TrackingSearchProvider implements SearchProvider {
 		}
 	}
 
-	@Override
-	public Completable invokeReindex() {
-		return Completable.complete();
-	}
 }

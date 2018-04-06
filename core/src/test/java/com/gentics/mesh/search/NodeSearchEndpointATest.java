@@ -1,23 +1,18 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.test.util.TestUtils.latchForEvent;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Events;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -32,49 +27,6 @@ import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
-
-	@Test
-	public void testReindexNodeIndex() throws Exception {
-
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
-
-		String oldContent = "supersonic";
-		String newContent = "urschnell";
-
-		// "urschnell" not found in published nodes
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent)));
-		assertThat(response.getData()).as("Published search result").isEmpty();
-
-		String uuid = db().tx(() -> content("concorde").getUuid());
-
-		// publish the Concorde
-		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
-		call(() -> client().publishNode(PROJECT_NAME, uuid));
-
-		// "supersonic" found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
-		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
-
-		// // Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = tx()) {
-			user().addGroup(data().getGroups().get("admin"));
-			tx.success();
-		}
-
-		// Now clear all data
-		searchProvider().clear().blockingAwait();
-
-		CompletableFuture<Void> fut = latchForEvent(client(), Events.EVENT_REINDEX_COMPLETED);
-		GenericMessageResponse message = call(() -> client().invokeReindex());
-		assertMessage(message, "search_admin_reindex_invoked");
-		fut.get();
-
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
-		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
-
-	}
 
 	@Test
 	public void testSearchPublishedNodes() throws Exception {

@@ -189,7 +189,7 @@ public interface NodeClientMethods {
 	 * @return Mesh request which can be invoked
 	 */
 	MeshRequest<TagListResponse> updateTagsForNode(String projectName, String nodeUuid, TagListUpdateRequest request,
-			ParameterProvider... parameters);
+		ParameterProvider... parameters);
 
 	/**
 	 * Get the publish status of a node
@@ -216,10 +216,10 @@ public interface NodeClientMethods {
 	 * @return Mesh request which can be invoked
 	 */
 	MeshRequest<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters);
+		ParameterProvider... parameters);
 
 	/**
-	 * Publish a node.
+	 * Publish a node and all its languages.
 	 *
 	 * @param projectName
 	 *            Name of the project
@@ -265,7 +265,24 @@ public interface NodeClientMethods {
 	 * @param languageTag
 	 * @param parameters
 	 * @return Mesh request which can be invoked
+	 * @deprecated Use {@link #takeNodeLanguageOffline(String, String, String, ParameterProvider...)} instead.
 	 */
-	MeshRequest<Void> takeNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
+	@Deprecated
+	default MeshRequest<Void> takeNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
+		return takeNodeLanguageOffline(projectName, nodeUuid, languageTag, parameters);
+	}
+
+	/**
+	 * Take a node language offline.
+	 *
+	 * @param projectName
+	 *            Name of the project
+	 * @param nodeUuid
+	 *            Uuid of the node
+	 * @param languageTag
+	 * @param parameters
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
 
 }

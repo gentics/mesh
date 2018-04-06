@@ -1,16 +1,5 @@
 package com.gentics.mesh.graphql.type.field;
 
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static graphql.schema.GraphQLUnionType.newUnionType;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -19,8 +8,8 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
-
 import dagger.Lazy;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -28,6 +17,16 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLUnionType;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.HashMap;
+import java.util.Map;
+
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLUnionType.newUnionType;
 
 @Singleton
 public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
@@ -43,8 +42,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	public MicronodeFieldTypeProvider() {
 	}
 
-	public GraphQLType createType(Project project) {
-		Map<String, GraphQLObjectType> types = generateMicroschemaFieldType(project);
+	public GraphQLType createType(GraphQLContext context) {
+		Map<String, GraphQLObjectType> types = generateMicroschemaFieldType(context);
 		// No microschemas have been found - We need to add a dummy type in order to keep the type system working
 		if (types.isEmpty()) {
 			types.put("dummy", newObject().name("dummy").field(newFieldDefinition().name("dummy").type(GraphQLString).staticValue(null).build()).description("Placeholder dummy microschema type").build());
@@ -67,7 +66,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		return fieldType;
 	}
 
-	private Map<String, GraphQLObjectType> generateMicroschemaFieldType(Project project) {
+	private Map<String, GraphQLObjectType> generateMicroschemaFieldType(GraphQLContext context) {
+		Project project = context.getProject();
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAllIt()) {
 			MicroschemaContainerVersion version = container.getLatestVersion();
@@ -99,7 +99,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					microschemaType.field(fields.get().createListDef(listFieldSchema));
+					microschemaType.field(fields.get().createListDef(context, listFieldSchema));
 					break;
 				default:
 					log.error("Micronode field type {" + type + "} is not supported.");

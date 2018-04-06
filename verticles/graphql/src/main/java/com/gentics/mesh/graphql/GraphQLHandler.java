@@ -54,7 +54,7 @@ public class GraphQLHandler {
 		try (Tx tx = db.tx()) {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
-			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc.getProject())).build();
+			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).build();
 			ExecutionInput executionInput = ExecutionInput.newExecutionInput().query(query).context(gc).variables(extractVariables(queryJson))
 					.build();
 			ExecutionResult result = graphQL.execute(executionInput);

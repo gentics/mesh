@@ -18,6 +18,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -30,13 +33,13 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.RouterStorage;
@@ -99,7 +102,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		MeshInternal.get().searchProvider().clear().blockingAwait();
 		for (IndexHandler<?> handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
 			handler.init().blockingAwait();
-			handler.reindexAll().blockingAwait();
+			handler.syncIndices().blockingAwait();
 		}
 	}
 
@@ -389,6 +392,21 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 			filename, contentType));
 		assertNotNull(response);
 		return buffer.length();
+	}
 
+	/**
+	 * Wait until the given event has been received.
+	 * 
+	 * @param address
+	 * @param code
+	 * @throws TimeoutException
+	 */
+	protected void waitForEvent(String address, Runnable code) throws Exception {
+		CountDownLatch latch = new CountDownLatch(1);
+		vertx().eventBus().consumer(address, handler -> {
+			latch.countDown();
+		});
+		code.run();
+		latch.await(2000, TimeUnit.SECONDS);
 	}
 }

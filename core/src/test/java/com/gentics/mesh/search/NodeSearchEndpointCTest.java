@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -8,17 +9,12 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.test.util.TestUtils.latchForEvent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.junit.Test;
 
-import com.gentics.mesh.Events;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
@@ -186,7 +182,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testSearchStringFieldRawAfterReindex() throws Exception {
+	public void testSearchStringFieldRawAfterIndexSync() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
@@ -197,10 +193,10 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		tx(() -> user().addGroup(groups().get("admin")));
 		searchProvider().refreshIndex().blockingAwait();
 
-		CompletableFuture<Void> latch = latchForEvent(client(), Events.EVENT_REINDEX_COMPLETED);
-		GenericMessageResponse message = call(() -> client().invokeReindex());
-		assertMessage(message, "search_admin_reindex_invoked");
-		latch.get(20, TimeUnit.SECONDS);
+		waitForEvent(INDEX_SYNC_EVENT, () -> {
+			GenericMessageResponse message = call(() -> client().invokeIndexSync());
+			assertMessage(message, "search_admin_index_sync_invoked");
+		});
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));

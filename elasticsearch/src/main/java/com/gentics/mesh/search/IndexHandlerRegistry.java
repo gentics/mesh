@@ -101,4 +101,7 @@ public class IndexHandlerRegistry {
 		return null;
 	}
 
+	public NodeIndexHandler getNodeIndexHandler() {
+		return nodeIndexHandler;
+	}
 }

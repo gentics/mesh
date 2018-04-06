@@ -11,6 +11,21 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
+import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
+import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
+import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
+import com.gentics.mesh.core.endpoint.release.ReleaseCrudHandler;
+import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
+import com.gentics.mesh.core.endpoint.schema.SchemaCrudHandler;
+import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
+import com.gentics.mesh.core.endpoint.tagfamily.TagFamilyCrudHandler;
+import com.gentics.mesh.core.endpoint.user.UserCrudHandler;
+import com.gentics.mesh.core.endpoint.utility.UtilityHandler;
+import com.gentics.mesh.core.endpoint.webroot.WebRootHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
@@ -63,6 +78,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -80,27 +96,13 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
-import com.gentics.mesh.core.verticle.admin.AdminHandler;
-import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
-import com.gentics.mesh.core.verticle.group.GroupCrudHandler;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaCrudHandler;
-import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
-import com.gentics.mesh.core.verticle.node.NodeCrudHandler;
-import com.gentics.mesh.core.verticle.project.ProjectCrudHandler;
-import com.gentics.mesh.core.verticle.release.ReleaseCrudHandler;
-import com.gentics.mesh.core.verticle.role.RoleCrudHandler;
-import com.gentics.mesh.core.verticle.schema.SchemaCrudHandler;
-import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyCrudHandler;
-import com.gentics.mesh.core.verticle.user.UserCrudHandler;
-import com.gentics.mesh.core.verticle.utility.UtilityHandler;
-import com.gentics.mesh.core.verticle.webroot.WebRootHandler;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
+import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Single;
@@ -160,6 +162,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public AdminHandler adminHandler;
 
 	@Inject
+	public AdminIndexHandler adminIndexHandler;
+
+	@Inject
 	public AuthenticationRestHandler authRestHandler;
 
 	@Inject
@@ -204,14 +209,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleUpdate(ac, uuid);
@@ -294,7 +299,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<TagListResponse> updateTagsForNode(String projectName, String nodeUuid, TagListUpdateRequest request,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -901,8 +906,23 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeReindex() {
+	public MeshRequest<GenericMessageResponse> invokeIndexClear() {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		adminIndexHandler.handleClear(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeIndexSync() {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		adminIndexHandler.handleSync(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<SearchStatusResponse> searchStatus() {
+		LocalActionContextImpl<SearchStatusResponse> ac = createContext(SearchStatusResponse.class);
+		adminIndexHandler.handleStatus(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -965,7 +985,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-			Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
+		Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
 
 		Vertx vertx = Mesh.vertx();
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
@@ -1027,7 +1047,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		// LocalActionContextImpl<NodeResponse> ac = createContext();
 		// return new MeshLocalRequestImpl<>( ac.getFuture());
 		return null;
@@ -1035,7 +1055,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
-			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
+		String fieldKey, ImageManipulationParameters imageManipulationParameter) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -1114,7 +1134,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1129,7 +1149,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		LocalActionContextImpl<PublishStatusModel> ac = createContext(PublishStatusModel.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handlePublish(ac, nodeUuid, languageTag);
@@ -1145,7 +1165,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> takeNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
+	public MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
 		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);
@@ -1160,14 +1180,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1200,7 +1220,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-			ReleaseInfoSchemaList schemaVersionReferences) {
+		ReleaseInfoSchemaList schemaVersionReferences) {
 		LocalActionContextImpl<ReleaseInfoSchemaList> ac = createContext(ReleaseInfoSchemaList.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(schemaVersionReferences);
@@ -1210,7 +1230,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-			SchemaReference... schemaVersionReferences) {
+		SchemaReference... schemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1223,14 +1243,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-			ReleaseInfoMicroschemaList microschemaVersionReferences) {
+		ReleaseInfoMicroschemaList microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-			MicroschemaReference... microschemaVersionReferences) {
+		MicroschemaReference... microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}

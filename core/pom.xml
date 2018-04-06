@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.17.4-SNAPSHOT</version>
+		<version>0.18.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -134,13 +134,6 @@
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
-		</dependency>
-
-		<!-- Metrics -->
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-dropwizard-metrics</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 
 		<dependency>

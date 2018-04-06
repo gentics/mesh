@@ -120,7 +120,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 			.awaitStartup(20).login();
 
 		// Stop and restart each of the nodes alternatively and create projects in between each phase of the start/stop actions.
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 2; i++) {
 			boolean handleFirst = i % 2 == 0;
 			MeshDockerServer server = handleFirst ? serverA : serverB;
 			MeshDockerServer otherServer = handleFirst ? serverB : serverA;
@@ -138,10 +138,10 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 			ProjectCreateRequest request3 = new ProjectCreateRequest().setName(otherServer.getNodeName() + "B" + i).setSchemaRef("folder");
 			responses.add(call(() -> otherServer.client().createProject(request3)));
 
-			// Now start the server again but clear the data directory before
+			// Now start the server again
 			Thread.sleep(10_000);
 			System.out.println("Starting server {" + server.getNodeName() + "}");
-			MeshDockerServer serverAfterRestart = addSlave("dockerCluster" + clusterPostFix, server.getNodeName(), server.getDataPathPostfix(), true)
+			MeshDockerServer serverAfterRestart = addSlave("dockerCluster" + clusterPostFix, server.getNodeName(), server.getDataPathPostfix(), false)
 				.awaitStartup(30)
 				.login();
 			if (handleFirst) {

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
 
 import java.util.List;
@@ -232,7 +234,9 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            release Uuid
 	 * @return true if it is the draft, false if not
 	 */
-	boolean isDraft(String releaseUuid);
+	default boolean isDraft(String releaseUuid) {
+		return isType(DRAFT, releaseUuid);
+	}
 
 	/**
 	 * Check whether this field container is the published version for the given release.
@@ -241,7 +245,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            release Uuid
 	 * @return true if it is published, false if not
 	 */
-	boolean isPublished(String releaseUuid);
+	default boolean isPublished(String releaseUuid) {
+		return isType(PUBLISHED, releaseUuid);
+	}
+
+	/**
+	 * Check whether this field container has the given type in the given release.
+	 * 
+	 * @param type
+	 * @param releaseUuid
+	 * @return true if it matches the type, false if not
+	 */
+	boolean isType(ContainerType type, String releaseUuid);
 
 	/**
 	 * Get tuples of type and release Uuids specifying for which release the container is a container of a type.

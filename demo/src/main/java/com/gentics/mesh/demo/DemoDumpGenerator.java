@@ -123,7 +123,7 @@ public class DemoDumpGenerator {
 		boot.markChangelogApplied();
 
 		// Setup demo data
-		provider.setup();
+		provider.setup(false);
 	}
 
 }

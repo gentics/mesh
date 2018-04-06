@@ -5,16 +5,13 @@ import com.google.common.net.UrlEscapers;
 public final class URIUtils {
 
 	/**
-	 * Encode the URL fragment. This method will also encode '?' and '/' characters in the provided fragment.
+	 * Encode the URL path segment. This method will also encode '?' and '/' characters in the provided segment.
 	 * 
-	 * @param fragment
+	 * @param segment
 	 * @return
 	 */
-	public static String encodeFragment(String fragment) {
-		String partiallyEncodedFragment = UrlEscapers.urlFragmentEscaper().escape(fragment);
-		partiallyEncodedFragment = partiallyEncodedFragment.replaceAll("\\?", "%3F");
-		partiallyEncodedFragment = partiallyEncodedFragment.replaceAll("/", "%2F");
-		return partiallyEncodedFragment;
+	public static String encodeSegment(String segment) {
+		return UrlEscapers.urlPathSegmentEscaper().escape(segment);
 	}
 
 }

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import io.reactivex.BackpressureStrategy;

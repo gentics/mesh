@@ -27,4 +27,12 @@ public interface Transformer<T> {
 	 */
 	JsonObject toPermissionPartial(MeshCoreVertex<?, ?> element);
 
+	/**
+	 * Generate the version for the given element.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	String generateVersion(T element);
+
 }

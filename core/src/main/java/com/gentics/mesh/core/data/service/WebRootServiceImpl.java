@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.service;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -47,7 +48,8 @@ public class WebRootServiceImpl implements WebRootService {
 		// Handle path to project root (baseNode)
 		if ("/".equals(path) || path.isEmpty()) {
 			// TODO Why this container? Any other container would also be fine?
-			NodeGraphFieldContainer container = baseNode.getDraftGraphFieldContainers().get(0);
+			Iterator<? extends NodeGraphFieldContainer> it = baseNode.getDraftGraphFieldContainers().iterator();
+			NodeGraphFieldContainer container = it.next();
 			nodePath.addSegment(new PathSegment(container, null, null));
 			return nodePath;
 		}

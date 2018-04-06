@@ -19,7 +19,6 @@ public class LoggingConfigurator {
 	 * Initialize the logback logger and ensure that the logback file is placed in the config folder
 	 */
 	public static void init() {
-
 		File logbackFile = new File("config", "logback.xml");
 		if (!logbackFile.exists()) {
 			writeFile(logbackFile);

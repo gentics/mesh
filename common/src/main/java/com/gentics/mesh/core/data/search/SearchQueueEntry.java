@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.search;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 
 import io.reactivex.Completable;
+import io.reactivex.functions.Action;
 
 /**
  * A search queue entry is contains the information that is needed to update the search index for the element that is specified in this entry. In order to
@@ -46,5 +47,12 @@ public interface SearchQueueEntry<T extends EntryContext> extends Comparable<Sea
 	default int compareTo(SearchQueueEntry<?> o) {
 		return getElementAction().getPriority().compareTo(o.getElementAction().getPriority());
 	}
+
+	/**
+	 * Action which will be invoked once the entry has been processed.
+	 * 
+	 * @param onProcessAction
+	 */
+	void setOnProcessAction(Action onProcessAction);
 
 }

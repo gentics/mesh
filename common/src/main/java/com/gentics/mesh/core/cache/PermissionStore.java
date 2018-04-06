@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -72,7 +73,12 @@ public final class PermissionStore {
 		PERM_CACHE.invalidateAll();
 		if (notify) {
 			// Send the event to inform other to purge the stored permissions
-			Mesh.vertx().eventBus().publish(EVENT_CLEAR_PERMISSION_STORE, null);
+			Vertx vertx = Mesh.vertx();
+			if (vertx != null) {
+				vertx.eventBus().publish(EVENT_CLEAR_PERMISSION_STORE, null);
+			} else {
+				log.error("Can't distribute cache clear event. Maybe Vert.x is stopping / starting right now");
+			}
 		}
 	}
 

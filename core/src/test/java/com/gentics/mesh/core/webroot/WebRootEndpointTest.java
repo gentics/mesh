@@ -199,6 +199,16 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 	}
 
+	/**
+	 * Test if a webroot request containing spaces in the path string never returns.
+	 * @throws Exception
+	 */
+	@Test(timeout=2000)
+	public void testPathWithSpacesTimeout() throws Exception {
+		String path = "/path with spaces";
+		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")), NOT_FOUND, "node_not_found_for_path", path);
+	}
+
 	@Test
 	public void testPathWithPlus() throws Exception {
 		// Test RFC3986 sub-delims and an additional space and questionmark
@@ -214,7 +224,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
 		assertEquals(uuid, response.getNodeResponse().getUuid());
-		assertEquals("/News/" + URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
+		assertEquals("/News/" + URIUtils.encodeSegment(newName), response.getNodeResponse().getPath());
 	}
 
 	@Test

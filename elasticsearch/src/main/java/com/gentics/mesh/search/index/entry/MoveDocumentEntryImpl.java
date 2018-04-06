@@ -27,7 +27,7 @@ public class MoveDocumentEntryImpl extends AbstractEntry<MoveEntryContext> imple
 	public Completable process() {
 		switch (elementAction) {
 		case MOVE_ACTION:
-			return indexHandler.move(this);
+			return indexHandler.move(this).doOnComplete(onProcessAction);
 		default:
 			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
 		}

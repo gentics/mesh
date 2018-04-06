@@ -1,0 +1,26 @@
+++++
+<div class="graphql-example" style="height: 39em">
+{
+  # Loading node with path "/". This is the root folder.
+  node(path: "/") {
+    # Applying a filter on its children.
+    children(filter: {
+      # We filter for the schema with the name category.
+      schema: {
+        is: category
+      }
+    }) {
+      elements {
+        uuid
+        fields {
+          ... on category {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+
+</div>
+++++
