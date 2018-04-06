@@ -396,7 +396,7 @@ public class DemoDataProvider {
 					}
 					if (obj instanceof Integer || obj instanceof Float || obj instanceof Double) {
 						nodeCreateRequest.getFields().put(fieldName,
-								FieldUtil.createNumberField(com.gentics.mesh.util.NumberUtils.createNumber(obj.toString())));
+							FieldUtil.createNumberField(com.gentics.mesh.util.NumberUtils.createNumber(obj.toString())));
 					} else if (obj instanceof String) {
 						nodeCreateRequest.getFields().put(fieldName, FieldUtil.createStringField((String) obj));
 					} else {
@@ -422,7 +422,7 @@ public class DemoDataProvider {
 				Buffer fileData = Buffer.buffer(bytes);
 
 				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image",
-						fileData, filenName, contentType));
+					fileData, filenName, contentType));
 
 			}
 

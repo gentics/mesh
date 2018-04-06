@@ -11,7 +11,16 @@
 = Gentics Mesh Changelog
 
 [[v0.18.0]]
-== 0.18.0 (TBD)
+== 0.18.0 (06.04.2018)
+
+icon:bullhorn[] GraphQL filtering
+
+[quote]
+____
+This version of Gentics Mesh introduces _GraphQL filtering_. A detailed description of this feature can be found in our link:https://getmesh.io/docs/beta/graphql.html#_filtering[Documentation].
+____
+
+---
 
 CAUTION: Search: The  `/api/v1/search/reindex` endpoint was replaced by `/api/v1/search/sync`.
 
@@ -28,8 +37,6 @@ icon:plus[] REST: The `/api/v1/search/status` endpoint has been enhanced. The en
 
 icon:plus[] Logging: The logging verbosity has been further decreased.
 
-icon:plus[] GraphQL: It is now possible to link:https://getmesh.io/docs/beta/graphql.html#_filtering[filter lists of nodes].
-
 icon:check[] REST: Fix ETag generation for nodes.
                    Previously taking a node offline did not alter the ETag and this also lead to inconsistent status
                    information being displayed in the Mesh UI link:https://github.com/gentics/mesh/issues/345[#345]
@@ -37,6 +44,8 @@ icon:check[] REST: Fix ETag generation for nodes.
 icon:check[] Java Rest Client: Fix webroot requests never returns when containing whitespaces.
 
 icon:check[] GraphQL: Fixed language parameter in nodes query method was ignored in some cases. link:https://github.com/gentics/mesh/issues/365[#365]
+
+icon:check[] REST: The `/api/v1/microschemas` endpoint will now correctly detect name conflicts during microschema creation.
 
 [[v0.17.3]]
 == 0.17.3 (15.03.2018)
