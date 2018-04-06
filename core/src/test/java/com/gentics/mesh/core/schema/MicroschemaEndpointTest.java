@@ -150,7 +150,9 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName(name);
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(request));
 		assertEquals("The microschema with the given name should haven been created.", microschemaResponse.getName(), name);
-		call(() -> client().createMicroschema(request), CONFLICT, "schema_conflicting_name", name);
+
+		// Create the same schema again
+		call(() -> client().createMicroschema(request), CONFLICT, "microschema_conflicting_name", name);
 	}
 
 	@Test
@@ -196,7 +198,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			assertNotNull(vcardContainer);
 			MicroschemaResponse microschemaResponse = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name",
-					"description");
+				"description");
 		}
 	}
 
@@ -234,10 +236,10 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
 
 		call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("5.0")), NOT_FOUND,
-				"object_not_found_for_uuid_version", uuid, "5.0");
+			"object_not_found_for_uuid_version", uuid, "5.0");
 
 		call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("sadgsdgasgd")), BAD_REQUEST,
-				"error_illegal_version", "sadgsdgasgd");
+			"error_illegal_version", "sadgsdgasgd");
 	}
 
 	@Test
@@ -249,7 +251,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			String uuid = vcardContainer.getUuid();
 
 			MicroschemaResponse microschema = call(
-					() -> client().findMicroschemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
+				() -> client().findMicroschemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(microschema.getRolePerms());
 			assertThat(microschema.getRolePerms()).hasPerm(Permission.values());
 		}
@@ -359,14 +361,14 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 			// 4. Try to delete the microschema
 			call(() -> client().deleteMicroschema(microschemaContainer.getUuid()), BAD_REQUEST, "microschema_delete_still_in_use",
-					microschemaContainer.getUuid());
+				microschemaContainer.getUuid());
 
 			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
 			assertNotNull("The microschema should not have been deleted.", reloaded);
-			
+
 			// 5. Delete the newly created node
 			call(() -> client().deleteNode(PROJECT_NAME, nodeResponse.getUuid()));
-			
+
 			// 6. Attempt to delete the microschema now
 			call(() -> client().deleteMicroschema(microschemaContainer.getUuid()));
 			MicroschemaContainer searched = boot().microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());

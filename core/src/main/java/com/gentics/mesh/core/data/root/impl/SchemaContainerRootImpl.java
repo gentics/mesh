@@ -78,6 +78,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			validateSchema(schema);
 		}
 
+		String name = schema.getName();
+		SchemaContainer conflictingSchema = findByName(name);
+		if (conflictingSchema != null) {
+			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
+		}
+
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		if (uuid != null) {
 			container.setUuid(uuid);
@@ -136,13 +142,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());
 		}
-
-		String schemaName = requestModel.getName();
-		SchemaContainer conflictingSchema = findByName(schemaName);
-		if (conflictingSchema != null) {
-			throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
-		}
-
 		SchemaContainer container = create(requestModel, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 		batch.store(container, true);
@@ -170,7 +169,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		// Check whether a container was actually found
 		if (schemaContainer == null) {
 			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
-					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+				: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 		}
 		if (schemaVersion == null) {
 			return schemaContainer.getLatestVersion();
@@ -178,7 +177,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
 			if (foundVersion == null) {
 				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
-						: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 			} else {
 				return foundVersion;
 			}

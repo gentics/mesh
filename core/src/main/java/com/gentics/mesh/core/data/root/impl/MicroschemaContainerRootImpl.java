@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -61,6 +62,13 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	@Override
 	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid) {
 		microschema.validate();
+
+		String name = microschema.getName();
+		MicroschemaContainer conflictingSchema = findByName(name);
+		if (conflictingSchema != null) {
+			throw conflict(conflictingSchema.getUuid(), name, "microschema_conflicting_name", name);
+		}
+
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		if (uuid != null) {
 			container.setUuid(uuid);
@@ -118,7 +126,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		// Return the specified version or fallback to latest version.
 		if (container == null) {
 			throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
-					isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
+				isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
 		}
 
 		MicroschemaContainerVersion foundVersion = null;
@@ -133,7 +141,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 		if (foundVersion == null) {
 			throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
-					isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
+				isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
 		}
 		return foundVersion;
 	}
