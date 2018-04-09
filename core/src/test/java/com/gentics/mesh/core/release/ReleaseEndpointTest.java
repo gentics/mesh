@@ -873,6 +873,20 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
+	public void testMigrateReleaseSchemas() {
+		//TODO Assign schema versions to the release and delay the actual migration
+		// https://github.com/gentics/mesh/issues/374
+		call(() -> client().migrateReleaseSchemas(PROJECT_NAME, initialReleaseUuid()));
+	}
+
+	@Test
+	public void testReleaseMicroschemas() {
+		//TODO Assign schema versions to the release and delay the actual migration
+		// https://github.com/gentics/mesh/issues/374
+		call(() -> client().migrateReleaseMicroschemas(PROJECT_NAME, initialReleaseUuid()));
+	}
+
+	@Test
 	public void testAssignLatestMicroschemaVersion() throws Exception {
 		try (Tx tx = tx()) {
 			// create version 1 of a microschema

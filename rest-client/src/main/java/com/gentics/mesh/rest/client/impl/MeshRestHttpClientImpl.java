@@ -1218,6 +1218,22 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> migrateReleaseSchemas(String projectName, String releaseUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/migrateSchemas", GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> migrateReleaseMicroschemas(String projectName, String releaseUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/migrateMicroschemas", GenericMessageResponse.class);
+	}
+
+	@Override
 	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(request, "request must not be null");

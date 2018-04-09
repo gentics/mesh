@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.18.1]]
+== 0.18.1 (TBD)
+
+icon:check[] Java Rest Client: Missing methods to start schema/microschema migrations for a release have been added.
+
 [[v0.18.0]]
 == 0.18.0 (06.04.2018)
 
