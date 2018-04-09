@@ -134,7 +134,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			batch.addNodeIndex(project, release, version, DRAFT);
 			batch.addNodeIndex(project, release, version, PUBLISHED);
 		}
-
+		MeshInternal.get().boot().jobRoot().enqueueReleaseMigration(release.getCreator(), release);
 		return release;
 	}
 

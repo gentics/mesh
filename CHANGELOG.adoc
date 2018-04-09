@@ -13,6 +13,8 @@
 [[v0.18.1]]
 == 0.18.1 (TBD)
 
+icon:check[] REST: Creating a release with fixed UUID will now invoke the node migration.
+
 icon:check[] Java Rest Client: Missing methods to start schema/microschema migrations for a release have been added.
 
 [[v0.18.0]]

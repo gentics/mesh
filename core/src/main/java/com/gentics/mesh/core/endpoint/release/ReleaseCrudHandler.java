@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Iterator;
@@ -43,9 +42,7 @@ import com.gentics.mesh.core.rest.release.info.ReleaseSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
@@ -80,38 +77,6 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		throw new NotImplementedException("Release can't be deleted");
-	}
-
-	@Override
-	public void handleCreate(InternalActionContext ac) {
-		utils.asyncTx(ac, (tx) -> {
-			Database db = MeshInternal.get().database();
-			User user = ac.getUser();
-
-			ResultInfo info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				RootVertex<Release> root = getRootVertex(ac);
-				Release created = root.create(ac, batch);
-				Project project = created.getProject();
-				ReleaseResponse model = created.transformToRestSync(ac, 0);
-				ResultInfo resultInfo = new ResultInfo(model, batch);
-				resultInfo.setProperty("path", created.getAPIPath(ac));
-				resultInfo.setProperty("projectUuid", project.getUuid());
-				resultInfo.setProperty("releaseUuid", created.getUuid());
-				JobRoot jobRoot = boot.jobRoot();
-				jobRoot.enqueueReleaseMigration(user, created);
-				return resultInfo;
-			});
-
-			// The release has been created now lets start the release migration (specific node migration)
-			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
-
-			ac.setLocation(info.getProperty("path"));
-			// Finally process the batch
-			info.getBatch().processSync();
-			return info.getModel();
-		}, model -> ac.send(model, CREATED));
-
 	}
 
 	/**
