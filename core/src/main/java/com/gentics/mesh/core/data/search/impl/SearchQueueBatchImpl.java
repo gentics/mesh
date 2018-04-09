@@ -54,7 +54,7 @@ import io.vertx.core.logging.LoggerFactory;
 public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	private String batchId;
-	private List<SearchQueueEntry> entries = new ArrayList<>();
+	private List<SearchQueueEntry<?>> entries = new ArrayList<>();
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
 

@@ -9,8 +9,10 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_REL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -104,11 +106,11 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	public Release create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		Database db = MeshInternal.get().database();
 
-		ReleaseCreateRequest createRequest = ac.fromJson(ReleaseCreateRequest.class);
+		ReleaseCreateRequest request = ac.fromJson(ReleaseCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();
 
 		// Check for completeness of request
-		if (StringUtils.isEmpty(createRequest.getName())) {
+		if (StringUtils.isEmpty(request.getName())) {
 			throw error(BAD_REQUEST, "release_missing_name");
 		}
 
@@ -121,14 +123,19 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		}
 
 		// Check for uniqueness of release name (per project)
-		Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class, getUniqueNameKey(createRequest
-				.getName()));
+		Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class, getUniqueNameKey(request
+			.getName()));
 		if (conflictingRelease != null) {
-			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", createRequest.getName());
+			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", request.getName());
 		}
 
-		Release release = create(createRequest.getName(), requestUser, uuid);
-
+		Release release = create(request.getName(), requestUser, uuid);
+		if (!isEmpty(request.getHostname())) {
+			release.setHostname(request.getHostname());
+		}
+		if (request.getSsl() != null) {
+			release.setSsl(request.getSsl());
+		}
 		// A new release was created - We also need to create new indices for the nodes within the release
 		for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 			batch.addNodeIndex(project, release, version, DRAFT);

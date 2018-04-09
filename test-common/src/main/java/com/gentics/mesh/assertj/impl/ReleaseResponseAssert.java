@@ -12,7 +12,7 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 	}
 
 	/**
-	 * Assert that the release response has the given name
+	 * Assert that the release response has the given name.
 	 * 
 	 * @param name
 	 * @return fluent API
@@ -23,7 +23,7 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 	}
 
 	/**
-	 * Assert that the release response has the given uuid
+	 * Assert that the release response has the given uuid.
 	 * 
 	 * @param uuid
 	 * @return fluent API
@@ -34,7 +34,7 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 	}
 
 	/**
-	 * Assert that the release response has the given hostname
+	 * Assert that the release response has the given hostname.
 	 * 
 	 * @param hostname
 	 * @return fluent API
@@ -45,7 +45,18 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 	}
 
 	/**
-	 * Assert that the release response has the given SSL setting
+	 * Assert that the release response has the given ssl flag.
+	 * 
+	 * @param flag
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert hasSSL(Object flag) {
+		assertThat(actual.getSsl()).as(descriptionText() + " ssl").isEqualTo(flag);
+		return this;
+	}
+
+	/**
+	 * Assert that the release response has the given SSL setting.
 	 * 
 	 * @param ssl
 	 * @return fluent API
@@ -56,29 +67,29 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 	}
 
 	/**
-	 * Assert that the release response is marked active
+	 * Assert that the release response is marked active.
 	 * 
 	 * @return fluent API
 	 */
 	public ReleaseResponseAssert isActive() {
 		// TODO disabled since the feature is not yet fully implemented
-		//assertThat(actual.isActive()).as(descriptionText() + " active").isTrue();
+		// assertThat(actual.isActive()).as(descriptionText() + " active").isTrue();
 		return this;
 	}
 
 	/**
-	 * Assert that the release response is marked inactive
+	 * Assert that the release response is marked inactive.
 	 * 
 	 * @return fluent API
 	 */
 	public ReleaseResponseAssert isInactive() {
 		// TODO disabled since the feature is not yet fully implemented
-		//		assertThat(actual.isActive()).as(descriptionText() + " active").isFalse();
+		// assertThat(actual.isActive()).as(descriptionText() + " active").isFalse();
 		return this;
 	}
 
 	/**
-	 * Assert that all nodes have been migrated to this release
+	 * Assert that all nodes have been migrated to this release.
 	 * 
 	 * @return fluent API
 	 */
@@ -88,7 +99,7 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 	}
 
 	/**
-	 * Assert that not all nodes have been migrated to this release
+	 * Assert that not all nodes have been migrated to this release.
 	 * 
 	 * @return fluent API
 	 */

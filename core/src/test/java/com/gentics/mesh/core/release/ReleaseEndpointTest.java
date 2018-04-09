@@ -295,10 +295,11 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 		request.setHostname(hostname);
-
-		ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
-
-		assertThat(response).as("Created release").hasName(releaseName).hasHostname(hostname);
+		request.setSsl(true);
+		waitForJobs(() -> {
+			ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
+			assertThat(response).as("Created release").hasName(releaseName).hasHostname(hostname).hasSSL(true);
+		}, COMPLETED, 1);
 	}
 
 	@Test
@@ -310,9 +311,10 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(releaseName);
 		request.setSsl(ssl);
 
-		ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
-
-		assertThat(response).as("Created release").hasName(releaseName).hasSsl(ssl);
+		waitForJobs(() -> {
+			ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
+			assertThat(response).as("Created release").hasName(releaseName).hasSsl(ssl);
+		}, COMPLETED, 1);
 	}
 
 	@Test
@@ -524,7 +526,6 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testReadSchemaVersions() throws Exception {
 		try (Tx tx = tx()) {
 			ReleaseInfoSchemaList list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
-			System.out.println(list.toJson());
 			ReleaseSchemaInfo content = new ReleaseSchemaInfo(schemaContainer("content").getLatestVersion().transformToReference());
 			ReleaseSchemaInfo folder = new ReleaseSchemaInfo(schemaContainer("folder").getLatestVersion().transformToReference());
 			ReleaseSchemaInfo binaryContent = new ReleaseSchemaInfo(schemaContainer("binary_content").getLatestVersion().transformToReference());
@@ -623,11 +624,9 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}, COMPLETED, 1);
 
 		JobListResponse jobList = call(() -> client().findJobs());
-		System.out.println(jobList.toJson());
 		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();
 
 		ReleaseInfoSchemaList schemaList = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
-		System.out.println(schemaList.toJson());
 		ReleaseSchemaInfo schemaInfo = schemaList.getSchemas().stream().filter(s -> s.getUuid().equals(schema.getUuid())).findFirst().get();
 		assertEquals(COMPLETED, schemaInfo.getMigrationStatus());
 		assertEquals(job.getUuid(), schemaInfo.getJobUuid());
@@ -881,14 +880,14 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testMigrateReleaseSchemas() {
-		//TODO Assign schema versions to the release and delay the actual migration
+		// TODO Assign schema versions to the release and delay the actual migration
 		// https://github.com/gentics/mesh/issues/374
 		call(() -> client().migrateReleaseSchemas(PROJECT_NAME, initialReleaseUuid()));
 	}
 
 	@Test
 	public void testReleaseMicroschemas() {
-		//TODO Assign schema versions to the release and delay the actual migration
+		// TODO Assign schema versions to the release and delay the actual migration
 		// https://github.com/gentics/mesh/issues/374
 		call(() -> client().migrateReleaseMicroschemas(PROJECT_NAME, initialReleaseUuid()));
 	}

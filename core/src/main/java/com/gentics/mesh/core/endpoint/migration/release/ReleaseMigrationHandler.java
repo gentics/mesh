@@ -54,7 +54,7 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 
 		if (!oldRelease.isMigrated()) {
 			throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newRelease.getName() + "}, because previous release {"
-					+ oldRelease.getName() + "} is not fully migrated yet.");
+				+ oldRelease.getName() + "} is not fully migrated yet.");
 		}
 
 		if (status != null) {
@@ -65,12 +65,14 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 		long count = 0;
 		// Iterate over all nodes of the project and migrate them to the new release
 		Project project = oldRelease.getProject();
-		Iterable<? extends Node> it = project.getNodeRoot().findAllIt();
-		for (Node node : it) {
+		for (Node node : project.getNodeRoot().findAllIt()) {
 			SearchQueueBatch sqb = db.tx(() -> {
+				System.out.println(node.getUuid());
 				return migrateNode(node, oldRelease, newRelease);
 			});
-			sqb.processSync();
+			if (sqb != null) {
+				sqb.processSync();
+			}
 			if (status != null) {
 				status.incCompleted();
 			}
@@ -102,10 +104,12 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 	 * @return
 	 */
 	private SearchQueueBatch migrateNode(Node node, Release oldRelease, Release newRelease) {
-		if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {
+		// Check whether the node already has an initial container and thus was already migrated
+		if (node.getGraphFieldContainersIt(newRelease, INITIAL).iterator().hasNext()) {
 			return null;
 		}
-		node.getGraphFieldContainers(oldRelease, DRAFT).stream().forEach(container -> {
+
+		node.getGraphFieldContainersIt(oldRelease, DRAFT).forEach(container -> {
 			GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 			initialEdge.setType(INITIAL);
@@ -119,7 +123,7 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 		SearchQueueBatch batch = searchQueue.create();
 		batch.store(node, newRelease.getUuid(), DRAFT, false);
 
-		node.getGraphFieldContainers(oldRelease, PUBLISHED).stream().forEach(container -> {
+		node.getGraphFieldContainersIt(oldRelease, PUBLISHED).forEach(container -> {
 			GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			edge.setLanguageTag(container.getLanguage().getLanguageTag());
 			edge.setType(PUBLISHED);
