@@ -162,6 +162,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
+		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
 		fieldGet.description(
 				"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
