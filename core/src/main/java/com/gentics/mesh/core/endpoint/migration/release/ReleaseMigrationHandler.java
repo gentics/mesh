@@ -67,7 +67,6 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 		Project project = oldRelease.getProject();
 		for (Node node : project.getNodeRoot().findAllIt()) {
 			SearchQueueBatch sqb = db.tx(() -> {
-				System.out.println(node.getUuid());
 				return migrateNode(node, oldRelease, newRelease);
 			});
 			if (sqb != null) {
