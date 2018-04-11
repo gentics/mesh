@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.admin.consistency.asserter.GraphFieldContainerCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.asserter.GroupCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.asserter.MicroschemaContainerCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.asserter.NodeCheck;
@@ -41,7 +42,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	private static List<ConsistencyCheck> checks = Arrays.asList(new GroupCheck(), new MicroschemaContainerCheck(), new NodeCheck(),
 			new ProjectCheck(), new ReleaseCheck(), new RoleCheck(), new SchemaContainerCheck(), new TagCheck(), new TagFamilyCheck(),
-			new UserCheck());
+			new UserCheck(), new GraphFieldContainerCheck());
 
 	/**
 	 * Get the list of checks
