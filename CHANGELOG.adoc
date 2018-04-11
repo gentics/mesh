@@ -10,6 +10,12 @@
 
 = Gentics Mesh Changelog
 
+[[v0.18.1]]
+== 0.18.1 (TBD)
+
+icon:check[] Java REST Client: The eventbus() method now correctly sends authorization headers.
+
+
 [[v0.18.0]]
 == 0.18.0 (06.04.2018)
 
