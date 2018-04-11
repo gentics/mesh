@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.18.1]]
+== 0.18.1 (TBD)
+
+icon:check[] Core: Added consistency check for node containers.
+
 [[v0.18.0]]
 == 0.18.0 (06.04.2018)
 
