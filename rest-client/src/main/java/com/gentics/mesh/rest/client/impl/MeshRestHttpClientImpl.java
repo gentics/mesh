@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.vertx.core.MultiMap;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -1103,7 +1104,14 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect, Handler<Throwable> failureHandler) {
-		getClient().websocket(getBaseUri() + "/eventbus/websocket", wsConnect, failureHandler);
+		String token = getAuthentication().getToken();
+		if (token != null) {
+			MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+			headers.set("Authorization", "Bearer " + token);
+			getClient().websocket(getBaseUri() + "/eventbus/websocket", headers, wsConnect, failureHandler);
+		} else {
+			getClient().websocket(getBaseUri() + "/eventbus/websocket", wsConnect, failureHandler);
+		}
 	}
 
 	@Override
