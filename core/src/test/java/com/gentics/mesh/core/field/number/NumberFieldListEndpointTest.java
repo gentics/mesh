@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import io.reactivex.Completable;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -27,10 +28,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
-import rx.functions.Func1;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
@@ -209,8 +206,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		NumberFieldListImpl listField = new NumberFieldListImpl();
 		NodeResponse response = createNode(FIELD_NAME, listField);
 
-		addNumbers(response, elementCount).await();
-		response = client().findNodeByUuid(PROJECT_NAME, response.getUuid()).toSingle().toBlocking().value();
+		addNumbers(response, elementCount).blockingAwait();
+		response = client().findNodeByUuid(PROJECT_NAME, response.getUuid()).toSingle().blockingGet();
 
 		Integer[] expected = IntStream.range(0, elementCount)
 			.boxed()
