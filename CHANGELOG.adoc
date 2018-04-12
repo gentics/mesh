@@ -10,6 +10,12 @@
 
 = Gentics Mesh Changelog
 
+[[v0.18.1]]
+== 0.18.1 (TBD)
+
+icon:check[] GraphQL: Using filtering with nodes without content does not throw an error anymore.
+
+
 [[v0.18.0]]
 == 0.18.0 (06.04.2018)
 
