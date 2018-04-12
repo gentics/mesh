@@ -13,6 +13,8 @@
 [[v0.18.1]]
 == 0.18.1 (TBD)
 
+icon:check[] Core: Added consistency check for node containers.
+
 icon:check[] GraphQL: Using filtering with nodes without content does not throw an error anymore.
 
 icon:check[] REST: Added missing `hostname` and `ssl` property handling for release creation requests.
