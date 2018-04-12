@@ -39,8 +39,9 @@ public class NodeUpdateRequest implements FieldContainer {
 	 * @param language
 	 *            Language tag for the node
 	 */
-	public void setLanguage(String language) {
+	public NodeUpdateRequest setLanguage(String language) {
 		this.language = language;
+		return this;
 	}
 
 	/**
@@ -78,8 +79,9 @@ public class NodeUpdateRequest implements FieldContainer {
 	 * 
 	 * @param version
 	 */
-	public void setVersion(String version) {
+	public NodeUpdateRequest setVersion(String version) {
 		this.version = version;
+		return this;
 	}
 
 }
