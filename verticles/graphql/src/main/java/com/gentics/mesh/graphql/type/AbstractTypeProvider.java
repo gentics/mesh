@@ -376,7 +376,7 @@ public abstract class AbstractTypeProvider {
             // Now lets try to load the containers for those found nodes - apply the language fallback
             .map(node -> new NodeContent(node, node.findVersion(gc, languageTags)))
 			// Filter nodes without a container
-			.filter(content -> content.getContainer() == null);
+			.filter(content -> content.getContainer() != null);
 
         return applyNodeFilter(env, contents);
 	}
