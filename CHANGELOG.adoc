@@ -11,9 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.18.1]]
-== 0.18.1 (TBD)
-
-icon:check[] Java REST Client: The eventbus() method now correctly sends authorization headers.
+== 0.18.1 (13.04.2018)
 
 icon:check[] Core: Added consistency check for node containers.
 
@@ -22,6 +20,8 @@ icon:check[] GraphQL: Using filtering with nodes without content does not throw 
 icon:check[] REST: Added missing `hostname` and `ssl` property handling for release creation requests.
 
 icon:check[] REST: Creating a release with fixed UUID will now invoke the node migration.
+
+icon:check[] Java REST Client: The `eventbus()` method now correctly sends authorization headers.
 
 icon:check[] Java Rest Client: Missing methods to start schema/microschema migrations for a release have been added.
 
