@@ -103,6 +103,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			request.setName("new_microschema_name" + i);
 			set.add(client().createMicroschema(request).invoke());
 		}
 		validateCreation(set, barrier);

@@ -57,7 +57,6 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	@Test
 	public void testResize() throws Exception {
-
 		checkImages((imageName, width, height, color, refImage, bs) -> {
 			log.debug("Handling " + imageName);
 

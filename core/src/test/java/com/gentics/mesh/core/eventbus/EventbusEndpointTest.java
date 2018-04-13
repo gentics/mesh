@@ -155,7 +155,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testEventbusHeathbeatHandling(TestContext context) throws InterruptedException {
+	public void testEventbusHeartbeatHandling(TestContext context) throws InterruptedException {
 		Async asyncRec = context.async();
 
 		// Register
@@ -184,7 +184,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		Async asyncRec = context.async();
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", "some-address");
+		JsonObject msg = new JsonObject().put("type", "register").put("address", "custom.address");
 		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
 
 		// Handle msgs
@@ -197,7 +197,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		});
 
 		// Send msg
-		msg = new JsonObject().put("type", "publish").put("address", "some-address").put("body", "someText");
+		msg = new JsonObject().put("type", "publish").put("address", "custom.address").put("body", "someText");
 		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
 	}
 
