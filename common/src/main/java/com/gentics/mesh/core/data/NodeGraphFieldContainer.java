@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
 
@@ -143,6 +144,14 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void delete(SearchQueueBatch batch);
 
 	/**
+	 * Delete the field container. This will also delete linked elements like lists.
+	 * 
+	 * @param batch
+	 * @param deleteNext true to also delete all "next" containers, false to only delete this container
+	 */
+	void delete(SearchQueueBatch batch, boolean deleteNext);
+
+	/**
 	 * "Delete" the field container from the release. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
 	 *
 	 * @param release
@@ -199,11 +208,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void setVersion(VersionNumber version);
 
 	/**
-	 * Get the next version.
+	 * Check whether the field container has a next version
 	 * 
-	 * @return next version or null
+	 * @return true iff the field container has a next version
 	 */
-	NodeGraphFieldContainer getNextVersion();
+	boolean hasNextVersion();
+
+	/**
+	 * Get the next versions.
+	 * 
+	 * @return iterable for all next versions
+	 */
+	Iterable<? extends NodeGraphFieldContainer> getNextVersions();
 
 	/**
 	 * Set the next version.
@@ -211,6 +227,13 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param container
 	 */
 	void setNextVersion(NodeGraphFieldContainer container);
+
+	/**
+	 * Check whether the field container has a previous version
+	 * 
+	 * @return true iff the field container has a previous version
+	 */
+	boolean hasPreviousVersion();
 
 	/**
 	 * Get the previous version.
@@ -226,6 +249,54 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            container
 	 */
 	void clone(NodeGraphFieldContainer container);
+
+	/**
+	 * Check whether this field container is the initial version for any
+	 * release.
+	 * 
+	 * @return true if it is the initial, false if not
+	 */
+	default boolean isInitial() {
+		return isType(INITIAL);
+	}
+
+	/**
+	 * Check whether this field container is the draft version for any release.
+	 * 
+	 * @return true if it is the draft, false if not
+	 */
+	default boolean isDraft() {
+		return isType(DRAFT);
+	}
+
+	/**
+	 * Check whether this field container is the published version for any release.
+	 * 
+	 * @return true if it is published, false if not
+	 */
+	default boolean isPublished() {
+		return isType(PUBLISHED);
+	}
+
+	/**
+	 * Check whether this field container has the given type for any release.
+	 * 
+	 * @param type
+	 * @return true if it matches the type, false if not
+	 */
+	boolean isType(ContainerType type);
+
+	/**
+	 * Check whether this field container is the initial version for the given
+	 * release.
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @return true if it is the initial, false if not
+	 */
+	default boolean isInitial(String releaseUuid) {
+		return isType(INITIAL, releaseUuid);
+	}
 
 	/**
 	 * Check whether this field container is the draft version for the given release.
@@ -335,8 +406,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * @param version
 	 * @return
+	 * @deprecated since the version String is not unique among releases
 	 */
 	NodeGraphFieldContainer findVersion(String version);
+
+	/**
+	 * Find the specified version of the container by moving to the next versions.
+	 * 
+	 * @param version
+	 * @return
+	 * @deprecated since the version String is not unique among releases
+	 */
+	NodeGraphFieldContainer findVersionNext(String version);
 
 	/**
 	 * Return the URL field values for the container.

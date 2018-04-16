@@ -132,8 +132,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public Node getParentNode() {
 		NodeGraphFieldContainer container = getContainer();
-		while (container.getNextVersion() != null) {
-			container = container.getNextVersion();
+		while (container.getPreviousVersion() != null) {
+			container = container.getPreviousVersion();
 		}
 
 		return container.getParentNode();

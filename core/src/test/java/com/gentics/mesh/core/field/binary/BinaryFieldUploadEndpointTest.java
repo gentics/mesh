@@ -121,7 +121,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, newFileName));
 
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer newContainer = container.getNextVersion();
+				NodeGraphFieldContainer newContainer = container.getNextVersions().iterator().next();
 				assertNotNull("No new version was created.", newContainer);
 				assertEquals(newContainer.getUuid(), node.getLatestDraftFieldContainer(english()).getUuid());
 

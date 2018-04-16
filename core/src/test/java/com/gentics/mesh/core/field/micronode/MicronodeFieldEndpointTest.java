@@ -97,7 +97,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELD_NAME);
 				assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
-				NodeGraphFieldContainer newContainer = container.getNextVersion();
+				NodeGraphFieldContainer newContainer = container.getNextVersions().iterator().next();
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				if (oldValue == null) {
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isNull();

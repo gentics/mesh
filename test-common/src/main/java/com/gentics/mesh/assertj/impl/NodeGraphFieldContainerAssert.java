@@ -3,6 +3,9 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -56,7 +59,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert isLast() {
-		assertThat(actual.getNextVersion()).as(descriptionText() + " next container").isNull();
+		assertThat(actual.getNextVersions()).as(descriptionText() + " next container").isEmpty();
 		return this;
 	}
 
@@ -67,8 +70,8 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert hasNext(NodeGraphFieldContainer container) {
-		assertThat(actual.getNextVersion()).as(descriptionText() + " next container").isNotNull()
-				.isEqualToComparingFieldByField(container);
+		Iterable<NodeGraphFieldContainer> next = (Iterable<NodeGraphFieldContainer>) actual.getNextVersions();
+		assertThat(next).as(descriptionText() + " next container").isNotNull().usingFieldByFieldElementComparator().contains(container);
 		return this;
 	}
 

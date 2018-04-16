@@ -166,7 +166,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		assertThat(restNode).hasVersion("1.1");
 
 		try (Tx tx = tx()) {
-			assertNotNull("The old version should have a new version 1.1", oldContainer.getNextVersion());
+			assertNotNull("The old version should have a new version 1.1", oldContainer.getNextVersions().iterator().next());
 			NodeGraphFieldContainer newContainer = node.findVersion("en", project().getLatestRelease().getUuid(), "1.1");
 			assertEquals("The name field value of the old container version should not have been changed.", "Concorde_english_name", oldContainer
 					.getString("teaser").getString());

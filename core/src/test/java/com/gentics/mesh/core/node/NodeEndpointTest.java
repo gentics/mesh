@@ -1463,8 +1463,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodeByUUIDLanguageFallback() {
 		try (Tx tx = tx()) {
 			Node node = folder("products");
-			SearchQueueBatch batch = createBatch();
-			node.getLatestDraftFieldContainer(english()).delete(batch);
+			String uuid = node.getUuid();
+
+			call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParametersImpl().setRecursive(true)));
+			call(() -> client().deleteNode(PROJECT_NAME, uuid, "en", new DeleteParametersImpl().setRecursive(true)));
 			tx.success();
 		}
 
@@ -1865,7 +1867,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		nodeUpdateRequest.setLanguage("de");
 		nodeUpdateRequest.setVersion("0.1");
 		nodeUpdateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("old-page.de.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("old-page.de2.html"));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		nodeUpdateRequest.setVersion("0.2");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("old-page.de3.html"));
 		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
 
 		// 3. Delete (de)

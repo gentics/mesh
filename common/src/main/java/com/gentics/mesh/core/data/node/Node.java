@@ -223,6 +223,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type);
 
 	/**
+	 * Return containers of the given type
+	 * 
+	 * @param type
+	 * @return
+	 */
+	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type);
+
+	/**
 	 * Return containers of the given type and release.
 	 * 
 	 * @param releaseUuid

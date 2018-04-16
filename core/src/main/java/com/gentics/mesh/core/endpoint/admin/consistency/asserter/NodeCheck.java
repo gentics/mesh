@@ -1,17 +1,21 @@
 package com.gentics.mesh.core.endpoint.admin.consistency.asserter;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -62,10 +66,28 @@ public class NodeCheck implements ConsistencyCheck {
 			response.addInconsistency("The node has no creation date", uuid, MEDIUM);
 		}
 
-		List<? extends NodeGraphFieldContainer> initialContainers = node.getAllInitialGraphFieldContainers();
-		if (initialContainers.isEmpty()) {
+		Iterable<? extends NodeGraphFieldContainer> initialIterator = node.getGraphFieldContainersIt(ContainerType.INITIAL);
+		if (!initialIterator.iterator().hasNext()) {
 			response.addInconsistency("The node has no initial field containers", uuid, HIGH);
+		}
+		for (ContainerType type : ContainerType.values()) {
+			checkGraphFieldContainers(node, type, response);
 		}
 	}
 
+	private void checkGraphFieldContainers(Node node, ContainerType type, ConsistencyCheckResponse response) {
+		String uuid = node.getUuid();
+
+		Set<String> languageAndReleaseSet = new HashSet<>();
+		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())
+				.frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+			String languageAndRelease = String.format("%s - %s", edge.getReleaseUuid(), edge.getLanguageTag());
+			if (languageAndReleaseSet.contains(languageAndRelease)) {
+				response.addInconsistency(String.format("The node has more than one GFC of type %s, language %s for release %s", type,
+						edge.getLanguageTag(), edge.getReleaseUuid()), uuid, HIGH);
+			} else {
+				languageAndReleaseSet.add(languageAndRelease);
+			}
+		}
+	}
 }
