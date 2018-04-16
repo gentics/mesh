@@ -46,6 +46,13 @@ public @interface MeshTestSetting {
 	boolean inMemoryDB() default true;
 
 	/**
+	 * Flag which indicates whether the graph database server should be started (only if {@link #inMemoryDB()} is false)
+	 * 
+	 * @return
+	 */
+	boolean startStorageServer() default false;
+
+	/**
 	 * Flag which indicates that the cluster mode should be enabled.
 	 * 
 	 * @return

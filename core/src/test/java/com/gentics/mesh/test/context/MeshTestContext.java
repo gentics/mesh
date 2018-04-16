@@ -294,6 +294,9 @@ public class MeshTestContext extends TestWatcher {
 			directory.deleteOnExit();
 			directory.mkdirs();
 		}
+		if (!settings.inMemoryDB() && settings.startStorageServer()) {
+			options.getStorageOptions().setStartServer(true);
+		}
 		// Increase timeout to high load during testing
 		options.getSearchOptions().setTimeout(10_000L);
 		options.getStorageOptions().setDirectory(graphPath);
