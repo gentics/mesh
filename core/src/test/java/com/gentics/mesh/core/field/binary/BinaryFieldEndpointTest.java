@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -253,6 +255,35 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		JsonObject variables = new JsonObject().put("uuid", nodeResponse1.getUuid());
 		GraphQLResponse response = call(() -> client().graphql(PROJECT_NAME, new GraphQLRequest().setQuery(query).setVariables(variables)));
 		assertEquals(response.getData().getJsonObject("node").getString("displayName"), fileName);
+	}
+
+	/**
+	 * Svg images should not be transformed, since ImageIO can't read svg images.
+	 */
+	@Test
+	public void testSvgTransformation() throws Exception {
+		String fileName = "laptop-2.svg";
+		InputStream ins = getClass().getResourceAsStream("/pictures/laptop-2.svg");
+		byte[] inputBytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(inputBytes);
+		String parentUuid = tx(() -> folder("2015").getUuid());
+
+		tx(() -> group().addRole(roles().get("admin")));
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
+		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", buffer, fileName,
+			"image/svg"));
+
+		NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", "binary",
+			new ImageManipulationParametersImpl().setWidth(100)
+		));
+
+		byte[] downloadBytes = download.getBuffer().getBytes();
+
+		assertThat(downloadBytes).containsExactly(inputBytes);
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.util.NodeUtil;
 
 /**
  * @see BinaryGraphField
@@ -162,12 +163,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public boolean hasImage() {
-		String contentType = getMimeType();
-		if (contentType == null) {
-			return false;
-		}
-		return contentType.startsWith("image/");
+	public boolean hasProcessableImage() {
+		return NodeUtil.isProcessableImage(getMimeType());
 	}
 
 	@Override

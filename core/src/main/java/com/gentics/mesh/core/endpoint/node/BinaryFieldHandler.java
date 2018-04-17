@@ -54,6 +54,7 @@ import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
@@ -271,7 +272,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				oldField.copyTo(field);
 
 				// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
-				if (oldField.hasImage() && !ul.contentType().startsWith("image/")) {
+				if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(ul.contentType())) {
 					field.setImageDominantColor(null);
 				}
 			}
@@ -311,11 +312,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 		String hash = binary.getSHA512Sum();
 		String binaryUuid = binary.getUuid();
 		String contentType = ul.contentType();
-		boolean isImage = contentType.startsWith("image/");
+		boolean isProcessableImage = NodeUtil.isProcessableImage(contentType);
 
 		// Calculate how many streams will connect to the data stream
 		int neededDataStreams = 0;
-		if (isImage) {
+		if (isProcessableImage) {
 			neededDataStreams++;
 		}
 		if (storeBinary) {
@@ -325,7 +326,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 		if (neededDataStreams > 0) {
 			// Only gather image info for actual images. Otherwise return an empty image info object.
 			Single<Optional<ImageInfo>> imageInfo = Single.just(Optional.empty());
-			if (isImage) {
+			if (isProcessableImage) {
 				imageInfo = processImageInfo(ac, uploadFile);
 			}
 
@@ -430,7 +431,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
 
-			if (!initialField.hasImage()) {
+			if (!initialField.hasProcessableImage()) {
 				throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
 			}
 

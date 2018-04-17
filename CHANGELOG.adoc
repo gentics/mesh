@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.18.2]]
+== 0.18.2 (TBD)
+
+icon:check[] Core: Image data in binary fields will now only be processed/transformed if the binary is in a readable file format. The readable image file formats are `png`, `jpg`, `bmp` and `gif`.
+
 [[v0.18.1]]
 == 0.18.1 (13.04.2018)
 

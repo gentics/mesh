@@ -85,7 +85,7 @@ public class WebRootHandler {
 
 				// Check the etag
 				String etagKey = sha512sum;
-				if (binaryField.hasImage()) {
+				if (binaryField.hasProcessableImage()) {
 					etagKey += ac.getImageParameters().getQueryParameters();
 				}
 				String etag = ETag.hash(etagKey);
