@@ -1747,6 +1747,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			dangling = initial;
 			while (dangling != null && !dangling.isInitial() && !dangling.hasPreviousVersion()) {
 				NodeGraphFieldContainer toDelete = dangling;
+				// since the GFC "toDelete" was only used by this release, it can not have more than one "next" GFC
+				// (multiple "next" would have to belong to different releases, and for every release, there would have to be
+				// an INITIAL, which would have to be either this GFC or a previous)
 				dangling = toDelete.getNextVersions().iterator().next();
 				toDelete.delete(batch, false);
 			}

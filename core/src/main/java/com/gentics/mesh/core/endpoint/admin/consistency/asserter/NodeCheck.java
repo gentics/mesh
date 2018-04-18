@@ -71,11 +71,17 @@ public class NodeCheck implements ConsistencyCheck {
 			response.addInconsistency("The node has no initial field containers", uuid, HIGH);
 		}
 		for (ContainerType type : ContainerType.values()) {
-			checkGraphFieldContainers(node, type, response);
+			checkGraphFieldContainerUniqueness(node, type, response);
 		}
 	}
 
-	private void checkGraphFieldContainers(Node node, ContainerType type, ConsistencyCheckResponse response) {
+	/**
+	 * Check that the node has not more than one GFC of the type for each release
+	 * @param node node
+	 * @param type GFC type
+	 * @param response check response
+	 */
+	private void checkGraphFieldContainerUniqueness(Node node, ContainerType type, ConsistencyCheckResponse response) {
 		String uuid = node.getUuid();
 
 		Set<String> languageAndReleaseSet = new HashSet<>();

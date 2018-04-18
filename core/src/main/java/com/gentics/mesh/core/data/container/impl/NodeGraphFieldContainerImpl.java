@@ -412,7 +412,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Iterable<? extends NodeGraphFieldContainer> getNextVersions() {
-		return out(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).frameExplicit(NodeGraphFieldContainerImpl.class);
+		return out(HAS_VERSION).frameExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -428,37 +428,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
 		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
-	}
-
-	@Override
-	public NodeGraphFieldContainer findVersion(String version) {
-		NodeGraphFieldContainer container = findVersionNext(version);
-		if (container != null) {
-			return container;
-		}
-
-		container = this;
-		while (container != null) {
-			container = container.getPreviousVersion();
-			if (container != null && container.getVersion().toString().equals(version)) {
-				return container;
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public NodeGraphFieldContainer findVersionNext(String version) {
-		if (getVersion().toString().equals(version)) {
-			return this;
-		}
-		for (NodeGraphFieldContainer next : getNextVersions()) {
-			NodeGraphFieldContainer found = next.findVersionNext(version);
-			if (found != null) {
-				return found;
-			}
-		}
-		return null;
 	}
 
 	@Override

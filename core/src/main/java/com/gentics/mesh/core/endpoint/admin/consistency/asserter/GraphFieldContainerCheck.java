@@ -56,7 +56,7 @@ public class GraphFieldContainerCheck implements ConsistencyCheck {
 			}
 		}
 
-		// GFC must either have a next GFC, or nust be the draft GFC for a Node
+		// GFC must either have a next GFC, or must be the draft GFC for a Node
 		if (!container.hasNextVersion() && !container.isDraft()) {
 			response.addInconsistency(String.format("GraphFieldContainer does not have next GraphFieldContainer and is not DRAFT for a Node"), uuid, MEDIUM);
 		}
