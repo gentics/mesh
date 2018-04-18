@@ -22,7 +22,10 @@ public class MicroschemaTransformer extends AbstractTransformer<MicroschemaConta
 	}
 
 	public String generateVersion(MicroschemaContainer microschema) {
-		return ETag.hash(toDocument(microschema, false).encode());
+		StringBuilder builder = new StringBuilder();
+		builder.append(microschema.getElementVersion());
+		// No need to add users since the creator/editor edge affects the microschema version
+		return ETag.hash(builder.toString());
 	}
 
 	private JsonObject toDocument(MicroschemaContainer microschema, boolean withVersion) {

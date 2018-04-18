@@ -22,7 +22,10 @@ public class RoleTransformer extends AbstractTransformer<Role> {
 	}
 
 	public String generateVersion(Role role) {
-		return ETag.hash(toDocument(role, false).encode());
+		StringBuilder builder = new StringBuilder();
+		builder.append(role.getElementVersion());
+		// No need to add users since the creator/editor edge affects the role version
+		return ETag.hash(builder.toString());
 	}
 
 	/**

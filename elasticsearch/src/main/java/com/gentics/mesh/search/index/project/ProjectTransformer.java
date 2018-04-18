@@ -22,11 +22,13 @@ public class ProjectTransformer extends AbstractTransformer<Project> {
 	}
 
 	public String generateVersion(Project project) {
-		return ETag.hash(toDocument(project, false).encode());
+		StringBuilder builder = new StringBuilder();
+		builder.append(project.getElementVersion());
+		// No need to add users since the creator/editor edge affects the project version
+		return ETag.hash(builder.toString());
 	}
 
 	private JsonObject toDocument(Project project, boolean withVersion) {
-
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, project.getName());
 		addBasicReferences(document, project);

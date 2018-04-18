@@ -38,7 +38,17 @@ public class UserTransformer extends AbstractTransformer<User> {
 
 	@Override
 	public String generateVersion(User user) {
-		return ETag.hash(toDocument(user, false).encode());
+		StringBuilder builder = new StringBuilder();
+		builder.append(user.getElementVersion());
+		for (Group group : user.getGroups()) {
+			builder.append(group.getElementVersion());
+		}
+		Node referencedNode = user.getReferencedNode();
+		if (referencedNode != null) {
+			builder.append(referencedNode.getElementVersion());
+		}
+		// No need to add users since the creator/editor edge affects the user version
+		return ETag.hash(builder.toString());
 	}
 
 	/**

@@ -15,6 +15,9 @@
 
 CAUTION: Database revision was updated due to OrientDB update. Thus only an offline update can be performed.
 
+CAUTION: The generation of the search index document version has been reworked in order to increase index sync performance.
+         A triggered index sync will thus re sync all documents. Triggering the sync action is not required and can be executed at any time.
+
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.34
 
 icon:check[] Core: Image data in binary fields will now only be processed/transformed if the binary is in a readable file format. The readable image file formats are `png`, `jpg`, `bmp` and `gif`.

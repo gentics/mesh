@@ -630,6 +630,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return fullSettings;
 	}
 
+	/**
+	 * Generate the version for the container that should be transformed.
+	 * 
+	 * @param container
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
 	public String generateVersion(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		return getTransformer().generateVersion(container, releaseUuid, type);
 	}
