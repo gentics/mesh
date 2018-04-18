@@ -142,6 +142,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
+		delete(batch, true);
+	}
+
+	@Override
+	public void delete(SearchQueueBatch batch, boolean deleteNext) {
 		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).frame(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(this);
@@ -169,10 +174,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		// We don't need to handle node fields since those are only edges and will automatically be removed
 
-		// Recursively delete all versions of the container
-		NodeGraphFieldContainer next = getNextVersion();
-		if (next != null) {
-			next.delete(batch);
+		if (deleteNext) {
+			// Recursively delete all versions of the container
+			for (NodeGraphFieldContainer next : getNextVersions()) {
+				next.delete(batch);
+			}
 		}
 
 		// Delete the container from all releases and types
@@ -400,41 +406,28 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public NodeGraphFieldContainer getNextVersion() {
-		return out(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+	public boolean hasNextVersion() {
+		return outE(HAS_VERSION).hasNext();
+	}
+
+	@Override
+	public Iterable<? extends NodeGraphFieldContainer> getNextVersions() {
+		return out(HAS_VERSION).frameExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
 	public void setNextVersion(NodeGraphFieldContainer container) {
-		setSingleLinkOutTo(container, HAS_VERSION);
+		linkOut(container, HAS_VERSION);
+	}
+
+	@Override
+	public boolean hasPreviousVersion() {
+		return inE(HAS_VERSION).hasNext();
 	}
 
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
 		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
-	}
-
-	@Override
-	public NodeGraphFieldContainer findVersion(String version) {
-		if (getVersion().toString().equals(version)) {
-			return this;
-		}
-		NodeGraphFieldContainer container = this;
-		while (container != null) {
-			container = container.getNextVersion();
-			if (container != null && container.getVersion().toString().equals(version)) {
-				return container;
-			}
-		}
-
-		container = this;
-		while (container != null) {
-			container = container.getPreviousVersion();
-			if (container != null && container.getVersion().toString().equals(version)) {
-				return container;
-			}
-		}
-		return null;
 	}
 
 	@Override
@@ -444,6 +437,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		for (GraphField graphField : otherFields) {
 			graphField.cloneTo(this);
 		}
+	}
+
+	@Override
+	public boolean isType(ContainerType type) {
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		return traversal.hasNext();
 	}
 
 	@Override

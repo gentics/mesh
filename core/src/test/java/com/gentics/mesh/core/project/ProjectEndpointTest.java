@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -45,6 +46,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -57,10 +59,12 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -725,4 +729,33 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 	}
 
+	@Test
+	public void testDeleteWithReleases() throws Exception {
+		String uuid = projectUuid();
+		String releaseName = "Release_V1";
+
+		tx(() -> group().addRole(roles().get("admin")));
+
+		ReleaseCreateRequest request = new ReleaseCreateRequest();
+		request.setName(releaseName);
+
+		waitForJobs(() -> {
+			ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
+			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated();
+		}, COMPLETED, 1);
+
+		// update a node in all releases
+		String nodeUuid = tx(() -> folder("2015").getUuid());
+		for (ReleaseResponse release : call(() -> client().findReleases(PROJECT_NAME)).getData()) {
+			NodeUpdateRequest update = new NodeUpdateRequest();
+			update.setLanguage("en");
+			update.setVersion("0.1");
+			update.getFields().put("name", FieldUtil.createStringField("2015 in " + release.getName()));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(release.getName())));
+		}
+
+		checkConsistency();
+
+		call(() -> client().deleteProject(uuid));
+	}
 }

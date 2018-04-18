@@ -223,6 +223,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type);
 
 	/**
+	 * Return containers of the given type
+	 * 
+	 * @param type
+	 * @return
+	 */
+	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type);
+
+	/**
 	 * Return containers of the given type and release.
 	 * 
 	 * @param releaseUuid
@@ -527,8 +535,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, String languageTag);
 
 	/**
-	 * Delete the language container for the given language from the release This will not actually delete the container, but will remove the DRAFT and
-	 * PUBLISHED edge to the container for the release.
+	 * Delete the language container for the given language from the release. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs
+	 * for the language and release, and will then delete all "dangling" GFC (GFCs, which are not used by another release).
 	 * 
 	 * @param ac
 	 * @param release

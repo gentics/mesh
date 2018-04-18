@@ -283,6 +283,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type) {
+		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class);
+	}
+
+	@Override
 	public Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String releaseUuid, ContainerType type) {
 		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class);
@@ -1723,6 +1728,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		container.deleteFromRelease(release, batch);
 		// No need to delete the published variant because if the container was published the take offline call handled it
+
+		// starting with the old draft, delete all GFC that have no next and are not draft (for other releases)
+		NodeGraphFieldContainer dangling = container;
+		while (dangling != null && !dangling.isDraft() && !dangling.hasNextVersion()) {
+			NodeGraphFieldContainer toDelete = dangling;
+			dangling = toDelete.getPreviousVersion();
+			toDelete.delete(batch);
+		}
+
+		NodeGraphFieldContainer initial = getGraphFieldContainer(language, release, INITIAL);
+		if (initial != null) {
+			// Remove the initial edge
+			initial.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+					.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
+
+			// starting with the old intial, delete all GFC that have no previous and are not initial (for other releases)
+			dangling = initial;
+			while (dangling != null && !dangling.isInitial() && !dangling.hasPreviousVersion()) {
+				NodeGraphFieldContainer toDelete = dangling;
+				// since the GFC "toDelete" was only used by this release, it can not have more than one "next" GFC
+				// (multiple "next" would have to belong to different releases, and for every release, there would have to be
+				// an INITIAL, which would have to be either this GFC or a previous)
+				dangling = toDelete.getNextVersions().iterator().next();
+				toDelete.delete(batch, false);
+			}
+		}
 
 		// 3. Check whether this was be the last container of the node for this release
 		DeleteParameters parameters = ac.getDeleteParameters();

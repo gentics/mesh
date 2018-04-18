@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -332,7 +333,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		String configString = FileUtils.readFileToString(configFile);
 
 		// Now replace the parameters within the configuration
-		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", new File("orientdb-plugins").getAbsolutePath());
+		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", Matcher.quoteReplacement(new File("orientdb-plugins").getAbsolutePath()));
 		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);

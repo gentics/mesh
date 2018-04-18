@@ -10,6 +10,15 @@
 
 = Gentics Mesh Changelog
 
+[[v0.18.2]]
+== 0.18.2 (TBD)
+
+icon:check[] Core: Added consistency checks for node versions.
+
+icon:check[] Core: Deleting language versions of node will no longer create inconsistencies.
+
+icon:check[] Core: Projects containing multiple releases can now be deleted without error.
+
 [[v0.18.1]]
 == 0.18.1 (13.04.2018)
 
