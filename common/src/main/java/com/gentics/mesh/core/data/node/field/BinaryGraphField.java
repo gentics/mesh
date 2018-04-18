@@ -75,7 +75,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @return
 	 */
-	boolean hasImage();
+	boolean hasProcessableImage();
 
 	/**
 	 * Set the binary image dominant color.

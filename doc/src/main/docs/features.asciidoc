@@ -844,6 +844,7 @@ Valid links:
 == Image Manipulation
 
 Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
+The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
 
 === Fetch and Resize an Image with UUID
 

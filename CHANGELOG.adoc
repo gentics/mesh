@@ -13,6 +13,8 @@
 [[v0.18.2]]
 == 0.18.2 (TBD)
 
+icon:check[] Core: Image data in binary fields will now only be processed/transformed if the binary is in a readable file format. The readable image file formats are `png`, `jpg`, `bmp` and `gif`.
+
 icon:check[] Core: Added consistency checks for node versions.
 
 icon:check[] Core: Deleting language versions of node will no longer create inconsistencies.

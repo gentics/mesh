@@ -301,5 +301,4 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		assertEquals(1376, result.getImageInfo().getHeight().intValue());
 		assertEquals(1160, result.getImageInfo().getWidth().intValue());
 	}
-
 }
