@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.data.search;
 
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 
 /**
@@ -54,5 +56,19 @@ public interface SearchQueueEntry<T extends EntryContext> extends Comparable<Sea
 	 * @param onProcessAction
 	 */
 	void setOnProcessAction(Action onProcessAction);
+
+	/**
+	 * Return whether the entry can be processed as a bulk request.
+	 * 
+	 * @return
+	 */
+	boolean isBulkable();
+
+	/**
+	 * Process the entry and generate bulk entries.
+	 * 
+	 * @return
+	 */
+	Observable<? extends BulkEntry> processForBulk();
 
 }

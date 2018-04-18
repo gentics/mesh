@@ -1,7 +1,9 @@
 package com.gentics.mesh.search;
 
+import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -55,7 +57,7 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable storeDocumentBatch(String index, Map<String, JsonObject> documents) {
+	public Completable processBulk(List<? extends BulkEntry> entries) {
 		return Completable.complete();
 	}
 

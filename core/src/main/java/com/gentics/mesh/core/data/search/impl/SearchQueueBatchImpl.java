@@ -7,12 +7,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
@@ -72,7 +75,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Inject
 	DropIndexHandler commonHandler;
-	
+
 	@Inject
 	SearchProvider searchProvider;
 
@@ -207,7 +210,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 			context.setProjectUuid(project.getUuid());
 		}
 		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context,
-				SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
+			SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
 		addEntry(entry);
 		return this;
 	}
@@ -245,31 +248,37 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	@Override
 	public Completable processAsync() {
 		return Completable.defer(() -> {
-			// Process the batch
 			Completable obs = Completable.complete();
+			// Map<Boolean, List<SearchQueueEntry>> entries2 = getEntries().stream()
+			// .collect(Collectors.partitioningBy(i -> i.getElementAction() == STORE_ACTION));
+			//
+			// List<SearchQueueEntry> storeEntries = entries2.get(true);
+			// List<SearchQueueEntry> nonStoreEntries = entries2.get(false);
+			//
+
 			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION).collect(
-					Collectors.toList());
+				Collectors.toList());
 
 			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION).collect(Collectors
-					.toList());
+				.toList());
 
 			if (!nonStoreEntries.isEmpty()) {
 				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
 			}
+			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
 			AtomicLong counter = new AtomicLong();
 			if (!storeEntries.isEmpty()) {
-				List<Completable> entryList = storeEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
-				// Handle all entries sequentially since some entries create entries and those need to be executed first
-				int batchSize = 8;
-				long totalBatchCount = entryList.size() / batchSize + 1;
-				Observable<Completable> obs2 = Observable.fromIterable(entryList);
-				Observable<List<Completable>> buffers = obs2.buffer(batchSize);
-				// First ensure that the non-store events are processed before handling the store batches
-				obs = obs.andThen(buffers.map(i -> Completable.merge(i).doOnComplete(() -> {
-					if (totalBatchCount > 0) {
-						log.debug("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
-					}
-				})).toList().flatMapCompletable(it -> Completable.concat(it)));
+				Observable<? extends BulkEntry> bulkObs = Observable.fromIterable(storeEntries)
+					.flatMap(SearchQueueEntry::processForBulk)
+					.doOnComplete(() -> {
+						if (bulkLimit > 0) {
+							log.debug("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + bulkLimit + "}");
+						}
+					});
+				obs = obs
+					.andThen(bulkObs
+						.buffer(bulkLimit)
+						.flatMapCompletable(searchProvider::processBulk));
 			}
 
 			return obs.andThen(searchProvider.refreshIndex()).doOnComplete(() -> {
@@ -292,7 +301,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	public void processSync(long timeout, TimeUnit unit) {
 		if (!processAsync().blockingAwait(timeout, unit)) {
 			throw error(INTERNAL_SERVER_ERROR, "Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
-					+ "} exceeded.");
+				+ "} exceeded.");
 		}
 	}
 

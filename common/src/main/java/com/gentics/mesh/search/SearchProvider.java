@@ -1,8 +1,10 @@
 package com.gentics.mesh.search;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -80,15 +82,12 @@ public interface SearchProvider {
 	Completable storeDocument(String indexName, String uuid, JsonObject document);
 
 	/**
-	 * Store a batch of document.
+	 * Process the bulk request.
 	 * 
-	 * @param index
-	 *            Index name
-	 * @param documents
-	 *            Map of documents in which the key represents the documentId to be used
+	 * @param entries
 	 * @return
 	 */
-	Completable storeDocumentBatch(String index, Map<String, JsonObject> documents);
+	Completable processBulk(List<? extends BulkEntry> entries);
 
 	/**
 	 * Get the given document.

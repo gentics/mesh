@@ -2,8 +2,10 @@ package com.gentics.mesh.search.index.entry;
 
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 
+import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 
 /**
@@ -38,6 +40,16 @@ public abstract class AbstractEntry<T extends EntryContext> implements SearchQue
 	@Override
 	public T getContext() {
 		return context;
+	}
+
+	@Override
+	public boolean isBulkable() {
+		return false;
+	}
+
+	@Override
+	public Observable<? extends BulkEntry> processForBulk() {
+		return Observable.empty();
 	}
 
 }

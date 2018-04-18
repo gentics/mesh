@@ -20,6 +20,9 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
+import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
+import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -34,6 +37,7 @@ import com.google.common.collect.Maps;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -115,6 +119,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		});
 	}
 
+	public Observable<IndexBulkEntry> storeForBulk(T element, UpdateDocumentEntry entry) {
+		String indexName = composeIndexNameFromEntry(entry);
+		String documentId = composeDocumentIdFromEntry(entry);
+		return Observable
+			.just(new IndexBulkEntry(indexName, documentId, getTransformer().toDocument(element)));
+	}
+
 	@Override
 	public Completable updatePermission(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
@@ -134,11 +145,32 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
+	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
+		String uuid = entry.getElementUuid();
+		T element = getRootVertex().findByUuid(uuid);
+		if (element == null) {
+			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
+		} else {
+			String indexName = composeIndexNameFromEntry(entry);
+			String documentId = composeDocumentIdFromEntry(entry);
+			return Observable.just(
+				new UpdateBulkEntry(indexName, documentId, getTransformer().toPermissionPartial(element)));
+		}
+	}
+
+	@Override
 	public Completable delete(UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		// We don't need to resolve the uuid and load the graph object in this case.
 		return searchProvider.deleteDocument(indexName, documentId);
+	}
+
+	@Override
+	public Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry) {
+		String indexName = composeIndexNameFromEntry(entry);
+		String documentId = composeDocumentIdFromEntry(entry);
+		return Observable.just(new DeleteBulkEntry().setDocumentId(documentId).setIndexName(indexName));
 	}
 
 	@Override
@@ -151,6 +183,21 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
 				} else {
 					return store(element, entry);
+				}
+			}
+		});
+	}
+
+	@Override
+	public Observable<IndexBulkEntry> storeForBulk(UpdateDocumentEntry entry) {
+		return Observable.defer(() -> {
+			try (Tx tx = db.tx()) {
+				String uuid = entry.getElementUuid();
+				T element = getRootVertex().findByUuid(uuid);
+				if (element == null) {
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
+				} else {
+					return storeForBulk(element, entry);
 				}
 			}
 		});
@@ -268,10 +315,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		// Check whether we need to process more scrolls
 		if (hits.size() != 0) {
 			String nextScrollId = result.getString("_scroll_id");
-			while (true) {
-				final String currentScroll = nextScrollId;
-				log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
-				try {
+			try {
+				while (true) {
+					final String currentScroll = nextScrollId;
+					log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
 					JsonObject scrollResult = client.scroll(currentScroll, "1m").sync();
 					JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
 					if (log.isTraceEnabled()) {
@@ -288,11 +335,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 						// The scroll yields no more data. We are done
 						break;
 					}
-				} finally {
-					// Clearing used scroll in order to free memory in ES
-					client.clearScroll(currentScroll).sync();
 				}
-
+			} finally {
+				// Clearing used scroll in order to free memory in ES
+				client.clearScroll(nextScrollId).sync();
 			}
 		}
 		return versions;

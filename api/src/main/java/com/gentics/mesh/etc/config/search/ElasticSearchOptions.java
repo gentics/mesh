@@ -21,6 +21,8 @@ public class ElasticSearchOptions implements Option {
 
 	public static final int DEFAULT_STARTUP_TIMEOUT = 45;
 
+	public static final int DEFAULT_BULK_LIMIT = 2000;
+
 	public static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
 
 	public static final String MESH_ELASTICSEARCH_URL_ENV = "MESH_ELASTICSEARCH_URL";
@@ -51,6 +53,10 @@ public class ElasticSearchOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("String of arguments which will be used for starting the Elasticsearch server instance")
 	private String embeddedArguments = DEFAULT_ARGS;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Upper limit for the size of bulk requests.")
+	private int bulkLimit = DEFAULT_BULK_LIMIT;
 
 	public ElasticSearchOptions() {
 
@@ -123,6 +129,14 @@ public class ElasticSearchOptions implements Option {
 
 	public void setStartupTimeout(Integer startupTimeout) {
 		this.startupTimeout = startupTimeout;
+	}
+
+	public int getBulkLimit() {
+		return bulkLimit;
+	}
+
+	public void setBulkLimit(int bulkLimit) {
+		this.bulkLimit = bulkLimit;
 	}
 
 }

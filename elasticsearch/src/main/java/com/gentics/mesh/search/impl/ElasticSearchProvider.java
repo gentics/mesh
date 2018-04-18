@@ -12,7 +12,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -22,6 +21,7 @@ import javax.inject.Singleton;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
@@ -316,34 +316,25 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable storeDocumentBatch(String index, Map<String, JsonObject> documents) {
-		if (documents.isEmpty()) {
+	public Completable processBulk(List<? extends BulkEntry> entries) {
+		if (entries.isEmpty()) {
 			return Completable.complete();
 		}
 		long start = System.currentTimeMillis();
 
-		JsonArray items = new JsonArray();
-		JsonObject bulkData = new JsonObject();
-		bulkData.put("items", items);
-
-		// Add index requests for each document to the bulk request
-		// for (Map.Entry<String, JsonObject> entry : documents.entrySet()) {
-		// JsonObject item = new JsonObject();
-		// item.put("index", value)
-		// String documentId = entry.getKey();
-		// JsonObject document = entry.getValue();
-		// request.add(new IndexRequest(index, DEFAULT_TYPE, documentId).source(document.toString(), XContentType.JSON));
-		// items.add(item);
-		// }
-
-		return client.storeDocumentBulk(bulkData).async()
+		String bulkData = entries.stream().map(BulkEntry::toBulkString).collect(Collectors.joining("\n")) + "\n";
+		if (log.isTraceEnabled()) {
+			log.trace("Using bulk payload:");
+			log.trace(bulkData);
+		}
+		return client.processBulk(bulkData).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System.currentTimeMillis()
+					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis()
 						- start) + "[ms]");
 				}
 			}).toCompletable()
-			.compose(withTimeoutAndLog("Storing document batch {" + index + "} / {" + DEFAULT_TYPE + "}", true));
+			.compose(withTimeoutAndLog("Storing document batch.", true));
 	}
 
 	@Override
@@ -449,7 +440,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	 * @return
 	 */
 	private CompletableTransformer withTimeoutAndLog(String msg, boolean ignoreError) {
-		Long timeout = getOptions().getTimeout();
+		Long timeout = getOptions().getTimeout()+ 60000;
 		return c -> {
 			Completable t = c
 				// Retry the operation if an conflict error was returned
