@@ -3,6 +3,8 @@ package com.gentics.mesh.cli;
 import java.io.IOException;
 import java.util.Collection;
 
+import javax.naming.InvalidNameException;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
@@ -222,5 +224,12 @@ public interface BootstrapInitializer {
 	 * Register the eventbus event handlers.
 	 */
 	void registerEventHandlers();
+
+	/**
+	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
+	 * 
+	 * @throws InvalidNameException
+	 */
+	void initProjects() throws InvalidNameException;
 
 }

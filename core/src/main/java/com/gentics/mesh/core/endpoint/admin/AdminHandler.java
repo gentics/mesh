@@ -17,16 +17,20 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.cache.PermissionStore;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.router.RouterStorage;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * Handler for admin request methods.
@@ -39,9 +43,15 @@ public class AdminHandler extends AbstractHandler {
 
 	private Database db;
 
+	private RouterStorage routerStorage;
+
+	private BootstrapInitializer boot;
+
 	@Inject
-	public AdminHandler(Database db) {
+	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot) {
 		this.db = db;
+		this.routerStorage = routerStorage;
+		this.boot = boot;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -82,12 +92,19 @@ public class AdminHandler extends AbstractHandler {
 
 			// Find the file which was last modified
 			File latestFile = Arrays.asList(backupDir.listFiles()).stream().filter(file -> file.getName().endsWith(".zip"))
-					.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
+				.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
 
 			if (latestFile == null) {
 				throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
 			}
 			db.restoreGraph(latestFile.getAbsolutePath());
+
+			// Now clear the cached references and cached permissions
+			MeshRootImpl.clearReferences();
+			PermissionStore.invalidate(false);
+			routerStorage.getProjectRouters().clear();
+			boot.initProjects();
+
 			return Single.just(message(ac, "restore_finished"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -122,7 +139,7 @@ public class AdminHandler extends AbstractHandler {
 
 		// Find the file which was last modified
 		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))
-				.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
+			.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
 		try {
 			db.importGraph(latestFile.getAbsolutePath());
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);

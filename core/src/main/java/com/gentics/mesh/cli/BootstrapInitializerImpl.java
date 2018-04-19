@@ -161,12 +161,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		clearReferences();
 	}
 
-	/**
-	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
-	 * 
-	 * @throws InvalidNameException
-	 */
-	private void initProjects() throws InvalidNameException {
+	@Override
+	public void initProjects() throws InvalidNameException {
 		for (Project project : meshRoot().getProjectRoot().findAllIt()) {
 			RouterStorage.addProject(project.getName());
 			if (log.isDebugEnabled()) {
