@@ -193,9 +193,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonObject source = hit.getJsonObject("_source");
 			// The id contains the UUID + language
-			String uuid = hit.getString("_id");
+			String uuidAndLang = hit.getString("_id");
 			String version = source.getString("version");
-			versions.put(uuid, version);
+			versions.put(uuidAndLang, version);
 		}
 	}
 

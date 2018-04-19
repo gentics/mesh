@@ -170,7 +170,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
-		return Observable.just(new DeleteBulkEntry().setDocumentId(documentId).setIndexName(indexName));
+		return Observable.just(new DeleteBulkEntry(indexName, documentId));
 	}
 
 	@Override

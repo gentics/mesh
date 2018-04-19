@@ -14,6 +14,7 @@ import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -93,13 +94,22 @@ public class AdminIndexHandler {
 	}
 
 	public void handleClear(InternalActionContext ac) {
-		searchProvider.clear().andThen(Observable.fromIterable(registry.getHandlers()).flatMapCompletable(handler -> handler.init()))
-			.subscribe(() -> {
-				ac.send(message(ac, "search_admin_index_clear"), OK);
-			}, error -> {
+		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole())).flatMapCompletable(hasAdminRole -> {
+			if (hasAdminRole) {
+				return searchProvider.clear().andThen(Observable.fromIterable(registry.getHandlers()).flatMapCompletable(handler -> handler.init()));
+			} else {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+		}).subscribe(() -> {
+			ac.send(message(ac, "search_admin_index_clear"), OK);
+		}, error -> {
+			if (error instanceof GenericRestException) {
+				ac.fail(error);
+			} else {
 				log.error("Error while clearing all indices.", error);
 				ac.send(message(ac, "search_admin_index_clear_error"), INTERNAL_SERVER_ERROR);
-			});
+			}
+		});
 	}
 
 }

@@ -419,11 +419,17 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());
-		builder.append(container.getEditor().getElementVersion());
-		builder.append(node.getCreator().getElementVersion());
+		builder.append("|");
+		builder.append(releaseUuid);
+		builder.append("|");
+		builder.append(type.name());
+		builder.append("|");
 		builder.append(project.getElementVersion());
+		builder.append("|");
 		builder.append(node.getElementVersion());
-		return ETag.hash(builder.toString());
+
+		String hash = ETag.hash(builder.toString());
+		return hash;
 	}
 
 	/**
@@ -496,7 +502,5 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		return toDocument(container, releaseUuid, type, true);
 	}
-	
-	
 
 }

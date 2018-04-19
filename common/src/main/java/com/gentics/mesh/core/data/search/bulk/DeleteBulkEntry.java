@@ -4,6 +4,9 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Bulk entry for a delete operation.
+ */
 public class DeleteBulkEntry implements BulkEntry {
 
 	private static final String BULK_ACTION = "delete";
@@ -12,25 +15,17 @@ public class DeleteBulkEntry implements BulkEntry {
 
 	private String documentId;
 
-	public DeleteBulkEntry() {
+	public DeleteBulkEntry(String indexName, String documentId) {
+		this.indexName = indexName;
+		this.documentId = documentId;
 	}
 
 	public String getIndexName() {
 		return indexName;
 	}
 
-	public DeleteBulkEntry setIndexName(String indexName) {
-		this.indexName = indexName;
-		return this;
-	}
-
 	public String getDocumentId() {
 		return documentId;
-	}
-
-	public DeleteBulkEntry setDocumentId(String documentId) {
-		this.documentId = documentId;
-		return this;
 	}
 
 	@Override

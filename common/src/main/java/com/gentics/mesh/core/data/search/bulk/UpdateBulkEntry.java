@@ -4,6 +4,9 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * A bulk entry for document updates.
+ */
 public class UpdateBulkEntry implements BulkEntry {
 
 	private static final String BULK_ACTION = "update";
@@ -14,6 +17,13 @@ public class UpdateBulkEntry implements BulkEntry {
 
 	private JsonObject payload;
 
+	/**
+	 * Construct a new entry.
+	 * 
+	 * @param indexName
+	 * @param documentId
+	 * @param payload
+	 */
 	public UpdateBulkEntry(String indexName, String documentId, JsonObject payload) {
 		this.indexName = indexName;
 		this.documentId = documentId;

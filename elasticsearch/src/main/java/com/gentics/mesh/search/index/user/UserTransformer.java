@@ -40,12 +40,15 @@ public class UserTransformer extends AbstractTransformer<User> {
 	public String generateVersion(User user) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(user.getElementVersion());
+		builder.append("|");
 		for (Group group : user.getGroups()) {
 			builder.append(group.getElementVersion());
+			builder.append("|");
 		}
 		Node referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			builder.append(referencedNode.getElementVersion());
+			builder.append("|");
 		}
 		// No need to add users since the creator/editor edge affects the user version
 		return ETag.hash(builder.toString());

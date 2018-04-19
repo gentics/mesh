@@ -163,6 +163,7 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 
 	/**
 	 * Process the entry and generate the bulk entry.
+	 * 
 	 * @param entry
 	 * @return
 	 */

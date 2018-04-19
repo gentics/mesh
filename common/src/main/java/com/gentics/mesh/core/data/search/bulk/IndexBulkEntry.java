@@ -4,6 +4,9 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Bulk entry for a document index operation.
+ */
 public class IndexBulkEntry implements BulkEntry {
 
 	private static final String BULK_ACTION = "index";
@@ -14,6 +17,13 @@ public class IndexBulkEntry implements BulkEntry {
 
 	private JsonObject payload;
 
+	/**
+	 * Construct a new entry.
+	 * 
+	 * @param indexName
+	 * @param documentId
+	 * @param payload
+	 */
 	public IndexBulkEntry(String indexName, String documentId, JsonObject payload) {
 		this.indexName = indexName;
 		this.documentId = documentId;
