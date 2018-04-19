@@ -23,7 +23,8 @@ public class GroupTransformer extends AbstractTransformer<Group> {
 	}
 
 	public String generateVersion(Group group) {
-		return ETag.hash(toDocument(group, false).encode());
+		// No need to add users since the creator/editor edge affects the group version
+		return ETag.hash(group.getElementVersion());
 	}
 
 	private JsonObject toDocument(Group group, boolean withVersion) {

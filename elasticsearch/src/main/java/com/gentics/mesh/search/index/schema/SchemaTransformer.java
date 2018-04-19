@@ -23,7 +23,12 @@ public class SchemaTransformer extends AbstractTransformer<SchemaContainer> {
 	}
 
 	public String generateVersion(SchemaContainer container) {
-		return ETag.hash(toDocument(container, false).encode());
+		StringBuilder builder = new StringBuilder();
+		builder.append(container.getElementVersion());
+		builder.append("|");
+		builder.append(container.getLatestVersion().getElementVersion());
+		// No need to add users since the creator/editor edge affects the schema version
+		return ETag.hash(builder.toString());
 	}
 
 	private JsonObject toDocument(SchemaContainer container, boolean withVersion) {

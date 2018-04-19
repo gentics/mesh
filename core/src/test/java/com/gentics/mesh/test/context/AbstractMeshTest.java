@@ -401,7 +401,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @param code
 	 * @throws TimeoutException
 	 */
-	protected void waitForEvent(String address, Runnable code) throws Exception {
+	protected void waitForEvent(String address, Action code) throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx().eventBus().consumer(address, handler -> {
 			latch.countDown();

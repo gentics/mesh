@@ -21,6 +21,7 @@ import org.jsoup.Jsoup;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -400,7 +401,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	/**
-	 * Generate the node specific permission info partial whiich is used to update node container documents in the indices.
+	 * Generate the node specific permission info partial which is used to update node container documents in the indices.
 	 * 
 	 * @param node
 	 * @param type
@@ -413,7 +414,21 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	public String generateVersion(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
-		return ETag.hash(toDocument(container, releaseUuid, type, false).encode());
+		Node node = container.getParentNode();
+		Project project = node.getProject();
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(container.getElementVersion());
+		builder.append("|");
+		builder.append(releaseUuid);
+		builder.append("|");
+		builder.append(type.name());
+		builder.append("|");
+		builder.append(project.getElementVersion());
+		builder.append("|");
+		builder.append(node.getElementVersion());
+
+		return ETag.hash(builder.toString());
 	}
 
 	/**
@@ -486,7 +501,5 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		return toDocument(container, releaseUuid, type, true);
 	}
-	
-	
 
 }

@@ -72,13 +72,16 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReindex() {
+	public void testResync() throws Exception {
 		// Add the user to the admin group - this way the user is in fact an admin.
 		tx(() -> group().addRole(roles().get("admin")));
 		searchProvider().refreshIndex().blockingAwait();
 
-		GenericMessageResponse message = call(() -> client().invokeIndexSync());
-		assertMessage(message, "search_admin_index_sync_invoked");
+		waitForEvent(INDEX_SYNC_EVENT, () -> {
+			GenericMessageResponse message = call(() -> client().invokeIndexSync());
+			assertMessage(message, "search_admin_index_sync_invoked");
+		});
+
 	}
 
 	@Test

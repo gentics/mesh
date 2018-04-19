@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
@@ -192,9 +193,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonObject source = hit.getJsonObject("_source");
 			// The id contains the UUID + language
-			String uuid = hit.getString("_id");
+			String uuidAndLang = hit.getString("_id");
 			String version = source.getString("version");
-			versions.put(uuid, version);
+			versions.put(uuidAndLang, version);
 		}
 	}
 
@@ -332,6 +333,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
+	public Observable<IndexBulkEntry> storeForBulk(Node node, UpdateDocumentEntry entry) {
+		GenericEntryContext context = entry.getContext();
+		try (Tx tx = db.tx()) {
+			return storeForBulk(node, context);
+		}
+	}
+
 	/**
 	 * Step 1 - Check whether we need to handle all releases.
 	 * 
@@ -393,13 +401,87 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			} else {
 				obs.add(storeContainer(container, releaseUuid, type));
 			}
-			// obs.add(sanitizeIndex(node, container, context.getLanguageTag()).toCompletable());
 		} else {
 			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(releaseUuid, type)) {
 				obs.add(storeContainer(container, releaseUuid, type));
-				// obs.add(sanitizeIndex(node, container, context.getLanguageTag()).toCompletable());
 			}
 		}
+
+	}
+
+	/**
+	 * Step 1 - Check whether we need to handle all releases.
+	 * 
+	 * @param node
+	 * @param context
+	 * @return
+	 */
+	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
+		if (context.getReleaseUuid() == null) {
+			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
+			for (Release release : node.getProject().getReleaseRoot().findAllIt()) {
+				obs.add(storeForBulk(node, release.getUuid(), context));
+			}
+			return Observable.merge(obs);
+		} else {
+			return storeForBulk(node, context.getReleaseUuid(), context);
+		}
+	}
+
+	/**
+	 * Step 2 - Check whether we need to handle all container types.
+	 * 
+	 * Add the possible store actions to the set of observables. This method will utilise as much of the provided context data if possible. It will also handle
+	 * fallback options and invoke store for all types if the container type has not been specified.
+	 * 
+	 * @param node
+	 * @param releaseUuid
+	 * @param context
+	 * @return
+	 */
+	private Observable<IndexBulkEntry> storeForBulk(Node node, String releaseUuid, GenericEntryContext context) {
+		if (context.getContainerType() == null) {
+			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
+			for (ContainerType type : ContainerType.values()) {
+				// We only want to store DRAFT and PUBLISHED Types
+				if (type == DRAFT || type == PUBLISHED) {
+					obs.add(storeForBulk(node, releaseUuid, type, context));
+				}
+			}
+			return Observable.merge(obs);
+		} else {
+			return storeForBulk(node, releaseUuid, context.getContainerType(), context);
+		}
+	}
+
+	/**
+	 * Step 3 - Check whether we need to handle all languages.
+	 * 
+	 * Invoke store for the possible set of containers. Utilise the given context settings as much as possible.
+	 * 
+	 * @param node
+	 * @param releaseUuid
+	 * @param type
+	 * @param context
+	 * @return
+	 */
+	private Observable<IndexBulkEntry> storeForBulk(Node node, String releaseUuid, ContainerType type, GenericEntryContext context) {
+		if (context.getLanguageTag() != null) {
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), releaseUuid, type);
+			if (container == null) {
+				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
+					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
+			} else {
+				return storeContainerForBulk(container, releaseUuid, type).toObservable();
+			}
+		} else {
+			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(releaseUuid, type)) {
+				obs.add(storeContainerForBulk(container, releaseUuid, type).toObservable());
+			}
+			return Observable.merge(obs);
+		}
+		return Observable.empty();
 
 	}
 
@@ -448,6 +530,27 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguage().getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
+	}
+
+	/**
+	 * Generate an elasticsearch document object from the given container and stores it in the search index.
+	 * 
+	 * @param container
+	 * @param releaseUuid
+	 * @param type
+	 * @return Single with the bulk entry
+	 */
+	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
+		JsonObject doc = transformer.toDocument(container, releaseUuid, type);
+		String projectUuid = container.getParentNode().getProject().getUuid();
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
+		if (log.isDebugEnabled()) {
+			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
+		}
+		String languageTag = container.getLanguage().getLanguageTag();
+		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
+
+		return Single.just(new IndexBulkEntry(indexName, documentId, doc));
 	}
 
 	@Override
@@ -528,6 +631,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return fullSettings;
 	}
 
+	/**
+	 * Generate the version for the container that should be transformed.
+	 * 
+	 * @param container
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
 	public String generateVersion(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		return getTransformer().generateVersion(container, releaseUuid, type);
 	}

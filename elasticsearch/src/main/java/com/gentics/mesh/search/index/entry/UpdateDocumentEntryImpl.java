@@ -7,9 +7,11 @@ import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 /**
  * Basic implementation for most indexable elements.
@@ -77,6 +79,24 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 	}
 
 	@Override
+	public Observable<? extends BulkEntry> processForBulk() {
+		switch (elementAction) {
+		case STORE_ACTION:
+			return indexHandler.storeForBulk(this).doOnComplete(onProcessAction);
+
+		case DELETE_ACTION:
+			return indexHandler.deleteForBulk(this).doOnComplete(onProcessAction);
+
+		case UPDATE_ROLE_PERM_ACTION:
+			return indexHandler.updatePermissionForBulk(this).doOnComplete(onProcessAction);
+
+		default:
+			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
+		}
+
+	}
+
+	@Override
 	public GenericEntryContext getContext() {
 		return context;
 	}
@@ -86,5 +106,10 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 		String context = getContext() != null ? getContext().toString() : "null";
 		return "Update Entry {" + getElementAction() + "} for {" + elementUuid + "} and handler {" + indexHandler.getClass().getSimpleName()
 			+ "} with context {" + context + "}";
+	}
+
+	@Override
+	public boolean isBulkable() {
+		return true;
 	}
 }
