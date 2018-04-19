@@ -117,7 +117,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/graphdb/restore");
 		endpoint.description(
-				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
+				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);

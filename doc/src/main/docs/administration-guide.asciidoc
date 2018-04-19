@@ -241,10 +241,22 @@ Gentics Mesh does not manage any cache structure but it is possible to tweak the
 
 == Backup & Recovery
 
-The ```/api/v1/admin/graphdb/backup``` and ```/api/v1/admin/graphdb/restore``` endpoints can be used to create and restore backups. Please note that invoking these endpoints will block all execution and request processing.
+There are currently three components which can be included in a backup:
 
-The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
-It is advised to restart Gentics Mesh once a backup has been restored.
+* *Graph Database* - The graph database contains the main content of Gentics Mesh.
+    The DB can be backed up on demand via `/api/v1/admin/graphdb/backup` endpoint or via the OrientDB backup job using `automatic-backup.json`. 
+    This will automatically create a full backup. Note that both backup processes will block the application. 
+    The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
+
+* *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
+
+* *Elasticsearch Index* - Optionally you can also backup the Elasticsearch index. 
+    The index can also be recreated anytime using the `POST /api/v1/search/sync` endpoint.
+
+The ```/api/v1/admin/graphdb/restore``` endpoint can be used to restore created backups. 
+The endpoint will utilize the latest backup found in the backup directory.
+
+Please note that invoking these endpoints will block all execution and request processing.
 
 == link:changelog.html[Changelog]
 
