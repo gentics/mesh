@@ -440,7 +440,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	 * @return
 	 */
 	private CompletableTransformer withTimeoutAndLog(String msg, boolean ignoreError) {
-		Long timeout = getOptions().getTimeout()+ 60000;
+		Long timeout = getOptions().getTimeout();
 		return c -> {
 			Completable t = c
 				// Retry the operation if an conflict error was returned
