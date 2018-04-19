@@ -249,12 +249,6 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	public Completable processAsync() {
 		return Completable.defer(() -> {
 			Completable obs = Completable.complete();
-			// Map<Boolean, List<SearchQueueEntry>> entries2 = getEntries().stream()
-			// .collect(Collectors.partitioningBy(i -> i.getElementAction() == STORE_ACTION));
-			//
-			// List<SearchQueueEntry> storeEntries = entries2.get(true);
-			// List<SearchQueueEntry> nonStoreEntries = entries2.get(false);
-			//
 
 			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION).collect(
 				Collectors.toList());

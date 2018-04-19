@@ -11,10 +11,16 @@ public class DeleteBulkEntry implements BulkEntry {
 
 	private static final String BULK_ACTION = "delete";
 
-	private String indexName;
+	private final String indexName;
 
-	private String documentId;
+	private final String documentId;
 
+	/**
+	 * Construct new entry.
+	 *
+	 * @param indexName
+	 * @param documentId
+	 */
 	public DeleteBulkEntry(String indexName, String documentId) {
 		this.indexName = indexName;
 		this.documentId = documentId;

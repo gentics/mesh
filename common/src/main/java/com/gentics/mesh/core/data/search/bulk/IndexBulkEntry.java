@@ -11,11 +11,11 @@ public class IndexBulkEntry implements BulkEntry {
 
 	private static final String BULK_ACTION = "index";
 
-	private String indexName;
+	private final String indexName;
 
-	private String documentId;
+	private final String documentId;
 
-	private JsonObject payload;
+	private final JsonObject payload;
 
 	/**
 	 * Construct a new entry.

@@ -22,10 +22,8 @@ public class RoleTransformer extends AbstractTransformer<Role> {
 	}
 
 	public String generateVersion(Role role) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(role.getElementVersion());
 		// No need to add users since the creator/editor edge affects the role version
-		return ETag.hash(builder.toString());
+		return ETag.hash(role.getElementVersion());
 	}
 
 	/**

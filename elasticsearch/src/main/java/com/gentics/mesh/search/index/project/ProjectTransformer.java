@@ -22,10 +22,8 @@ public class ProjectTransformer extends AbstractTransformer<Project> {
 	}
 
 	public String generateVersion(Project project) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(project.getElementVersion());
 		// No need to add users since the creator/editor edge affects the project version
-		return ETag.hash(builder.toString());
+		return ETag.hash(project.getElementVersion());
 	}
 
 	private JsonObject toDocument(Project project, boolean withVersion) {

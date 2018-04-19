@@ -428,8 +428,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		builder.append("|");
 		builder.append(node.getElementVersion());
 
-		String hash = ETag.hash(builder.toString());
-		return hash;
+		return ETag.hash(builder.toString());
 	}
 
 	/**
