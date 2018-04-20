@@ -7,13 +7,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Bulk entry for a document index operation.
  */
-public class IndexBulkEntry implements BulkEntry {
-
-	private static final String BULK_ACTION = "index";
-
-	private final String indexName;
-
-	private final String documentId;
+public class IndexBulkEntry extends AbstractBulkEntry {
 
 	private final JsonObject payload;
 
@@ -25,17 +19,8 @@ public class IndexBulkEntry implements BulkEntry {
 	 * @param payload
 	 */
 	public IndexBulkEntry(String indexName, String documentId, JsonObject payload) {
-		this.indexName = indexName;
-		this.documentId = documentId;
+		super(indexName, documentId);
 		this.payload = payload;
-	}
-
-	public String getIndexName() {
-		return indexName;
-	}
-
-	public String getDocumentId() {
-		return documentId;
 	}
 
 	public JsonObject getPayload() {
@@ -43,9 +28,14 @@ public class IndexBulkEntry implements BulkEntry {
 	}
 
 	@Override
+	public Action getBulkAction() {
+		return Action.INDEX;
+	}
+
+	@Override
 	public String toBulkString() {
 		JsonObject metaData = new JsonObject();
-		metaData.put(BULK_ACTION,
+		metaData.put(getBulkAction().id(),
 			new JsonObject().put("_index", getIndexName()).put("_type", SearchProvider.DEFAULT_TYPE).put("_id", getDocumentId()));
 		return new StringBuilder().append(metaData.encode()).append("\n").append(payload.encode()).toString();
 	}

@@ -7,13 +7,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Bulk entry for a delete operation.
  */
-public class DeleteBulkEntry implements BulkEntry {
-
-	private static final String BULK_ACTION = "delete";
-
-	private final String indexName;
-
-	private final String documentId;
+public class DeleteBulkEntry extends AbstractBulkEntry {
 
 	/**
 	 * Construct new entry.
@@ -22,22 +16,18 @@ public class DeleteBulkEntry implements BulkEntry {
 	 * @param documentId
 	 */
 	public DeleteBulkEntry(String indexName, String documentId) {
-		this.indexName = indexName;
-		this.documentId = documentId;
+		super(indexName, documentId);
 	}
 
-	public String getIndexName() {
-		return indexName;
-	}
-
-	public String getDocumentId() {
-		return documentId;
+	@Override
+	public Action getBulkAction() {
+		return Action.DELETE;
 	}
 
 	@Override
 	public String toBulkString() {
 		JsonObject metaData = new JsonObject();
-		metaData.put(BULK_ACTION,
+		metaData.put(getBulkAction().id(),
 			new JsonObject().put("_index", getIndexName()).put("_type", SearchProvider.DEFAULT_TYPE).put("_id", getDocumentId()));
 		return metaData.encode();
 	}
