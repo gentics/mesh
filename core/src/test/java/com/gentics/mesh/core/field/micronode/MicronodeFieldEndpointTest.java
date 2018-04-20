@@ -84,20 +84,24 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		updateNode(FIELD_NAME, field);
 
 		for (int i = 0; i < 20; i++) {
+			String newLastName = "Moritz" + i;
+			Micronode oldValue = null;
+			NodeGraphFieldContainer container = null;
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-				Micronode oldValue = getMicronodeValue(container, FIELD_NAME);
-
+				container = node.getGraphFieldContainer("en");
+				oldValue = getMicronodeValue(container, FIELD_NAME);
 				field = new MicronodeResponse();
 				field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-				String newLastName = "Moritz" + i;
 				field.getFields().put("lastName", new StringFieldImpl().setString(newLastName));
-				NodeResponse response = updateNode(FIELD_NAME, field);
+			}
 
+			NodeResponse response = updateNode(FIELD_NAME, field);
+
+			try (Tx tx = tx()) {
 				MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELD_NAME);
 				assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
-				NodeGraphFieldContainer newContainer = container.getNextVersions().iterator().next();
+				container.getNextVersions().iterator().next();
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				if (oldValue == null) {
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isNull();
@@ -150,11 +154,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).as("The old version micronode field could not be found.").isNotNull();
 			Micronode oldMicronode = latest.getPreviousVersion().getMicronode(FIELD_NAME).getMicronode();
 			assertThat(oldMicronode.getString("firstName").getString()).as("Old version micronode firstname field value should not be modified")
-					.isEqualTo("Max");
+				.isEqualTo("Max");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -178,12 +182,12 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).as("Updated Field").isNotNull();
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("firstName").getString()).isEqualTo("Max");
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("lastName").getString())
-					.isEqualTo("Moritz");
+				.isEqualTo("Moritz");
 			assertThat(secondResponse.getVersion()).as("No new version number should have been generated").isEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -234,7 +238,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			field.setMicroschema(microschema);
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 			createNodeAndExpectFailure(FIELD_NAME, field, BAD_REQUEST, "node_error_invalid_microschema_field_value", "micronodeField",
-					"captionedImage");
+				"captionedImage");
 		}
 	}
 

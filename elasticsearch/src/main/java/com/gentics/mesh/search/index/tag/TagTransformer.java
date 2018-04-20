@@ -31,7 +31,9 @@ public class TagTransformer extends AbstractTransformer<Tag> {
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(tag.getElementVersion());
-		builder.append(project.getElementVersion());
+		builder.append("|");
+		builder.append(project.getUuid() + project.getName());
+		builder.append("|");
 		builder.append(tagFamily.getElementVersion());
 		// No need to add users since the creator/editor edge affects the tag version
 		return ETag.hash(builder.toString());
@@ -45,22 +47,16 @@ public class TagTransformer extends AbstractTransformer<Tag> {
 	 *            Whether to include the version number.
 	 * @return
 	 */
-	private JsonObject toDocument(Tag tag, boolean withVersion) {
+	@Override
+	public JsonObject toDocument(Tag tag) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tag.getName());
 		addBasicReferences(document, tag);
 		addPermissionInfo(document, tag);
 		addTagFamily(document, tag.getTagFamily());
 		addProject(document, tag.getProject());
-		if (withVersion) {
-			document.put(MappingHelper.VERSION_KEY, generateVersion(tag));
-		}
+		document.put(MappingHelper.VERSION_KEY, generateVersion(tag));
 		return document;
-	}
-
-	@Override
-	public JsonObject toDocument(Tag tag) {
-		return toDocument(tag, true);
 	}
 
 	/**

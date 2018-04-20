@@ -26,20 +26,14 @@ public class ProjectTransformer extends AbstractTransformer<Project> {
 		return ETag.hash(project.getElementVersion());
 	}
 
-	private JsonObject toDocument(Project project, boolean withVersion) {
+	@Override
+	public JsonObject toDocument(Project project) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, project.getName());
 		addBasicReferences(document, project);
 		addPermissionInfo(document, project);
-		if (withVersion) {
-			document.put(VERSION_KEY, generateVersion(project));
-		}
+		document.put(VERSION_KEY, generateVersion(project));
 		return document;
-	}
-
-	@Override
-	public JsonObject toDocument(Project project) {
-		return toDocument(project, true);
 	}
 
 }

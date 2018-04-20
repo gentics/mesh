@@ -62,7 +62,8 @@ public class UserTransformer extends AbstractTransformer<User> {
 	 *            Whether to include the version number.
 	 * @return
 	 */
-	private JsonObject toDocument(User user, boolean withVersion) {
+	@Override
+	public JsonObject toDocument(User user) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, user);
 		document.put(USERNAME_KEY, user.getUsername());
@@ -76,15 +77,8 @@ public class UserTransformer extends AbstractTransformer<User> {
 		if (referencedNode != null) {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}
-		if (withVersion) {
-			document.put(VERSION_KEY, generateVersion(user));
-		}
+		document.put(VERSION_KEY, generateVersion(user));
 		return document;
-	}
-
-	@Override
-	public JsonObject toDocument(User user) {
-		return toDocument(user, true);
 	}
 
 	/**

@@ -220,6 +220,10 @@ public interface TestHelperMethods {
 		return data().getContent(key);
 	}
 
+	default Map<String, TagFamily> tagFamilies() {
+		return data().getTagFamilies();
+	}
+
 	default TagFamily tagFamily(String key) {
 		return data().getTagFamily(key);
 	}

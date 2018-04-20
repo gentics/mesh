@@ -26,21 +26,15 @@ public class MicroschemaTransformer extends AbstractTransformer<MicroschemaConta
 		return ETag.hash(microschema.getElementVersion());
 	}
 
-	private JsonObject toDocument(MicroschemaContainer microschema, boolean withVersion) {
+	@Override
+	public JsonObject toDocument(MicroschemaContainer microschema) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, microschema);
 		document.put(NAME_KEY, microschema.getName());
 		addPermissionInfo(document, microschema);
 		// map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
-		if (withVersion) {
-			document.put(VERSION_KEY, generateVersion(microschema));
-		}
+		document.put(VERSION_KEY, generateVersion(microschema));
 		return document;
-	}
-
-	@Override
-	public JsonObject toDocument(MicroschemaContainer microschema) {
-		return toDocument(microschema, true);
 	}
 
 }

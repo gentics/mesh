@@ -424,7 +424,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		builder.append("|");
 		builder.append(type.name());
 		builder.append("|");
-		builder.append(project.getElementVersion());
+		builder.append(project.getUuid() + project.getName());
 		builder.append("|");
 		builder.append(node.getElementVersion());
 
@@ -446,10 +446,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param container
 	 * @param releaseUuid
 	 * @param type
-	 * @param withVersion
 	 * @return
 	 */
-	private JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean withVersion) {
+	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -484,22 +483,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 		displayField.put("value", container.getDisplayFieldValue());
 		document.put("displayField", displayField);
-		if (withVersion) {
-			document.put(VERSION_KEY, generateVersion(container, releaseUuid, type));
-		}
+		document.put(VERSION_KEY, generateVersion(container, releaseUuid, type));
 		return document;
-	}
-
-	/**
-	 * Transform the given container into a indexable document.
-	 * 
-	 * @param container
-	 * @param releaseUuid
-	 * @param type
-	 * @return
-	 */
-	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
-		return toDocument(container, releaseUuid, type, true);
 	}
 
 }

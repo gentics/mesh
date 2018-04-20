@@ -171,7 +171,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			}
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
-		assertMetrics("tag", 400, 0, 0);
+		// 400: The additional tags needs to be added to the index
+		// 3: Tag family needs to be updated and the two color tags
+		assertMetrics("tag", 400, 3, 0);
 
 		// Assert update
 		tx(() -> {
@@ -197,7 +199,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			}
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
+		// 400: The additional tag families need to be added to the index
 		assertMetrics("tagfamily", 400, 0, 0);
+		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
+		assertMetrics("tagfamily", 0, 0, 0);
 
 		// Assert update
 		tx(() -> {
@@ -254,7 +259,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			node.createGraphFieldContainer(german(), initialRelease(), user());
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
-		assertMetrics("node", 1, 0, 0);
+		assertMetrics("node", 1, 2, 0);
+		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
+		assertMetrics("node", 0, 0, 0);
 
 		// Assert update
 		tx(() -> {
@@ -270,7 +277,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			draft.remove();
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
-		assertMetrics("node", 0, 0, 1);
+		assertMetrics("node", 0, 2, 1);
 	}
 
 	@Test

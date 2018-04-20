@@ -27,25 +27,6 @@ public class RoleTransformer extends AbstractTransformer<Role> {
 	}
 
 	/**
-	 * Transform the role to the document which can be stored in ES.
-	 * 
-	 * @param role
-	 * @param withVersion
-	 *            Whether to include the version number.
-	 * @return
-	 */
-	private JsonObject toDocument(Role role, boolean withVersion) {
-		JsonObject document = new JsonObject();
-		document.put(NAME_KEY, role.getName());
-		addBasicReferences(document, role);
-		addPermissionInfo(document, role);
-		if (withVersion) {
-			document.put(VERSION_KEY, generateVersion(role));
-		}
-		return document;
-	}
-
-	/**
 	 * Transform the given object into a source JSON object which can be used to store the document in the search provider specific format.
 	 * 
 	 * @param role
@@ -53,7 +34,12 @@ public class RoleTransformer extends AbstractTransformer<Role> {
 	 */
 	@Override
 	public JsonObject toDocument(Role role) {
-		return toDocument(role, true);
+		JsonObject document = new JsonObject();
+		document.put(NAME_KEY, role.getName());
+		addBasicReferences(document, role);
+		addPermissionInfo(document, role);
+		document.put(VERSION_KEY, generateVersion(role));
+		return document;
 	}
 
 }

@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index;
 import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -27,6 +28,9 @@ public class IndexClearTest extends AbstractMeshTest {
 	@Test
 	public void testClear() throws Exception {
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
+
+		call(() -> client().invokeIndexClear(), FORBIDDEN, "error_admin_permission_required");
+		tx(() -> group().addRole(roles().get("admin")));
 
 		GenericMessageResponse message = call(() -> client().invokeIndexClear());
 		assertMessage(message, "search_admin_index_clear");

@@ -31,21 +31,15 @@ public class SchemaTransformer extends AbstractTransformer<SchemaContainer> {
 		return ETag.hash(builder.toString());
 	}
 
-	private JsonObject toDocument(SchemaContainer container, boolean withVersion) {
+	@Override
+	public JsonObject toDocument(SchemaContainer container) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, container.getName());
 		document.put(DESCRIPTION_KEY, container.getLatestVersion().getSchema().getDescription());
 		addBasicReferences(document, container);
 		addPermissionInfo(document, container);
-		if (withVersion) {
-			document.put(VERSION_KEY, generateVersion(container));
-		}
+		document.put(VERSION_KEY, generateVersion(container));
 		return document;
-	}
-
-	@Override
-	public JsonObject toDocument(SchemaContainer container) {
-		return toDocument(container, true);
 	}
 
 }
