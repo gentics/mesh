@@ -30,6 +30,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -119,9 +120,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 		assertThat(call(() -> client().findJobs())).isEmpty();
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
-				DRAFT));
+			DRAFT));
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
-				PUBLISHED));
+			PUBLISHED));
 
 		/**
 		 * 2. Stop the job worker and update the schema again. The new version should be assigned to the release and a migration job should be queued. Make sure
@@ -152,9 +153,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
 			assertTrue("The assignment should be active.", edge2.isActive());
 			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
-					DRAFT)).hasNoDropEvents();
+				DRAFT)).hasNoDropEvents();
 			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
-					PUBLISHED)).hasNoDropEvents();
+				PUBLISHED)).hasNoDropEvents();
 			assertThat(call(() -> client().findJobs())).hasInfos(1);
 		}
 
@@ -173,9 +174,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		// The initial index should have been removed
-		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, DRAFT));
+		assertThat(trackingSearchProvider())
+			.hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, DRAFT));
 		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
-				PUBLISHED));
+			PUBLISHED));
 
 		/**
 		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
@@ -192,8 +194,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		nodeCreateRequest.getFields().put("text2", new StringFieldImpl().setString("text2_value"));
 		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT),
-				response.getUuid() + "-en");
+		assertThat(trackingSearchProvider()).hasStore(
+			NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT),
+			response.getUuid() + "-en");
 
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
 		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
@@ -205,7 +208,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionC = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
 			versionCUuid = versionC.getUuid();
 			assertTrue("There should be editable containers (one draft) which should be linked to the version.", versionB.getDraftFieldContainers(
-					initialReleaseUuid()).hasNext());
+				initialReleaseUuid()).hasNext());
 			assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
 
 			edge3 = initialRelease().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
@@ -215,9 +218,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertTrue("The previous assignment should be active since it has not yet been migrated.", edge2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
 			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid,
-					DRAFT)).hasNoDropEvents();
+				DRAFT)).hasNoDropEvents();
 			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid,
-					PUBLISHED)).hasNoDropEvents();
+				PUBLISHED)).hasNoDropEvents();
 			assertThat(call(() -> client().findJobs())).hasInfos(2);
 		}
 
@@ -232,23 +235,25 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertFalse("The previous assignment should be inactive since it has been been migrated.", edge2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
 			assertFalse(
-					"There should no longer be an editable container (one draft) linked to the version since the migration should have updated the link.",
-					versionB.getDraftFieldContainers(initialReleaseUuid()).hasNext());
+				"There should no longer be an editable container (one draft) linked to the version since the migration should have updated the link.",
+				versionB.getDraftFieldContainers(initialReleaseUuid()).hasNext());
 			assertTrue("There should now be versions linked to the new schema version instead.", versionC.getDraftFieldContainers(
-					initialReleaseUuid()).hasNext());
+				initialReleaseUuid()).hasNext());
 
 		}
 
 		// The old index should have been removed
-		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
+		assertThat(trackingSearchProvider())
+			.hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
 		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
-				PUBLISHED));
+			PUBLISHED));
 
 		// The node should have been removed from the old index and placed in the new one
 		assertThat(trackingSearchProvider()).hasDelete(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid,
-				DRAFT), response.getUuid() + "-en");
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT),
-				response.getUuid() + "-en");
+			DRAFT), response.getUuid() + "-en");
+		assertThat(trackingSearchProvider()).hasStore(
+			NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT),
+			response.getUuid() + "-en");
 
 	}
 
@@ -272,9 +277,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
-				DRAFT));
+			DRAFT));
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid,
-				PUBLISHED));
+			PUBLISHED));
 
 	}
 
@@ -295,19 +300,19 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			User user = user();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the release. No need for a migration",
-					project().getLatestRelease().assignSchemaVersion(user, versionA));
+				project().getLatestRelease().assignSchemaVersion(user, versionA));
 
 			// create a node based on the old schema
 			Language english = english();
 			Node parentNode = folder("2015");
 			firstNode = parentNode.create(user, versionA, project());
 			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(),
-					user);
+				user);
 			firstEnglishContainer.createString(fieldName).setString("first content");
 
 			secondNode = parentNode.create(user, versionA, project());
 			NodeGraphFieldContainer secondEnglishContainer = secondNode.createGraphFieldContainer(english, secondNode.getProject().getLatestRelease(),
-					user);
+				user);
 			secondEnglishContainer.createString(fieldName).setString("second content");
 
 			jobUuid = project().getLatestRelease().assignSchemaVersion(user, versionB).getUuid();
@@ -321,11 +326,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value").isEqualTo(
-					"modified first content");
+				"modified first content");
 			assertThat(secondNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value").isEqualTo(
-					"modified second content");
+				"modified second content");
 
 			// Two containers are moved from on index to another -> 2 Store / 2 Delete
 			// The old indices are dropped -> 2 Deleted
@@ -354,13 +359,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 
 		int size = tx(() -> {
-			return Long.valueOf(node.getSchemaContainer().getLatestVersion().getFieldContainers(initialReleaseUuid()).count()).intValue();	
+			return Long.valueOf(node.getSchemaContainer().getLatestVersion().getFieldContainers(initialReleaseUuid()).count()).intValue();
 		});
 
 		// Update the schema and enable the addRaw field
 		waitForJobs(() -> {
 			SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(),
-					SchemaUpdateRequest.class));
+				SchemaUpdateRequest.class));
 			request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
 			call(() -> client().updateSchema(schemaUuid, request));
 		}, COMPLETED, 1);
@@ -370,13 +375,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(trackingSearchProvider()).hasEvents(size + size + 1, size + size, 2, 2);
 		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
 			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "keyword",
-					"The mapping should include a raw field for the teaser field");
+				"The mapping should include a raw field for the teaser field");
 			assertThat(mapping).hasNot("$.mapping.default.properties.fields.properties.title.fields.raw",
-					"The mapping should not include a raw field for the title field");
+				"The mapping should not include a raw field for the title field");
 		}
 
 		List<JsonObject> searchDocumentsOfContent = trackingSearchProvider().getStoreEvents().entrySet().stream().filter(e -> e.getKey().endsWith(
-				nodeUuid + "-en")).map(e -> e.getValue()).collect(Collectors.toList());
+			nodeUuid + "-en")).map(e -> e.getValue()).collect(Collectors.toList());
 		assertThat(searchDocumentsOfContent).isNotEmpty();
 		// Assert that the documents are correct. The teaser must have been truncated.
 		for (JsonObject doc : searchDocumentsOfContent) {
@@ -403,14 +408,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			User user = user();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the release. No need for a migration",
-					project().getLatestRelease().assignSchemaVersion(user, versionA));
+				project().getLatestRelease().assignSchemaVersion(user, versionA));
 
 			// create a node based on the old schema
 			Language english = english();
 			Node parentNode = folder("2015");
 			firstNode = parentNode.create(user, versionA, project());
 			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(),
-					user);
+				user);
 			firstEnglishContainer.createString(fieldName).setString("first content");
 
 			// do the schema migration twice
@@ -427,7 +432,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value").isEqualTo(
-					"modified first content");
+				"modified first content");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -467,7 +472,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
 			assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
-					.isOf(versionB).hasVersion("2.0");
+				.isOf(versionB).hasVersion("2.0");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -479,7 +484,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// 1. Prepare the schema and add micronode list to the content schema
 		SchemaUpdateRequest schemaUpdate = tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
-				SchemaUpdateRequest.class));
+			SchemaUpdateRequest.class));
 		schemaUpdate.addField(FieldUtil.createListFieldSchema("micronode", "micronode").setAllowedSchemas("vcard"));
 
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
@@ -495,10 +500,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("test"));
 
 		MicronodeField micronodeA = FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField(
-				"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname")));
+			"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname")));
 
 		MicronodeField micronodeB = FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test")), Tuple
-				.tuple("lastName", FieldUtil.createStringField("test")));
+			.tuple("lastName", FieldUtil.createStringField("test")));
 
 		nodeCreateRequest.getFields().put("micronode", FieldUtil.createMicronodeListField(micronodeA, micronodeB));
 		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
@@ -521,7 +526,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// 3. Assert that the node still contains the micronode list contents
 		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion(
-				"published")));
+			"published")));
 		assertThat(migratedNode.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
 		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), response.getVersion());
 
@@ -541,7 +546,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// 6. Now update the name of the microschema
 		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
 		MicroschemaUpdateRequest microschemaUpdate = db().tx(() -> JsonUtil.readValue(microschemaContainer("vcard").getLatestVersion().getJson(),
-				MicroschemaUpdateRequest.class));
+			MicroschemaUpdateRequest.class));
 		microschemaUpdate.setName("someOtherName2");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("enemenemuh"));
 		waitForJobs(() -> {
@@ -550,7 +555,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// 7. Verify that the node has been migrated again
 		NodeResponse migratedNode2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion(
-				"published")));
+			"published")));
 		assertThat(migratedNode2.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
 		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), migratedNode2.getVersion());
 
@@ -569,7 +574,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		String jobUuid = tx(() -> {
 			return boot().jobRoot().enqueueMicroschemaMigration(user(), initialRelease(), microschemaContainer("vcard").getLatestVersion(),
-					microschemaContainer("vcard").getLatestVersion()).getUuid();
+				microschemaContainer("vcard").getLatestVersion()).getUuid();
 		});
 
 		tx(() -> microschemaContainer("vcard").getLatestVersion().remove());
@@ -636,7 +641,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(call(() -> client().updateNode(PROJECT_NAME, draftResponse.getUuid(), nodeUpdateRequest))).hasVersion("1.1");
 
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid(), new VersioningParametersImpl().published()))).hasVersion(
-				"1.0");
+			"1.0");
 
 		// Update the schema again.
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
@@ -652,16 +657,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}, COMPLETED, 1);
 		// Now load the node again and verify that the draft has been migrated from 1.1 to 2.1 (2.1 since 2.0 is the new published version)
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.1").hasStringField("text",
-				"text2_value");
+			"text2_value");
 
 		triggerAndWaitForAllJobs(COMPLETED);
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasStringField("text", "text2_value").hasVersion("2.1")
-				.hasSchemaVersion("dummy", "2.0");
+			.hasSchemaVersion("dummy", "2.0");
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid(), new VersioningParametersImpl().published())))
-				.hasStringField("text", "text_value").hasSchemaVersion("dummy", "2.0").hasVersion("2.0");
+			.hasStringField("text", "text_value").hasSchemaVersion("dummy", "2.0").hasVersion("2.0");
 
 	}
 
@@ -696,7 +701,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Publish node
 		call(() -> client().publishNode(PROJECT_NAME, draftResponse.getUuid()));
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid(), new VersioningParametersImpl().published()))).hasVersion(
-				"1.0");
+			"1.0");
 
 		// Update the schema again.
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
@@ -713,16 +718,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// Assert that the draft version stays in sync with the publish version. Both must have version 1.0 since they are using the same NGFC.
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.0").hasStringField("text", "text_value")
-				.hasSchemaVersion("dummy", "2.0");
+			.hasSchemaVersion("dummy", "2.0");
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 		// Assert that the draft and publish version both have version 2.0 since they share the same NGFC.
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasStringField("text", "text_value").hasVersion("2.0")
-				.hasSchemaVersion("dummy", "2.0");
+			.hasSchemaVersion("dummy", "2.0");
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid(), new VersioningParametersImpl().published())))
-				.hasStringField("text", "text_value").hasSchemaVersion("dummy", "2.0").hasVersion("2.0");
+			.hasStringField("text", "text_value").hasSchemaVersion("dummy", "2.0").hasVersion("2.0");
 
 	}
 
@@ -774,7 +779,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
 			updateFieldChange.setCustomMigrationScript(
-					"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -789,12 +794,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			firstMicronodeField = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), user()).createMicronode(
-					micronodeFieldName, versionA);
+				micronodeFieldName, versionA);
 			firstMicronodeField.getMicronode().createString(fieldName).setString("first content");
 
 			secondNode = folder("news");
 			secondMicronodeField = secondNode.createGraphFieldContainer(english, secondNode.getProject().getLatestRelease(), user()).createMicronode(
-					micronodeFieldName, versionA);
+				micronodeFieldName, versionA);
 			secondMicronodeField.getMicronode().createString(fieldName).setString("second content");
 			tx.success();
 		}
@@ -810,18 +815,18 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("1.2");
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
-					versionB);
+				versionB);
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode().getString(fieldName).getString()).as(
-					"Migrated field value").isEqualTo("modified first content");
+				"Migrated field value").isEqualTo("modified first content");
 
 			assertThat(secondMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(secondMicronodeField.getMicronode().getString(fieldName).getString()).as("Old field value").isEqualTo("second content");
 
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("1.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
-					versionB);
+				versionB);
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode().getString(fieldName).getString()).as(
-					"Migrated field value").isEqualTo("modified second content");
+				"Migrated field value").isEqualTo("modified second content");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -874,7 +879,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
 			updateFieldChange.setCustomMigrationScript(
-					"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -885,18 +890,26 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstNode = folder("2015");
 			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName()).setName(micronodeFieldName)
-					.setLabel("Micronode List Field"));
+				.setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			firstMicronodeListField = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), user())
-					.createMicronodeFieldList(micronodeFieldName);
+			// Create the new container version with the specified content which will be migrated
+			Release release = firstNode.getProject().getLatestRelease();
+			NodeGraphFieldContainer oldContainer = firstNode.getGraphFieldContainer(english, release, DRAFT);
+			NodeGraphFieldContainer newContainer = firstNode.createGraphFieldContainer(english, release, user(),
+				oldContainer, true);
+			firstMicronodeListField = newContainer
+				.createMicronodeFieldList(micronodeFieldName);
 			Micronode micronode = firstMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
 			micronode.createString(fieldName).setString("first content");
 
 			secondNode = folder("news");
-			secondMicronodeListField = secondNode.createGraphFieldContainer(english, secondNode.getProject().getLatestRelease(), user())
-					.createMicronodeFieldList(micronodeFieldName);
+			Release release2 = secondNode.getProject().getLatestRelease();
+			NodeGraphFieldContainer oldContainer2 = secondNode.getGraphFieldContainer(english, release2, DRAFT);
+			secondMicronodeListField = secondNode.createGraphFieldContainer(english, release2, user(), oldContainer2, true)
+				.createMicronodeFieldList(micronodeFieldName);
+
 			micronode = secondMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
 			micronode.createString(fieldName).setString("second content");
@@ -907,38 +920,47 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		String jobUuid = tx(() -> boot().jobRoot().enqueueMicroschemaMigration(user(), project().getLatestRelease(), versionA, versionB).getUuid());
-
 		triggerAndWaitForJob(jobUuid);
+
+//		try (Tx tx = tx()) {
+//			Node node = folder("2015");
+//			for (ContainerType type : ContainerType.values()) {
+//				for (NodeGraphFieldContainer c : node.getGraphFieldContainersIt(type)) {
+//					System.out.println("node: " + node.getUuid() + " container: " + c.getUuid() + " version: " + c.getVersion() + " type:" + type
+//						+ " hasPrev: " + (c.getPreviousVersion() != null ? "true" : "false"));
+//				}
+//			}
+//		}
 
 		try (Tx tx = tx()) {
 
 			// assert that migration worked and created a new version
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode().getString(fieldName).getString()).as("Old field value").isEqualTo(
-					"first content");
+				"first content");
 
 			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("2.1");
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
-					"Migrated Micronode").isOf(versionB);
+				"Migrated Micronode").isOf(versionB);
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
-					fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
 
 			assertThat(secondMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(secondMicronodeListField.getList().get(0).getMicronode().getString(fieldName).getString()).as("Old field value").isEqualTo(
-					"second content");
+				"second content");
 			assertThat(secondMicronodeListField.getList().get(1).getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(secondMicronodeListField.getList().get(1).getMicronode().getString(fieldName).getString()).as("Old field value").isEqualTo(
-					"third content");
+				"third content");
 
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("2.1");
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
-					"Migrated Micronode").isOf(versionB);
+				"Migrated Micronode").isOf(versionB);
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
-					fieldName).getString()).as("Migrated field value").isEqualTo("modified second content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("modified second content");
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
-					"Migrated Micronode").isOf(versionB);
+				"Migrated Micronode").isOf(versionB);
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode().getString(
-					fieldName).getString()).as("Migrated field value").isEqualTo("modified third content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("modified third content");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -989,7 +1011,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
 			updateFieldChange.setCustomMigrationScript(
-					"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -1000,11 +1022,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstNode = folder("2015");
 			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName(), "vcard").setName(
-					micronodeFieldName).setLabel("Micronode List Field"));
+				micronodeFieldName).setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			firstMicronodeListField = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), user())
-					.createMicronodeFieldList(micronodeFieldName);
+			// 1.0
+			NodeGraphFieldContainer org = firstNode.getGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), ContainerType.DRAFT);
+			NodeGraphFieldContainer newContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), user(),
+				org, true);
+
+			firstMicronodeListField = newContainer
+				.createMicronodeFieldList(micronodeFieldName);
 			Micronode micronode = firstMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
 			micronode.createString(fieldName).setString("first content");
@@ -1025,26 +1052,27 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// assert that migration worked and created a new version
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode().getString(fieldName).getString()).as("Old field value").isEqualTo(
-					"first content");
+				"first content");
 			assertThat(firstMicronodeListField.getList().get(1).getMicronode()).as("Old Micronode").isOf(microschemaContainer("vcard")
-					.getLatestVersion());
+				.getLatestVersion());
 			assertThat(firstMicronodeListField.getList().get(1).getMicronode().getString("firstName").getString()).as("Old field value").isEqualTo(
-					"Max");
+				"Max");
 
 			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("2.1");
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
-					"Migrated Micronode").isOf(versionB);
+				"Migrated Micronode").isOf(versionB);
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
-					fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
 
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
-					"Not migrated Micronode").isOf(microschemaContainer("vcard").getLatestVersion());
+				"Not migrated Micronode").isOf(microschemaContainer("vcard").getLatestVersion());
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode().getString(
-					"firstName").getString()).as("Not migrated field value").isEqualTo("Max");
+				"firstName").getString()).as("Not migrated field value").isEqualTo("Max");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
+
 	}
 
 	private SchemaContainer createDummySchemaWithChanges(String fieldName, boolean setAddRaw) {
@@ -1091,7 +1119,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 		updateFieldChange.setCustomMigrationScript(
-				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+			"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);

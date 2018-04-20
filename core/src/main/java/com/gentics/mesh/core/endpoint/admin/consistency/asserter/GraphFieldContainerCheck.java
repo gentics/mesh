@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.endpoint.admin.consistency.asserter;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
+import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
+
+import java.util.Iterator;
+
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -8,12 +14,6 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.VersionNumber;
-
-import java.util.Iterator;
-
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
-import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
 public class GraphFieldContainerCheck implements ConsistencyCheck {
 	@Override
@@ -24,7 +24,7 @@ public class GraphFieldContainerCheck implements ConsistencyCheck {
 		}
 	}
 
-	private void checkGraphFieldContainer(NodeGraphFieldContainerImpl container, ConsistencyCheckResponse response) {
+	private void checkGraphFieldContainer(NodeGraphFieldContainer container, ConsistencyCheckResponse response) {
 		String uuid = container.getUuid();
 		if (container.getSchemaContainerVersion() == null) {
 			response.addInconsistency("The GraphFieldContainer has no assigned SchemaContainerVersion",
