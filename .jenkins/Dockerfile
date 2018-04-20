@@ -30,15 +30,14 @@ RUN mkdir -p /usr/lib/jvm/ && \
    rm *.gz && \
    mv jdk1.8.0_151 java-8-oracle
 
-# Install Java 9
-#RUN \
-#  echo  oracle-java9-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-#  add-apt-repository "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" && \
-#  apt-get update && \
-#  apt-get install -y oracle-java9-installer && \
-#  rm -rf /var/lib/apt/lists/* && \
-#  rm -rf /var/cache/oracle-*
-#ENV JAVA_1_9_HOME /usr/lib/jvm/java-9-oracle
+# Install Java 10
+RUN mkdir -p /usr/lib/jvm/ && \
+   cd /usr/lib/jvm/ && \
+   wget -nv -O openjdk-10.0.1_linux-x64_bin.tar.gz "https://download.java.net/java/GA/jdk10/10.0.1/fb4372174a714e6b8c52526dc134031e/10/openjdk-10.0.1_linux-x64_bin.tar.gz" && \
+   tar xfz openjdk-10.0.1_linux-x64_bin.tar.gz && \
+   rm *.gz && \
+   mv jdk-10* java-10
+ENV JAVA_1_10_HOME /usr/lib/jvm/java-10
 
 # Add Jenkins user
 RUN echo "jenkins:jenkins" | chpasswd
