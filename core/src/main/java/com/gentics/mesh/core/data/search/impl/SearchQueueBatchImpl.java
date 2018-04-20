@@ -250,29 +250,31 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return Completable.defer(() -> {
 			Completable obs = Completable.complete();
 
-			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION).collect(
-				Collectors.toList());
+			List<? extends SearchQueueEntry> nonStoreEntries = getEntries()
+				.stream()
+				.filter(i -> i.getElementAction() != STORE_ACTION)
+				.collect(Collectors.toList());
 
-			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION).collect(Collectors
-				.toList());
+			List<? extends SearchQueueEntry> storeEntries = getEntries()
+				.stream()
+				.filter(i -> i.getElementAction() == STORE_ACTION)
+				.collect(Collectors.toList());
 
 			if (!nonStoreEntries.isEmpty()) {
 				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
 			}
 			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
-			AtomicLong counter = new AtomicLong();
 			if (!storeEntries.isEmpty()) {
-				Observable<? extends BulkEntry> bulkObs = Observable.fromIterable(storeEntries)
-					.flatMap(SearchQueueEntry::processForBulk)
-					.doOnComplete(() -> {
-						if (bulkLimit > 0) {
-							log.debug("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + bulkLimit + "}");
-						}
-					});
-				obs = obs
-					.andThen(bulkObs
-						.buffer(bulkLimit)
-						.flatMapCompletable(searchProvider::processBulk));
+				Observable<BulkEntry> bulks = Observable.fromIterable(storeEntries)
+					.flatMap(SearchQueueEntry::processForBulk);
+
+				AtomicLong counter = new AtomicLong();
+				Completable bulkProcessing = bulks
+					.buffer(bulkLimit)
+					.flatMapCompletable(bulk -> searchProvider.processBulk(bulk).doOnComplete(() -> {
+						log.debug("Bulk completed {" + counter.incrementAndGet() + "}");
+					}));
+				obs = obs.andThen(bulkProcessing);
 			}
 
 			return obs.andThen(searchProvider.refreshIndex()).doOnComplete(() -> {

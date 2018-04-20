@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -24,6 +25,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 @Singleton
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
@@ -73,6 +75,12 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	public Completable store(TagFamily tagFamily, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
 		return super.store(tagFamily, entry);
+	}
+
+	@Override
+	public Observable<IndexBulkEntry> storeForBulk(TagFamily tagFamily, UpdateDocumentEntry entry) {
+		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
+		return super.storeForBulk(tagFamily, entry);
 	}
 
 	@Override

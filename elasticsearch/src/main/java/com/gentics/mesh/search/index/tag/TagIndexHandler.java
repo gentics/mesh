@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -24,6 +25,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 /**
  * Handler for the tag specific search index.
@@ -81,6 +83,12 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	public Completable store(Tag tag, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tag.getProject().getUuid());
 		return super.store(tag, entry);
+	}
+
+	@Override
+	public Observable<IndexBulkEntry> storeForBulk(Tag tag, UpdateDocumentEntry entry) {
+		entry.getContext().setProjectUuid(tag.getProject().getUuid());
+		return super.storeForBulk(tag, entry);
 	}
 
 	@Override
