@@ -13,7 +13,7 @@
 [[v0.18.2]]
 == 0.18.2 (23.04.2018)
 
-CAUTION: Database revision was updated due to OrientDB update. Thus only an offline update can be performed.
+CAUTION: Database revision was updated due to OrientDB update. Thus only an link:https://getmesh.io/docs/beta/clustering.html#_offline_upgrade[offline upgrade] can be performed when using clustered mode.
 
 CAUTION: The generation of the search index document version has been reworked in order to increase index sync performance.
          A triggered index sync will thus re-sync all documents. Triggering the sync action is not required and can be executed at any time.
@@ -32,9 +32,9 @@ icon:check[] Core: Image data in binary fields will now only be processed/transf
 
 icon:check[] Core: Added consistency checks for node versions.
 
-icon:check[] Core: Deleting language versions of node will no longer create inconsistencies.
+icon:check[] Core: Deleting language versions of nodes will no longer create inconsistencies.
 
-icon:check[] Core: Projects containing multiple releases can now be deleted without error.
+icon:check[] Core: Projects containing multiple releases can now be deleted without any error.
 
 [[v0.18.1]]
 == 0.18.1 (13.04.2018)
