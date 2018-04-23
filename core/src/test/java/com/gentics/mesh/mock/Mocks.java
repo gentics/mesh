@@ -113,6 +113,7 @@ public final class Mocks {
 		when(project.getEditor()).thenReturn(user);
 		when(project.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		when(project.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(project.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return project;
 	}
 
@@ -120,6 +121,7 @@ public final class Mocks {
 		Language language = mock(LanguageImpl.class);
 		when(language.getUuid()).thenReturn(randomUUID());
 		when(language.getLanguageTag()).thenReturn("de");
+		when(language.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return language;
 	}
 
@@ -149,7 +151,7 @@ public final class Mocks {
 		NumberGraphField latitudeField = mock(NumberGraphFieldImpl.class);
 		when(latitudeField.getNumber()).thenReturn(16.373063840833);
 		when(micronode.getNumber("latitude")).thenReturn(latitudeField);
-
+		when(micronode.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return micronode;
 	}
 
@@ -162,6 +164,7 @@ public final class Mocks {
 		when(role.getName()).thenReturn(roleName);
 		when(role.getUuid()).thenReturn(randomUUID());
 		when(role.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(role.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return role;
 	}
 
@@ -174,6 +177,7 @@ public final class Mocks {
 		when(group.getName()).thenReturn(groupName);
 		when(group.getUuid()).thenReturn(randomUUID());
 		when(group.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(group.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return group;
 	}
 
@@ -195,6 +199,7 @@ public final class Mocks {
 			when(user.getEditor()).thenReturn(creator);
 		}
 		when(user.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(user.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return user;
 	}
 
@@ -217,6 +222,7 @@ public final class Mocks {
 		when(tagFamily.getUuid()).thenReturn(randomUUID());
 		when(tagFamily.getProject()).thenReturn(project);
 		when(tagFamily.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(tagFamily.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return tagFamily;
 	}
 
@@ -231,6 +237,7 @@ public final class Mocks {
 		when(tag.getTagFamily()).thenReturn(tagFamily);
 		when(tag.getProject()).thenReturn(project);
 		when(tag.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(tag.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return tag;
 	}
 
@@ -264,6 +271,7 @@ public final class Mocks {
 		when(container.getEditor()).thenReturn(user);
 		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(container.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return container;
 	}
 
@@ -325,7 +333,9 @@ public final class Mocks {
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(container.getParentNode()).thenReturn(node);
+		when(container.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		when(node.getLatestDraftFieldContainer(language)).thenReturn(container);
+		when(node.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		Mockito.<Iterable<? extends NodeGraphFieldContainer>> when(node.getDraftGraphFieldContainers()).thenReturn(Arrays.asList(container));
 		return node;
 	}
