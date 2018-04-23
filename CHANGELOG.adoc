@@ -11,7 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.18.2]]
-== 0.18.2 (TBD)
+== 0.18.2 (23.04.2018)
 
 CAUTION: Database revision was updated due to OrientDB update. Thus only an offline update can be performed.
 
