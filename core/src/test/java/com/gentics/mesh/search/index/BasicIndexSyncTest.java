@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -239,14 +241,13 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
 		assertMetrics("project", 0, 1, 0);
 
-		// Assert deletion
+		// Now manually delete the project
 		tx(() -> {
 			Project project = boot().projectRoot().findByName("project_2");
-			project.getBaseNode().remove();
-			project.getReleaseRoot().getLatestRelease().remove();
-			project.getReleaseRoot().remove();
-			project.remove();
+			SearchQueueBatch batch = Mockito.mock(SearchQueueBatch.class);
+			project.delete(batch);
 		});
+		// Assert that the deletion was detected
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
 		assertMetrics("project", 0, 0, 1);
 	}

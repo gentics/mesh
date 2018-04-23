@@ -40,6 +40,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -74,6 +75,12 @@ import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+
+	@After
+	public void waitForJobs() {
+		tx(() -> group().addRole(roles().get("admin")));
+		triggerAndWaitForAllJobs(COMPLETED);
+	}
 
 	@Test
 	@Override
@@ -502,8 +509,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		validateSet(set, barrier);
 		failingLatch(latch);
-		tx(() -> group().addRole(roles().get("admin")));
-		triggerAndWaitForAllJobs(COMPLETED);
 	}
 
 	@Test
