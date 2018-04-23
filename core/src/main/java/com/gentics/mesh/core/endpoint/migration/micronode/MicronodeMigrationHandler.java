@@ -188,7 +188,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			throws Exception {
 
 		String releaseUuid = release.getUuid();
-		ac.getVersioningParameters().setVersion("draft");
+		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
 
 		boolean publish = container.isPublished(releaseUuid);
 
@@ -239,7 +239,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		String releaseUuid = release.getUuid();
 		ac.getVersioningParameters().setVersion("published");
 
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container, false);
+		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container, true);
 		migrated.setVersion(container.getVersion().nextPublished());
 		node.setPublished(migrated, releaseUuid);
 

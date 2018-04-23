@@ -402,18 +402,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return container;
 	}
 
-	/**
-	 * Get an existing edge.
-	 * 
-	 * @param languageTag
-	 *            language tag
-	 * @param releaseUuid
-	 *            release uuid
-	 * @param type
-	 *            edge type
-	 * @return existing edge or null
-	 */
-	protected EdgeFrame getGraphFieldContainerEdge(String languageTag, String releaseUuid, ContainerType type) {
+	@Override
+	public EdgeFrame getGraphFieldContainerEdge(String languageTag, String releaseUuid, ContainerType type) {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag).has(
 			GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		if (edgeTraversal.hasNext()) {

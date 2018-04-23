@@ -32,7 +32,7 @@ public class GraphFieldContainerCheck implements ConsistencyCheck {
 		}
 		VersionNumber version = container.getVersion();
 		if (version == null) {
-			response.addInconsistency("The GraphFieldContainer has no version", uuid, HIGH);
+			response.addInconsistency("The GraphFieldContainer has no version number", uuid, HIGH);
 		}
 		// GFC must either have a previous GFC, or must be the initial GFC for a Node
 		NodeGraphFieldContainer previous = container.getPreviousVersion();

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -659,6 +660,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.1").hasStringField("text",
 			"text2_value");
 
+
 		triggerAndWaitForAllJobs(COMPLETED);
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
@@ -668,6 +670,32 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid(), new VersioningParametersImpl().published())))
 			.hasStringField("text", "text_value").hasSchemaVersion("dummy", "2.0").hasVersion("2.0");
 
+//		printVersionInfo(draftResponse.getUuid());
+
+	}
+
+	private void printVersionInfo(String uuid) {
+		try (Tx tx = tx()) {
+			System.out.println();
+			Node node = boot().nodeRoot().findByUuid(uuid);
+			for (GraphFieldContainerEdgeImpl e : node.outE("HAS_FIELD_CONTAINER").frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+				NodeGraphFieldContainer container = e.getNodeContainer();
+				System.out.println("Type: " + e.getType() + " " + container.getUuid() + " version: " + container.getVersion());
+
+				NodeGraphFieldContainer prev = container.getPreviousVersion();
+				while (prev != null) {
+					System.out.println("Prev: " + prev.getUuid() + " version:" + prev.getVersion());
+					prev = prev.getPreviousVersion();
+				}
+
+				for (NodeGraphFieldContainer next : container.getNextVersions()) {
+					System.out.println("Next: " + next.getUuid() + " version:" + next.getVersion());
+				}
+				System.out.println("--");
+			}
+
+			System.out.println();
+		}
 	}
 
 	/**
@@ -921,16 +949,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		String jobUuid = tx(() -> boot().jobRoot().enqueueMicroschemaMigration(user(), project().getLatestRelease(), versionA, versionB).getUuid());
 		triggerAndWaitForJob(jobUuid);
-
-//		try (Tx tx = tx()) {
-//			Node node = folder("2015");
-//			for (ContainerType type : ContainerType.values()) {
-//				for (NodeGraphFieldContainer c : node.getGraphFieldContainersIt(type)) {
-//					System.out.println("node: " + node.getUuid() + " container: " + c.getUuid() + " version: " + c.getVersion() + " type:" + type
-//						+ " hasPrev: " + (c.getPreviousVersion() != null ? "true" : "false"));
-//				}
-//			}
-//		}
 
 		try (Tx tx = tx()) {
 

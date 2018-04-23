@@ -6,7 +6,9 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
@@ -62,8 +64,12 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 		return inV().nextOrDefault(MeshVertexImpl.class, null);
 	}
 
-	public AbstractBasicGraphFieldContainerImpl getI18NProperties() {
+	public AbstractBasicGraphFieldContainerImpl getContainer() {
 		return outV().nextOrDefault(AbstractBasicGraphFieldContainerImpl.class, null);
+	}
+
+	public NodeGraphFieldContainer getNodeContainer() {
+		return inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 	}
 
 	@Override

@@ -22,6 +22,10 @@ icon:plus[] Backup/Restore: It is now no longer required to restart the server a
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.34
 
+icon:plus[] Consistency: Additional consistency checks have been added.
+
+icon:check[] Consistency: Various consistency issues have been fixed.
+
 icon:check[] REST: Fixed various security related issues.
 
 icon:check[] Core: Image data in binary fields will now only be processed/transformed if the binary is in a readable file format. The readable image file formats are `png`, `jpg`, `bmp` and `gif`.

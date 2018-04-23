@@ -67,7 +67,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return Completable which is completed once the migration finishes
 	 */
 	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
-			MigrationStatusHandler status) {
+		MigrationStatusHandler status) {
 
 		// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 		// versions. We'll work on drafts. The migration code will later on also handle publish versions.
@@ -142,8 +142,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return
 	 */
 	private void migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, SchemaContainerVersion toVersion,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release, SchemaModel newSchema, List<Exception> errorsDetected,
-			Set<String> touchedFields) {
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release, SchemaModel newSchema, List<Exception> errorsDetected,
+		Set<String> touchedFields) {
 
 		if (log.isDebugEnabled()) {
 			log.debug("Migrating container {" + container.getUuid() + "}");
@@ -157,17 +157,17 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				String languageTag = container.getLanguage().getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");
-				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, release.getUuid(), PUBLISHED);
 
 				VersionNumber nextDraftVersion = null;
+				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, release.getUuid(), PUBLISHED);
 				// 1. Check whether there is any other published container which we need to handle separately
 				if (oldPublished != null && !oldPublished.equals(container)) {
 					// We only need to migrate the container if the container's schema version is also "old"
 					boolean hasSameOldSchemaVersion = container != null
-							&& container.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
+						&& container.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
 					if (hasSameOldSchemaVersion) {
-						nextDraftVersion = migratePublishedContainer(ac, sqb, release, node, container, toVersion, touchedFields, migrationScripts,
-								newSchema);
+						nextDraftVersion = migratePublishedContainer(ac, sqb, release, node, oldPublished, toVersion, touchedFields, migrationScripts,
+							newSchema);
 						nextDraftVersion = nextDraftVersion.nextDraft();
 					}
 
@@ -211,18 +211,19 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Release release, Node node,
-			NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, VersionNumber nextDraftVersion)
-			throws Exception {
+		NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, VersionNumber nextDraftVersion)
+		throws Exception {
 
 		String releaseUuid = release.getUuid();
 		String languageTag = container.getLanguage().getLanguageTag();
 
-		// Check whether the same container is also used as a published version within the given release. A migration is always scoped to a specific release.
+		// Check whether the same container is also used as a published version within the given release.
+		// A migration is always scoped to a specific release.
 		// We need to ensure that the migrated container is also published.
 		boolean publish = container.isPublished(releaseUuid);
 
-		ac.getVersioningParameters().setVersion("draft");
+		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 
 		// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
@@ -271,8 +272,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Release release, Node node,
-			NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema) throws Exception {
+		NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema) throws Exception {
 
 		String languageTag = container.getLanguage().getLanguageTag();
 		String releaseUuid = release.getUuid();
@@ -281,9 +282,11 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 		restModel.getSchema().setVersion(newSchema.getVersion());
 
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container, false);
+		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container, true);
+
 		migrated.setVersion(container.getVersion().nextPublished());
 		node.setPublished(migrated, releaseUuid);
+
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 		sqb.store(migrated, releaseUuid, PUBLISHED, false);
 		return migrated.getVersion();

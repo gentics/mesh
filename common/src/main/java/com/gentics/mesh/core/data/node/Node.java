@@ -29,6 +29,8 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.syncleus.ferma.EdgeFrame;
+
 import io.reactivex.Single;
 
 import java.util.Arrays;
@@ -185,7 +187,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	default Iterable<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
-		//FIX ME: We should not rely on specific releases.
+		// FIX ME: We should not rely on specific releases.
 		return getGraphFieldContainersIt(getProject().getLatestRelease(), DRAFT);
 	}
 
@@ -535,8 +537,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, String languageTag);
 
 	/**
-	 * Delete the language container for the given language from the release. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs
-	 * for the language and release, and will then delete all "dangling" GFC (GFCs, which are not used by another release).
+	 * Delete the language container for the given language from the release. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
+	 * and release, and will then delete all "dangling" GFC (GFCs, which are not used by another release).
 	 * 
 	 * @param ac
 	 * @param release
@@ -720,5 +722,18 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 */
 	void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag);
+
+	/**
+	 * Get an existing edge.
+	 * 
+	 * @param languageTag
+	 *            language tag
+	 * @param releaseUuid
+	 *            release uuid
+	 * @param type
+	 *            edge type
+	 * @return existing edge or null
+	 */
+	EdgeFrame getGraphFieldContainerEdge(String languageTag, String releaseUuid, ContainerType type);
 
 }
