@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -288,7 +289,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				// Find all permission edges between the found role and target
 				// vertex with the specified label
 				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
-						MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
+					MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
@@ -513,19 +514,29 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 		if (requestModel.getNodeReference() != null) {
 			ExpandableNode reference = requestModel.getNodeReference();
+			String referencedNodeUuid = null;
+			String projectName = null;
 			if (reference instanceof NodeResponse) {
-				// TODO also handle full node response inside node reference
-				// field
-				// TODO i18n
-				throw error(BAD_REQUEST, "Handling node responses for user updates is not yet supported");
+				NodeResponse response = (NodeResponse) reference;
+				ProjectReference project = response.getProject();
+				if (project == null) {
+					throw error(BAD_REQUEST, "user_incomplete_node_reference");
+				}
+				projectName = project.getName();
+				if (isEmpty(projectName)) {
+					throw error(BAD_REQUEST, "user_incomplete_node_reference");
+				}
+				referencedNodeUuid = response.getUuid();
 			}
 			if (reference instanceof NodeReference) {
 				NodeReference basicReference = ((NodeReference) reference);
 				if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
 					throw error(BAD_REQUEST, "user_incomplete_node_reference");
 				}
-				String referencedNodeUuid = basicReference.getUuid();
-				String projectName = basicReference.getProjectName();
+				referencedNodeUuid = basicReference.getUuid();
+				projectName = basicReference.getProjectName();
+			}
+			if (referencedNodeUuid != null && projectName != null) {
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
@@ -538,6 +549,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				setReferencedNode(node);
 				modified = true;
 			}
+
 		}
 
 		if (modified) {
@@ -556,7 +568,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 		Node referencedNode = getReferencedNode();
 		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
-				|| ac.getNodeParameters().getExpandAll();
+			|| ac.getNodeParameters().getExpandAll();
 		// We only need to compute the full etag if the referenced node is expanded.
 		if (referencedNode != null && expandReference) {
 			keyBuilder.append("-");

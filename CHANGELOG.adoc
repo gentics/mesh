@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.18.3]]
+== 0.18.3 (TBD)
+
+icon:check[] REST: Add error response when updating a user node reference without specifying the project name.
+
 [[v0.18.2]]
 == 0.18.2 (23.04.2018)
 

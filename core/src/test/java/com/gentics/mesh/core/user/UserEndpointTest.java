@@ -621,6 +621,25 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	public void testUpdateUserAndSetNodeReferenceWithoutProjectName() throws Exception {
+		String nodeUuid = tx(() -> folder("news").getUuid());
+		String userUuid = userUuid();
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		try (Tx tx = tx()) {
+			updateRequest.setEmailAddress("t.stark@stark-industries.com");
+			updateRequest.setFirstname("Tony Awesome");
+			updateRequest.setLastname("Epic Stark");
+			updateRequest.setUsername("dummy_user_changed");
+		}
+
+		NodeReference userNodeReference = new NodeReference();
+		userNodeReference.setUuid(nodeUuid);
+		updateRequest.setNodeReference(userNodeReference);
+
+		call(() -> client().updateUser(userUuid, updateRequest), BAD_REQUEST, "user_incomplete_node_reference");
+	}
+
+	@Test
 	public void testCreateUserWithNodeReference() {
 		String nodeUuid;
 		try (Tx tx = tx()) {
