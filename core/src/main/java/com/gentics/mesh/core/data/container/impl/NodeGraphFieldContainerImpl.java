@@ -148,7 +148,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void delete(SearchQueueBatch batch, boolean deleteNext) {
 		// TODO delete linked aggregation nodes for node lists etc
-		for (BinaryGraphField binaryField : outE(HAS_FIELD).frame(BinaryGraphFieldImpl.class)) {
+		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frame(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(this);
 		}
 

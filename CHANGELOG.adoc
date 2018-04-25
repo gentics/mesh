@@ -11,9 +11,11 @@
 = Gentics Mesh Changelog
 
 [[v0.18.3]]
-== 0.18.3 (TBD)
+== 0.18.3 (25.04.2018)
 
 icon:check[] REST: Add error response when updating a user node reference without specifying the project name.
+
+icon:check[] REST: Fixed the root cause of an inconsistency which caused the deletion of referenced nodes when deleting a node.
 
 [[v0.18.2]]
 == 0.18.2 (23.04.2018)

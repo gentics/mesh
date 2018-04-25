@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.node;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -18,7 +18,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -36,11 +35,13 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
 public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -140,6 +141,18 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			updateNodeFailure(FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", FIELD_NAME);
 		}
+	}
+
+	@Test
+	public void testDeleteNodeWithReference() {
+		Node target = folder("deals");
+		String targetUuid = tx(() -> target.getUuid());
+
+		NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, targetUuid));
+
+		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid(), new DeleteParametersImpl().setRecursive(true)));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, targetUuid));
 	}
 
 	@Test
