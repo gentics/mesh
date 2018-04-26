@@ -71,7 +71,7 @@ On first startup, Gentics Mesh will create all files and folders.
     binaryImageCache
     graphdb
     tmp
- conf
+ config
     keystore.jceks
     default-distributed-db-config.json
     orientdb-server-config.xml
