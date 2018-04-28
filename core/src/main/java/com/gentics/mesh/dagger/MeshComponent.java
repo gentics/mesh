@@ -23,7 +23,6 @@ import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.plugin.factory.PluginVerticleFactory;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
@@ -114,8 +113,6 @@ public interface MeshComponent {
 	SchemaComparator schemaComparator();
 
 	RestAPIVerticle restApiVerticle();
-
-	PluginVerticleFactory pluginFactory();
 
 	MeshAuthProvider authProvider();
 }

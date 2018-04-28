@@ -80,7 +80,6 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.PluginManager;
-import com.gentics.mesh.plugin.factory.PluginVerticleFactory;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -133,9 +132,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public ConsoleProvider console;
-
-	@Inject
-	public PluginVerticleFactory pluginFactory;
 
 	private static MeshRoot meshRoot;
 
@@ -336,9 +332,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			log.info("Creating non-clustered Vert.x instance");
 			vertx = Vertx.vertx(vertxOptions);
 		}
-
-		// Factories
-		vertx.registerVerticleFactory(pluginFactory);
 
 		mesh.setVertx(vertx);
 		mesh.setMetricsService(MetricsService.create(vertx));

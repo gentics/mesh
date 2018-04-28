@@ -22,6 +22,8 @@ ____
 
 icon:plus[] The base image of the Gentics Mesh docker container has been changed to `openjdk:10-slim`.
 
+icon:plus[] Logging: The logging verbosity has been further decreased.
+
 [[v0.18.3]]
 == 0.18.3 (25.04.2018)
 
