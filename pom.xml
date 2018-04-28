@@ -330,6 +330,7 @@
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
+					<useSystemClassLoader>true</useSystemClassLoader>
 					<excludes>
 						<include>**/*AbstractTest.java</include>
 						<include>**/*Abstract*Test.java</include>
