@@ -23,6 +23,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
+	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 
@@ -75,6 +76,11 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
 	private String tempDirectory = "data" + File.separator + "tmp";
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Path to the plugin directory.")
+	@EnvironmentVariable(name = MESH_PLUGIN_DIR_ENV, description = "Override the configured plugin directory.")
+	private String pluginDirectory = "plugins";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
@@ -245,6 +251,24 @@ public class MeshOptions implements Option {
 	 */
 	public void setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
+	}
+
+	/**
+	 * Return the plugin directory.
+	 * 
+	 * @return
+	 */
+	public String getPluginDirectory() {
+		return pluginDirectory;
+	}
+
+	/**
+	 * Set the plugin directory.
+	 * 
+	 * @param pluginDirectory
+	 */
+	public void setPluginDirectory(String pluginDirectory) {
+		this.pluginDirectory = pluginDirectory;
 	}
 
 	/**

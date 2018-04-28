@@ -1,8 +1,6 @@
 package com.gentics.mesh.search;
 
 import java.util.List;
-import java.util.Map;
-
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;

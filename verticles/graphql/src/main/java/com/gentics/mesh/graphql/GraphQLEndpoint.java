@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.core.logging.Logger;
@@ -36,7 +36,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	public void registerEndPoints() {
 		secureAll();
 
-		EndpointRoute queryEndpoint = createEndpoint();
+		InternalEndpointRoute queryEndpoint = createRoute();
 		queryEndpoint.method(POST);
 		queryEndpoint.exampleRequest(graphqlExamples.createQueryRequest());
 		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");

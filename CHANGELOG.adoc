@@ -10,6 +10,18 @@
 
 = Gentics Mesh Changelog
 
+[[v0.19.0]]
+== 0.19.0 (TBD)
+
+icon:bullhorn[] Plugin System
+
+[quote]
+____
+This version of Gentics Mesh introduces the _Plugin System_. A detailed description of this feature can be found in our https://getmesh.io/docs/beta/plugin-system.html[Plugin System Documentation].
+____
+
+icon:plus[] The base image of the Gentics Mesh docker container has been changed to `openjdk:10-slim`.
+
 [[v0.18.3]]
 == 0.18.3 (25.04.2018)
 
@@ -1148,7 +1160,7 @@ ____
 
 icon:plus[] The missing *availableLanguages* and *defaultLanguage* parameters have been added to the *mesh-ui-config.js* file. Previously no language was configured which removed the option to translate contents.
 
-icon:plus[] Image Property Support - The binary field will not automatically contain properties for image *width*, image *height* and the main *dominant color* in the image.
+icon:plus[] Image Property Support - The binary field will now automatically contain properties for image *width*, image *height* and the main *dominant color* in the image.
 
 icon:plus[] API Version endpoint -  It is now possible to load the mesh version information via a `GET` request to `/api/v1/`.
 

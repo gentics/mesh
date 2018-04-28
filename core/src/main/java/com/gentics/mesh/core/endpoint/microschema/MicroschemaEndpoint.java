@@ -14,14 +14,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class MicroschemaEndpoint extends AbstractEndpoint {
+public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;
 
@@ -55,7 +54,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDiffHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid/diff");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -66,7 +65,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.description(
 			"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDiff(ac, schemaUuid);
 		});
@@ -85,7 +84,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		// crudHandler.handleGetSchemaChanges(ac, schemaUuid);
 		// });
 
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid/changes");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -96,14 +95,14 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Microschema migration was invoked.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
 		});
 	}
 
 	private void addReadHandlers() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:microschemaUuid");
 		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		readOne.addQueryParameters(VersioningParametersImpl.class);
@@ -116,12 +115,11 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				crudHandler.handleRead(ac, uuid);
+				crudHandler.handleRead(wrap(rc), uuid);
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple microschemas and return a paged list response.");
@@ -129,13 +127,12 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleReadList(ac);
+			crudHandler.handleReadList(wrap(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -143,14 +140,14 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was deleted.");
 		endpoint.description("Delete the microschema with the given uuid.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -161,14 +158,14 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
 		endpoint.description("Update the microschema with the given uuid.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new microschema.");
@@ -176,8 +173,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(CREATED, microschemaExamples.getGeolocationMicroschemaResponse(), "Created microschema.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleCreate(ac);
+			crudHandler.handleCreate(wrap(rc));
 		});
 
 	}

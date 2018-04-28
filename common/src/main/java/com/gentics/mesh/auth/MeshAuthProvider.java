@@ -149,7 +149,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				}
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
 				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
-					new JWTOptions().setExpiresInSeconds(Long.valueOf(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())))));
+					new JWTOptions()
+						.setExpiresInSeconds(Long.valueOf(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())))));
 			}
 		});
 	}
@@ -209,7 +210,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, ((MeshAuthUser) user).getUuid());
-			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm()).setExpiresInSeconds(Long.valueOf(options.getTokenExpirationTime()));
+			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
+				.setExpiresInSeconds(Long.valueOf(options.getTokenExpirationTime()));
 			return jwtProvider.generateToken(tokenData, jwtOptions);
 		} else {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
@@ -223,12 +225,16 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * @param user
 	 * @param tokenCode
 	 *            Code which will be part of the JWT. This code is used to verify that the JWT is still valid
+	 * @param expireDuration
 	 * @return Generated API key
 	 */
-	public String generateAPIToken(com.gentics.mesh.core.data.User user, String tokenCode) {
+	public String generateAPIToken(com.gentics.mesh.core.data.User user, String tokenCode, Long expireDuration) {
 		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.getUuid()).put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
 		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());
+		if (expireDuration != null) {
+			jwtOptions.setExpiresInMinutes(expireDuration);
+		}
 		return jwtProvider.generateToken(tokenData, jwtOptions);
 	}
 

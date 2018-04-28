@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.job;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
-import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -14,11 +14,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
@@ -110,7 +110,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		waitForJob(() -> {
 			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
-			assertMessage(msg, "job_processing_invoked");
+			assertThat(msg).matches("job_processing_invoked");
 		}, jobUuid, FAILED);
 
 		call(() -> client().invokeJobProcessing());
@@ -137,8 +137,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 		tx(() -> group().addRole(roles().get("admin")));
 
 		JobResponse response = waitForJob(() -> {
-			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
-			assertMessage(msg, "job_processing_invoked");
+			GenericMessageResponse message = call(() -> client().invokeJobProcessing());
+			assertThat(message).matches("job_processing_invoked");
 		}, jobUuid, FAILED);
 		assertEquals("The job uuid of the job should match up with the migration status info uuid.", jobUuid, response.getUuid());
 

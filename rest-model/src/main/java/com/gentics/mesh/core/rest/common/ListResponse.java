@@ -52,4 +52,13 @@ public class ListResponse<T> implements RestModel {
 		return data;
 	}
 
+	/**
+	 * Add the given element to the list.
+	 * 
+	 * @param e
+	 */
+	public void add(T e) {
+		data.add(e);
+	}
+
 }

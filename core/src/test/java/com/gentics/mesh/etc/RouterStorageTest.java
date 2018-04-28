@@ -34,6 +34,6 @@ public class RouterStorageTest {
 		when(rc.request()).thenReturn(request);
 		when(rc.normalisedPath()).thenReturn("/blub");
 		when(rc.queryParams()).thenReturn(new CaseInsensitiveHeaders());
-		storage.getRootRouter().handleFailure(rc);
+		storage.root().getRouter().handleFailure(rc);
 	}
 }

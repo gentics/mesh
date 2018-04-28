@@ -1,0 +1,9 @@
+{
+  "name": "Dummy Plugin",
+  "apiName": "dummy",
+  "description": "A very dummy plugin for tests",
+  "license": "Apache License 2.0",
+  "inception": "26-04-2018",
+  "author": "Johannes Schüth",
+  "version": "1.0"
+}

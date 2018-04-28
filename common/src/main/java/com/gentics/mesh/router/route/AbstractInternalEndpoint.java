@@ -6,9 +6,9 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
-import com.gentics.mesh.rest.Endpoint;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.rest.impl.EndpointImpl;
+import com.gentics.mesh.rest.InternalEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;
 import com.gentics.mesh.router.RouterStorage;
 
 import io.vertx.ext.web.Route;
@@ -17,9 +17,9 @@ import io.vertx.ext.web.Router;
 /**
  * An abstract class that should be used when creating new endpoints.
  */
-public abstract class AbstractEndpoint implements Endpoint {
+public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 
-	protected List<EndpointRoute> endpoints = new ArrayList<>();
+	protected List<InternalEndpointRoute> endpointRoutes = new ArrayList<>();
 
 	protected Router localRouter = null;
 
@@ -38,13 +38,13 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 * @param routerStorage
 	 *            Router storage
 	 */
-	protected AbstractEndpoint(String basePath) {
+	protected AbstractInternalEndpoint(String basePath) {
 		this.basePath = basePath;
 	}
 
 	public void init(RouterStorage rs) {
 		this.routerStorage = rs;
-		this.localRouter = rs.getAPISubRouter(basePath);
+		this.localRouter = rs.root().apiRouter().createSubRouter(basePath);
 	}
 
 	/**
@@ -96,9 +96,9 @@ public abstract class AbstractEndpoint implements Endpoint {
 	}
 
 	@Override
-	public EndpointRoute createEndpoint() {
-		EndpointRoute endpoint = new EndpointImpl(getRouter());
-		endpoints.add(endpoint);
+	public InternalEndpointRoute createRoute() {
+		InternalEndpointRoute endpoint = new InternalEndpointRouteImpl(getRouter());
+		endpointRoutes.add(endpoint);
 		return endpoint;
 	}
 
@@ -107,8 +107,8 @@ public abstract class AbstractEndpoint implements Endpoint {
 	 * 
 	 * @return List of created endpoint
 	 */
-	public List<EndpointRoute> getEndpoints() {
-		return endpoints;
+	public List<InternalEndpointRoute> getEndpoints() {
+		return endpointRoutes;
 	}
 
 	/**

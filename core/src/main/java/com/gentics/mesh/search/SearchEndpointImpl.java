@@ -11,7 +11,6 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -25,8 +24,8 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
@@ -40,7 +39,7 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import dagger.Lazy;
 
-public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoint {
+public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -124,14 +123,14 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	}
 
 	private void addAdminHandlers() {
-		EndpointRoute statusEndpoint = createEndpoint();
+		InternalEndpointRoute statusEndpoint = createRoute();
 		statusEndpoint.path("/status");
 		statusEndpoint.method(GET);
 		statusEndpoint.description("Returns the search index status.");
 		statusEndpoint.produces(APPLICATION_JSON);
 		statusEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Search index status.");
 		statusEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			adminHandler.handleStatus(ac);
 		});
 
@@ -142,22 +141,22 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 		// createMappings.description("Create search index mappings.");
 		// createMappings.exampleResponse(OK, miscExamples.createMessageResponse(), "Create all mappings.");
 		// createMappings.handler(rc -> {
-		// InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		// InternalActionContext ac = wrap(rc);
 		// adminHandler.createMappings(ac);
 		// });
 
-		EndpointRoute indexClearEndpoint = createEndpoint();
+		InternalEndpointRoute indexClearEndpoint = createRoute();
 		indexClearEndpoint.path("/clear");
 		indexClearEndpoint.method(POST);
 		indexClearEndpoint.produces(APPLICATION_JSON);
 		indexClearEndpoint.description("Drops all indices and recreates them. The index sync is not invoked automatically.");
 		indexClearEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Recreated all indices.");
 		indexClearEndpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			adminHandler.handleClear(ac);
 		});
 
-		EndpointRoute indexSyncEndpoint = createEndpoint();
+		InternalEndpointRoute indexSyncEndpoint = createRoute();
 		indexSyncEndpoint.path("/sync");
 		indexSyncEndpoint.method(POST);
 		indexSyncEndpoint.produces(APPLICATION_JSON);
@@ -165,7 +164,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 			"Invokes the manual synchronisation of the search indices. This operation may take some time to complete and is performed asynchronously. When clustering is enabled it will be executed on any free instance.");
 		indexSyncEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked index synchronisation on all indices.");
 		indexSyncEndpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			adminHandler.handleSync(ac);
 		});
 	}
@@ -184,7 +183,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse, boolean filterByLanguage) {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
@@ -194,7 +193,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				InternalActionContext ac = wrap(rc);
 				searchHandler.query(ac, root, classOfRL, filterByLanguage);
 			} catch (Exception e) {
 				rc.fail(e);

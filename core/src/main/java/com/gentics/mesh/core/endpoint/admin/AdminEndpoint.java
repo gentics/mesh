@@ -10,16 +10,16 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The admin verticle provides core administration rest endpoints.
  */
-public class AdminEndpoint extends AbstractEndpoint {
+public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private AdminHandler adminHandler;
 
@@ -27,12 +27,15 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private ConsistencyCheckHandler consistencyHandler;
 
+	private PluginHandler pluginHandler;
+
 	@Inject
-	public AdminEndpoint(AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler) {
+	public AdminEndpoint(AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler) {
 		super("admin");
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
+		this.pluginHandler = pluginHandler;
 	}
 
 	public AdminEndpoint() {
@@ -41,7 +44,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	@Override
 	public String getDescription() {
-		// TODO what is a admin permission?
+		// TODO what is an admin permission?
 		return "Collection of administrative endpoints which usually require admin permission";
 	}
 
@@ -60,82 +63,132 @@ public class AdminEndpoint extends AbstractEndpoint {
 		// addVerticleHandler();
 		// addServiceHandler();
 		addJobHandler();
+		addPluginHandler();
 
 	}
 
+	private void addPluginHandler() {
+		InternalEndpointRoute deployEndpoint = createRoute();
+		deployEndpoint.path("/plugins");
+		deployEndpoint.method(POST);
+		deployEndpoint.description("Deploys the plugin using the provided deployment information.");
+		deployEndpoint.produces(APPLICATION_JSON);
+		deployEndpoint.exampleRequest(adminExamples.createPluginDeploymentRequest());
+		deployEndpoint.exampleResponse(OK, adminExamples.createPluginResponse(), "Plugin response.");
+		deployEndpoint.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			pluginHandler.handleDeploy(ac);
+		});
+
+		InternalEndpointRoute undeployEndpoint = createRoute();
+		undeployEndpoint.path("/plugins/:uuid");
+		undeployEndpoint.method(DELETE);
+		undeployEndpoint.description("Undeploys the plugin with the given uuid.");
+		undeployEndpoint.produces(APPLICATION_JSON);
+		undeployEndpoint.addUriParameter("uuid", "Uuid of the plugin.", UUIDUtil.randomUUID());
+		undeployEndpoint.exampleResponse(OK, adminExamples.createPluginResponse(), "Plugin response.");
+		undeployEndpoint.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("uuid");
+			pluginHandler.handleUndeploy(ac, uuid);
+		});
+
+		InternalEndpointRoute readEndpoint = createRoute();
+		readEndpoint.path("/plugins/:uuid");
+		readEndpoint.method(GET);
+		readEndpoint.description("Loads deployment information for the plugin with the given id.");
+		readEndpoint.produces(APPLICATION_JSON);
+		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", UUIDUtil.randomUUID());
+		readEndpoint.exampleResponse(OK, adminExamples.createPluginResponse(), "Plugin response.");
+		readEndpoint.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("uuid");
+			pluginHandler.handleRead(ac, uuid);
+		});
+
+		InternalEndpointRoute readAllEndpoint = createRoute();
+		readAllEndpoint.path("/plugins");
+		readAllEndpoint.method(GET);
+		readAllEndpoint.description("Loads deployment information for all deployed plugins.");
+		readAllEndpoint.produces(APPLICATION_JSON);
+		readAllEndpoint.exampleResponse(OK, adminExamples.createPluginListResponse(), "Plugin list response.");
+		readAllEndpoint.handler(rc -> {
+			pluginHandler.handleReadList(wrap(rc));
+		});
+	}
+
 	private void addClusterStatusHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cluster/status");
 		endpoint.method(GET);
 		endpoint.description("Loads the cluster status information.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
 		endpoint.handler(rc -> {
-			adminHandler.handleClusterStatus(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleClusterStatus(wrap(rc));
 		});
-
 	}
 
 	private void addConsistencyCheckHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
 		endpoint.description("Invokes a consistency check of the graph database and returns a list of found issues");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createConsistencyCheckResponse(), "Consistency check report");
 		endpoint.handler(rc -> {
-			consistencyHandler.invokeCheck(new InternalRoutingActionContextImpl(rc));
+			consistencyHandler.invokeCheck(wrap(rc));
 		});
 	}
 
 	private void addExportHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/export");
 		endpoint.method(POST);
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
 		endpoint.handler(rc -> {
-			adminHandler.handleExport(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleExport(wrap(rc));
 		});
 	}
 
 	private void addImportHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/import");
 		endpoint.method(POST);
 		endpoint.description(
-				"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
+			"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
 		endpoint.handler(rc -> {
-			adminHandler.handleImport(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleImport(wrap(rc));
 		});
 	}
 
 	private void addRestoreHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/restore");
 		endpoint.description(
-				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data.");
+			"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
 		endpoint.handler(rc -> {
-			adminHandler.handleRestore(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleRestore(wrap(rc));
 		});
 	}
 
 	private void addBackupHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/backup");
 		endpoint.method(POST);
 		endpoint.description(
-				"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
+			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
 		endpoint.handler(rc -> {
-			adminHandler.handleBackup(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleBackup(wrap(rc));
 		});
 	}
 
@@ -143,77 +196,45 @@ public class AdminEndpoint extends AbstractEndpoint {
 	 * Handler that reacts onto status requests.
 	 */
 	private void addMeshStatusHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Return the Gentics Mesh server status.");
 		endpoint.path("/status");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createMeshStatusResponse(MeshStatus.READY), "Status of the Gentics Mesh server.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			// TODO this is currently polled by apa. We need to update their monitoring as well if we change this
 			adminHandler.handleMeshStatus(ac);
 		});
 
 	}
 
-	// private void addServiceHandler() {
-	// route("/deployService/:mavenCoordinates").method(GET).handler(rc -> {
-	// // TODO impl me
-	// rc.response().end("Deploy " + rc.request().params().get("mavenCoordinates"));
-	// });
-	//
-	// route("/undeployService/:mavenCoordinates").method(GET).handler(rc -> {
-	// // TODO impl me
-	// rc.response().end("Undeploy " + rc.request().params().get("mavenCoordinates"));
-	// });
-	//
-	// }
-	//
-	// private void addVerticleHandler() {
-	// route("/deployVerticle/:clazz").method(GET).handler(rc -> {
-	// String clazz = rc.request().params().get("clazz");
-	// try {
-	// // TODO create merged jsonconfig (see mesh init)
-	// JsonObject config = new JsonObject();
-	// String id = deployAndWait(vertx, config, clazz);
-	// rc.response().end("Deployed " + clazz + " id: " + id);
-	// } catch (Exception e) {
-	// rc.fail(e);
-	// }
-	// });
-	//
-	// route("/undeployVerticle/:clazz").method(GET).handler(rc -> {
-	// // TODO impl me
-	// rc.response().end("Undeploy " + rc.request().params().get("clazz"));
-	// });
-	// }
-
 	private void addJobHandler() {
 
-		EndpointRoute invokeJobWorker = createEndpoint();
+		InternalEndpointRoute invokeJobWorker = createRoute();
 		invokeJobWorker.path("/processJobs");
 		invokeJobWorker.method(POST);
 		invokeJobWorker.description("Invoke the processing of remaining jobs.");
 		invokeJobWorker.produces(APPLICATION_JSON);
 		invokeJobWorker.exampleResponse(OK, miscExamples.createMessageResponse(), "Response message.");
 		invokeJobWorker.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			jobHandler.handleInvokeJobWorker(ac);
 		});
 
-		EndpointRoute readJobList = createEndpoint();
+		InternalEndpointRoute readJobList = createRoute();
 		readJobList.path("/jobs");
 		readJobList.method(GET);
 		readJobList.description("List all currently queued jobs.");
 		readJobList.produces(APPLICATION_JSON);
 		readJobList.exampleResponse(OK, jobExamples.createJobList(), "List of jobs.");
 		readJobList.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			jobHandler.handleReadList(ac);
 		});
 
-		EndpointRoute readJob = createEndpoint();
+		InternalEndpointRoute readJob = createRoute();
 		readJob.path("/jobs/:jobUuid");
 		readJob.method(GET);
 		readJob.description("Load a specific job.");
@@ -221,29 +242,29 @@ public class AdminEndpoint extends AbstractEndpoint {
 		readJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
 		readJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
 		readJob.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleRead(ac, uuid);
 		});
 
-		EndpointRoute deleteJob = createEndpoint();
+		InternalEndpointRoute deleteJob = createRoute();
 		deleteJob.path("/jobs/:jobUuid");
 		deleteJob.method(DELETE);
 		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
 		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
 		deleteJob.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleDelete(ac, uuid);
 		});
 
-		EndpointRoute resetJob = createEndpoint();
+		InternalEndpointRoute resetJob = createRoute();
 		resetJob.path("/jobs/:jobUuid/error");
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
 		resetJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
 		resetJob.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleResetJob(ac, uuid);
 		});

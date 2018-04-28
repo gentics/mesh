@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.test.ClientHelper.assertMessage;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
@@ -45,7 +45,7 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		// // Add the user to the admin group - this way the user is in fact an admin.
+		// Add the user to the admin group - this way the user is in fact an admin.
 		try (Tx tx = tx()) {
 			user().addGroup(data().getGroups().get("admin"));
 			tx.success();
@@ -56,7 +56,7 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 
 		waitForEvent(Events.INDEX_SYNC_EVENT, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertMessage(message, "search_admin_index_sync_invoked");
+			assertThat(message).matches("search_admin_index_sync_invoked");
 		});
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));

@@ -28,7 +28,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private MeshRestClient client;
 
-	private boolean initCluster;
+	private boolean initCluster = false;
 
 	private CountDownLatch waitingLatch = new CountDownLatch(1);
 
@@ -36,25 +36,27 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private int httpPort;
 
-	private String clusterName;
+	private String clusterName = null;
+
+	private boolean clustering = false;
+
+	private boolean startEmbeddedES = false;
+
+	private boolean isInMemory = false;
+
+	private Mesh mesh;
 
 	/**
 	 * Create a new local server.
 	 * 
 	 * @param clusterName
-	 * @param nodeName
 	 * @param initCluster
-	 * @param waitForStartup
 	 */
-	public MeshLocalServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup) {
+	public MeshLocalServer() {
 		if (inUse) {
-			throw new RuntimeException("The Mesh local server rule can't be used twice in the same JVM.");
+			throw new RuntimeException("The MeshLocalServer rule can't be used twice in the same JVM.");
 		}
 		inUse = true;
-		this.initCluster = initCluster;
-		this.clusterName = clusterName;
-		this.nodeName = nodeName;
-		this.waitForStartup = waitForStartup;
 	}
 
 	@Override
@@ -70,21 +72,31 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 			args = new String[] { "-" + MeshCLI.INIT_CLUSTER };
 		}
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
-		options.setNodeName(nodeName);
-
-		options.getStorageOptions().setDirectory(basePath + "/graph");
-//		options.getSearchOptions().setDirectory(basePath + "/es");
+		if (nodeName != null) {
+			options.setNodeName(nodeName);
+		}
+		if (isInMemory) {
+			options.getStorageOptions().setDirectory(null);
+		} else {
+			options.getStorageOptions().setDirectory(basePath + "/graph");
+		}
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
 		options.getUploadOptions().setTempDirectory(basePath + "/temp");
 		options.getHttpServerOptions().setPort(httpPort);
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
-		// options.getSearchOptions().setHttpEnabled(true);
-		options.getClusterOptions().setEnabled(true);
-		options.getClusterOptions().setClusterName(clusterName);
+		options.getSearchOptions().setStartEmbedded(startEmbeddedES);
+		if (!startEmbeddedES) {
+			options.getSearchOptions().setUrl(null);
+		}
 
-		Mesh mesh = Mesh.mesh(options);
+		options.getClusterOptions().setEnabled(clustering);
+		if (clusterName != null) {
+			options.getClusterOptions().setClusterName(clusterName);
+		}
+
+		mesh = Mesh.mesh(options);
 
 		new Thread(() -> {
 			try {
@@ -139,8 +151,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	}
 
 	/**
-	 * Block until the startup message has been seen in the container log
-	 * output.
+	 * Block until the startup message has been seen in the container log output.
 	 * 
 	 * @param timeoutInSeconds
 	 * @throws InterruptedException
@@ -167,6 +178,87 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	@Override
 	public int getPort() {
 		return httpPort;
+	}
+
+	/**
+	 * Set the name of the node.
+	 * 
+	 * @param name
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withNodeName(String name) {
+		this.nodeName = name;
+		return this;
+	}
+
+	/**
+	 * Wait until the mesh instance is ready.
+	 * 
+	 * @return Fluent API
+	 */
+	public MeshLocalServer waitForStartup() {
+		waitForStartup = true;
+		return this;
+	}
+
+	/**
+	 * Set the name of the cluster.
+	 * 
+	 * @param name
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withClusterName(String name) {
+		this.clusterName = name;
+		return this;
+	}
+
+	/**
+	 * Set the init cluster flag.
+	 * 
+	 * @return
+	 */
+	public MeshLocalServer withInitCluster() {
+		this.initCluster = true;
+		return this;
+	}
+
+	/**
+	 * Set the init cluster flag.
+	 * 
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withClustering() {
+		this.clustering = true;
+		return this;
+	}
+
+	/**
+	 * Set the memory mode flag.
+	 * 
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withInMemoryMode() {
+		this.isInMemory = true;
+		return this;
+	}
+
+	/**
+	 * Start the embedded ES
+	 * 
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withES() {
+		this.startEmbeddedES = true;
+		return this;
+	}
+
+	/**
+	 * Return the created mesh instance.
+	 * 
+	 * @return
+	 */
+	public Mesh getMesh() {
+		return mesh;
 	}
 
 }

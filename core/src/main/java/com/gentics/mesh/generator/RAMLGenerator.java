@@ -43,9 +43,11 @@ import com.gentics.mesh.core.endpoint.user.UserEndpoint;
 import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
 import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.APIRouter;
+import com.gentics.mesh.router.RootRouter;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.RawSearchEndpointImpl;
@@ -132,7 +134,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	 *            Endpoint which provides endpoints
 	 * @throws IOException
 	 */
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle) throws IOException {
+	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle) throws IOException {
 
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
@@ -143,7 +145,7 @@ public class RAMLGenerator extends AbstractGenerator {
 			verticleResource.setDescription(verticle.getDescription());
 			resources.put(ramlPath, verticleResource);
 		}
-		for (EndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
+		for (InternalEndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
 
 			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
@@ -268,7 +270,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		return ActionType.valueOf(method.name());
 	}
 
-	private void initEndpoint(AbstractEndpoint endpoint) {
+	private void initEndpoint(AbstractInternalEndpoint endpoint) {
 		Vertx vertx = mock(Vertx.class);
 		Mockito.when(endpoint.getRouter()).thenReturn(Router.router(vertx));
 		endpoint.registerEndPoints();
@@ -383,6 +385,10 @@ public class RAMLGenerator extends AbstractGenerator {
 		addEndpoints(coreBasePath, resources, eventbusEndpoint);
 
 		RouterStorage rs = Mockito.mock(RouterStorage.class);
+		RootRouter rootRouter = Mockito.mock(RootRouter.class);
+		Mockito.when(rs.root()).thenReturn(rootRouter);
+		APIRouter apiRouter = Mockito.mock(APIRouter.class);
+		Mockito.when(rootRouter.apiRouter()).thenReturn(apiRouter);
 		RestInfoEndpoint infoEndpoint = Mockito.spy(new RestInfoEndpoint(""));
 		infoEndpoint.init(rs);
 		initEndpoint(infoEndpoint);

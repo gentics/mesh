@@ -11,17 +11,16 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
-import com.gentics.mesh.router.route.AbstractEndpoint;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class UserEndpoint extends AbstractEndpoint {
+public class UserEndpoint extends AbstractInternalEndpoint {
 
 	private UserCrudHandler crudHandler;
 
@@ -57,7 +56,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addAPITokenHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -67,12 +66,12 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleIssueAPIToken(ac, uuid);
 		});
 
-		EndpointRoute deleteEndpoint = createEndpoint();
+		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.path("/:userUuid/token");
 		deleteEndpoint.setRAMLPath("/{userUuid}/token");
 		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -81,14 +80,14 @@ public class UserEndpoint extends AbstractEndpoint {
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token.");
 		deleteEndpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDeleteAPIToken(ac, uuid);
 		});
 	}
 
 	private void addReadPermissionHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -98,7 +97,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionRead(ac, userUuid, pathToElement);
@@ -106,7 +105,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addResetTokenHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/reset_token");
 		endpoint.setRAMLPath("/{userUuid}/reset_token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -115,14 +114,14 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleFetchToken(ac, uuid);
 		});
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:userUuid");
 		readOne.description("Read the user with the given uuid");
 		readOne.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -133,7 +132,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleRead(ac, uuid);
 		});
@@ -141,7 +140,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		/*
 		 * List all users when no parameter was specified
 		 */
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.description("Load multiple users and return a paged list response.");
 		readAll.method(GET);
@@ -152,13 +151,13 @@ public class UserEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
 	}
 
 	private void addDeleteHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -167,7 +166,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "User was deactivated.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
@@ -180,7 +179,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
 		getRouter().route("/:userUuid").method(POST).handler(authHandler);
 
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
@@ -191,14 +190,14 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
 		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.description("Create a new user.");
 		endpoint.method(POST);
@@ -207,7 +206,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));
 		endpoint.exampleResponse(CREATED, userExamples.getUserResponse1("newuser"), "User response of the created user.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});
 	}

@@ -363,22 +363,23 @@ public abstract class AbstractTypeProvider {
 	/**
 	 * Fetches nodes and applies filters
 	 *
-	 * @param env the environment of the request
+	 * @param env
+	 *            the environment of the request
 	 * @return the filtered nodes
 	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
-        GraphQLContext gc = env.getContext();
-        NodeRoot nodeRoot = gc.getProject().getNodeRoot();
+		GraphQLContext gc = env.getContext();
+		NodeRoot nodeRoot = gc.getProject().getNodeRoot();
 
-        List<String> languageTags = getLanguageArgument(env);
+		List<String> languageTags = getLanguageArgument(env);
 
-        Stream<NodeContent> contents = nodeRoot.findAllStream(gc)
-            // Now lets try to load the containers for those found nodes - apply the language fallback
-            .map(node -> new NodeContent(node, node.findVersion(gc, languageTags)))
+		Stream<NodeContent> contents = nodeRoot.findAllStream(gc)
+			// Now lets try to load the containers for those found nodes - apply the language fallback
+			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags)))
 			// Filter nodes without a container
 			.filter(content -> content.getContainer() != null);
 
-        return applyNodeFilter(env, contents);
+		return applyNodeFilter(env, contents);
 	}
 
 	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream) {

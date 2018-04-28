@@ -86,6 +86,7 @@
 	<modules>
 		<module>rest-model</module>
 		<module>api</module>
+		<module>plugin-api</module>
 		<module>common</module>
 		<module>test-common</module>
 		<module>elasticsearch</module>
@@ -322,6 +323,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
+					<jvm>${env.JAVA_1_10_HOME}/bin/java</jvm>
 					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>

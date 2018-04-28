@@ -22,8 +22,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.router.RouterStorage;
-
+import com.gentics.mesh.router.APIRouter;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -160,7 +159,7 @@ public class WebRootLinkReplacer {
 			case MEDIUM:
 				return "/" + projectName + "/error/404";
 			case FULL:
-				return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404";
+				return APIRouter.API_MOUNTPOINT + "/" + projectName + "/webroot/error/404";
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -230,7 +229,7 @@ public class WebRootLinkReplacer {
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path;
+			return APIRouter.API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path;
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}

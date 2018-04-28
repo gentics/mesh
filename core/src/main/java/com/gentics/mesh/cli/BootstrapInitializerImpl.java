@@ -79,6 +79,8 @@ import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.plugin.PluginManager;
+import com.gentics.mesh.plugin.factory.PluginVerticleFactory;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -89,6 +91,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
+import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.logging.Logger;
@@ -104,6 +107,8 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
+
+	private static PluginManager pluginManager = ServiceHelper.loadFactory(PluginManager.class);
 
 	@Inject
 	public ServerSchemaStorage schemaStorage;
@@ -128,6 +133,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public ConsoleProvider console;
+
+	@Inject
+	public PluginVerticleFactory pluginFactory;
 
 	private static MeshRoot meshRoot;
 
@@ -280,6 +288,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		eventManager.registerHandlers();
 		handleLocalData(forceReindex, options, verticleLoader);
+
+		// Load existing plugins
+		pluginManager.init(options);
+		pluginManager.deployExistingPluginFiles().subscribe(() -> {
+			// Finally fire the startup event and log that bootstrap has completed
+			log.info("Sending startup completed event to {" + STARTUP_EVENT_ADDRESS + "}");
+			Mesh.vertx().eventBus().publish(STARTUP_EVENT_ADDRESS, true);
+		}, log::error);
+
 	}
 
 	/**
@@ -310,14 +327,19 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
+		vertxOptions.setFileResolverCachingEnabled(false);
 		Vertx vertx = null;
 		if (vertxOptions.isClustered()) {
 			log.info("Creating clustered Vert.x instance");
 			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast());
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
-			vertx =Vertx.vertx(vertxOptions);
+			vertx = Vertx.vertx(vertxOptions);
 		}
+
+		// Factories
+		vertx.registerVerticleFactory(pluginFactory);
+
 		mesh.setVertx(vertx);
 		mesh.setMetricsService(MetricsService.create(vertx));
 	}
@@ -409,10 +431,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initProjects();
 		}
 		registerEventHandlers();
-
-		// Finally fire the startup event and log that bootstrap has completed
-		log.info("Sending startup completed event to {" + STARTUP_EVENT_ADDRESS + "}");
-		Mesh.vertx().eventBus().publish(STARTUP_EVENT_ADDRESS, true);
 
 	}
 

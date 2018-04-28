@@ -17,7 +17,11 @@ public class LocalServerTest {
 	private static String clusterPostFix = randomUUID();
 
 	@ClassRule
-	public static MeshLocalServer serverA = new MeshLocalServer("cluster" + clusterPostFix, "localNodeA", true, true);
+	public static MeshLocalServer serverA = new MeshLocalServer()
+		.withNodeName("localNodeA")
+		.withClusterName("cluster" + clusterPostFix)
+		.withInitCluster()
+		.waitForStartup();
 
 	@Test
 	public void testServer() {

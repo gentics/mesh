@@ -1,8 +1,8 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -195,7 +195,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 		waitForEvent(INDEX_SYNC_EVENT, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertMessage(message, "search_admin_index_sync_invoked");
+			assertThat(message).matches("search_admin_index_sync_invoked");
 		});
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Locale;
@@ -11,7 +12,6 @@ import com.gentics.mesh.context.AbstractActionContext;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class I18NTest extends AbstractMeshTest {

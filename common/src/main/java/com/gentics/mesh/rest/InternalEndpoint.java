@@ -1,5 +1,7 @@
 package com.gentics.mesh.rest;
 
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.example.AdminExamples;
 import com.gentics.mesh.example.GraphQLExamples;
 import com.gentics.mesh.example.GroupExamples;
@@ -17,17 +19,12 @@ import com.gentics.mesh.example.UserExamples;
 import com.gentics.mesh.example.UtilityExamples;
 import com.gentics.mesh.example.VersioningExamples;
 
+import io.vertx.ext.web.RoutingContext;
+
 /**
  * An endpoint represents a specific path in the REST API which exposes various endpoint routes.
  */
-public interface Endpoint {
-
-	/**
-	 * Create a new endpoint. Internally a new route will be wrapped.
-	 * 
-	 * @return Created endpoint
-	 */
-	EndpointRoute createEndpoint();
+public interface InternalEndpoint {
 
 	NodeExamples nodeExamples = new NodeExamples();
 	TagExamples tagExamples = new TagExamples();
@@ -46,4 +43,20 @@ public interface Endpoint {
 	ReleaseExamples releaseExamples = new ReleaseExamples();
 	UtilityExamples utilityExamples = new UtilityExamples();
 
+	/**
+	 * Create a new endpoint. Internally a new route will be wrapped.
+	 * 
+	 * @return Created endpoint
+	 */
+	InternalEndpointRoute createRoute();
+
+	/**
+	 * Wrap the routing context.
+	 * 
+	 * @param rc
+	 * @return
+	 */
+	default InternalActionContext wrap(RoutingContext rc) {
+		return new InternalRoutingActionContextImpl(rc);
+	}
 }

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.admin;
 
-import static com.gentics.mesh.test.ClientHelper.assertMessage;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -30,7 +30,7 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 			tx.success();
 		}
 		GenericMessageResponse message = call(() -> client().invokeBackup());
-		assertMessage(message, "backup_finished");
+		assertThat(message).matches("backup_finished");
 
 		// Now create a project which is not in the backup. The routes and data must vanish when inserting the backup
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -41,7 +41,7 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid));
 
 		message = call(() -> client().invokeRestore());
-		assertMessage(message, "restore_finished");
+		assertThat(message).matches("restore_finished");
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid), NOT_FOUND, "project_not_found", NEW_PROJECT_NAME);
@@ -55,10 +55,10 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 			tx.success();
 		}
 		GenericMessageResponse message = call(() -> client().invokeExport());
-		assertMessage(message, "export_finished");
+		assertThat(message).matches("export_finished");
 
 		message = call(() -> client().invokeImport());
-		assertMessage(message, "import_finished");
+		assertThat(message).matches("import_finished");
 	}
 
 }

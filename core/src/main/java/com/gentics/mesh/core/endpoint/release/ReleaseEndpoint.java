@@ -12,9 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -54,7 +53,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addMicroschemaInfoHandler() {
-		EndpointRoute readMicroschemas = createEndpoint();
+		InternalEndpointRoute readMicroschemas = createRoute();
 		readMicroschemas.path("/:releaseUuid/microschemas");
 		readMicroschemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readMicroschemas.method(GET);
@@ -63,7 +62,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		readMicroschemas.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
 		readMicroschemas.addQueryParameters(PagingParametersImpl.class);
 		readMicroschemas.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("releaseUuid");
 			crudHandler.handleGetMicroschemaVersions(ac, uuid);
 		});
@@ -72,7 +71,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addSchemaInfoHandler() {
-		EndpointRoute readSchemas = createEndpoint();
+		InternalEndpointRoute readSchemas = createRoute();
 		readSchemas.path("/:releaseUuid/schemas");
 		readSchemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readSchemas.method(GET);
@@ -82,13 +81,13 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		readSchemas.exampleResponse(OK, releaseExamples.createSchemaReferenceList(), "Loaded schema list.");
 		readSchemas.handler(rc -> {
 			String uuid = rc.request().getParam("releaseUuid");
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleGetSchemaVersions(ac, uuid);
 		});
 	}
 
 	private void addNodeMigrationHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:releaseUuid/migrateSchemas");
 		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
@@ -96,14 +95,14 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String releaseUuid = rc.request().getParam("releaseUuid");
 			crudHandler.handleMigrateRemainingNodes(ac, releaseUuid);
 		});
 	}
 
 	private void addMicronodeMigrationHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:releaseUuid/migrateMicroschemas");
 		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
@@ -111,14 +110,14 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String releaseUuid = rc.request().getParam("releaseUuid");
 			crudHandler.handleMigrateRemainingMicronodes(ac, releaseUuid);
 		});
 	}
 
 	private void addCreateHandler() {
-		EndpointRoute endpoint = createEndpoint();
+		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new release and automatically invoke a node migration.");
@@ -126,13 +125,13 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleRequest(versioningExamples.createReleaseCreateRequest("Winter 2016"));
 		endpoint.exampleResponse(CREATED, versioningExamples.createReleaseResponse("Winter 2016"), "Created release.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});
 	}
 
 	private void addReadHandler() {
-		EndpointRoute readOne = createEndpoint();
+		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:releaseUuid");
 		readOne.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readOne.description("Load the release with the given uuid.");
@@ -144,12 +143,12 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
-		EndpointRoute readAll = createEndpoint();
+		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple releases and return a paged list response.");
@@ -157,13 +156,13 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
 	}
 
 	private void addUpdateHandler() {
-		EndpointRoute addSchema = createEndpoint();
+		InternalEndpointRoute addSchema = createRoute();
 		addSchema.path("/:releaseUuid/schemas");
 		addSchema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		addSchema.method(POST);
@@ -174,11 +173,11 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		addSchema.exampleResponse(OK, releaseExamples.createSchemaReferenceList(), "Updated schema list.");
 		addSchema.handler(rc -> {
 			String uuid = rc.request().params().get("releaseUuid");
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			crudHandler.handleAssignSchemaVersion(ac, uuid);
 		});
 
-		EndpointRoute addMicroschema = createEndpoint();
+		InternalEndpointRoute addMicroschema = createRoute();
 		addMicroschema.path("/:releaseUuid/microschemas");
 		addMicroschema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		addMicroschema.method(POST);
@@ -188,12 +187,12 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		addMicroschema.exampleRequest(microschemaExamples.createMicroschemaReferenceList());
 		addMicroschema.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "Updated microschema list.");
 		addMicroschema.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("releaseUuid");
 			crudHandler.handleAssignMicroschemaVersion(ac, uuid);
 		});
 
-		EndpointRoute updateRelease = createEndpoint();
+		InternalEndpointRoute updateRelease = createRoute();
 		updateRelease.path("/:releaseUuid");
 		updateRelease.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		updateRelease
@@ -204,7 +203,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		updateRelease.exampleRequest(versioningExamples.createReleaseUpdateRequest("Winter Collection Release"));
 		updateRelease.exampleResponse(OK, versioningExamples.createReleaseResponse("Winter Collection Release"), "Updated release");
 		updateRelease.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("releaseUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});

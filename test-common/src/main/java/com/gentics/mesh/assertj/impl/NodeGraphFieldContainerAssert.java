@@ -3,9 +3,6 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;

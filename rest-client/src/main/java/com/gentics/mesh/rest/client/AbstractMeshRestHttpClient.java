@@ -104,6 +104,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 *
 	 * @return
 	 */
+	@Override
 	public JWTAuthentication getAuthentication() {
 		return authentication;
 	}
