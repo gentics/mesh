@@ -17,8 +17,9 @@ RUN mkdir /plugins && chown mesh: /plugins -R && ln -s /plugins /mesh/plugins
 ADD https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ESVERSION.zip /es.zip
 
 WORKDIR /
-RUN apk --update --no-cache add unzip \
-    && unzip /es.zip && apk del unzip \
+RUN apt-get update && apt-get install -y unzip \
+    && unzip /es.zip && apt-get remove -y unzip \
+    && apt-get clean \
     && mv elasticsearch* elasticsearch \
     && rm /es.zip \
     && ln -s /elasticsearch /mesh/elasticsearch \
