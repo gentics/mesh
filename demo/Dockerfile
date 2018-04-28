@@ -4,7 +4,7 @@ ENV ESVERSION 6.1.2
 
 EXPOSE 8080
 
-RUN adduser -D -u 1000 -h /mesh mesh
+RUN adduser --disabled-password --disabled-login --uid 1000 --home /mesh mesh
 USER mesh
 WORKDIR /mesh
 ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
