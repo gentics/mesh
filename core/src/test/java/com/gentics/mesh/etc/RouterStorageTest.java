@@ -4,7 +4,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 
 import io.vertx.core.http.CaseInsensitiveHeaders;
@@ -17,10 +19,12 @@ import io.vertx.ext.web.impl.RouteImpl;
 
 public class RouterStorageTest {
 
-	private RouterStorage storage = new RouterStorage(null, null, null, null);
-
 	@Test
 	public void testFailureHandler() throws Exception {
+		RouterStorage storage = new RouterStorage(null, null, null, () -> {
+			return Mockito.mock(Database.class);
+		});
+
 		RoutingContext rc = mock(RoutingContext.class);
 		Route currentRoute = mock(RouteImpl.class);
 		when(currentRoute.getPath()).thenReturn("/blub");
