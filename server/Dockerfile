@@ -12,6 +12,7 @@ ADD ./target/mesh-server*jar /mesh/mesh.jar
 USER root
 RUN mkdir /data   && chown mesh: /data -R   && ln -s /data /mesh/data
 RUN mkdir /config && chown mesh: /config -R && ln -s /config /mesh/config
+RUN mkdir /plugins && chown mesh: /plugins -R && ln -s /plugins /mesh/plugins
 
 ADD https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ESVERSION.zip /es.zip
 
@@ -28,6 +29,7 @@ USER mesh
 WORKDIR /mesh
 VOLUME /data
 VOLUME /config
+VOLUME /plugins
 VOLUME /elasticsearch/data
 VOLUME /elasticsearch/config
 
