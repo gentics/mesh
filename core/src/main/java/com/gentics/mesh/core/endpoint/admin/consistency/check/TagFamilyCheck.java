@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.admin.consistency.asserter;
+package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
@@ -17,7 +17,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class TagFamilyCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response) {
+	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends TagFamily> it = db.getVerticesForType(TagFamilyImpl.class);
 		while (it.hasNext()) {
 			checkTagFamily(it.next(), response);

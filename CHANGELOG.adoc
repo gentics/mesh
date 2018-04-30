@@ -10,6 +10,13 @@
 
 = Gentics Mesh Changelog
 
+[[v0.19.1]]
+== 0.19.1 (30.04.2018)
+
+icon:plus[] REST: The `/api/v1/admin/consistency/repair` endpoint has been added. The endpoint can be used to verify and directly repair found inconsistencies. 
+                  The `/api/v1/admin/consistency/check` endpoint response has been updated to also include information about the action which will be performed by `/repair` in order to repair the inconsistency.
+                  You can read more about these endpoints in the https://getmesh.io/docs/local/administration-guide.html#_database_consistency[database consistency] section in our administration documentation.
+
 [[v0.19.0]]
 == 0.19.0 (28.04.2018)
 

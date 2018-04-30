@@ -959,6 +959,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<ConsistencyCheckResponse> repairConsistency() {
+		return prepareRequest(POST, "/admin/consistency/repair", ConsistencyCheckResponse.class);
+	}
+
+	@Override
 	public MeshRequest<MeshStatusResponse> meshStatus() {
 		return prepareRequest(GET, "/admin/status", MeshStatusResponse.class);
 	}

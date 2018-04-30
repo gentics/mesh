@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.admin.consistency.asserter;
+package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_RELEASE;
@@ -26,7 +26,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class ReleaseCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response) {
+	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends ReleaseRoot> it = db.getVerticesForType(ReleaseRootImpl.class);
 		while (it.hasNext()) {
 			checkReleaseRoot(it.next(), response);

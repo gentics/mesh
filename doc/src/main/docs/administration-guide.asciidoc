@@ -280,6 +280,28 @@ structure was altered due to an automatic change.
 
 include::examples/tables/mesh-db-revs.adoc[]
 
+
+== Database Consistency
+
+It is possible to verify the database integrity via the `GET /api/v1/admin/consistency/check` endpoint.
+
+The response contains information about the found inconsistencies and whether they have a repair action.
+
+[source,json]
+----
+include::examples/api/response/api/v1/admin/consistency/check/200/example.json[]
+----
+
+The `POST /api/v1/admin/consistency/repair` endpoint can be used to invoke a check and repair of repairable inconsistencies.
+
+The `repaired` property will be set to true if the inconsistency could be fixed.
+
+[source,json]
+----
+include::examples/api/response/api/v1/admin/consistency/repair/200/example.json[]
+----
+
+
 == License
 
 * Gentics Mesh is published under Apache 2.0 license.

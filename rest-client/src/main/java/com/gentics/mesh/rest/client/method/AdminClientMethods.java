@@ -64,4 +64,11 @@ public interface AdminClientMethods {
 	 */
 	MeshRequest<ConsistencyCheckResponse> checkConsistency();
 
+	/**
+	 * Invoke a consistency check and repair of the graph database.
+	 * 
+	 * @return
+	 */
+	MeshRequest<ConsistencyCheckResponse> repairConsistency();
+
 }

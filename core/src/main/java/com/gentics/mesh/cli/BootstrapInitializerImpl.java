@@ -148,6 +148,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Init the classes / indices
 		DatabaseHelper.init(db);
 
+		// TODO skip index action if ES integration is turned off
+
 		// Ensure indices are setup and sync the documents
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
 		for (IndexHandler<?> handler : registry.getHandlers()) {
@@ -324,6 +326,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
 		vertxOptions.setFileResolverCachingEnabled(false);
+		vertxOptions.setBlockedThreadCheckInterval(Integer.MAX_VALUE);
 		Vertx vertx = null;
 		if (vertxOptions.isClustered()) {
 			log.info("Creating clustered Vert.x instance");

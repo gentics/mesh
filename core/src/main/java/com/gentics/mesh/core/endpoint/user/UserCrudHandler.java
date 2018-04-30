@@ -113,12 +113,14 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 			// 2. Generate a new token and store it for the user
 			UserResetTokenResponse tokenResponse = db.tx(() -> {
-				String token = TokenUtil.randomToken();
 				Long tokenTimestamp = System.currentTimeMillis();
+				String created = DateUtils.toISO8601(tokenTimestamp, 0);
+
+				String token = TokenUtil.randomToken();
 				user.setResetToken(token);
 				user.setResetTokenIssueTimestamp(tokenTimestamp);
+
 				UserResetTokenResponse response = new UserResetTokenResponse();
-				String created = DateUtils.toISO8601(tokenTimestamp, 0);
 				response.setCreated(created);
 				response.setToken(token);
 				return response;

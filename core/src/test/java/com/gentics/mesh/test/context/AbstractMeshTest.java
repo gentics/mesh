@@ -78,7 +78,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		try (Tx tx = tx()) {
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
 			for (ConsistencyCheck check : ConsistencyCheckHandler.getChecks()) {
-				check.invoke(db(), response);
+				check.invoke(db(), response, false);
 			}
 
 			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();

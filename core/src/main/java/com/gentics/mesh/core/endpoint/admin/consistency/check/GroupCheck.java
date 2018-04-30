@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.admin.consistency.asserter;
+package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
@@ -20,7 +20,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class GroupCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response) {
+	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends Group> it = db.getVerticesForType(GroupImpl.class);
 		while (it.hasNext()) {
 			checkGroup(it.next(), response);

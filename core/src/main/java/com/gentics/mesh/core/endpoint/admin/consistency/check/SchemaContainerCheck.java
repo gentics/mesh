@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.admin.consistency.asserter;
+package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
@@ -25,7 +25,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class SchemaContainerCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response) {
+	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends SchemaContainer> it = db.getVerticesForType(SchemaContainerImpl.class);
 		while (it.hasNext()) {
 			checkSchemaContainer(it.next(), response);

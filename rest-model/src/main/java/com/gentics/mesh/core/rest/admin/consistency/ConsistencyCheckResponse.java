@@ -28,11 +28,30 @@ public class ConsistencyCheckResponse implements RestModel {
 		return inconsistencies;
 	}
 
-	public void setInconsistencies(List<InconsistencyInfo> inconsistencies) {
-		this.inconsistencies = inconsistencies;
+	/**
+	 * Add a new inconsistency info the list of found inconsistencies.
+	 * 
+	 * @param description
+	 * @param uuid
+	 * @param severity
+	 * @param repaired
+	 * @param repairAction
+	 */
+	public void addInconsistency(String description, String uuid, InconsistencySeverity severity, boolean repaired, RepairAction repairAction) {
+		getInconsistencies()
+			.add(new InconsistencyInfo().setDescription(description).setElementUuid(uuid).setSeverity(severity).setRepaired(repaired)
+				.setRepairAction(repairAction));
 	}
 
+	/**
+	 * Add a new inconsistency info the list of found inconsistencies.
+	 * 
+	 * @param description
+	 * @param uuid
+	 * @param severity
+	 */
 	public void addInconsistency(String description, String uuid, InconsistencySeverity severity) {
-		getInconsistencies().add(new InconsistencyInfo().setDescription(description).setElementUuid(uuid).setSeverity(severity));
+		addInconsistency(description, uuid, severity, false, RepairAction.NONE);
 	}
+
 }

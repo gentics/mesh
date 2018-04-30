@@ -133,11 +133,21 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
-		endpoint.description("Invokes a consistency check of the graph database and returns a list of found issues");
+		endpoint.description("Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createConsistencyCheckResponse(), "Consistency check report");
+		endpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
 		endpoint.handler(rc -> {
 			consistencyHandler.invokeCheck(wrap(rc));
+		});
+
+		InternalEndpointRoute repairEndpoint = createRoute();
+		repairEndpoint.path("/consistency/repair");
+		repairEndpoint.method(POST);
+		repairEndpoint.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.");
+		repairEndpoint.produces(APPLICATION_JSON);
+		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
+		repairEndpoint.handler(rc -> {
+			consistencyHandler.invokeRepair(wrap(rc));
 		});
 	}
 

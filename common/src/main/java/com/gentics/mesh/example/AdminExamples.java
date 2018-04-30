@@ -1,7 +1,13 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
+import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -49,6 +55,13 @@ public class AdminExamples {
 		PluginDeploymentRequest request = new PluginDeploymentRequest();
 		request.setName("filesystem:my-plugin.jar");
 		return request;
+	}
+
+	public ConsistencyCheckResponse createConsistencyCheckResponse(boolean repaired) {
+		ConsistencyCheckResponse response = new ConsistencyCheckResponse();
+		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(randomUUID()).setDescription(
+			"A dangling field container has been found.").setRepairAction(RepairAction.DELETE).setRepaired(repaired));
+		return response;
 	}
 
 }

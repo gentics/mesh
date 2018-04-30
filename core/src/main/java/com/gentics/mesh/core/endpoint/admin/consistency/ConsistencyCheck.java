@@ -16,8 +16,9 @@ public interface ConsistencyCheck {
 	 * @param db
 	 *            database
 	 * @param response
+	 * @param attemptRepair
 	 */
-	void invoke(Database db, ConsistencyCheckResponse response);
+	void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair);
 
 	/**
 	 * Check existence of an incoming edge.
@@ -30,11 +31,11 @@ public interface ConsistencyCheck {
 	 * @param edges
 	 */
 	default <N extends MeshVertex> void checkIn(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResponse response,
-			InconsistencySeverity severity, Edge... edges) {
+		InconsistencySeverity severity, Edge... edges) {
 		N ref = vertex.in(edgeLabel).has(clazz).nextOrDefaultExplicit(clazz, null);
 		if (ref == null) {
 			response.addInconsistency(String.format("%s: incoming edge %s from %s not found", vertex.getClass().getSimpleName(), edgeLabel, clazz
-					.getSimpleName()), vertex.getUuid(), severity);
+				.getSimpleName()), vertex.getUuid(), severity);
 		} else if (edges.length > 0) {
 			MeshVertex ref2 = vertex;
 			for (Edge edge : edges) {
@@ -46,7 +47,7 @@ public interface ConsistencyCheck {
 
 			if (ref2 != null && !ref.equals(ref2)) {
 				response.addInconsistency(String.format("%s: incoming edge %s from %s should be equal to %s but was %s", vertex.getClass()
-						.getSimpleName(), edgeLabel, clazz.getSimpleName(), ref2.getUuid(), ref.getUuid()), vertex.getUuid(), severity);
+					.getSimpleName(), edgeLabel, clazz.getSimpleName(), ref2.getUuid(), ref.getUuid()), vertex.getUuid(), severity);
 			}
 		}
 	}
@@ -62,11 +63,11 @@ public interface ConsistencyCheck {
 	 * @param edges
 	 */
 	default <N extends MeshVertex> void checkOut(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResponse response,
-			InconsistencySeverity severity, Edge... edges) {
+		InconsistencySeverity severity, Edge... edges) {
 		N ref = vertex.out(edgeLabel).has(clazz).nextOrDefaultExplicit(clazz, null);
 		if (ref == null) {
 			response.addInconsistency(String.format("%s: outgoing edge %s to %s not found", vertex.getClass().getSimpleName(), edgeLabel, clazz
-					.getSimpleName()), vertex.getUuid(), severity);
+				.getSimpleName()), vertex.getUuid(), severity);
 		} else if (edges.length > 0) {
 			MeshVertex ref2 = vertex;
 			for (Edge edge : edges) {
@@ -78,7 +79,7 @@ public interface ConsistencyCheck {
 
 			if (ref2 != null && !ref.equals(ref2)) {
 				response.addInconsistency(String.format("%s: outgoing edge %s to %s should be equal to %s but was %s", vertex.getClass()
-						.getSimpleName(), edgeLabel, clazz.getSimpleName(), ref2.getUuid(), ref.getUuid()), vertex.getUuid(), severity);
+					.getSimpleName(), edgeLabel, clazz.getSimpleName(), ref2.getUuid(), ref.getUuid()), vertex.getUuid(), severity);
 			}
 		}
 	}

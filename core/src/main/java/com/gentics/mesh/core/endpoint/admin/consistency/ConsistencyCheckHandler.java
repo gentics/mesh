@@ -11,17 +11,17 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.GraphFieldContainerCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.GroupCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.MicroschemaContainerCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.NodeCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.ProjectCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.ReleaseCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.RoleCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.SchemaContainerCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.TagCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.TagFamilyCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.asserter.UserCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.GraphFieldContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.GroupCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.MicroschemaContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.NodeCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.ProjectCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.ReleaseCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.RoleCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -71,7 +71,26 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
 			// Check domain model
 			for (ConsistencyCheck check : checks) {
-				check.invoke(db, response);
+				check.invoke(db, response, false);
+			}
+			return Single.just(response);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
+	}
+
+	/**
+	 * Invoke the consistency check and repair
+	 * @param ac
+	 */
+	public void invokeRepair(InternalActionContext ac) {
+		db.asyncTx((tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			log.info("Consistency repair has been invoked.");
+			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
+			// Check domain model
+			for (ConsistencyCheck check : checks) {
+				check.invoke(db, response, true);
 			}
 			return Single.just(response);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

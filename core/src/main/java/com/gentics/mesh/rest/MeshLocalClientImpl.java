@@ -1372,19 +1372,21 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRestClient disableAnonymousAccess() {
-		// TODO Auto-generated method stub
 		return this;
 	}
 
 	@Override
 	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
-		// TODO Auto-generated method stub
 		return this;
 	}
 
 	@Override
 	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
-		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<ConsistencyCheckResponse> repairConsistency() {
 		return null;
 	}
 

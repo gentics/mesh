@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.admin.consistency.asserter;
+package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
@@ -30,7 +30,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class NodeCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response) {
+	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends Node> it = db.getVerticesForType(NodeImpl.class);
 		while (it.hasNext()) {
 			checkNode(it.next(), response);
