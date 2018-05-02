@@ -325,7 +325,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
-		vertxOptions.setFileResolverCachingEnabled(false);
+		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
+		// has negative performance implications.
+		//vertxOptions.setFileResolverCachingEnabled(false);
 		vertxOptions.setBlockedThreadCheckInterval(Integer.MAX_VALUE);
 		Vertx vertx = null;
 		if (vertxOptions.isClustered()) {

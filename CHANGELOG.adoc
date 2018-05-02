@@ -10,6 +10,13 @@
 
 = Gentics Mesh Changelog
 
+[[v0.19.2]]
+== 0.19.2 (02.05.2018)
+
+icon:check[] Docker: The base image of the Gentics Mesh docker container has been reverted back to `java:openjdk-8-jre-alpine`. We will switch to Java 10 with the upcoming OrientDB 3.0.0 update.
+
+icon:check[] UI: In some cases the UI did not load fast. We updated the caching mechanism to quickly load the UI after a new Gentics Mesh version has been deployed.
+
 [[v0.19.1]]
 == 0.19.1 (30.04.2018)
 
