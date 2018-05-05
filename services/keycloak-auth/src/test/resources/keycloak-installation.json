@@ -1,0 +1,10 @@
+{
+  "realm": "master-test",
+  "auth-server-url": "http://localhost:32781/auth",
+  "ssl-required": "external",
+  "resource": "mesh",
+  "credentials": {
+    "secret": "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"
+  },
+  "confidential-port": 0
+}
