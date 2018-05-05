@@ -9,13 +9,19 @@ import org.junit.Test;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
+import io.vertx.ext.auth.oauth2.impl.AccessTokenImpl;
 import io.vertx.ext.auth.oauth2.providers.KeycloakAuth;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.OAuth2AuthHandler;
 
 public class KeycloakAuthTest {
+
+	private static final Logger log = LoggerFactory.getLogger(KeycloakAuthTest.class);
 
 	@ClassRule
 	public static KeycloakContainer keycloak = new KeycloakContainer()
@@ -38,13 +44,32 @@ public class KeycloakAuthTest {
 		oauth2.setupCallback(router.get("/callback"));
 
 		router.route("/protected/*").handler(oauth2);
+
+		router.route("/protected/me").handler(rc -> {
+			User user = rc.user();
+			if (user instanceof AccessTokenImpl) {
+				AccessTokenImpl token = (AccessTokenImpl) user;
+				// TODO extract the role information from the user info
+				token.userInfo(info -> {
+					if (info.failed()) {
+						info.cause().printStackTrace();
+					} else {
+						System.out.println(info.result().encodePrettily());
+					}
+				});
+			}
+
+			// TODO decode the access_token and extract the needed information
+			System.out.println(rc.user().getClass().getName());
+			rc.response().end(rc.user().principal().encodePrettily());
+		});
 		router.route("/protected/*").handler(rc -> {
+
 			rc.response().end("Welcome to the protected resource!");
 		});
-
 		vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-		System.in.read();
 
+		System.in.read();
 	}
 
 	private JsonObject loadJson(String path) throws IOException {
@@ -52,3 +77,4 @@ public class KeycloakAuthTest {
 	}
 
 }
+

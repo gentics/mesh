@@ -319,7 +319,20 @@
       ]
     }
   },
-  "groups": [],
+  "groups": [
+    {
+      "id": "17d89211-b82e-4191-8d15-560f17a706a3",
+      "name": "testgroup",
+      "path": "/testgroup",
+      "attributes": {},
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    }
+  ],
   "users" : [
         {
             "username" : "dummyuser",
@@ -886,6 +899,35 @@
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
+        {
+          "id": "8db9fbd6-b00b-4ef0-be11-b9242075368c",
+          "name": "role",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "e2dbded6-c569-465f-ba79-0cc0108bd6a0",
+          "name": "group",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "true"
+          }
+        },
         {
           "id": "e2b7f3d7-ce6d-446d-b503-43ac307140b3",
           "name": "role list",
