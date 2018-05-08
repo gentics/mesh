@@ -29,7 +29,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.auth.jwt.JWTOptions;
+import io.vertx.ext.jwt.JWTOptions;
 import io.vertx.ext.web.Cookie;
 
 /**
@@ -110,18 +110,14 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		}
 	}
 
-	/**
-	 * @deprecated Use {@link MeshAuthProvider#generateToken(User)} instead
-	 */
 	@Override
-	public String generateToken(JsonObject arg0, JWTOptions arg1) {
-		// The mesh auth provider is not using this method to generate the token.
+	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
+		// The mesh auth provider is not using this method to authenticate a user.
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		// The mesh auth provider is not using this method to authenticate a user.
+	public String generateToken(JsonObject claims, JWTOptions options) {
 		throw new NotImplementedException();
 	}
 
@@ -150,7 +146,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
 				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
 					new JWTOptions()
-						.setExpiresInSeconds(Long.valueOf(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())))));
+						.setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
 			}
 		});
 	}
@@ -211,7 +207,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, ((MeshAuthUser) user).getUuid());
 			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
-				.setExpiresInSeconds(Long.valueOf(options.getTokenExpirationTime()));
+				.setExpiresInSeconds(options.getTokenExpirationTime());
 			return jwtProvider.generateToken(tokenData, jwtOptions);
 		} else {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
@@ -228,7 +224,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * @param expireDuration
 	 * @return Generated API key
 	 */
-	public String generateAPIToken(com.gentics.mesh.core.data.User user, String tokenCode, Long expireDuration) {
+	public String generateAPIToken(com.gentics.mesh.core.data.User user, String tokenCode, Integer expireDuration) {
 		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 		JsonObject tokenData = new JsonObject()
 			.put(USERID_FIELD_NAME, user.getUuid())

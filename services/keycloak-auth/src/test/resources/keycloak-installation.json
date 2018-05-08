@@ -6,5 +6,6 @@
   "credentials": {
     "secret": "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"
   },
-  "confidential-port": 0
+  "confidential-port": 0,
+  "realm-public-key":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAltqVWr4r2b6Lvay87a5rwEOm0wEDiw2b/OvdfiaHCDBK/32SVikRtgiCBiqYom7hH43H3jF6llmZxbFO5fbdE160e7JiqEYI9gV/L8W66rhHt04cTR/ImCZsiActlgWT+f57i5PtV+AdCVcz4mqN46ZBzZYEPBT2u7WWzelvsxQkQIbX0YEBr0pilORDfLMykjGL7vXex5IN8yUnWhihzrz1vPZV7PzRJ19SO6h/dfMMyVuMCQPHmNGSCP2FCKk0ECzDpTRQmbbjMJNjY9qTJpQ9YEfZ9b1xEhi7VzbaBrev+C6R8Xvo6zt9S35TOtZMhKxPFZoRGo5HFw7szzKIXwIDAQAB"
 }

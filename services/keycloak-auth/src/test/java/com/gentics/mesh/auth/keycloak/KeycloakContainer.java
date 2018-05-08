@@ -47,9 +47,11 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 			args.add("-Dkeycloak.import=" + containerPath);
 		}
 		withCommand(args.stream().toArray(String[]::new));
+		
 	}
 
 	public KeycloakContainer waitStartup() {
+		//started in 
 		waitingFor(Wait.forListeningPort());
 		return this;
 	}
