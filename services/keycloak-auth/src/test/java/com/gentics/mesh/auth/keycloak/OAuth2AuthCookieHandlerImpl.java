@@ -1,9 +1,13 @@
 package com.gentics.mesh.auth.keycloak;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.oauth2.AccessToken;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.impl.OAuth2AuthProviderImpl;
 import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl;
@@ -44,10 +48,30 @@ public class OAuth2AuthCookieHandlerImpl implements OAuth2AuthCookieHandler {
 			}
 		} else {
 			setAuthCookie(rc);
+			AccessToken token = (AccessToken) rc.user();
+			if (token.expired()) {
+				log.info("Trying to refresh expired token");
+				token.refresh(result -> refreshCallback(rc, result));
+				return;
+			}
 		}
+
 		log.debug("User authenticated");
 		rc.next();
 
+	}
+
+	private void refreshCallback(RoutingContext rc, AsyncResult<Void> result) {
+		if (result.failed()) {
+			log.fatal("Refreshing access token failed", result.cause());
+			rc.response().setStatusCode(INTERNAL_SERVER_ERROR.code()).end();
+			return;
+		}
+
+		log.info("Token refresh successful");
+		setAuthCookie(rc);
+		rc.next();
+		// internalHandle(rc);
 	}
 
 	/**
