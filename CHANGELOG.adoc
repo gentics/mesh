@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[0.20.0]]
+== 0.20.0 (TBD)
+
+icon:plus[] Clustering: It is now possible to configure the public network host within `mesh.yml` file via `cluster.publicHost` or via the environment setting `MESH_CLUSTER_PUBLIC_NETWORK_HOST`.
+
 [[v0.19.2]]
 == 0.19.2 (02.05.2018)
 

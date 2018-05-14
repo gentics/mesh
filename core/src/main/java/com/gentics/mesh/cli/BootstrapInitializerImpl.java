@@ -235,6 +235,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				clusterOptions.setNetworkHost(localIp);
 			}
 
+			if (clusterOptions.getPublicHost() != null) {
+				String addr = clusterOptions.getPublicHost();
+				String hazelcastPublicSetting = "hazelcast.local.publicAddress";
+				log.info("Setting {" + hazelcastPublicSetting + "} to {" + addr + "}");
+				System.setProperty(hazelcastPublicSetting, addr);
+			}
+
 			if (isInitMode) {
 				log.info("Init cluster flag was found. Creating initial graph database now.");
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
@@ -327,7 +334,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
 		// has negative performance implications.
-		//vertxOptions.setFileResolverCachingEnabled(false);
+		// vertxOptions.setFileResolverCachingEnabled(false);
 		vertxOptions.setBlockedThreadCheckInterval(Integer.MAX_VALUE);
 		Vertx vertx = null;
 		if (vertxOptions.isClustered()) {
@@ -357,10 +364,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		manager = new HazelcastClusterManager(hazelcast);
 		vertxOptions.setClusterManager(manager);
 		String localIp = options.getClusterOptions().getNetworkHost();
+		String publicIp = options.getClusterOptions().getPublicHost();
 		vertxOptions.getEventBusOptions().setHost(localIp);
 		vertxOptions.getEventBusOptions().setClusterPublicHost(localIp);
 		vertxOptions.setClusterHost(localIp);
-		vertxOptions.setClusterPublicHost(localIp);
+		if (publicIp != null) {
+			vertxOptions.setClusterPublicHost(publicIp);
+		} else {
+			vertxOptions.setClusterPublicHost(localIp);
+		}
 
 		Integer clusterPort = options.getClusterOptions().getVertxPort();
 		int vertxClusterPort = clusterPort == null ? 0 : clusterPort;

@@ -19,18 +19,20 @@ public class ClusterOptions implements Option {
 
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final String MESH_CLUSTER_NETWORK_HOST_ENV = "MESH_CLUSTER_NETWORK_HOST";
+	public static final String MESH_CLUSTER_PUBLIC_NETWORK_HOST_ENV = "MESH_CLUSTER_PUBLIC_NETWORK_HOST";
 	public static final String MESH_CLUSTER_ENABLED_ENV = "MESH_CLUSTER_ENABLED";
 	public static final String MESH_CLUSTER_NAME_ENV = "MESH_CLUSTER_NAME";
 	public static final String MESH_CLUSTER_VERTX_PORT_ENV = "MESH_CLUSTER_VERTX_PORT";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
+	@JsonPropertyDescription("IP or host which is used to bind the instance to a specific network. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
 	@EnvironmentVariable(name = MESH_CLUSTER_NETWORK_HOST_ENV, description = "Override the cluster network host.")
 	private String networkHost;
 
-	// TODO use public and bind host - https://www.prjhub.com/#/issues/9058, https://www.elastic.co/guide/en/elasticsearch/reference/2.0/modules-network.html
-	// private String publicHost;
-	// private String bindHost;
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
+	@EnvironmentVariable(name = MESH_CLUSTER_PUBLIC_NETWORK_HOST_ENV, description = "Override the cluster public network host.")
+	private String publicHost;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag to enable or disable the cluster mode.")
@@ -84,6 +86,24 @@ public class ClusterOptions implements Option {
 	 */
 	public void setNetworkHost(String networkHost) {
 		this.networkHost = networkHost;
+	}
+
+	/**
+	 * Return the public network host.
+	 * 
+	 * @return
+	 */
+	public String getPublicHost() {
+		return publicHost;
+	}
+
+	/**
+	 * Set the public network host.
+	 * 
+	 * @param publicHost
+	 */
+	public void setPublicHost(String publicHost) {
+		this.publicHost = publicHost;
 	}
 
 	/**
