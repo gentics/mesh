@@ -128,6 +128,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	}
 
+	/**
+	 * Test that the user is able to update itself even without the assigned perm and being logged out. The reset token should grant the right to update himself.
+	 */
 	@Test
 	public void testUpdateUsingToken() {
 		String uuid = tx(() -> user().getUuid());
@@ -156,6 +159,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNotEquals("The password hash has not been updated.", oldHash, newHash);
 	}
 
+	/**
+	 * Test that the user is able to update itself even without the assigned perm. The reset token should grant the right to update himself.
+	 */
 	@Test
 	public void testUpdateUsingTokenWithoutLogout() {
 		String uuid = tx(() -> user().getUuid());

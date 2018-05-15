@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.19.3]]
+== 0.19.3 (TBD)
+
+icon:check[] Plugins: The admin client token will no longer expire. The token was previously only valid for one hour.
+
 [[v0.19.2]]
 == 0.19.2 (02.05.2018)
 

@@ -230,7 +230,9 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	public String generateAPIToken(com.gentics.mesh.core.data.User user, String tokenCode, Long expireDuration) {
 		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
-		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.getUuid()).put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
+		JsonObject tokenData = new JsonObject()
+			.put(USERID_FIELD_NAME, user.getUuid())
+			.put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
 		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());
 		if (expireDuration != null) {
 			jwtOptions.setExpiresInMinutes(expireDuration);
@@ -264,10 +266,13 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			// Check whether the token might be an API key token
 			if (!jwt.containsKey("exp")) {
 				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
-				String storedApiKey = user.getAPIKeyTokenCode();
-				// Verify that the API token is invalid.
-				if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
-					throw new Exception("API key token is invalid.");
+				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
+				if (apiKeyToken != null) {
+					String storedApiKey = user.getAPIKeyTokenCode();
+					// Verify that the API token is invalid.
+					if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
+						throw new Exception("API key token is invalid.");
+					}
 				}
 			}
 
