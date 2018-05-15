@@ -27,6 +27,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.twelvemonkeys.io.FileUtil;
 
 import io.vertx.core.ServiceHelper;
+import io.vertx.core.http.HttpHeaders;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 
@@ -138,7 +139,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 		Request.Builder b = new Request.Builder();
 		b.url(url);
 		b.method("GET", null);
-		b.addHeader("Authentication", client().getAuthentication().getToken());
+		b.addHeader(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + client().getAuthentication().getToken());
 
 		String json = httpClient().newCall(b.build()).execute().body().string();
 		return JsonUtil.readValue(json, clazz);
