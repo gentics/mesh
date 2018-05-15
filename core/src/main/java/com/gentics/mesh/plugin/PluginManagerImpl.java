@@ -25,7 +25,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.PluginRouter;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.util.TokenUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import hu.akarnokd.rxjava2.interop.ObservableInterop;
@@ -266,8 +265,8 @@ public class PluginManagerImpl implements PluginManager {
 
 		return db.tx(() -> {
 			User admin = mesh.boot().userRoot().findByUsername("admin");
-			String tokenId = TokenUtil.randomToken();
-			return authProvider.generateAPIToken(admin, tokenId, 60L);
+			// TODO: Use dedicated tokenCode - See https://github.com/gentics/mesh/issues/412
+			return authProvider.generateAPIToken(admin, null, null);
 		});
 
 	}
