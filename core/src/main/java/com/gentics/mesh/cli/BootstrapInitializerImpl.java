@@ -83,6 +83,7 @@ import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.tx.Tx;
@@ -90,6 +91,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -148,8 +150,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Init the classes / indices
 		DatabaseHelper.init(db);
 
-		// TODO skip index action if ES integration is turned off
-
+		if (searchProvider instanceof TrackingSearchProvider) {
+			return;
+		}
 		// Ensure indices are setup and sync the documents
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
 		for (IndexHandler<?> handler : registry.getHandlers()) {
