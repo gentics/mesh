@@ -51,8 +51,7 @@ public class APIRouter {
 
 		router.route().handler(rh -> {
 			// Connection upgrade requests never end and therefore the body
-			// handler will never
-			// pass through to the subsequent route handlers.
+			// handler will never pass through to the subsequent route handlers.
 			if ("websocket".equalsIgnoreCase(rh.request().getHeader("Upgrade"))) {
 				rh.next();
 			} else {

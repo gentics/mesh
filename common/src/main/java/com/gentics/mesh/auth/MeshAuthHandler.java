@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
 
@@ -46,16 +47,23 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 	private MeshAuthProvider authProvider;
 
+	private MeshOAuthHandler oauthHandler;
+
 	private BootstrapInitializer boot;
 
 	private Database database;
 
+	private MeshOptions meshOptions;
+
 	@Inject
-	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database) {
+	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database, MeshOAuthHandler oauthHandler) {
 		super(authProvider);
 		this.authProvider = authProvider;
 		this.boot = boot;
 		this.database = database;
+		this.oauthHandler = oauthHandler;
+		this.meshOptions = Mesh.mesh().getOptions();
+
 		options = new JsonObject();
 	}
 
@@ -85,10 +93,13 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		if (user != null) {
 			// Already authenticated in, just authorise
 			authorizeUser(user, context);
-			return;
+		} else {
+			if (meshOptions.getAuthenticationOptions().isEnableOAuth2()) {
+				oauthHandler.handle(context);
+			} else {
+				handleJWTAuth(context);
+			}
 		}
-
-		handleJWTAuth(context);
 
 	}
 
@@ -192,7 +203,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 					// Remove the original cookie and set the new one
 					context.removeCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
 					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
-							.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				}
 				authorizeUser(authenticatedUser, context);
 			} else {
