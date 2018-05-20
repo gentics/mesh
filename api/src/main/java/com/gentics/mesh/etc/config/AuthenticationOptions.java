@@ -2,15 +2,13 @@ package com.gentics.mesh.etc.config;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
-
-import io.vertx.core.json.JsonObject;
-
-import java.util.Objects;
 
 /**
  * Authentication options POJO.
@@ -29,7 +27,6 @@ public class AuthenticationOptions implements Option {
 	public static final String MESH_AUTH_KEYSTORE_PATH_ENV = "MESH_AUTH_KEYSTORE_PATH";
 	public static final String MESH_AUTH_JWT_ALGO_ENV = "MESH_AUTH_JWT_ALGO";
 	public static final String MESH_AUTH_ANONYMOUS_ENABLED_ENV = "MESH_AUTH_ANONYMOUS_ENABLED";
-	public static final String MESH_AUTH_OAUTH2_ENABLED_ENV = "MESH_AUTH_OAUTH2_ENABLED";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Time in minutes which an issued token stays valid.")
@@ -57,13 +54,8 @@ public class AuthenticationOptions implements Option {
 	private boolean enableAnonymousAccess = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether the OAuth2 support should be enabled.")
-	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_ENABLED_ENV, description = "Override the configured OAuth2 enabled flag.")
-	private boolean enableOAuth2 = false;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Property which contains the OAuth2 configuration settings like realm name, auth server url.")
-	private JsonObject oauth2 = null;
+	@JsonPropertyDescription("OAuth2 related configuration options.")
+	private OAuth2Options oauth2 = new OAuth2Options();
 
 	/**
 	 * Gets the time after which an authentication token should expire.
@@ -157,20 +149,11 @@ public class AuthenticationOptions implements Option {
 		return this;
 	}
 
-	public boolean isEnableOAuth2() {
-		return enableOAuth2;
-	}
-
-	public AuthenticationOptions setEnableOAuth2(boolean enableOAuth2) {
-		this.enableOAuth2 = enableOAuth2;
-		return this;
-	}
-
-	public JsonObject getOauth2() {
+	public OAuth2Options getOauth2() {
 		return oauth2;
 	}
 
-	public AuthenticationOptions setOauth2(JsonObject oauth2) {
+	public AuthenticationOptions setOauth2(OAuth2Options oauth2) {
 		this.oauth2 = oauth2;
 		return this;
 	}
