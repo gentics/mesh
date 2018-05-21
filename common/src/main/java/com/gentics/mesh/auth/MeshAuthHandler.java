@@ -12,18 +12,21 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Cookie;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
@@ -47,22 +50,23 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 	private MeshAuthProvider authProvider;
 
-	private MeshOAuthHandler oauthHandler;
+	private MeshOAuthService oauthService;
+
+	private OAuth2AuthCookieHandler oauthCookieHandler;
 
 	private BootstrapInitializer boot;
 
 	private Database database;
 
-	private MeshOptions meshOptions;
-
 	@Inject
-	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database, MeshOAuthHandler oauthHandler) {
+	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database, MeshOAuthService oauthService,
+		OAuth2AuthCookieHandler oauthCookieHandler) {
 		super(authProvider);
 		this.authProvider = authProvider;
 		this.boot = boot;
 		this.database = database;
-		this.oauthHandler = oauthHandler;
-		this.meshOptions = Mesh.mesh().getOptions();
+		this.oauthService = oauthService;
+		this.oauthCookieHandler = oauthCookieHandler;
 
 		options = new JsonObject();
 	}
@@ -93,14 +97,8 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		if (user != null) {
 			// Already authenticated in, just authorise
 			authorizeUser(user, context);
-		} else {
-			if (meshOptions.getAuthenticationOptions().isEnableOAuth2()) {
-				oauthHandler.handle(context);
-			} else {
-				handleJWTAuth(context);
-			}
 		}
-
+		handleJWTAuth(context);
 	}
 
 	@Override
@@ -215,6 +213,38 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 	private void handle401(RoutingContext context) {
 		context.fail(401);
+	}
+
+	/**
+	 * Secure the given route by adding auth handlers
+	 * 
+	 * @param route
+	 */
+	public void secure(Route route) {
+		route.handler(this);
+
+		MeshOptions meshOptions = Mesh.mesh().getOptions();
+		OAuth2Options oauthOptions = meshOptions.getAuthenticationOptions().getOauth2();
+		if (oauthOptions != null && oauthOptions.isEnabled()) {
+			route.handler(oauthCookieHandler);
+			route.handler(oauthService).failureHandler(rc -> {
+				if (rc.failed()) {
+					Throwable error = rc.failure();
+					if (error instanceof NoStackTraceThrowable) {
+						NoStackTraceThrowable s = (NoStackTraceThrowable) error;
+						String msg = s.getMessage();
+						if ("callback route is not configured.".equalsIgnoreCase(msg)) {
+							// Suppress the error and use 401 instead
+							rc.response().setStatusCode(401).end();
+							return;
+						}
+					} else {
+						rc.fail(error);
+					}
+				}
+			});
+		}
+
 	}
 
 }

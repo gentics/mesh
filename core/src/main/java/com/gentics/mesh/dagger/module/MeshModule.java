@@ -21,6 +21,7 @@ import com.gentics.mesh.storage.BinaryStorageService;
 
 import dagger.Module;
 import dagger.Provides;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -115,6 +116,16 @@ public class MeshModule {
 		corsHandler.allowedHeader("Origin");
 		corsHandler.allowedHeader("Cookie");
 		return corsHandler;
+	}
+
+	@Provides
+	public static Vertx vertx() {
+		return Mesh.vertx();
+	}
+
+	@Provides
+	public static io.vertx.reactivex.core.Vertx rxVertx() {
+		return Mesh.rxVertx();
 	}
 
 	/**

@@ -1,3 +1,4 @@
+package com.gentics.mesh.auth;
 //package com.gentics.mesh.auth.keycloak;
 //
 //import static com.gentics.mesh.portal.api.PortalFlags.RC_IS_PREVIEW;

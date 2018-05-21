@@ -1,14 +1,14 @@
-package com.gentics.mesh.oauth;
+package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -16,14 +16,9 @@ import javax.script.ScriptException;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.auth.MeshOAuthHandler;
 import com.gentics.mesh.etc.config.OAuth2Options;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.reactivex.Single;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
@@ -35,76 +30,28 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 @Singleton
 @SuppressWarnings("restriction")
-public class MeshOAuthHandlerImpl implements MeshOAuthHandler {
+public class MeshOAuthServiceImpl implements MeshOAuthService {
 
-	private OAuth2AuthHandler oauth2;
-	private HttpClient client;
+	private OAuth2AuthHandler oauth2Handler;
 	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 	private OAuth2Options options;
-	private String mapperScript = null; 
+	private String mapperScript = null;
+	private OAuth2Auth oauth2Provider;
 
 	@Inject
-	public MeshOAuthHandlerImpl() {
+	public MeshOAuthServiceImpl(@Named("oauth") JsonObject config) {
 		Vertx vertx = Mesh.vertx();
 		this.options = Mesh.mesh().getOptions().getAuthenticationOptions().getOauth2();
 		this.mapperScript = loadScript();
 
-		JsonObject config = loadRealmInfo();
-		String host = config.getString("auth-server-host");
-		int port = config.getInteger("auth-server-port");
-
-		client = vertx
-			.createHttpClient(new HttpClientOptions().setDefaultHost(host).setDefaultPort(port));
+		this.oauth2Provider = KeycloakAuth.create(vertx, OAuth2FlowType.AUTH_CODE, config);
 
 		OAuth2Auth keyCloakAuth = KeycloakAuth.create(vertx, OAuth2FlowType.AUTH_CODE, config);
 		// TODO configure callback url
-		this.oauth2 = OAuth2AuthHandler.create(keyCloakAuth, "http://localhost:8080");
+		this.oauth2Handler = OAuth2AuthHandler.create(keyCloakAuth, "http://localhost:8080");
 		// Don't setup the callback mechanism. This would create redirects in our rest api which we don't want. Instead we want to handle auth errors with http
 		// error codes.
 		// oauth2.setupCallback(router.get("/callback"));
-
-	}
-
-	/**
-	 * Load the settings and enhance them with the public realm information from the auth server.
-	 * 
-	 * @return
-	 */
-	private JsonObject loadRealmInfo() {
-		// TODO handle null
-
-		JsonObject config = options.getConfig();
-		String realmName = config.getString("realm");
-		String url = config.getString("auth-server-url");
-		try {
-			URL authServerUrl = new URL(url);
-			String authServerHost = authServerUrl.getHost();
-			config.put("auth-server-host", authServerHost);
-			int authServerPort = authServerUrl.getPort();
-			config.put("auth-server-port", authServerPort);
-			String authServerProtocol = authServerUrl.getProtocol();
-			config.put("auth-server-protocol", authServerProtocol);
-
-			Single<JsonObject> result = Single.create(sub -> {
-				client.getNow("/auth/realms/" + realmName, rh -> {
-					int code = rh.statusCode();
-					if (code != 200) {
-						sub.onError(new RuntimeException("Error while loading realm info. Got code {" + code + "}"));
-					}
-					rh.bodyHandler(bh -> {
-						JsonObject json = bh.toJsonObject();
-						sub.onSuccess(json);
-					});
-				});
-			});
-			JsonObject json = result.blockingGet();
-
-			config.put("auth-server-url", authServerProtocol + "://" + authServerHost + ":" + authServerPort + "/auth");
-			config.put("realm-public-key", json.getString("public_key"));
-			return config;
-		} catch (Exception e) {
-			throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "oauth_config_error", e);
-		}
 
 	}
 
@@ -134,14 +81,18 @@ public class MeshOAuthHandlerImpl implements MeshOAuthHandler {
 	private void executeMapperScript() throws ScriptException {
 		ScriptEngine engine = factory.getScriptEngine(new Sandbox());
 		// engine.put("input", nodeJson);
-		 engine.eval(mapperScript);
+		engine.eval(mapperScript);
 		Object transformedModel = engine.get("output");
 
 	}
 
 	@Override
 	public void handle(RoutingContext rc) {
-		oauth2.handle(rc);
+		oauth2Handler.handle(rc);
+	}
+
+	public OAuth2Auth getOauth2Provider() {
+		return oauth2Provider;
 	}
 
 	/**

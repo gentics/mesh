@@ -1,4 +1,4 @@
-package com.gentics.mesh.auth.keycloak;
+package com.gentics.mesh.test.docker;
 
 import java.io.File;
 import java.util.ArrayList;

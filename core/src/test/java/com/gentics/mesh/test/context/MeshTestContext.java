@@ -350,7 +350,7 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public void initDagger(MeshOptions options, TestSize size) throws Exception {
 		log.info("Initializing dagger context");
-		meshDagger = DaggerTestMeshComponent.create();
+		meshDagger = DaggerTestMeshComponent.builder().configuration(options).build();
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {

@@ -1,4 +1,4 @@
-package com.gentics.mesh.auth.keycloak;
+package com.gentics.mesh.auth;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

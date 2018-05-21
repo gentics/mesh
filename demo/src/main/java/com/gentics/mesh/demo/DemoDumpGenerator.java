@@ -66,7 +66,7 @@ public class DemoDumpGenerator {
 		Mesh mesh = Mesh.mesh(options);
 
 		// Setup dagger
-		MeshComponent meshDagger = MeshInternal.create();
+		MeshComponent meshDagger = MeshInternal.create(options);
 		BootstrapInitializer boot = meshDagger.boot();
 		boot.init(mesh, false, options, null);
 	}

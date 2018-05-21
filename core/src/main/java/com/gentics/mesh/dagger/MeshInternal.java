@@ -3,6 +3,7 @@ package com.gentics.mesh.dagger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 /**
  * Central singleton which provides and keeps track of the dagger mesh dependency context. The stored dagger mesh component exposes various internal data
@@ -16,11 +17,14 @@ public interface MeshInternal {
 	 * Create a new mesh dagger context if non existed and return it. This method will only create the context once and otherwise return the previously created
 	 * context.
 	 * 
+	 * @param options
+	 *            Mesh options which should be injected in the dagger context
+	 * 
 	 * @return
 	 */
-	static MeshComponent create() {
+	static MeshComponent create(MeshOptions options) {
 		if (applicationComponent.get() == null) {
-			applicationComponent.set(DaggerMeshComponent.builder().build());
+			applicationComponent.set(DaggerMeshComponent.builder().configuration(options).build());
 		}
 		return applicationComponent.get();
 

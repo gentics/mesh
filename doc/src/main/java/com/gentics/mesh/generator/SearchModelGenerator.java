@@ -106,7 +106,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		meshDagger = DaggerTestMeshComponent.builder().build();
+		meshDagger = DaggerTestMeshComponent.builder().configuration(new MeshOptions()).build();
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {

@@ -1,9 +1,11 @@
-package com.gentics.mesh.auth.keycloak;
+package com.gentics.mesh.auth;
 
 import java.io.IOException;
 
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import com.gentics.mesh.test.docker.KeycloakContainer;
 
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
@@ -47,7 +49,7 @@ public class KeycloakAuthTest extends AbstractKeycloakTest {
 		Router router = Router.router(vertx);
 		router.route().handler(CookieHandler.create());
 		OAuth2AuthHandler oauth2 = OAuth2AuthHandler.create(keyCloakAuth, "http://localhost:8080");
-		OAuth2AuthCookieHandler oauth2cookies = OAuth2AuthCookieHandler.create(keyCloakAuth);
+		OAuth2AuthCookieHandler oauth2cookies = new OAuth2AuthCookieHandlerImpl(keyCloakAuth);
 
 		// oauth2.setupCallback(router.get("/callback"));
 		// router.route().handler(oauth2cookies);

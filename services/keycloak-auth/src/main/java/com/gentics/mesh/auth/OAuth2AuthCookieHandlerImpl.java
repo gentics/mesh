@@ -1,6 +1,8 @@
-package com.gentics.mesh.auth.keycloak;
+package com.gentics.mesh.auth;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import javax.inject.Inject;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonObject;
@@ -34,6 +36,12 @@ public class OAuth2AuthCookieHandlerImpl implements OAuth2AuthCookieHandler {
 
 	private OAuth2Auth auth;
 
+	/**
+	 * Create a new cookie handler.
+	 * 
+	 * @param auth
+	 */
+	@Inject
 	public OAuth2AuthCookieHandlerImpl(OAuth2Auth auth) {
 		this.auth = auth;
 	}

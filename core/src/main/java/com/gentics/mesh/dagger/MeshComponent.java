@@ -22,6 +22,7 @@ import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
@@ -41,13 +42,14 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 
+import dagger.BindsInstance;
 import dagger.Component;
 
 /**
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, SearchProviderModule.class, BindModule.class, ConsoleModule.class })
+@Component(modules = { MeshModule.class, OAuth2Module.class, SearchProviderModule.class, BindModule.class, ConsoleModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();
@@ -115,4 +117,12 @@ public interface MeshComponent {
 	RestAPIVerticle restApiVerticle();
 
 	MeshAuthProvider authProvider();
+
+	@Component.Builder
+	interface Builder {
+		@BindsInstance
+		Builder configuration(MeshOptions options);
+
+		MeshComponent build();
+	}
 }
