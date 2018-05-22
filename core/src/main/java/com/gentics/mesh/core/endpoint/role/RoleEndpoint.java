@@ -10,6 +10,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -21,12 +22,12 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 	private RoleCrudHandler crudHandler;
 
 	public RoleEndpoint() {
-		super("roles");
+		super("roles", null);
 	}
 
 	@Inject
-	public RoleEndpoint(RoleCrudHandler crudHandler) {
-		super("roles");
+	public RoleEndpoint(MeshAuthHandler handler, RoleCrudHandler crudHandler) {
+		super("roles", handler);
 		this.crudHandler = crudHandler;
 	}
 
@@ -53,7 +54,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
 		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		permissionSetEndpoint.addUriParameter("path", "API path to the element.",
-				"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
+			"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
 		permissionSetEndpoint.method(POST);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
 		permissionSetEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Permissions were set.");
@@ -71,7 +72,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
 		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		permissionGetEndpoint.addUriParameter("path", "API path to the element.",
-				"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
+			"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
 		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
 		permissionGetEndpoint.method(GET);
 		permissionGetEndpoint.produces(APPLICATION_JSON);

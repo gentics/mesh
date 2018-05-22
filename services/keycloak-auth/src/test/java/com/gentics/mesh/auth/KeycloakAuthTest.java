@@ -30,7 +30,7 @@ public class KeycloakAuthTest extends AbstractKeycloakTest {
 
 	@ClassRule
 	public static KeycloakContainer keycloak = new KeycloakContainer()
-		.withRealmFile("src/test/resources/realm.json")
+		.withRealmFromClassPath("/keycloak/realm.json")
 		.waitStartup();
 
 	private static Vertx vertx = Vertx.vertx();

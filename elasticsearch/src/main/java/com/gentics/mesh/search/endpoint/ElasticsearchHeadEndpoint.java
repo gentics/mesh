@@ -12,7 +12,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 public class ElasticsearchHeadEndpoint extends AbstractInternalEndpoint {
 
 	public ElasticsearchHeadEndpoint() {
-		super("elastichead");
+		super("elastichead", null);
 	}
 
 	@Override

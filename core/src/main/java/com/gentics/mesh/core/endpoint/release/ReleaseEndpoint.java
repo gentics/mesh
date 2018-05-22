@@ -10,6 +10,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -25,12 +26,12 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	private ReleaseCrudHandler crudHandler;
 
 	public ReleaseEndpoint() {
-		super("releases", null);
+		super("releases", null, null);
 	}
 
 	@Inject
-	public ReleaseEndpoint(BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
-		super("releases", boot);
+	public ReleaseEndpoint(MeshAuthHandler handler, BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
+		super("releases", handler, boot);
 		this.crudHandler = crudHandler;
 	}
 

@@ -2,7 +2,6 @@ package com.gentics.mesh.test.context;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +21,7 @@ import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -29,11 +29,14 @@ import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.docker.ElasticsearchContainer;
+import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -44,6 +47,8 @@ public class MeshTestContext extends TestWatcher {
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
 	public static GenericContainer<?> elasticsearch;
+
+	public static KeycloakContainer keycloak;
 
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
@@ -96,6 +101,9 @@ public class MeshTestContext extends TestWatcher {
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
 					elasticsearch.stop();
+				}
+				if (keycloak != null && keycloak.isRunning()) {
+					keycloak.stop();
 				}
 			} else {
 				cleanupFolders();
@@ -307,12 +315,7 @@ public class MeshTestContext extends TestWatcher {
 			options.getSearchOptions().setStartEmbedded(false);
 			options.getSearchOptions().setUrl(null);
 			if (settings.useElasticsearch()) {
-				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2")
-					.withEnv("discovery.type", "single-node")
-					.withEnv("xpack.security.enabled", "false")
-					.withExposedPorts(9200)
-					.withStartupTimeout(Duration.ofSeconds(250L))
-					.waitingFor(Wait.forHttp("/"));
+				elasticsearch = new ElasticsearchContainer();
 				if (!elasticsearch.isRunning()) {
 					elasticsearch.start();
 				}
@@ -320,6 +323,26 @@ public class MeshTestContext extends TestWatcher {
 				options.getSearchOptions().setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
 			}
 		}
+
+		if (settings.useKeycloak()) {
+			keycloak = new KeycloakContainer()
+				.withRealmFromClassPath("/keycloak/realm.json");
+			if (!keycloak.isRunning()) {
+				keycloak.start();
+			}
+			keycloak.waitingFor(Wait.forListeningPort());
+			OAuth2Options oauth2Options = options.getAuthenticationOptions().getOauth2();
+			oauth2Options.setEnabled(true);
+			JsonObject realmConfig = new JsonObject();
+			realmConfig.put("realm", "master-test");
+			realmConfig.put("auth-server-url", "http://localhost:" + keycloak.getFirstMappedPort() + "/auth");
+			realmConfig.put("ssl-required", "external");
+			realmConfig.put("resource", "mesh");
+			realmConfig.put("credentials", new JsonObject().put("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"));
+			realmConfig.put("confidential-port", 0);
+			oauth2Options.setConfig(realmConfig);
+		}
+
 		Mesh.mesh(options);
 		return options;
 	}

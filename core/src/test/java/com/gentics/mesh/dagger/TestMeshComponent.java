@@ -16,7 +16,6 @@ import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
-import com.gentics.mesh.dagger.MeshComponent.Builder;
 import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.FakeConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
@@ -43,7 +42,7 @@ import dagger.BindsInstance;
 import dagger.Component;
 
 @Singleton
-@Component(modules = { MeshModule.class, OAuth2Module.class, TestSearchProviderModule.class, BindModule.class, FakeConsoleModule.class })
+@Component(modules = { MeshModule.class, TestSearchProviderModule.class, BindModule.class, FakeConsoleModule.class })
 public interface TestMeshComponent extends MeshComponent {
 
 	BootstrapInitializer boot();

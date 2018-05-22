@@ -23,24 +23,12 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 
 	protected String basePath;
 
-	public MeshAuthHandler authHandler;
+	protected MeshAuthHandler authHandler;
 
 	protected RouterStorage routerStorage;
 
-	/**
-	 * Constructor to be invoked from implementation.
-	 * 
-	 * @param basePath
-	 *            Basebase for the endpoint
-	 * @param routerStorage
-	 *            Router storage
-	 */
-	protected AbstractInternalEndpoint(String basePath) {
-		this.basePath = basePath;
-	}
-
 	protected AbstractInternalEndpoint(String basePath, MeshAuthHandler handler) {
-		this(basePath);
+		this.basePath = basePath;
 		this.authHandler = handler;
 	}
 

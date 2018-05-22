@@ -25,12 +25,12 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 	private MicroschemaCrudHandler crudHandler;
 
 	public MicroschemaEndpoint() {
-		super("microschemas");
+		super("microschemas", null);
 	}
 
 	@Inject
-	public MicroschemaEndpoint(MicroschemaCrudHandler crudHandler, MeshAuthHandler authHandler) {
-		super("microschemas");
+	public MicroschemaEndpoint(MeshAuthHandler handler, MicroschemaCrudHandler crudHandler) {
+		super("microschemas", handler);
 		this.crudHandler = crudHandler;
 	}
 

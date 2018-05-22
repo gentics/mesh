@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -18,14 +19,14 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 	private MeshBasicAuthLoginHandler basicAuthLoginHandler;
 
 	@Inject
-	public AuthenticationEndpoint(AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler) {
-		super("auth");
+	public AuthenticationEndpoint(MeshAuthHandler handler, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler) {
+		super("auth", handler);
 		this.authRestHandler = authRestHandler;
 		this.basicAuthLoginHandler = basicAuthHandler;
 	}
 
 	public AuthenticationEndpoint() {
-		super("auth");
+		super("auth", null);
 	}
 
 	@Override

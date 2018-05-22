@@ -5,6 +5,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -19,13 +20,13 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 	private UtilityHandler utilityHandler;
 
 	@Inject
-	public UtilityEndpoint(UtilityHandler utilityHandler) {
-		super("utilities");
+	public UtilityEndpoint(MeshAuthHandler handler, UtilityHandler utilityHandler) {
+		super("utilities", handler);
 		this.utilityHandler = utilityHandler;
 	}
 
 	public UtilityEndpoint() {
-		super("utilities");
+		super("utilities", null);
 	}
 
 	@Override
@@ -76,7 +77,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/linkResolver");
 		endpoint.method(POST);
 		endpoint.description("Return the posted text and resolve and replace all found mesh links. "
-				+ "A mesh link must be in the format {{mesh.link(\"UUID\",\"languageTag\")}}");
+			+ "A mesh link must be in the format {{mesh.link(\"UUID\",\"languageTag\")}}");
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.exampleRequest("Some text before {{mesh.link(\"" + UUIDUtil.randomUUID() + "\", \"en\")}} and after.");
 		endpoint.exampleResponse(OK, "Some text before /api/v1/dummy/webroot/flower.jpg and after");

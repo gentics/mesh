@@ -1,19 +1,21 @@
 package com.gentics.mesh.auth;
 
-import org.junit.ClassRule;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+
 import org.junit.Test;
 
-import com.gentics.mesh.test.docker.KeycloakContainer;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class OAuthKeycloakTest {
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
+public class OAuthKeycloakTest extends AbstractMeshTest {
 
-	@ClassRule
-	public static KeycloakContainer keycloak = new KeycloakContainer()
-		.withRealmFile("src/test/resources/realm.json")
-		.waitStartup();
-	
 	@Test
 	public void testKeycloakAuth() {
-		
+		client().logout();
+		UserResponse me = call(() -> client().me());
+		System.out.println(me.toJson());
 	}
 }

@@ -25,7 +25,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 
 	@Inject
 	public EventbusEndpoint() {
-		super("eventbus");
+		super("eventbus", null);
 	}
 
 	public String getDescription() {

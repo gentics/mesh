@@ -9,6 +9,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import javax.inject.Inject;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.example.RestInfoExamples;
@@ -34,14 +35,14 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 	private RouterStorage routerStorage;
 
 	@Inject
-	public RestInfoEndpoint(Database db, SearchProvider searchProvider) {
-		super(null);
+	public RestInfoEndpoint(MeshAuthHandler handler, Database db, SearchProvider searchProvider) {
+		super(null, handler);
 		this.searchProvider = searchProvider;
 		this.db = db;
 	}
 
 	public RestInfoEndpoint(String path) {
-		super(path);
+		super(path, null);
 	}
 
 	@Override

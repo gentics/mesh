@@ -11,6 +11,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -25,12 +26,12 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 	private SchemaCrudHandler crudHandler;
 
 	public ProjectSchemaEndpoint() {
-		super("schemas", null);
+		super("schemas", null, null);
 	}
 
 	@Inject
-	public ProjectSchemaEndpoint(BootstrapInitializer boot, SchemaCrudHandler crudHandler) {
-		super("schemas", boot);
+	public ProjectSchemaEndpoint(MeshAuthHandler handler, BootstrapInitializer boot, SchemaCrudHandler crudHandler) {
+		super("schemas", handler, boot);
 		this.crudHandler = crudHandler;
 	}
 
@@ -83,7 +84,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
 		endpoint.description(
-				"Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
+			"Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Assigned schema.");
 		endpoint.handler(rc -> {
@@ -99,7 +100,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.description(
-				"Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all releases of the project.");
+			"Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully removed.");
 		endpoint.handler(rc -> {

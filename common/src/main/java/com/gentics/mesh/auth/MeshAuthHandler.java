@@ -19,7 +19,6 @@ import com.gentics.mesh.http.MeshHeaders;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -52,21 +51,17 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 	private MeshOAuthService oauthService;
 
-	private OAuth2AuthCookieHandler oauthCookieHandler;
-
 	private BootstrapInitializer boot;
 
 	private Database database;
 
 	@Inject
-	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database, MeshOAuthService oauthService,
-		OAuth2AuthCookieHandler oauthCookieHandler) {
+	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database, MeshOAuthService oauthService) {
 		super(authProvider);
 		this.authProvider = authProvider;
 		this.boot = boot;
 		this.database = database;
 		this.oauthService = oauthService;
-		this.oauthCookieHandler = oauthCookieHandler;
 
 		options = new JsonObject();
 	}
@@ -226,23 +221,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		OAuth2Options oauthOptions = meshOptions.getAuthenticationOptions().getOauth2();
 		if (oauthOptions != null && oauthOptions.isEnabled()) {
-			route.handler(oauthCookieHandler);
-			route.handler(oauthService).failureHandler(rc -> {
-				if (rc.failed()) {
-					Throwable error = rc.failure();
-					if (error instanceof NoStackTraceThrowable) {
-						NoStackTraceThrowable s = (NoStackTraceThrowable) error;
-						String msg = s.getMessage();
-						if ("callback route is not configured.".equalsIgnoreCase(msg)) {
-							// Suppress the error and use 401 instead
-							rc.response().setStatusCode(401).end();
-							return;
-						}
-					} else {
-						rc.fail(error);
-					}
-				}
-			});
+			oauthService.secure(route);
 		}
 
 	}

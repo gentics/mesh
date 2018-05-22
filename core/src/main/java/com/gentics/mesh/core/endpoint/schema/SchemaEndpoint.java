@@ -12,6 +12,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
@@ -28,12 +29,12 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 	private SchemaCrudHandler crudHandler;
 
 	public SchemaEndpoint() {
-		super("schemas");
+		super("schemas", null);
 	}
 
 	@Inject
-	public SchemaEndpoint(SchemaCrudHandler crudHandler) {
-		super("schemas");
+	public SchemaEndpoint(MeshAuthHandler handler, SchemaCrudHandler crudHandler) {
+		super("schemas", handler);
 		this.crudHandler = crudHandler;
 	}
 
@@ -105,7 +106,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		diffEndpoint.produces(APPLICATION_JSON);
 		diffEndpoint.exampleRequest(schemaExamples.getSchemaResponse());
 		diffEndpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(),
-				"List of schema changes that were detected by comparing the posted schema and the current version.");
+			"List of schema changes that were detected by comparing the posted schema and the current version.");
 		diffEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");

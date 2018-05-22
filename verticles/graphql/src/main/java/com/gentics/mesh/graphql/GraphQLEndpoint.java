@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
@@ -23,12 +24,12 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	private GraphQLHandler queryHandler;
 
 	public GraphQLEndpoint() {
-		super("graphql", null);
+		super("graphql", null, null);
 	}
 
 	@Inject
-	public GraphQLEndpoint(BootstrapInitializer boot, GraphQLHandler queryHandler) {
-		super("graphql", boot);
+	public GraphQLEndpoint(MeshAuthHandler handler, BootstrapInitializer boot, GraphQLHandler queryHandler) {
+		super("graphql", handler, boot);
 		this.queryHandler = queryHandler;
 	}
 

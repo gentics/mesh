@@ -9,6 +9,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
@@ -30,8 +31,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	private PluginHandler pluginHandler;
 
 	@Inject
-	public AdminEndpoint(AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler) {
-		super("admin");
+	public AdminEndpoint(MeshAuthHandler handler, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler) {
+		super("admin", handler);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
@@ -39,7 +40,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	}
 
 	public AdminEndpoint() {
-		super("admin");
+		super("admin", null);
 	}
 
 	@Override

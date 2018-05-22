@@ -10,6 +10,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -27,12 +28,12 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 	private UserTokenAuthHandler userTokenHandler;
 
 	public UserEndpoint() {
-		super("users");
+		super("users", null);
 	}
 
 	@Inject
-	public UserEndpoint(UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
-		super("users");
+	public UserEndpoint(MeshAuthHandler handler, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
+		super("users", handler);
 		this.crudHandler = userCrudHandler;
 		this.userTokenHandler = userTokenHandler;
 	}

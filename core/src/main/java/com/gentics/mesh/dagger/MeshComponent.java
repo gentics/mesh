@@ -49,7 +49,7 @@ import dagger.Component;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, OAuth2Module.class, SearchProviderModule.class, BindModule.class, ConsoleModule.class })
+@Component(modules = { MeshModule.class, SearchProviderModule.class, BindModule.class, ConsoleModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();

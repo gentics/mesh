@@ -10,6 +10,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
@@ -35,12 +36,13 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private TagCrudHandler tagCrudHandler;
 
 	public TagFamilyEndpoint() {
-		super("tagFamilies", null);
+		super("tagFamilies", null, null);
 	}
 
 	@Inject
-	public TagFamilyEndpoint(BootstrapInitializer boot, TagCrudHandler tagCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler) {
-		super("tagFamilies", boot);
+	public TagFamilyEndpoint(MeshAuthHandler handler, BootstrapInitializer boot, TagCrudHandler tagCrudHandler,
+		TagFamilyCrudHandler tagFamilyCrudHandler) {
+		super("tagFamilies", handler, boot);
 		this.tagCrudHandler = tagCrudHandler;
 		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
 	}

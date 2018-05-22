@@ -5,6 +5,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -16,12 +17,12 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	private WebRootHandler handler;
 
 	public WebRootEndpoint() {
-		super("webroot", null);
+		super("webroot", null, null);
 	}
 
 	@Inject
-	public WebRootEndpoint(BootstrapInitializer boot, WebRootHandler handler) {
-		super("webroot", boot);
+	public WebRootEndpoint(MeshAuthHandler authHandler, BootstrapInitializer boot, WebRootHandler handler) {
+		super("webroot", authHandler, boot);
 		this.handler = handler;
 	}
 
@@ -45,7 +46,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
 		endpoint.exampleResponse(OK, "JSON for a node or the binary data of the node for the given path.", MeshHeaders.WEBROOT_RESPONSE_TYPE, "node",
-				"Header value which identifies the type of the webroot response. The response can either be a node or binary response.");
+			"Header value which identifies the type of the webroot response. The response can either be a node or binary response.");
 		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
 		endpoint.addQueryParameters(ImageManipulationParametersImpl.class);
 		endpoint.handler(rc -> {
