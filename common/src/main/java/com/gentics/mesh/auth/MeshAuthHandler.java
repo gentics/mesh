@@ -169,6 +169,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 					authorizeUser(anonymousUser, context);
 					return;
 				}
+				return;
 			}
 			handle401(context);
 			return;
@@ -216,13 +217,13 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 	 * @param route
 	 */
 	public void secure(Route route) {
-		route.handler(this);
 
 		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		OAuth2Options oauthOptions = meshOptions.getAuthenticationOptions().getOauth2();
 		if (oauthOptions != null && oauthOptions.isEnabled()) {
 			oauthService.secure(route);
 		}
+		// route.handler(this);
 
 	}
 

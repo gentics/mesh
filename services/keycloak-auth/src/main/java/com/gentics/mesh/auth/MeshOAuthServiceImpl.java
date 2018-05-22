@@ -17,16 +17,21 @@ import javax.script.ScriptException;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.oauth2.AccessToken;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.auth.oauth2.providers.KeycloakAuth;
@@ -51,10 +56,14 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 	private String mapperScript = null;
 	private OAuth2Auth oauth2Provider;
 	private OAuth2AuthCookieHandler oauthCookieHandler;
+	private Database db;
+	private BootstrapInitializer boot;
 
 	@Inject
-	public MeshOAuthServiceImpl() {
+	public MeshOAuthServiceImpl(Database db, BootstrapInitializer boot) {
 		Vertx vertx = Mesh.vertx();
+		this.db = db;
+		this.boot = boot;
 		this.options = Mesh.mesh().getOptions().getAuthenticationOptions().getOauth2();
 		if (options == null || !options.isEnabled()) {
 			return;
@@ -64,7 +73,7 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 		this.mapperScript = loadScript();
 
 		this.oauth2Provider = KeycloakAuth.create(vertx, OAuth2FlowType.AUTH_CODE, config);
-		this.oauthCookieHandler = new OAuth2AuthCookieHandlerImpl(oauth2Provider);
+		this.oauthCookieHandler = new OAuth2AuthCookieHandlerImpl(oauth2Provider, db);
 
 		// TODO configure callback url
 		this.oauth2Handler = OAuth2AuthHandler.create(oauth2Provider, "http://localhost:8080");
@@ -111,23 +120,46 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 	@Override
 	public void secure(Route route) {
 		route.handler(oauthCookieHandler);
-		route.handler(oauth2Handler).failureHandler(rc -> {
-			if (rc.failed()) {
-				Throwable error = rc.failure();
-				if (error instanceof NoStackTraceThrowable) {
-					NoStackTraceThrowable s = (NoStackTraceThrowable) error;
-					String msg = s.getMessage();
-					if ("callback route is not configured.".equalsIgnoreCase(msg)) {
-						// Suppress the error and use 401 instead
-						rc.response().setStatusCode(401).end();
-						return;
+		route.handler(oauth2Handler);
+		route.handler(rc -> {
+			User user = rc.user();
+			if (user instanceof AccessToken) {
+				AccessToken token = (AccessToken) user;
+				// TODO extract the role information from the user info
+				token.userInfo(info -> {
+					if (info.failed()) {
+						log.error("Could not fetch user info from access token", info.cause());
+						rc.fail(info.cause());
+					} else {
+						rc.setUser(syncUser(info.result()));
 					}
-				} else {
-					rc.fail(error);
-				}
+					rc.next();
+				});
 			}
 		});
+	}
 
+	/**
+	 * Utilize the user information to return the matching mesh user.
+	 * 
+	 * @param userInfo
+	 * @return
+	 */
+	private MeshAuthUser syncUser(JsonObject userInfo) {
+		System.out.println(userInfo.encodePrettily());
+		String username = userInfo.getString("preferred_username");
+		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
+		return db.tx(() -> {
+			UserRoot root = boot.userRoot();
+			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
+			// Create the user if it can't be found.
+			if (user == null) {
+				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
+				root.create(username, admin);
+				user = root.findMeshAuthUserByUsername(username);
+			}
+			return user;
+		});
 	}
 
 	public OAuth2Auth getOauth2Provider() {

@@ -2,7 +2,7 @@ package com.gentics.mesh.auth;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import javax.inject.Inject;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonObject;
@@ -36,14 +36,16 @@ public class OAuth2AuthCookieHandlerImpl implements OAuth2AuthCookieHandler {
 
 	private OAuth2Auth auth;
 
+	private Database db;
+
 	/**
 	 * Create a new cookie handler.
 	 * 
 	 * @param auth
 	 */
-	@Inject
-	public OAuth2AuthCookieHandlerImpl(OAuth2Auth auth) {
+	public OAuth2AuthCookieHandlerImpl(OAuth2Auth auth, Database db) {
 		this.auth = auth;
+		this.db = db;
 	}
 
 	@Override
@@ -89,8 +91,9 @@ public class OAuth2AuthCookieHandlerImpl implements OAuth2AuthCookieHandler {
 	 *            The current routing context
 	 */
 	private void setAuthCookie(RoutingContext rc) {
-		JsonObject principal = rc.user().principal();
+		JsonObject principal = db.tx(() -> rc.user().principal());
 
+		System.out.println(principal.encodePrettily());
 		Cookie cookie = Cookie.cookie(COOKIE_AUTH, principal.getString("access_token"))
 			.setPath("/")
 			.setMaxAge(principal.getLong("expires_in", DEFAULT_AUTH_TIMEOUT));

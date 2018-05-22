@@ -16,6 +16,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.Handler;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -52,6 +53,21 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	@Override
 	public void handle(RoutingContext rc) {
+
+		// Handle "callback route is not configured" error from OAuthHandler
+		if (rc.failed()) {
+			Throwable error = rc.failure();
+			if (error instanceof NoStackTraceThrowable) {
+				NoStackTraceThrowable s = (NoStackTraceThrowable) error;
+				String msg = s.getMessage();
+				if ("callback route is not configured.".equalsIgnoreCase(msg)) {
+					// Suppress the error and use 401 instead
+					rc.response().setStatusCode(401).end();
+					return;
+				}
+			}
+		}
+
 		if (rc.statusCode() == 404) {
 			rc.next();
 			return;

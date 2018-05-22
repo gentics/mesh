@@ -87,7 +87,12 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
-			this.httpClient = new OkHttpClient.Builder().build();
+			int timeout = 60;
+			this.httpClient = new OkHttpClient.Builder()
+				.writeTimeout(timeout, TimeUnit.SECONDS)
+				.readTimeout(timeout, TimeUnit.SECONDS)
+				.connectTimeout(timeout, TimeUnit.SECONDS)
+				.build();
 		}
 		return this.httpClient;
 	}

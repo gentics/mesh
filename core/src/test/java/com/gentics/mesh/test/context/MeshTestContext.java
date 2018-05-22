@@ -392,4 +392,8 @@ public class MeshTestContext extends TestWatcher {
 		return client;
 	}
 
+	public static KeycloakContainer getKeycloak() {
+		return keycloak;
+	}
+
 }

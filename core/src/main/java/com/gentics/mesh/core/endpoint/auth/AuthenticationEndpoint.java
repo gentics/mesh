@@ -38,7 +38,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 	public void registerEndPoints() {
 
 		// Only secure /me
-		getRouter().route("/me").handler(authHandler);
+		authHandler.secure(getRouter().route("/me"));
 
 		InternalEndpointRoute meEndpoint = createRoute();
 		meEndpoint.path("/me");
