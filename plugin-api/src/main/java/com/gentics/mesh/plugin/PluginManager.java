@@ -62,6 +62,7 @@ public interface PluginManager {
 	 * Deploy the plugin with the given service name.
 	 * 
 	 * @param name
+	 * @return Single which contains the plugin deployment uuid.
 	 */
 	Single<String> deploy(String name);
 
@@ -73,7 +74,7 @@ public interface PluginManager {
 	Map<String, Plugin> getPlugins();
 
 	/**
-	 * Undeploy and de-register the plugin with the given id.
+	 * Undeploy and de-register the plugin with the given uuid.
 	 * 
 	 * @param uuid
 	 * @return

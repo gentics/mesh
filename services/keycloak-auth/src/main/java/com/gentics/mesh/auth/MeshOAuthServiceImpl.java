@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,18 +16,25 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -50,32 +58,34 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshOAuthServiceImpl.class);
 
-	private OAuth2AuthHandler oauth2Handler;
-	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
-	private OAuth2Options options;
-	private String mapperScript = null;
-	private OAuth2Auth oauth2Provider;
-	private OAuth2AuthCookieHandler oauthCookieHandler;
-	private Database db;
-	private BootstrapInitializer boot;
+	/**
+	 * Cache the token id which was last used by an user.
+	 */
+	public static final Cache<String, String> TOKEN_ID_LOG = Caffeine.newBuilder().maximumSize(20_000).expireAfterWrite(24, TimeUnit.HOURS).build();
+
+	protected OAuth2AuthHandler oauth2Handler;
+	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
+	protected OAuth2Options options;
+	protected String mapperScript = null;
+	protected OAuth2Auth oauth2Provider;
+	protected Database db;
+	protected BootstrapInitializer boot;
 
 	@Inject
-	public MeshOAuthServiceImpl(Database db, BootstrapInitializer boot) {
-		Vertx vertx = Mesh.vertx();
+	public MeshOAuthServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx) {
 		this.db = db;
 		this.boot = boot;
-		this.options = Mesh.mesh().getOptions().getAuthenticationOptions().getOauth2();
+		this.options = meshOptions.getAuthenticationOptions().getOauth2();
 		if (options == null || !options.isEnabled()) {
 			return;
 		}
 
-		JsonObject config = loadRealmInfo(vertx, Mesh.mesh().getOptions());
+		JsonObject config = loadRealmInfo(vertx, meshOptions);
 		this.mapperScript = loadScript();
 
 		this.oauth2Provider = KeycloakAuth.create(vertx, OAuth2FlowType.AUTH_CODE, config);
-		this.oauthCookieHandler = new OAuth2AuthCookieHandlerImpl(oauth2Provider, db);
 
-		// TODO configure callback url
+		// TODO configure callback urls
 		this.oauth2Handler = OAuth2AuthHandler.create(oauth2Provider, "http://localhost:8080");
 		// Don't setup the callback mechanism. This would create redirects in our rest api which we don't want. Instead we want to handle auth errors with http
 		// error codes.
@@ -84,15 +94,11 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 	}
 
 	/**
-	 * Ensure that the user principle information is in sync with the graph database.
+	 * Read the mapper script from the configured path.
+	 * 
+	 * @return
 	 */
-	private void syncUserWithGraph() {
-		// TODO sync user
-		// TODO sync roles - Add script to handle mapped fields
-		// TODO sync groups - Add script to handle mapped fields
-	}
-
-	private String loadScript() {
+	protected String loadScript() {
 		String path = options.getMapperScriptPath();
 		if (path == null) {
 			return null;
@@ -110,31 +116,59 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 		}
 	}
 
-	private void executeMapperScript() throws ScriptException {
+	protected JsonObject executeMapperScript(JsonObject principle) throws ScriptException {
+		JsonObject info = new JsonObject();
+		info.put("roles", new JsonArray());
+		info.put("groups", new JsonArray());
+		if (StringUtils.isEmpty(mapperScript)) {
+			return info;
+		}
+
 		ScriptEngine engine = factory.getScriptEngine(new Sandbox());
-		// engine.put("input", nodeJson);
-		engine.eval(mapperScript);
-		Object transformedModel = engine.get("output");
+		engine.put("principle", principle);
+		StringBuilder script = new StringBuilder();
+		script.append(mapperScript);
+		script.append("\ngroups = JSON.stringify(extractGroups(JSON.parse(principle)));");
+		script.append("\nroles = JSON.stringify(extractRoles(JSON.parse(principle)));");
+
+		if (log.isDebugEnabled()) {
+			log.debug("Executing mapper script:\n" + script.toString());
+			log.debug("Using principle:\n" + principle.encodePrettily());
+		}
+
+		engine.eval(script.toString());
+		Object rolesResult = engine.get("roles");
+		if (rolesResult != null) {
+			if (rolesResult instanceof String) {
+				info.put("roles", new JsonArray((String) rolesResult));
+			} else {
+				throw new RuntimeException("The mapper script must return roles as a string. Got {" + rolesResult.getClass().getName() + "}");
+			}
+		}
+
+		Object groupResult = engine.get("groups");
+		if (groupResult != null) {
+			if (groupResult instanceof String) {
+				info.put("groups", new JsonArray((String) groupResult));
+			} else {
+				throw new RuntimeException("The mapper script must return groups as a string. Got {" + groupResult.getClass().getName() + "}");
+			}
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Mapping script output:\n" + info.encodePrettily());
+		}
+		return info;
 	}
 
 	@Override
 	public void secure(Route route) {
-		route.handler(oauthCookieHandler);
 		route.handler(oauth2Handler);
 		route.handler(rc -> {
 			User user = rc.user();
 			if (user instanceof AccessToken) {
 				AccessToken token = (AccessToken) user;
-				// TODO extract the role information from the user info
-				token.userInfo(info -> {
-					if (info.failed()) {
-						log.error("Could not fetch user info from access token", info.cause());
-						rc.fail(info.cause());
-					} else {
-						rc.setUser(syncUser(info.result()));
-					}
-					rc.next();
-				});
+				rc.setUser(syncUser(token.accessToken()));
+				rc.next();
 			}
 		});
 	}
@@ -145,10 +179,11 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 	 * @param userInfo
 	 * @return
 	 */
-	private MeshAuthUser syncUser(JsonObject userInfo) {
-		System.out.println(userInfo.encodePrettily());
+	protected MeshAuthUser syncUser(JsonObject userInfo) {
 		String username = userInfo.getString("preferred_username");
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
+		String currentTokenId = userInfo.getString("jti");
+
 		return db.tx(() -> {
 			UserRoot root = boot.userRoot();
 			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
@@ -157,9 +192,80 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
 				root.create(username, admin);
 				user = root.findMeshAuthUserByUsername(username);
+				String uuid = user.getUuid();
+				syncUser(user, admin, userInfo);
+				TOKEN_ID_LOG.put(uuid, currentTokenId);
+			} else {
+				// Compare the stored and current token id to see whether the current token is different.
+				// In that case a sync must be invoked.
+				String uuid = user.getUuid();
+				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
+				if (lastSeenTokenId == null || !lastSeenTokenId.equals(currentTokenId)) {
+					com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
+					syncUser(user, admin, userInfo);
+					TOKEN_ID_LOG.put(uuid, currentTokenId);
+				}
 			}
 			return user;
 		});
+	}
+
+	protected void syncUser(MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
+		String givenName = userInfo.getString("given_name");
+		if (givenName == null) {
+			log.warn("Did not find given_name property in OAuth2 principle.");
+		} else {
+			user.setFirstname(givenName);
+		}
+
+		String familyName = userInfo.getString("family_name");
+		if (familyName == null) {
+			log.warn("Did not find family_name property in OAuth2 principle.");
+		} else {
+			user.setLastname(familyName);
+		}
+
+		String email = userInfo.getString("email");
+		if (email == null) {
+			log.warn("Did not find email property in OAuth2 principle");
+		} else {
+			user.setEmailAddress(email);
+		}
+
+		try {
+			JsonObject mappingInfo = executeMapperScript(userInfo);
+			JsonArray roles = mappingInfo.getJsonArray("roles");
+			RoleRoot roleRoot = boot.roleRoot();
+			for (int i = 0; i < roles.size(); i++) {
+				String roleName = roles.getString(i);
+				Role role = roleRoot.findByName(roleName);
+				if (role == null) {
+					role = roleRoot.create(roleName, admin);
+				}
+				// The group<->role assignment must be done manually. We don't want to enforce this here.
+			}
+			JsonArray groups = mappingInfo.getJsonArray("groups");
+			GroupRoot groupRoot = boot.groupRoot();
+
+			// First remove the user from all groups
+			for (Group group : groupRoot.findAllIt()) {
+				group.removeUser(user);
+			}
+
+			// Now create the groups and assign the user to the listed groups
+			for (int i = 0; i < groups.size(); i++) {
+				String groupName = groups.getString(i);
+				Group group = groupRoot.findByName(groupName);
+				if (group == null) {
+					group = groupRoot.create(groupName, admin);
+				}
+				// Ensure that the user is part of the group
+				group.addUser(user);
+
+			}
+		} catch (Exception e) {
+			log.error("Error while executing mapping script. Ignoring mapping script.", e);
+		}
 	}
 
 	public OAuth2Auth getOauth2Provider() {
@@ -221,7 +327,7 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 
 	}
 
-	private JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName) throws IOException {
+	protected JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName) throws IOException {
 		Builder builder = new OkHttpClient.Builder();
 		OkHttpClient client = builder.build();
 

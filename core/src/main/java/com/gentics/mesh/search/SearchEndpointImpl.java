@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
@@ -190,6 +191,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.exampleResponse(OK, exampleListResponse, "Paged search result for " + typeName);
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {

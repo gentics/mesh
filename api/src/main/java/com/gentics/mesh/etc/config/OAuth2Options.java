@@ -12,6 +12,10 @@ public class OAuth2Options implements Option {
 	public static final String MESH_AUTH_OAUTH2_ENABLED_ENV = "MESH_AUTH_OAUTH2_ENABLED";
 
 	public static final String MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH_ENV = "MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH";
+	
+	public static final String MESH_AUTH_OAUTH2_SYNC_TOKEN_MAX_AGE_ENV= "MESH_AUTH_OAUTH2_SYNC_TOKEN_MAX_AGE";
+	
+	public static final String DEFAULT_SYNC_AGE ="60m";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether the OAuth2 support should be enabled.")

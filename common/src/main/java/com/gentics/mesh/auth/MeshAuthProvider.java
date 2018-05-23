@@ -23,6 +23,7 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -55,7 +56,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public MeshAuthProvider(BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
+	public MeshAuthProvider(Vertx vertx, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 		this.boot = boot;
@@ -71,7 +72,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		String type = "jceks";
 		JsonObject config = new JsonObject().put("keyStore",
 			new JsonObject().put("path", keyStorePath).put("type", type).put("password", keystorePassword));
-		jwtProvider = JWTAuth.create(Mesh.vertx(), config);
+		jwtProvider = JWTAuth.create(vertx, config);
 
 	}
 

@@ -19,9 +19,10 @@ import org.testcontainers.containers.wait.Wait;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Docker Testcontainer for keycloak.
+ */
 public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
-
-	private static final String REALM_FILE_NAME = "realm.json";
 
 	private static final String VERSION = "3.4.3.Final";
 
@@ -75,19 +76,30 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 	 */
 	private File toHostPath(JsonObject json) {
 		try {
-			File hostPath = File.createTempFile("realm-file", ".json");
-			FileUtils.writeStringToFile(hostPath, json.encodePrettily(), Charset.defaultCharset());
-			return hostPath;
+			File hostFile = File.createTempFile("realm-file", ".json");
+			FileUtils.writeStringToFile(hostFile, json.encodePrettily(), Charset.defaultCharset());
+			return hostFile;
 		} catch (IOException e) {
 			throw new RuntimeException("Could not create realm host file", e);
 		}
 	}
 
+	/**
+	 * Wait until the keycloak port is reachable.
+	 * 
+	 * @return
+	 */
 	public KeycloakContainer waitStartup() {
 		waitingFor(Wait.forListeningPort());
 		return this;
 	}
 
+	/**
+	 * Use the provided realm data to import into keycloak.
+	 * 
+	 * @param json
+	 * @return
+	 */
 	public KeycloakContainer withRealmConfig(JsonObject json) {
 		this.json = json;
 		return this;
