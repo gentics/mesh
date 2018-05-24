@@ -217,7 +217,9 @@ public class PluginManagerImpl implements PluginManager {
 				}
 				deployments.put(plugin.deploymentID(), plugin);
 				sub.onComplete();
-			}));
+			})).doOnError(error -> {
+				syncSet.remove(plugin.getManifest().getApiName());
+			});
 	}
 
 	@Override

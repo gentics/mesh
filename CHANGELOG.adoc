@@ -24,6 +24,8 @@ icon:plus[] All plugin endpoints will now automatically be secured via the confi
 
 icon:check[] Plugins: The admin client token will no longer expire. The token was previously only valid for one hour.
 
+icon:check[] Plugins: When deployment of a plugin fails during plugin initialization, the plugin can now be redeployed without restarting Gentics Mesh.
+
 [[v0.19.2]]
 == 0.19.2 (02.05.2018)
 
