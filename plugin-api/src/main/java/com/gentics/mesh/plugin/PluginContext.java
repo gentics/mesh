@@ -1,8 +1,11 @@
 package com.gentics.mesh.plugin;
 
+import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -37,6 +40,8 @@ import io.vertx.ext.web.Session;
  */
 public class PluginContext implements RoutingContext {
 
+	private static final Pattern BEARER = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
+
 	private RoutingContext rc;
 
 	/**
@@ -59,11 +64,32 @@ public class PluginContext implements RoutingContext {
 		String host = options.getHttpServerOptions().getHost();
 		MeshRestClient client = new MeshRestHttpClientImpl(host, port, false, rc.vertx());
 		// The authentication token / header may be missing if the inbound request was anonymous.
-		String token = rc.request().getHeader("Authentication");
+		String token = parseHeader(rc);
 		if (token != null) {
 			client.setAPIKey(token);
 		}
 		return client;
+	}
+
+	/**
+	 * Extract the token value from the header.
+	 * 
+	 * @param rc
+	 * @return
+	 */
+	private String parseHeader(RoutingContext rc) {
+		HttpServerRequest request = rc.request();
+		final String authorization = request.headers().get(AUTHORIZATION);
+		if (authorization != null) {
+			String[] parts = authorization.split(" ");
+			if (parts.length == 2) {
+				final String scheme = parts[0], credentials = parts[1];
+				if (BEARER.matcher(scheme).matches()) {
+					return credentials;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
