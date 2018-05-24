@@ -104,6 +104,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readUsers.produces(APPLICATION_JSON);
 		readUsers.exampleResponse(OK, userExamples.getUserListResponse(), "List of users which belong to the group.");
 		readUsers.description("Load a list of users which have been assigned to the group.");
+		readUsers.addQueryParameters(PagingParametersImpl.class);
 		readUsers.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
