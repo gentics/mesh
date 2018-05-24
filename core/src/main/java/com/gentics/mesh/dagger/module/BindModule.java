@@ -1,5 +1,7 @@
 package com.gentics.mesh.dagger.module;
 
+import com.gentics.mesh.auth.MeshOAuthService;
+import com.gentics.mesh.auth.MeshOAuthServiceImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -27,4 +29,6 @@ public abstract class BindModule {
 	@Binds
 	abstract WebRootService bindWebrootService(WebRootServiceImpl e);
 
+	@Binds
+	abstract MeshOAuthService bindOAuthHandler(MeshOAuthServiceImpl e);
 }

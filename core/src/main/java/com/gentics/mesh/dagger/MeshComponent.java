@@ -5,8 +5,8 @@ import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
-import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -22,6 +22,7 @@ import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
@@ -41,6 +42,7 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 
+import dagger.BindsInstance;
 import dagger.Component;
 
 /**
@@ -70,7 +72,7 @@ public interface MeshComponent {
 		return (TrackingSearchProvider) searchProvider();
 	}
 
-	MeshAuthHandler authenticationHandler();
+	MeshJWTAuthHandler authenticationHandler();
 
 	JobWorkerVerticle jobWorkerVerticle();
 
@@ -114,5 +116,13 @@ public interface MeshComponent {
 
 	RestAPIVerticle restApiVerticle();
 
-	MeshAuthProvider authProvider();
+	MeshJWTAuthProvider authProvider();
+
+	@Component.Builder
+	interface Builder {
+		@BindsInstance
+		Builder configuration(MeshOptions options);
+
+		MeshComponent build();
+	}
 }

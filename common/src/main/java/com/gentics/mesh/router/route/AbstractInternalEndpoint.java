@@ -3,9 +3,7 @@ package com.gentics.mesh.router.route;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.rest.InternalEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;
@@ -25,21 +23,13 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 
 	protected String basePath;
 
-	@Inject
-	public MeshAuthHandler authHandler;
+	protected MeshAuthChain chain;
 
 	protected RouterStorage routerStorage;
 
-	/**
-	 * Constructor to be invoked from implementation.
-	 * 
-	 * @param basePath
-	 *            Basebase for the endpoint
-	 * @param routerStorage
-	 *            Router storage
-	 */
-	protected AbstractInternalEndpoint(String basePath) {
+	protected AbstractInternalEndpoint(String basePath, MeshAuthChain chain) {
 		this.basePath = basePath;
+		this.chain = chain;
 	}
 
 	public void init(RouterStorage rs) {
@@ -51,7 +41,9 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 	 * Add a route which will secure all endpoints.
 	 */
 	protected void secureAll() {
-		getRouter().route("/*").handler(authHandler);
+		if (chain != null) {
+			chain.secure(getRouter().route("/*"));
+		}
 	}
 
 	/**

@@ -27,7 +27,7 @@ public class ProjectRouter {
 
 	public ProjectRouter(RouterStorage storage) {
 		this.router = Router.router(Mesh.vertx());
-		this.pluginRouter = new PluginRouter(storage.getDb().get(), router);
+		this.pluginRouter = new PluginRouter(storage.getAuthChain(), storage.getDb().get(), router);
 	}
 
 	/**

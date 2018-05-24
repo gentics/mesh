@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -260,7 +260,7 @@ public class PluginManagerImpl implements PluginManager {
 	@Override
 	public String adminToken() {
 		MeshComponent mesh = MeshInternal.get();
-		MeshAuthProvider authProvider = mesh.authProvider();
+		MeshJWTAuthProvider authProvider = mesh.authProvider();
 		Database db = mesh.database();
 
 		return db.tx(() -> {

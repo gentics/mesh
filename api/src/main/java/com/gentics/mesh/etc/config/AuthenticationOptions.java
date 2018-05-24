@@ -2,13 +2,13 @@ package com.gentics.mesh.etc.config;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
-
-import java.util.Objects;
 
 /**
  * Authentication options POJO.
@@ -48,10 +48,14 @@ public class AuthenticationOptions implements Option {
 	@EnvironmentVariable(name = MESH_AUTH_JWT_ALGO_ENV, description = "Override the configured algorithm which is used to sign the JWT.")
 	private String algorithm = DEFAULT_ALGORITHM;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether anonymous access should be enabled.")
 	@EnvironmentVariable(name = MESH_AUTH_ANONYMOUS_ENABLED_ENV, description = "Override the configured anonymous enabled flag.")
 	private boolean enableAnonymousAccess = true;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("OAuth2 related configuration options.")
+	private OAuth2Options oauth2 = new OAuth2Options();
 
 	/**
 	 * Gets the time after which an authentication token should expire.
@@ -142,6 +146,15 @@ public class AuthenticationOptions implements Option {
 
 	public AuthenticationOptions setEnableAnonymousAccess(boolean enableAnonymousAccess) {
 		this.enableAnonymousAccess = enableAnonymousAccess;
+		return this;
+	}
+
+	public OAuth2Options getOauth2() {
+		return oauth2;
+	}
+
+	public AuthenticationOptions setOauth2(OAuth2Options oauth2) {
+		this.oauth2 = oauth2;
 		return this;
 	}
 

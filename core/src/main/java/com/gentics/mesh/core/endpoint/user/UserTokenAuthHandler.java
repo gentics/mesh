@@ -8,8 +8,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
-import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -31,7 +31,7 @@ import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
  * 
  * Please note that is very important to always chain the MeshAuthHandler after this handler because it will just inject a User into the routing context. This
  * handler will also call rc.next() if no token has been provided. The token code is only a fallback mechanism and should not replace the JWT auth handler. If
- * this handler fails the {@link MeshAuthHandler} should try to extract the JWT token from the cookie and load the correct user.
+ * this handler fails the {@link MeshJWTAuthHandler} should try to extract the JWT token from the cookie and load the correct user.
  */
 @Singleton
 public class UserTokenAuthHandler extends AuthHandlerImpl {
@@ -41,7 +41,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 	private Database db;
 
 	@Inject
-	public UserTokenAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database db) {
+	public UserTokenAuthHandler(MeshJWTAuthProvider authProvider, BootstrapInitializer boot, Database db) {
 		super(authProvider);
 		this.boot = boot;
 		this.db = db;

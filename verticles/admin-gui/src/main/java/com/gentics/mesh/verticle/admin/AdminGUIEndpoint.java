@@ -37,7 +37,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
 	public AdminGUIEndpoint() {
-		super("mesh-ui");
+		super("mesh-ui", null);
 	}
 
 	@Override

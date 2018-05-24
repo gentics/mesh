@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -47,7 +48,7 @@ public class DemoDumpGeneratorTest {
 
 	@Before
 	public void setup() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-		MeshComponent meshDagger = MeshInternal.create();
+		MeshComponent meshDagger = MeshInternal.create(new MeshOptions());
 		boot = meshDagger.boot();
 		searchProvider = meshDagger.searchProvider();
 		db = meshDagger.database();

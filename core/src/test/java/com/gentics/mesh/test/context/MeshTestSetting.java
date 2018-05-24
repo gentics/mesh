@@ -53,6 +53,13 @@ public @interface MeshTestSetting {
 	boolean startStorageServer() default false;
 
 	/**
+	 * Flag which indicates whether the keycloak server should be used.
+	 * 
+	 * @return
+	 */
+	boolean useKeycloak() default false;
+
+	/**
 	 * Flag which indicates that the cluster mode should be enabled.
 	 * 
 	 * @return

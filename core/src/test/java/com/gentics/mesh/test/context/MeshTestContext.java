@@ -2,7 +2,6 @@ package com.gentics.mesh.test.context;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +21,8 @@ import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OAuth2Options;
+import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -29,6 +30,8 @@ import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.docker.ElasticsearchContainer;
+import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
@@ -43,7 +46,11 @@ public class MeshTestContext extends TestWatcher {
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
+	private static MeshOptions meshOptions = new MeshOptions();
+
 	public static GenericContainer<?> elasticsearch;
+
+	public static KeycloakContainer keycloak;
 
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
@@ -96,6 +103,9 @@ public class MeshTestContext extends TestWatcher {
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
 					elasticsearch.stop();
+				}
+				if (keycloak != null && keycloak.isRunning()) {
+					keycloak.stop();
 				}
 			} else {
 				cleanupFolders();
@@ -249,16 +259,15 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public MeshOptions init(MeshTestSetting settings) throws Exception {
 		MeshFactoryImpl.clear();
-		MeshOptions options = new MeshOptions();
 
 		if (settings == null) {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
 		}
 		// Clustering options
 		if (settings.clusterMode()) {
-			options.getClusterOptions().setEnabled(true);
-			options.setInitCluster(true);
-			options.getClusterOptions().setClusterName("cluster" + System.currentTimeMillis());
+			meshOptions.getClusterOptions().setEnabled(true);
+			meshOptions.setInitCluster(true);
+			meshOptions.getClusterOptions().setClusterName("cluster" + System.currentTimeMillis());
 		}
 
 		// Setup the keystore
@@ -268,26 +277,26 @@ public class MeshTestContext extends TestWatcher {
 		if (!keystoreFile.exists()) {
 			KeyStoreHelper.gen(keystoreFile.getAbsolutePath(), keystorePassword);
 		}
-		options.getAuthenticationOptions().setKeystorePassword(keystorePassword);
-		options.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
-		options.setNodeName("testNode");
+		meshOptions.getAuthenticationOptions().setKeystorePassword(keystorePassword);
+		meshOptions.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
+		meshOptions.setNodeName("testNode");
 
 		String uploads = newFolder("testuploads");
-		options.getUploadOptions().setDirectory(uploads);
+		meshOptions.getUploadOptions().setDirectory(uploads);
 
 		String targetTmpDir = newFolder("tmpdir");
-		options.getUploadOptions().setTempDirectory(targetTmpDir);
+		meshOptions.getUploadOptions().setTempDirectory(targetTmpDir);
 
 		String imageCacheDir = newFolder("image_cache");
-		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
+		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
 
 		String backupPath = newFolder("backups");
-		options.getStorageOptions().setBackupDirectory(backupPath);
+		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
 
 		String exportPath = newFolder("exports");
-		options.getStorageOptions().setExportDirectory(exportPath);
+		meshOptions.getStorageOptions().setExportDirectory(exportPath);
 
-		options.getHttpServerOptions().setPort(port);
+		meshOptions.getHttpServerOptions().setPort(port);
 		// The database provider will switch to in memory mode when no directory has been specified.
 
 		String graphPath = null;
@@ -298,30 +307,47 @@ public class MeshTestContext extends TestWatcher {
 			directory.mkdirs();
 		}
 		if (!settings.inMemoryDB() && settings.startStorageServer()) {
-			options.getStorageOptions().setStartServer(true);
+			meshOptions.getStorageOptions().setStartServer(true);
 		}
 		// Increase timeout to high load during testing
-		options.getSearchOptions().setTimeout(10_000L);
-		options.getStorageOptions().setDirectory(graphPath);
+		meshOptions.getSearchOptions().setTimeout(10_000L);
+		meshOptions.getStorageOptions().setDirectory(graphPath);
 		if (settings.useElasticsearchContainer()) {
-			options.getSearchOptions().setStartEmbedded(false);
-			options.getSearchOptions().setUrl(null);
+			meshOptions.getSearchOptions().setStartEmbedded(false);
+			meshOptions.getSearchOptions().setUrl(null);
 			if (settings.useElasticsearch()) {
-				elasticsearch = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:6.1.2")
-					.withEnv("discovery.type", "single-node")
-					.withEnv("xpack.security.enabled", "false")
-					.withExposedPorts(9200)
-					.withStartupTimeout(Duration.ofSeconds(250L))
-					.waitingFor(Wait.forHttp("/"));
+				elasticsearch = new ElasticsearchContainer();
 				if (!elasticsearch.isRunning()) {
 					elasticsearch.start();
 				}
 				elasticsearch.waitingFor(Wait.forHttp("/"));
-				options.getSearchOptions().setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
+				meshOptions.getSearchOptions().setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
 			}
 		}
-		Mesh.mesh(options);
-		return options;
+
+		if (settings.useKeycloak()) {
+			keycloak = new KeycloakContainer()
+				.withRealmFromClassPath("/keycloak/realm.json");
+			if (!keycloak.isRunning()) {
+				keycloak.start();
+			}
+			keycloak.waitingFor(Wait.forListeningPort());
+			OAuth2Options oauth2Options = meshOptions.getAuthenticationOptions().getOauth2();
+			oauth2Options.setEnabled(true);
+
+			OAuth2ServerConfig realmConfig = new OAuth2ServerConfig();
+			realmConfig.setAuthServerUrl("http://localhost:" + keycloak.getFirstMappedPort() + "/auth");
+			realmConfig.setRealm("master-test");
+			realmConfig.setSslRequired("external");
+			realmConfig.setResource("mesh");
+			realmConfig.setConfidentialPort(0);
+			realmConfig.addCredential("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4");
+
+			oauth2Options.setConfig(realmConfig);
+		}
+
+		Mesh.mesh(meshOptions);
+		return meshOptions;
 	}
 
 	/**
@@ -350,7 +376,7 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public void initDagger(MeshOptions options, TestSize size) throws Exception {
 		log.info("Initializing dagger context");
-		meshDagger = DaggerTestMeshComponent.create();
+		meshDagger = DaggerTestMeshComponent.builder().configuration(options).build();
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
@@ -367,6 +393,14 @@ public class MeshTestContext extends TestWatcher {
 
 	public MeshRestClient getClient() {
 		return client;
+	}
+
+	public static KeycloakContainer getKeycloak() {
+		return keycloak;
+	}
+
+	public MeshOptions getOptions() {
+		return meshOptions;
 	}
 
 }

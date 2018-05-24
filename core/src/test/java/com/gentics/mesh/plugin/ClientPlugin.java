@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin;
 
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
+import com.gentics.mesh.dagger.MeshInternal;
 
 import io.vertx.ext.web.Router;
 
@@ -30,6 +31,13 @@ public class ClientPlugin extends AbstractPluginVerticle {
 			context.client().me().toSingle().subscribe(me -> {
 				rc.response().end(me.toJson());
 			}, rc::fail);
+		});
+
+		globalRouter.route("/user").handler(rc -> {
+			//TODO We currently need a transaction to read the principal. It would be better to avoid this or handle the needed tx internally.
+			MeshInternal.get().database().tx(() -> {
+				rc.response().end(rc.user().principal().encodePrettily());
+			});
 		});
 
 		globalRouter.route("/admin").handler(rc -> {

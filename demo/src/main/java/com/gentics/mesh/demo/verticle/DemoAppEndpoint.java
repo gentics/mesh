@@ -15,7 +15,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 public class DemoAppEndpoint extends AbstractInternalEndpoint {
 
 	public DemoAppEndpoint() {
-		super("demo");
+		super("demo", null);
 	}
 
 	@Override

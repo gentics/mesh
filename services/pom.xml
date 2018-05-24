@@ -21,6 +21,7 @@
 		<module>image-imgscalr</module>
 		<module>aws-s3-storage</module>
 		<module>local-storage</module>
+		<module>keycloak-auth</module>
 	</modules>
 
 	<dependencies>

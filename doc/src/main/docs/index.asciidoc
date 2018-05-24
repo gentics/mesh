@@ -245,6 +245,7 @@ ul.doc-toc h2 {
                             </li>
                         </ul>
                     </li>
+
                 </ul>
             </div>
             <div class="col-md-4">
@@ -289,19 +290,22 @@ ul.doc-toc h2 {
                                 </ul>
                             </li>
                             <li>
-                                <a href="references.html#_authentication">Authentication</a>
+                                <a href="authentication.html#_authentication">Authentication</a>
                                 <ul>
                                     <li>
-                                        <a href="references.html#_overview">Overview</a>
+                                        <a href="authentication.html#_overview">Overview</a>
                                     </li>
                                     <li>
-                                        <a href="references.html#_login">Login</a>
+                                        <a href="authentication.html#_oauth2">OAuth2</a>
                                     </li>
                                     <li>
-                                        <a href="references.html#_api_token">API Token</a>
+                                        <a href="authentication.html#_login">Login</a>
                                     </li>
                                     <li>
-                                        <a href="references.html#_anonymous_access">Anonymous Access</a>
+                                        <a href="authentication.html#_api_token">API Token</a>
+                                    </li>
+                                    <li>
+                                        <a href="authentication.html#_anonymous_access">Anonymous Access</a>
                                     </li>
                                 </ul>
                             </li>
