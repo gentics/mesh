@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -162,6 +163,19 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 		assertEquals("world", httpGetNow("/api/v1/plugins/" + apiName + "/hello"));
 		assertEquals("project", httpGetNow("/api/v1/test/plugins/" + apiName + "/hello"));
+	}
+
+	@Test
+	public void testRedeployAfterInitFailure() {
+		try {
+			manager.deploy(new FailingPlugin()).blockingGet();
+			fail("Deployment should have failed");
+		} catch (Exception e) {
+		}
+		assertEquals(0, manager.getPlugins().size());
+
+		manager.deploy(new SucceedingPlugin()).blockingGet();
+		assertEquals(1, manager.getPlugins().size());
 	}
 
 	private void setPluginBaseDir(String baseDir) {
