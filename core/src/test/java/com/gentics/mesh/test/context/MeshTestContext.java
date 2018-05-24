@@ -22,6 +22,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
+import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -36,7 +37,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -334,13 +334,15 @@ public class MeshTestContext extends TestWatcher {
 			keycloak.waitingFor(Wait.forListeningPort());
 			OAuth2Options oauth2Options = meshOptions.getAuthenticationOptions().getOauth2();
 			oauth2Options.setEnabled(true);
-			JsonObject realmConfig = new JsonObject();
-			realmConfig.put("realm", "master-test");
-			realmConfig.put("auth-server-url", "http://localhost:" + keycloak.getFirstMappedPort() + "/auth");
-			realmConfig.put("ssl-required", "external");
-			realmConfig.put("resource", "mesh");
-			realmConfig.put("credentials", new JsonObject().put("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"));
-			realmConfig.put("confidential-port", 0);
+
+			OAuth2ServerConfig realmConfig = new OAuth2ServerConfig();
+			realmConfig.setAuthServerUrl("http://localhost:" + keycloak.getFirstMappedPort() + "/auth");
+			realmConfig.setRealm("master-test");
+			realmConfig.setSslRequired("external");
+			realmConfig.setResource("mesh");
+			realmConfig.setConfidentialPort(0);
+			realmConfig.addCredential("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4");
+
 			oauth2Options.setConfig(realmConfig);
 		}
 

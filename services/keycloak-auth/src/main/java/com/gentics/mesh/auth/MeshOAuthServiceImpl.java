@@ -358,7 +358,7 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 			log.debug("Mesh auth options not specified. Can't setup OAuth2.");
 			return null;
 		}
-		JsonObject config = options.getAuthenticationOptions().getOauth2().getConfig();
+		JsonObject config = options.getAuthenticationOptions().getOauth2().getConfig().toJson();
 		if (config == null) {
 			log.debug("OAuth config  not specified. Can't setup OAuth2.");
 			return null;

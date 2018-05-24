@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
-import io.vertx.core.json.JsonObject;
-
 public class OAuth2Options implements Option {
 
 	public static final String MESH_AUTH_OAUTH2_ENABLED_ENV = "MESH_AUTH_OAUTH2_ENABLED";
@@ -22,7 +20,7 @@ public class OAuth2Options implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Property which contains the OAuth2 configuration settings like realm name, auth server url.")
-	private JsonObject config = null;
+	private OAuth2ServerConfig config = null;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the OAuth2 mapper script.")
@@ -43,11 +41,11 @@ public class OAuth2Options implements Option {
 		return this;
 	}
 
-	public JsonObject getConfig() {
+	public OAuth2ServerConfig getConfig() {
 		return config;
 	}
 
-	public OAuth2Options setConfig(JsonObject config) {
+	public OAuth2Options setConfig(OAuth2ServerConfig config) {
 		this.config = config;
 		return this;
 	}

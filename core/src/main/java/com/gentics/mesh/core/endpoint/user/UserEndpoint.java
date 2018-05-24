@@ -62,7 +62,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description(
-				"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
+			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
@@ -163,7 +163,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.description(
-				"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
+			"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "User was deactivated.");
 		endpoint.handler(rc -> {
@@ -178,7 +178,9 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		// Add the user token handler first in order to allow for recovery token handling
 		getRouter().route("/:userUuid").method(POST).handler(userTokenHandler);
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
-		chain.secure(getRouter().route("/:userUuid").method(POST));
+		if (chain != null) {
+			chain.secure(getRouter().route("/:userUuid").method(POST));
+		}
 
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");
