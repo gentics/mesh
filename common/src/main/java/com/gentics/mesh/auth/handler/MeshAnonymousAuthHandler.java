@@ -87,12 +87,12 @@ public class MeshAnonymousAuthHandler extends AuthHandlerImpl implements MeshAut
 				if (log.isDebugEnabled()) {
 					log.debug("No anonymous user and authorization header was found. Can't authenticate request.");
 				}
+				handle401(rc);
+				return;
 			} else {
 				rc.setUser(anonymousUser);
-				authorizeUser(anonymousUser, rc);
-				return;
 			}
-
+			rc.next();
 		} else {
 			handle401(rc);
 			return;
