@@ -1,4 +1,4 @@
-package com.gentics.mesh.auth;
+package com.gentics.mesh.auth.provider;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -37,9 +38,9 @@ import io.vertx.ext.web.Cookie;
  * Central mesh authentication provider which will handle JWT.
  */
 @Singleton
-public class MeshAuthProvider implements AuthProvider, JWTAuth {
+public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshAuthProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthProvider.class);
 
 	private JWTAuth jwtProvider;
 
@@ -56,7 +57,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public MeshAuthProvider(Vertx vertx, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
+	public MeshJWTAuthProvider(Vertx vertx, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 		this.boot = boot;
@@ -294,7 +295,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			if (rh.failed()) {
 				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 			} else {
-				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
+				ac.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, rh.result())
 					.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				ac.send(new TokenResponse(rh.result()).toJson());
 			}

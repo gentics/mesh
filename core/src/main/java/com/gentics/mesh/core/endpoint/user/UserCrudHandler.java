@@ -12,7 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -45,10 +45,10 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	private BootstrapInitializer boot;
 
-	private MeshAuthProvider authProvider;
+	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshAuthProvider authProvider) {
+	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider) {
 		super(db, utils);
 		this.boot = boot;
 		this.authProvider = authProvider;

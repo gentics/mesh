@@ -12,7 +12,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -29,8 +29,8 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Inject
-	public MicroschemaEndpoint(MeshAuthHandler handler, MicroschemaCrudHandler crudHandler) {
-		super("microschemas", handler);
+	public MicroschemaEndpoint(MeshAuthChain chain, MicroschemaCrudHandler crudHandler) {
+		super("microschemas", chain);
 		this.crudHandler = crudHandler;
 	}
 

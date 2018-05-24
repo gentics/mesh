@@ -8,7 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -20,11 +20,11 @@ import com.gentics.mesh.json.JsonUtil;
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
-	private MeshAuthProvider authProvider;
+	private MeshJWTAuthProvider authProvider;
 	private Database db;
 
 	@Inject
-	public AuthenticationRestHandler(MeshAuthProvider authProvider, Database db) {
+	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, Database db) {
 		this.authProvider = authProvider;
 		this.db = db;
 	}

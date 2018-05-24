@@ -5,7 +5,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -21,8 +21,8 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public WebRootEndpoint(MeshAuthHandler authHandler, BootstrapInitializer boot, WebRootHandler handler) {
-		super("webroot", authHandler, boot);
+	public WebRootEndpoint(MeshAuthChain chain, BootstrapInitializer boot, WebRootHandler handler) {
+		super("webroot", chain, boot);
 		this.handler = handler;
 	}
 

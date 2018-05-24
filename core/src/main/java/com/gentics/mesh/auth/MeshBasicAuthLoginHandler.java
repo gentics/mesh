@@ -5,6 +5,7 @@ import java.util.Base64;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 
@@ -22,10 +23,10 @@ public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
 
 	final String realm;
 
-	private MeshAuthProvider authProvider;
+	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public MeshBasicAuthLoginHandler(MeshAuthProvider authProvider) {
+	public MeshBasicAuthLoginHandler(MeshJWTAuthProvider authProvider) {
 		super(authProvider);
 		this.authProvider = authProvider;
 		this.realm = "Gentics Mesh";

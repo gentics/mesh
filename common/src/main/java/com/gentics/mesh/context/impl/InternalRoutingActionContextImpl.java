@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -158,7 +158,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		if (session != null) {
 			session.destroy();
 		}
-		rc.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0).setPath("/"));
+		rc.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0).setPath("/"));
 		rc.clearUser();
 	}
 

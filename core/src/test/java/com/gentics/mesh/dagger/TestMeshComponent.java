@@ -4,7 +4,7 @@ import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -61,7 +61,7 @@ public interface TestMeshComponent extends MeshComponent {
 		return (TrackingSearchProvider) searchProvider();
 	}
 
-	MeshAuthHandler authenticationHandler();
+	MeshJWTAuthHandler authenticationHandler();
 
 	JobWorkerVerticle jobWorkerVerticle();
 

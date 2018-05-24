@@ -5,7 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
@@ -18,8 +18,8 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectInfoEndpoint(MeshAuthHandler handler, ProjectCrudHandler crudHandler) {
-		super(null, handler);
+	public ProjectInfoEndpoint(MeshAuthChain chain, ProjectCrudHandler crudHandler) {
+		super(null, chain);
 		this.crudHandler = crudHandler;
 	}
 

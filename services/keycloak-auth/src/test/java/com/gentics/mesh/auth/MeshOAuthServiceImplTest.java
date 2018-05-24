@@ -8,7 +8,9 @@ import java.io.File;
 import javax.script.ScriptException;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.Vertx;
@@ -20,7 +22,10 @@ public class MeshOAuthServiceImplTest {
 	public void testPrincipleMapper() throws ScriptException {
 		File scriptFile = new File("src/test/resources/dummyscript.js");
 		MeshOptions meshOptions = new MeshOptions();
-		MeshOAuthServiceImpl service = new MeshOAuthServiceImpl(null, null, meshOptions, Vertx.vertx());
+
+		SearchQueue searchQueue = Mockito.mock(SearchQueue.class);
+
+		MeshOAuthServiceImpl service = new MeshOAuthServiceImpl(null, null, meshOptions, Vertx.vertx(), searchQueue);
 		service.options.setMapperScriptPath(scriptFile.getAbsolutePath());
 		String script = service.loadScript();
 		assertNotNull(script);

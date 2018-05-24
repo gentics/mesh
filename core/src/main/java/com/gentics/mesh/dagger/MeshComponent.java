@@ -5,8 +5,8 @@ import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
-import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -72,7 +72,7 @@ public interface MeshComponent {
 		return (TrackingSearchProvider) searchProvider();
 	}
 
-	MeshAuthHandler authenticationHandler();
+	MeshJWTAuthHandler authenticationHandler();
 
 	JobWorkerVerticle jobWorkerVerticle();
 
@@ -116,7 +116,7 @@ public interface MeshComponent {
 
 	RestAPIVerticle restApiVerticle();
 
-	MeshAuthProvider authProvider();
+	MeshJWTAuthProvider authProvider();
 
 	@Component.Builder
 	interface Builder {

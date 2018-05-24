@@ -1,7 +1,9 @@
 package com.gentics.mesh.auth;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +27,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
@@ -34,6 +38,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -70,12 +75,14 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 	protected OAuth2Auth oauth2Provider;
 	protected Database db;
 	protected BootstrapInitializer boot;
+	protected SearchQueue searchQueue;
 
 	@Inject
-	public MeshOAuthServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx) {
+	public MeshOAuthServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx, SearchQueue searchQueue) {
 		this.db = db;
 		this.boot = boot;
 		this.options = meshOptions.getAuthenticationOptions().getOauth2();
+		this.searchQueue = searchQueue;
 		if (options == null || !options.isEnabled()) {
 			return;
 		}
@@ -120,6 +127,13 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 		JsonObject info = new JsonObject();
 		info.put("roles", new JsonArray());
 		info.put("groups", new JsonArray());
+
+		boolean devMode = options.isMapperScriptDevMode();
+		if (devMode) {
+			log.info("Reloading mapper script due to enabled development mode.");
+			mapperScript = loadScript();
+		}
+
 		if (StringUtils.isEmpty(mapperScript)) {
 			return info;
 		}
@@ -131,9 +145,9 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 		script.append("\ngroups = JSON.stringify(extractGroups(JSON.parse(principle)));");
 		script.append("\nroles = JSON.stringify(extractRoles(JSON.parse(principle)));");
 
-		if (log.isDebugEnabled()) {
-			log.debug("Executing mapper script:\n" + script.toString());
-			log.debug("Using principle:\n" + principle.encodePrettily());
+		if (devMode || log.isDebugEnabled()) {
+			log.info("Executing mapper script:\n" + script.toString());
+			log.info("Using principle:\n" + principle.encodePrettily());
 		}
 
 		engine.eval(script.toString());
@@ -154,22 +168,47 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 				throw new RuntimeException("The mapper script must return groups as a string. Got {" + groupResult.getClass().getName() + "}");
 			}
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Mapping script output:\n" + info.encodePrettily());
+		if (devMode || log.isDebugEnabled()) {
+			log.info("Mapping script output:\n" + info.encodePrettily());
 		}
 		return info;
 	}
 
 	@Override
 	public void secure(Route route) {
-		route.handler(oauth2Handler);
+		route.handler(rc -> {
+			// Don't run the OAuth2 handler if a user has already been authenticated.
+			if (rc.user() != null) {
+				rc.next();
+				return;
+			}
+
+			// No need to bother the oauth2 handler if no token info was provided.
+			// Maybe the anonymous handler can process this.
+			final HttpServerRequest request = rc.request();
+			final String authorization = request.headers().get(AUTHORIZATION);
+			boolean hasAuth = authorization != null;
+			if (!hasAuth) {
+				rc.next();
+				return;
+			}
+			oauth2Handler.handle(rc);
+
+		});
+		// Check whether the oauth handler was successful and convert the user to a mesh user.
 		route.handler(rc -> {
 			User user = rc.user();
 			if (user instanceof AccessToken) {
+				// FIXME - Workaround for Vert.x bug - https://github.com/vert-x3/vertx-auth/issues/216
 				AccessToken token = (AccessToken) user;
-				rc.setUser(syncUser(token.accessToken()));
-				rc.next();
+				if (token.accessToken() == null) {
+					rc.fail(401);
+					return;
+				} else {
+					rc.setUser(syncUser(token.accessToken()));
+				}
 			}
+			rc.next();
 		});
 	}
 
@@ -184,16 +223,19 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
 		String currentTokenId = userInfo.getString("jti");
 
-		return db.tx(() -> {
+		SearchQueueBatch batch = searchQueue.create();
+		MeshAuthUser authUser = db.tx(() -> {
 			UserRoot root = boot.userRoot();
 			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
 			// Create the user if it can't be found.
 			if (user == null) {
 				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-				root.create(username, admin);
+				com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
+				admin.addCRUDPermissionOnRole(root, CREATE_PERM, createdUser);
+
 				user = root.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
-				syncUser(user, admin, userInfo);
+				syncUser(batch, user, admin, userInfo);
 				TOKEN_ID_LOG.put(uuid, currentTokenId);
 			} else {
 				// Compare the stored and current token id to see whether the current token is different.
@@ -202,15 +244,26 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
 				if (lastSeenTokenId == null || !lastSeenTokenId.equals(currentTokenId)) {
 					com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-					syncUser(user, admin, userInfo);
+					syncUser(batch, user, admin, userInfo);
 					TOKEN_ID_LOG.put(uuid, currentTokenId);
 				}
 			}
 			return user;
 		});
+		batch.processSync();
+		return authUser;
+
 	}
 
-	protected void syncUser(MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
+	/**
+	 * Synchronize the other components of the user (e.g.: roles, groups).
+	 * 
+	 * @param batch
+	 * @param user
+	 * @param admin
+	 * @param userInfo
+	 */
+	protected void syncUser(SearchQueueBatch batch, MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
 		String givenName = userInfo.getString("given_name");
 		if (givenName == null) {
 			log.warn("Did not find given_name property in OAuth2 principle.");
@@ -231,6 +284,7 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 		} else {
 			user.setEmailAddress(email);
 		}
+		batch.store(user, false);
 
 		try {
 			JsonObject mappingInfo = executeMapperScript(userInfo);
@@ -241,6 +295,8 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 				Role role = roleRoot.findByName(roleName);
 				if (role == null) {
 					role = roleRoot.create(roleName, admin);
+					admin.addCRUDPermissionOnRole(roleRoot, CREATE_PERM, role);
+					batch.store(role, false);
 				}
 				// The group<->role assignment must be done manually. We don't want to enforce this here.
 			}
@@ -249,7 +305,11 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 
 			// First remove the user from all groups
 			for (Group group : groupRoot.findAllIt()) {
+				// TODO only remove the user if needed.
+				// We should not touch other groups if not needed.
+				// Otherwise the permission store and index sync gets a lot of work.
 				group.removeUser(user);
+				batch.store(group, false);
 			}
 
 			// Now create the groups and assign the user to the listed groups
@@ -258,10 +318,11 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 				Group group = groupRoot.findByName(groupName);
 				if (group == null) {
 					group = groupRoot.create(groupName, admin);
+					admin.addCRUDPermissionOnRole(groupRoot, CREATE_PERM, group);
 				}
 				// Ensure that the user is part of the group
 				group.addUser(user);
-
+				batch.store(group, false);
 			}
 		} catch (Exception e) {
 			log.error("Error while executing mapping script. Ignoring mapping script.", e);

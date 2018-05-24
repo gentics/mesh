@@ -10,7 +10,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -32,8 +32,8 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Inject
-	public UserEndpoint(MeshAuthHandler handler, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
-		super("users", handler);
+	public UserEndpoint(MeshAuthChain chain, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
+		super("users", chain);
 		this.crudHandler = userCrudHandler;
 		this.userTokenHandler = userTokenHandler;
 	}
@@ -178,7 +178,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		// Add the user token handler first in order to allow for recovery token handling
 		getRouter().route("/:userUuid").method(POST).handler(userTokenHandler);
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
-		getRouter().route("/:userUuid").method(POST).handler(authHandler);
+		chain.secure(getRouter().route("/:userUuid").method(POST));
 
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");

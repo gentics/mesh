@@ -1,4 +1,4 @@
-package com.gentics.mesh.auth;
+package com.gentics.mesh.auth.handler;
 
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
 
@@ -9,12 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OAuth2Options;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.http.MeshHeaders;
+import com.gentics.mesh.auth.AuthenticationResult;
+import com.gentics.mesh.auth.MeshOAuthService;
+import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -25,7 +22,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Cookie;
-import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
@@ -37,7 +33,7 @@ import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
  * Central authentication handler for mesh. All requests to secured resources must pass this handler.
  */
 @Singleton
-public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
+public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandler, MeshAuthHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(JWTAuthHandlerImpl.class);
 
@@ -47,21 +43,12 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 	private final JsonObject options;
 
-	private MeshAuthProvider authProvider;
-
-	private MeshOAuthService oauthService;
-
-	private BootstrapInitializer boot;
-
-	private Database database;
+	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database, MeshOAuthService oauthService) {
+	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, MeshOAuthService oauthService) {
 		super(authProvider);
 		this.authProvider = authProvider;
-		this.boot = boot;
-		this.database = database;
-		this.oauthService = oauthService;
 
 		options = new JsonObject();
 	}
@@ -86,14 +73,18 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 	@Override
 	public void handle(RoutingContext context) {
+		handle(context, false);
+	}
+
+	public void handle(RoutingContext context, boolean ignoreDecodeErrors) {
 
 		// 1. Check whether the user is already authenticated
 		User user = context.user();
 		if (user != null) {
-			// Already authenticated in, just authorise
-			authorizeUser(user, context);
+			context.next();
+			return;
 		}
-		handleJWTAuth(context);
+		handleJWTAuth(context, ignoreDecodeErrors);
 	}
 
 	@Override
@@ -101,28 +92,24 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		// Not needed for this handler
 	}
 
-	private void authorizeUser(User user, RoutingContext ctx) {
-		authorize(user, authZ -> {
-			if (authZ.failed()) {
-				ctx.fail(authZ.cause());
-				return;
-			}
-			// success, allowed to continue
-			ctx.next();
-		});
-	}
-
 	/**
 	 * Handle the JWT authentication part.
 	 * 
 	 * @param context
+	 * @param ignoreDecodeErrors
 	 */
-	private void handleJWTAuth(RoutingContext context) {
+	private void handleJWTAuth(RoutingContext context, boolean ignoreDecodeErrors) {
+
+		// Don't do anything if the user has already been authenticated by a previous handler
+		if (context.user() != null) {
+			context.next();
+			return;
+		}
 
 		// Mesh accepts JWT tokens via the cookie as well in order to handle JWT even for regular HTTP Download requests (eg. non ajax requests (static file
 		// downloads)).
 		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value.
-		Cookie tokenCookie = context.getCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
+		Cookie tokenCookie = context.getCookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY);
 		if (tokenCookie != null) {
 			context.request().headers().set(AUTHORIZATION, "Bearer " + tokenCookie.getValue());
 		}
@@ -142,36 +129,12 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 				}
 			} else {
 				log.warn("Format is Authorization: Bearer [token]");
-				context.fail(401);
+				handle401(context);
 				return;
 			}
 		} else {
-			if (Mesh.mesh().getOptions().getAuthenticationOptions().isEnableAnonymousAccess()) {
-				if (log.isDebugEnabled()) {
-					log.debug("No Authorization header was found.");
-				}
-				// Check whether the Anonymous-Authentication header was set to disable. This will disable the anonymous authentication method altogether.
-				String anonymousAuthHeaderValue = request.headers().get(MeshHeaders.ANONYMOUS_AUTHENTICATION);
-				if ("disable".equals(anonymousAuthHeaderValue)) {
-					handle401(context);
-					return;
-				}
-				if (log.isDebugEnabled()) {
-					log.debug("Using anonymous user.");
-				}
-				MeshAuthUser anonymousUser = database.tx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
-				if (anonymousUser == null) {
-					if (log.isDebugEnabled()) {
-						log.debug("No anonymous user and authorization header was found. Can't authenticate request.");
-					}
-				} else {
-					context.setUser(anonymousUser);
-					authorizeUser(anonymousUser, context);
-					return;
-				}
-				return;
-			}
-			handle401(context);
+			// Continue and let the next handler deal with this situation
+			context.next();
 			return;
 		}
 
@@ -186,45 +149,32 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		JsonObject authInfo = new JsonObject().put("jwt", token).put("options", options);
 		authProvider.authenticateJWT(authInfo, res -> {
 
-			// Authentication was successful. Lets update the token cookie to keep it alive
+			// Authentication was successful.
 			if (res.succeeded()) {
 				AuthenticationResult result = res.result();
 				User authenticatedUser = result.getUser();
 				context.setUser(authenticatedUser);
 
+				// Lets update the token cookie if this is request is using a regular token (e.g. not an api token) to keep it alive
 				if (!result.isUsingAPIKey()) {
 					String jwtToken = authProvider.generateToken(authenticatedUser);
 					// Remove the original cookie and set the new one
-					context.removeCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
-					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
+					context.removeCookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY);
+					context.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
 						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				}
 				authorizeUser(authenticatedUser, context);
+				return;
 			} else {
-				log.warn("JWT decode failure", res.cause());
-				handle401(context);
+				if (ignoreDecodeErrors) {
+					context.next();
+				} else {
+					log.warn("JWT decode failure", res.cause());
+					handle401(context);
+					return;
+				}
 			}
 		});
-	}
-
-	private void handle401(RoutingContext context) {
-		context.fail(401);
-	}
-
-	/**
-	 * Secure the given route by adding auth handlers
-	 * 
-	 * @param route
-	 */
-	public void secure(Route route) {
-
-		MeshOptions meshOptions = Mesh.mesh().getOptions();
-		OAuth2Options oauthOptions = meshOptions.getAuthenticationOptions().getOauth2();
-		if (oauthOptions != null && oauthOptions.isEnabled()) {
-			oauthService.secure(route);
-		}
-		// route.handler(this);
-
 	}
 
 }

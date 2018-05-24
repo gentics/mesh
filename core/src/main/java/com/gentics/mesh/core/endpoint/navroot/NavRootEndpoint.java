@@ -6,7 +6,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
@@ -25,8 +25,8 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public NavRootEndpoint(MeshAuthHandler authHandler, BootstrapInitializer boot, NavRootHandler handler) {
-		super("navroot", authHandler, boot);
+	public NavRootEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NavRootHandler handler) {
+		super("navroot", chain, boot);
 		this.handler = handler;
 	}
 

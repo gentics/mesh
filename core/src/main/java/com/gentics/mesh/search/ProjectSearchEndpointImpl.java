@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -43,8 +43,8 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	}
 
 	@Inject
-	public ProjectSearchEndpointImpl(MeshAuthHandler handler, BootstrapInitializer boot) {
-		super("search", handler, boot);
+	public ProjectSearchEndpointImpl(MeshAuthChain chain, BootstrapInitializer boot) {
+		super("search", chain, boot);
 	}
 
 	@Override

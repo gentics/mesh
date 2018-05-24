@@ -12,10 +12,8 @@ public class OAuth2Options implements Option {
 	public static final String MESH_AUTH_OAUTH2_ENABLED_ENV = "MESH_AUTH_OAUTH2_ENABLED";
 
 	public static final String MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH_ENV = "MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH";
-	
-	public static final String MESH_AUTH_OAUTH2_SYNC_TOKEN_MAX_AGE_ENV= "MESH_AUTH_OAUTH2_SYNC_TOKEN_MAX_AGE";
-	
-	public static final String DEFAULT_SYNC_AGE ="60m";
+
+	public static final String MESH_AUTH_OAUTH2_MAPPER_SCRIPT_DEV_MODE_ENV = "MESH_AUTH_OAUTH2_MAPPER_SCRIPT_DEV_MODE";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether the OAuth2 support should be enabled.")
@@ -30,6 +28,11 @@ public class OAuth2Options implements Option {
 	@JsonPropertyDescription("Path to the OAuth2 mapper script.")
 	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH_ENV, description = "Override the configured OAuth2 mapper script path.")
 	private String mapperScriptPath = null;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether the OAuth2 mapper script development mode should be enabled. The mapper script will be re-loaded for each request when enabled.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_MAPPER_SCRIPT_DEV_MODE_ENV, description = "Override the configured OAuth2 mapper script development mode flag.")
+	private boolean mapperScriptDevMode = false;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -55,6 +58,15 @@ public class OAuth2Options implements Option {
 
 	public OAuth2Options setMapperScriptPath(String mapperScriptPath) {
 		this.mapperScriptPath = mapperScriptPath;
+		return this;
+	}
+
+	public boolean isMapperScriptDevMode() {
+		return mapperScriptDevMode;
+	}
+
+	public OAuth2Options setMapperScriptDevMode(boolean mapperScriptDevMode) {
+		this.mapperScriptDevMode = mapperScriptDevMode;
 		return this;
 	}
 

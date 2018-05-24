@@ -7,6 +7,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -23,7 +24,8 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	public Completable addAuthenticationInformation(HttpClientRequest request) {
 		// TODO: request new Token when old one expires
 		if (token != null) {
-			request.headers().add("Cookie", "mesh.token=" + token);
+			request.headers().add(HttpHeaders.COOKIE, "mesh.token=" + token);
+			request.headers().add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 		}
 		return Completable.complete();
 	}

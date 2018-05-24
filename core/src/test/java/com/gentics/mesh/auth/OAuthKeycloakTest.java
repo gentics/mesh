@@ -1,6 +1,8 @@
 package com.gentics.mesh.auth;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -14,8 +16,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -31,7 +34,9 @@ public class OAuthKeycloakTest extends AbstractMeshTest {
 
 	@ClassRule
 	public static TestRule rule = (Statement base, Description description) -> {
-		testContext.getOptions().getAuthenticationOptions().getOauth2().setMapperScriptPath("src/test/resources/oauth2/mapperscript.js");
+		OAuth2Options options = testContext.getOptions().getAuthenticationOptions().getOauth2();
+		options.setMapperScriptDevMode(true);
+		options.setMapperScriptPath("src/test/resources/oauth2/mapperscript.js");
 		return base;
 	};
 
@@ -40,14 +45,12 @@ public class OAuthKeycloakTest extends AbstractMeshTest {
 
 		// 1. Login the user
 		JsonObject authInfo = loginKeycloak();
+		String token = authInfo.getString("access_token");
+		client().setAPIKey(token);
 		System.out.println("Login Token\n:" + authInfo.encodePrettily());
 
 		// 2. Invoke authenticated request
-		JsonObject info = get("/api/v1/auth/me", authInfo);
-
-		UserResponse me = JsonUtil.readValue(info.encodePrettily(), UserResponse.class);
-
-		System.out.println(info.encodePrettily());
+		UserResponse me = call(() -> client().me());
 		assertEquals("dummy@dummy.dummy", me.getEmailAddress());
 		assertEquals("Dummy", me.getFirstname());
 		assertEquals("User", me.getLastname());
@@ -55,10 +58,10 @@ public class OAuthKeycloakTest extends AbstractMeshTest {
 		String uuid = me.getUuid();
 
 		// 3. Invoke request again to ensure that the previously created user gets returned
-		JsonObject info2 = get("/api/v1/auth/me", authInfo);
-		UserResponse me2 = JsonUtil.readValue(info2.encodePrettily(), UserResponse.class);
-		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
+		call(() -> client().me());
 
+		UserResponse me2 = call(() -> client().me());
+		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
 		assertEquals("group1", me2.getGroups().get(0).getName());
 		assertEquals("group2", me2.getGroups().get(1).getName());
 
@@ -68,17 +71,31 @@ public class OAuthKeycloakTest extends AbstractMeshTest {
 		assertNotNull(tx(() -> boot().roleRoot().findByName("role1")));
 		assertNotNull(tx(() -> boot().roleRoot().findByName("role2")));
 
+		// Invoke request without token
 		System.out.println(get("/api/v1/auth/me"));
 
-		// client().logout();
-		// UserResponse me = call(() -> client().me());
-		// System.out.println(me.toJson());
+		client().setLogin("admin", "admin");
+		client().login().blockingGet();
+
+		// Now invoke request with regular Mesh API token.
+		UserAPITokenResponse meshApiToken = call(() -> client().issueAPIToken(me2.getUuid()));
+		client().logout().blockingGet();
+		client().setAPIKey(meshApiToken.getToken());
+		call(() -> client().me());
+
+		// Test broken token
+		client().setAPIKey("borked");
+		call(() -> client().me(), UNAUTHORIZED, "error_not_authorized");
+
+		client().setAPIKey(null);
+		UserResponse anonymous = call(() -> client().me());
+		assertEquals("anonymous", anonymous.getUsername());
 	}
 
-	protected JsonObject get(String path, JsonObject authInfo) throws IOException {
+	protected JsonObject get(String path, String token) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
-			.header("Authorization", "Bearer " + authInfo.getString("access_token"))
+			.header("Authorization", "Bearer " + token)
 			.url("http://localhost:" + testContext.getPort() + path)
 			.build();
 

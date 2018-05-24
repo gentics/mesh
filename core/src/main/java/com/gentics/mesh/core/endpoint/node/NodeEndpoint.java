@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -48,8 +48,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public NodeEndpoint(MeshAuthHandler handler, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryFieldHandler fieldAPIHandler) {
-		super("nodes", handler, boot);
+	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryFieldHandler fieldAPIHandler) {
+		super("nodes", chain, boot);
 		this.crudHandler = crudHandler;
 		this.binaryFieldHandler = fieldAPIHandler;
 	}

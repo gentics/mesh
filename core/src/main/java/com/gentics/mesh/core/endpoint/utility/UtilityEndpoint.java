@@ -5,7 +5,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -20,8 +20,8 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 	private UtilityHandler utilityHandler;
 
 	@Inject
-	public UtilityEndpoint(MeshAuthHandler handler, UtilityHandler utilityHandler) {
-		super("utilities", handler);
+	public UtilityEndpoint(MeshAuthChain chain, UtilityHandler utilityHandler) {
+		super("utilities", chain);
 		this.utilityHandler = utilityHandler;
 	}
 

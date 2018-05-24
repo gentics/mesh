@@ -13,7 +13,7 @@ import io.vertx.core.Vertx;
 public class MeshDockerServerTest {
 
 	@ClassRule
-	public static MeshDockerServer server = new MeshDockerServer("gentics/mesh:0.17.0", Vertx.vertx())
+	public static MeshDockerServer server = new MeshDockerServer("gentics/mesh:0.19.2", Vertx.vertx())
 		.withDebug(9200)
 		.waitForStartup();
 

@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -76,8 +76,8 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	public SearchEndpointImpl(MeshAuthHandler handler, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
-		super("search", handler);
+	public SearchEndpointImpl(MeshAuthChain chain, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
+		super("search", chain);
 		this.boot = boot;
 	}
 

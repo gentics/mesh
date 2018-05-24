@@ -7,7 +7,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -19,8 +19,8 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 	private MeshBasicAuthLoginHandler basicAuthLoginHandler;
 
 	@Inject
-	public AuthenticationEndpoint(MeshAuthHandler handler, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler) {
-		super("auth", handler);
+	public AuthenticationEndpoint(MeshAuthChain chain, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler) {
+		super("auth", chain);
 		this.authRestHandler = authRestHandler;
 		this.basicAuthLoginHandler = basicAuthHandler;
 	}
@@ -38,7 +38,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 	public void registerEndPoints() {
 
 		// Only secure /me
-		authHandler.secure(getRouter().route("/me"));
+		chain.secure(getRouter().route("/me"));
 
 		InternalEndpointRoute meEndpoint = createRoute();
 		meEndpoint.path("/me");
@@ -71,7 +71,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		});
 
 		// Only secure logout
-		getRouter().route("/logout").handler(authHandler);
+		chain.secure(getRouter().route("/logout"));
 		InternalEndpointRoute logoutEndpoint = createRoute();
 		logoutEndpoint.path("/logout");
 		logoutEndpoint.method(GET);

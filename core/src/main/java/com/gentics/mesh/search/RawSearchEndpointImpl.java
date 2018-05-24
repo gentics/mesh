@@ -2,7 +2,7 @@ package com.gentics.mesh.search;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
@@ -48,8 +48,8 @@ public class RawSearchEndpointImpl extends AbstractInternalEndpoint implements S
 	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	public RawSearchEndpointImpl(MeshAuthHandler handler, NodeSearchHandler searchHandler) {
-		super("rawSearch", handler);
+	public RawSearchEndpointImpl(MeshAuthChain chain, NodeSearchHandler searchHandler) {
+		super("rawSearch", chain);
 	}
 
 	public RawSearchEndpointImpl() {

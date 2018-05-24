@@ -9,7 +9,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -18,8 +18,8 @@ import io.vertx.ext.web.Route;
 public class LanguageEndpoint extends AbstractProjectEndpoint {
 
 	@Inject
-	public LanguageEndpoint(MeshAuthHandler handler, BootstrapInitializer boot) {
-		super("languages", handler, boot);
+	public LanguageEndpoint(MeshAuthChain chain, BootstrapInitializer boot) {
+		super("languages", chain, boot);
 	}
 
 	@Override
