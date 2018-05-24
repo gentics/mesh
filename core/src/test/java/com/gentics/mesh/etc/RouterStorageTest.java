@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 
@@ -21,7 +22,8 @@ public class RouterStorageTest {
 
 	@Test
 	public void testFailureHandler() throws Exception {
-		RouterStorage storage = new RouterStorage(null, null, null, () -> {
+		MeshAuthChain chain = Mockito.mock(MeshAuthChain.class);
+		RouterStorage storage = new RouterStorage(null, chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
 		});
 

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -28,11 +29,15 @@ public class PluginRouter {
 	/**
 	 * Create a new plugin router.
 	 * 
+	 * @param chain
 	 * @param db
 	 * @param parentRouter
 	 */
-	public PluginRouter(Database db, Router parentRouter) {
+	public PluginRouter(MeshAuthChain chain, Database db, Router parentRouter) {
 		this.router = Router.router(Mesh.vertx());
+
+		// Ensure that all plugin requests are authenticated
+		chain.secure(router.route());
 
 		router.route().handler(rc -> {
 			Project project = (Project) rc.data().get(ProjectsRouter.PROJECT_CONTEXT_KEY);

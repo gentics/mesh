@@ -41,7 +41,7 @@ public class APIRouter {
 		initHandlers(root.getStorage().corsHandler, root.getStorage().bodyHandler);
 
 		this.projectsRouter = new ProjectsRouter(this);
-		this.pluginRouter = new PluginRouter(root.getStorage().getDb().get(), getRouter());
+		this.pluginRouter = new PluginRouter(root.getStorage().getAuthChain(), root.getStorage().getDb().get(), getRouter());
 	}
 
 	private void initHandlers(CorsHandler corsHandler, BodyHandler bodyHandler) {

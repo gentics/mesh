@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.twelvemonkeys.io.FileUtil;
 
 import io.vertx.core.ServiceHelper;
+import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 
@@ -109,6 +111,24 @@ public class PluginManagerTest extends AbstractMeshTest {
 		assertEquals(1, manager.getPlugins().size());
 	}
 
+	/**
+	 * Test whether plugin requests are authenticated via the regular authentication chain of the Gentics Mesh server.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testPluginAuth() throws IOException {
+		Plugin plugin = new ClientPlugin();
+		manager.deploy(plugin).blockingGet();
+		JsonObject json = new JsonObject(getJSONViaClient("/api/v1/plugins/client/user"));
+		assertNotNull(json.getString("uuid"));
+	}
+
+	/**
+	 * Test whether the user and admin client are working as expected.
+	 * 
+	 * @throws IOException
+	 */
 	@Test
 	public void testClientAPI() throws IOException {
 		Plugin plugin = new ClientPlugin();
@@ -132,7 +152,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 		assertEquals("testabc", project.getName());
 	}
 
-	private <T extends RestModel> T getViaClient(Class<T> clazz, String path) throws IOException {
+	private String getJSONViaClient(String path) throws IOException {
 		HttpUrl url = prepareUrl(path);
 
 		Request.Builder b = new Request.Builder();
@@ -141,6 +161,11 @@ public class PluginManagerTest extends AbstractMeshTest {
 		b.addHeader("Authentication", client().getAuthentication().getToken());
 
 		String json = httpClient().newCall(b.build()).execute().body().string();
+		return json;
+	}
+
+	private <T extends RestModel> T getViaClient(Class<T> clazz, String path) throws IOException {
+		String json = getJSONViaClient(path);
 		return JsonUtil.readValue(json, clazz);
 
 	}

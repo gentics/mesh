@@ -12,12 +12,14 @@ import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -62,15 +64,19 @@ public class RouterStorage {
 
 	public BodyHandler bodyHandler;
 
+	private MeshAuthChain authChain;
+
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot, Lazy<Database> db) {
+	public RouterStorage(Vertx vertx, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
+		Lazy<Database> db) {
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
 		this.bodyHandler = bodyHandler;
+		this.authChain = authChain;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
-		rootRouter = new RootRouter(Mesh.vertx(), this);
+		rootRouter = new RootRouter(vertx, this);
 		RouterStorage.instances.add(this);
 	}
 
@@ -169,6 +175,10 @@ public class RouterStorage {
 
 	public Lazy<BootstrapInitializer> getBoot() {
 		return boot;
+	}
+
+	public MeshAuthChain getAuthChain() {
+		return authChain;
 	}
 
 	public RootRouter root() {
