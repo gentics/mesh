@@ -36,6 +36,16 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Completable registerIngestPipeline(IndexInfo info) {
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable deregisterPipeline(String name) {
+		return Completable.complete();
+	}
+
+	@Override
 	public Completable updateDocument(String index, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
 		return Completable.complete();
 	}

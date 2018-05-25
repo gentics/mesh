@@ -362,7 +362,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		// Only create indices which we know of
 		if (info != null) {
 			// Create the index - Note that dedicated index settings are only configurable for nodes, micronodes (via schema, microschema)
-			return searchProvider.createIndex(info);
+			Completable indexCompletable = searchProvider.createIndex(info);
+
+			// Check whether we also need to create an ingest pipeline for the index
+			if (info.getIngestPipelineSettings() != null) {
+				indexCompletable = indexCompletable.andThen(searchProvider.registerIngestPipeline(info));
+			}
+			return indexCompletable;
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Only found indices:");

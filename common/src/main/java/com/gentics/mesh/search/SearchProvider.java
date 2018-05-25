@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 
@@ -42,6 +43,22 @@ public interface SearchProvider {
 	 * @return Completable for the action
 	 */
 	Completable createIndex(IndexInfo info);
+
+	/**
+	 * Register the ingest pipeline using the index information.
+	 * 
+	 * @param info
+	 * @return Completable for the action
+	 */
+	Completable registerIngestPipeline(IndexInfo info);
+
+	/**
+	 * Deregister the ingest pipeline using the index information.
+	 * 
+	 * @param name
+	 * @return Completable for the action
+	 */
+	Completable deregisterPipeline(String name);
 
 	/**
 	 * Update the document.

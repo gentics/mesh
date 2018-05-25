@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -78,6 +79,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public NodeContainerMappingProvider mappingProvider;
 
 	@Inject
+	public AttachmentIngestConfigProvider ingestConfigProvider;
+
+	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
 	}
@@ -141,8 +145,22 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						SchemaModel schema = containerVersion.getSchema();
 						JsonObject mapping = getMappingProvider().getMapping(schema, release);
 						JsonObject settings = schema.getElasticsearch();
-						indexInfo.put(draftIndexName, new IndexInfo(draftIndexName, settings, mapping));
-						indexInfo.put(publishIndexName, new IndexInfo(publishIndexName, settings, mapping));
+						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping);
+						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping);
+
+						// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
+						Optional<JsonObject> ingestConfig = ingestConfigProvider.getConfig(schema);
+						if (ingestConfig.isPresent()) {
+							JsonObject config = ingestConfig.get();
+							draftInfo.setIngestPipelineSettings(config);
+							draftInfo.setIngestPipelineName(draftIndexName);
+							publishInfo.setIngestPipelineSettings(config);
+							publishInfo.setIngestPipelineName(publishIndexName);
+						}
+
+						indexInfo.put(draftIndexName, draftInfo);
+						indexInfo.put(publishIndexName, publishInfo);
+
 					}
 				}
 			}

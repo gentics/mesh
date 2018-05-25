@@ -259,11 +259,36 @@ public class ElasticSearchProvider implements SearchProvider {
 		return client.createIndex(indexName, json).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
+					log.debug("Create index {" + indexName + "} response: {" + response.toString() + "}");
 				}
 			}).toCompletable()
 			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
 			.compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
+	}
+
+	@Override
+	public Completable registerIngestPipeline(IndexInfo info) {
+		String name = info.getIngestPipelineName();
+		JsonObject config = info.getIngestPipelineSettings();
+		return client.registerPipeline(name, config).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Registered pipeline {" + name + "} response: {" + response.toString() + "}");
+				}
+			}).toCompletable()
+			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Creating pipeline {" + name + "}", true));
+	}
+
+	@Override
+	public Completable deregisterPipeline(String name) {
+		return client.deregisterPlugin(name).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deregistered pipeline {" + name + "} response: {" + response.toString() + "}");
+				}
+			}).toCompletable()
+			.compose(withTimeoutAndLog("Removed pipeline {" + name + "}", true));
 	}
 
 	@Override

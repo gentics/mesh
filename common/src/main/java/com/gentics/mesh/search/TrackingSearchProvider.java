@@ -28,6 +28,7 @@ public class TrackingSearchProvider implements SearchProvider {
 	private List<String> getEvents = new ArrayList<>();
 	private List<String> dropIndexEvents = new ArrayList<>();
 	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
+	private Map<String, JsonObject> pipelineEvents = new HashMap<>();
 
 	@Override
 	public SearchProvider init(MeshOptions options) {
@@ -50,6 +51,17 @@ public class TrackingSearchProvider implements SearchProvider {
 		json.put("mapping", info.getIndexMappings());
 		json.put("settings", info.getIndexSettings());
 		createIndexEvents.put(info.getIndexName(), json);
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable registerIngestPipeline(IndexInfo info) {
+		pipelineEvents.put(info.getIngestPipelineName(), info.getIngestPipelineSettings());
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable deregisterPipeline(String name) {
 		return Completable.complete();
 	}
 
