@@ -9,7 +9,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mesh.version>0.18.3-SNAPSHOT</mesh.version>
+		<mesh.version>${mesh.version}</mesh.version>
 	</properties>
 
 	<modules>
