@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
+import static com.gentics.mesh.search.SearchProvider.ES_PREFIX;
 
 import java.util.List;
 import java.util.Objects;
@@ -76,7 +76,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		Objects.requireNonNull(type, "The container type was not set");
 		// TODO check that only "draft" and "published" are used for version
 		StringBuilder indexName = new StringBuilder();
-		indexName.append(INDEX_PREFIX);
+		indexName.append(ES_PREFIX);
 		indexName.append("node");
 		indexName.append("-");
 		indexName.append(projectUuid);

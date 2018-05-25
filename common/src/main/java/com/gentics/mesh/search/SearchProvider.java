@@ -2,12 +2,12 @@ package com.gentics.mesh.search;
 
 import java.io.IOException;
 import java.util.List;
+
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 
@@ -19,7 +19,7 @@ public interface SearchProvider {
 	/**
 	 * Prefix for indices created by mesh.
 	 */
-	static final String INDEX_PREFIX = "mesh-";
+	static final String ES_PREFIX = "mesh-";
 
 	/**
 	 * Default document type for all indices. Note that the type handling will be removed in future ES versions.

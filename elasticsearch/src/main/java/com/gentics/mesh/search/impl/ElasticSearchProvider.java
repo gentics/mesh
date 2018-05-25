@@ -195,9 +195,9 @@ public class ElasticSearchProvider implements SearchProvider {
 		return client.readIndex("_all").async()
 			.flatMapObservable(response -> {
 				List<String> indices = Collections.emptyList();
-				indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
+				indices = response.fieldNames().stream().filter(e -> e.startsWith(ES_PREFIX)).collect(Collectors.toList());
 				if (indices.isEmpty()) {
-					log.debug("No indices with prefix {" + INDEX_PREFIX + "} were found.");
+					log.debug("No indices with prefix {" + ES_PREFIX + "} were found.");
 				} else {
 					if (log.isDebugEnabled()) {
 						for (String idx : indices) {
@@ -268,7 +268,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable registerIngestPipeline(IndexInfo info) {
-		String name = info.getIngestPipelineName();
+		String name = ES_PREFIX + info.getIngestPipelineName();
 		JsonObject config = info.getIngestPipelineSettings();
 		return client.registerPipeline(name, config).async()
 			.doOnSuccess(response -> {
@@ -282,13 +282,14 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable deregisterPipeline(String name) {
-		return client.deregisterPlugin(name).async()
+		String fullname = ES_PREFIX + name;
+		return client.deregisterPlugin(fullname).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Deregistered pipeline {" + name + "} response: {" + response.toString() + "}");
+					log.debug("Deregistered pipeline {" + fullname + "} response: {" + response.toString() + "}");
 				}
 			}).toCompletable()
-			.compose(withTimeoutAndLog("Removed pipeline {" + name + "}", true));
+			.compose(withTimeoutAndLog("Removed pipeline {" + fullname + "}", true));
 	}
 
 	@Override

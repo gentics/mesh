@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_DELETED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
-import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
+import static com.gentics.mesh.search.SearchProvider.ES_PREFIX;
 
 import java.util.List;
 import java.util.Objects;
@@ -48,7 +48,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	static String composeIndexName() {
-		return INDEX_PREFIX + TYPE.toLowerCase();
+		return ES_PREFIX + TYPE.toLowerCase();
 	}
 
 	/**
