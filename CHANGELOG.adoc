@@ -11,7 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.20.0]]
-== 0.20.0 (TBD)
+== 0.20.0 (25.05.2018)
 
 icon:bullhorn[] OAuth2 Support
 
@@ -20,7 +20,7 @@ ____
 This version of Gentics Mesh introduces the __OAuth2 authentication support__. A detailed description of this feature can be found in our https://getmesh.io/docs/beta/authentication.html#_oauth2[Authentication Documentation].
 ____
 
-icon:plus[] All plugin endpoints will now automatically be secured via the configured authentication mechanism.
+icon:plus[] Plugins: All plugin endpoints will now automatically be secured via the configured authentication mechanism.
 
 icon:check[] Plugins: The admin client token will no longer expire. The token was previously only valid for one hour.
 

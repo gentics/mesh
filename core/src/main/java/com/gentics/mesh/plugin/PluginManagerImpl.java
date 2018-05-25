@@ -112,8 +112,6 @@ public class PluginManagerImpl implements PluginManager {
 	@Override
 	public Single<String> deploy(Plugin plugin) {
 		DeploymentOptions options = new DeploymentOptions();
-		options.setIsolationGroup(plugin.deploymentID());
-
 		return applyRollbackChecks(Single.create(sub -> {
 			Mesh.vertx().deployVerticle(plugin, options, ch -> {
 				if (ch.failed()) {
@@ -219,6 +217,13 @@ public class PluginManagerImpl implements PluginManager {
 				deployments.put(plugin.deploymentID(), plugin);
 				sub.onComplete();
 			})).doOnError(error -> {
+				if (error instanceof GenericRestException) {
+					String key = ((GenericRestException) error).getI18nKey();
+					// Don't remove the syncset entry if the plugin has already been deployed.
+					if ("admin_plugin_error_plugin_already_deployed".equals(key)) {
+						return;
+					}
+				}
 				syncSet.remove(plugin.getManifest().getApiName());
 			});
 	}

@@ -104,7 +104,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPlugins().size());
 
 		manager.stop().blockingAwait();
 		assertEquals(0, manager.getPlugins().size());
