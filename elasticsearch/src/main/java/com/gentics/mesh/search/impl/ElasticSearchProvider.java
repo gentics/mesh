@@ -26,11 +26,9 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
-import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
@@ -54,15 +52,12 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
-	private Lazy<IndexHandlerRegistry> registry;
-
 	private ElasticsearchProcessManager processManager;
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
 	@Inject
-	public ElasticSearchProvider(Lazy<IndexHandlerRegistry> registry) {
-		this.registry = registry;
+	public ElasticSearchProvider() {
 	}
 
 	@Override

@@ -12,6 +12,11 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 	private final JsonObject payload;
 
 	/**
+	 * Flag which indicates whether the bulk entry should make use of a pipeline.
+	 */
+	private boolean usePipeline = false;
+
+	/**
 	 * Construct a new entry.
 	 * 
 	 * @param indexName
@@ -21,6 +26,19 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 	public IndexBulkEntry(String indexName, String documentId, JsonObject payload) {
 		super(indexName, documentId);
 		this.payload = payload;
+	}
+
+	/**
+	 * Construct a new entry.
+	 * 
+	 * @param indexName
+	 * @param documentId
+	 * @param payload
+	 * @param usePipeline
+	 */
+	public IndexBulkEntry(String indexName, String documentId, JsonObject payload, boolean usePipeline) {
+		this(indexName, documentId, payload);
+		this.usePipeline = usePipeline;
 	}
 
 	public JsonObject getPayload() {
@@ -35,8 +53,16 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 	@Override
 	public String toBulkString() {
 		JsonObject metaData = new JsonObject();
-		metaData.put(getBulkAction().id(),
-			new JsonObject().put("_index", getIndexName()).put("_type", SearchProvider.DEFAULT_TYPE).put("_id", getDocumentId()));
+		JsonObject settings = new JsonObject()
+			.put("_index", getIndexName())
+			.put("_type", SearchProvider.DEFAULT_TYPE)
+			.put("_id", getDocumentId());
+
+		if (usePipeline) {
+			settings.put("pipeline", getIndexName());
+		}
+
+		metaData.put(getBulkAction().id(), settings);
 		return new StringBuilder().append(metaData.encode()).append("\n").append(payload.encode()).toString();
 	}
 
