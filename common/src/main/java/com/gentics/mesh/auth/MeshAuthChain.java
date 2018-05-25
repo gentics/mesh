@@ -36,7 +36,6 @@ public class MeshAuthChain {
 	 * @param route
 	 */
 	public void secure(Route route) {
-
 		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		OAuth2Options oauthOptions = meshOptions.getAuthenticationOptions().getOauth2();
 		if (oauthOptions != null && oauthOptions.isEnabled()) {
@@ -52,7 +51,6 @@ public class MeshAuthChain {
 		route.handler(rc -> {
 			anonHandler.handle(rc);
 		});
-
 	}
 
 }

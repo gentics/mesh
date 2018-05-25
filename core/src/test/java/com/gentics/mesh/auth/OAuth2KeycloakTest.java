@@ -30,7 +30,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
-public class OAuthKeycloakTest extends AbstractMeshTest {
+public class OAuth2KeycloakTest extends AbstractMeshTest {
 
 	@ClassRule
 	public static TestRule rule = (Statement base, Description description) -> {

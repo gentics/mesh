@@ -25,7 +25,7 @@ public class MeshOAuthServiceImplTest {
 
 		SearchQueue searchQueue = Mockito.mock(SearchQueue.class);
 
-		MeshOAuthServiceImpl service = new MeshOAuthServiceImpl(null, null, meshOptions, Vertx.vertx(), searchQueue);
+		MeshOAuth2ServiceImpl service = new MeshOAuth2ServiceImpl(null, null, meshOptions, Vertx.vertx(), searchQueue);
 		service.options.setMapperScriptPath(scriptFile.getAbsolutePath());
 		String script = service.loadScript();
 		assertNotNull(script);

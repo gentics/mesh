@@ -3,7 +3,6 @@ package com.gentics.mesh.auth;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +37,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -49,7 +47,6 @@ import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.auth.oauth2.providers.KeycloakAuth;
 import io.vertx.ext.web.Route;
-import io.vertx.ext.web.handler.OAuth2AuthHandler;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import okhttp3.OkHttpClient;
@@ -59,16 +56,16 @@ import okhttp3.Response;
 
 @Singleton
 @SuppressWarnings("restriction")
-public class MeshOAuthServiceImpl implements MeshOAuthService {
+public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshOAuthServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshOAuth2ServiceImpl.class);
 
 	/**
 	 * Cache the token id which was last used by an user.
 	 */
 	public static final Cache<String, String> TOKEN_ID_LOG = Caffeine.newBuilder().maximumSize(20_000).expireAfterWrite(24, TimeUnit.HOURS).build();
 
-	protected OAuth2AuthHandler oauth2Handler;
+	protected MeshOAuth2AuthHandlerImpl oauth2Handler;
 	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 	protected OAuth2Options options;
 	protected String mapperScript = null;
@@ -78,7 +75,7 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 	protected SearchQueue searchQueue;
 
 	@Inject
-	public MeshOAuthServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx, SearchQueue searchQueue) {
+	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx, SearchQueue searchQueue) {
 		this.db = db;
 		this.boot = boot;
 		this.options = meshOptions.getAuthenticationOptions().getOauth2();
@@ -91,12 +88,7 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 		this.mapperScript = loadScript();
 
 		this.oauth2Provider = KeycloakAuth.create(vertx, OAuth2FlowType.AUTH_CODE, config);
-
-		// TODO configure callback urls
-		this.oauth2Handler = OAuth2AuthHandler.create(oauth2Provider, "http://localhost:8080");
-		// Don't setup the callback mechanism. This would create redirects in our rest api which we don't want. Instead we want to handle auth errors with http
-		// error codes.
-		// oauth2.setupCallback(router.get("/callback"));
+		this.oauth2Handler = new MeshOAuth2AuthHandlerImpl(oauth2Provider);
 
 	}
 
@@ -176,25 +168,8 @@ public class MeshOAuthServiceImpl implements MeshOAuthService {
 
 	@Override
 	public void secure(Route route) {
-		route.handler(rc -> {
-			// Don't run the OAuth2 handler if a user has already been authenticated.
-			if (rc.user() != null) {
-				rc.next();
-				return;
-			}
+		route.handler(oauth2Handler);
 
-			// No need to bother the oauth2 handler if no token info was provided.
-			// Maybe the anonymous handler can process this.
-			final HttpServerRequest request = rc.request();
-			final String authorization = request.headers().get(AUTHORIZATION);
-			boolean hasAuth = authorization != null;
-			if (!hasAuth) {
-				rc.next();
-				return;
-			}
-			oauth2Handler.handle(rc);
-
-		});
 		// Check whether the oauth handler was successful and convert the user to a mesh user.
 		route.handler(rc -> {
 			User user = rc.user();

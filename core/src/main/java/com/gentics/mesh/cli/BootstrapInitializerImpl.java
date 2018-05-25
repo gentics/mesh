@@ -91,7 +91,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
-import io.reactivex.Completable;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;

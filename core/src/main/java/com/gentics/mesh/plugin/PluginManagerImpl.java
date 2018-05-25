@@ -111,8 +111,10 @@ public class PluginManagerImpl implements PluginManager {
 
 	@Override
 	public Single<String> deploy(Plugin plugin) {
+		DeploymentOptions options = new DeploymentOptions();
+		options.setIsolationGroup(plugin.deploymentID());
+
 		return applyRollbackChecks(Single.create(sub -> {
-			DeploymentOptions options = new DeploymentOptions();
 			Mesh.vertx().deployVerticle(plugin, options, ch -> {
 				if (ch.failed()) {
 					sub.onError(ch.cause());
@@ -172,7 +174,6 @@ public class PluginManagerImpl implements PluginManager {
 
 	@Override
 	public Completable validate(Plugin plugin) {
-
 		return Completable.create(sub -> {
 			Objects.requireNonNull(plugin, "The plugin must not be null");
 			checkForConflict(plugin);
@@ -270,7 +271,6 @@ public class PluginManagerImpl implements PluginManager {
 			// TODO: Use dedicated tokenCode - See https://github.com/gentics/mesh/issues/412
 			return authProvider.generateAPIToken(admin, null, null);
 		});
-
 	}
 
 }

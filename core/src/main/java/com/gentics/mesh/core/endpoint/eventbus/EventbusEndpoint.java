@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -23,9 +24,13 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusEndpoint.class);
 
-	@Inject
 	public EventbusEndpoint() {
 		super("eventbus", null);
+	}
+
+	@Inject
+	public EventbusEndpoint(MeshAuthChain chain) {
+		super("eventbus", chain);
 	}
 
 	public String getDescription() {

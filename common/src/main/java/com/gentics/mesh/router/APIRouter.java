@@ -58,6 +58,7 @@ public class APIRouter {
 				bodyHandler.handle(rh);
 			}
 		});
+
 		router.route().handler(CookieHandler.create());
 
 	}
