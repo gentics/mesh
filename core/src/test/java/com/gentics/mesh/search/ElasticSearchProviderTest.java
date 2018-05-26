@@ -95,11 +95,12 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 		IndexInfo info = new IndexInfo("test", new JsonObject(), new JsonObject());
 		info.setIngestPipelineSettings(getPipelineConfig(Arrays.asList("data1", "data2")));
 
+		client.registerPipeline("othername", getPipelineConfig(Arrays.asList("blub"))).sync();
 		provider.createIndex(info).blockingAwait();
 		provider.registerIngestPipeline(info).blockingAwait();
 
 		JsonObject pipelines = client.listPipelines().sync();
-		assertEquals(7, pipelines.fieldNames().size());
+		assertEquals(8, pipelines.fieldNames().size());
 
 		// Clear the instance
 		provider.clear().blockingAwait();
@@ -108,6 +109,14 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 		assertEquals(1, pipelines.fieldNames().size());
 
 		provider.deregisterPipeline("notfound").blockingAwait();
+	}
+
+	@Test
+	public void testPrefixHandling() {
+		assertEquals("mesh-", getProvider().installationPrefix());
+
+		String fullIndex = "mesh-node-blar";
+		assertEquals("node-blar", getProvider().removePrefix(fullIndex));
 	}
 
 	/**

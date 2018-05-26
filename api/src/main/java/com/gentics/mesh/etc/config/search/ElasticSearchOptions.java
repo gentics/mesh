@@ -6,7 +6,6 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Search engine options POJO.
@@ -23,6 +22,8 @@ public class ElasticSearchOptions implements Option {
 	public static final int DEFAULT_STARTUP_TIMEOUT = 45;
 
 	public static final int DEFAULT_BULK_LIMIT = 2000;
+
+	public static final String DEFAULT_PREFIX = "mesh-";
 
 	public static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
 
@@ -61,9 +62,10 @@ public class ElasticSearchOptions implements Option {
 	private int bulkLimit = DEFAULT_BULK_LIMIT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances.")
+	@JsonPropertyDescription("Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: "
+		+ DEFAULT_PREFIX)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_PREFIX_ENV, description = "Override the configured elasticsearch prefix.")
-	private String prefix = UUIDUtil.randomUUID().substring(0, 4);
+	private String prefix = DEFAULT_PREFIX;
 
 	public ElasticSearchOptions() {
 

@@ -47,15 +47,15 @@ public class UpdateBulkEntry extends AbstractBulkEntry {
 	}
 
 	@Override
-	public String toBulkString() {
+	public String toBulkString(String installationPrefix) {
 		JsonObject metaData = new JsonObject();
 		JsonObject settings = new JsonObject()
-			.put("_index", getIndexName())
+			.put("_index", installationPrefix + getIndexName())
 			.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
 
 		if (usePipeline) {
-			settings.put("pipeline", getIndexName());
+			settings.put("pipeline", installationPrefix + getIndexName());
 		}
 
 		metaData.put(getBulkAction().id(), settings);

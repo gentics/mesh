@@ -25,10 +25,13 @@ public class DeleteBulkEntry extends AbstractBulkEntry {
 	}
 
 	@Override
-	public String toBulkString() {
+	public String toBulkString(String installationPrefix) {
 		JsonObject metaData = new JsonObject();
-		metaData.put(getBulkAction().id(),
-			new JsonObject().put("_index", getIndexName()).put("_type", SearchProvider.DEFAULT_TYPE).put("_id", getDocumentId()));
+		JsonObject doc = new JsonObject()
+			.put("_index", installationPrefix + getIndexName())
+			.put("_type", SearchProvider.DEFAULT_TYPE)
+			.put("_id", getDocumentId());
+		metaData.put(getBulkAction().id(), doc);
 		return metaData.encode();
 	}
 }

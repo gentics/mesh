@@ -295,8 +295,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	public Map<String, String> loadVersionsFromIndex(String indexName) throws HttpErrorException {
+		String fullIndexName = searchProvider.installationPrefix() + indexName;
 		Map<String, String> versions = new HashMap<>();
-		log.debug("Loading document info from index {" + indexName + "}");
+		log.debug("Loading document info from index {" + fullIndexName + "}");
 		SearchClient client = searchProvider.getClient();
 		JsonObject query = new JsonObject();
 		query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
@@ -304,7 +305,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		query.put("query", new JsonObject().put("match_all", new JsonObject()));
 		query.put("sort", new JsonArray().add("_doc"));
 
-		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", indexName);
+		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 		JsonObject result = builder.sync();
 		if (log.isTraceEnabled()) {
 			log.trace("Got response {" + result.encodePrettily() + "}");
@@ -362,13 +363,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		// Only create indices which we know of
 		if (info != null) {
 			// Create the index - Note that dedicated index settings are only configurable for nodes, micronodes (via schema, microschema)
-			Completable indexCompletable = searchProvider.createIndex(info);
-
-			// Check whether we also need to create an ingest pipeline for the index
-			if (info.getIngestPipelineSettings() != null) {
-				indexCompletable = indexCompletable.andThen(searchProvider.registerIngestPipeline(info));
-			}
-			return indexCompletable;
+			return searchProvider.createIndex(info);
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Only found indices:");

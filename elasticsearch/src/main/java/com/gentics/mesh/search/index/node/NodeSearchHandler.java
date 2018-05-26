@@ -94,7 +94,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		}
 
 		JsonObject queryOption = new JsonObject();
-		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
 		queryOption.put("search_type", "dfs_query_then_fetch");
 		log.debug("Using options {" + queryOption.encodePrettily() + "}");
 

@@ -16,9 +16,11 @@ public interface BulkEntry {
 	/**
 	 * Transform the entry information into the string representation needed for the bulk update.
 	 * 
+	 * @param installationPrefix
+	 *            Prefix which will be prepended to used pipelines and indices
 	 * @return
 	 */
-	String toBulkString();
+	String toBulkString(String installationPrefix);
 
 	/**
 	 * Returns the action of the entry.
@@ -27,7 +29,17 @@ public interface BulkEntry {
 	 */
 	Action getBulkAction();
 
+	/**
+	 * Return the index name.
+	 * 
+	 * @return
+	 */
 	String getIndexName();
 
+	/**
+	 * Return the document id.
+	 * 
+	 * @return
+	 */
 	String getDocumentId();
 }
