@@ -24,7 +24,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 	private static ImageFromDockerfile prepareDockerImage(boolean b) {
 		try {
 			ImageFromDockerfile dockerImage = new ImageFromDockerfile("elasticsearch", false);
-			String dockerFile = IOUtils.toString(MeshDockerServer.class.getResourceAsStream("/elasticsearch/Dockerfile"), Charset.defaultCharset());
+			String dockerFile = IOUtils.toString(ElasticsearchContainer.class.getResourceAsStream("/elasticsearch/Dockerfile"), Charset.defaultCharset());
 			dockerFile = dockerFile.replace("%VERSION%", VERSION);
 			dockerImage.withFileFromString("Dockerfile", dockerFile);
 			return dockerImage;

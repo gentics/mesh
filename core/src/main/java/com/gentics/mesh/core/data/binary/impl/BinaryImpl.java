@@ -2,6 +2,11 @@ package com.gentics.mesh.core.data.binary.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 
+import java.util.Base64;
+
+import org.apache.commons.codec.binary.Base64InputStream;
+
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -10,14 +15,18 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
 /**
  * @see Binary
  */
 public class BinaryImpl extends MeshVertexImpl implements Binary {
+
+	private static final Base64.Encoder BASE64 = Base64.getEncoder();
 
 	public static void init(Database database) {
 		database.addVertexType(BinaryImpl.class, MeshVertexImpl.class);
@@ -34,7 +43,24 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
 		return storage.read(getUuid());
 	}
-	
+
+	@Override
+	public Flowable<String> getBase64Stream() {
+		//TODO use stream instead to optimze the binary handling
+//		Flowable.using(() -> {
+//			Base64InputStream bins = new Base64InputStream(RxUtil.toInputStream(getStream(), Mesh.rxVertx()), true, 0, null);
+//			return bins;
+//		});
+		return getStream().reduce((a, b) -> a.appendBuffer(b)).map(buffer -> {
+			return BASE64.encodeToString(buffer.getBytes());
+		}).toFlowable();
+	}
+
+	@Override
+	public Single<String> getBase64Content() {
+		return getBase64Stream().reduce(String::concat).toSingle("");
+	}
+
 	@Override
 	public void remove() {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
