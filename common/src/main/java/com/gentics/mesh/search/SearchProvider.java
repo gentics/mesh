@@ -183,12 +183,11 @@ public interface SearchProvider {
 	String getVersion();
 
 	/**
-	 * Initialise and start the search provider using the given options.
+	 * Initialize and start the search provider.
 	 * 
-	 * @param options
 	 * @return Fluent API
 	 */
-	SearchProvider init(MeshOptions options);
+	SearchProvider init();
 
 	/**
 	 * Return the search provider client.
@@ -239,5 +238,13 @@ public interface SearchProvider {
 	 * @return
 	 */
 	boolean hasIngestPipelinePlugin();
+
+	/**
+	 * Return the specific prefix for this installation. Indices and pipelines will make use of this prefix so that multiple mesh instances can use the same
+	 * search server.
+	 * 
+	 * @return
+	 */
+	String installationPrefix();
 
 }

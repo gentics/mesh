@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
@@ -33,7 +34,7 @@ public class TrackingSearchProvider implements SearchProvider {
 	private Map<String, JsonObject> pipelineEvents = new HashMap<>();
 
 	@Override
-	public SearchProvider init(MeshOptions options) {
+	public SearchProvider init() {
 		return this;
 	}
 
@@ -209,6 +210,11 @@ public class TrackingSearchProvider implements SearchProvider {
 	@Override
 	public boolean hasIngestPipelinePlugin() {
 		return true;
+	}
+
+	@Override
+	public String installationPrefix() {
+		return Mesh.mesh().getOptions().getSearchOptions().getPrefix();
 	}
 
 }

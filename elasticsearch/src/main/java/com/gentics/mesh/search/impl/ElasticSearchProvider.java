@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +22,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -32,10 +30,12 @@ import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -63,8 +63,12 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private Set<String> registerdPlugins = new HashSet<>();
 
+	private Lazy<Vertx> vertx;
+
 	@Inject
-	public ElasticSearchProvider() {
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options) {
+		this.vertx = vertx;
+		this.options = options;
 	}
 
 	@Override
@@ -150,9 +154,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public ElasticSearchProvider init(MeshOptions options) {
-		this.options = options;
-		processManager = new ElasticsearchProcessManager(Mesh.mesh().getVertx(), options.getSearchOptions());
+	public ElasticSearchProvider init() {
+		processManager = new ElasticsearchProcessManager(vertx.get(), options.getSearchOptions());
 		return this;
 	}
 
@@ -196,10 +199,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable clear() {
 		// Read all indices and locate indices which have been created for/by mesh.
-		return client.readIndex("_all").async()
+		Completable clearIndices = client.readIndex("_all").async()
 			.flatMapObservable(response -> {
-				List<String> indices = Collections.emptyList();
-				indices = response.fieldNames().stream().filter(e -> e.startsWith(ES_PREFIX)).collect(Collectors.toList());
+				List<String> indices = response.fieldNames().stream().filter(e -> e.startsWith(ES_PREFIX)).collect(Collectors.toList());
 				if (indices.isEmpty()) {
 					log.debug("No indices with prefix {" + ES_PREFIX + "} were found.");
 				} else {
@@ -216,6 +218,19 @@ public class ElasticSearchProvider implements SearchProvider {
 				return deleteIndex(index).compose(withTimeoutAndLog("Deleting mesh index {" + index + "}", true));
 			}).compose(withTimeoutAndLog("Clearing mesh indices failed", true));
 
+		// Read all pipelines and remove them
+		Completable clearPipelines = client.listPipelines().async()
+			.flatMapObservable(response -> {
+				List<String> meshPipelines = response.fieldNames().stream().filter(e -> e.startsWith(ES_PREFIX)).collect(Collectors.toList());
+				if (meshPipelines.isEmpty()) {
+					log.debug("No pipelines with prefix {" + ES_PREFIX + "} were found");
+				}
+				return Observable.fromIterable(meshPipelines);
+			}).flatMapCompletable(pipeline -> {
+				return deregisterPipeline(pipeline).compose(withTimeoutAndLog("Deleting pipeline {" + pipeline + "}", true));
+			}).compose(withTimeoutAndLog("Clearing mesh piplines failed", true));
+
+		return Completable.mergeArray(clearIndices, clearPipelines);
 	}
 
 	@Override
@@ -310,7 +325,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable deregisterPipeline(String name) {
-		String fullname = ES_PREFIX + name;
+		String fullname = name;
 		return client.deregisterPlugin(fullname).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
@@ -530,5 +545,10 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public boolean hasIngestPipelinePlugin() {
 		return registerdPlugins.contains(INGEST_PIPELINE_PLUGIN_NAME);
+	}
+
+	@Override
+	public String installationPrefix() {
+		return ES_PREFIX;
 	}
 }

@@ -9,10 +9,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
+import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -84,6 +86,26 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 		assertEquals("Lorem ipsum dolor sit amet",
 			output.getJsonObject("_source").getJsonObject("field").getJsonObject("data2").getString("content"));
 
+	}
+
+	@Test
+	public void testClear() throws HttpErrorException {
+		ElasticSearchProvider provider = getProvider();
+		SearchClient client = (SearchClient) provider.getClient();
+		IndexInfo info = new IndexInfo("test", new JsonObject(), new JsonObject());
+		info.setIngestPipelineSettings(getPipelineConfig(Arrays.asList("data1", "data2")));
+
+		provider.createIndex(info).blockingAwait();
+		provider.registerIngestPipeline(info).blockingAwait();
+
+		JsonObject pipelines = client.listPipelines().sync();
+		assertEquals(7, pipelines.fieldNames().size());
+
+		// Clear the instance
+		provider.clear().blockingAwait();
+
+		pipelines = client.listPipelines().sync();
+		assertEquals(1, pipelines.fieldNames().size());
 	}
 
 	/**
