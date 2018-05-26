@@ -194,6 +194,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
 						binaryFieldInfo.put("width", binary.getImageWidth());
 						binaryFieldInfo.put("height", binary.getImageHeight());
+						
+						//TODO add binary field to document
+						String data = binary.getBase64Content().blockingGet();
 					}
 				}
 				break;
