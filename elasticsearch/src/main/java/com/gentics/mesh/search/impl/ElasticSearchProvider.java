@@ -119,12 +119,12 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 				}
+				registerdPlugins = loadPluginInfo().blockingGet();
 			}
 		} catch (MalformedURLException e) {
 			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
 		}
 
-		registerdPlugins = loadPluginInfo().blockingGet();
 	}
 
 	private void waitForCluster(SearchClient client, long timeoutInSec) {

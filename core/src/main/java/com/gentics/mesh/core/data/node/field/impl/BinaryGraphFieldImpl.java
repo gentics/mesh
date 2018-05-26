@@ -33,7 +33,7 @@ import com.gentics.mesh.util.NodeUtil;
 public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphField {
 
 	public static final Set<String> allowedTypes = new HashSet<>();
-	
+
 	static {
 		allowedTypes.add("application/pdf");
 		allowedTypes.add("application/msword");
@@ -289,7 +289,11 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public boolean isIngestableDocument() {
-		String mimeType = getMimeType().toLowerCase();
+		String mimeType = getMimeType();
+		if (mimeType == null) {
+			return false;
+		}
+		mimeType = mimeType.toLowerCase();
 		return allowedTypes.contains(mimeType);
 	}
 
