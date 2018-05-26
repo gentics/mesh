@@ -335,7 +335,7 @@ Example binary field within document:
     "dominantColor" : null,
     "width" : null,
     "height" : null,
-    "content" : {
+    "file" : {
       "language" : "ro",
       "content" : "Lorem ipsum dolor sit amet",
       "date" : "2018-05-04T21:28:30Z",
@@ -530,5 +530,5 @@ NOTE: Index settings for other elements (e.g: Users, Roles etc) can currently no
 
 == Binary Fields
 
-NOTE: Currently only the `content.content` field which is provided by the Elasticsearch ingest plugin supports custom mappings.
+NOTE: Currently only the `file.content` field which is provided by the Elasticsearch ingest plugin supports custom mappings.
 

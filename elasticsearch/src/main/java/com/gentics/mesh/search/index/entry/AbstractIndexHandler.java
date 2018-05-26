@@ -390,12 +390,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			if (log.isDebugEnabled()) {
 				log.debug("Creating index {" + indexInfo + "}");
 			}
-			if (info.getIngestPipelineSettings() != null) {
-				obs.add(searchProvider.createIndex(info).andThen(searchProvider.registerIngestPipeline(info)));
-			} else {
-				obs.add(searchProvider.createIndex(info));
-			}
-
+			obs.add(searchProvider.createIndex(info));
 		}
 		return Completable.merge(obs);
 	}

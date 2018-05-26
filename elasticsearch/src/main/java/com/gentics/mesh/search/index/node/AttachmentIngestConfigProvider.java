@@ -44,7 +44,7 @@ public class AttachmentIngestConfigProvider {
 			props.add("date");
 
 			settings.put("properties", props);
-			settings.put("target_field", "fields." + fieldName + ".content");
+			settings.put("target_field", "fields." + fieldName + ".file");
 			settings.put("ignore_missing", true);
 
 			JsonObject processor = new JsonObject();

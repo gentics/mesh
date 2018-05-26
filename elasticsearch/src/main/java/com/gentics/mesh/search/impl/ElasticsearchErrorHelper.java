@@ -29,7 +29,12 @@ public final class ElasticsearchErrorHelper {
 		if (error instanceof HttpErrorException) {
 			HttpErrorException he = (HttpErrorException) error;
 			JsonObject json = he.getBodyObject(JsonObject::new);
-			String errorType = json.getJsonObject("error").getString("type");
+			JsonObject errorObj = json.getJsonObject("error");
+			if (errorObj == null) {
+				json.encodePrettily();
+				return false;
+			}
+			String errorType = errorObj.getString("type");
 			return "version_conflict_engine_exception".equals(errorType);
 		}
 		return false;
@@ -39,7 +44,8 @@ public final class ElasticsearchErrorHelper {
 		if (error instanceof HttpErrorException) {
 			HttpErrorException se = (HttpErrorException) error;
 			JsonObject errorResp = se.getBodyObject(JsonObject::new);
-			if (se.getStatusCode() == 404 && "not_found".equals(errorResp.getString("result"))) {
+			// boolean isNotFound = "not_found".equals(errorResp.getString("result"));
+			if (se.getStatusCode() == 404) {
 				return true;
 			}
 		}

@@ -64,7 +64,8 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
-			System.out.println(doc.encodePrettily());
+			assertEquals("Lorem ipsum dolor sit amet",
+				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
 			tx.success();
 		}
 

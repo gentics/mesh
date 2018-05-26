@@ -32,9 +32,11 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.functions.Function;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -64,6 +66,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	private Set<String> registerdPlugins = new HashSet<>();
 
 	private Lazy<Vertx> vertx;
+
+	private Function<Throwable, CompletableSource> ignore404 = error -> isNotFoundError(error) ? Completable.complete()
+		: Completable.error(error);
 
 	@Inject
 	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options) {
@@ -198,12 +203,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable clear() {
+		String prefix = installationPrefix();
 		// Read all indices and locate indices which have been created for/by mesh.
 		Completable clearIndices = client.readIndex("_all").async()
 			.flatMapObservable(response -> {
-				List<String> indices = response.fieldNames().stream().filter(e -> e.startsWith(ES_PREFIX)).collect(Collectors.toList());
+				List<String> indices = response.fieldNames().stream().filter(e -> e.startsWith(prefix)).collect(Collectors.toList());
 				if (indices.isEmpty()) {
-					log.debug("No indices with prefix {" + ES_PREFIX + "} were found.");
+					log.debug("No indices with prefix {" + prefix + "} were found.");
 				} else {
 					if (log.isDebugEnabled()) {
 						for (String idx : indices) {
@@ -220,14 +226,18 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		// Read all pipelines and remove them
 		Completable clearPipelines = client.listPipelines().async()
+			.onErrorResumeNext(error -> isNotFoundError(error) ? Single.just(new JsonObject()) : Single.error(error))
 			.flatMapObservable(response -> {
-				List<String> meshPipelines = response.fieldNames().stream().filter(e -> e.startsWith(ES_PREFIX)).collect(Collectors.toList());
+				List<String> meshPipelines = response.fieldNames().stream().filter(e -> e.startsWith(prefix))
+					.collect(Collectors.toList());
 				if (meshPipelines.isEmpty()) {
-					log.debug("No pipelines with prefix {" + ES_PREFIX + "} were found");
+					log.debug("No pipelines with prefix {" + prefix + "} were found");
 				}
 				return Observable.fromIterable(meshPipelines);
 			}).flatMapCompletable(pipeline -> {
-				return deregisterPipeline(pipeline).compose(withTimeoutAndLog("Deleting pipeline {" + pipeline + "}", true));
+				log.debug("Deleting pipeline {" + pipeline + "}");
+				return deregisterPipeline(pipeline)
+					.compose(withTimeoutAndLog("Deleting pipeline {" + pipeline + "}", true));
 			}).compose(withTimeoutAndLog("Clearing mesh piplines failed", true));
 
 		return Completable.mergeArray(clearIndices, clearPipelines);
@@ -299,7 +309,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 
 		JsonObject json = createIndexSettings(info);
-		return client.createIndex(indexName, json).async()
+		Completable indexCreation = client.createIndex(indexName, json).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Create index {" + indexName + "} response: {" + response.toString() + "}");
@@ -307,6 +317,12 @@ public class ElasticSearchProvider implements SearchProvider {
 			}).toCompletable()
 			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
 			.compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
+
+		if (info.getIngestPipelineSettings() != null) {
+			return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
+		} else {
+			return indexCreation;
+		}
 	}
 
 	@Override
@@ -321,18 +337,6 @@ public class ElasticSearchProvider implements SearchProvider {
 			}).toCompletable()
 			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
 			.compose(withTimeoutAndLog("Creating pipeline {" + name + "}", true));
-	}
-
-	@Override
-	public Completable deregisterPipeline(String name) {
-		String fullname = name;
-		return client.deregisterPlugin(fullname).async()
-			.doOnSuccess(response -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Deregistered pipeline {" + fullname + "} response: {" + response.toString() + "}");
-				}
-			}).toCompletable()
-			.compose(withTimeoutAndLog("Removed pipeline {" + fullname + "}", true));
 	}
 
 	@Override
@@ -359,7 +363,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
 				}
 			}).toCompletable()
-			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
+			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}", true));
 	}
 
@@ -443,14 +447,41 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting indices {" + indices + "}");
 		}
-		return client.deleteIndex(indexNames).async()
+		Completable deleteIndex = client.deleteIndex(indexNames).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 			}).toCompletable()
-			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
+			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
+
+		Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
+			// We don't need to delete the pipeline for non node indices
+			if (!indexName.equals(installationPrefix() + "node")) {
+				return Completable.complete();
+			}
+			return deregisterPipeline(indexName);
+		})
+			.onErrorResumeNext(error -> {
+				return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+			})
+			.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
+
+		return Completable.mergeArray(deleteIndex, deletePipelines);
+	}
+
+	@Override
+	public Completable deregisterPipeline(String name) {
+		String fullname = name;
+		return client.deregisterPlugin(fullname).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deregistered pipeline {" + fullname + "} response: {" + response.toString() + "}");
+				}
+			}).toCompletable()
+			.onErrorResumeNext(ignore404)
+			.compose(withTimeoutAndLog("Removed pipeline {" + fullname + "}", true));
 	}
 
 	@Override
@@ -534,7 +565,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (error instanceof TimeoutException) {
 						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 					} else {
-						error.printStackTrace();
 						log.error("Request failed {" + msg + "}", error);
 					}
 				});

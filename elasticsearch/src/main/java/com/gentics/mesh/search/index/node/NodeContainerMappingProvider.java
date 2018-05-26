@@ -330,7 +330,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			contentFieldInfo.put("fields", customIndexOptions);
 		}
 
-		binaryProps.put("content", contentFieldInfo);
+		binaryProps.put("file", contentFieldInfo);
 	}
 
 	/**

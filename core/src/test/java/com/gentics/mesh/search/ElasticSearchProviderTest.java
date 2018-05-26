@@ -106,6 +106,8 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 
 		pipelines = client.listPipelines().sync();
 		assertEquals(1, pipelines.fieldNames().size());
+
+		provider.deregisterPipeline("notfound").blockingAwait();
 	}
 
 	/**
