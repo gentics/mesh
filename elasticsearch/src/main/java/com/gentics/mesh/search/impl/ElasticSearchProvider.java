@@ -328,7 +328,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
 			.compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
 
-		if (info.getIngestPipelineSettings() != null) {
+		if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
 			return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
 		} else {
 			return indexCreation;
@@ -473,19 +473,23 @@ public class ElasticSearchProvider implements SearchProvider {
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 
-		Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
-			// We don't need to delete the pipeline for non node indices
-			if (!indexName.startsWith("node")) {
-				return Completable.complete();
-			}
-			return deregisterPipeline(indexName);
-		})
-			.onErrorResumeNext(error -> {
-				return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+		if (hasIngestPipelinePlugin()) {
+			Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
+				// We don't need to delete the pipeline for non node indices
+				if (!indexName.startsWith("node")) {
+					return Completable.complete();
+				}
+				return deregisterPipeline(indexName);
 			})
-			.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
+				.onErrorResumeNext(error -> {
+					return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+				})
+				.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
+			return Completable.mergeArray(deleteIndex, deletePipelines);
+		} else {
+			return deleteIndex;
+		}
 
-		return Completable.mergeArray(deleteIndex, deletePipelines);
 	}
 
 	@Override
