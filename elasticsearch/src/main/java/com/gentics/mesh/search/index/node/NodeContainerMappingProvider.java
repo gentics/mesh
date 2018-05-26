@@ -175,124 +175,166 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		switch (type) {
 		case STRING:
 		case HTML:
-			fieldInfo.put("type", TEXT);
-			fieldInfo.put("index", INDEX_VALUE);
-			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
-			if (customIndexOptions != null) {
-				fieldInfo.put("fields", customIndexOptions);
-			}
+			addStringFieldMapping(fieldInfo, customIndexOptions);
 			break;
 		case BOOLEAN:
-			fieldInfo.put("type", BOOLEAN);
+			addBooleanFieldMapping(fieldInfo);
 			break;
 		case DATE:
-			fieldInfo.put("type", DATE);
+			addDataFieldMapping(fieldInfo);
 			break;
 		case BINARY:
-			fieldInfo.put("type", OBJECT);
-			JsonObject binaryProps = new JsonObject();
-			fieldInfo.put("properties", binaryProps);
-
-			binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
-			binaryProps.put("filename", notAnalyzedType(KEYWORD));
-			binaryProps.put("filesize", notAnalyzedType(LONG));
-			binaryProps.put("mimeType", notAnalyzedType(KEYWORD));
-			binaryProps.put("width", notAnalyzedType(LONG));
-			binaryProps.put("height", notAnalyzedType(LONG));
-			binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
-
-			JsonObject ignoreField = new JsonObject();
-			ignoreField.put("type", BINARY);
-			ignoreField.put("index", DONT_INDEX_VALUE);
-			binaryProps.put("data", ignoreField);
-
-			// Add mapping for fields which were added by the ingest plugin
-			JsonObject contentProps = new JsonObject();
-			contentProps.put("language", notAnalyzedType(KEYWORD));
-
-			contentProps.put("title", notAnalyzedType(KEYWORD));
-
-			JsonObject contentTextInfo = new JsonObject();
-			contentTextInfo.put("type", TEXT);
-			contentTextInfo.put("index", INDEX_VALUE);
-			contentTextInfo.put("analyzer", TRIGRAM_ANALYZER);
-			contentProps.put("content", contentTextInfo);
-
-			JsonObject contentFieldInfo = new JsonObject();
-			contentFieldInfo.put("type", OBJECT);
-			contentFieldInfo.put("properties", contentProps);
-
-			binaryProps.put("content", contentFieldInfo);
-
+			addBinaryFieldMapping(fieldInfo, customIndexOptions);
 			break;
 		case NUMBER:
-			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
-			// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.
-			fieldInfo.put("type", DOUBLE);
+			addNumberFieldMapping(fieldInfo);
 			break;
 		case NODE:
-			fieldInfo.put("type", KEYWORD);
-			fieldInfo.put("index", INDEX_VALUE);
+			addNodeMapping(fieldInfo);
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
-				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
-				switch (listFieldSchema.getListType()) {
-				case "node":
-					fieldInfo.put("type", KEYWORD);
-					fieldInfo.put("index", INDEX_VALUE);
-					break;
-				case "date":
-					fieldInfo.put("type", DATE);
-					break;
-				case "number":
-					fieldInfo.put("type", DOUBLE);
-					break;
-				case "boolean":
-					fieldInfo.put("type", BOOLEAN);
-					break;
-				case "micronode":
-					fieldInfo.put("type", NESTED);
-
-					// All allowed microschemas
-					String[] allowed = listFieldSchema.getAllowedSchemas();
-
-					// Merge the options into the info
-					fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, release));
-
-					// fieldProps.put(field.getName(), fieldInfo);
-					break;
-				case "string":
-					fieldInfo.put("type", TEXT);
-					if (customIndexOptions != null) {
-						fieldInfo.put("fields", customIndexOptions);
-					}
-					break;
-				case "html":
-					fieldInfo.put("type", TEXT);
-					if (customIndexOptions != null) {
-						fieldInfo.put("fields", customIndexOptions);
-					}
-					break;
-				default:
-					log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
-					throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
-				}
+				addListFieldMApping(fieldInfo, release, (ListFieldSchemaImpl) fieldSchema, customIndexOptions);
 			}
 			break;
 		case MICRONODE:
-			fieldInfo.put("type", OBJECT);
-
-			// Cast to MicronodeFieldSchema should be safe as it's a Micronode-Field
-			String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();
-
-			// Merge the options into the info
-			fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, release));
+			addMicronodeMapping(fieldInfo, fieldSchema, release);
 			break;
 		default:
 			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
 		}
 		return fieldInfo;
+	}
+
+	private void addBooleanFieldMapping(JsonObject fieldInfo) {
+		fieldInfo.put("type", BOOLEAN);
+	}
+
+	private void addDataFieldMapping(JsonObject fieldInfo) {
+		fieldInfo.put("type", DATE);
+	}
+
+	private void addNumberFieldMapping(JsonObject fieldInfo) {
+		// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
+		// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.
+		fieldInfo.put("type", DOUBLE);
+	}
+
+	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Release release) {
+		fieldInfo.put("type", OBJECT);
+
+		// Cast to MicronodeFieldSchema should be safe as it's a Micronode-Field
+		String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();
+
+		// Merge the options into the info
+		fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, release));
+	}
+
+	private void addNodeMapping(JsonObject fieldInfo) {
+		fieldInfo.put("type", KEYWORD);
+		fieldInfo.put("index", INDEX_VALUE);
+	}
+
+	private void addListFieldMApping(JsonObject fieldInfo, Release release, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
+		ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
+		String type = listFieldSchema.getListType();
+		switch (type) {
+		case "node":
+			fieldInfo.put("type", KEYWORD);
+			fieldInfo.put("index", INDEX_VALUE);
+			break;
+		case "date":
+			fieldInfo.put("type", DATE);
+			break;
+		case "number":
+			fieldInfo.put("type", DOUBLE);
+			break;
+		case "boolean":
+			fieldInfo.put("type", BOOLEAN);
+			break;
+		case "micronode":
+			fieldInfo.put("type", NESTED);
+
+			// All allowed microschemas
+			String[] allowed = listFieldSchema.getAllowedSchemas();
+
+			// Merge the options into the info
+			fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, release));
+
+			// fieldProps.put(field.getName(), fieldInfo);
+			break;
+		case "string":
+			fieldInfo.put("type", TEXT);
+			if (customIndexOptions != null) {
+				fieldInfo.put("fields", customIndexOptions);
+			}
+			break;
+		case "html":
+			fieldInfo.put("type", TEXT);
+			if (customIndexOptions != null) {
+				fieldInfo.put("fields", customIndexOptions);
+			}
+			break;
+		default:
+			log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
+			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
+		}
+
+	}
+
+	private void addStringFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		fieldInfo.put("type", TEXT);
+		fieldInfo.put("index", INDEX_VALUE);
+		fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
+		if (customIndexOptions != null) {
+			fieldInfo.put("fields", customIndexOptions);
+		}
+	}
+
+	private void addBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		fieldInfo.put("type", OBJECT);
+		JsonObject binaryProps = new JsonObject();
+		fieldInfo.put("properties", binaryProps);
+
+		binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
+		binaryProps.put("filename", notAnalyzedType(KEYWORD));
+		binaryProps.put("filesize", notAnalyzedType(LONG));
+		binaryProps.put("mimeType", notAnalyzedType(KEYWORD));
+		binaryProps.put("width", notAnalyzedType(LONG));
+		binaryProps.put("height", notAnalyzedType(LONG));
+		binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
+
+		// Add mapping for fields which were added by the ingest plugin
+		addBinaryFieldIngestMapping(binaryProps, customIndexOptions);
+	}
+
+	private void addBinaryFieldIngestMapping(JsonObject binaryProps, JsonObject customIndexOptions) {
+		// The data field must not be indexed. It is just provided for the ingest pipeline
+		JsonObject ignoreField = new JsonObject();
+		ignoreField.put("type", BINARY);
+		ignoreField.put("index", DONT_INDEX_VALUE);
+		binaryProps.put("data", ignoreField);
+
+		JsonObject contentProps = new JsonObject();
+		contentProps.put("language", notAnalyzedType(KEYWORD));
+
+		contentProps.put("title", notAnalyzedType(KEYWORD));
+
+		JsonObject contentTextInfo = new JsonObject();
+		contentTextInfo.put("type", TEXT);
+		contentTextInfo.put("index", INDEX_VALUE);
+		contentTextInfo.put("analyzer", TRIGRAM_ANALYZER);
+		contentProps.put("content", contentTextInfo);
+
+		JsonObject contentFieldInfo = new JsonObject();
+		contentFieldInfo.put("type", OBJECT);
+		contentFieldInfo.put("properties", contentProps);
+
+		if (customIndexOptions != null) {
+			contentFieldInfo.put("fields", customIndexOptions);
+		}
+
+		binaryProps.put("content", contentFieldInfo);
 	}
 
 	/**
