@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.ProjectsRouter;
+import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
@@ -413,5 +414,9 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		});
 		code.run();
 		latch.await(2000, TimeUnit.SECONDS);
+	}
+
+	public ElasticSearchProvider getProvider() {
+		return ((ElasticSearchProvider) searchProvider());
 	}
 }

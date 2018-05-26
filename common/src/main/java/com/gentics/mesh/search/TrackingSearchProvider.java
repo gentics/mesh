@@ -1,11 +1,14 @@
 package com.gentics.mesh.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
@@ -28,9 +31,10 @@ public class TrackingSearchProvider implements SearchProvider {
 	private List<String> getEvents = new ArrayList<>();
 	private List<String> dropIndexEvents = new ArrayList<>();
 	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
+	private Map<String, JsonObject> pipelineEvents = new HashMap<>();
 
 	@Override
-	public SearchProvider init(MeshOptions options) {
+	public SearchProvider init() {
 		return this;
 	}
 
@@ -45,11 +49,27 @@ public class TrackingSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Single<Set<String>> loadPluginInfo() {
+		return Single.just(Collections.emptySet());
+	}
+
+	@Override
 	public Completable createIndex(IndexInfo info) {
 		JsonObject json = new JsonObject();
 		json.put("mapping", info.getIndexMappings());
 		json.put("settings", info.getIndexSettings());
 		createIndexEvents.put(info.getIndexName(), json);
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable registerIngestPipeline(IndexInfo info) {
+		pipelineEvents.put(info.getIngestPipelineName(), info.getIngestPipelineSettings());
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable deregisterPipeline(String name) {
 		return Completable.complete();
 	}
 
@@ -185,6 +205,16 @@ public class TrackingSearchProvider implements SearchProvider {
 				System.out.println("Json:\n" + entry.getValue().encodePrettily());
 			}
 		}
+	}
+
+	@Override
+	public boolean hasIngestPipelinePlugin() {
+		return true;
+	}
+
+	@Override
+	public String installationPrefix() {
+		return Mesh.mesh().getOptions().getSearchOptions().getPrefix();
 	}
 
 }

@@ -23,12 +23,15 @@ public class ElasticSearchOptions implements Option {
 
 	public static final int DEFAULT_BULK_LIMIT = 2000;
 
+	public static final String DEFAULT_PREFIX = "mesh-";
+
 	public static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
 
 	public static final String MESH_ELASTICSEARCH_URL_ENV = "MESH_ELASTICSEARCH_URL";
 	public static final String MESH_ELASTICSEARCH_TIMEOUT_ENV = "MESH_ELASTICSEARCH_TIMEOUT";
 	public static final String MESH_ELASTICSEARCH_STARTUP_TIMEOUT_ENV = "MESH_ELASTICSEARCH_STARTUP_TIMEOUT";
 	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
+	public static final String MESH_ELASTICSEARCH_PREFIX_ENV = "MESH_ELASTICSEARCH_PREFIX";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
@@ -57,6 +60,12 @@ public class ElasticSearchOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Upper limit for the size of bulk requests.")
 	private int bulkLimit = DEFAULT_BULK_LIMIT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: "
+		+ DEFAULT_PREFIX)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_PREFIX_ENV, description = "Override the configured elasticsearch prefix.")
+	private String prefix = DEFAULT_PREFIX;
 
 	public ElasticSearchOptions() {
 
@@ -106,8 +115,9 @@ public class ElasticSearchOptions implements Option {
 		return url;
 	}
 
-	public void setUrl(String url) {
+	public ElasticSearchOptions setUrl(String url) {
 		this.url = url;
+		return this;
 	}
 
 	public String getEmbeddedArguments() {
@@ -127,16 +137,27 @@ public class ElasticSearchOptions implements Option {
 		return startupTimeout;
 	}
 
-	public void setStartupTimeout(Integer startupTimeout) {
+	public ElasticSearchOptions setStartupTimeout(Integer startupTimeout) {
 		this.startupTimeout = startupTimeout;
+		return this;
 	}
 
 	public int getBulkLimit() {
 		return bulkLimit;
 	}
 
-	public void setBulkLimit(int bulkLimit) {
+	public ElasticSearchOptions setBulkLimit(int bulkLimit) {
 		this.bulkLimit = bulkLimit;
+		return this;
+	}
+
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public ElasticSearchOptions setPrefix(String prefix) {
+		this.prefix = prefix;
+		return this;
 	}
 
 }

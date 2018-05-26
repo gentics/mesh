@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -52,6 +53,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 	private static final String BINARY_FIELD = "binaryField";
 
+	private static final Base64.Decoder BASE64 = Base64.getDecoder();
+
 	@Override
 	protected BinaryFieldSchema createFieldSchema(boolean isRequired) {
 		BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
@@ -59,6 +62,31 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		binaryFieldSchema.setAllowedMimeTypes("image/jpg", "text/plain");
 		binaryFieldSchema.setRequired(isRequired);
 		return binaryFieldSchema;
+	}
+
+	@Test
+	public void testBinaryFieldBase64() {
+		try (Tx tx = tx()) {
+			String input = "";
+			while (input.length() < 32 * 1024) {
+				input = input.concat("Hallo");
+			}
+			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
+			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			String base64 = binary.getBase64Content().blockingGet();
+			assertEquals(input.toString(), new String(BASE64.decode(base64)));
+		}
+	}
+
+	@Test
+	public void testBinaryFieldBase641Char() {
+		try (Tx tx = tx()) {
+			String input = " ";
+			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
+			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			String base64 = binary.getBase64Content().blockingGet();
+			assertEquals(input.toString(), new String(BASE64.decode(base64)));
+		}
 	}
 
 	@Test
@@ -83,7 +111,6 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 		try (Tx tx = tx()) {
 			String json = getJson(node);
-			System.out.println(json);
 			assertNotNull(json);
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 			assertNotNull(response);

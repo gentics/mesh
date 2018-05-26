@@ -1,10 +1,13 @@
 package com.gentics.mesh.search;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -16,7 +19,7 @@ import io.vertx.core.json.JsonObject;
 public class DevNullSearchProvider implements SearchProvider {
 
 	@Override
-	public SearchProvider init(MeshOptions options) {
+	public SearchProvider init() {
 		return this;
 	}
 
@@ -31,7 +34,22 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Single<Set<String>> loadPluginInfo() {
+		return Single.just(Collections.emptySet());
+	}
+
+	@Override
 	public Completable createIndex(IndexInfo info) {
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable registerIngestPipeline(IndexInfo info) {
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable deregisterPipeline(String name) {
 		return Completable.complete();
 	}
 
@@ -104,6 +122,16 @@ public class DevNullSearchProvider implements SearchProvider {
 	@Override
 	public <T> T getClient() {
 		return null;
+	}
+
+	@Override
+	public boolean hasIngestPipelinePlugin() {
+		return true;
+	}
+
+	@Override
+	public String installationPrefix() {
+		return Mesh.mesh().getOptions().getSearchOptions().getPrefix();
 	}
 
 }

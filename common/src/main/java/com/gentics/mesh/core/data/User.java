@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.Events.EVENT_USER_CREATED;
 import static com.gentics.mesh.Events.EVENT_USER_DELETED;
 import static com.gentics.mesh.Events.EVENT_USER_UPDATED;
-import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -65,7 +63,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	static String composeIndexName() {
-		return INDEX_PREFIX + TYPE.toLowerCase();
+		return TYPE.toLowerCase();
 	}
 
 	/**

@@ -246,7 +246,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.startServer();
 				initVertx(options, isClustered);
 				db.registerEventHandlers();
-				searchProvider.init(options);
+				searchProvider.init();
 				searchProvider.start();
 				if (setupData) {
 					createSearchIndicesAndMappings();
@@ -255,12 +255,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to wait for other nodes and receive the graphdb
 				db.startServer();
 				initVertx(options, isClustered);
-				Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
+				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 				db.joinCluster();
 				db.registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
-				searchProvider.init(options);
+				searchProvider.init();
 				searchProvider.start();
 				initLocalData(true);
 			}
@@ -276,7 +276,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		} else {
 			initVertx(options, isClustered);
-			searchProvider.init(options);
+			searchProvider.init();
 			searchProvider.start();
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();

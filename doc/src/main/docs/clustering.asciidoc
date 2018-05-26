@@ -91,7 +91,6 @@ Alternatively it is also possible to hardcode the IP addresses of the cluster in
 ...
 ----
 
-  
 == Session distribution
 
 Since Gentics Mesh is not using sessions it is not needed to distribute sessions across the cluster. A link:https://jwt.io/introduction/[JWT] will be used to authenticate the user. 
@@ -121,7 +120,7 @@ Transactions are directly being handled by link:http://orientdb.com/docs/2.2.x/T
 
 The distribution of data (write) is executed synchronous and will be directly visible on other instances. 
 Operations which modify permissions are handled asynchronous and may take a few miliseconds to propagate throughout the cluster.
-Operations which invoke node, micronode or release migrations can only be executed seperately throughout the cluster. 
+Operations which invoke node, micronode or release migrations can only be executed separately throughout the cluster. 
 A running migration on one instance will cause the other instances of the cluster to reject any migration request as long as a migration is active.
 
 == Upgrading a cluster
@@ -139,8 +138,8 @@ You can rollback by stopping the Gentics Mesh version and starting the older ver
 
 === Offline Upgrade
 
-Offline upgrades are required when database changes need to be applied. These changes could negativly impact other (older) instances in the cluster and thus an offline upgrade will 
-only occure locally and not directly propagate throughout the cluster. Gentics Mesh will not join the cluster in such situations.
+Offline upgrades are required when database changes need to be applied. These changes could negatively impact other (older) instances in the cluster and thus an offline upgrade will 
+only occur locally and not directly propagate throughout the cluster. Gentics Mesh will not join the cluster in such situations.
 The cluster will only form in-between versions which use the same database revision. You can check the list of link:administration-guide.html#database-revisions[Database revisions] in 
 order to determine whether an online or offline upgrade can be done.
 
@@ -155,6 +154,11 @@ You can rollback as long as you still have instances which have not yet been mig
 
 There is currently no build-in support for these platforms.
 
+== Scaling
+
+When dynamic discovery via multicast is enabled it is possible to just start additional Gentics Mesh instances in order to scale horizontally.
+The newly start instances must not have any data within the graph storage directory. The needed data will automatically be replicated when joining the cluster.
+
 == FAQ
 
 [qanda]
@@ -167,7 +171,7 @@ Yes. New instances can be added at any time.
 Are my changes directly visible on other instances?::
 The replication handles this as fast as the network allows but by default replication is happening synchronous to fullfill the `writeQuorum` and asynchronous once the quorum has been satisfied.
 which means that it could take a few moments until your changes are propagated throughout the cluster.
-This behaviour is configureable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
+This behaviour is configurable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
 Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.
 
 What happens if the network between my instances fails?::

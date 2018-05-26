@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.Events.EVENT_ROLE_CREATED;
 import static com.gentics.mesh.Events.EVENT_ROLE_DELETED;
 import static com.gentics.mesh.Events.EVENT_ROLE_UPDATED;
-import static com.gentics.mesh.search.SearchProvider.INDEX_PREFIX;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +38,7 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 * @return
 	 */
 	static String composeIndexName() {
-		return INDEX_PREFIX + TYPE.toLowerCase();
+		return TYPE.toLowerCase();
 	}
 
 	/**

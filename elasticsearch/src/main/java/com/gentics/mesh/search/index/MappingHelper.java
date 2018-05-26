@@ -22,6 +22,7 @@ public final class MappingHelper {
 	public static final String DATE = "date";
 	public static final String LONG = "long";
 	public static final String DOUBLE = "double";
+	public static final String BINARY = "binary";
 
 	// Index Types
 	public static final boolean DONT_INDEX_VALUE = false;

@@ -10,8 +10,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -20,21 +23,22 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.functions.Function;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -50,19 +54,27 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
+	private static final String INGEST_PIPELINE_PLUGIN_NAME = "ingest-attachment";
+
 	private SearchClient client;
 
 	private MeshOptions options;
-
-	private Lazy<IndexHandlerRegistry> registry;
 
 	private ElasticsearchProcessManager processManager;
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
+	private Set<String> registerdPlugins = new HashSet<>();
+
+	private Lazy<Vertx> vertx;
+
+	private Function<Throwable, CompletableSource> ignore404 = error -> isNotFoundError(error) ? Completable.complete()
+		: Completable.error(error);
+
 	@Inject
-	public ElasticSearchProvider(Lazy<IndexHandlerRegistry> registry) {
-		this.registry = registry;
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options) {
+		this.vertx = vertx;
+		this.options = options;
 	}
 
 	@Override
@@ -107,10 +119,12 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 				}
+				registerdPlugins = loadPluginInfo().blockingGet();
 			}
 		} catch (MalformedURLException e) {
 			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
 		}
+
 	}
 
 	private void waitForCluster(SearchClient client, long timeoutInSec) {
@@ -146,9 +160,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public ElasticSearchProvider init(MeshOptions options) {
-		this.options = options;
-		processManager = new ElasticsearchProcessManager(Mesh.mesh().getVertx(), options.getSearchOptions());
+	public ElasticSearchProvider init() {
+		processManager = new ElasticsearchProcessManager(vertx.get(), options.getSearchOptions());
 		return this;
 	}
 
@@ -191,13 +204,17 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable clear() {
+		String prefix = installationPrefix();
 		// Read all indices and locate indices which have been created for/by mesh.
-		return client.readIndex("_all").async()
+		Completable clearIndices = client.readIndex("_all").async()
 			.flatMapObservable(response -> {
-				List<String> indices = Collections.emptyList();
-				indices = response.fieldNames().stream().filter(e -> e.startsWith(INDEX_PREFIX)).collect(Collectors.toList());
+				List<String> indices = response.fieldNames()
+					.stream()
+					.filter(e -> e.startsWith(prefix))
+					.map(this::removePrefix)
+					.collect(Collectors.toList());
 				if (indices.isEmpty()) {
-					log.debug("No indices with prefix {" + INDEX_PREFIX + "} were found.");
+					log.debug("No indices with prefix {" + prefix + "} were found.");
 				} else {
 					if (log.isDebugEnabled()) {
 						for (String idx : indices) {
@@ -212,6 +229,26 @@ public class ElasticSearchProvider implements SearchProvider {
 				return deleteIndex(index).compose(withTimeoutAndLog("Deleting mesh index {" + index + "}", true));
 			}).compose(withTimeoutAndLog("Clearing mesh indices failed", true));
 
+		// Read all pipelines and remove them
+		Completable clearPipelines = client.listPipelines().async()
+			.onErrorResumeNext(error -> isNotFoundError(error) ? Single.just(new JsonObject()) : Single.error(error))
+			.flatMapObservable(response -> {
+				List<String> meshPipelines = response.fieldNames()
+					.stream()
+					.filter(e -> e.startsWith(prefix))
+					.map(this::removePrefix)
+					.collect(Collectors.toList());
+				if (meshPipelines.isEmpty()) {
+					log.debug("No pipelines with prefix {" + prefix + "} were found");
+				}
+				return Observable.fromIterable(meshPipelines);
+			}).flatMapCompletable(pipeline -> {
+				log.debug("Deleting pipeline {" + pipeline + "}");
+				return deregisterPipeline(pipeline)
+					.compose(withTimeoutAndLog("Deleting pipeline {" + pipeline + "}", true));
+			}).compose(withTimeoutAndLog("Clearing mesh piplines failed", true));
+
+		return Completable.mergeArray(clearIndices, clearPipelines);
 	}
 
 	@Override
@@ -237,71 +274,120 @@ public class ElasticSearchProvider implements SearchProvider {
 				}).toCompletable()
 				.compose(withTimeoutAndLog("Refreshing all indices", true));
 		}
+
 		return Observable.fromArray(indices).flatMapCompletable(index -> {
-			return client.refresh(index).async()
+			String fullIndex = installationPrefix() + index;
+			return client.refresh(fullIndex).async()
 				.doOnError(error -> {
-					log.error("Refreshing of indices {" + index + "} failed.", error);
+					log.error("Refreshing of indices {" + fullIndex + "} failed.", error);
 					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
 				}).toCompletable()
-				.compose(withTimeoutAndLog("Refreshing indices {" + index + "}", true));
+				.compose(withTimeoutAndLog("Refreshing indices {" + fullIndex + "}", true));
+		});
+	}
+
+	public boolean hasPlugin(String name) {
+		Objects.requireNonNull(name, "A valid plugin name must be specified.");
+		return registerdPlugins.contains(name);
+	}
+
+	@Override
+	public Single<Set<String>> loadPluginInfo() {
+		return client.nodesInfo().async().map(info -> {
+			Set<String> pluginSet = new HashSet<>();
+			JsonObject nodes = info.getJsonObject("nodes");
+			for (String nodeId : nodes.fieldNames()) {
+				JsonObject node = nodes.getJsonObject(nodeId);
+				JsonArray plugins = node.getJsonArray("plugins");
+				for (int i = 0; i < plugins.size(); i++) {
+					JsonObject plugin = plugins.getJsonObject(i);
+					String name = plugin.getString("name");
+					pluginSet.add(name);
+
+				}
+			}
+			return pluginSet;
 		});
 	}
 
 	@Override
 	public Completable createIndex(IndexInfo info) {
-		String indexName = info.getIndexName();
+		String indexName = installationPrefix() + info.getIndexName();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Creating ES Index {" + indexName + "}");
 		}
 
 		JsonObject json = createIndexSettings(info);
-		return client.createIndex(indexName, json).async()
+		Completable indexCreation = client.createIndex(indexName, json).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
+					log.debug("Create index {" + indexName + "} response: {" + response.toString() + "}");
 				}
 			}).toCompletable()
 			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
 			.compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
+
+		if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
+			return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
+		} else {
+			return indexCreation;
+		}
+	}
+
+	@Override
+	public Completable registerIngestPipeline(IndexInfo info) {
+		String name = installationPrefix() + info.getIngestPipelineName();
+		JsonObject config = info.getIngestPipelineSettings();
+		return client.registerPipeline(name, config).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Registered pipeline {" + name + "} response: {" + response.toString() + "}");
+				}
+			}).toCompletable()
+			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
+			.compose(withTimeoutAndLog("Creating pipeline {" + name + "}", true));
 	}
 
 	@Override
 	public Single<JsonObject> getDocument(String index, String uuid) {
-		return client.getDocument(index, DEFAULT_TYPE, uuid).async()
+		String fullIndex = installationPrefix() + index;
+		return client.getDocument(fullIndex, DEFAULT_TYPE, uuid).async()
 			.map(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Get object {" + uuid + "} from index {" + index + "}");
+					log.debug("Get object {" + uuid + "} from index {" + fullIndex + "}");
 				}
 				return response;
 			}).timeout(getOptions().getTimeout(), TimeUnit.MILLISECONDS).doOnError(error -> {
-				log.error("Could not get object {" + uuid + "} from index {" + index + "}", error);
+				log.error("Could not get object {" + uuid + "} from index {" + fullIndex + "}", error);
 			});
 	}
 
 	@Override
 	public Completable deleteDocument(String index, String uuid) {
+		String fullIndex = installationPrefix() + index;
 		if (log.isDebugEnabled()) {
-			log.debug("Deleting document {" + uuid + "} from index {" + index + "}.");
+			log.debug("Deleting document {" + uuid + "} from index {" + fullIndex + "}.");
 		}
-		return client.deleteDocument(index, DEFAULT_TYPE, uuid).async()
+		return client.deleteDocument(fullIndex, DEFAULT_TYPE, uuid).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
+					log.debug("Deleted object {" + uuid + "} from index {" + fullIndex + "}");
 				}
 			}).toCompletable()
-			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
-			.compose(withTimeoutAndLog("Deleting document {" + index + "} / {" + uuid + "}", true));
+			.onErrorResumeNext(ignore404)
+			.compose(withTimeoutAndLog("Deleting document {" + fullIndex + "} / {" + uuid + "}", true));
 	}
 
 	@Override
 	public Completable updateDocument(String index, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
+		String fullIndex = installationPrefix() + index;
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
 		}
 
-		return client.updateDocument(index, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async()
+		return client.updateDocument(fullIndex, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug(
@@ -312,7 +398,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					return Completable.complete();
 				}
 				return Completable.error(error);
-			}).compose(withTimeoutAndLog("Updating document {" + index + "} / {" + uuid + "}", true));
+			}).compose(withTimeoutAndLog("Updating document {" + fullIndex + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -322,16 +408,33 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		long start = System.currentTimeMillis();
 
-		String bulkData = entries.stream().map(BulkEntry::toBulkString).collect(Collectors.joining("\n")) + "\n";
+		String bulkData = entries.stream()
+			.map(e -> e.toBulkString(installationPrefix()))
+			.collect(Collectors.joining("\n")) + "\n";
 		if (log.isTraceEnabled()) {
 			log.trace("Using bulk payload:");
 			log.trace(bulkData);
 		}
 		return client.processBulk(bulkData).async()
 			.doOnSuccess(response -> {
+				boolean errors = response.getBoolean("errors");
+				if (errors) {
+					JsonArray items = response.getJsonArray("items");
+					for (int i = 0; i < items.size(); i++) {
+						JsonObject item = items.getJsonObject(i).getJsonObject("index");
+						if (item != null && item.containsKey("error")) {
+							JsonObject error = item.getJsonObject("error");
+							String type = error.getString("type");
+							String reason = error.getString("reason");
+							String id = item.getString("_id");
+							String index = item.getString("_index");
+							log.error("Could not store document {" + index + ":" + id + "} - " + type + " : " + reason);
+						}
+					}
+				}
+
 				if (log.isDebugEnabled()) {
-					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis()
-						- start) + "[ms]");
+					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 			}).toCompletable()
 			.compose(withTimeoutAndLog("Storing document batch.", true));
@@ -339,34 +442,67 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
+		String fullIndex = installationPrefix() + index;
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
-			log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}");
+			log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + fullIndex + "}");
 		}
-		return client.storeDocument(index, DEFAULT_TYPE, uuid, document).async()
+		return client.storeDocument(fullIndex, DEFAULT_TYPE, uuid, document).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}. Duration " + (System.currentTimeMillis()
+					log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis()
 						- start) + "[ms]");
 				}
-			}).toCompletable().compose(withTimeoutAndLog("Storing document {" + index + "} / {" + uuid + "}", true));
+			}).toCompletable().compose(withTimeoutAndLog("Storing document {" + fullIndex + "} / {" + uuid + "}", true));
 	}
 
 	@Override
 	public Completable deleteIndex(boolean failOnMissingIndex, String... indexNames) {
-		String indices = Strings.join(indexNames, ",");
+		String[] fullIndexNames = Arrays.stream(indexNames).map(i -> installationPrefix() + i).toArray(String[]::new);
+		String indices = Strings.join(fullIndexNames, ",");
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting indices {" + indices + "}");
 		}
-		return client.deleteIndex(indexNames).async()
+		Completable deleteIndex = client.deleteIndex(fullIndexNames).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 			}).toCompletable()
-			.onErrorResumeNext(error -> isNotFoundError(error) ? Completable.complete() : Completable.error(error))
+			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
+
+		if (hasIngestPipelinePlugin()) {
+			Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
+				// We don't need to delete the pipeline for non node indices
+				if (!indexName.startsWith("node")) {
+					return Completable.complete();
+				}
+				return deregisterPipeline(indexName);
+			})
+				.onErrorResumeNext(error -> {
+					return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+				})
+				.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
+			return Completable.mergeArray(deleteIndex, deletePipelines);
+		} else {
+			return deleteIndex;
+		}
+
+	}
+
+	@Override
+	public Completable deregisterPipeline(String name) {
+		String fullname = installationPrefix() + name;
+		return client.deregisterPlugin(fullname).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deregistered pipeline {" + fullname + "} response: {" + response.toString() + "}");
+				}
+			}).toCompletable()
+			.onErrorResumeNext(ignore404)
+			.compose(withTimeoutAndLog("Removed pipeline {" + fullname + "}", true));
 	}
 
 	@Override
@@ -450,7 +586,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (error instanceof TimeoutException) {
 						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 					} else {
-						error.printStackTrace();
 						log.error("Request failed {" + msg + "}", error);
 					}
 				});
@@ -458,4 +593,28 @@ public class ElasticSearchProvider implements SearchProvider {
 		};
 	}
 
+	@Override
+	public boolean hasIngestPipelinePlugin() {
+		return registerdPlugins.contains(INGEST_PIPELINE_PLUGIN_NAME);
+	}
+
+	/**
+	 * Remove the installation prefix from the given string.
+	 * 
+	 * @param withPrefix
+	 * @return
+	 */
+	public String removePrefix(String withPrefix) {
+		String prefix = installationPrefix();
+		if (withPrefix.startsWith(prefix)) {
+			return withPrefix.substring(prefix.length());
+		} else {
+			return withPrefix;
+		}
+	}
+
+	@Override
+	public String installationPrefix() {
+		return options.getSearchOptions().getPrefix();
+	}
 }

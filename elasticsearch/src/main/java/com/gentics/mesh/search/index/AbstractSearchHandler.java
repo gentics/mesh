@@ -146,13 +146,13 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		JsonObject queryOption = new JsonObject();
-		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
 		queryOption.put("search_type", "dfs_query_then_fetch");
 		log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
 		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
 		requestBuilder.async().subscribe(response -> {
-			//JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
+			// JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
 			ac.send(response.toString(), OK);
 		}, error -> {
@@ -213,7 +213,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		JsonObject queryOption = new JsonObject();
-		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
 		queryOption.put("search_type", "dfs_query_then_fetch");
 		log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
@@ -335,7 +335,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		JsonObject queryOption = new JsonObject();
-		queryOption.put("index", StringUtils.join(indices.stream().toArray(String[]::new), ","));
+		queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
 		queryOption.put("search_type", "dfs_query_then_fetch");
 		log.debug("Using options {" + queryOption.encodePrettily() + "}");
 

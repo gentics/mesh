@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -26,6 +27,20 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	Flowable<Buffer> getStream();
+
+	/**
+	 * Return the base64 data stream.
+	 * 
+	 * @return
+	 */
+	Flowable<String> getBase64Stream();
+
+	/**
+	 * Return the data as base 64 encoded string.
+	 * 
+	 * @return
+	 */
+	Single<String> getBase64Content();
 
 	/**
 	 * Return the sha512 checksum.

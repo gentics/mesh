@@ -2,9 +2,10 @@ package com.gentics.mesh.search;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
-import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -14,11 +15,6 @@ import io.vertx.core.json.JsonObject;
  * A search provider is a service this enables storage and retrieval of indexed documents.
  */
 public interface SearchProvider {
-
-	/**
-	 * Prefix for indices created by mesh.
-	 */
-	static final String INDEX_PREFIX = "mesh-";
 
 	/**
 	 * Default document type for all indices. Note that the type handling will be removed in future ES versions.
@@ -35,6 +31,13 @@ public interface SearchProvider {
 	Completable refreshIndex(String... indices);
 
 	/**
+	 * Load the plugin information.
+	 * 
+	 * @return
+	 */
+	Single<Set<String>> loadPluginInfo();
+
+	/**
 	 * Create a search index with index information.
 	 * 
 	 * @param info
@@ -42,6 +45,22 @@ public interface SearchProvider {
 	 * @return Completable for the action
 	 */
 	Completable createIndex(IndexInfo info);
+
+	/**
+	 * Register the ingest pipeline using the index information.
+	 * 
+	 * @param info
+	 * @return Completable for the action
+	 */
+	Completable registerIngestPipeline(IndexInfo info);
+
+	/**
+	 * Deregister the ingest pipeline using the index information.
+	 * 
+	 * @param name
+	 * @return Completable for the action
+	 */
+	Completable deregisterPipeline(String name);
 
 	/**
 	 * Update the document.
@@ -158,12 +177,11 @@ public interface SearchProvider {
 	String getVersion();
 
 	/**
-	 * Initialise and start the search provider using the given options.
+	 * Initialize and start the search provider.
 	 * 
-	 * @param options
 	 * @return Fluent API
 	 */
-	SearchProvider init(MeshOptions options);
+	SearchProvider init();
 
 	/**
 	 * Return the search provider client.
@@ -207,5 +225,20 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Completable validateCreateViaTemplate(IndexInfo info);
+
+	/**
+	 * Check whether the ingest attachment plugin can be used.
+	 * 
+	 * @return
+	 */
+	boolean hasIngestPipelinePlugin();
+
+	/**
+	 * Return the specific prefix for this installation. Indices and pipelines will make use of this prefix so that multiple mesh instances can use the same
+	 * search server.
+	 * 
+	 * @return
+	 */
+	String installationPrefix();
 
 }

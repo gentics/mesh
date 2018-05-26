@@ -295,8 +295,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	public Map<String, String> loadVersionsFromIndex(String indexName) throws HttpErrorException {
+		String fullIndexName = searchProvider.installationPrefix() + indexName;
 		Map<String, String> versions = new HashMap<>();
-		log.debug("Loading document info from index {" + indexName + "}");
+		log.debug("Loading document info from index {" + fullIndexName + "}");
 		SearchClient client = searchProvider.getClient();
 		JsonObject query = new JsonObject();
 		query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
@@ -304,7 +305,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		query.put("query", new JsonObject().put("match_all", new JsonObject()));
 		query.put("sort", new JsonArray().add("_doc"));
 
-		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", indexName);
+		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 		JsonObject result = builder.sync();
 		if (log.isTraceEnabled()) {
 			log.trace("Got response {" + result.encodePrettily() + "}");

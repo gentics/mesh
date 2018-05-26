@@ -10,6 +10,21 @@
 
 = Gentics Mesh Changelog
 
+[[v0.21.0]]
+== 0.21.0 (27.05.2018)
+
+icon:bullhorn[] Binary Search
+
+[quote]
+____
+This version of Gentics Mesh introduces the __Binary Search support__.
+
+The https://www.elastic.co/guide/en/elasticsearch/plugins/6.2/ingest-attachment.html[Elasticsearch Ingest Attachment Plugin] will be utilized if possible to process text file uploads (PDF, DOC, DOCX).
+A detailed description of this feature can be found in our https://getmesh.io/docs/beta/elasticsearch.html#_binarysearch[Elasticsearch Documentation].
+____
+
+icon:plus[] Elasticsearch: It is now possible to configure a prefix string within the search options. Multiple Gentics Mesh installations with different prefixes can now utilize the same Elasticsearch server. Created indices and pipelines will automatically be prefixed. Other elements which do not start with the prefix will be ignored.
+
 [[v0.20.0]]
 == 0.20.0 (25.05.2018)
 

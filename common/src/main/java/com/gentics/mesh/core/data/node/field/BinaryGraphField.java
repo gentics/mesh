@@ -142,4 +142,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 */
 	Binary getBinary();
 
+	/**
+	 * Check whether the binary data represents a ingestable document(e.g.: pdf, doc, txt).
+	 * 
+	 * @return
+	 */
+	boolean isIngestableDocument();
 }
