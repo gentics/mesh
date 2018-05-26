@@ -194,7 +194,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
-				addListFieldMApping(fieldInfo, release, (ListFieldSchemaImpl) fieldSchema, customIndexOptions);
+				addListFieldMapping(fieldInfo, release, (ListFieldSchemaImpl) fieldSchema, customIndexOptions);
 			}
 			break;
 		case MICRONODE:
@@ -235,7 +235,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		fieldInfo.put("index", INDEX_VALUE);
 	}
 
-	private void addListFieldMApping(JsonObject fieldInfo, Release release, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
+	private void addListFieldMapping(JsonObject fieldInfo, Release release, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
 		ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 		String type = listFieldSchema.getListType();
 		switch (type) {
@@ -264,11 +264,6 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			// fieldProps.put(field.getName(), fieldInfo);
 			break;
 		case "string":
-			fieldInfo.put("type", TEXT);
-			if (customIndexOptions != null) {
-				fieldInfo.put("fields", customIndexOptions);
-			}
-			break;
 		case "html":
 			fieldInfo.put("type", TEXT);
 			if (customIndexOptions != null) {

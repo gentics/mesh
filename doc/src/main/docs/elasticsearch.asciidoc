@@ -305,6 +305,52 @@ NOTE: Future versions of Gentics Mesh will utilize a differential sync and thus 
 
 NOTE: The reindex operation will automatically be invoked when Mesh is being started and a unclean shutdown has been detected.
 
+== Binary Search
+
+Starting with Gentics Mesh 0.21.0 it is possible to add the contents of file uploads to the search index.
+The https://www.elastic.co/guide/en/elasticsearch/plugins/6.2/ingest-attachment.html[Elasticsearch Ingest Attachment Plugin] will be utilized when installed to process text file uploads (PDF, DOC, DOCX).
+
+This is especially useful if you also want to search within document file uploads. 
+
+Currently uploads which have one of these mimetypes will be processed:
+
+* application/pdf
+* application/msword
+* text/rtf
+* application/vnd.ms-powerpoint
+* application/vnd.oasis.opendocument.text
+* text/plain
+* application/rtf
+
+Example binary field within document:
+
+[source,json]
+----
+…
+  "binaryField" : {
+    "filename" : "mydoc.pdf",
+    "sha512sum" : "16d3aeae9869d2915dda30866c2d7b77f50dc668daa3a49d2bc6eb6349cf6e895099349b7f8240174a788db967c87947b6a2fd41a353eec99a20358dfd4c9211",
+    "mimeType" : "application/pdf",
+    "filesize" : 200,
+    "dominantColor" : null,
+    "width" : null,
+    "height" : null,
+    "content" : {
+      "language" : "ro",
+      "content" : "Lorem ipsum dolor sit amet",
+      "date" : "2018-05-04T21:28:30Z",
+      "author" : "Joe Doe",
+      "title" : "My Document Title"
+    }
+  }
+…
+----
+
+Gentics Mesh will automatically create ingest piplines for each node index. The created pipelines will be utilized when storing documents. 
+The name of these pipelines matches the index name. No longer needed pipelines will automatically be removed.
+
+NOTE: All documents need to be re-index if you choose to enable the Elasticsearch plugin.
+
 == GraphQL
 
 It is possible to nest Elasticsearch queries within the GraphQL query in order to filter elements.
@@ -472,4 +518,17 @@ This schema contains additional tokenizer and analyzer which can be used to setu
 }
 ----
 
+Custom mappings can currently only be specified for the following types:
+
+* string fields
+* html fields
+* string list fields
+* html list fields
+* binary fields
+
 NOTE: Index settings for other elements (e.g: Users, Roles etc) can currently not be configured.
+
+== Binary Fields
+
+NOTE: Currently only the `content.content` field which is provided by the Elasticsearch ingest plugin supports custom mappings.
+
