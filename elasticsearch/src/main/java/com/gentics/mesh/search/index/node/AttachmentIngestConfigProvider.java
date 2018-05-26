@@ -36,7 +36,14 @@ public class AttachmentIngestConfigProvider {
 
 			JsonObject settings = new JsonObject();
 			settings.put("field", "fields." + fieldName + ".data");
-			settings.put("properties", new JsonArray().add("content").add("title").add("language"));
+			JsonArray props = new JsonArray();
+			props.add("content");
+			props.add("title");
+			props.add("language");
+			props.add("author");
+			props.add("date");
+
+			settings.put("properties", props);
 			settings.put("target_field", "fields." + fieldName + ".content");
 			settings.put("ignore_missing", true);
 

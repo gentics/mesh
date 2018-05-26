@@ -317,8 +317,9 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 		JsonObject contentProps = new JsonObject();
 		contentProps.put("language", notAnalyzedType(KEYWORD));
-
 		contentProps.put("title", notAnalyzedType(KEYWORD));
+		contentProps.put("author", notAnalyzedType(KEYWORD));
+		contentProps.put("date", notAnalyzedType(DATE));
 
 		JsonObject contentTextInfo = new JsonObject();
 		contentTextInfo.put("type", TEXT);

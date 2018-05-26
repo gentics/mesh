@@ -7,6 +7,8 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Base64;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.ContainerType;
@@ -54,7 +56,8 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
 			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer("Hello world")), binary.getBinary().getUuid()).blockingAwait();
+			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
+			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
 			recreateIndices();
 
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(),
