@@ -1,9 +1,11 @@
 package com.gentics.mesh.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
@@ -43,6 +45,11 @@ public class TrackingSearchProvider implements SearchProvider {
 	@Override
 	public Completable refreshIndex(String... indices) {
 		return Completable.complete();
+	}
+
+	@Override
+	public Single<Set<String>> loadPluginInfo() {
+		return Single.just(Collections.emptySet());
 	}
 
 	@Override
@@ -197,6 +204,11 @@ public class TrackingSearchProvider implements SearchProvider {
 				System.out.println("Json:\n" + entry.getValue().encodePrettily());
 			}
 		}
+	}
+
+	@Override
+	public boolean hasIngestPipelinePlugin() {
+		return true;
 	}
 
 }

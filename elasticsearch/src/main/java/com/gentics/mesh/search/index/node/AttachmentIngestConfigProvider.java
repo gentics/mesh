@@ -37,8 +37,15 @@ public class AttachmentIngestConfigProvider {
 			config.put("description", "Extract attachment information");
 			JsonArray processors = new JsonArray();
 			for (String fieldName : binaryFieldNames) {
+
+				JsonObject settings = new JsonObject();
+				settings.put("field", "fields." + fieldName + ".data");
+				settings.put("target_field", "fields." + fieldName + ".content");
+				settings.put("ignore_missing", true);
+
 				JsonObject processor = new JsonObject();
-				processor.put("attachment", new JsonObject().put("field", "fields." + fieldName + ".data"));
+				processor.put("attachment", settings);
+
 				processors.add(processor);
 			}
 			config.put("processors", processors);

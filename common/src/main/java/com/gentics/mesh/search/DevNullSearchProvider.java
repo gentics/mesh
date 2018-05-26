@@ -1,6 +1,9 @@
 package com.gentics.mesh.search;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -28,6 +31,11 @@ public class DevNullSearchProvider implements SearchProvider {
 	@Override
 	public Completable refreshIndex(String... indices) {
 		return Completable.complete();
+	}
+
+	@Override
+	public Single<Set<String>> loadPluginInfo() {
+		return Single.just(Collections.emptySet());
 	}
 
 	@Override
@@ -114,6 +122,11 @@ public class DevNullSearchProvider implements SearchProvider {
 	@Override
 	public <T> T getClient() {
 		return null;
+	}
+
+	@Override
+	public boolean hasIngestPipelinePlugin() {
+		return true;
 	}
 
 }

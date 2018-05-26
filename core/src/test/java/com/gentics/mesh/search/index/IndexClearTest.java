@@ -12,7 +12,6 @@ import org.junit.Test;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -20,10 +19,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
 public class IndexClearTest extends AbstractMeshTest {
-
-	private ElasticSearchProvider getProvider() {
-		return ((ElasticSearchProvider) searchProvider());
-	}
 
 	@Test
 	public void testClear() throws Exception {

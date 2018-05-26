@@ -10,7 +10,6 @@ public class IndexInfo {
 	private JsonObject indexSettings;
 	private JsonObject indexMappings;
 
-	private String ingestPipelineName;
 	private JsonObject ingestPipelineSettings;
 
 	public IndexInfo(String indexName, JsonObject indexSettings, JsonObject indexMappings) {
@@ -32,12 +31,7 @@ public class IndexInfo {
 	}
 
 	public String getIngestPipelineName() {
-		return ingestPipelineName;
-	}
-
-	public IndexInfo setIngestPipelineName(String ingestPipelineName) {
-		this.ingestPipelineName = ingestPipelineName;
-		return this;
+		return indexName;
 	}
 
 	public JsonObject getIngestPipelineSettings() {

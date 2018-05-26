@@ -20,8 +20,11 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 	 * Construct a new entry.
 	 * 
 	 * @param indexName
+	 *            Name of the search index
 	 * @param documentId
+	 *            Id of the document
 	 * @param payload
+	 *            Document payload
 	 */
 	public IndexBulkEntry(String indexName, String documentId, JsonObject payload) {
 		super(indexName, documentId);
@@ -32,9 +35,13 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 	 * Construct a new entry.
 	 * 
 	 * @param indexName
+	 *            Name of the search index
 	 * @param documentId
+	 *            Id of the document
 	 * @param payload
+	 *            Document payload
 	 * @param usePipeline
+	 *            Flag which indicated whether or not the ingest pipeline should be enabled for the entry
 	 */
 	public IndexBulkEntry(String indexName, String documentId, JsonObject payload, boolean usePipeline) {
 		this(indexName, documentId, payload);

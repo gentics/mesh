@@ -153,9 +153,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						if (ingestConfig.isPresent()) {
 							JsonObject config = ingestConfig.get();
 							draftInfo.setIngestPipelineSettings(config);
-							draftInfo.setIngestPipelineName(draftIndexName);
 							publishInfo.setIngestPipelineSettings(config);
-							publishInfo.setIngestPipelineName(publishIndexName);
 						}
 
 						indexInfo.put(draftIndexName, draftInfo);
@@ -568,7 +566,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguage().getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 
-		return Single.just(new IndexBulkEntry(indexName, documentId, doc, true));
+		return Single.just(new IndexBulkEntry(indexName, documentId, doc, searchProvider.hasIngestPipelinePlugin()));
 	}
 
 	@Override

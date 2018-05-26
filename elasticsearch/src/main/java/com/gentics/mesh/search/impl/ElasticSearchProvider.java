@@ -11,7 +11,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -48,6 +51,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
+	private static final String INGEST_PIPELINE_PLUGIN_NAME = "ingest-attachment";
+
 	private SearchClient client;
 
 	private MeshOptions options;
@@ -55,6 +60,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	private ElasticsearchProcessManager processManager;
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
+
+	private Set<String> registerdPlugins = new HashSet<>();
 
 	@Inject
 	public ElasticSearchProvider() {
@@ -106,6 +113,8 @@ public class ElasticSearchProvider implements SearchProvider {
 		} catch (MalformedURLException e) {
 			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
 		}
+
+		registerdPlugins = loadPluginInfo().blockingGet();
 	}
 
 	private void waitForCluster(SearchClient client, long timeoutInSec) {
@@ -242,6 +251,30 @@ public class ElasticSearchProvider implements SearchProvider {
 		});
 	}
 
+	public boolean hasPlugin(String name) {
+		Objects.requireNonNull(name, "A valid plugin name must be specified.");
+		return registerdPlugins.contains(name);
+	}
+
+	@Override
+	public Single<Set<String>> loadPluginInfo() {
+		return client.nodesInfo().async().map(info -> {
+			Set<String> pluginSet = new HashSet<>();
+			JsonObject nodes = info.getJsonObject("nodes");
+			for (String nodeId : nodes.fieldNames()) {
+				JsonObject node = nodes.getJsonObject(nodeId);
+				JsonArray plugins = node.getJsonArray("plugins");
+				for (int i = 0; i < plugins.size(); i++) {
+					JsonObject plugin = plugins.getJsonObject(i);
+					String name = plugin.getString("name");
+					pluginSet.add(name);
+
+				}
+			}
+			return pluginSet;
+		});
+	}
+
 	@Override
 	public Completable createIndex(IndexInfo info) {
 		String indexName = info.getIndexName();
@@ -263,7 +296,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable registerIngestPipeline(IndexInfo info) {
-		String name = ES_PREFIX + info.getIngestPipelineName();
+		String name = info.getIngestPipelineName();
 		JsonObject config = info.getIngestPipelineSettings();
 		return client.registerPipeline(name, config).async()
 			.doOnSuccess(response -> {
@@ -350,9 +383,24 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		return client.processBulk(bulkData).async()
 			.doOnSuccess(response -> {
+				boolean errors = response.getBoolean("errors");
+				if (errors) {
+					JsonArray items = response.getJsonArray("items");
+					for (int i = 0; i < items.size(); i++) {
+						JsonObject item = items.getJsonObject(i).getJsonObject("index");
+						if (item != null) {
+							JsonObject error = item.getJsonObject("error");
+							String type = error.getString("type");
+							String reason = error.getString("reason");
+							String id = item.getString("_id");
+							String index = item.getString("_index");
+							log.error("Could not store document {" + index + ":" + id + "} - " + type + " : " + reason);
+						}
+					}
+				}
+
 				if (log.isDebugEnabled()) {
-					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis()
-						- start) + "[ms]");
+					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 			}).toCompletable()
 			.compose(withTimeoutAndLog("Storing document batch.", true));
@@ -479,4 +527,8 @@ public class ElasticSearchProvider implements SearchProvider {
 		};
 	}
 
+	@Override
+	public boolean hasIngestPipelinePlugin() {
+		return registerdPlugins.contains(INGEST_PIPELINE_PLUGIN_NAME);
+	}
 }

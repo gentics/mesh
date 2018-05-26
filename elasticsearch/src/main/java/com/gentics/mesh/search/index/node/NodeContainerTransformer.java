@@ -48,6 +48,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -68,8 +69,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	private static final String VERSION_KEY = "version";
 
+	private SearchProvider searchProvider;
+
 	@Inject
-	public NodeContainerTransformer() {
+	public NodeContainerTransformer(SearchProvider searchProvider) {
+		this.searchProvider = searchProvider;
 	}
 
 	/**
@@ -194,7 +198,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
 						binaryFieldInfo.put("width", binary.getImageWidth());
 						binaryFieldInfo.put("height", binary.getImageHeight());
+
+						// Only add the base64 content if we can actually process it and if it can be processed
+						// Images, Videos etc can't be processed by the ingest plugin
+						if (searchProvider.hasIngestPipelinePlugin() && binaryField.isIngestableDocument()) {
+							binaryFieldInfo.put("data", binary.getBase64Content());
+						}
 					}
+
 				}
 				break;
 			case BOOLEAN:

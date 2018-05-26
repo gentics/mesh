@@ -5,7 +5,9 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
@@ -90,7 +92,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
 					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(),
-							imageSize.toString());
+						imageSize.toString());
 				}
 			}
 			graphBinaryField.setImageFocalPoint(newFocalPoint);
@@ -271,6 +273,21 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	@Override
 	public Binary getBinary() {
 		return inV().nextOrDefaultExplicit(BinaryImpl.class, null);
+	}
+
+	@Override
+	public boolean isIngestableDocument() {
+		Set<String> allowedTypes = new HashSet<>();
+		allowedTypes.add("application/pdf");
+		allowedTypes.add("application/msword");
+		allowedTypes.add("text/rtf");
+		allowedTypes.add("application/vnd.ms-powerpoint");
+		allowedTypes.add("application/vnd.oasis.opendocument.text");
+		allowedTypes.add("text/plain");
+		allowedTypes.add("application/rtf");
+
+		String mimeType = getMimeType().toLowerCase();
+		return allowedTypes.contains(mimeType);
 	}
 
 }

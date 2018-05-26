@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -34,6 +35,13 @@ public interface SearchProvider {
 	 * @return Completable for the action
 	 */
 	Completable refreshIndex(String... indices);
+
+	/**
+	 * Load the plugin information.
+	 * 
+	 * @return
+	 */
+	Single<Set<String>> loadPluginInfo();
 
 	/**
 	 * Create a search index with index information.
@@ -224,5 +232,12 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Completable validateCreateViaTemplate(IndexInfo info);
+
+	/**
+	 * Check whether the ingest attachment plugin can be used.
+	 * 
+	 * @return
+	 */
+	boolean hasIngestPipelinePlugin();
 
 }

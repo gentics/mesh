@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -42,10 +41,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
  */
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
 public class BasicIndexSyncTest extends AbstractMeshTest {
-
-	private ElasticSearchProvider getProvider() {
-		return ((ElasticSearchProvider) searchProvider());
-	}
 
 	@Before
 	public void setup() throws Exception {

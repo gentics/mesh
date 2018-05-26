@@ -71,56 +71,6 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testSearchBinaryField() throws Exception {
-		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
-			Node nodeB = content();
-			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
-			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-			// image
-			Binary binaryA = MeshInternal.get().boot().binaryRoot().create("someHashA", 200L);
-			binaryA.setImageHeight(200);
-			binaryA.setImageWidth(400);
-			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
-				.setImageDominantColor("#super");
-
-			// file
-			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
-			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat").setMimeType("application/test");
-			recreateIndices();
-			tx.success();
-		}
-
-		// filesize
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.filesize", 100, 300),
-			new VersioningParametersImpl().draft()));
-		assertEquals("Exactly two nodes should be found for the given filesize range.", 2, response.getData().size());
-
-		// width
-		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParametersImpl()
-			.draft()));
-		assertEquals("Exactly one node should be found for the given image width range.", 1, response.getData().size());
-
-		// height
-		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.height", 100, 300), new VersioningParametersImpl()
-			.draft()));
-		assertEquals("Exactly one node should be found for the given image height range.", 1, response.getData().size());
-
-		// dominantColor
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.dominantColor", "#super"),
-			new VersioningParametersImpl().draft()));
-		assertEquals("Exactly one node should be found for the given image dominant color.", 1, response.getData().size());
-
-		// mimeType
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "image/jpeg"),
-			new VersioningParametersImpl().draft()));
-		assertEquals("Exactly one node should be found for the given image mime type.", 1, response.getData().size());
-
-	}
-
-	@Test
 	public void testSearchNumberRange3() throws Exception {
 		int numberValue = 1200;
 		try (Tx tx = tx()) {
