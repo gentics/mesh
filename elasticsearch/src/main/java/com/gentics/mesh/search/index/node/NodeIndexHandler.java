@@ -149,12 +149,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping);
 
 						// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
-						Optional<JsonObject> ingestConfig = ingestConfigProvider.getConfig(schema);
-						if (ingestConfig.isPresent()) {
-							JsonObject config = ingestConfig.get();
-							draftInfo.setIngestPipelineSettings(config);
-							publishInfo.setIngestPipelineSettings(config);
-						}
+						JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
+						draftInfo.setIngestPipelineSettings(ingestConfig);
+						publishInfo.setIngestPipelineSettings(ingestConfig);
 
 						indexInfo.put(draftIndexName, draftInfo);
 						indexInfo.put(publishIndexName, publishInfo);

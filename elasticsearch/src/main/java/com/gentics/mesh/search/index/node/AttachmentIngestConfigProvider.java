@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.index.node;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,34 +22,32 @@ public class AttachmentIngestConfigProvider {
 	public AttachmentIngestConfigProvider() {
 	}
 
-	public Optional<JsonObject> getConfig(Schema schema) {
+	public JsonObject getConfig(Schema schema) {
 
 		Set<String> binaryFieldNames = schema.getFields().stream()
 			.filter(f -> f.getType().equals(FieldTypes.BINARY.toString()))
 			.map(f -> f.getName())
 			.collect(Collectors.toSet());
 
-		if (binaryFieldNames.size() == 0) {
-			return Optional.empty();
-		} else {
-			JsonObject config = new JsonObject();
-			config.put("description", "Extract attachment information");
-			JsonArray processors = new JsonArray();
-			for (String fieldName : binaryFieldNames) {
+		JsonObject config = new JsonObject();
+		config.put("description", "Extract attachment information");
+		JsonArray processors = new JsonArray();
+		for (String fieldName : binaryFieldNames) {
 
-				JsonObject settings = new JsonObject();
-				settings.put("field", "fields." + fieldName + ".data");
-				settings.put("target_field", "fields." + fieldName + ".content");
-				settings.put("ignore_missing", true);
+			JsonObject settings = new JsonObject();
+			settings.put("field", "fields." + fieldName + ".data");
+			settings.put("properties", new JsonArray().add("content").add("title").add("language"));
+			settings.put("target_field", "fields." + fieldName + ".content");
+			settings.put("ignore_missing", true);
 
-				JsonObject processor = new JsonObject();
-				processor.put("attachment", settings);
+			JsonObject processor = new JsonObject();
+			processor.put("attachment", settings);
 
-				processors.add(processor);
-			}
-			config.put("processors", processors);
-			return Optional.of(config);
+			processors.add(processor);
 		}
+		config.put("processors", processors);
+		return config;
+
 	}
 
 }

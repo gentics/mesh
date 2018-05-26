@@ -1,8 +1,10 @@
 package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
+import static com.gentics.mesh.search.index.MappingHelper.BINARY;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
+import static com.gentics.mesh.search.index.MappingHelper.DONT_INDEX_VALUE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
 import static com.gentics.mesh.search.index.MappingHelper.INDEX_VALUE;
 import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;
@@ -60,7 +62,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	/**
 	 * Return the type specific mapping which is constructed using the provided schema.
 	 * 
-	 * @param schema Schema from which the mapping should be constructed
+	 * @param schema
+	 *            Schema from which the mapping should be constructed
 	 * @return An ES-Mapping for the given Schema
 	 */
 	public JsonObject getMapping(Schema schema) {
@@ -70,8 +73,10 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	/**
 	 * Return the type specific mapping which is constructed using the provided schema.
 	 * 
-	 * @param schema Schema from which the mapping should be constructed
-	 * @param release The release-version which should be used for the construction
+	 * @param schema
+	 *            Schema from which the mapping should be constructed
+	 * @param release
+	 *            The release-version which should be used for the construction
 	 * @return An ES-Mapping for the given Schema in the Release
 	 */
 	public JsonObject getMapping(Schema schema, Release release) {
@@ -195,6 +200,30 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			binaryProps.put("width", notAnalyzedType(LONG));
 			binaryProps.put("height", notAnalyzedType(LONG));
 			binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
+
+			JsonObject ignoreField = new JsonObject();
+			ignoreField.put("type", BINARY);
+			ignoreField.put("index", DONT_INDEX_VALUE);
+			binaryProps.put("data", ignoreField);
+
+			// Add mapping for fields which were added by the ingest plugin
+			JsonObject contentProps = new JsonObject();
+			contentProps.put("language", notAnalyzedType(KEYWORD));
+
+			contentProps.put("title", notAnalyzedType(KEYWORD));
+
+			JsonObject contentTextInfo = new JsonObject();
+			contentTextInfo.put("type", TEXT);
+			contentTextInfo.put("index", INDEX_VALUE);
+			contentTextInfo.put("analyzer", TRIGRAM_ANALYZER);
+			contentProps.put("content", contentTextInfo);
+
+			JsonObject contentFieldInfo = new JsonObject();
+			contentFieldInfo.put("type", OBJECT);
+			contentFieldInfo.put("properties", contentProps);
+
+			binaryProps.put("content", contentFieldInfo);
+
 			break;
 		case NUMBER:
 			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
@@ -224,7 +253,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 					break;
 				case "micronode":
 					fieldInfo.put("type", NESTED);
-					
+
 					// All allowed microschemas
 					String[] allowed = listFieldSchema.getAllowedSchemas();
 
@@ -253,10 +282,10 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			break;
 		case MICRONODE:
 			fieldInfo.put("type", OBJECT);
-			
+
 			// Cast to MicronodeFieldSchema should be safe as it's a Micronode-Field
-			String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();	
-			
+			String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();
+
 			// Merge the options into the info
 			fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, release));
 			break;
@@ -265,13 +294,15 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		}
 		return fieldInfo;
 	}
-	
+
 	/**
-	 * Creates an Elasticsearch mapping for all allowed microschemas in the given release.
-	 * When the allowed are empty/null, it'll generate the mapping for all microschemas in the release.
+	 * Creates an Elasticsearch mapping for all allowed microschemas in the given release. When the allowed are empty/null, it'll generate the mapping for all
+	 * microschemas in the release.
 	 * 
-	 * @param allowed Restriction to which microschemas are allowed to be saved in the field
-	 * @param release The release for which the mapping should be created
+	 * @param allowed
+	 *            Restriction to which microschemas are allowed to be saved in the field
+	 * @param release
+	 *            The release for which the mapping should be created
 	 * @return An Properties-mapping for a microschema field.
 	 */
 	public JsonObject getMicroschemaMappingOptions(String[] allowed, Release release) {
@@ -282,58 +313,54 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 		// General options
 		JsonObject properties = new JsonObject();
-		
+
 		// Microschema options
 		properties.put("microschema", new JsonObject()
 			.put("type", OBJECT)
 			.put("properties", new JsonObject()
 				.put(NAME_KEY, trigramTextType())
 				.put(UUID_KEY, notAnalyzedType(KEYWORD))
-				.put("version", notAnalyzedType(KEYWORD))
-			)
-		);
-		
+				.put("version", notAnalyzedType(KEYWORD))));
+
 		// Final Object which will be returned
 		JsonObject options = new JsonObject().put("properties", properties);
 
 		// A Set-Instance of the allowed microschema-names
 		Set<String> whitelist = Sets.newHashSet(allowed);
-		
+
 		// If the release is given and the whitelist has entries.
 		// Otherwise the index would be empty and not dynamic which prevents every
 		// kind of proper search.
 		boolean shouldFilter = release != null && !whitelist.isEmpty();
-		
-		if (shouldFilter) {			
+
+		if (shouldFilter) {
 			for (ReleaseMicroschemaEdge edge : release.findAllLatestMicroschemaVersionEdges()) {
 				MicroschemaContainerVersion version = edge.getMicroschemaContainerVersion();
 				MicroschemaModel microschema = version.getSchema();
 				String microschemaName = microschema.getName();
-				
+
 				// Check if the microschema is contained in the whitelist
 				// and ignore it if it isn't
 				if (!whitelist.contains(microschemaName)) {
 					continue;
 				}
-				
+
 				// Create and save a mapping for all microschema fields
 				JsonObject fields = new JsonObject(microschema
 					.getFields()
 					.stream()
-					.collect(Collectors.toMap(FieldSchema::getName, field -> this.getFieldMapping(field, release)))
-				);
-				
+					.collect(Collectors.toMap(FieldSchema::getName, field -> this.getFieldMapping(field, release))));
+
 				// Save the created mapping to the properties
 				properties.put("fields-" + microschemaName, new JsonObject()
 					.put("type", OBJECT)
-					.put("properties", fields)
-				);
+					.put("properties", fields));
 			}
 		} else {
 			// Set the options to dynamic as no proper mapping could be generated
 			options.put("dynamic", true);
 		}
-		
+
 		return options;
 	}
 }

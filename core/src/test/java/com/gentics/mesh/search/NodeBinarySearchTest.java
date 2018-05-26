@@ -53,13 +53,13 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			// file
 			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
 			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
-				.setMimeType("application/test");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer("Hello world")), binary.getBinary().getUuid());
+				.setMimeType("text/plain");
+			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer("Hello world")), binary.getBinary().getUuid()).blockingAwait();
 			recreateIndices();
 
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(),
-				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = NodeGraphFieldContainer.composeDocumentId(nodeA.getUuid(), "en");
+				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			System.out.println(doc.encodePrettily());
 			tx.success();

@@ -32,6 +32,18 @@ import com.gentics.mesh.util.NodeUtil;
  */
 public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphField {
 
+	public static final Set<String> allowedTypes = new HashSet<>();
+	
+	static {
+		allowedTypes.add("application/pdf");
+		allowedTypes.add("application/msword");
+		allowedTypes.add("text/rtf");
+		allowedTypes.add("application/vnd.ms-powerpoint");
+		allowedTypes.add("application/vnd.oasis.opendocument.text");
+		allowedTypes.add("text/plain");
+		allowedTypes.add("application/rtf");
+	}
+
 	public static void init(Database database) {
 		// database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
 	}
@@ -277,15 +289,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public boolean isIngestableDocument() {
-		Set<String> allowedTypes = new HashSet<>();
-		allowedTypes.add("application/pdf");
-		allowedTypes.add("application/msword");
-		allowedTypes.add("text/rtf");
-		allowedTypes.add("application/vnd.ms-powerpoint");
-		allowedTypes.add("application/vnd.oasis.opendocument.text");
-		allowedTypes.add("text/plain");
-		allowedTypes.add("application/rtf");
-
 		String mimeType = getMimeType().toLowerCase();
 		return allowedTypes.contains(mimeType);
 	}

@@ -1,10 +1,7 @@
 package com.gentics.mesh.search.index.node;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Optional;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
@@ -23,22 +20,20 @@ public class AttachmentIngestConfigProviderTest {
 
 		// Test with no field
 		Schema schema = new SchemaModelImpl();
-		assertFalse(provider.getConfig(schema).isPresent());
+		assertNotNull(provider.getConfig(schema));
 
 		// String field
 		schema.addField(FieldUtil.createStringFieldSchema("test1"));
-		assertFalse(provider.getConfig(schema).isPresent());
+		assertNotNull(provider.getConfig(schema));
 
 		// Single field
 		schema.addField(FieldUtil.createBinaryFieldSchema("test2"));
-		Optional<JsonObject> op = provider.getConfig(schema);
-		assertTrue(op.isPresent());
-		assertEquals(1, op.get().getJsonArray("processors").size());
+		JsonObject op = provider.getConfig(schema);
+		assertEquals(1, op.getJsonArray("processors").size());
 
 		// Two fields
 		schema.addField(FieldUtil.createBinaryFieldSchema("test3"));
-		Optional<JsonObject> op2 = provider.getConfig(schema);
-		assertTrue(op2.isPresent());
-		assertEquals(2, op2.get().getJsonArray("processors").size());
+		JsonObject op2 = provider.getConfig(schema);
+		assertEquals(2, op2.getJsonArray("processors").size());
 	}
 }

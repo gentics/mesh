@@ -388,7 +388,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					JsonArray items = response.getJsonArray("items");
 					for (int i = 0; i < items.size(); i++) {
 						JsonObject item = items.getJsonObject(i).getJsonObject("index");
-						if (item != null) {
+						if (item != null && item.containsKey("error")) {
 							JsonObject error = item.getJsonObject("error");
 							String type = error.getString("type");
 							String reason = error.getString("reason");
