@@ -75,19 +75,27 @@ public final class MappingHelper {
 		return fieldInfo;
 	}
 
+	public static JsonObject notAnalyzedType(String type) {
+		return notAnalyzedType(type, null);
+	}
+
 	/**
 	 * Return a JSON mapping field type which is set to not_analyzed.
 	 * 
 	 * @param type
+	 * @param customFields
 	 * @return
 	 */
-	public static JsonObject notAnalyzedType(String type) {
+	public static JsonObject notAnalyzedType(String type, JsonObject customFields) {
 		if (type.equals(TEXT)) {
 			throw new RuntimeException("Type {text} is invalid for this operation. You most likly want {keyword}");
 		}
 		JsonObject indexFieldInfo = new JsonObject();
 		indexFieldInfo.put("type", type);
 		indexFieldInfo.put("index", INDEX_VALUE);
+		if (customFields != null) {
+			indexFieldInfo.put("fields", customFields);
+		}
 		return indexFieldInfo;
 	}
 

@@ -70,7 +70,6 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			binaryFieldSchema.setLabel("Some label");
 			binaryFieldSchema.setRequired(isRequired);
 			schema.addField(binaryFieldSchema);
-
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 		}
 	}

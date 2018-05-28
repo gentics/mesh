@@ -291,12 +291,33 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject binaryProps = new JsonObject();
 		fieldInfo.put("properties", binaryProps);
 
+		// .sha512sum
 		binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
-		binaryProps.put("filename", notAnalyzedType(KEYWORD));
+
+		// .filename
+		JsonObject customFilenameMapping = null;
+		if (customIndexOptions != null && customIndexOptions.containsKey("filename")) {
+			customFilenameMapping = customIndexOptions.getJsonObject("filename");
+		}
+		binaryProps.put("filename", notAnalyzedType(KEYWORD, customFilenameMapping));
+
+		// .filesize
 		binaryProps.put("filesize", notAnalyzedType(LONG));
-		binaryProps.put("mimeType", notAnalyzedType(KEYWORD));
+
+		// .mimeType
+		JsonObject customMimeTypeMapping = null;
+		if (customIndexOptions != null && customIndexOptions.containsKey("mimeType")) {
+			customMimeTypeMapping = customIndexOptions.getJsonObject("mimeType");
+		}
+		binaryProps.put("mimeType", notAnalyzedType(KEYWORD, customMimeTypeMapping));
+
+		// .width
 		binaryProps.put("width", notAnalyzedType(LONG));
+
+		// .height
 		binaryProps.put("height", notAnalyzedType(LONG));
+
+		// .dominantColor
 		binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
 
 		// Add mapping for fields which were added by the ingest plugin
@@ -305,30 +326,39 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	private void addBinaryFieldIngestMapping(JsonObject binaryProps, JsonObject customIndexOptions) {
 		// The data field must not be indexed. It is just provided for the ingest pipeline
+		// .data (for input only)
 		JsonObject ignoreField = new JsonObject();
 		ignoreField.put("type", BINARY);
 		ignoreField.put("index", DONT_INDEX_VALUE);
 		binaryProps.put("data", ignoreField);
 
 		JsonObject contentProps = new JsonObject();
-		contentProps.put("language", notAnalyzedType(KEYWORD));
-		contentProps.put("title", notAnalyzedType(KEYWORD));
-		contentProps.put("author", notAnalyzedType(KEYWORD));
-		contentProps.put("date", notAnalyzedType(DATE));
 
+		// .file.content
 		JsonObject contentTextInfo = new JsonObject();
 		contentTextInfo.put("type", TEXT);
 		contentTextInfo.put("index", INDEX_VALUE);
 		contentTextInfo.put("analyzer", TRIGRAM_ANALYZER);
+		if (customIndexOptions != null && customIndexOptions.containsKey("file.content")) {
+			contentTextInfo.put("fields", customIndexOptions.getJsonObject("file.content"));
+		}
 		contentProps.put("content", contentTextInfo);
+
+		// .file.language
+		contentProps.put("language", notAnalyzedType(KEYWORD));
+
+		// .file.title
+		contentProps.put("title", notAnalyzedType(KEYWORD));
+
+		// .file.author
+		contentProps.put("author", notAnalyzedType(KEYWORD));
+
+		// .file.date
+		contentProps.put("date", notAnalyzedType(DATE));
 
 		JsonObject contentFieldInfo = new JsonObject();
 		contentFieldInfo.put("type", OBJECT);
 		contentFieldInfo.put("properties", contentProps);
-
-		if (customIndexOptions != null) {
-			contentFieldInfo.put("fields", customIndexOptions);
-		}
 
 		binaryProps.put("file", contentFieldInfo);
 	}

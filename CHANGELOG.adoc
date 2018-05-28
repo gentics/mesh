@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.21.1]]
+== 0.21.1 (28.05.2018)
+
+icon:plus[] Elasticsearch: It is now possible to configure custom mappings for binary fields. Currently only the `mimeType` and `file.content` fields can be mapped. An example for this mapping can be found in the documentation.
+
 [[v0.21.0]]
 == 0.21.0 (27.05.2018)
 

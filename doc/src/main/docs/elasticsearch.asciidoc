@@ -533,5 +533,45 @@ NOTE: Index settings for other elements (e.g: Users, Roles etc) can currently no
 
 == Binary Fields
 
-NOTE: Currently only the `file.content` field which is provided by the Elasticsearch ingest plugin supports custom mappings.
 
+You can add custom mappings to the `mimeType` and `file.content` field. The elasticsearch property needs to contain a custom mapping for each type.
+
+Example:
+[source,json]
+----
+{
+  "displayField": "name",
+  "segmentField": "binary",
+  "container": false,
+  "description": "Image schema",
+  "name": "image",
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "binary",
+      "label": "Image",
+      "required": false,
+      "type": "binary",
+      "elasticsearch": {
+        "mimeType": {
+          "raw": {
+            "type": "keyword",
+            "index": true
+          }
+        },
+        "file.content": {
+          "raw": {
+            "type": "keyword",
+            "index": true
+          }
+        }
+      }
+    }
+  ]
+}
+----
