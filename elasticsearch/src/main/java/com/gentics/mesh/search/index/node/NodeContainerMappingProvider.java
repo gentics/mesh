@@ -18,6 +18,7 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,6 +83,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	public JsonObject getMapping(Schema schema, Release release) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
+
+		addBinaryFieldExcludes(mapping, schema);
 
 		// 2. Enhance the type specific mapping
 		JsonObject typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
@@ -158,6 +161,24 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		}
 		return mapping;
 
+	}
+
+	/**
+	 * Add custom exclude for the source document. We don't want to store the base64 encoded data fields.
+	 * @param mapping
+	 * @param schema
+	 */
+	private void addBinaryFieldExcludes(JsonObject mapping, Schema schema) {
+		JsonObject sourceInfo = new JsonObject();
+
+		JsonArray excludes = new JsonArray();
+		List<String> binaryFields = schema.getFields().stream().filter(f -> f.getType().equals("binary")).map(f -> f.getType())
+			.collect(Collectors.toList());
+		for (String field : binaryFields) {
+			excludes.add("fields." + field + ".data");
+		}
+		sourceInfo.put("excludes", excludes);
+		mapping.getJsonObject(DEFAULT_TYPE).put("_source", sourceInfo);
 	}
 
 	/**

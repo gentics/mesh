@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -33,8 +34,8 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true, withIngestPlugin = true)
-public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
+@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true, withIngestPlugin = false)
+public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
@@ -79,18 +80,17 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
-			assertEquals("Lorem ipsum dolor sit amet",
-				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
+			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
 		}
 
 		// file.content
 		NodeListResponse response = call(
 			() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.binary.file.content", "Lorem ipsum dolor sit amet")));
-		assertEquals("Exactly one node should be found for the given content.", 1, response.getData().size());
+		assertEquals("Exactly one node should be found for the given content.", 0, response.getData().size());
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.file.content.raw", "Lorem ipsum dolor sit amet")));
-		assertEquals("Exactly one node should be found for the given content.", 1, response.getData().size());
+		assertEquals("Exactly one node should be found for the given content.", 0, response.getData().size());
 
 		// mimeType
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "text/plain")));
@@ -129,8 +129,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
-			assertEquals("Lorem ipsum dolor sit amet",
-				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
+			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
 		}
 

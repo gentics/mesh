@@ -72,7 +72,8 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		assertNotNull(tx(() -> boot().roleRoot().findByName("role2")));
 
 		// Invoke request without token
-		System.out.println(get("/api/v1/auth/me"));
+		JsonObject meJson = new JsonObject(get("/api/v1/auth/me"));
+		assertEquals("anonymous", meJson.getString("username"));
 
 		client().setLogin("admin", "admin");
 		client().login().blockingGet();
@@ -81,7 +82,8 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		UserAPITokenResponse meshApiToken = call(() -> client().issueAPIToken(me2.getUuid()));
 		client().logout().blockingGet();
 		client().setAPIKey(meshApiToken.getToken());
-		call(() -> client().me());
+		me = call(() -> client().me());
+		assertEquals("dummyuser", me.getUsername());
 
 		// Test broken token
 		client().setAPIKey("borked");
