@@ -83,7 +83,6 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	public JsonObject getMapping(Schema schema, Release release) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
-		System.out.println(mapping.encodePrettily());
 
 		addBinaryFieldExcludes(mapping, schema);
 

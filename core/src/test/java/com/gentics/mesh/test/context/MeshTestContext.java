@@ -316,7 +316,7 @@ public class MeshTestContext extends TestWatcher {
 			meshOptions.getSearchOptions().setStartEmbedded(false);
 			meshOptions.getSearchOptions().setUrl(null);
 			if (settings.useElasticsearch()) {
-				elasticsearch = new ElasticsearchContainer();
+				elasticsearch = new ElasticsearchContainer(settings.withIngestPlugin());
 				if (!elasticsearch.isRunning()) {
 					elasticsearch.start();
 				}
