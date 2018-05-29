@@ -298,15 +298,15 @@ These endpoints will accept the same query but return a Elasticsearch multi sear
 This is useful if you want to use for example the Elasticsearch highlighing and aggregation features.
 The endpoint will automatically select the needed indices and modify the query in order to add needed permission checks.
 
-==== Reindex
+==== Index Synchronization
 
-The ```POST /api/v1/search/reindex``` endpoint can be used to rebuild the full search index from scratch.
+The ```POST /api/v1/search/sync``` endpoint can be used to invoke a manual sync of the search index.
 
-NOTE: This operation will remove all indices which have been created by Mesh and rebuild them one at a time. 
+NOTE: The index sync operation will automatically be invoked when Mesh is being started and a unclean shutdown has been detected.
 
-NOTE: Future versions of Gentics Mesh will utilize a differential sync and thus this operation will not cause temporary dataloss.
+You can also recreate all indices if needed via the ```POST /api/v1/search/clear``` endpoint.
 
-NOTE: The reindex operation will automatically be invoked when Mesh is being started and a unclean shutdown has been detected.
+NOTE: This operation will remove all indices which have been created by Mesh and rebuild them one at a time.
 
 == Binary Search
 
