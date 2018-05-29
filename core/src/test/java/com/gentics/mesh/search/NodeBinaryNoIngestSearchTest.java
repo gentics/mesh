@@ -76,7 +76,7 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 
 			recreateIndices();
 
-			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(),
+			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
@@ -125,7 +125,7 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
 			recreateIndices();
 
-			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(),
+			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();

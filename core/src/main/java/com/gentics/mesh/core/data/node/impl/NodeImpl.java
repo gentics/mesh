@@ -1810,7 +1810,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String indexName = type == ContainerType.PUBLISHED ?
 			NodeGraphFieldContainer.PUBLISHED_WEBROOT_INDEX_NAME :
 			NodeGraphFieldContainer.WEBROOT_INDEX_NAME;
-		String key = NodeGraphFieldContainer.composeWebrootIndexKey(segment, releaseUuid, this);
+		String key = NodeGraphFieldContainer.composeWebrootIndexKey(segment, branchUuid, this);
 
 		Iterator<? extends NodeGraphFieldContainerImpl> childNodeIt = graph.getFramedVertices(indexName, key, NodeGraphFieldContainerImpl.class).iterator();
 		if (childNodeIt.hasNext()) {
