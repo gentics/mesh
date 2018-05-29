@@ -10,6 +10,12 @@
 
 = Gentics Mesh Changelog
 
+[[v0.21.2]]
+== 0.21.2 (TBD)
+
+icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.
+
+
 [[v0.21.1]]
 == 0.21.1 (28.05.2018)
 

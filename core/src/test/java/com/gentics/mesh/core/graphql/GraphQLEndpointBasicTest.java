@@ -7,7 +7,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
+import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
+import io.reactivex.Flowable;
+import io.reactivex.Single;
 import org.json.JSONException;
 import org.junit.Test;
 
@@ -65,5 +73,16 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 		GraphQLResponse response = call(() -> client().graphql(PROJECT_NAME, request));
 		String uuid = response.getData().getJsonObject("node").getJsonObject("node").getString("uuid");
 		assertThat(uuid).isNotEmpty();
+	}
+
+	@Test
+	public void testConcurrentQuery() {
+		Flowable<Completable> calls = Single.fromCallable(() ->
+			client().graphqlQuery(PROJECT_NAME, "{me{firstname}}").toSingle()
+				.doOnSuccess(response -> MeshJSONAssert.assertEquals("{'me':{'firstname':'Joe'}}", response.getData()))
+				.toCompletable())
+			.repeat(100);
+
+		Completable.merge(calls).blockingAwait();
 	}
 }
