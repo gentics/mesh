@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -147,7 +147,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			role().grantPermissions(node, GraphPermission.values());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestRelease(), user());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
 			englishContainer.createString("displayName").setString("german displayName");
@@ -440,15 +440,15 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadForRelease() {
-		String newReleaseName = "newrelease";
+	public void testReadForBranch() {
+		String newBranchName = "newbranch";
 		String initialPath = "/News/2015";
 		String newPath = "/News_new/2015_new";
 
-		// 1. create new release and migrate node
+		// 1. create new branch and migrate node
 		db().tx(() -> {
-			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
+			Branch newBranch = project().getBranchRoot().create(newBranchName, user());
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
 		});
 
 		// 2. update nodes in new release
@@ -466,14 +466,14 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 4. Assert new names in initial release
 		db().tx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, newPath,
-					new VersioningParametersImpl().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND, "node_not_found_for_path",
+					new VersioningParametersImpl().draft().setBranch(project().getInitialBranch().getUuid())), NOT_FOUND, "node_not_found_for_path",
 					newPath);
 		});
 
 		// 5. Assert old names in initial release
 		db().tx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, initialPath,
-					new VersioningParametersImpl().draft().setRelease(project().getInitialRelease().getUuid())));
+					new VersioningParametersImpl().draft().setBranch(project().getInitialBranch().getUuid())));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		});
 
@@ -507,17 +507,17 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	 * 
 	 * @param node
 	 *            node
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param language
 	 *            language
 	 * @param newName
 	 *            new name
 	 */
-	protected void updateName(Node node, Release release, String language, String newName) {
+	protected void updateName(Node node, Branch branch, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.getFields().put("name", FieldUtil.createStringField(newName));
-		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update, new VersioningParametersImpl().setRelease(release.getUuid())));
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update, new VersioningParametersImpl().setBranch(branch.getUuid())));
 	}
 }

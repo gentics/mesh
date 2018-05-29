@@ -73,7 +73,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * 
 	 * @return List of nodes
 	 */
-	List<? extends Node> getNodes(Release release);
+	List<? extends Node> getNodes(Branch release);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
@@ -85,7 +85,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type,
+	TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Branch release, List<String> languageTags, ContainerType type,
 			PagingParameters pagingInfo);
 
 	/**

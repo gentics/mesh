@@ -10,8 +10,8 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import com.gentics.mesh.core.data.branch.ReleaseVersionEdge;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;

@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -236,8 +236,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 		// 1. Create new release and migrate nodes
 		db().tx(() -> {
-			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
+			Branch newRelease = project().getBranchRoot().create(newReleaseName, user());
+			meshDagger().branchMigrationHandler().migrateBranch(newRelease, null);
 			return null;
 		});
 
@@ -266,7 +266,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setRelease(project().getInitialRelease().getUuid())));
+			call(() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
 
 			return null;
 		});

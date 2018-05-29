@@ -14,12 +14,12 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
+import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
-import com.gentics.mesh.core.endpoint.release.ReleaseCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.endpoint.schema.SchemaCrudHandler;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
@@ -31,6 +31,12 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchListResponse;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -60,12 +66,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseListResponse;
-import com.gentics.mesh.core.rest.release.ReleaseResponse;
-import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
-import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
-import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -175,7 +175,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public UtilityHandler utilityHandler;
 
 	@Inject
-	public ReleaseCrudHandler releaseCrudHandler;
+	public BranchCrudHandler releaseCrudHandler;
 
 	@Inject
 	public PluginHandler pluginHandler;
@@ -1186,49 +1186,49 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest,
+	public MeshRequest<BranchResponse> createBranch(String projectName, BranchCreateRequest branchCreateRequest,
 		ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
+	public MeshRequest<BranchResponse> createBranch(String projectName, String uuid, BranchCreateRequest branchCreateRequest,
 		ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters) {
+	public MeshRequest<BranchResponse> findBranchByUuid(String projectName, String releaseUuid, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseListResponse> findReleases(String projectName, ParameterProvider... parameters) {
-		LocalActionContextImpl<ReleaseListResponse> ac = createContext(ReleaseListResponse.class, parameters);
+	public MeshRequest<BranchListResponse> findBranches(String projectName, ParameterProvider... parameters) {
+		LocalActionContextImpl<BranchListResponse> ac = createContext(BranchListResponse.class, parameters);
 		ac.setProject(projectName);
 		releaseCrudHandler.handleReadList(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> updateRelease(String projectName, String releaseUuid, ReleaseUpdateRequest request) {
+	public MeshRequest<BranchResponse> updateRelease(String projectName, String releaseUuid, BranchUpdateRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoSchemaList> getReleaseSchemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String releaseUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-		ReleaseInfoSchemaList schemaVersionReferences) {
-		LocalActionContextImpl<ReleaseInfoSchemaList> ac = createContext(ReleaseInfoSchemaList.class);
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String releaseUuid,
+		BranchInfoSchemaList schemaVersionReferences) {
+		LocalActionContextImpl<BranchInfoSchemaList> ac = createContext(BranchInfoSchemaList.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(schemaVersionReferences);
 		releaseCrudHandler.handleAssignSchemaVersion(ac, releaseUuid);
@@ -1236,40 +1236,40 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String releaseUuid,
 		SchemaReference... schemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoMicroschemaList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String releaseUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-		ReleaseInfoMicroschemaList microschemaVersionReferences) {
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String releaseUuid,
+		BranchInfoMicroschemaList microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String releaseUuid,
 		MicroschemaReference... microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> migrateReleaseSchemas(String projectName, String releaseUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchSchemas(String projectName, String releaseUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> migrateReleaseMicroschemas(String projectName, String releaseUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchMicroschemas(String projectName, String releaseUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}

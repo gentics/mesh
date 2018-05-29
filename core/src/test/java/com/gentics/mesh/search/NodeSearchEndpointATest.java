@@ -100,7 +100,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		// Wait for migration to complete
 		waitForJobs(() -> {
 			SchemaUpdateRequest updateRequest = new SchemaUpdateRequest().setFields(fields).setName(schema.getName());
-			call(() -> client().updateSchema(schema.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true)));
+			call(() -> client().updateSchema(schema.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)));
 		}, COMPLETED, 1);
 
 		// Now search again and verify that we still find the same amount of elements

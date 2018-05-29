@@ -4,9 +4,9 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -38,7 +38,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		try {
 
 			try (Tx tx = DB.get().tx()) {
-				Release release = getRelease();
+				Branch release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
 				}
@@ -54,7 +54,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				}
 
 				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
-				ReleaseMicroschemaEdge releaseVersionEdge = release.findReleaseMicroschemaEdge(toContainerVersion);
+				BranchMicroschemaEdge releaseVersionEdge = release.findReleaseMicroschemaEdge(toContainerVersion);
 				statusHandler.setVersionEdge(releaseVersionEdge);
 
 				if (log.isDebugEnabled()) {

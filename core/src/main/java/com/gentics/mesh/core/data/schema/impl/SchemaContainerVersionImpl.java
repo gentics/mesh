@@ -20,12 +20,12 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -145,8 +145,8 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Release> getReleases() {
-		return in(HAS_SCHEMA_VERSION).toListExplicit(ReleaseImpl.class);
+	public List<? extends Branch> getReleases() {
+		return in(HAS_SCHEMA_VERSION).toListExplicit(BranchImpl.class);
 	}
 
 	@Override

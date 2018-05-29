@@ -252,7 +252,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			Node node = folder("2015");
-			node.createGraphFieldContainer(german(), initialRelease(), user());
+			node.createGraphFieldContainer(german(), initialBranch(), user());
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
 		assertMetrics("node", 1, 2, 0);

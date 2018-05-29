@@ -225,7 +225,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			// 3. Send the request to the server
 			trackingSearchProvider().clear().blockingAwait();
-			nodes = tag.getNodes(project().getLatestRelease());
+			nodes = tag.getNodes(project().getLatestBranch());
 			tx.success();
 		}
 
@@ -235,13 +235,13 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeDocumentId(tag2.getUuid()));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
-			String releaseUuid = project().getLatestRelease().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
 							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
-					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
 							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
@@ -325,13 +325,13 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		String projectUuid = db().tx(() -> project().getUuid());
-		String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
+		String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
 
 		try (Tx tx = tx()) {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
-			List<? extends Node> nodes = tag.getNodes(project().getLatestRelease());
+			List<? extends Node> nodes = tag.getNodes(project().getLatestBranch());
 
 			String uuid = tag.getUuid();
 			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
@@ -340,7 +340,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
-				assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+				assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
 						schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 1, 0, 0);

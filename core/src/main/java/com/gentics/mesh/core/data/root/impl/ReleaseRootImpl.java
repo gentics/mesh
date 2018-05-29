@@ -18,25 +18,25 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
- * @see ReleaseRoot
+ * @see BranchRoot
  */
-public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
+public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
 	public static void init(Database database) {
 		database.addVertexType(ReleaseRootImpl.class, MeshVertexImpl.class);
@@ -50,62 +50,62 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	}
 
 	@Override
-	public Release create(String name, User creator, String uuid) {
-		Release latestRelease = getLatestRelease();
+	public Branch create(String name, User creator, String uuid) {
+		Branch latestRelease = getLatestRelease();
 
-		Release release = getGraph().addFramedVertex(ReleaseImpl.class);
+		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
-			release.setUuid(uuid);
+			branch.setUuid(uuid);
 		}
-		addItem(release);
-		release.setCreated(creator);
-		release.setName(name);
-		release.setActive(true);
-		release.setMigrated(false);
-		release.setProject(getProject());
+		addItem(branch);
+		branch.setCreated(creator);
+		branch.setName(name);
+		branch.setActive(true);
+		branch.setMigrated(false);
+		branch.setProject(getProject());
 
 		if (latestRelease == null) {
 			// if this is the first release, make it the initial release
-			setSingleLinkOutTo(release, HAS_INITIAL_RELEASE);
+			setSingleLinkOutTo(branch, HAS_INITIAL_RELEASE);
 		} else {
 			// otherwise link the releases
-			latestRelease.setNextRelease(release);
+			latestRelease.setNextBranch(branch);
 		}
 
 		// make the new release the latest
-		setSingleLinkOutTo(release, HAS_LATEST_RELEASE);
+		setSingleLinkOutTo(branch, HAS_LATEST_RELEASE);
 
 		// set initial permissions on the release
-		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, release);
+		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
 
 		// assign the newest schema versions of all project schemas to the release
 		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
-			release.assignSchemaVersion(creator, schemaContainer.getLatestVersion());
+			branch.assignSchemaVersion(creator, schemaContainer.getLatestVersion());
 		}
 
 		// ... same for microschemas
 		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAllIt()) {
-			release.assignMicroschemaVersion(creator, microschemaContainer.getLatestVersion());
+			branch.assignMicroschemaVersion(creator, microschemaContainer.getLatestVersion());
 		}
 
-		return release;
+		return branch;
 	}
 
 	@Override
-	public Release getInitialRelease() {
-		return out(HAS_INITIAL_RELEASE).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public Branch getInitialRelease() {
+		return out(HAS_INITIAL_RELEASE).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
-	public Release getLatestRelease() {
-		return out(HAS_LATEST_RELEASE).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public Branch getLatestRelease() {
+		return out(HAS_LATEST_RELEASE).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
-	public Release create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Branch create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		Database db = MeshInternal.get().database();
 
-		ReleaseCreateRequest request = ac.fromJson(ReleaseCreateRequest.class);
+		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();
 
 		// Check for completeness of request
@@ -122,31 +122,31 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		}
 
 		// Check for uniqueness of release name (per project)
-		Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class, getUniqueNameKey(request
+		Branch conflictingRelease = db.checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
 			.getName()));
 		if (conflictingRelease != null) {
 			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", request.getName());
 		}
 
-		Release release = create(request.getName(), requestUser, uuid);
+		Branch branch = create(request.getName(), requestUser, uuid);
 		if (!isEmpty(request.getHostname())) {
-			release.setHostname(request.getHostname());
+			branch.setHostname(request.getHostname());
 		}
 		if (request.getSsl() != null) {
-			release.setSsl(request.getSsl());
+			branch.setSsl(request.getSsl());
 		}
 		// A new release was created - We also need to create new indices for the nodes within the release
-		for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
-			batch.addNodeIndex(project, release, version, DRAFT);
-			batch.addNodeIndex(project, release, version, PUBLISHED);
+		for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+			batch.addNodeIndex(project, branch, version, DRAFT);
+			batch.addNodeIndex(project, branch, version, PUBLISHED);
 		}
-		MeshInternal.get().boot().jobRoot().enqueueReleaseMigration(release.getCreator(), release);
-		return release;
+		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(branch.getCreator(), branch);
+		return branch;
 	}
 
 	@Override
-	public Class<? extends Release> getPersistanceClass() {
-		return ReleaseImpl.class;
+	public Class<? extends Branch> getPersistanceClass() {
+		return BranchImpl.class;
 	}
 
 	@Override
@@ -166,7 +166,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		}
 
 		// Delete all releases
-		for (Release release : findAllIt()) {
+		for (Branch release : findAllIt()) {
 			release.delete(batch);
 		}
 

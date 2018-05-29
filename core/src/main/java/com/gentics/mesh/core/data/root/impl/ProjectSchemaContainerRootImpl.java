@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -20,7 +20,7 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 		super.addSchemaContainer(user, schema);
 
 		// assign the latest schema version to all releases of the project
-		for (Release release : getProject().getReleaseRoot().findAllIt()) {
+		for (Branch release : getProject().getBranchRoot().findAllIt()) {
 			release.assignSchemaVersion(user, schema.getLatestVersion());
 		}
 	}
@@ -30,7 +30,7 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 		super.removeSchemaContainer(schemaContainer);
 
 		// unassign the schema from all releases
-		for (Release release : getProject().getReleaseRoot().findAllIt()) {
+		for (Branch release : getProject().getBranchRoot().findAllIt()) {
 			release.unassignSchema(schemaContainer);
 		}
 	}

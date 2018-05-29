@@ -7,7 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -33,7 +33,7 @@ public class ReleaseMigrationJobImpl extends JobImpl {
 
 	@Override
 	public void prepare() {
-		Release newRelease = getRelease();
+		Branch newRelease = getRelease();
 		String newReleaseUuid = newRelease.getUuid();
 		Project project = newRelease.getProject();
 
@@ -49,7 +49,7 @@ public class ReleaseMigrationJobImpl extends JobImpl {
 
 	@Override
 	protected void processTask() {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.release);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch);
 		try {
 
 			if (log.isDebugEnabled()) {
@@ -58,11 +58,11 @@ public class ReleaseMigrationJobImpl extends JobImpl {
 			status.commit();
 
 			try (Tx tx = DB.get().tx()) {
-				Release release = getRelease();
+				Branch release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} cannot be found.");
 				}
-				MeshInternal.get().releaseMigrationHandler().migrateRelease(release, status);
+				MeshInternal.get().branchMigrationHandler().migrateBranch(release, status);
 				status.done();
 			}
 		} catch (Exception e) {

@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -181,14 +181,14 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		// Create a new release and migrate the nodes
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		String releaseName = "newrelease";
-		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
+		BranchCreateRequest createRelease = new BranchCreateRequest();
 		createRelease.setName(releaseName);
-		call(() -> client().createRelease(PROJECT_NAME, createRelease));
+		call(() -> client().createBranch(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
 		// Assert that the node can be found within the publish index within the new release
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-				new VersioningParametersImpl().setRelease(releaseName).setVersion("published")));
+				new VersioningParametersImpl().setBranch(releaseName).setVersion("published")));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

@@ -26,6 +26,7 @@ import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
+import com.gentics.mesh.core.endpoint.branch.BranchEndpoint;
 import com.gentics.mesh.core.endpoint.eventbus.EventbusEndpoint;
 import com.gentics.mesh.core.endpoint.group.GroupEndpoint;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaEndpoint;
@@ -34,7 +35,6 @@ import com.gentics.mesh.core.endpoint.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.endpoint.node.NodeEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectInfoEndpoint;
-import com.gentics.mesh.core.endpoint.release.ReleaseEndpoint;
 import com.gentics.mesh.core.endpoint.role.RoleEndpoint;
 import com.gentics.mesh.core.endpoint.schema.ProjectSchemaEndpoint;
 import com.gentics.mesh.core.endpoint.schema.SchemaEndpoint;
@@ -301,7 +301,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(webEndpoint);
 		addEndpoints(projectBasePath, resources, webEndpoint);
 
-		ReleaseEndpoint releaseEndpoint = Mockito.spy(new ReleaseEndpoint());
+		BranchEndpoint releaseEndpoint = Mockito.spy(new BranchEndpoint());
 		initEndpoint(releaseEndpoint);
 		addEndpoints(projectBasePath, resources, releaseEndpoint);
 

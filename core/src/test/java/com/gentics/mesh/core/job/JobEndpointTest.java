@@ -51,7 +51,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		}, COMPLETED, 1);
 
 		tx((tx) -> {
-			boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
+			boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 		});
 
 		jobList = call(() -> client().findJobs());
@@ -65,7 +65,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPeriodicProcessing() {
-		String jobUuid = tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), initialRelease()).getUuid());
+		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
 		tx(() -> group().addRole(roles().get("admin")));
 		assertEquals(QUEUED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
 
@@ -78,7 +78,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteFailedJob() {
 
-		String jobUuid = tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), initialRelease()).getUuid());
+		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
 
 		call(() -> client().deleteJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
@@ -102,7 +102,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testHandlingOfFailedJobs() {
 
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
+			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -130,7 +130,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testManualInvoke() {
-		String jobUuid = tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), initialRelease()).getUuid());
+		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
 
 		call(() -> client().invokeJobProcessing(), FORBIDDEN, "error_admin_permission_required");
 
@@ -147,19 +147,19 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadJob() {
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
+			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
 		tx(() -> {
 			SchemaContainer schema = schemaContainer("content");
-			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), schema.getLatestVersion(), schema.getLatestVersion());
+			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
 		String job3Uuid = tx(() -> {
 			SchemaContainer schema = schemaContainer("folder");
-			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), schema.getLatestVersion(), schema.getLatestVersion());
+			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
@@ -168,14 +168,14 @@ public class JobEndpointTest extends AbstractMeshTest {
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("folder");
-			assertEquals(initialReleaseUuid(), jobResponse.getProperties().get("releaseUuid"));
+			assertEquals(initialBranchUuid(), jobResponse.getProperties().get("releaseUuid"));
 			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("fromVersion"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("toVersion"));
 		}
 
 		jobResponse = call(() -> client().findJobByUuid(jobUuid));
-		assertEquals(initialReleaseUuid(), jobResponse.getProperties().get("releaseUuid"));
+		assertEquals(initialBranchUuid(), jobResponse.getProperties().get("releaseUuid"));
 
 	}
 
@@ -183,7 +183,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testRetryJob() {
 
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
+			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 

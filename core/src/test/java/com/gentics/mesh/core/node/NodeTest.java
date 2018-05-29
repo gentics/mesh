@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -71,9 +71,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			InternalActionContext ac = mockActionContext();
-			String path = newsNode.getPath(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
+			String path = newsNode.getPath(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
 			assertEquals("/News/News%20Overview.en.html", path);
-			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english()
+			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestBranch().getUuid(), ContainerType.DRAFT, english()
 					.getLanguageTag());
 			assertEquals("News Overview.en.html", pathSegementFieldValue);
 		}
@@ -102,10 +102,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Tag carTag = tag("car");
 			assertNotNull(carTag);
 
-			newsNode.addTag(carTag, project().getLatestRelease());
+			newsNode.addTag(carTag, project().getLatestBranch());
 
-			assertEquals(1, newsNode.getTags(project().getLatestRelease()).size());
-			Tag firstTag = newsNode.getTags(project().getLatestRelease()).iterator().next();
+			assertEquals(1, newsNode.getTags(project().getLatestBranch()).size());
+			Tag firstTag = newsNode.getTags(project().getLatestBranch()).iterator().next();
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
 		}
 	}
@@ -215,7 +215,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(subNode.getUuid());
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
-			subNode.deleteFromRelease(ac, project().getLatestRelease(), batch, false);
+			subNode.deleteFromRelease(ac, project().getLatestBranch(), batch, false);
 		}
 	}
 
@@ -261,7 +261,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Language english = english();
 			Language german = german();
 
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user);
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
 			assertNotNull(node.getUuid());
@@ -272,7 +272,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, node.getProject().getLatestRelease(), user);
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, node.getProject().getLatestBranch(), user);
 			germanContainer.createString("content").setString("german content");
 			assertEquals(2, TestUtils.size(node.getDraftGraphFieldContainers()));
 
@@ -313,7 +313,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
-				node.deleteFromRelease(ac, project().getLatestRelease(), batch, false);
+				node.deleteFromRelease(ac, project().getLatestBranch(), batch, false);
 				tx2.success();
 			}
 
@@ -377,7 +377,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildren() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
+			Branch initialRelease = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
@@ -419,7 +419,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildrenInRelease() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
+			Branch initialRelease = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
@@ -433,10 +433,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String subSubFolderUuid = subSubFolder.getUuid();
 
 			// 2. create a new release
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			Branch newRelease = project.getBranchRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
+			meshDagger().branchMigrationHandler().migrateBranch(newRelease, null);
 
 			// 4. assert nodes in new release
 			assertThat(folder).as("folder").hasOnlyChildren(newRelease, subFolder);
@@ -490,7 +490,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeletePublished() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
+			Branch initialRelease = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
@@ -557,7 +557,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeletePublishedFromRelease() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
+			Branch initialRelease = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
@@ -573,8 +573,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 2. create new release and migrate nodes
 			tx(() -> {
-				Release newRelease = project.getReleaseRoot().create("newrelease", user());
-				meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
+				Branch newRelease = project.getBranchRoot().create("newrelease", user());
+				meshDagger().branchMigrationHandler().migrateBranch(newRelease, null);
 				System.out.println("Release UUID: " + newRelease.getUuid());
 			});
 

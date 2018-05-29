@@ -308,7 +308,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			NodeGraphFieldContainer containerWithOtherVersion = folder("deals").getGraphFieldContainer("en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
-			Iterator<? extends NodeGraphFieldContainer> it = vcard.getDraftFieldContainers(project().getLatestRelease().getUuid());
+			Iterator<? extends NodeGraphFieldContainer> it = vcard.getDraftFieldContainers(project().getLatestBranch().getUuid());
 			List<NodeGraphFieldContainer> containers = TestUtils.toList(it);
 			assertThat(containers).containsOnly(containerWithBoth, containerWithField, containerWithList).hasSize(3);
 		}

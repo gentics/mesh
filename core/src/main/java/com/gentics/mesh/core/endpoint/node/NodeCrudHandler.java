@@ -25,7 +25,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -87,7 +87,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.deleteFromRelease(ac, ac.getRelease(), batch, false);
+				node.deleteFromRelease(ac, ac.getBranch(), batch, false);
 				return batch;
 			}).processSync();
 			node.onDeleted(uuid, name, schema, null);
@@ -120,7 +120,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.deleteLanguageContainer(ac, ac.getRelease(), language, batch, true);
+				node.deleteLanguageContainer(ac, ac.getBranch(), language, batch, true);
 				return batch;
 			}).processSync();
 			node.onDeleted(uuid, name, schema, languageTag);
@@ -200,7 +200,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
 			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(),
-				ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+				ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 			// Handle etag
 			String etag = page.getETag(ac);
 			ac.setEtag(etag, true);
@@ -233,7 +233,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			try {
-				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getRelease());
+				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
 				// Handle etag
 				String etag = tagPage.getETag(ac);
 				ac.setEtag(etag, true);
@@ -264,16 +264,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Project project = ac.getProject();
-			Release release = ac.getRelease();
+			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Tuple<Node, SearchQueueBatch> tuple = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.addTag(tag, release);
-				batch.store(node, release.getUuid(), PUBLISHED, false);
-				batch.store(node, release.getUuid(), DRAFT, false);
+				node.addTag(tag, branch);
+				batch.store(node, branch.getUuid(), PUBLISHED, false);
+				batch.store(node, branch.getUuid(), DRAFT, false);
 				return Tuple.tuple(node, batch);
 			});
 			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
@@ -297,7 +297,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Project project = ac.getProject();
-			Release release = ac.getRelease();
+			Branch release = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
@@ -429,7 +429,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				Release release = ac.getRelease(ac.getProject());
+				Branch release = ac.getBranch(ac.getProject());
 				node.takeOffline(ac, batch, release, languageTag);
 				return batch;
 			}).processAsync().andThen(Single.just(Optional.empty()));

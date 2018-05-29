@@ -16,9 +16,9 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -142,9 +142,9 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 		// 1. Create a new release
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
+		BranchCreateRequest createRelease = new BranchCreateRequest();
 		createRelease.setName("newrelease");
-		call(() -> client().createRelease(PROJECT_NAME, createRelease));
+		call(() -> client().createBranch(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
 		// 2. Search within the newly create release
@@ -153,9 +153,9 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// 3. Search within the initial release
-		String releaseName = db().tx(() -> project().getInitialRelease().getName());
+		String releaseName = db().tx(() -> project().getInitialBranch().getName());
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
-				.setRelease(releaseName).draft()));
+				.setBranch(releaseName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

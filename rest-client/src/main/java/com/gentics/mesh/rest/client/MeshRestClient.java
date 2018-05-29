@@ -17,7 +17,7 @@ import com.gentics.mesh.rest.client.method.NavigationClientMethods;
 import com.gentics.mesh.rest.client.method.NodeBinaryFieldClientMethods;
 import com.gentics.mesh.rest.client.method.NodeClientMethods;
 import com.gentics.mesh.rest.client.method.ProjectClientMethods;
-import com.gentics.mesh.rest.client.method.ReleaseClientMethods;
+import com.gentics.mesh.rest.client.method.BranchClientMethods;
 import com.gentics.mesh.rest.client.method.RoleClientMethods;
 import com.gentics.mesh.rest.client.method.SchemaClientMethods;
 import com.gentics.mesh.rest.client.method.SearchClientMethods;
@@ -33,7 +33,7 @@ import io.vertx.core.http.HttpClient;
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
-	NavRootClientMethods, EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
+	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
 
 	/**
 	 * The default base URI path to the Mesh-API.

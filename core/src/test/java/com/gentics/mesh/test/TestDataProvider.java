@@ -79,7 +79,7 @@ public class TestDataProvider {
 
 	private Project project;
 	private String projectUuid;
-	private String releaseUuid;
+	private String branchUuid;
 
 	private UserInfo userInfo;
 
@@ -158,8 +158,8 @@ public class TestDataProvider {
 			addPermissions(project.getBaseNode());
 			addPermissions(project.getMicroschemaContainerRoot());
 			addPermissions(project.getSchemaContainerRoot());
-			addPermissions(project.getReleaseRoot());
-			addPermissions(project.getInitialRelease());
+			addPermissions(project.getBranchRoot());
+			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
 			addPermissions(boot.projectRoot());
 			addPermissions(boot.userRoot());
@@ -228,17 +228,17 @@ public class TestDataProvider {
 				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
 				contentSchema);
-		concorde.addTag(tags.get("plane"), project.getLatestRelease());
-		concorde.addTag(tags.get("twinjet"), project.getLatestRelease());
-		concorde.addTag(tags.get("red"), project.getLatestRelease());
+		concorde.addTag(tags.get("plane"), project.getLatestBranch());
+		concorde.addTag(tags.get("twinjet"), project.getLatestBranch());
+		concorde.addTag(tags.get("red"), project.getLatestBranch());
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
 				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
 				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
 				contentSchema);
-		hondaNR.addTag(tags.get("vehicle"), project.getLatestRelease());
-		hondaNR.addTag(tags.get("motorcycle"), project.getLatestRelease());
-		hondaNR.addTag(tags.get("green"), project.getLatestRelease());
+		hondaNR.addTag(tags.get("vehicle"), project.getLatestBranch());
+		hondaNR.addTag(tags.get("motorcycle"), project.getLatestBranch());
+		hondaNR.addTag(tags.get("green"), project.getLatestBranch());
 
 	}
 
@@ -250,10 +250,10 @@ public class TestDataProvider {
 		Node news = addFolder(baseNode, "News", "Neuigkeiten");
 		Node news2015 = addFolder(news, "2015", null);
 		if (getSize() == FULL) {
-			news2015.addTag(tags.get("car"), project.getLatestRelease());
-			news2015.addTag(tags.get("bike"), project.getLatestRelease());
-			news2015.addTag(tags.get("plane"), project.getLatestRelease());
-			news2015.addTag(tags.get("jeep"), project.getLatestRelease());
+			news2015.addTag(tags.get("car"), project.getLatestBranch());
+			news2015.addTag(tags.get("bike"), project.getLatestBranch());
+			news2015.addTag(tags.get("plane"), project.getLatestBranch());
+			news2015.addTag(tags.get("jeep"), project.getLatestBranch());
 
 			Node news2014 = addFolder(news, "2014", null);
 			addFolder(news2014, "March", "März");
@@ -338,7 +338,7 @@ public class TestDataProvider {
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"));
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"));
 		projectUuid = project.getUuid();
-		releaseUuid = project.getInitialRelease().getUuid();
+		branchUuid = project.getInitialBranch().getUuid();
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
@@ -364,7 +364,7 @@ public class TestDataProvider {
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode
-		project.getBaseNode().publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
+		project.getBaseNode().publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
 
 	}
 
@@ -482,20 +482,20 @@ public class TestDataProvider {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
 
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestBranch(), userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
-			folderNode.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
+			folderNode.publish(getGerman(), getProject().getLatestBranch(), getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestBranch(), userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
-			folderNode.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
+			folderNode.publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
 		}
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
@@ -525,25 +525,25 @@ public class TestDataProvider {
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestBranch(), userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
-			node.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
+			node.publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestBranch(), userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
-			node.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
+			node.publish(getGerman(), getProject().getLatestBranch(), getUserInfo().getUser());
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {
@@ -669,8 +669,8 @@ public class TestDataProvider {
 		return contentUuid;
 	}
 
-	public String releaseUuid() {
-		return releaseUuid;
+	public String branchUuid() {
+		return branchUuid;
 	}
 
 }

@@ -19,7 +19,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.router.APIRouter;
@@ -208,7 +208,7 @@ public class WebRootLinkReplacer {
 		}
 		// if no release given, take the latest release of the project
 		if (releaseUuid == null) {
-			releaseUuid = theirProject.getLatestRelease().getUuid();
+			releaseUuid = theirProject.getLatestBranch().getUuid();
 		}
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
@@ -242,7 +242,7 @@ public class WebRootLinkReplacer {
 	 * @return scheme and authority or empty string if the release of the node does not supply the needed information
 	 */
 	private String generateSchemeAuthorityForNode(Node node) {
-		Release release = node.getProject().getLatestRelease();
+		Branch release = node.getProject().getLatestBranch();
 		String hostname = release.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme

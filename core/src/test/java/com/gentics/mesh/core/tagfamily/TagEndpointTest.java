@@ -22,7 +22,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -164,7 +164,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 				affectedElements.put("tagFamily", new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
 
 				Project project = project();
-				Release release = project.getLatestRelease();
+				Branch release = project.getLatestBranch();
 
 				int i = 0;
 				Tag redTag = tag("red");

@@ -26,8 +26,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
@@ -80,7 +80,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            The release-version which should be used for the construction
 	 * @return An ES-Mapping for the given Schema in the Release
 	 */
-	public JsonObject getMapping(Schema schema, Release release) {
+	public JsonObject getMapping(Schema schema, Branch release) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
 
@@ -188,7 +188,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            Field schema which will be used to construct the mapping info
 	 * @return JSON object which contains the mapping info
 	 */
-	public JsonObject getFieldMapping(FieldSchema fieldSchema, Release release) {
+	public JsonObject getFieldMapping(FieldSchema fieldSchema, Branch release) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		JsonObject customIndexOptions = fieldSchema.getElasticsearch();
 		JsonObject fieldInfo = new JsonObject();
@@ -241,7 +241,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		fieldInfo.put("type", DOUBLE);
 	}
 
-	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Release release) {
+	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Branch release) {
 		fieldInfo.put("type", OBJECT);
 
 		// Cast to MicronodeFieldSchema should be safe as it's a Micronode-Field
@@ -256,7 +256,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		fieldInfo.put("index", INDEX_VALUE);
 	}
 
-	private void addListFieldMapping(JsonObject fieldInfo, Release release, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
+	private void addListFieldMapping(JsonObject fieldInfo, Branch release, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
 		ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 		String type = listFieldSchema.getListType();
 		switch (type) {
@@ -394,7 +394,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            The release for which the mapping should be created
 	 * @return An Properties-mapping for a microschema field.
 	 */
-	public JsonObject getMicroschemaMappingOptions(String[] allowed, Release release) {
+	public JsonObject getMicroschemaMappingOptions(String[] allowed, Branch release) {
 		// Prevent Null-Pointers
 		if (allowed == null) {
 			allowed = new String[0];
@@ -423,7 +423,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		boolean shouldFilter = release != null && !whitelist.isEmpty();
 
 		if (shouldFilter) {
-			for (ReleaseMicroschemaEdge edge : release.findAllLatestMicroschemaVersionEdges()) {
+			for (BranchMicroschemaEdge edge : release.findAllLatestMicroschemaVersionEdges()) {
 				MicroschemaContainerVersion version = edge.getMicroschemaContainerVersion();
 				MicroschemaModel microschema = version.getSchema();
 				String microschemaName = microschema.getName();

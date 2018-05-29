@@ -14,11 +14,11 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -157,12 +157,12 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public Release getRelease() {
-		return out(HAS_RELEASE).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public Branch getRelease() {
+		return out(HAS_RELEASE).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
-	public void setRelease(Release release) {
+	public void setRelease(Branch release) {
 		setUniqueLinkOutTo(release, HAS_RELEASE);
 	}
 

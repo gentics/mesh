@@ -18,7 +18,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
@@ -96,7 +96,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueSchemaMigration(User creator, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+	public Job enqueueSchemaMigration(User creator, Branch release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(MigrationType.schema);
 		job.setCreated(creator);
@@ -113,7 +113,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueMicroschemaMigration(User creator, Release release, MicroschemaContainerVersion fromVersion,
+	public Job enqueueMicroschemaMigration(User creator, Branch release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(MigrationType.microschema);
@@ -132,27 +132,27 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueReleaseMigration(User creator, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(ReleaseMigrationJobImpl.class);
 		job.setCreated(creator);
-		job.setType(MigrationType.release);
-		job.setRelease(release);
+		job.setType(MigrationType.branch);
+		job.setRelease(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
 		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
-			log.debug("Enqueued release migration job {" + job.getUuid() + "} for release {" + release.getUuid() + "}");
+			log.debug("Enqueued release migration job {" + job.getUuid() + "} for release {" + branch.getUuid() + "}");
 		}
 		return job;
 	}
 
 	@Override
-	public Job enqueueReleaseMigration(User creator, Release release) {
+	public Job enqueueBranchMigration(User creator, Branch release) {
 		Job job = getGraph().addFramedVertex(ReleaseMigrationJobImpl.class);
 		job.setCreated(creator);
-		job.setType(MigrationType.release);
+		job.setType(MigrationType.branch);
 		job.setStatus(QUEUED);
 		job.setRelease(release);
 		job.prepare();

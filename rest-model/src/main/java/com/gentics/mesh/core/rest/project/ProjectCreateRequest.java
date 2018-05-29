@@ -14,16 +14,16 @@ public class ProjectCreateRequest implements RestModel {
 	private String name;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Reference to the schema of the root node. Creating a project will also automatically create the base node of the project and link the schema to the initial release of the project.")
+	@JsonPropertyDescription("Reference to the schema of the root node. Creating a project will also automatically create the base node of the project and link the schema to the initial branch  of the project.")
 	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The hostname of the project can be used to generate links across multiple projects. The hostname will be stored along the initial release of the project.")
+	@JsonPropertyDescription("The hostname of the project can be used to generate links across multiple projects. The hostname will be stored along the initial branch of the project.")
 	private String hostname;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("SSL flag of the project which will be used to generate links across multiple projects. The flag will be stored along the intial release of the project.")
+	@JsonPropertyDescription("SSL flag of the project which will be used to generate links across multiple projects. The flag will be stored along the intial branch of the project.")
 	private Boolean ssl;
 
 	/**

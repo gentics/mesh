@@ -33,12 +33,12 @@ public class JobTest extends AbstractMeshTest {
 	public void testJob() {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			Job job = root.enqueueReleaseMigration(user(), initialRelease());
+			Job job = root.enqueueBranchMigration(user(), initialBranch());
 			assertEquals("The creator of the job was not correct", user().getUuid(), job.getCreator().getUuid());
 			assertNotNull("The creation timestamp was not set.", job.getCreationTimestamp());
 			assertNotNull("The uuid of the job was not set.", job.getUuid());
-			assertEquals("The job release information did not match.", initialReleaseUuid(), job.getRelease().getUuid());
-			assertEquals("The job type did not match.", MigrationType.release, job.getType());
+			assertEquals("The job release information did not match.", initialBranchUuid(), job.getRelease().getUuid());
+			assertEquals("The job type did not match.", MigrationType.branch, job.getType());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			assertNull("The job error message should be null since it has not yet been marked as failed.", job.getErrorMessage());
 
@@ -79,7 +79,7 @@ public class JobTest extends AbstractMeshTest {
 	public void testJobErrorDetailTruncate() {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			Job job = root.enqueueReleaseMigration(user(), initialRelease());
+			Job job = root.enqueueBranchMigration(user(), initialBranch());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			Exception ex = buildExceptionStackTraceLongerThan(Job.ERROR_DETAIL_MAX_LENGTH * 2);
 			assertThat(ExceptionUtils.getStackTrace(ex).length()).isGreaterThan(Job.ERROR_DETAIL_MAX_LENGTH);

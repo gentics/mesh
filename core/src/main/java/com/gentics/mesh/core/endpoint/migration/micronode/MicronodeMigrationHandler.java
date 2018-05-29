@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -61,7 +61,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Migration status
 	 * @return Completable which will be completed once the migration has completed
 	 */
-	public Completable migrateMicronodes(Release release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
+	public Completable migrateMicronodes(Branch release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
 			MigrationStatusHandler status) {
 
 		// Get the containers, that need to be transformed
@@ -83,7 +83,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(release.getProject());
-		ac.setRelease(release);
+		ac.setBranch(release);
 
 		if (status != null) {
 			status.setStatus(RUNNING);
@@ -122,7 +122,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		return result;
 	}
 
-	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, Release release, MicroschemaContainerVersion fromVersion,
+	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, Branch release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, List<Exception> errorsDetected) {
 
@@ -182,7 +182,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param nextDraftVersion
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Release release, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Branch release, Node node,
 			NodeGraphFieldContainer container, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
 			Set<String> touchedFields, List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, VersionNumber nextDraftVersion)
 			throws Exception {
@@ -232,7 +232,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Release release, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Branch release, Node node,
 			NodeGraphFieldContainer container, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
 			Set<String> touchedFields, List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts) throws Exception {
 

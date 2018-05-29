@@ -298,7 +298,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 		assertThat(response).hasDepth(1).isValid(4);
 
 		try (Tx tx = tx()) {
-			project.getReleaseRoot().create(newReleaseName, user());
+			project.getBranchRoot().create(newReleaseName, user());
 			tx.success();
 		}
 
@@ -309,12 +309,12 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 		// latest release by name
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-				new VersioningParametersImpl().draft().setRelease(newReleaseName)));
+				new VersioningParametersImpl().draft().setBranch(newReleaseName)));
 		assertThat(response).hasDepth(0);
 
 		// initial release by name
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-				new VersioningParametersImpl().draft().setRelease(INITIAL_RELEASE_NAME)));
+				new VersioningParametersImpl().draft().setBranch(INITIAL_RELEASE_NAME)));
 		assertThat(response).hasDepth(1).isValid(4);
 	}
 

@@ -5,10 +5,10 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
-import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
@@ -16,8 +16,8 @@ import com.gentics.mesh.util.UUIDUtil;
 
 public class MicroschemaExamples extends AbstractExamples {
 
-	public ReleaseInfoMicroschemaList createMicroschemaReferenceList() {
-		ReleaseInfoMicroschemaList microschemas = new ReleaseInfoMicroschemaList();
+	public BranchInfoMicroschemaList createMicroschemaReferenceList() {
+		BranchInfoMicroschemaList microschemas = new BranchInfoMicroschemaList();
 		microschemas.add(getMicroschemaReference("vcard", "2.0"));
 		microschemas.add(getMicroschemaReference("geolocation", "1.0"));
 		return microschemas;

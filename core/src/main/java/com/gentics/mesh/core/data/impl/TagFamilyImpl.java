@@ -21,7 +21,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -222,12 +222,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			// To prevent nodes from being handled multiple times
 			HashSet<String> handledNodes = new HashSet<>();
 
-			for (Release release : tag.getProject().getReleaseRoot().findAllIt()) {
-				for (Node node : tag.getNodes(release)) {
+			for (Branch branch : tag.getProject().getBranchRoot().findAllIt()) {
+				for (Node node : tag.getNodes(branch)) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());
 						GenericEntryContextImpl nodeContext = new GenericEntryContextImpl();
-						context.setReleaseUuid(release.getUuid());
+						context.setBranchUuid(branch.getUuid());
 						context.setProjectUuid(node.getProject().getUuid());
 						action.call(node, nodeContext);
 					}

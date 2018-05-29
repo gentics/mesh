@@ -21,7 +21,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -141,28 +141,28 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 				// Check whether the assigned releases of the schema should also directly be updated.
 				// This will trigger a node migration.
-				if (updateParams.getUpdateAssignedReleases()) {
-					Map<Release, SchemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
+				if (updateParams.getUpdateAssignedBranches()) {
+					Map<Branch, SchemaContainerVersion> referencedBranches = schemaContainer.findReferencedBranches();
 
 					// Assign the created version to the found releases
-					for (Map.Entry<Release, SchemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
-						Release release = releaseEntry.getKey();
+					for (Map.Entry<Branch, SchemaContainerVersion> branchEntry : referencedBranches.entrySet()) {
+						Branch branch = branchEntry.getKey();
 
 						// Check whether a list of release names was specified and skip releases which were not included in the list.
-						List<String> releaseNames = updateParams.getReleaseNames();
-						if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
+						List<String> branchNames = updateParams.getBranchNames();
+						if (branchNames != null && !branchNames.isEmpty() && !branchNames.contains(branch.getName())) {
 							continue;
 						}
 
 						// Assign the new version to the release
-						release.assignSchemaVersion(user, createdVersion);
+						branch.assignSchemaVersion(user, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());
 			});
 
 			info.v1().processSync();
-			if (updateParams.getUpdateAssignedReleases()) {
+			if (updateParams.getUpdateAssignedBranches()) {
 				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
 				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
 			} else {
@@ -229,7 +229,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 				// Assign the schema to the project
 				root.addSchemaContainer(ac.getUser(), schema);
-				String releaseUuid = project.getLatestRelease().getUuid();
+				String releaseUuid = project.getLatestBranch().getUuid();
 				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
 				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
 				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());

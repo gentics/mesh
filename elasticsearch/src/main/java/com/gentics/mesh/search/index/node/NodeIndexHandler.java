@@ -23,7 +23,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -104,10 +104,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
 		GenericEntryContext context = entry.getContext();
 		String projectUuid = context.getProjectUuid();
-		String releaseUuid = context.getReleaseUuid();
+		String branchUuid = context.getBranchUuid();
 		String schemaContainerVersionUuid = context.getSchemaContainerVersionUuid();
 		ContainerType type = context.getContainerType();
-		return NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
+		return NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
 	}
 
 	@Override
@@ -127,22 +127,22 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			// Iterate over all projects and construct the index names
 			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-				// Add the draft and published index names per release to the map
-				for (Release release : project.getReleaseRoot().findAllIt()) {
+				// Add the draft and published index names per branch to the map
+				for (Branch branch : project.getBranchRoot().findAllIt()) {
 					// Each release specific index has also document type specific mappings
-					for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
-						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+					for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
+						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 							.getUuid(), DRAFT);
-						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 							.getUuid(), PUBLISHED);
 						if (log.isDebugEnabled()) {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "}");
 							log.debug("Adding index to map of known idices {" + publishIndexName + "}");
 						}
-						release.findAllMicroschemaVersions();
+						branch.findAllMicroschemaVersions();
 						// Load the index mapping information for the index
 						SchemaModel schema = containerVersion.getSchema();
-						JsonObject mapping = getMappingProvider().getMapping(schema, release);
+						JsonObject mapping = getMappingProvider().getMapping(schema, branch);
 						JsonObject settings = schema.getElasticsearch();
 						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping);
 						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping);
@@ -169,7 +169,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				SyncMetric metric = new SyncMetric(getType());
 				Set<Completable> actions = new HashSet<>();
 				for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Release release : project.getReleaseRoot().findAllIt()) {
+					for (Branch release : project.getBranchRoot().findAllIt()) {
 						for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 							for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 								actions.add(diffAndSync(project, release, version, type, metric));
@@ -183,7 +183,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
-	private Map<String, String> loadVersionsFromGraph(Release release, SchemaContainerVersion version, ContainerType type) {
+	private Map<String, String> loadVersionsFromGraph(Branch release, SchemaContainerVersion version, ContainerType type) {
 		Map<String, String> versions = new HashMap<>();
 		String releaseUuid = release.getUuid();
 		version.getFieldContainers(releaseUuid)
@@ -211,7 +211,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private Completable diffAndSync(Project project, Release release, SchemaContainerVersion version, ContainerType type, SyncMetric metric)
+	private Completable diffAndSync(Project project, Branch release, SchemaContainerVersion version, ContainerType type, SyncMetric metric)
 		throws HttpErrorException {
 		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
 			version.getUuid(), type);
@@ -255,7 +255,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setContainerType(type);
 				context.setProjectUuid(projectUuid);
-				context.setReleaseUuid(releaseUuid);
+				context.setBranchUuid(releaseUuid);
 				context.setLanguageTag(lang);
 				context.setSchemaContainerVersionUuid(versionUuid);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
@@ -269,7 +269,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setContainerType(type);
 				context.setProjectUuid(projectUuid);
-				context.setReleaseUuid(releaseUuid);
+				context.setBranchUuid(releaseUuid);
 				context.setSchemaContainerVersionUuid(versionUuid);
 				context.setLanguageTag(lang);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, DELETE_ACTION);
@@ -283,7 +283,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setContainerType(type);
 				context.setProjectUuid(projectUuid);
-				context.setReleaseUuid(releaseUuid);
+				context.setBranchUuid(releaseUuid);
 				context.setSchemaContainerVersionUuid(versionUuid);
 				context.setLanguageTag(lang);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
@@ -304,7 +304,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Set<String> indices = new HashSet<>();
 			Project project = ac.getProject();
 			if (project != null) {
-				Release release = ac.getRelease();
+				Branch release = ac.getBranch();
 				// Locate all schema versions which need to be taken into consideration when choosing the indices
 				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(), ContainerType
@@ -314,7 +314,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// The project was not specified. Maybe a global search wants to know which indices must be searched.
 				// In that case we just iterate over all projects and collect index names per release.
 				for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Release release : currentProject.getReleaseRoot().findAllIt()) {
+					for (Branch release : currentProject.getBranchRoot().findAllIt()) {
 						for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
 								ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
@@ -360,12 +360,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param context
 	 */
 	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
-		if (context.getReleaseUuid() == null) {
-			for (Release release : node.getProject().getReleaseRoot().findAllIt()) {
+		if (context.getBranchUuid() == null) {
+			for (Branch release : node.getProject().getBranchRoot().findAllIt()) {
 				store(obs, node, release.getUuid(), context);
 			}
 		} else {
-			store(obs, node, context.getReleaseUuid(), context);
+			store(obs, node, context.getBranchUuid(), context);
 		}
 	}
 
@@ -429,14 +429,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
-		if (context.getReleaseUuid() == null) {
+		if (context.getBranchUuid() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (Release release : node.getProject().getReleaseRoot().findAllIt()) {
+			for (Branch release : node.getProject().getBranchRoot().findAllIt()) {
 				obs.add(storeForBulk(node, release.getUuid(), context));
 			}
 			return Observable.merge(obs);
 		} else {
-			return storeForBulk(node, context.getReleaseUuid(), context);
+			return storeForBulk(node, context.getBranchUuid(), context);
 		}
 	}
 
@@ -506,9 +506,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable move(MoveDocumentEntry entry) {
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
-		String releaseUuid = context.getReleaseUuid();
-		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
-			releaseUuid, type));
+		String branchUuid = context.getBranchUuid();
+		return storeContainer(context.getNewContainer(), branchUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
+			branchUuid, type));
 	}
 
 	/**
@@ -590,7 +590,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Set<Observable<String>> obs = new HashSet<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (Release release : project.getReleaseRoot().findAllIt()) {
+			for (Branch release : project.getBranchRoot().findAllIt()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(release, type)) {

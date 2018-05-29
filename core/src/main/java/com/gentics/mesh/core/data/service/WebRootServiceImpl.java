@@ -35,7 +35,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// First try to locate the content via the url path index
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		NodeGraphFieldContainer containerByWebUrlPath = findByPath(ac.getRelease().getUuid(), path, type);
+		NodeGraphFieldContainer containerByWebUrlPath = findByPath(ac.getBranch().getUuid(), path, type);
 		if (containerByWebUrlPath != null) {
 			return containerByWebUrlPath.getPath(ac);
 		}
@@ -63,7 +63,7 @@ public class WebRootServiceImpl implements WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		return baseNode.resolvePath(ac.getRelease().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
+		return baseNode.resolvePath(ac.getBranch().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -146,7 +146,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Trigger migration
 			waitForJobs(() -> {
-				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, project().getLatestBranch().getUuid(),
 						new SchemaReferenceImpl().setName("content").setVersion(schema.getVersion())));
 			}, COMPLETED, 1);
 		}
@@ -228,7 +228,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
@@ -270,13 +270,13 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		// 4. Update the schema server side -> 2.0
 		try (Tx tx = tx()) {
 			GenericMessageResponse status = call(() -> client().updateSchema(schemaContainer.getUuid(), request,
-					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+					new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 			assertThat(status).matches("schema_updated_migration_deferred", request.getName(), "2.0");
-			// 5. assign the new schema version to the release (which will start the migration)
+			// 5. assign the new schema version to the branch (which will start the migration)
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaContainer.getUuid()));
 
 			waitForJobs(() -> {
-				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, project().getLatestBranch().getUuid(),
 						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
 			failingLatch(latch);
@@ -393,7 +393,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
@@ -429,7 +429,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		// 4. Latch for completion
@@ -450,7 +450,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	/**
-	 * Construct a latch which will release when the migration has finished.
+	 * Construct a latch which will unlatch when the migration has finished.
 	 * 
 	 * @return
 	 */
@@ -493,7 +493,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		String containerUuid = db().tx(() -> schemaContainer("content").getUuid());
-		String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
+		String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
 
 		for (int i = 0; i < 10; i++) {
 
@@ -511,7 +511,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 3. Invoke migration
 			waitForJobs(() -> {
-				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
+				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, branchUuid,
 						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
 			// 4. Latch for completion
@@ -589,14 +589,14 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. Update the schema server side -> 2.0
 		GenericMessageResponse status = call(
-				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 		assertThat(status).matches("schema_updated_migration_deferred", "content", "2.0");
 
-		// 4. Assign the new schema version to the release
+		// 4. Assign the new schema version to the branch
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
@@ -630,7 +630,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testRemoveField2() throws Exception {
 		String containerUuid = db().tx(() -> schemaContainer("content").getUuid());
-		String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
+		String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
 		SchemaUpdateRequest schema;
 		String nodeUuid;
 		try (Tx tx = tx()) {
@@ -655,7 +655,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("2.0", updatedSchema.getVersion());
 		assertNull("The content field should have been removed", updatedSchema.getField("content"));
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, branchUuid,
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		schema.setVersion(schema.getVersion() + 1);
@@ -672,10 +672,10 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		String schemaUuid = tx(() -> schemaContainer.getUuid());
 		Node content = content();
 		SchemaUpdateRequest request;
-		Release newRelease;
+		Branch newRelease;
 
 		try (Tx tx = tx()) {
-			newRelease = project().getReleaseRoot().create("newrelease", user());
+			newRelease = project().getBranchRoot().create("newrelease", user());
 			content.createGraphFieldContainer(english(), newRelease, user());
 			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getSchema().toJson(), SchemaUpdateRequest.class);
 			request.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
@@ -686,19 +686,19 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		// 2. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		// 3. Update the schema server side
-		call(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+		call(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 
 		// 4. assign the new schema version to the initial release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		failingLatch(latch);
 
 		// node must be migrated for initial release
 		try (Tx tx = tx()) {
-			assertThat(content.getGraphFieldContainer("en", initialReleaseUuid(), ContainerType.DRAFT)).isOf(schemaContainer.getLatestVersion());
+			assertThat(content.getGraphFieldContainer("en", initialBranchUuid(), ContainerType.DRAFT)).isOf(schemaContainer.getLatestVersion());
 
 			// node must not be migrated for new release
 			assertThat(content.getGraphFieldContainer("en", newRelease.getUuid(), ContainerType.DRAFT))

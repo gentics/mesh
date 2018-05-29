@@ -5,7 +5,7 @@ import java.util.Map;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -78,6 +78,6 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE ex
 	 * 
 	 * @return
 	 */
-	Map<Release, VV> findReferencedReleases();
+	Map<Branch, VV> findReferencedBranches();
 
 }

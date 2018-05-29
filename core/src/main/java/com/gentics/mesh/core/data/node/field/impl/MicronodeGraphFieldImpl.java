@@ -84,7 +84,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 
 		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference,
-				ac.getRelease());
+				ac.getBranch());
 
 		Micronode micronode = null;
 

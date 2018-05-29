@@ -469,8 +469,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		addTags(document, node.getTags(node.getProject().getLatestRelease()));
-		addTagFamilies(document, node.getTags(node.getProject().getLatestRelease()));
+		addTags(document, node.getTags(node.getProject().getLatestBranch()));
+		addTagFamilies(document, node.getTags(node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.

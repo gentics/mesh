@@ -5,7 +5,7 @@ import java.util.List;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -170,7 +170,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * 
 	 * @return Found releases of this version
 	 */
-	List<? extends Release> getReleases();
+	List<? extends Branch> getReleases();
 
 	/**
 	 * Load the stored schema JSON data.

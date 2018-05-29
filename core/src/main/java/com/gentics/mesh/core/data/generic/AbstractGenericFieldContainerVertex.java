@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -24,7 +24,7 @@ import com.tinkerpop.blueprints.Vertex;
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
 		AbstractMeshCoreVertex<T, R> {
 
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Release release, ContainerType type, Class<U> classOfU) {
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Branch release, ContainerType type, Class<U> classOfU) {
 		return getGraphFieldContainer(language.getLanguageTag(), release != null ? release.getUuid() : null, type, classOfU);
 	}
 

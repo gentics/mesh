@@ -12,7 +12,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -141,10 +141,10 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Map<Release, SCV> findReferencedReleases() {
-		Map<Release, SCV> references = new HashMap<>();
+	public Map<Branch, SCV> findReferencedBranches() {
+		Map<Branch, SCV> references = new HashMap<>();
 		for (SCV version : findAll()) {
-			version.getReleases().forEach(release -> references.put(release, version));
+			version.getReleases().forEach(branch -> references.put(branch, version));
 		}
 		return references;
 	}

@@ -65,7 +65,7 @@ public class TagCrudHandler extends AbstractHandler {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
-			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(), nodeParams.getLanguageList(),
+			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 			return page.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

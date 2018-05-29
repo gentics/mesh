@@ -3,7 +3,7 @@ package com.gentics.mesh.graphql.type;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -215,7 +215,7 @@ public abstract class AbstractTypeProvider {
 
 	protected MeshVertex handleReleaseSchema(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Release release = env.getSource();
+		Branch release = env.getSource();
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false);
 
 		// We need to handle permissions dedicately since we check the schema container perm and not the schema container version perm.
@@ -228,7 +228,7 @@ public abstract class AbstractTypeProvider {
 
 	protected Page<SchemaContainerVersion> handleReleaseSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Release release = env.getSource();
+		Branch release = env.getSource();
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false).filter(
 			schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
 		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));

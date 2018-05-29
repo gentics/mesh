@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -78,5 +78,5 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 *            release
 	 * @return
 	 */
-	MicroschemaContainerVersion fromReference(MicroschemaReference reference, Release release);
+	MicroschemaContainerVersion fromReference(MicroschemaReference reference, Branch release);
 }

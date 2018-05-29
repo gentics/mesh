@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -39,10 +39,10 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	/**
 	 * Cache for project specific releases.
 	 */
-	private Map<Project, Release> releaseCache = new ConcurrentHashMap<>();
+	private Map<Project, Branch> releaseCache = new ConcurrentHashMap<>();
 
 	@Override
-	public Release getRelease(Project project) {
+	public Branch getBranch(Project project) {
 		if (project == null) {
 			project = getProject();
 		}
@@ -52,22 +52,22 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 				throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
 			}
 
-			Release release = null;
+			Branch branch = null;
 
-			String releaseNameOrUuid = getVersioningParameters().getRelease();
-			if (!isEmpty(releaseNameOrUuid)) {
-				release = p.getReleaseRoot().findByUuid(releaseNameOrUuid);
-				if (release == null) {
-					release = p.getReleaseRoot().findByName(releaseNameOrUuid);
+			String branchNameOrUuid = getVersioningParameters().getBranch();
+			if (!isEmpty(branchNameOrUuid)) {
+				branch = p.getBranchRoot().findByUuid(branchNameOrUuid);
+				if (branch == null) {
+					branch = p.getBranchRoot().findByName(branchNameOrUuid);
 				}
-				if (release == null) {
-					throw error(BAD_REQUEST, "release_error_not_found", releaseNameOrUuid);
+				if (branch == null) {
+					throw error(BAD_REQUEST, "release_error_not_found", branchNameOrUuid);
 				}
 			} else {
-				release = p.getLatestRelease();
+				branch = p.getLatestBranch();
 			}
 
-			return release;
+			return branch;
 		});
 	}
 

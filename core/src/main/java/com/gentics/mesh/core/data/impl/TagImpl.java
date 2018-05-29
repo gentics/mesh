@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -62,7 +62,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public List<? extends Node> getNodes(Release release) {
+	public List<? extends Node> getNodes(Branch release) {
 		return TagEdgeImpl.getNodeTraversal(this, release).toListExplicit(NodeImpl.class);
 	}
 
@@ -133,7 +133,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		batch.delete(this, true);
 
 		// Nodes which used this tag must be updated in the search index for all releases
-		for (Release release : getProject().getReleaseRoot().findAllIt()) {
+		for (Branch release : getProject().getBranchRoot().findAllIt()) {
 			String releaseUuid = release.getUuid();
 			for (Node node : getNodes(release)) {
 				batch.store(node, releaseUuid);
@@ -143,7 +143,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser user, Release release, List<String> languageTags, ContainerType type,
+	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser user, Branch release, List<String> languageTags, ContainerType type,
 			PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(release, languageTags, type);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
@@ -164,7 +164,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	 *            Optional type of the node containers to filter by
 	 * @return Traversal which can be used to locate the nodes
 	 */
-	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Release release, List<String> languageTags, ContainerType type) {
+	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Branch release, List<String> languageTags, ContainerType type) {
 
 		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark().outE(
 				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
@@ -209,12 +209,12 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
 		// Locate all nodes that use the tag across all releases and update these nodes
-		for (Release release : getProject().getReleaseRoot().findAllIt()) {
-			for (Node node : getNodes(release)) {
+		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+			for (Node node : getNodes(branch)) {
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					GenericEntryContextImpl context = new GenericEntryContextImpl();
 					context.setContainerType(type);
-					context.setReleaseUuid(release.getUuid());
+					context.setBranchUuid(branch.getUuid());
 					context.setProjectUuid(node.getProject().getUuid());
 					action.call(node, context);
 				}
@@ -227,7 +227,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(super.getETag(ac));
 		keyBuilder.append(getLastEditedTimestamp());
-		keyBuilder.append(ac.getRelease(getProject()).getUuid());
+		keyBuilder.append(ac.getBranch(getProject()).getUuid());
 		return ETag.hash(keyBuilder);
 	}
 

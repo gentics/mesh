@@ -41,7 +41,7 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 		pageParameter.setExample("24cf92691c7641158f92691c76c115ef");
 		pageParameter.setRequired(false);
 		pageParameter.setType(ParamType.STRING);
-		parameters.put(RELEASE_QUERY_PARAM_KEY, pageParameter);
+		parameters.put(BRANCH_QUERY_PARAM_KEY, pageParameter);
 
 		// version
 		QueryParameter versionParameter = new QueryParameter();

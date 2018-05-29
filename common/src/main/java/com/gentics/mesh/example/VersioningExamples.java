@@ -9,12 +9,12 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchListResponse;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseListResponse;
-import com.gentics.mesh.core.rest.release.ReleaseResponse;
-import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 public class VersioningExamples extends AbstractExamples {
@@ -42,24 +42,24 @@ public class VersioningExamples extends AbstractExamples {
 		return response;
 	}
 
-	public ReleaseListResponse createReleaseListResponse() {
-		ReleaseListResponse releaseList = new ReleaseListResponse();
-		releaseList.getData().add(createReleaseResponse("summer2016"));
-		releaseList.getData().add(createReleaseResponse("autumn2016"));
+	public BranchListResponse createBranchListResponse() {
+		BranchListResponse releaseList = new BranchListResponse();
+		releaseList.getData().add(createBranchResponse("summer2016"));
+		releaseList.getData().add(createBranchResponse("autumn2016"));
 		setPaging(releaseList, 1, 10, 2, 20);
 		return releaseList;
 	}
 
-	public ReleaseCreateRequest createReleaseCreateRequest(String name) {
-		ReleaseCreateRequest create = new ReleaseCreateRequest();
+	public BranchCreateRequest createBranchCreateRequest(String name) {
+		BranchCreateRequest create = new BranchCreateRequest();
 		create.setName(name);
 		create.setHostname("getmesh.io");
 		create.setSsl(true);
 		return create;
 	}
 
-	public ReleaseUpdateRequest createReleaseUpdateRequest(String name) {
-		ReleaseUpdateRequest update = new ReleaseUpdateRequest();
+	public BranchUpdateRequest createBranchUpdateRequest(String name) {
+		BranchUpdateRequest update = new BranchUpdateRequest();
 		update.setName(name);
 		update.setHostname("getmesh.io");
 		update.setSsl(true);
@@ -78,8 +78,8 @@ public class VersioningExamples extends AbstractExamples {
 	 *            Name of the release
 	 * @return Constructed response
 	 */
-	public ReleaseResponse createReleaseResponse(String name) {
-		ReleaseResponse response = new ReleaseResponse();
+	public BranchResponse createBranchResponse(String name) {
+		BranchResponse response = new BranchResponse();
 		response.setName(name);
 		response.setUuid(randomUUID());
 		// response.setActive(true);

@@ -57,20 +57,20 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * <p>
 	 * <ul>
-	 * <li>Document Index: [:indexPrefixnode-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
+	 * <li>Document Index: [:indexPrefixnode-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
 	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
 	 * </ul>
 	 * <p>
 	 * 
 	 * @param projectUuid
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param schemaContainerVersionUuid
 	 * @param type
 	 * @return
 	 */
-	static String composeIndexName(String projectUuid, String releaseUuid, String schemaContainerVersionUuid, ContainerType type) {
+	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type) {
 		Objects.requireNonNull(projectUuid, "The project uuid was not set");
-		Objects.requireNonNull(releaseUuid, "The release uuid was not set");
+		Objects.requireNonNull(branchUuid, "The release uuid was not set");
 		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
 		Objects.requireNonNull(type, "The container type was not set");
 		// TODO check that only "draft" and "published" are used for version
@@ -79,7 +79,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		indexName.append("-");
 		indexName.append(projectUuid);
 		indexName.append("-");
-		indexName.append(releaseUuid);
+		indexName.append(branchUuid);
 		indexName.append("-");
 		indexName.append(schemaContainerVersionUuid);
 		indexName.append("-");
@@ -91,12 +91,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Return the index name for the given parameters.
 	 * 
 	 * @param projectUuid
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
-	default String getIndexName(String projectUuid, String releaseUuid, ContainerType type) {
-		return composeIndexName(projectUuid, releaseUuid, getSchemaContainerVersion().getUuid(), type);
+	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
+		return composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
 	}
 
 	/**
@@ -167,12 +167,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void delete(SearchQueueBatch batch, boolean deleteNext);
 
 	/**
-	 * "Delete" the field container from the release. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
+	 * "Delete" the field container from the branch. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
 	 *
-	 * @param release
+	 * @param branch
 	 * @param batch
 	 */
-	void deleteFromRelease(Release release, SearchQueueBatch batch);
+	void deleteFromRelease(Branch branch, SearchQueueBatch batch);
 
 	/**
 	 * Return the display field value for this container.

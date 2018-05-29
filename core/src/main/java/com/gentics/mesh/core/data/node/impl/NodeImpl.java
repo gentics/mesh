@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.impl;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -10,7 +11,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
@@ -221,7 +221,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void assertPublishConsistency(InternalActionContext ac, Release release) {
+	public void assertPublishConsistency(InternalActionContext ac, Branch release) {
 
 		NodeParameters parameters = ac.getNodeParameters();
 
@@ -263,7 +263,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends Tag> getTags(Release release) {
+	public List<? extends Tag> getTags(Branch release) {
 		return TagEdgeImpl.getTagTraversal(this, release).toListExplicit(TagImpl.class);
 	}
 
@@ -300,17 +300,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeGraphFieldContainer getLatestDraftFieldContainer(Language language) {
-		return getGraphFieldContainer(language, getProject().getLatestRelease(), DRAFT, NodeGraphFieldContainerImpl.class);
+		return getGraphFieldContainer(language, getProject().getLatestBranch(), DRAFT, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(Language language, Release release, ContainerType type) {
+	public NodeGraphFieldContainer getGraphFieldContainer(Language language, Branch release, ContainerType type) {
 		return getGraphFieldContainer(language, release, type, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
 	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag) {
-		return getGraphFieldContainer(languageTag, getProject().getLatestRelease().getUuid(), DRAFT, NodeGraphFieldContainerImpl.class);
+		return getGraphFieldContainer(languageTag, getProject().getLatestBranch().getUuid(), DRAFT, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -319,12 +319,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor) {
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch release, User editor) {
 		return createGraphFieldContainer(language, release, editor, null, true);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor, NodeGraphFieldContainer original,
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch release, User editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
@@ -425,19 +425,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void addTag(Tag tag, Release release) {
+	public void addTag(Tag tag, Branch release) {
 		removeTag(tag, release);
 		TagEdge edge = addFramedEdge(HAS_TAG, tag, TagEdgeImpl.class);
 		edge.setReleaseUuid(release.getUuid());
 	}
 
 	@Override
-	public void removeTag(Tag tag, Release release) {
+	public void removeTag(Tag tag, Branch release) {
 		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).mark().inV().retain(tag).back().removeAll();
 	}
 
 	@Override
-	public void removeAllTags(Release release) {
+	public void removeAllTags(Branch release) {
 		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).removeAll();
 	}
 
@@ -482,7 +482,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		MeshAuthUser user = ac.getUser();
 
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release",
-			db.createComposedIndexKey(getId(), ac.getRelease().getUuid()));
+			db.createComposedIndexKey(getId(), ac.getBranch().getUuid()));
 		Iterator<Edge> it = edges.iterator();
 		Iterable<Edge> iterable = () -> it;
 		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
@@ -527,14 +527,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project) {
-		return create(creator, schemaVersion, project, project.getLatestRelease());
+		return create(creator, schemaVersion, project, project.getLatestBranch());
 	}
 
 	/**
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release, String uuid) {
+	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch release, String uuid) {
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the
 		// (project)--(nodeRoot) node.
 		Node node = MeshInternal.get().boot().nodeRoot().create(creator, schemaVersion, project, uuid);
@@ -568,7 +568,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 		restNode.setAvailableLanguages(getLanguageInfo(ac));
 		setFields(ac, release, restNode, level, languageTags);
 		setParentNodeInfo(ac, release, restNode);
@@ -602,7 +602,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Model to be updated
 	 * @return
 	 */
-	private void setParentNodeInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
+	private void setParentNodeInfo(InternalActionContext ac, Branch release, NodeResponse restNode) {
 		Node parentNode = getParentNode(release.getUuid());
 		if (parentNode != null) {
 			restNode.setParentNode(parentNode.transformToReference(ac));
@@ -626,7 +626,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param languageTags
 	 * @return
 	 */
-	private void setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
+	private void setFields(InternalActionContext ac, Branch release, NodeResponse restNode, int level, String... languageTags) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 
@@ -734,7 +734,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setChildrenInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
+	private void setChildrenInfo(InternalActionContext ac, Branch release, NodeResponse restNode) {
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		for (Node child : getChildren(release.getUuid())) {
 			if (ac.getUser().hasPermission(child, READ_PERM)) {
@@ -764,7 +764,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Release which will be used to identify the release specific tags
 	 * @return
 	 */
-	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
+	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, Branch release) {
 		for (Tag tag : getTags(release)) {
 			TagReference reference = tag.transformToReference();
 			restNode.getTags().add(reference);
@@ -781,10 +781,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Release which will be used to identify the nodes relations and thus the correct path can be determined
 	 * @return
 	 */
-	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
+	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Branch release) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-			String releaseUuid = ac.getRelease(getProject()).getUuid();
+			String releaseUuid = ac.getBranch(getProject()).getUuid();
 			ContainerType type = forVersion(versioiningParameters.getVersion());
 
 			LinkType linkType = ac.getNodeParameters().getResolveLinks();
@@ -800,9 +800,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Release release) {
+	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Branch release) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		String releaseUuid = ac.getBranch(getProject()).getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Map<String, String> languagePaths = new HashMap<>();
@@ -822,7 +822,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param restNode
 	 */
 	private void setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		String releaseUuid = ac.getBranch(getProject()).getUuid();
 		Node current = this.getParentNode(releaseUuid);
 		// The project basenode has no breadcrumb
 		if (current == null) {
@@ -845,7 +845,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Deque<Node> getBreadcrumbNodes(InternalActionContext ac) {
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		String releaseUuid = ac.getBranch(getProject()).getUuid();
 		Node current = this.getParentNode(releaseUuid);
 		// The project basenode has no breadcrumb
 		if (current == null) {
@@ -876,7 +876,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
-			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getRelease(getProject()).getUuid(), forVersion(ac
+			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getBranch(getProject()).getUuid(), forVersion(ac
 				.getVersioningParameters().getVersion()));
 			String etag = ETag.hash(etagKey);
 			ac.setEtag(etag, true);
@@ -884,7 +884,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return Single.error(new NotModifiedException());
 			} else {
 				NavigationResponse response = new NavigationResponse();
-				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getRelease(getProject()).getUuid(),
+				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getBranch(getProject()).getUuid(),
 					forVersion(ac.getVersioningParameters().getVersion()));
 			}
 		});
@@ -995,7 +995,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeReference transformToReference(InternalActionContext ac) {
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 
 		NodeReference nodeReference = new NodeReference();
 		nodeReference.setUuid(getUuid());
@@ -1016,7 +1016,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
 		// Create the rest field and populate the fields
 		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		String releaseUuid = ac.getBranch(getProject()).getUuid();
 		ContainerType type = forVersion(new VersioningParametersImpl(ac).getVersion());
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 			listItem.setUrl(MeshInternal.get().webRootLinkReplacer().resolve(ac, releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(),
@@ -1035,7 +1035,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Map<String, PublishStatusModel> getLanguageInfo(InternalActionContext ac) {
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 
 		getGraphFieldContainers(release, PUBLISHED).stream().forEach(c -> {
 
@@ -1060,7 +1060,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void publish(InternalActionContext ac, Release release, SearchQueueBatch batch) {
+	public void publish(InternalActionContext ac, Branch release, SearchQueueBatch batch) {
 		String releaseUuid = release.getUuid();
 		PublishParameters parameters = ac.getPublishParameters();
 
@@ -1078,7 +1078,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, SearchQueueBatch batch) {
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 		String releaseUuid = release.getUuid();
 
 		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(release, ContainerType.DRAFT).stream().filter(c -> !c
@@ -1100,7 +1100,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters) {
+	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch release, PublishParameters parameters) {
 		List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, PUBLISHED);
 
 		String releaseUuid = release.getUuid();
@@ -1132,7 +1132,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch) {
 		Database db = MeshInternal.get().database();
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		db.tx(() -> {
 			takeOffline(ac, batch, release, parameters);
@@ -1142,7 +1142,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), PUBLISHED);
 		if (container != null) {
@@ -1167,7 +1167,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, SearchQueueBatch batch, String languageTag) {
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 		String releaseUuid = release.getUuid();
 
 		// get the draft version of the given language
@@ -1191,7 +1191,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, String languageTag) {
+	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch release, String languageTag) {
 		String releaseUuid = release.getUuid();
 
 		// 1. Locate the published container
@@ -1233,7 +1233,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(Language language, Release release, User user) {
+	public NodeGraphFieldContainer publish(Language language, Branch release, User user) {
 		String releaseUuid = release.getUuid();
 
 		// create published version
@@ -1282,7 +1282,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<String> getAvailableLanguageNames(Release release, ContainerType type) {
+	public List<String> getAvailableLanguageNames(Branch release, ContainerType type) {
 		List<String> languageTags = new ArrayList<>();
 		for (GraphFieldContainer container : getGraphFieldContainers(release, type)) {
 			languageTags.add(container.getLanguage().getLanguageTag());
@@ -1323,7 +1323,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteFromRelease(InternalActionContext ac, Release release, SearchQueueBatch batch, boolean ignoreChecks) {
+	public void deleteFromRelease(InternalActionContext ac, Branch release, SearchQueueBatch batch, boolean ignoreChecks) {
 
 		DeleteParameters parameters = ac.getDeleteParameters();
 
@@ -1433,7 +1433,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Release release) {
+	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch release) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, release);
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
@@ -1455,7 +1455,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(), ac.getRelease(getProject()).getUuid(), versioningParameters
+		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(), ac.getBranch(getProject()).getUuid(), versioningParameters
 			.getVersion());
 		if (container == null) {
 			if (log.isDebugEnabled()) {
@@ -1509,7 +1509,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, release, DRAFT);
 
 		// Check whether this is the first time that an update for the given language and release occurs. In this case a new container must be created.
@@ -1522,10 +1522,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Check whether the node has a parent node in this release, if not, we set the parent node from the previous release (if any)
 			if (getParentNode(release.getUuid()) == null) {
 				Node previousParent = null;
-				Release previousRelease = release.getPreviousRelease();
+				Branch previousRelease = release.getPreviousBranch();
 				while (previousParent == null && previousRelease != null) {
 					previousParent = getParentNode(previousRelease.getUuid());
-					previousRelease = previousRelease.getPreviousRelease();
+					previousRelease = previousRelease.getPreviousBranch();
 				}
 
 				if (previousParent != null) {
@@ -1609,7 +1609,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
 		Project project = getProject();
-		Release release = ac.getRelease();
+		Branch release = ac.getBranch();
 		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		User user = ac.getUser();
@@ -1664,7 +1664,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// node.
 		// We must detect and prevent such actions because those would
 		// invalidate the tree structure
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 		String releaseUuid = release.getUuid();
 		Node parent = targetNode.getParentNode(releaseUuid);
 		while (parent != null) {
@@ -1700,7 +1700,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch,
+	public void deleteLanguageContainer(InternalActionContext ac, Branch release, Language language, SearchQueueBatch batch,
 		boolean failForLastContainer) {
 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
@@ -1840,7 +1840,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String superkey = super.getETag(ac);
 
 		// Parameters
-		Release release = ac.getRelease(getProject());
+		Branch release = ac.getBranch(getProject());
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 

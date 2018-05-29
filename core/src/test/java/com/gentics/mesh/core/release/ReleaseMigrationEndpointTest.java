@@ -25,7 +25,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -51,13 +51,13 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartReleaseMigration() throws Throwable {
-		Release newRelease;
+		Branch newRelease;
 		List<? extends Node> nodes;
 		List<? extends Node> published;
 		Project project = project();
 
 		try (Tx tx = tx()) {
-			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
+			assertThat(project.getInitialBranch().isMigrated()).as("Initial release migration status").isEqualTo(true);
 		}
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, tx(() -> project().getBaseNode().getUuid()),
@@ -65,7 +65,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		try (Tx tx = tx()) {
-			nodes = project.getNodeRoot().findAll().stream().filter(node -> node.getParentNode(project.getLatestRelease().getUuid()) != null)
+			nodes = project.getNodeRoot().findAll().stream().filter(node -> node.getParentNode(project.getLatestBranch().getUuid()) != null)
 					.collect(Collectors.toList());
 			assertThat(nodes).as("Nodes list").isNotEmpty();
 		}
@@ -76,7 +76,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newRelease = project.getBranchRoot().create("newrelease", user());
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(false);
 			tx.success();
 		}
@@ -106,7 +106,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 							.isNotNull().isEmpty();
 				}
 
-				Node initialParent = node.getParentNode(initialReleaseUuid());
+				Node initialParent = node.getParentNode(initialBranchUuid());
 				if (initialParent == null) {
 					assertThat(node.getParentNode(newRelease.getUuid())).as("Parent in new release").isNull();
 				} else {
@@ -123,15 +123,15 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartForInitial() throws Throwable {
 		try (Tx tx = tx()) {
-			triggerAndWaitForJob(requestReleaseMigration(initialRelease()), FAILED);
+			triggerAndWaitForJob(requestReleaseMigration(initialBranch()), FAILED);
 		}
 	}
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		Release newRelease;
+		Branch newRelease;
 		try (Tx tx = tx()) {
-			newRelease = project().getReleaseRoot().create("newrelease", user());
+			newRelease = project().getBranchRoot().create("newrelease", user());
 			tx.success();
 		}
 		String jobUuidA = requestReleaseMigration(newRelease);
@@ -148,12 +148,12 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartOrder() throws Throwable {
 
-		Release newRelease;
-		Release newestRelease;
+		Branch newRelease;
+		Branch newestRelease;
 		try (Tx tx = tx()) {
 			Project project = project();
-			newRelease = project.getReleaseRoot().create("newrelease", user());
-			newestRelease = project.getReleaseRoot().create("newestrelease", user());
+			newRelease = project.getBranchRoot().create("newrelease", user());
+			newestRelease = project.getBranchRoot().create("newestrelease", user());
 			tx.success();
 		}
 
@@ -176,7 +176,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		MetricRegistry metrics = new MetricRegistry();
 		Meter createdNode = metrics.meter("Create Node");
 		Timer migrationTimer = metrics.timer("Migration");
-		Release newRelease;
+		Branch newRelease;
 		try (Tx tx = tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
@@ -208,7 +208,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newRelease = project.getBranchRoot().create("newrelease", user());
 			tx.success();
 		}
 
@@ -217,12 +217,12 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Request release migration and return the future
+	 * Request branch migration and return the future
 	 * 
-	 * @param release
+	 * @param branch
 	 * @return future
 	 */
-	protected String requestReleaseMigration(Release release) {
-		return tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), release).getUuid());
+	protected String requestReleaseMigration(Branch branch) {
+		return tx(() -> boot().jobRoot().enqueueBranchMigration(user(), branch).getUuid());
 	}
 }

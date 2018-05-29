@@ -12,7 +12,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -113,7 +113,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Release release) {
+	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Branch release) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		String version = release == null ? reference.getVersion() : null;

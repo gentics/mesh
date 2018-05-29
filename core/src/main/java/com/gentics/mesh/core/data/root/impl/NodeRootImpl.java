@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -98,11 +98,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 		GraphPermission perm = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 
-		Release release = ac.getRelease();
-		String releaseUuid = release.getUuid();
+		Branch branch = ac.getBranch();
+		String branchUuid = branch.getUuid();
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return matchesReleaseAndType(item.getId(), releaseUuid, type.getCode());
+			return matchesReleaseAndType(item.getId(), branchUuid, type.getCode());
 		}, true);
 	}
 
@@ -131,7 +131,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
-			Release release = ac.getRelease(element.getProject());
+			Branch release = ac.getBranch(element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, release.getUuid(),
@@ -170,7 +170,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 *            permission to filter by
 	 * @return vertex traversal
 	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type, GraphPermission permission) {
+	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Branch release, ContainerType type, GraphPermission permission) {
 		return out(getRootLabel()).filter(vertex -> {
 			return requestUser.hasPermissionForId(vertex.getId(), permission);
 		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
@@ -240,7 +240,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(), CREATE_PERM);
-		Release release = ac.getRelease();
+		Branch release = ac.getBranch();
 		// BUG: Don't use the latest version. Use the version which is linked to the release!
 		Node node = parentNode.create(requestUser, schemaVersion, project, release, uuid);
 
@@ -268,7 +268,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
-		Release release = ac.getRelease();
+		Branch branch = ac.getBranch();
 
 		String body = ac.getBodyAsString();
 
@@ -283,7 +283,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
 			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
-			SchemaContainerVersion schemaVersion = release.findLatestSchemaVersion(schemaByUuid);
+			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
 			return createNode(ac, schemaVersion, batch, uuid);
 		}
 
@@ -294,7 +294,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (requestUser.hasPermission(schemaByName, GraphPermission.READ_PERM)) {
-					SchemaContainerVersion schemaVersion = release.findLatestSchemaVersion(schemaByName);
+					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);

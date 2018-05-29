@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -53,7 +53,7 @@ public interface SearchQueueBatch {
 	 * @param type
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch addNodeIndex(Project project, Release release, SchemaContainerVersion version, ContainerType type) {
+	default SearchQueueBatch addNodeIndex(Project project, Branch release, SchemaContainerVersion version, ContainerType type) {
 		return createNodeIndex(project.getUuid(), release.getUuid(), version.getUuid(), type, version.getSchema());
 	}
 

@@ -11,10 +11,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Iterator;
 
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
-import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.impl.BranchImpl;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
@@ -27,24 +27,24 @@ public class ReleaseCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
-		Iterator<? extends ReleaseRoot> it = db.getVerticesForType(ReleaseRootImpl.class);
+		Iterator<? extends BranchRoot> it = db.getVerticesForType(ReleaseRootImpl.class);
 		while (it.hasNext()) {
 			checkReleaseRoot(it.next(), response);
 		}
 
-		Iterator<? extends Release> rIt = db.getVerticesForType(ReleaseImpl.class);
+		Iterator<? extends Branch> rIt = db.getVerticesForType(BranchImpl.class);
 		while (rIt.hasNext()) {
 			checkRelease(rIt.next(), response);
 		}
 	}
 
-	private void checkReleaseRoot(ReleaseRoot releaseRoot, ConsistencyCheckResponse response) {
+	private void checkReleaseRoot(BranchRoot releaseRoot, ConsistencyCheckResponse response) {
 		checkIn(releaseRoot, HAS_RELEASE_ROOT, ProjectImpl.class, response, HIGH);
-		checkOut(releaseRoot, HAS_INITIAL_RELEASE, ReleaseImpl.class, response, HIGH);
-		checkOut(releaseRoot, HAS_LATEST_RELEASE, ReleaseImpl.class, response, HIGH);
+		checkOut(releaseRoot, HAS_INITIAL_RELEASE, BranchImpl.class, response, HIGH);
+		checkOut(releaseRoot, HAS_LATEST_RELEASE, BranchImpl.class, response, HIGH);
 	}
 
-	private void checkRelease(Release release, ConsistencyCheckResponse response) {
+	private void checkRelease(Branch release, ConsistencyCheckResponse response) {
 		String uuid = release.getUuid();
 
 		checkIn(release, HAS_RELEASE, ReleaseRootImpl.class, response, HIGH);

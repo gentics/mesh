@@ -39,14 +39,14 @@ public class SchemaUpdateParametersImpl extends AbstractParameters implements Sc
 		updateAssigned.setDefaultValue("true");
 		updateAssigned.setType(ParamType.BOOLEAN);
 		updateAssigned.setDefaultValue("true");
-		parameters.put(UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY, updateAssigned);
+		parameters.put(UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY, updateAssigned);
 
 		QueryParameter releaseNames = new QueryParameter();
 		releaseNames.setDescription(
 				"List of release names which should be included in the update process. By default all releases which use the schema will be updated. You can thus use this parameter to only include a subset of release in the update.");
 		releaseNames.setType(ParamType.STRING);
 		releaseNames.setExample("summerRelease,winterRelease");
-		parameters.put(UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY, releaseNames);
+		parameters.put(UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY, releaseNames);
 
 		return parameters;
 	}

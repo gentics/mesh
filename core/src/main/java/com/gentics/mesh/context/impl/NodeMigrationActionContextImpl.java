@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -64,7 +64,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private Project project;
 
-	private Release release;
+	private Branch release;
 
 	/**
 	 * Set the body.
@@ -121,12 +121,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return project;
 	}
 
-	public void setRelease(Release release) {
+	public void setBranch(Branch release) {
 		this.release = release;
 	}
 
 	@Override
-	public Release getRelease(Project project) {
+	public Branch getBranch(Project project) {
 		return release;
 	}
 

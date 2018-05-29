@@ -89,7 +89,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			List<String> languageTags = getLanguageArgument(env);
 
 			Stream<? extends NodeContent> nodes = StreamSupport.stream(getSchemaContainerVersion(env).getNodes(
-					gc.getRelease().getUuid(),
+					gc.getBranch().getUuid(),
 					gc.getUser(),
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
 			).spliterator(), false)

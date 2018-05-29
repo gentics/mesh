@@ -49,12 +49,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -64,9 +67,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseResponse;
-import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
@@ -239,14 +239,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 		call(() -> client().createProject(request));
 
-		ReleaseResponse release = call(() -> client().findReleases(name)).getData().get(0);
+		BranchResponse release = call(() -> client().findBranches(name)).getData().get(0);
 		assertEquals("dummy.host", release.getHostname());
 		assertTrue(release.getSsl());
 
-		ReleaseUpdateRequest updateRequest = new ReleaseUpdateRequest();
+		BranchUpdateRequest updateRequest = new BranchUpdateRequest();
 		updateRequest.setHostname("different.host");
 		updateRequest.setSsl(null);
-		ReleaseResponse response = call(() -> client().updateRelease(name, release.getUuid(), updateRequest));
+		BranchResponse response = call(() -> client().updateRelease(name, release.getUuid(), updateRequest));
 		assertEquals("different.host", response.getHostname());
 		assertTrue(response.getSsl());
 	}
@@ -593,7 +593,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			Project project = project();
 
 			// 1. Determine a list all project indices which must be dropped
-			for (Release release : project.getReleaseRoot().findAllIt()) {
+			for (Branch release : project.getBranchRoot().findAllIt()) {
 				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 					String schemaContainerVersionUuid = version.getUuid();
 					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, PUBLISHED));
@@ -732,26 +732,26 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testDeleteWithReleases() throws Exception {
 		String uuid = projectUuid();
-		String releaseName = "Release_V1";
+		String branchName = "Release_V1";
 
 		tx(() -> group().addRole(roles().get("admin")));
 
-		ReleaseCreateRequest request = new ReleaseCreateRequest();
-		request.setName(releaseName);
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(branchName);
 
 		waitForJobs(() -> {
-			ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
-			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated();
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(response).as("Release Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
 
 		// update a node in all releases
 		String nodeUuid = tx(() -> folder("2015").getUuid());
-		for (ReleaseResponse release : call(() -> client().findReleases(PROJECT_NAME)).getData()) {
+		for (BranchResponse release : call(() -> client().findBranches(PROJECT_NAME)).getData()) {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion("0.1");
 			update.getFields().put("name", FieldUtil.createStringField("2015 in " + release.getName()));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(release.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(release.getName())));
 		}
 
 		checkConsistency();

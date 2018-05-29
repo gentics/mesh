@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -54,7 +54,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			// publish the node and its parent
 			InternalActionContext ac = mockActionContext();
 			SearchQueueBatch batch = createBatch();
-			content("concorde").getParentNode(project().getLatestRelease().getUuid()).publish(ac, batch);
+			content("concorde").getParentNode(project().getLatestBranch().getUuid()).publish(ac, batch);
 			content("concorde").publish(ac, batch);
 
 			nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
@@ -66,30 +66,30 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodesForTagInRelease() {
-		Release newRelease;
+		Branch newRelease;
 		NodeResponse concorde = new NodeResponse();
 		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
 
 		// Create new release
 		try (Tx tx = tx()) {
-			newRelease = project().getReleaseRoot().create("newrelease", user());
+			newRelease = project().getBranchRoot().create("newrelease", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			Release initialRelease = initialRelease();
+			Branch initialRelease = initialBranch();
 			// Get for latest release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
 
 			// Get for new release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft().setRelease(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
+					new VersioningParametersImpl().draft().setBranch(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
 							.isEmpty();
 
 			// Get for initial release
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
+					new VersioningParametersImpl().draft().setBranch(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
 							.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		}
 	}

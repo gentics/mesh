@@ -4,7 +4,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ParameterProviderContext;
@@ -36,24 +36,24 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	Project getProject();
 
 	/**
-	 * Return the latest release of the project.
+	 * Return the latest branch of the project.
 	 * 
 	 * @return release
 	 */
-	default Release getRelease() {
-		return getRelease(null);
+	default Branch getBranch() {
+		return getBranch(null);
 	}
 
 	/**
-	 * Return the release that may be specified in this action context as query parameter. This method will fail, if no project is set, or if the specified
-	 * release does not exist for the project When no release was specified (but a project was set), this will return the latest release of the project
+	 * Return the branch that may be specified in this action context as query parameter. This method will fail, if no project is set, or if the specified
+	 * branch does not exist for the project When no branch was specified (but a project was set), this will return the latest branch of the project.
 	 * 
 	 * @param project
 	 *            project for overriding the project set in the action context
 	 *
 	 * @return release
 	 */
-	Release getRelease(Project project);
+	Branch getBranch(Project project);
 
 	/**
 	 * Return the mesh auth user.

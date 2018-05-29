@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -199,7 +199,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		Node node = folder("news");
 		long childrenSize;
 		long expectedItemsInPage;
-		Release newRelease;
+		Branch newRelease;
 		Node firstChild;
 
 		try (Tx tx = tx()) {
@@ -207,18 +207,18 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			childrenSize = size(node.getChildren());
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
 
-			newRelease = project().getReleaseRoot().create("newrelease", user());
+			newRelease = project().getBranchRoot().create("newrelease", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParametersImpl().setRelease(initialRelease().getName()).draft()));
+					new VersioningParametersImpl().setBranch(initialBranch().getName()).draft()));
 			assertEquals("Total children in initial release", childrenSize, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial release", expectedItemsInPage, nodeList.getData().size());
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParametersImpl().setRelease(newRelease.getName()).draft()));
+					new VersioningParametersImpl().setBranch(newRelease.getName()).draft()));
 			assertEquals("Total children in initial release", 0, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial release", 0, nodeList.getData().size());
 
@@ -228,7 +228,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParametersImpl().setRelease(newRelease.getName()).draft()));
+					new VersioningParametersImpl().setBranch(newRelease.getName()).draft()));
 			assertEquals("Total children in new release", 1, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in new release", 1, nodeList.getData().size());
 		}

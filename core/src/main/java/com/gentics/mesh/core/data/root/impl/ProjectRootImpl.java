@@ -22,14 +22,14 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -82,7 +82,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 		// Create the initial release for the project and add the used schema
 		// version to it
-		Release release = project.getReleaseRoot().create(name, creator);
+		Branch release = project.getBranchRoot().create(name, creator);
 		release.setMigrated(true);
 		if (hostname != null) {
 			release.setHostname(hostname);
@@ -130,8 +130,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			} else {
 				String nestedRootNode = stack.pop();
 				switch (nestedRootNode) {
-				case ReleaseRoot.TYPE:
-					ReleaseRoot releasesRoot = project.getReleaseRoot();
+				case BranchRoot.TYPE:
+					BranchRoot releasesRoot = project.getBranchRoot();
 					return releasesRoot.resolveToElement(stack);
 				case TagFamilyRoot.TYPE:
 					TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
@@ -191,7 +191,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
 		Project project = create(projectName, hostname, ssl, creator, schemaContainerVersion, uuid);
-		Release initialRelease = project.getInitialRelease();
+		Branch initialRelease = project.getInitialBranch();
 
 		// Add project permissions
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);

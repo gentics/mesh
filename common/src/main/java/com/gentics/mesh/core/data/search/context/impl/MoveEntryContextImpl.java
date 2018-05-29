@@ -12,12 +12,12 @@ public class MoveEntryContextImpl implements MoveEntryContext {
 	private NodeGraphFieldContainer newContainer;
 
 	@Override
-	public String getReleaseUuid() {
+	public String getBranchUuid() {
 		return releaseUuid;
 	}
 
 	@Override
-	public MoveEntryContext setReleaseUuid(String uuid) {
+	public MoveEntryContext setBranchUuid(String uuid) {
 		this.releaseUuid = uuid;
 		return this;
 	}

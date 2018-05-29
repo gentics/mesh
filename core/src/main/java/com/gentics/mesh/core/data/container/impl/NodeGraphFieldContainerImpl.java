@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.container.impl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -195,7 +195,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
+	public void deleteFromRelease(Branch release, SearchQueueBatch batch) {
 		String releaseUuid = release.getUuid();
 
 		batch.delete(this, releaseUuid, DRAFT, false);
@@ -216,7 +216,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
 		super.updateFieldsFromRest(ac, restFields);
-		String releaseUuid = ac.getRelease().getUuid();
+		String releaseUuid = ac.getBranch().getUuid();
 
 		updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
 		updateDisplayFieldValue();

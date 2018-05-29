@@ -15,10 +15,10 @@ import java.util.List;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -131,8 +131,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Release> getReleases() {
-		return in(HAS_MICROSCHEMA_VERSION).toListExplicit(ReleaseImpl.class);
+	public List<? extends Branch> getReleases() {
+		return in(HAS_MICROSCHEMA_VERSION).toListExplicit(BranchImpl.class);
 	}
 
 	@Override

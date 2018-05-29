@@ -38,7 +38,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -360,7 +360,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testUpdateNodeIndex() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release release = project.getReleaseRoot().getLatestRelease();
+			Branch release = project.getBranchRoot().getLatestRelease();
 			TagFamily tagfamily = tagFamily("basic");
 
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();

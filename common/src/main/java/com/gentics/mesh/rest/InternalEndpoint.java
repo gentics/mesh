@@ -40,7 +40,7 @@ public interface InternalEndpoint {
 	GraphQLExamples graphqlExamples = new GraphQLExamples();
 	AdminExamples adminExamples = new AdminExamples();
 	JobExamples jobExamples = new JobExamples();
-	ReleaseExamples releaseExamples = new ReleaseExamples();
+	ReleaseExamples branchExamples = new ReleaseExamples();
 	UtilityExamples utilityExamples = new UtilityExamples();
 
 	/**

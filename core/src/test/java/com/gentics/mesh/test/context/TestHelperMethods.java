@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -170,8 +170,8 @@ public interface TestHelperMethods {
 	 * 
 	 * @return
 	 */
-	default String initialReleaseUuid() {
-		return data().releaseUuid();
+	default String initialBranchUuid() {
+		return data().branchUuid();
 	}
 
 	default String roleUuid() {
@@ -298,8 +298,8 @@ public interface TestHelperMethods {
 	 * 
 	 * @return
 	 */
-	default Release latestRelease() {
-		return project().getLatestRelease();
+	default Branch latestRelease() {
+		return project().getLatestBranch();
 	}
 
 	/**
@@ -307,8 +307,8 @@ public interface TestHelperMethods {
 	 * 
 	 * @return
 	 */
-	default Release initialRelease() {
-		return project().getInitialRelease();
+	default Branch initialBranch() {
+		return project().getInitialBranch();
 	}
 
 	default UserResponse readUser(String uuid) {
@@ -450,7 +450,7 @@ public interface TestHelperMethods {
 	 */
 	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
-		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName)
+		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setBranch(sourceReleaseName)
 			.draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
@@ -460,7 +460,7 @@ public interface TestHelperMethods {
 		update.setLanguage(nodeResponse.getLanguage());
 
 		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setRelease(targetReleaseName)));
+		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setBranch(targetReleaseName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {

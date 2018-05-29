@@ -25,6 +25,7 @@ import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -35,7 +36,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -229,7 +229,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 		call(() -> clientB.findNodeByUuid(projectName, uuid));
 
-		ReleaseListResponse releasesResponse = call(() -> clientA.findReleases(projectName));
+		BranchListResponse releasesResponse = call(() -> clientA.findBranches(projectName));
 		String releaseUuid = releasesResponse.getData().get(0).getUuid();
 
 		// NodeA - Assert that the node is offline

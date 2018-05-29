@@ -177,7 +177,7 @@ public class BinaryFieldHandlerTest extends AbstractMeshTest {
 		when(context.getFileUploads()).thenReturn(new HashSet<FileUpload>(Arrays.asList(fileUpload)));
 		when(context.getProject()).thenReturn(project());
 		when(context.getUser()).thenReturn(getRequestUser());
-		when(context.getRelease()).thenReturn(initialRelease());
+		when(context.getBranch()).thenReturn(initialBranch());
 		when(context.get("sourceFile")).thenAnswer(answer -> file.get());
 		when(context.put(eq("sourceFile"), anyObject())).thenAnswer(answer -> {
 			file.set(answer.getArgumentAt(1, Object.class));

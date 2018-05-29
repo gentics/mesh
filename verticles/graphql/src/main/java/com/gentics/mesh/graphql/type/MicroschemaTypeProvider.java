@@ -9,7 +9,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -48,8 +48,8 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
 			GraphQLContext gc = env.getContext();
 			MicroschemaContainer microschema = env.getSource();
-			return microschema.findReferencedReleases().keySet().stream()
-				.map(Release::getProject)
+			return microschema.findReferencedBranches().keySet().stream()
+				.map(Branch::getProject)
 				.distinct()
 				.filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM))
 				.collect(Collectors.toList());

@@ -5,5 +5,5 @@ public enum MigrationType {
 
 	microschema,
 
-	release
+	branch
 }

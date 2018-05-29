@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.migration;
 
-import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
+import com.gentics.mesh.core.data.branch.ReleaseVersionEdge;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 
 /**

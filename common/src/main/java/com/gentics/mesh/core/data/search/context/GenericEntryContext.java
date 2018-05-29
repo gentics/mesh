@@ -20,19 +20,19 @@ public interface GenericEntryContext extends EntryContext {
 	GenericEntryContext setProjectUuid(String projectUuid);
 
 	/**
-	 * Set the release uuid.
+	 * Set the branch uuid.
 	 * 
 	 * @return
 	 */
-	String getReleaseUuid();
+	String getBranchUuid();
 
 	/**
-	 * Set the release uuid.
+	 * Set the branch uuid.
 	 * 
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @return Fluent API
 	 */
-	GenericEntryContext setReleaseUuid(String releaseUuid);
+	GenericEntryContext setBranchUuid(String branchUuid);
 
 	/**
 	 * Return the container type.

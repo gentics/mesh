@@ -8,9 +8,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -39,7 +39,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	 */
 	@Override
 	public void prepare() {
-		Release release = getRelease();
+		Branch release = getRelease();
 		Project project = release.getProject();
 		SchemaContainerVersion toVersion = getToSchemaVersion();
 		SchemaModel newSchema = toVersion.getSchema();
@@ -56,7 +56,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		try {
 
 			try (Tx tx = DB.get().tx()) {
-				Release release = getRelease();
+				Branch release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
 				}
@@ -81,7 +81,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
 				}
 
-				ReleaseSchemaEdge releaseVersionEdge = release.findReleaseSchemaEdge(toContainerVersion);
+				BranchSchemaEdge releaseVersionEdge = release.findReleaseSchemaEdge(toContainerVersion);
 				status.setVersionEdge(releaseVersionEdge);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
@@ -113,10 +113,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 		}
 	}
 
-	private void finalizeMigration(Project project, Release release, SchemaContainerVersion fromContainerVersion) {
+	private void finalizeMigration(Project project, Branch release, SchemaContainerVersion fromContainerVersion) {
 		// Deactivate edge
 		try (Tx tx = DB.get().tx()) {
-			ReleaseSchemaEdge edge = release.findReleaseSchemaEdge(fromContainerVersion);
+			BranchSchemaEdge edge = release.findReleaseSchemaEdge(fromContainerVersion);
 			if (edge != null) {
 				edge.setActive(false);
 			}

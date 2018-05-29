@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -40,7 +40,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
@@ -181,7 +181,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
 			Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
-			baseNode.createGraphFieldContainer(language, getLatestRelease(), creator);
+			baseNode.createGraphFieldContainer(language, getLatestBranch(), creator);
 			setBaseNode(baseNode);
 			// Add the node to the aggregation nodes
 			getNodeRoot().addNode(baseNode);
@@ -204,7 +204,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		batch.dropIndex(Tag.composeIndexName(getUuid()));
 
 		// Drop all node indices for all releases and all schema versions
-		for (Release release : getReleaseRoot().findAllIt()) {
+		for (Branch release : getBranchRoot().findAllIt()) {
 			for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
@@ -237,7 +237,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		getSchemaContainerRoot().delete(batch);
 
 		// Remove the release root and all releases
-		getReleaseRoot().delete(batch);
+		getBranchRoot().delete(batch);
 
 		// Finally remove the project node
 		getVertex().remove();
@@ -306,18 +306,18 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Release getInitialRelease() {
-		return getReleaseRoot().getInitialRelease();
+	public Branch getInitialBranch() {
+		return getBranchRoot().getInitialRelease();
 	}
 
 	@Override
-	public Release getLatestRelease() {
-		return getReleaseRoot().getLatestRelease();
+	public Branch getLatestBranch() {
+		return getBranchRoot().getLatestRelease();
 	}
 
 	@Override
-	public ReleaseRoot getReleaseRoot() {
-		ReleaseRoot root = out(HAS_RELEASE_ROOT).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
+	public BranchRoot getBranchRoot() {
+		BranchRoot root = out(HAS_RELEASE_ROOT).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(ReleaseRootImpl.class);
 			linkOut(root, HAS_RELEASE_ROOT);

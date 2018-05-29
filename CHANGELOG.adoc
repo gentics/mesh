@@ -10,6 +10,14 @@
 
 = Gentics Mesh Changelog
 
+
+[[v0.22.0]]
+== 0.22.0 (TBD)
+
+CAUTION: The concept of releases has been renamed into branches. 
+
+* The `release` query parameter is now called `branch`
+
 [[v0.21.2]]
 == 0.21.2 (TBD)
 

@@ -87,7 +87,7 @@ public class DemoDumpGeneratorTest {
 
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
-				String releaseUuid = node.getProject().getInitialRelease().getUuid();
+				String releaseUuid = node.getProject().getInitialBranch().getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				ContainerType type = PUBLISHED;
 				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);

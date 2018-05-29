@@ -62,7 +62,7 @@ public class WebRootHandler {
 		// List<String> languageTags = ac.getSelectedLanguageTags();
 		db.asyncTx(() -> {
 
-			String releaseUuid = ac.getRelease().getUuid();
+			String branchUuid = ac.getBranch().getUuid();
 			// Load all nodes for the given path
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
 			PathSegment lastSegment = nodePath.getLast();
@@ -76,7 +76,7 @@ public class WebRootHandler {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
 
-			requestUser.failOnNoReadPermission(container, releaseUuid);
+			requestUser.failOnNoReadPermission(container, branchUuid);
 
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
