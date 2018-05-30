@@ -51,7 +51,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Branch create(String name, User creator, String uuid) {
-		Branch latestRelease = getLatestBranch();
+		Branch latestBranch = getLatestBranch();
 
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
@@ -64,12 +64,12 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		branch.setMigrated(false);
 		branch.setProject(getProject());
 
-		if (latestRelease == null) {
+		if (latestBranch == null) {
 			// if this is the first branch, make it the initial branch
 			setSingleLinkOutTo(branch, HAS_INITIAL_BRANCH);
 		} else {
 			// otherwise link the branches
-			latestRelease.setNextBranch(branch);
+			latestBranch.setNextBranch(branch);
 		}
 
 		// make the new branch the latest
@@ -122,10 +122,10 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// Check for uniqueness of branch name (per project)
-		Branch conflictingRelease = db.checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
+		Branch conflictingBranch = db.checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
 			.getName()));
-		if (conflictingRelease != null) {
-			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "branch_conflicting_name", request.getName());
+		if (conflictingBranch != null) {
+			throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", request.getName());
 		}
 
 		Branch branch = create(request.getName(), requestUser, uuid);

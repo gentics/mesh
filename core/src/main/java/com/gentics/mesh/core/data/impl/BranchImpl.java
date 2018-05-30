@@ -62,7 +62,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
 
-	public static final String UNIQUENAME_INDEX_NAME = "uniqueReleaseNameIndex";
+	public static final String UNIQUENAME_INDEX_NAME = "uniqueBranchNameIndex";
 
 	public static final String ACTIVE_PROPERTY_KEY = "active";
 

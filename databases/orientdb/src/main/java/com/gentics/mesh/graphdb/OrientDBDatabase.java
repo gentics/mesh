@@ -688,26 +688,27 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
+	public void addVertexType(String clazzOfVertex, String superClazzOfVertex) {
+
 		if (log.isDebugEnabled()) {
-			log.debug("Adding vertex type for class {" + clazzOfVertex.getName() + "}");
+			log.debug("Adding vertex type for class {" + clazzOfVertex + "}");
 		}
 		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientVertexType vertexType = noTx.getVertexType(clazzOfVertex.getSimpleName());
+			OrientVertexType vertexType = noTx.getVertexType(clazzOfVertex);
 			if (vertexType == null) {
 				String superClazz = "V";
 				if (superClazzOfVertex != null) {
-					superClazz = superClazzOfVertex.getSimpleName();
+					superClazz = superClazzOfVertex;
 				}
-				vertexType = noTx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
+				vertexType = noTx.createVertexType(clazzOfVertex, superClazz);
 			} else {
 				// Update the existing vertex type and set the super class
 				if (superClazzOfVertex != null) {
-					OrientVertexType superType = noTx.getVertexType(superClazzOfVertex.getSimpleName());
+					OrientVertexType superType = noTx.getVertexType(superClazzOfVertex);
 					if (superType == null) {
 						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
-							+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
+							+ superClazzOfVertex + "} was not yet added to orientdb.");
 					}
 					vertexType.setSuperClass(superType);
 				}
@@ -715,6 +716,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			noTx.shutdown();
 		}
+
+	}
+
+	@Override
+	public void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
+		String superClazz = superClazzOfVertex == null ? null : superClazzOfVertex.getSimpleName();
+		addVertexType(clazzOfVertex.getSimpleName(), superClazz);
 	}
 
 	@Override
@@ -744,6 +752,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			noTx.shutdown();
 		}
+	}
+
+	@Override
+	public void changeType(Vertex vertex, String newType) {
+		OrientVertex v = (OrientVertex) vertex;
+		v.moveToClass(newType);
 	}
 
 	/**
