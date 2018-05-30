@@ -405,7 +405,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 */
 	private void handleLocalData(boolean forceReindex, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Invoke reindex as requested
-		if (forceReindex) {
+		if (forceReindex && configuration.getSearchOptions().getUrl() != null) {
 			reindexAll();
 		}
 
