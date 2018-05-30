@@ -236,6 +236,10 @@ public class MeshImpl implements Mesh {
 		if (!isEmpty(hostname)) {
 			headers.set("X-Hostname", hostname);
 		}
+		request.exceptionHandler(err -> {
+			log.info("Failed to check for updates.");
+			log.debug("Reason for failed update check", err);
+		});
 		request.end();
 
 	}
