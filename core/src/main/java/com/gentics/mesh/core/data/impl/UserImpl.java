@@ -1,31 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.ContainerType;
@@ -65,10 +39,34 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see User
@@ -438,7 +436,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
 
 		for (GraphPermission perm : GraphPermission.values()) {
-			List<? extends Role> rolesWithPerm = sourceNode.in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+			Iterable<? extends RoleImpl> rolesWithPerm = sourceNode.in(perm.label()).frameExplicit(RoleImpl.class);
 			for (Role role : rolesWithPerm) {
 				if (log.isDebugEnabled()) {
 					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
