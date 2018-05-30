@@ -338,16 +338,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-releaseUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
 		if (segment != null) {
-			StringBuilder webRootInfo = new StringBuilder(segment);
-			webRootInfo.append("-").append(releaseUuid);
-			Node parent = node.getParentNode(releaseUuid);
-			if (parent != null) {
-				webRootInfo.append("-").append(parent.getUuid());
-			}
-
+			String webRootIndexKey = NodeGraphFieldContainer.composeWebrootIndexKey(segment, releaseUuid, node.getParentNode(releaseUuid));
 			// check for uniqueness of webroot path
-			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this, webRootInfo
-				.toString());
+			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this, webRootIndexKey);
 			if (conflictingContainer != null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} using index {" + indexName + "}");
@@ -356,7 +349,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
 					.getLanguageTag(), conflictI18n, segmentFieldName, segment);
 			} else {
-				setProperty(propertyName, webRootInfo.toString());
+				setProperty(propertyName, webRootIndexKey);
 			}
 		} else {
 			setProperty(propertyName, null);

@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -20,6 +13,14 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.INITIAL;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
@@ -121,6 +122,23 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		id.append("-");
 		id.append(languageTag);
 		return id.toString();
+	}
+
+	/**
+	 * Creates the key for the webroot index.
+	 *
+	 * @param segmentValue Value of the segment field
+	 * @param releaseUuid Uuid of the release
+	 * @param parent Parent of the node
+	 * @return The composed key
+	 */
+	static String composeWebrootIndexKey(String segmentValue, String releaseUuid, Node parent) {
+		StringBuilder webRootInfo = new StringBuilder(segmentValue);
+		webRootInfo.append("-").append(releaseUuid);
+		if (parent != null) {
+			webRootInfo.append("-").append(parent.getUuid());
+		}
+		return webRootInfo.toString();
 	}
 
 	/**

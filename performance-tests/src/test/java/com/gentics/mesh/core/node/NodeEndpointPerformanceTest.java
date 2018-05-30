@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
-
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -18,6 +11,12 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
+import org.junit.Test;
+
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointPerformanceTest extends AbstractMeshTest {
@@ -31,7 +30,7 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 			request.setSchema(new SchemaReferenceImpl().setName("content"));
-			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
+			request.getFields().put("slug", FieldUtil.createStringField("someNode_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
