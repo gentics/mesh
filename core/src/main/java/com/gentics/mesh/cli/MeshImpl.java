@@ -356,16 +356,16 @@ public class MeshImpl implements Mesh {
 		} catch (Exception e) {
 			log.error("One of the plugins could not be undeployed in the allotted time.", e);
 		}
+		io.vertx.reactivex.core.Vertx rxVertx = getRxVertx();
+		if (rxVertx != null) {
+			rxVertx.rxClose().blockingAwait();
+		}
 		MeshComponent meshInternal = MeshInternal.get();
 		meshInternal.database().stop();
 		try {
 			meshInternal.searchProvider().stop();
 		} catch (Exception e) {
 			log.error("The search provider did encounter an error while stopping", e);
-		}
-		Vertx vertx = getVertx();
-		if (vertx != null) {
-			vertx.close();
 		}
 		MeshFactoryImpl.clear();
 		deleteLock();
