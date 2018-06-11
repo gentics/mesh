@@ -230,11 +230,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 		call(() -> clientB.findNodeByUuid(projectName, uuid));
 
 		BranchListResponse releasesResponse = call(() -> clientA.findBranches(projectName));
-		String releaseUuid = releasesResponse.getData().get(0).getUuid();
+		String branchUuid = releasesResponse.getData().get(0).getUuid();
 
 		// NodeA - Assert that the node is offline
 		call(() -> clientA.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
-			"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
+			"node_error_published_not_found_for_uuid_release_language", uuid, "en", branchUuid);
 
 		call(() -> clientB.findNodeByUuid(projectName, uuid));
 

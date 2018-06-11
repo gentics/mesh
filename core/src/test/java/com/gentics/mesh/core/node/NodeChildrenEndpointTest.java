@@ -195,11 +195,11 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadReleaseChildren() {
+	public void testReadBranchChildren() {
 		Node node = folder("news");
 		long childrenSize;
 		long expectedItemsInPage;
-		Branch newRelease;
+		Branch newBranch;
 		Node firstChild;
 
 		try (Tx tx = tx()) {
@@ -207,20 +207,20 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			childrenSize = size(node.getChildren());
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
 
-			newRelease = project().getBranchRoot().create("newrelease", user());
+			newBranch = project().getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().setBranch(initialBranch().getName()).draft()));
-			assertEquals("Total children in initial release", childrenSize, nodeList.getMetainfo().getTotalCount());
-			assertEquals("Returned children in initial release", expectedItemsInPage, nodeList.getData().size());
+			assertEquals("Total children in initial branch", childrenSize, nodeList.getMetainfo().getTotalCount());
+			assertEquals("Returned children in initial branch", expectedItemsInPage, nodeList.getData().size());
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParametersImpl().setBranch(newRelease.getName()).draft()));
-			assertEquals("Total children in initial release", 0, nodeList.getMetainfo().getTotalCount());
-			assertEquals("Returned children in initial release", 0, nodeList.getData().size());
+					new VersioningParametersImpl().setBranch(newBranch.getName()).draft()));
+			assertEquals("Total children in initial branch", 0, nodeList.getMetainfo().getTotalCount());
+			assertEquals("Returned children in initial branch", 0, nodeList.getData().size());
 
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
@@ -228,9 +228,9 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParametersImpl().setBranch(newRelease.getName()).draft()));
-			assertEquals("Total children in new release", 1, nodeList.getMetainfo().getTotalCount());
-			assertEquals("Returned children in new release", 1, nodeList.getData().size());
+					new VersioningParametersImpl().setBranch(newBranch.getName()).draft()));
+			assertEquals("Total children in new branch", 1, nodeList.getMetainfo().getTotalCount());
+			assertEquals("Returned children in new branch", 1, nodeList.getData().size());
 		}
 	}
 
@@ -257,7 +257,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadReleasePublishedChildren() {
+	public void testReadBranchPublishedChildren() {
 		// TODO
 	}
 }

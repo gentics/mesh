@@ -28,7 +28,7 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	public static void init(Database db) {
 		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "release_type_lang", "out", GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY,
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "branch_type_lang", "out", GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY,
 				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
 	}
 
@@ -87,13 +87,13 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	}
 
 	@Override
-	public String getReleaseUuid() {
-		return getProperty(RELEASE_UUID_KEY);
+	public String getBranchUuid() {
+		return getProperty(BRANCH_UUID_KEY);
 	}
 
 	@Override
-	public void setReleaseUuid(String uuid) {
-		setProperty(RELEASE_UUID_KEY, uuid);
+	public void setBranchUuid(String uuid) {
+		setProperty(BRANCH_UUID_KEY, uuid);
 	}
 
 	/**

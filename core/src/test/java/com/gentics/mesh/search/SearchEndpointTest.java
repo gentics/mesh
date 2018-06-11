@@ -25,8 +25,8 @@ public class SearchEndpointTest extends AbstractMeshTest {
 			String uuid = node.getUuid();
 			SearchQueueBatch batch = MeshInternal.get().searchQueue().create();
 			for (int i = 0; i < 10; i++) {
-				String releaseUuid = project().getLatestBranch().getUuid();
-				batch.store(node, releaseUuid, DRAFT, true);
+				String branchUuid = project().getLatestBranch().getUuid();
+				batch.store(node, branchUuid, DRAFT, true);
 			}
 
 			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");

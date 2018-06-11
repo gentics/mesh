@@ -239,14 +239,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 		call(() -> client().createProject(request));
 
-		BranchResponse release = call(() -> client().findBranches(name)).getData().get(0);
-		assertEquals("dummy.host", release.getHostname());
-		assertTrue(release.getSsl());
+		BranchResponse branch = call(() -> client().findBranches(name)).getData().get(0);
+		assertEquals("dummy.host", branch.getHostname());
+		assertTrue(branch.getSsl());
 
 		BranchUpdateRequest updateRequest = new BranchUpdateRequest();
 		updateRequest.setHostname("different.host");
 		updateRequest.setSsl(null);
-		BranchResponse response = call(() -> client().updateRelease(name, release.getUuid(), updateRequest));
+		BranchResponse response = call(() -> client().updateBranch(name, branch.getUuid(), updateRequest));
 		assertEquals("different.host", response.getHostname());
 		assertTrue(response.getSsl());
 	}
@@ -593,11 +593,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			Project project = project();
 
 			// 1. Determine a list all project indices which must be dropped
-			for (Branch release : project.getBranchRoot().findAllIt()) {
-				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
+			for (Branch branch : project.getBranchRoot().findAllIt()) {
+				for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 					String schemaContainerVersionUuid = version.getUuid();
-					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, PUBLISHED));
-					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, DRAFT));
+					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, branch.getUuid(), schemaContainerVersionUuid, PUBLISHED));
+					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, branch.getUuid(), schemaContainerVersionUuid, DRAFT));
 				}
 			}
 		}
@@ -730,9 +730,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
-	public void testDeleteWithReleases() throws Exception {
+	public void testDeleteWithBranches() throws Exception {
 		String uuid = projectUuid();
-		String branchName = "Release_V1";
+		String branchName = "Branch_V1";
 
 		tx(() -> group().addRole(roles().get("admin")));
 
@@ -741,17 +741,17 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(response).as("Release Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
+			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
 
-		// update a node in all releases
+		// update a node in all branches
 		String nodeUuid = tx(() -> folder("2015").getUuid());
-		for (BranchResponse release : call(() -> client().findBranches(PROJECT_NAME)).getData()) {
+		for (BranchResponse branch : call(() -> client().findBranches(PROJECT_NAME)).getData()) {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion("0.1");
-			update.getFields().put("name", FieldUtil.createStringField("2015 in " + release.getName()));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(release.getName())));
+			update.getFields().put("name", FieldUtil.createStringField("2015 in " + branch.getName()));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(branch.getName())));
 		}
 
 		checkConsistency();

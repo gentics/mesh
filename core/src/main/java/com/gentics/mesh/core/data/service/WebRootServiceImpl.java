@@ -67,15 +67,15 @@ public class WebRootServiceImpl implements WebRootService {
 	}
 
 	@Override
-	public NodeGraphFieldContainer findByPath(String releaseUuid, String path, ContainerType type) {
+	public NodeGraphFieldContainer findByPath(String branchUuid, String path, ContainerType type) {
 
 		String fieldKey = NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY;
 		if (type == ContainerType.PUBLISHED) {
 			fieldKey = NodeGraphFieldContainer.PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY;
 		}
 
-		// Prefix each path with the releaseuuid in order to scope the paths by release
-		String key = releaseUuid + path;
+		// Prefix each path with the branchuuid in order to scope the paths by branch
+		String key = branchUuid + path;
 		return database.findVertex(fieldKey, key, NodeGraphFieldContainerImpl.class);
 	}
 

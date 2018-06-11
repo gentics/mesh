@@ -84,7 +84,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
 		endpoint.description(
-			"Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
+			"Assign the schema to the project. This will automatically assign the latest schema version to all branches of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Assigned schema.");
 		endpoint.handler(rc -> {
@@ -100,7 +100,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.description(
-			"Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all releases of the project.");
+			"Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all branches of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully removed.");
 		endpoint.handler(rc -> {

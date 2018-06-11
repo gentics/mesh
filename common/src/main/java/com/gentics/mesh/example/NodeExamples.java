@@ -87,7 +87,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(createTimestamp()));
+		fields.put("branch", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
@@ -208,7 +208,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(createTimestamp()));
+		fields.put("branch", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
@@ -258,7 +258,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct-", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(createTimestamp()));
+		fields.put("branch", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));

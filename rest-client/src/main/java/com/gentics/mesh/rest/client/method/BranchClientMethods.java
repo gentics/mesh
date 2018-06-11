@@ -66,7 +66,7 @@ public interface BranchClientMethods {
 	 * @param request
 	 * @return
 	 */
-	MeshRequest<BranchResponse> updateRelease(String projectName, String branchUuid, BranchUpdateRequest request);
+	MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request);
 
 	/**
 	 * Get schema versions assigned to a branch.

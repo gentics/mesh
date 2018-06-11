@@ -12,7 +12,7 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	public static final String TYPE = "microschemas";
 
 	/**
-	 * Add the microschema container to the aggregation node. The microschemas will automatically be assigned to all releases of the project to which this root
+	 * Add the microschema container to the aggregation node. The microschemas will automatically be assigned to all branches of the project to which this root
 	 * belongs.
 	 * 
 	 * @param user
@@ -69,14 +69,14 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	MicroschemaContainerVersion fromReference(MicroschemaReference reference);
 
 	/**
-	 * Get the microschema container version from the given reference. Ignore the version number from the reference, but take the version from the release
+	 * Get the microschema container version from the given reference. Ignore the version number from the reference, but take the version from the branch
 	 * instead.
 	 * 
 	 * @param reference
 	 *            reference
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @return
 	 */
-	MicroschemaContainerVersion fromReference(MicroschemaReference reference, Branch release);
+	MicroschemaContainerVersion fromReference(MicroschemaReference reference, Branch branch);
 }

@@ -33,30 +33,30 @@ public interface SchemaContainerVersion
 	}
 
 	/**
-	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given release.
+	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
 	 *
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @return
 	 */
-	Stream<NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
+	Stream<NodeGraphFieldContainer> getFieldContainers(String branchUuid);
 
 	/**
 	 * Returns an iterator for those {@link NodeGraphFieldContainer}'s which can be edited by users. Those are draft and publish versions.
 	 *
-	 * @param releaseUuid Release Uuid
+	 * @param branchUuid Branch Uuid
 	 * @return
 	 */
-	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid);
+	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
 
 	/**
 	 * Returns all nodes that the user has read permissions for.
 	 *
-	 * @param releaseUuid Release uuid
+	 * @param branchUuid Branch uuid
 	 * @param user User to check permissions for
 	 * @param type Container type
 	 * @return
 	 */
-	Iterable<? extends Node> getNodes(String releaseUuid, User user, ContainerType type);
+	Iterable<? extends Node> getNodes(String branchUuid, User user, ContainerType type);
 
 }

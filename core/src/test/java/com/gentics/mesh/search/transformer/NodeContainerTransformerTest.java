@@ -27,9 +27,9 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 	public void testNodeTagFamilyTransformer() {
 		NodeContainerTransformer transformer = new NodeContainerTransformer(searchProvider());
 		try (Tx tx = tx()) {
-			Branch release = project().getLatestBranch();
-			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), release, PUBLISHED);
-			JsonObject document = transformer.toDocument(node, release.getUuid(), PUBLISHED);
+			Branch branch = project().getLatestBranch();
+			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), branch, PUBLISHED);
+			JsonObject document = transformer.toDocument(node, branch.getUuid(), PUBLISHED);
 			JsonObject families = document.getJsonObject("tagFamilies");
 
 			HashSet<String> basicNames = new HashSet<>(Arrays.asList("Plane", "Twinjet"));

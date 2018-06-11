@@ -70,7 +70,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type) {
 		Objects.requireNonNull(projectUuid, "The project uuid was not set");
-		Objects.requireNonNull(branchUuid, "The release uuid was not set");
+		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
 		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
 		Objects.requireNonNull(type, "The container type was not set");
 		// TODO check that only "draft" and "published" are used for version
@@ -172,7 +172,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param branch
 	 * @param batch
 	 */
-	void deleteFromRelease(Branch branch, SearchQueueBatch batch);
+	void deleteFromBranch(Branch branch, SearchQueueBatch batch);
 
 	/**
 	 * Return the display field value for this container.
@@ -189,8 +189,8 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	Node getParentNode();
 
 	/**
-	 * Return the parent node the container for a specific release. Although a container always has the same container it may not be available in the specified
-	 * release.
+	 * Return the parent node the container for a specific branch. Although a container always has the same container it may not be available in the specified
+	 * branch.
 	 * 
 	 * @param uuid
 	 * @return Found node or null if no node could be found.
@@ -201,12 +201,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found.
 	 * 
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
-	void updateWebrootPathInfo(String releaseUuid, String conflictI18n);
+	void updateWebrootPathInfo(String branchUuid, String conflictI18n);
 
 	/**
 	 * Get the Version Number or null if no version set.
@@ -267,7 +267,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Check whether this field container is the initial version for any
-	 * release.
+	 * branch.
 	 * 
 	 * @return true if it is the initial, false if not
 	 */
@@ -276,7 +276,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
-	 * Check whether this field container is the draft version for any release.
+	 * Check whether this field container is the draft version for any branch.
 	 * 
 	 * @return true if it is the draft, false if not
 	 */
@@ -285,7 +285,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
-	 * Check whether this field container is the published version for any release.
+	 * Check whether this field container is the published version for any branch.
 	 * 
 	 * @return true if it is published, false if not
 	 */
@@ -294,7 +294,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
-	 * Check whether this field container has the given type for any release.
+	 * Check whether this field container has the given type for any branch.
 	 * 
 	 * @param type
 	 * @return true if it matches the type, false if not
@@ -303,62 +303,62 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Check whether this field container is the initial version for the given
-	 * release.
+	 * branch.
 	 * 
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @return true if it is the initial, false if not
 	 */
-	default boolean isInitial(String releaseUuid) {
-		return isType(INITIAL, releaseUuid);
+	default boolean isInitial(String branchUuid) {
+		return isType(INITIAL, branchUuid);
 	}
 
 	/**
-	 * Check whether this field container is the draft version for the given release.
+	 * Check whether this field container is the draft version for the given branch.
 	 * 
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @return true if it is the draft, false if not
 	 */
-	default boolean isDraft(String releaseUuid) {
-		return isType(DRAFT, releaseUuid);
+	default boolean isDraft(String branchUuid) {
+		return isType(DRAFT, branchUuid);
 	}
 
 	/**
-	 * Check whether this field container is the published version for the given release.
+	 * Check whether this field container is the published version for the given branch.
 	 * 
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @return true if it is published, false if not
 	 */
-	default boolean isPublished(String releaseUuid) {
-		return isType(PUBLISHED, releaseUuid);
+	default boolean isPublished(String branchUuid) {
+		return isType(PUBLISHED, branchUuid);
 	}
 
 	/**
-	 * Check whether this field container has the given type in the given release.
+	 * Check whether this field container has the given type in the given branch.
 	 * 
 	 * @param type
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @return true if it matches the type, false if not
 	 */
-	boolean isType(ContainerType type, String releaseUuid);
+	boolean isType(ContainerType type, String branchUuid);
 
 	/**
-	 * Get tuples of type and release Uuids specifying for which release the container is a container of a type.
+	 * Get tuples of type and branch Uuids specifying for which branch the container is a container of a type.
 	 *
 	 * @return set of tuples (may be empty, but never null)
 	 */
-	Set<Tuple<String, ContainerType>> getReleaseTypes();
+	Set<Tuple<String, ContainerType>> getBranchTypes();
 
 	/**
-	 * Get the release Uuids for which this container is the container of given type.
+	 * Get the branch Uuids for which this container is the container of given type.
 	 * 
 	 * @param type
 	 *            type
-	 * @return set of release Uuids (may be empty, but never null)
+	 * @return set of branch Uuids (may be empty, but never null)
 	 */
-	Set<String> getReleases(ContainerType type);
+	Set<String> getBranches(ContainerType type);
 
 	/**
 	 * Compare the container values of both containers and return a list of differences.

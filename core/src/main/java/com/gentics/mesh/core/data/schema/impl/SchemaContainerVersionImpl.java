@@ -68,29 +68,29 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid) {
+	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		return in(HAS_SCHEMA_CONTAINER_VERSION).inE(HAS_FIELD_CONTAINER).filter(e -> {
 			GraphFieldContainerEdgeImpl edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
 			ContainerType type = edge.getType();
-			return releaseUuid.equals(edge.getReleaseUuid()) && (DRAFT == type);
+			return branchUuid.equals(edge.getBranchUuid()) && (DRAFT == type);
 		}).inV().frameExplicit(NodeGraphFieldContainerImpl.class).iterator();
 	}
 
 	@Override
-	public Iterable<? extends Node> getNodes(String releaseUuid, User user, ContainerType type) {
+	public Iterable<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
 		return in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).transform(v -> v.reframeExplicit(NodeImpl.class)).filter(node -> {
 			return node.outE(HAS_FIELD_CONTAINER).filter(e -> {
 				GraphFieldContainerEdge edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-				return releaseUuid.equals(edge.getReleaseUuid()) && type == edge.getType();
+				return branchUuid.equals(edge.getBranchUuid()) && type == edge.getType();
 			}).hasNext() && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
 		});
 	}
 
 	@Override
-	public Stream<NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
+	public Stream<NodeGraphFieldContainer> getFieldContainers(String branchUuid) {
 		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
 		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
-			.filter(e -> e.getParentNode(releaseUuid) != null).map(e -> (NodeGraphFieldContainer) e);
+			.filter(e -> e.getParentNode(branchUuid) != null).map(e -> (NodeGraphFieldContainer) e);
 		return stream;
 	}
 
@@ -145,7 +145,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Branch> getReleases() {
+	public List<? extends Branch> getBranches() {
 		return in(HAS_SCHEMA_VERSION).toListExplicit(BranchImpl.class);
 	}
 

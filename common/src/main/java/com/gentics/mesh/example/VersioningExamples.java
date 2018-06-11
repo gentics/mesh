@@ -43,11 +43,11 @@ public class VersioningExamples extends AbstractExamples {
 	}
 
 	public BranchListResponse createBranchListResponse() {
-		BranchListResponse releaseList = new BranchListResponse();
-		releaseList.getData().add(createBranchResponse("summer2016"));
-		releaseList.getData().add(createBranchResponse("autumn2016"));
-		setPaging(releaseList, 1, 10, 2, 20);
-		return releaseList;
+		BranchListResponse branchList = new BranchListResponse();
+		branchList.getData().add(createBranchResponse("summer2016"));
+		branchList.getData().add(createBranchResponse("autumn2016"));
+		setPaging(branchList, 1, 10, 2, 20);
+		return branchList;
 	}
 
 	public BranchCreateRequest createBranchCreateRequest(String name) {
@@ -72,10 +72,10 @@ public class VersioningExamples extends AbstractExamples {
 	}
 
 	/**
-	 * Create a dummy release response with the given release name.
+	 * Create a dummy branch response with the given branch name.
 	 * 
 	 * @param name
-	 *            Name of the release
+	 *            Name of the branch
 	 * @return Constructed response
 	 */
 	public BranchResponse createBranchResponse(String name) {

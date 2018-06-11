@@ -175,7 +175,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public UtilityHandler utilityHandler;
 
 	@Inject
-	public BranchCrudHandler releaseCrudHandler;
+	public BranchCrudHandler branchCrudHandler;
 
 	@Inject
 	public PluginHandler pluginHandler;
@@ -1200,7 +1200,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<BranchResponse> findBranchByUuid(String projectName, String releaseUuid, ParameterProvider... parameters) {
+	public MeshRequest<BranchResponse> findBranchByUuid(String projectName, String branchUuid, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1209,67 +1209,67 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<BranchListResponse> findBranches(String projectName, ParameterProvider... parameters) {
 		LocalActionContextImpl<BranchListResponse> ac = createContext(BranchListResponse.class, parameters);
 		ac.setProject(projectName);
-		releaseCrudHandler.handleReadList(ac);
+		branchCrudHandler.handleReadList(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<BranchResponse> updateRelease(String projectName, String releaseUuid, BranchUpdateRequest request) {
+	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
 		BranchInfoSchemaList schemaVersionReferences) {
 		LocalActionContextImpl<BranchInfoSchemaList> ac = createContext(BranchInfoSchemaList.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(schemaVersionReferences);
-		releaseCrudHandler.handleAssignSchemaVersion(ac, releaseUuid);
+		branchCrudHandler.handleAssignSchemaVersion(ac, branchUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
 		SchemaReference... schemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 		BranchInfoMicroschemaList microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 		MicroschemaReference... microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> migrateBranchSchemas(String projectName, String releaseUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchSchemas(String projectName, String branchUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> migrateBranchMicroschemas(String projectName, String releaseUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchMicroschemas(String projectName, String branchUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}

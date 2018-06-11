@@ -227,21 +227,21 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testDuplicateCrossReleases() {
+	public void testDuplicateCrossBranches() {
 
 		String conflictingName = "filename.html";
-		String newReleaseName = "newrelease";
+		String newBranchName = "newbranch";
 		SchemaContainer contentSchema = db().tx(() -> {
 			return schemaContainer("content");
 		});
-		// 1. Create new release and migrate nodes
+		// 1. Create new branch and migrate nodes
 		db().tx(() -> {
-			Branch newRelease = project().getBranchRoot().create(newReleaseName, user());
-			meshDagger().branchMigrationHandler().migrateBranch(newRelease, null);
+			Branch newBranch = project().getBranchRoot().create(newBranchName, user());
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
 			return null;
 		});
 
-		// 2. Create content in new release
+		// 2. Create content in new branch
 		db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
@@ -256,7 +256,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			return null;
 		});
 
-		// 3. Create "conflicting" content in initial release
+		// 3. Create "conflicting" content in initial branch
 		db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());

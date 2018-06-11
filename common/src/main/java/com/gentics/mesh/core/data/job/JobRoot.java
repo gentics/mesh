@@ -37,12 +37,12 @@ public interface JobRoot extends RootVertex<Job> {
 	 * Enqueue a microschema migration.
 	 * 
 	 * @param creator
-	 * @param release
+	 * @param branch
 	 * @param fromVersion
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueMicroschemaMigration(User creator, Branch release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion);
+	Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion);
 
 	/**
 	 * Enqueue a branch migration.

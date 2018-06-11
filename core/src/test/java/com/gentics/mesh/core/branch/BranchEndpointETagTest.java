@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.release;
+package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -16,7 +16,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class ReleaseEndpointETagTest extends AbstractMeshTest {
+public class BranchEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
@@ -32,17 +32,17 @@ public class ReleaseEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			Branch release = project().getLatestBranch();
-			String actualEtag = callETag(() -> client().findBranchByUuid(PROJECT_NAME, release.getUuid()));
-			String etag = release.getETag(mockActionContext());
+			Branch branch = project().getLatestBranch();
+			String actualEtag = callETag(() -> client().findBranchByUuid(PROJECT_NAME, branch.getUuid()));
+			String etag = branch.getETag(mockActionContext());
 			assertThat(actualEtag).contains(etag);
 
 			// Check whether 304 is returned for correct etag
-			assertThat(callETag(() -> client().findBranchByUuid(PROJECT_NAME, release.getUuid()), etag, true, 304)).contains(etag);
+			assertThat(callETag(() -> client().findBranchByUuid(PROJECT_NAME, branch.getUuid()), etag, true, 304)).contains(etag);
 
 			// Assert that adding bogus query parameters will not affect the etag
-			callETag(() -> client().findBranchByUuid(PROJECT_NAME, release.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true, 304);
-			callETag(() -> client().findBranchByUuid(PROJECT_NAME, release.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304);
+			callETag(() -> client().findBranchByUuid(PROJECT_NAME, branch.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true, 304);
+			callETag(() -> client().findBranchByUuid(PROJECT_NAME, branch.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304);
 		}
 
 	}

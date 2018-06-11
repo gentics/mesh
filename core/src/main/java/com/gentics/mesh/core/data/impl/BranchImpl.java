@@ -5,9 +5,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
-import com.gentics.mesh.core.data.branch.ReleaseVersionEdge;
+import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
+import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -86,9 +86,9 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflicting project name
-			Branch conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
-			if (conflictingRelease != null) {
-				throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", requestModel.getName());
+			Branch conflictingBranch = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
+			if (conflictingBranch != null) {
+				throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", requestModel.getName());
 			}
 			setName(requestModel.getName());
 			modified = true;
@@ -118,7 +118,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		restBranch.setName(getName());
 		restBranch.setHostname(getHostname());
 		restBranch.setSsl(getSsl());
-		// restRelease.setActive(isActive());
+		// restBranch.setActive(isActive());
 		restBranch.setMigrated(isMigrated());
 
 		// Add common fields
@@ -189,23 +189,23 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Branch getNextBranch() {
-		return out(HAS_NEXT_RELEASE).nextOrDefaultExplicit(BranchImpl.class, null);
+		return out(HAS_NEXT_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
 	public Branch setNextBranch(Branch branch) {
-		setUniqueLinkOutTo(branch, HAS_NEXT_RELEASE);
+		setUniqueLinkOutTo(branch, HAS_NEXT_BRANCH);
 		return this;
 	}
 
 	@Override
 	public Branch getPreviousBranch() {
-		return in(HAS_NEXT_RELEASE).nextOrDefaultExplicit(BranchImpl.class, null);
+		return in(HAS_NEXT_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
 	public BranchRoot getRoot() {
-		return in(HAS_RELEASE).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
+		return in(HAS_BRANCH).nextOrDefaultExplicit(BranchRootImpl.class, null);
 	}
 
 	@Override
@@ -253,7 +253,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions() {
-		return outE(HAS_SCHEMA_VERSION).has(ReleaseVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class);
+		return outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class);
 	}
 
 	@Override
@@ -284,7 +284,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion) {
-		BranchSchemaEdge edge = findReleaseSchemaEdge(schemaContainerVersion);
+		BranchSchemaEdge edge = findBranchSchemaEdge(schemaContainerVersion);
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			SchemaContainerVersion currentVersion = findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer());
@@ -308,7 +308,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion) {
-		BranchMicroschemaEdge edge = findReleaseMicroschemaEdge(microschemaContainerVersion);
+		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaContainerVersion);
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			MicroschemaContainerVersion currentVersion = findLatestMicroschemaVersion(microschemaContainerVersion.getSchemaContainer());
@@ -420,12 +420,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public BranchSchemaEdge findReleaseSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
+	public BranchSchemaEdge findBranchSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
 		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(schemaContainerVersion).back().nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
 	}
 
 	@Override
-	public BranchMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
+	public BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
 		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaContainerVersion).back().nextOrDefaultExplicit(
 				BranchMicroschemaEdgeImpl.class, null);
 	}

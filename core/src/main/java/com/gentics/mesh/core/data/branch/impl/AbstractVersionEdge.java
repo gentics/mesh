@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.branch.impl;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.branch.ReleaseVersionEdge;
+import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 /**
  * Abstract implementation for {@link BranchMicroschemaEdgeImpl} and {@link BranchSchemaEdgeImpl}.
  */
-public abstract class AbstractVersionEdge extends MeshEdgeImpl implements ReleaseVersionEdge {
+public abstract class AbstractVersionEdge extends MeshEdgeImpl implements BranchVersionEdge {
 
 	@Override
 	public void setMigrationStatus(MigrationStatus status) {
@@ -28,7 +28,7 @@ public abstract class AbstractVersionEdge extends MeshEdgeImpl implements Releas
 	}
 
 	@Override
-	public Branch getRelease() {
+	public Branch getBranch() {
 		return outV().nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 

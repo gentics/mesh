@@ -168,14 +168,14 @@ public class JobEndpointTest extends AbstractMeshTest {
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("folder");
-			assertEquals(initialBranchUuid(), jobResponse.getProperties().get("releaseUuid"));
+			assertEquals(initialBranchUuid(), jobResponse.getProperties().get("branchUuid"));
 			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("fromVersion"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("toVersion"));
 		}
 
 		jobResponse = call(() -> client().findJobByUuid(jobUuid));
-		assertEquals(initialBranchUuid(), jobResponse.getProperties().get("releaseUuid"));
+		assertEquals(initialBranchUuid(), jobResponse.getProperties().get("branchUuid"));
 
 	}
 

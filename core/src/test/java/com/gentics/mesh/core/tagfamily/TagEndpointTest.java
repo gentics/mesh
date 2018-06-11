@@ -164,33 +164,33 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 				affectedElements.put("tagFamily", new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
 
 				Project project = project();
-				Branch release = project.getLatestBranch();
+				Branch branch = project.getLatestBranch();
 
 				int i = 0;
 				Tag redTag = tag("red");
 				affectedElements.put("tagFamily.red", new ElementEntry(DELETE_ACTION, redTag.getUuid()));
 				// Tagged nodes should be updated
-				for (Node node : redTag.getNodes(release)) {
+				for (Node node : redTag.getNodes(branch)) {
 					affectedElements.put("red tagged node " + i,
-							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), release.getUuid(),
+							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
 									ContainerType.DRAFT, node.getAvailableLanguageNames()));
 					i++;
 				}
 
 				Tag greenTag = tag("green");
 				affectedElements.put("tagFamily.green", new ElementEntry(DELETE_ACTION, greenTag.getUuid()));
-				for (Node node : greenTag.getNodes(release)) {
+				for (Node node : greenTag.getNodes(branch)) {
 					affectedElements.put("green tagged node " + i,
-							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), release.getUuid(),
+							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
 									ContainerType.DRAFT, node.getAvailableLanguageNames()));
 					i++;
 				}
 
 				Tag blueTag = tag("blue");
 				affectedElements.put("tagFamily.blue", new ElementEntry(DELETE_ACTION, blueTag.getUuid()));
-				for (Node node : blueTag.getNodes(release)) {
+				for (Node node : blueTag.getNodes(branch)) {
 					affectedElements.put("blue tagged node " + i,
-							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), release.getUuid(),
+							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
 									ContainerType.DRAFT, node.getAvailableLanguageNames()));
 					i++;
 				}

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.GroupCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.MicroschemaContainerCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.NodeCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.ProjectCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.ReleaseCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.RoleCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
@@ -41,7 +41,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	private Database db;
 
 	private static List<ConsistencyCheck> checks = Arrays.asList(new GroupCheck(), new MicroschemaContainerCheck(), new NodeCheck(),
-			new ProjectCheck(), new ReleaseCheck(), new RoleCheck(), new SchemaContainerCheck(), new TagCheck(), new TagFamilyCheck(),
+			new ProjectCheck(), new BranchCheck(), new RoleCheck(), new SchemaContainerCheck(), new TagCheck(), new TagFamilyCheck(),
 			new UserCheck(), new GraphFieldContainerCheck());
 
 	/**

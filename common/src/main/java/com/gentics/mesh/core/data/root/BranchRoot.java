@@ -5,64 +5,64 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 
 /**
- * Aggregation vertex for Releases.
+ * Aggregation vertex for Branches.
  */
 public interface BranchRoot extends RootVertex<Branch> {
 
-	public static final String TYPE = "releases";
+	public static final String TYPE = "branches";
 
 	/**
-	 * Get the project of this release root.
+	 * Get the project of this branch root.
 	 * 
 	 * @return
 	 */
 	Project getProject();
 
 	/**
-	 * Create a new release and make it the latest The new release will be the initial release, if it is the first created.
+	 * Create a new branch and make it the latest The new branch will be the initial branch, if it is the first created.
 	 *
 	 * @param name
-	 *            release name
+	 *            branch name
 	 * @param creator
 	 *            creator
-	 * @return new Release
+	 * @return new Branch
 	 */
 	default Branch create(String name, User creator) {
 		return create(name, creator, null);
 	}
 
 	/**
-	 * Create a new release and make it the latest The new release will be the initial release, if it is the first created.
+	 * Create a new branch and make it the latest The new branch will be the initial branch, if it is the first created.
 	 *
 	 * @param name
-	 *            release name
+	 *            branch name
 	 * @param creator
 	 *            creator
 	 * @param uuid
 	 *            Optional uuid
-	 * @return new Release
+	 * @return new Branch
 	 */
 	Branch create(String name, User creator, String uuid);
 
 	/**
-	 * Get the initial release of this root.
+	 * Get the initial branch of this root.
 	 *
 	 * @return
 	 */
-	Branch getInitialRelease();
+	Branch getInitialBranch();
 
 	/**
-	 * Get the latest release of this root.
+	 * Get the latest branch of this root.
 	 *
 	 * @return
 	 */
-	Branch getLatestRelease();
+	Branch getLatestBranch();
 
 	/**
-	 * Get the unique index key for names of releases attached to this root.
+	 * Get the unique index key for names of branches attached to this root.
 	 * 
 	 * @param name
-	 *            release name
+	 *            branch name
 	 * @return unique index key
 	 */
 	String getUniqueNameKey(String name);

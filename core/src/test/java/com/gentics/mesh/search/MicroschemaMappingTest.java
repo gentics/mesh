@@ -215,8 +215,8 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 		NodeContainerMappingProvider provider = handler.getMappingProvider();
 
 		tx(() -> {
-			Branch release = latestRelease();
-			JsonObject schemaMapping = provider.getMapping(this.schema, release);
+			Branch branch = latestBranch();
+			JsonObject schemaMapping = provider.getMapping(this.schema, branch);
 			assertNotNull(schemaMapping);
 			JsonObject fieldsMapping = schemaMapping
 					.getJsonObject(DEFAULT_TYPE)

@@ -32,9 +32,9 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	public void addMicroschema(User user, MicroschemaContainer microschema) {
 		super.addMicroschema(user, microschema);
 
-		// assign the latest schema version to all releases of the project
-		for (Branch release : getProject().getBranchRoot().findAllIt()) {
-			release.assignMicroschemaVersion(user, microschema.getLatestVersion());
+		// assign the latest schema version to all branches of the project
+		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+			branch.assignMicroschemaVersion(user, microschema.getLatestVersion());
 		}
 	}
 
@@ -42,9 +42,9 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	public void removeMicroschema(MicroschemaContainer microschema) {
 		super.removeMicroschema(microschema);
 
-		// unassign the schema from all releases
-		for (Branch release : getProject().getBranchRoot().findAllIt()) {
-			release.unassignMicroschema(microschema);
+		// unassign the schema from all branches
+		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+			branch.unassignMicroschema(microschema);
 		}
 	}
 }

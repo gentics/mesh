@@ -64,7 +64,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private Project project;
 
-	private Branch release;
+	private Branch branch;
 
 	/**
 	 * Set the body.
@@ -121,13 +121,13 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return project;
 	}
 
-	public void setBranch(Branch release) {
-		this.release = release;
+	public void setBranch(Branch branch) {
+		this.branch = branch;
 	}
 
 	@Override
 	public Branch getBranch(Project project) {
-		return release;
+		return branch;
 	}
 
 	@Override
@@ -251,7 +251,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void failOnNoReadPermission(NodeGraphFieldContainer container, String releaseUuid) {
+			public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid) {
 
 			}
 

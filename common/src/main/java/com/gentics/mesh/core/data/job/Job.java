@@ -52,18 +52,18 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	void setType(MigrationType type);
 
 	/**
-	 * Return the release reference for the job.
+	 * Return the branch reference for the job.
 	 * 
 	 * @return
 	 */
-	Branch getRelease();
+	Branch getBranch();
 
 	/**
-	 * Set the release reference for the job.
+	 * Set the branch reference for the job.
 	 * 
-	 * @param release
+	 * @param branch
 	 */
-	void setRelease(Branch release);
+	void setBranch(Branch branch);
 
 	/**
 	 * Return the schema version reference.

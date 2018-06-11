@@ -6,19 +6,19 @@ import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 
 public class MoveEntryContextImpl implements MoveEntryContext {
 
-	private String releaseUuid;
+	private String branchUuid;
 	private ContainerType type;
 	private NodeGraphFieldContainer oldContainer;
 	private NodeGraphFieldContainer newContainer;
 
 	@Override
 	public String getBranchUuid() {
-		return releaseUuid;
+		return branchUuid;
 	}
 
 	@Override
 	public MoveEntryContext setBranchUuid(String uuid) {
-		this.releaseUuid = uuid;
+		this.branchUuid = uuid;
 		return this;
 	}
 

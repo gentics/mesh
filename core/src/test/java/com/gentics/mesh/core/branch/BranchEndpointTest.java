@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.release;
+package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -67,7 +67,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Before
 	public void addAdminPerms() {
@@ -102,14 +102,14 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws Exception {
-		// Releases can't be deleted
+		// Branches can't be deleted
 	}
 
 	@Test
 	@Override
 	@Ignore
 	public void testCreateMultithreaded() throws Exception {
-		String releaseName = "Release V";
+		String branchName = "Branch V";
 		try (Tx tx = tx()) {
 			Project project = project();
 			int nJobs = 100;
@@ -117,7 +117,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			Set<MeshResponse<BranchResponse>> responseFutures = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				BranchCreateRequest request = new BranchCreateRequest();
-				request.setName(releaseName + i);
+				request.setName(branchName + i);
 				MeshResponse<BranchResponse> future = client().createBranch(PROJECT_NAME, request).invoke();
 				responseFutures.add(future);
 			}
@@ -133,21 +133,21 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 				uuids.add(future.result().getUuid());
 			}
 
-			// all releases must form a chain
-			Set<String> foundReleases = new HashSet<>();
-			Branch previousRelease = null;
-			Branch release = project.getInitialBranch();
+			// All branches must form a chain
+			Set<String> foundBranches = new HashSet<>();
+			Branch previousBranch = null;
+			Branch branch = project.getInitialBranch();
 
 			do {
-				assertThat(release).as("Release").isNotNull().hasPrevious(previousRelease);
-				assertThat(foundReleases).as("Existing uuids").doesNotContain(release.getUuid());
-				foundReleases.add(release.getUuid());
-				previousRelease = release;
-				release = release.getNextBranch();
-			} while (release != null);
+				assertThat(branch).as("Branch").isNotNull().hasPrevious(previousBranch);
+				assertThat(foundBranches).as("Existing uuids").doesNotContain(branch.getUuid());
+				foundBranches.add(branch.getUuid());
+				previousBranch = branch;
+				branch = branch.getNextBranch();
+			} while (branch != null);
 
-			assertThat(previousRelease).as("Latest Release").matches(project.getLatestBranch());
-			assertThat(foundReleases).as("Found Releases").containsOnlyElementsOf(uuids);
+			assertThat(previousBranch).as("Latest Branch").matches(project.getLatestBranch());
+			assertThat(foundBranches).as("Found Branchs").containsOnlyElementsOf(uuids);
 		}
 	}
 
@@ -170,23 +170,23 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		String releaseName = "Release V1";
+		String branchName = "Branch V1";
 
 		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(releaseName);
+		request.setName(branchName);
 
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated();
+			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
 
-		BranchListResponse releases = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
-		releases.getData().forEach(release -> assertThat(release).as("Release " + release.getName()).isMigrated());
+		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
+		branches.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
 	}
 
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
-		String releaseName = "Release V1";
+		String branchName = "Branch V1";
 		try (Tx tx = tx()) {
 			Project project = project();
 			role().grantPermissions(project, READ_PERM);
@@ -194,83 +194,83 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(releaseName);
+		request.setName(branchName);
 		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", projectUuid() + "/" + PROJECT_NAME);
 	}
 
 	@Test
 	@Override
 	public void testCreateWithUuid() throws Exception {
-		String releaseName = "Release V1";
+		String branchName = "Branch V1";
 		String uuid = UUIDUtil.randomUUID();
 
 		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(releaseName);
+		request.setName(branchName);
 
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, uuid, request));
-			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated().hasUuid(uuid);
+			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated().hasUuid(uuid);
 		}, COMPLETED, 1);
 
-		BranchListResponse releases = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
-		releases.getData().forEach(release -> assertThat(release).as("Release " + release.getName()).isMigrated());
+		BranchListResponse branchs = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
+		branchs.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
 	}
 
 	@Test
 	@Override
 	public void testCreateWithDuplicateUuid() throws Exception {
-		String releaseName = "Release V1";
+		String branchName = "Branch V1";
 		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = user().getUuid();
 
 			BranchUpdateRequest request = new BranchUpdateRequest();
-			request.setName(releaseName);
+			request.setName(branchName);
 
-			call(() -> client().updateRelease(project.getName(), uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
+			call(() -> client().updateBranch(project.getName(), uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
 		}
 	}
 
 	@Test
 	public void testCreateWithoutName() throws Exception {
-		call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest()), BAD_REQUEST, "release_missing_name");
+		call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest()), BAD_REQUEST, "branch_missing_name");
 	}
 
 	@Test
 	public void testCreateWithConflictingName1() throws Exception {
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(PROJECT_NAME);
-		call(() -> client().createBranch(PROJECT_NAME, request), CONFLICT, "release_conflicting_name", PROJECT_NAME);
+		call(() -> client().createBranch(PROJECT_NAME, request), CONFLICT, "branch_conflicting_name", PROJECT_NAME);
 	}
 
 	@Test
 	public void testCreateWithConflictingName2() throws Exception {
 		BranchCreateRequest request = new BranchCreateRequest();
-		String releaseName = "New Release";
-		request.setName(releaseName);
+		String branchName = "New Branch";
+		request.setName(branchName);
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		waitForJobs(() -> {
 			call(() -> client().createBranch(PROJECT_NAME, request));
 		}, COMPLETED, 1);
 		failingLatch(latch);
-		call(() -> client().createBranch(PROJECT_NAME, request), CONFLICT, "release_conflicting_name", releaseName);
+		call(() -> client().createBranch(PROJECT_NAME, request), CONFLICT, "branch_conflicting_name", branchName);
 	}
 
 	@Test
 	public void testCreateWithConflictingName3() throws Exception {
-		String releaseName = "New Release";
+		String branchName = "New Branch";
 		String newProjectName = "otherproject";
 
-		// 1. Create a new release
+		// 1. Create a new branch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(releaseName);
+		request.setName(branchName);
 		waitForJobs(() -> {
 			call(() -> client().createBranch(PROJECT_NAME, request));
 		}, COMPLETED, 1);
 		failingLatch(latch);
 
-		// 2. Create a new project and release and use the same name. This is allowed and should not raise any error.
+		// 2. Create a new project and branch and use the same name. This is allowed and should not raise any error.
 		latch = TestUtils.latchForMigrationCompleted(client());
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName(newProjectName);
@@ -290,30 +290,30 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testCreateWithHostname() {
-		String releaseName = "MyRelease";
+		String branchName = "MyBranch";
 		String hostname = "my.host";
 		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(releaseName);
+		request.setName(branchName);
 		request.setHostname(hostname);
 		request.setSsl(true);
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(response).as("Created release").hasName(releaseName).hasHostname(hostname).hasSSL(true);
+			assertThat(response).as("Created branch").hasName(branchName).hasHostname(hostname).hasSSL(true);
 		}, COMPLETED, 1);
 	}
 
 	@Test
 	public void testCreateWithSsl() {
-		String releaseName = "MyRelease";
+		String branchName = "MyBranch";
 		Boolean ssl = true;
 
 		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(releaseName);
+		request.setName(branchName);
 		request.setSsl(ssl);
 
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(response).as("Created release").hasName(releaseName).hasSsl(ssl);
+			assertThat(response).as("Created branch").hasName(branchName).hasSsl(ssl);
 		}, COMPLETED, 1);
 	}
 
@@ -321,26 +321,26 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUUID() throws Exception {
 
-		List<Pair<String, String>> releaseInfo = new ArrayList<>();
+		List<Pair<String, String>> branchInfo = new ArrayList<>();
 
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
-			releaseInfo.add(Pair.of(initialRelease.getUuid(), initialRelease.getName()));
+			Branch initialBranch = project.getInitialBranch();
+			branchInfo.add(Pair.of(initialBranch.getUuid(), initialBranch.getName()));
 
-			Branch firstRelease = project.getBranchRoot().create("One", user());
-			releaseInfo.add(Pair.of(firstRelease.getUuid(), firstRelease.getName()));
+			Branch firstBranch = project.getBranchRoot().create("One", user());
+			branchInfo.add(Pair.of(firstBranch.getUuid(), firstBranch.getName()));
 
-			Branch secondRelease = project.getBranchRoot().create("Two", user());
-			releaseInfo.add(Pair.of(secondRelease.getUuid(), secondRelease.getName()));
+			Branch secondBranch = project.getBranchRoot().create("Two", user());
+			branchInfo.add(Pair.of(secondBranch.getUuid(), secondBranch.getName()));
 
-			Branch thirdRelease = project.getBranchRoot().create("Three", user());
-			releaseInfo.add(Pair.of(thirdRelease.getUuid(), thirdRelease.getName()));
+			Branch thirdBranch = project.getBranchRoot().create("Three", user());
+			branchInfo.add(Pair.of(thirdBranch.getUuid(), thirdBranch.getName()));
 
 			tx.success();
 		}
 
-		for (Pair<String, String> info : releaseInfo) {
+		for (Pair<String, String> info : branchInfo) {
 			BranchResponse response = call(() -> client().findBranchByUuid(PROJECT_NAME, info.getKey()));
 			assertThat(response).isNotNull().hasName(info.getValue()).hasUuid(info.getKey()).isActive();
 		}
@@ -374,17 +374,17 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		Branch initialRelease;
-		Branch firstRelease;
-		Branch thirdRelease;
-		Branch secondRelease;
+		Branch initialBranch;
+		Branch firstBranch;
+		Branch thirdBranch;
+		Branch secondBranch;
 
 		try (Tx tx = tx()) {
 			Project project = project();
-			initialRelease = project.getInitialBranch();
-			firstRelease = project.getBranchRoot().create("One", user());
-			secondRelease = project.getBranchRoot().create("Two", user());
-			thirdRelease = project.getBranchRoot().create("Three", user());
+			initialBranch = project.getInitialBranch();
+			firstBranch = project.getBranchRoot().create("One", user());
+			secondBranch = project.getBranchRoot().create("Two", user());
+			thirdBranch = project.getBranchRoot().create("Three", user());
 			tx.success();
 		}
 
@@ -393,29 +393,29 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			InternalActionContext ac = mockActionContext();
 
 			assertThat(responseList).isNotNull();
-			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
-				firstRelease.transformToRestSync(ac, 0), secondRelease.transformToRestSync(ac, 0), thirdRelease.transformToRestSync(ac, 0));
+			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialBranch.transformToRestSync(ac, 0),
+				firstBranch.transformToRestSync(ac, 0), secondBranch.transformToRestSync(ac, 0), thirdBranch.transformToRestSync(ac, 0));
 		}
 	}
 
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
 		Project project = project();
-		Branch initialRelease = tx(() -> initialBranch());
+		Branch initialBranch = tx(() -> initialBranch());
 
-		Branch firstRelease;
-		Branch secondRelease;
-		Branch thirdRelease;
+		Branch firstBranch;
+		Branch secondBranch;
+		Branch thirdBranch;
 
 		try (Tx tx = tx()) {
-			firstRelease = project.getBranchRoot().create("One", user());
-			secondRelease = project.getBranchRoot().create("Two", user());
-			thirdRelease = project.getBranchRoot().create("Three", user());
+			firstBranch = project.getBranchRoot().create("One", user());
+			secondBranch = project.getBranchRoot().create("Two", user());
+			thirdBranch = project.getBranchRoot().create("Three", user());
 			tx.success();
 		}
 		try (Tx tx = tx()) {
-			role().revokePermissions(firstRelease, READ_PERM);
-			role().revokePermissions(thirdRelease, READ_PERM);
+			role().revokePermissions(firstBranch, READ_PERM);
+			role().revokePermissions(thirdBranch, READ_PERM);
 			tx.success();
 		}
 
@@ -424,49 +424,49 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			assertThat(responseList).isNotNull();
-			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
-				secondRelease.transformToRestSync(ac, 0));
+			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialBranch.transformToRestSync(ac, 0),
+				secondBranch.transformToRestSync(ac, 0));
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		String newName = "New Release Name";
-		String anotherNewName = "Another New Release Name";
+		String newName = "New Branch Name";
+		String anotherNewName = "Another New Branch Name";
 		try (Tx tx = tx()) {
 
 			// change name
 			BranchUpdateRequest request1 = new BranchUpdateRequest();
 			request1.setName(newName);
-			BranchResponse response = call(() -> client().updateRelease(PROJECT_NAME, initialBranchUuid(), request1));
-			assertThat(response).as("Updated Release").isNotNull().hasName(newName).isActive();
+			BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request1));
+			assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isActive();
 
 			// change active
 			BranchUpdateRequest request2 = new BranchUpdateRequest();
 			// request2.setActive(false);
-			response = call(() -> client().updateRelease(PROJECT_NAME, initialBranchUuid(), request2));
-			assertThat(response).as("Updated Release").isNotNull().hasName(newName).isInactive();
+			response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request2));
+			assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isInactive();
 
 			// change active and name
 			BranchUpdateRequest request3 = new BranchUpdateRequest();
 			// request3.setActive(true);
 			request3.setName(anotherNewName);
-			response = call(() -> client().updateRelease(PROJECT_NAME, initialBranchUuid(), request3));
-			assertThat(response).as("Updated Release").isNotNull().hasName(anotherNewName).isActive();
+			response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request3));
+			assertThat(response).as("Updated Branch").isNotNull().hasName(anotherNewName).isActive();
 		}
 	}
 
 	@Test
 	public void testUpdateWithNameConflict() throws Exception {
-		String newName = "New Release Name";
+		String newName = "New Branch Name";
 		try (Tx tx = tx()) {
 			project().getBranchRoot().create(newName, user());
 			tx.success();
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		request.setName(newName);
-		call(() -> client().updateRelease(PROJECT_NAME, initialBranchUuid(), request), CONFLICT, "release_conflicting_name", newName);
+		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request), CONFLICT, "branch_conflicting_name", newName);
 
 	}
 
@@ -479,7 +479,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().updateRelease(PROJECT_NAME, initialBranchUuid(), request), FORBIDDEN, "error_missing_perm", initialBranchUuid());
+		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request), FORBIDDEN, "error_missing_perm", initialBranchUuid());
 	}
 
 	@Test
@@ -496,8 +496,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		request.setHostname(hostname);
-		BranchResponse response = call(() -> client().updateRelease(PROJECT_NAME, initialBranchUuid(), request));
-		assertThat(response).as("Updated release").hasHostname(hostname);
+		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
+		assertThat(response).as("Updated branch").hasHostname(hostname);
 	}
 
 	@Test
@@ -506,8 +506,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		request.setSsl(ssl);
-		BranchResponse response = call(() -> client().updateRelease(PROJECT_NAME, initialBranchUuid(), request));
-		assertThat(response).as("Updated release").hasSsl(ssl);
+		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
+		assertThat(response).as("Updated branch").hasSsl(ssl);
 	}
 
 	@Override
@@ -520,7 +520,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// TODO Auto-generated method stub
 	}
 
-	// Tests for assignment of schema versions to releases
+	// Tests for assignment of schema versions to branchs
 
 	@Test
 	public void testReadSchemaVersions() throws Exception {
@@ -530,7 +530,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			BranchSchemaInfo folder = new BranchSchemaInfo(schemaContainer("folder").getLatestVersion().transformToReference());
 			BranchSchemaInfo binaryContent = new BranchSchemaInfo(schemaContainer("binary_content").getLatestVersion().transformToReference());
 
-			assertThat(list.getSchemas()).as("release schema versions").usingElementComparatorOnFields("name", "uuid", "version").containsOnly(
+			assertThat(list.getSchemas()).as("branch schema versions").usingElementComparatorOnFields("name", "uuid", "version").containsOnly(
 				content, folder, binaryContent);
 		}
 	}
@@ -549,7 +549,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 				updateSchema(schema.getUuid(), "newschemaname");
 			}, COMPLETED, 1);
 
-			// Assert that version 2 is assigned to release
+			// Assert that version 2 is assigned to branch
 			BranchInfoSchemaList infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
@@ -557,16 +557,16 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Generate version 3
 			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-			// Assert that version 2 is still assigned to release
+			// Assert that version 2 is still assigned to branch
 			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
-			// Generate version 3 which should not be auto assigned to the project release
+			// Generate version 3 which should not be auto assigned to the project branch
 			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false).setBranchNames(
 				INITIAL_RELEASE_NAME));
 
-			// Assert that version 2 is still assigned to the release
+			// Assert that version 2 is still assigned to the branch
 			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
@@ -576,7 +576,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 				updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true));
 			}, COMPLETED, 1);
 
-			// Assert that version 4 is assigned to the release
+			// Assert that version 4 is assigned to the branch
 			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
@@ -586,7 +586,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			updateSchema(schema.getUuid(), "anothernewschemaname3", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true).setBranchNames(
 				"bla", "bogus", "moped"));
 
-			// Assert that version 4 is still assigned to the release since non of the names matches the project release
+			// Assert that version 4 is still assigned to the branch since non of the names matches the project branch
 			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("4.0"));
@@ -611,12 +611,12 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// generate version 3
 		updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-		// check that version 1 is assigned to release
+		// check that version 1 is assigned to branch
 		BranchInfoSchemaList list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchSchemaInfo().setName("schemaname").setUuid(schema.getUuid()).setVersion("1.0"));
 
-		// assign version 2 to the release
+		// assign version 2 to the branch
 		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.getSchemas().add(new BranchSchemaInfo().setUuid(schema.getUuid()).setVersion("2.0"));
 		waitForJobs(() -> {
@@ -682,7 +682,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		// try to downgrade schema version
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), new SchemaReferenceImpl().setUuid(schemaUuid).setVersion(
-			"1.0")), BAD_REQUEST, "release_error_downgrade_schema_version", "schemaname", "2.0", "1.0");
+			"1.0")), BAD_REQUEST, "branch_error_downgrade_schema_version", "schemaname", "2.0", "1.0");
 
 	}
 
@@ -717,12 +717,12 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		// check that version 1 is assigned to release
+		// check that version 1 is assigned to branch
 		BranchInfoSchemaList list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchSchemaInfo().setName("schemaname").setUuid(schemaUuid).setVersion("1.0"));
 
-		// assign latest version to the release
+		// assign latest version to the branch
 		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.getSchemas().add(new BranchSchemaInfo().setUuid(schemaUuid));
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), info));
@@ -734,7 +734,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	}
 
-	// Tests for assignment of microschema versions to releases
+	// Tests for assignment of microschema versions to branchs
 
 	@Test
 	public void testReadMicroschemaVersions() throws Exception {
@@ -743,7 +743,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		BranchMicroschemaInfo captionedImage = new BranchMicroschemaInfo(db().tx(() -> microschemaContainer("captionedImage").getLatestVersion()
 			.transformToReference()));
 		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("release microschema versions").usingElementComparatorOnFields("name", "uuid", "version").containsOnly(
+		assertThat(list.getMicroschemas()).as("branch microschema versions").usingElementComparatorOnFields("name", "uuid", "version").containsOnly(
 			vcard, captionedImage);
 	}
 
@@ -762,7 +762,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// generate version 3
 			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-			// check that version 1 is assigned to release
+			// check that version 1 is assigned to branch
 			BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("microschemaname").setUuid(microschema.getUuid()).setVersion(
@@ -771,7 +771,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			BranchInfoMicroschemaList info = new BranchInfoMicroschemaList();
 			info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
 
-			// assign version 2 to the release
+			// assign version 2 to the branch
 			waitForJobs(() -> {
 				call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), info));
 			}, COMPLETED, 1);
@@ -803,18 +803,18 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 				updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
 			}, COMPLETED, 1);
 
-			// check that version 3 is assigned to release
+			// check that version 3 is assigned to branch
 			BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewmicroschemaname").setUuid(microschema.getUuid())
 					.setVersion("3.0")));
 
-			// assign version 2 to the release
-			// call(() -> getClient().assignReleaseMicroschemaVersions(PROJECT_NAME, releaseUuid(),
+			// assign version 2 to the branch
+			// call(() -> getClient().assignBranchMicroschemaVersions(PROJECT_NAME, branchUuid(),
 			// new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(2)))));
 
 			// assert
-			// list = call(() -> getClient().getReleaseMicroschemaVersions(PROJECT_NAME, releaseUuid()));
+			// list = call(() -> getClient().getBranchMicroschemaVersions(PROJECT_NAME, branchUuid()));
 			// assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
 			// .contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
 		}
@@ -863,7 +863,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// try to downgrade microschema version
 		call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), new MicroschemaReferenceImpl().setUuid(microschema
-			.getUuid()).setVersion("1.0")), BAD_REQUEST, "release_error_downgrade_microschema_version", "microschemaname", "2.0", "1.0");
+			.getUuid()).setVersion("1.0")), BAD_REQUEST, "branch_error_downgrade_microschema_version", "microschemaname", "2.0", "1.0");
 
 	}
 
@@ -879,15 +879,15 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
-	public void testMigrateReleaseSchemas() {
-		// TODO Assign schema versions to the release and delay the actual migration
+	public void testMigrateBranchSchemas() {
+		// TODO Assign schema versions to the branch and delay the actual migration
 		// https://github.com/gentics/mesh/issues/374
 		call(() -> client().migrateBranchSchemas(PROJECT_NAME, initialBranchUuid()));
 	}
 
 	@Test
-	public void testReleaseMicroschemas() {
-		// TODO Assign schema versions to the release and delay the actual migration
+	public void testBranchMicroschemas() {
+		// TODO Assign schema versions to the branch and delay the actual migration
 		// https://github.com/gentics/mesh/issues/374
 		call(() -> client().migrateBranchMicroschemas(PROJECT_NAME, initialBranchUuid()));
 	}
@@ -906,16 +906,16 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 				updateMicroschema(microschema.getUuid(), "newmicroschemaname");
 			}, COMPLETED, 1);
 
-			// Assert that version 2 is assigned to release
+			// Assert that version 2 is assigned to branch
 			BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
 					"2.0")));
 
-			// Generate version 3 which should not be auto assigned to the project release
+			// Generate version 3 which should not be auto assigned to the project branch
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-			// Assert that version 2 is still assigned to release
+			// Assert that version 2 is still assigned to branch
 			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
@@ -925,7 +925,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname1", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)
 				.setBranchNames(INITIAL_RELEASE_NAME));
 
-			// Assert that version 4 is assigned to the release
+			// Assert that version 4 is assigned to the branch
 			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname1").setUuid(microschema.getUuid())
@@ -946,7 +946,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname3", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)
 				.setBranchNames("bla", "bogus", "moped"));
 
-			// Assert that version 4 is still assigned to the release since non of the names matches the project release
+			// Assert that version 4 is still assigned to the branch since non of the names matches the project branch
 			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())

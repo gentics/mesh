@@ -24,8 +24,8 @@ import com.tinkerpop.blueprints.Vertex;
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
 		AbstractMeshCoreVertex<T, R> {
 
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Branch release, ContainerType type, Class<U> classOfU) {
-		return getGraphFieldContainer(language.getLanguageTag(), release != null ? release.getUuid() : null, type, classOfU);
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Branch branch, ContainerType type, Class<U> classOfU) {
+		return getGraphFieldContainer(language.getLanguageTag(), branch != null ? branch.getUuid() : null, type, classOfU);
 	}
 
 	/**
@@ -33,20 +33,20 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 * 
 	 * @param languageTag
 	 *            Language tag of the field container
-	 * @param releaseUuid
-	 *            Optional release to search within
+	 * @param branchUuid
+	 *            Optional branch to search within
 	 * @param type
 	 *            Optional type of the field container (published, draft)
 	 * @param classOfU
 	 * @return
 	 */
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String releaseUuid, ContainerType type,
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type,
 			Class<U> classOfU) {
 
 		Database db = MeshInternal.get().database();
 		FramedGraph graph = Tx.getActive().getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_release_type_lang", db.createComposedIndexKey(getId(),
-				releaseUuid, type.getCode(), languageTag));
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.createComposedIndexKey(getId(),
+				branchUuid, type.getCode(), languageTag));
 		Iterator<Edge> it = edges.iterator();
 		if (it.hasNext()) {
 			Vertex in = it.next().getVertex(IN);

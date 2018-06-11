@@ -73,7 +73,7 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE ex
 	RootVertex<V> getRoot();
 
 	/**
-	 * Return a map of all releases which reference the container via an assigned container version. The found container version will be added as key to the
+	 * Return a map of all branches which reference the container via an assigned container version. The found container version will be added as key to the
 	 * map.
 	 * 
 	 * @return

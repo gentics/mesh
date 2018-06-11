@@ -51,10 +51,10 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
-		Branch release = Tx.getActive().getGraph().addFramedVertex(BranchImpl.class);
-		release.assignSchemaVersion(user(), version);
-		project().getBranchRoot().addItem(release);
-		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), release, user());
+		Branch branch = Tx.getActive().getGraph().addFramedVertex(BranchImpl.class);
+		branch.assignSchemaVersion(user(), version);
+		project().getBranchRoot().addItem(branch);
+		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), branch, user());
 
 		return Tuple.tuple(node, nodeContainer);
 	}

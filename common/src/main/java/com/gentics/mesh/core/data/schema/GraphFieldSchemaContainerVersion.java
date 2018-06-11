@@ -166,11 +166,11 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	void setSchemaContainer(SC container);
 
 	/**
-	 * Get the releases to which the container was assigned.
+	 * Get the branches to which the container was assigned.
 	 * 
-	 * @return Found releases of this version
+	 * @return Found branches of this version
 	 */
-	List<? extends Branch> getReleases();
+	List<? extends Branch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.

@@ -5,9 +5,9 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 
-public class ReleaseExamples extends AbstractExamples {
+public class BranchExamples extends AbstractExamples {
 
-	public BranchSchemaInfo createReleaseSchemaInfo(String schemaName) {
+	public BranchSchemaInfo createBranchSchemaInfo(String schemaName) {
 		BranchSchemaInfo info = new BranchSchemaInfo();
 		info.setName(schemaName);
 		info.setUuid(randomUUID());
@@ -16,11 +16,11 @@ public class ReleaseExamples extends AbstractExamples {
 	}
 
 	public BranchInfoSchemaList createSchemaReferenceList() {
-		BranchInfoSchemaList releaseInfo = new BranchInfoSchemaList();
-		releaseInfo.getSchemas().add(createReleaseSchemaInfo("content"));
-		releaseInfo.getSchemas().add(createReleaseSchemaInfo("folder"));
-		releaseInfo.getSchemas().add(createReleaseSchemaInfo("binary-data"));
-		return releaseInfo;
+		BranchInfoSchemaList branchInfo = new BranchInfoSchemaList();
+		branchInfo.getSchemas().add(createBranchSchemaInfo("content"));
+		branchInfo.getSchemas().add(createBranchSchemaInfo("folder"));
+		branchInfo.getSchemas().add(createBranchSchemaInfo("binary-data"));
+		return branchInfo;
 	}
 
 }

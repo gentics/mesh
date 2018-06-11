@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 /**
  * Edge between a branch and a microschema version.
  */
-public interface BranchMicroschemaEdge extends ReleaseVersionEdge {
+public interface BranchMicroschemaEdge extends BranchVersionEdge {
 
 	/**
 	 * Return the corresponding microschema container version.

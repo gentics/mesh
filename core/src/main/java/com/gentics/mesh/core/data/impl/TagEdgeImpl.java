@@ -16,43 +16,43 @@ import com.syncleus.ferma.traversals.VertexTraversal;
  */
 @GraphElement
 public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
-	public static final String RELEASE_UUID_KEY = "releaseUuid";
+	public static final String BRANCH_UUID_KEY = "branchUuid";
 
 	public static void init(Database db) {
-		db.addEdgeType(TagEdgeImpl.class.getSimpleName(), (Class<?>) null, TagEdgeImpl.RELEASE_UUID_KEY);
+		db.addEdgeType(TagEdgeImpl.class.getSimpleName(), (Class<?>) null, TagEdgeImpl.BRANCH_UUID_KEY);
 		db.addEdgeType(HAS_TAG, TagEdgeImpl.class);
 	}
 
 	/**
-	 * Get the traversal for the tags assigned to the given vertex for the given release
+	 * Get the traversal for the tags assigned to the given vertex for the given branch
 	 * 
 	 * @param vertex
-	 * @param release
+	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Branch release) {
-		return vertex.outE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).inV();
+	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Branch branch) {
+		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV();
 	}
 
 	/**
-	 * Get the traversal for nodes that have been tagged with the given tag in the given release
+	 * Get the traversal for nodes that have been tagged with the given tag in the given branch
 	 * 
 	 * @param tag
-	 * @param release
+	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Branch release) {
-		return tag.inE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).outV();
+	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Branch branch) {
+		return tag.inE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).outV();
 	}
 
 	@Override
-	public String getReleaseUuid() {
-		return getProperty(RELEASE_UUID_KEY);
+	public String getBranchUuid() {
+		return getProperty(BRANCH_UUID_KEY);
 	}
 
 	@Override
-	public void setReleaseUuid(String uuid) {
-		setProperty(RELEASE_UUID_KEY, uuid);
+	public void setBranchUuid(String uuid) {
+		setProperty(BRANCH_UUID_KEY, uuid);
 	}
 
 }

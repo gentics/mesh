@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.endpoint.migration;
 
-import com.gentics.mesh.core.data.branch.ReleaseVersionEdge;
+import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 
 /**
- * Interface for migration status of node, release and micronode migrations.
+ * Interface for migration status of node, branch and micronode migrations.
  */
 public interface MigrationStatusHandler {
 
@@ -37,7 +37,7 @@ public interface MigrationStatusHandler {
 	 * 
 	 * @param versionEdge
 	 */
-	void setVersionEdge(ReleaseVersionEdge versionEdge);
+	void setVersionEdge(BranchVersionEdge versionEdge);
 
 	/**
 	 * Set the current status.

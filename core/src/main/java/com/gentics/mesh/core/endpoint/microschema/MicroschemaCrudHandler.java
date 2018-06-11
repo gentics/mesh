@@ -90,17 +90,17 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				if (updateParams.getUpdateAssignedBranches()) {
 					Map<Branch, MicroschemaContainerVersion> referencedBranches = schemaContainer.findReferencedBranches();
 
-					// Assign the created version to the found releases
+					// Assign the created version to the found branches
 					for (Map.Entry<Branch, MicroschemaContainerVersion> branchEntry : referencedBranches.entrySet()) {
 						Branch branch = branchEntry.getKey();
 
-						// Check whether a list of release names was specified and skip releases which were not included in the list.
+						// Check whether a list of branch names was specified and skip branches which were not included in the list.
 						List<String> branchNames = updateParams.getBranchNames();
 						if (branchNames != null && !branchNames.isEmpty() && !branchNames.contains(branch.getName())) {
 							continue;
 						}
 
-						// Assign the new version to the release
+						// Assign the new version to the branch
 						branch.assignMicroschemaVersion(user, createdVersion);
 					}
 				}

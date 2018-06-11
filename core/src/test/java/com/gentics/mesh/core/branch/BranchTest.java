@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.release;
+package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
@@ -15,9 +15,9 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -47,7 +47,7 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.ext.web.RoutingContext;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
-public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcases {
+public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
@@ -66,17 +66,17 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testFindAllVisible() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			BranchRoot releaseRoot = project.getBranchRoot();
-			Branch initialRelease = releaseRoot.getInitialRelease();
-			Branch releaseOne = releaseRoot.create("One", user());
-			Branch releaseTwo = releaseRoot.create("Two", user());
-			Branch releaseThree = releaseRoot.create("Three", user());
+			BranchRoot branchRoot = project.getBranchRoot();
+			Branch initialBranch = branchRoot.getInitialBranch();
+			Branch branchOne = branchRoot.create("One", user());
+			Branch branchTwo = branchRoot.create("Two", user());
+			Branch branchThree = branchRoot.create("Three", user());
 
-			Page<? extends Branch> page = releaseRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25));
+			Page<? extends Branch> page = branchRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25));
 			assertThat(page).isNotNull();
 			ArrayList<Branch> arrayList = new ArrayList<Branch>();
 			page.iterator().forEachRemaining(r -> arrayList.add(r));
-			assertThat(arrayList).contains(initialRelease, releaseOne, releaseTwo, releaseThree);
+			assertThat(arrayList).contains(initialBranch, branchOne, branchTwo, branchThree);
 		}
 	}
 
@@ -85,14 +85,14 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testFindAll() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			BranchRoot releaseRoot = project.getBranchRoot();
-			Branch initialRelease = releaseRoot.getInitialRelease();
-			Branch releaseOne = releaseRoot.create("One", user());
-			Branch releaseTwo = releaseRoot.create("Two", user());
-			Branch releaseThree = releaseRoot.create("Three", user());
+			BranchRoot branchRoot = project.getBranchRoot();
+			Branch initialBranch = branchRoot.getInitialBranch();
+			Branch branchOne = branchRoot.create("One", user());
+			Branch branchTwo = branchRoot.create("Two", user());
+			Branch branchThree = branchRoot.create("Three", user());
 
-			assertThat(new ArrayList<Branch>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialRelease,
-					releaseOne, releaseTwo, releaseThree);
+			assertThat(new ArrayList<Branch>(branchRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
+					branchOne, branchTwo, branchThree);
 		}
 	}
 
@@ -101,13 +101,13 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testRootNode() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			BranchRoot releaseRoot = project.getBranchRoot();
-			assertThat(releaseRoot).as("Release Root of Project").isNotNull();
-			Branch initialRelease = project.getInitialBranch();
-			assertThat(initialRelease).as("Initial Release of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
+			BranchRoot branchRoot = project.getBranchRoot();
+			assertThat(branchRoot).as("Branch Root of Project").isNotNull();
+			Branch initialBranch = project.getInitialBranch();
+			assertThat(initialBranch).as("Initial Branch of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
 					.hasPrevious(null);
-			Branch latestRelease = project.getLatestBranch();
-			assertThat(latestRelease).as("Latest Release of Project").matches(initialRelease);
+			Branch latestBranch = project.getLatestBranch();
+			assertThat(latestBranch).as("Latest Branch of Project").matches(initialBranch);
 		}
 	}
 
@@ -116,9 +116,9 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testFindByName() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			BranchRoot releaseRoot = project.getBranchRoot();
-			Branch foundRelease = releaseRoot.findByName(project.getName());
-			assertThat(foundRelease).as("Release with name " + project.getName()).isNotNull().matches(project.getInitialBranch());
+			BranchRoot branchRoot = project.getBranchRoot();
+			Branch foundBranch = branchRoot.findByName(project.getName());
+			assertThat(foundBranch).as("Branch with name " + project.getName()).isNotNull().matches(project.getInitialBranch());
 		}
 	}
 
@@ -127,11 +127,11 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			BranchRoot releaseRoot = project.getBranchRoot();
-			Branch initialRelease = project.getInitialBranch();
+			BranchRoot branchRoot = project.getBranchRoot();
+			Branch initialBranch = project.getInitialBranch();
 
-			Branch foundRelease = releaseRoot.findByUuid(initialRelease.getUuid());
-			assertThat(foundRelease).as("Release with uuid " + initialRelease.getUuid()).isNotNull().matches(initialRelease);
+			Branch foundBranch = branchRoot.findByUuid(initialBranch.getUuid());
+			assertThat(foundBranch).as("Branch with uuid " + initialBranch.getUuid()).isNotNull().matches(initialBranch);
 		}
 	}
 
@@ -145,24 +145,24 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			BranchRoot releaseRoot = project.getBranchRoot();
-			Branch initialRelease = releaseRoot.getInitialRelease();
-			Branch firstNewRelease = releaseRoot.create("First new Release", user());
-			Branch secondNewRelease = releaseRoot.create("Second new Release", user());
-			Branch thirdNewRelease = releaseRoot.create("Third new Release", user());
+			BranchRoot branchRoot = project.getBranchRoot();
+			Branch initialBranch = branchRoot.getInitialBranch();
+			Branch firstNewBranch = branchRoot.create("First new Branch", user());
+			Branch secondNewBranch = branchRoot.create("Second new Branch", user());
+			Branch thirdNewBranch = branchRoot.create("Third new Branch", user());
 
-			assertThat(project.getInitialBranch()).as("Initial Release").matches(initialRelease).hasNext(firstNewRelease).hasPrevious(null);
-			assertThat(firstNewRelease).as("First new Release").isNamed("First new Release").hasNext(secondNewRelease).hasPrevious(initialRelease);
-			assertThat(secondNewRelease).as("Second new Release").isNamed("Second new Release").hasNext(thirdNewRelease).hasPrevious(firstNewRelease);
-			assertThat(project.getLatestBranch()).as("Latest Release").isNamed("Third new Release").matches(thirdNewRelease).hasNext(null)
-					.hasPrevious(secondNewRelease);
+			assertThat(project.getInitialBranch()).as("Initial Branch").matches(initialBranch).hasNext(firstNewBranch).hasPrevious(null);
+			assertThat(firstNewBranch).as("First new Branch").isNamed("First new Branch").hasNext(secondNewBranch).hasPrevious(initialBranch);
+			assertThat(secondNewBranch).as("Second new Branch").isNamed("Second new Branch").hasNext(thirdNewBranch).hasPrevious(firstNewBranch);
+			assertThat(project.getLatestBranch()).as("Latest Branch").isNamed("Third new Branch").matches(thirdNewBranch).hasNext(null)
+					.hasPrevious(secondNewBranch);
 
-			assertThat(new ArrayList<Branch>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialRelease,
-					firstNewRelease, secondNewRelease, thirdNewRelease);
+			assertThat(new ArrayList<Branch>(branchRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
+					firstNewBranch, secondNewBranch, thirdNewBranch);
 
 			for (SchemaContainer schema : project.getSchemaContainerRoot().findAllIt()) {
-				for (Branch release : Arrays.asList(initialRelease, firstNewRelease, secondNewRelease, thirdNewRelease)) {
-					assertThat(release).as(release.getName()).hasSchema(schema).hasSchemaVersion(schema.getLatestVersion());
+				for (Branch branch : Arrays.asList(initialBranch, firstNewBranch, secondNewBranch, thirdNewBranch)) {
+					assertThat(branch).as(branch.getName()).hasSchema(schema).hasSchemaVersion(schema.getLatestVersion());
 				}
 			}
 		}
@@ -179,10 +179,10 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
-			initialRelease.setName("New Release Name");
-			initialRelease.setActive(false);
-			assertThat(initialRelease).as("Release").isNamed("New Release Name").isInactive();
+			Branch initialBranch = project.getInitialBranch();
+			initialBranch.setName("New Branch Name");
+			initialBranch.setActive(false);
+			assertThat(initialBranch).as("Branch").isNamed("New Branch Name").isInactive();
 		}
 	}
 
@@ -190,8 +190,8 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testReadPermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newRelease = project().getBranchRoot().create("New Release", user());
-			testPermission(GraphPermission.READ_PERM, newRelease);
+			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			testPermission(GraphPermission.READ_PERM, newBranch);
 		}
 	}
 
@@ -199,8 +199,8 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testDeletePermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newRelease = project().getBranchRoot().create("New Release", user());
-			testPermission(GraphPermission.DELETE_PERM, newRelease);
+			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			testPermission(GraphPermission.DELETE_PERM, newBranch);
 		}
 	}
 
@@ -208,8 +208,8 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdatePermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newRelease = project().getBranchRoot().create("New Release", user());
-			testPermission(GraphPermission.UPDATE_PERM, newRelease);
+			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			testPermission(GraphPermission.UPDATE_PERM, newBranch);
 		}
 	}
 
@@ -217,8 +217,8 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreatePermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newRelease = project().getBranchRoot().create("New Release", user());
-			testPermission(GraphPermission.CREATE_PERM, newRelease);
+			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			testPermission(GraphPermission.CREATE_PERM, newBranch);
 		}
 	}
 
@@ -226,13 +226,13 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			Branch release = project().getInitialBranch();
+			Branch branch = project().getInitialBranch();
 
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			BranchResponse releaseResponse = release.transformToRestSync(ac, 0);
-			assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive().isMigrated();
+			BranchResponse branchResponse = branch.transformToRestSync(ac, 0);
+			assertThat(branchResponse).isNotNull().hasName(branch.getName()).hasUuid(branch.getUuid()).isActive().isMigrated();
 		}
 	}
 
@@ -250,7 +250,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testReadSchemaVersions() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch release = latestRelease();
+			Branch branch = latestBranch();
 			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
 					.map(SchemaContainer::getLatestVersion).collect(Collectors.toList());
 
@@ -259,10 +259,10 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			newVersion.setName("content");
 			versions.add(newVersion);
 			newVersion.setSchemaContainer(schemaContainer("content"));
-			release.linkOut(newVersion, HAS_SCHEMA_VERSION);
+			branch.linkOut(newVersion, HAS_SCHEMA_VERSION);
 
 			List<SchemaContainerVersion> found = new ArrayList<>();
-			for (BranchSchemaEdge versionedge : release.findAllLatestSchemaVersionEdges()) {
+			for (BranchSchemaEdge versionedge : branch.findAllLatestSchemaVersionEdges()) {
 				found.add(versionedge.getSchemaContainerVersion());
 			}
 			assertThat(found).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version")
@@ -287,19 +287,19 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertThat(previousVersion).as("Previous version").isNotNull();
 
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
-			Branch newRelease = project.getBranchRoot().create("New Release", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("New Branch", user());
 
-			for (Branch release : Arrays.asList(initialRelease, newRelease)) {
-				assertThat(release).as(release.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(latestVersion)
+			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
+				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(latestVersion)
 						.hasNotSchemaVersion(previousVersion);
 			}
 
 			// assign the schema to the project
 			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer);
 
-			for (Branch release : Arrays.asList(initialRelease, newRelease)) {
-				assertThat(release).as(release.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
+			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
+				assertThat(branch).as(branch.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
 						.hasNotSchemaVersion(previousVersion);
 			}
 		}
@@ -317,12 +317,12 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll();
 			SchemaContainer schemaContainer = schemas.get(0);
 
-			Branch initialRelease = project.getInitialBranch();
-			Branch newRelease = project.getBranchRoot().create("New Release", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("New Branch", user());
 
 			project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer);
-			for (Branch release : Arrays.asList(initialRelease, newRelease)) {
-				assertThat(release).as(release.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
+			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
+				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
 			}
 		}
 	}
@@ -332,17 +332,17 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 		try (Tx tx = tx()) {
 
 			Project project = project();
-			Branch release = latestRelease();
+			Branch branch = latestBranch();
 			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(SchemaContainer::getLatestVersion)
 					.collect(Collectors.toList());
 
-			List<SchemaContainerVersion> activeVersions = TestUtils.toList(release.findActiveSchemaVersions());
+			List<SchemaContainerVersion> activeVersions = TestUtils.toList(branch.findActiveSchemaVersions());
 			assertThat(activeVersions).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
 		}
 	}
 
 	@Test
-	public void testReleaseSchemaVersion() throws Exception {
+	public void testBranchSchemaVersion() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
 
@@ -356,12 +356,12 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			updateSchema(schemaContainer, "newfield");
 			SchemaContainerVersion secondVersion = schemaContainer.getLatestVersion();
 
-			Branch initialRelease = project.getInitialBranch();
-			Branch newRelease = project.getBranchRoot().create("New Release", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("New Branch", user());
 
-			assertThat(initialRelease).as(initialRelease.getName()).hasSchema(schemaContainer).hasSchemaVersion(firstVersion)
+			assertThat(initialBranch).as(initialBranch.getName()).hasSchema(schemaContainer).hasSchemaVersion(firstVersion)
 					.hasNotSchemaVersion(secondVersion);
-			assertThat(newRelease).as(newRelease.getName()).hasSchema(schemaContainer).hasNotSchemaVersion(firstVersion)
+			assertThat(newBranch).as(newBranch.getName()).hasSchema(schemaContainer).hasNotSchemaVersion(firstVersion)
 					.hasSchemaVersion(secondVersion);
 		}
 	}
@@ -398,19 +398,19 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertThat(previousVersion).as("Previous version").isNotNull();
 
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
-			Branch newRelease = project.getBranchRoot().create("New Release", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("New Branch", user());
 
-			for (Branch release : Arrays.asList(initialRelease, newRelease)) {
-				assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer).hasNotMicroschemaVersion(latestVersion)
+			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
+				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschemaContainer).hasNotMicroschemaVersion(latestVersion)
 						.hasNotMicroschemaVersion(previousVersion);
 			}
 
 			// assign the schema to the project
 			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
 
-			for (Branch release : Arrays.asList(initialRelease, newRelease)) {
-				assertThat(release).as(release.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
+			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
+				assertThat(branch).as(branch.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
 						.hasNotMicroschemaVersion(previousVersion);
 			}
 		}
@@ -428,20 +428,20 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll();
 			MicroschemaContainer microschemaContainer = microschemas.get(0);
 
-			Branch initialRelease = project.getInitialBranch();
-			Branch newRelease = project.getBranchRoot().create("New Release", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("New Branch", user());
 
 			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer);
 
-			for (Branch release : Arrays.asList(initialRelease, newRelease)) {
-				assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer)
+			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
+				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschemaContainer)
 						.hasNotMicroschemaVersion(microschemaContainer.getLatestVersion());
 			}
 		}
 	}
 
 	@Test
-	public void testReleaseMicroschemaVersion() throws Exception {
+	public void testBranchMicroschemaVersion() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
 
@@ -455,12 +455,12 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			updateMicroschema(microschemaContainer, "newfield");
 			MicroschemaContainerVersion secondVersion = microschemaContainer.getLatestVersion();
 
-			Branch initialRelease = project.getInitialBranch();
-			Branch newRelease = project.getBranchRoot().create("New Release", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("New Branch", user());
 
-			assertThat(initialRelease).as(initialRelease.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(firstVersion)
+			assertThat(initialBranch).as(initialBranch.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(firstVersion)
 					.hasNotMicroschemaVersion(secondVersion);
-			assertThat(newRelease).as(newRelease.getName()).hasMicroschema(microschemaContainer).hasNotMicroschemaVersion(firstVersion)
+			assertThat(newBranch).as(newBranch.getName()).hasMicroschema(microschemaContainer).hasNotMicroschemaVersion(firstVersion)
 					.hasMicroschemaVersion(secondVersion);
 		}
 	}

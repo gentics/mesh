@@ -76,7 +76,7 @@ public class NodeCheck implements ConsistencyCheck {
 	}
 
 	/**
-	 * Check that the node has not more than one GFC of the type for each release
+	 * Check that the node has not more than one GFC of the type for each branch
 	 * @param node node
 	 * @param type GFC type
 	 * @param response check response
@@ -87,10 +87,10 @@ public class NodeCheck implements ConsistencyCheck {
 		Set<String> languageAndReleaseSet = new HashSet<>();
 		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())
 				.frameExplicit(GraphFieldContainerEdgeImpl.class)) {
-			String languageAndRelease = String.format("%s - %s", edge.getReleaseUuid(), edge.getLanguageTag());
+			String languageAndRelease = String.format("%s - %s", edge.getBranchUuid(), edge.getLanguageTag());
 			if (languageAndReleaseSet.contains(languageAndRelease)) {
-				response.addInconsistency(String.format("The node has more than one GFC of type %s, language %s for release %s", type,
-						edge.getLanguageTag(), edge.getReleaseUuid()), uuid, HIGH);
+				response.addInconsistency(String.format("The node has more than one GFC of type %s, language %s for branch %s", type,
+						edge.getLanguageTag(), edge.getBranchUuid()), uuid, HIGH);
 			} else {
 				languageAndReleaseSet.add(languageAndRelease);
 			}

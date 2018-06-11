@@ -34,12 +34,12 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type, Schema schema) {
+	public SearchQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch store(Node node, String releaseUuid, ContainerType type, boolean addRelatedEntries) {
+	public SearchQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedEntries) {
 		return this;
 	}
 
@@ -49,7 +49,7 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String releaseUuid, ContainerType type) {
+	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type) {
 		return this;
 	}
 
@@ -99,12 +99,12 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch delete(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean addRelatedEntries) {
+	public SearchQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedEntries) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch store(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean addRelatedElements) {
+	public SearchQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements) {
 		return this;
 	}
 

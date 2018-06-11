@@ -228,13 +228,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					Node node = content.getNode();
 					// Resolve the given path and return the found container
 					Branch release = gc.getBranch();
-					String releaseUuid = release.getUuid();
+					String branchUuid = release.getUuid();
 					ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 					Stack<String> pathStack = new Stack<>();
 					pathStack.add(nodePath);
 					Path path = new Path();
 					try {
-						node.resolvePath(releaseUuid, type, path, pathStack);
+						node.resolvePath(branchUuid, type, path, pathStack);
 					} catch (GenericRestException e) {
 						// Check whether the path could not be resolved
 						if (e.getStatus() == NOT_FOUND) {
@@ -321,9 +321,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 			ContainerType containerType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
-			String releaseUuid = gc.getBranch().getUuid();
+			String branchUuid = gc.getBranch().getUuid();
 			String languageTag = container.getLanguage().getLanguageTag();
-			return container.getParentNode().getPath(gc, releaseUuid, containerType, languageTag);
+			return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);
 		}));
 
 		// .edited

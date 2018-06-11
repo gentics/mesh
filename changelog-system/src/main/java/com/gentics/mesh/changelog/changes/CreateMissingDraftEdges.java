@@ -70,7 +70,7 @@ public class CreateMissingDraftEdges extends AbstractChange {
 			}
 			Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", fieldContainer);
 			draftEdge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
-			draftEdge.setProperty("releaseUuid", referenceEdge.getProperty("releaseUuid"));
+			draftEdge.setProperty("branchUuid", referenceEdge.getProperty("branchUuid"));
 			draftEdge.setProperty("edgeType", "D");
 			draftEdge.setProperty("languageTag", referenceEdge.getProperty("languageTag"));
 		}

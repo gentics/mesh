@@ -58,10 +58,10 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 				() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranchUuid())));
 		assertThat(response.getAvailableLanguages()).as("The node should have two container").hasSize(2);
 
-		// Also verify that the node is loadable in the other release
-		NodeResponse responseForRelease = call(
-				() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch("newRelease")));
-		assertThat(responseForRelease.getAvailableLanguages()).as("The node should have two container").hasSize(2);
+		// Also verify that the node is loadable in the other branch
+		NodeResponse responseForBranch = call(
+				() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch("newBranch")));
+		assertThat(responseForBranch.getAvailableLanguages()).as("The node should have two container").hasSize(2);
 
 		// Delete first language container: german
 		// The node should still be loadable and all child elements should still be existing
@@ -72,7 +72,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		assertThatSubNodesExist(childrenUuids,branchName);
 
 		// Delete the second language container (english) - The delete should fail since this would be the last language for this node
-		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en"), BAD_REQUEST, "node_error_delete_failed_last_container_for_release");
+		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en"), BAD_REQUEST, "node_error_delete_failed_last_container_for_branch");
 		assertThatSubNodesExist(childrenUuids, branchName);
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
 
@@ -82,35 +82,35 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		assertThatSubNodesExist(childrenUuids, branchName);
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
 		
-		// Delete the second language container (english) and use the recursive flag. The node and all subnodes should have been removed in the current release
+		// Delete the second language container (english) and use the recursive flag. The node and all subnodes should have been removed in the current branch
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en", new DeleteParametersImpl().setRecursive(true)));
-		// Verify that the node is still loadable in the initial release
+		// Verify that the node is still loadable in the initial branch
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranchUuid())));
 		
 		// TODO BUG - Issue #119
 		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(branchName)));
 		assertNull("We currently expect the node to be returned but without any contents.",nodeResponse.getLanguage());
-		//call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(releaseName)), NOT_FOUND,
+		//call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(branchName)), NOT_FOUND,
 		//		"object_not_found_for_uuid", uuid);
 		assertThatSubNodesWereDeleted(childrenUuids, branchName);
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
 	}
 
-	private void assertThatSubNodesWereDeleted(Set<String> childrenUuids, String releaseName) {
+	private void assertThatSubNodesWereDeleted(Set<String> childrenUuids, String branchName) {
 		// Verify that all sub nodes have been deleted as well.
 		for (String childUuid : childrenUuids) {
 			System.out.println("Checking child: " + childUuid);
-			NodeResponse nodeResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(releaseName)));
+			NodeResponse nodeResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(branchName)));
 			assertNull("We currently expect the node to be returned but without any contents.",nodeResponse.getLanguage());
 			// TODO BUG - Issue #119
-			// call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setRelease(releaseName)), NOT_FOUND, "object_not_found_for_uuid", childUuid);
+			// call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(branchName)), NOT_FOUND, "object_not_found_for_uuid", childUuid);
 		}
 	}
 
-	private void assertThatSubNodesExist(Set<String> uuids, String releaseName) {
+	private void assertThatSubNodesExist(Set<String> uuids, String branchName) {
 		for (String childUuid : uuids) {
 			System.out.println("Checking child: " + childUuid);
-			call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(releaseName)));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(branchName)));
 		}
 	}
 

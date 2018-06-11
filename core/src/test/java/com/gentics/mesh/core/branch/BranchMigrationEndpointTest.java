@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.release;
+package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
@@ -23,9 +23,9 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -39,7 +39,7 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.DeploymentOptions;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
+public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -50,14 +50,14 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testStartReleaseMigration() throws Throwable {
-		Branch newRelease;
+	public void testStartBranchMigration() throws Throwable {
+		Branch newBranch;
 		List<? extends Node> nodes;
 		List<? extends Node> published;
 		Project project = project();
 
 		try (Tx tx = tx()) {
-			assertThat(project.getInitialBranch().isMigrated()).as("Initial release migration status").isEqualTo(true);
+			assertThat(project.getInitialBranch().isMigrated()).as("Initial branch migration status").isEqualTo(true);
 		}
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, tx(() -> project().getBaseNode().getUuid()),
@@ -76,41 +76,41 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			newRelease = project.getBranchRoot().create("newrelease", user());
-			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(false);
+			newBranch = project.getBranchRoot().create("newbranch", user());
+			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(false);
 			tx.success();
 		}
 		nodes.forEach(node -> {
 			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
-				assertThat(tx(() -> node.getGraphFieldContainers(newRelease, type))).as(type + " Field Containers before Migration").isNotNull()
+				assertThat(tx(() -> node.getGraphFieldContainers(newBranch, type))).as(type + " Field Containers before Migration").isNotNull()
 						.isEmpty();
 			});
 		});
 
-		triggerAndWaitForJob(requestReleaseMigration(newRelease));
+		triggerAndWaitForJob(requestBranchMigration(newBranch));
 
 		try (Tx tx = tx()) {
-			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
+			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(true);
 
 			nodes.forEach(node -> {
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
-					assertThat(node.getGraphFieldContainers(newRelease, type)).as(type + " Field Containers after Migration").isNotNull()
+					assertThat(node.getGraphFieldContainers(newBranch, type)).as(type + " Field Containers after Migration").isNotNull()
 							.isNotEmpty();
 				});
 
 				if (published.contains(node)) {
-					assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("Published field containers after migration")
+					assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
 							.isNotNull().isNotEmpty();
 				} else {
-					assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("Published field containers after migration")
+					assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
 							.isNotNull().isEmpty();
 				}
 
 				Node initialParent = node.getParentNode(initialBranchUuid());
 				if (initialParent == null) {
-					assertThat(node.getParentNode(newRelease.getUuid())).as("Parent in new release").isNull();
+					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNull();
 				} else {
-					assertThat(node.getParentNode(newRelease.getUuid())).as("Parent in new release").isNotNull()
+					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNotNull()
 							.isEqualToComparingOnlyGivenFields(initialParent, "uuid");
 				}
 
@@ -123,22 +123,22 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartForInitial() throws Throwable {
 		try (Tx tx = tx()) {
-			triggerAndWaitForJob(requestReleaseMigration(initialBranch()), FAILED);
+			triggerAndWaitForJob(requestBranchMigration(initialBranch()), FAILED);
 		}
 	}
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		Branch newRelease;
+		Branch newBranch;
 		try (Tx tx = tx()) {
-			newRelease = project().getBranchRoot().create("newrelease", user());
+			newBranch = project().getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
-		String jobUuidA = requestReleaseMigration(newRelease);
+		String jobUuidA = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuidA, COMPLETED);
 
-		// The second job should fail because the release has already been migrated.
-		String jobUuidB = requestReleaseMigration(newRelease);
+		// The second job should fail because the branch has already been migrated.
+		String jobUuidB = requestBranchMigration(newBranch);
 		JobListResponse response = triggerAndWaitForJob(jobUuidB, FAILED);
 		List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
 		assertThat(status).contains(COMPLETED, FAILED);
@@ -148,23 +148,23 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartOrder() throws Throwable {
 
-		Branch newRelease;
-		Branch newestRelease;
+		Branch newBranch;
+		Branch newestBranch;
 		try (Tx tx = tx()) {
 			Project project = project();
-			newRelease = project.getBranchRoot().create("newrelease", user());
-			newestRelease = project.getBranchRoot().create("newestrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
+			newestBranch = project.getBranchRoot().create("newestbranch", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			triggerAndWaitForJob(requestReleaseMigration(newestRelease), FAILED);
+			triggerAndWaitForJob(requestBranchMigration(newestBranch), FAILED);
 
-			JobListResponse response = triggerAndWaitForJob(requestReleaseMigration(newRelease), COMPLETED);
+			JobListResponse response = triggerAndWaitForJob(requestBranchMigration(newBranch), COMPLETED);
 			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
 			assertThat(status).contains(FAILED, COMPLETED);
 
-			response = triggerAndWaitForJob(requestReleaseMigration(newestRelease), COMPLETED);
+			response = triggerAndWaitForJob(requestBranchMigration(newestBranch), COMPLETED);
 			status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
 			assertThat(status).contains(FAILED, COMPLETED, COMPLETED);
 		}
@@ -176,7 +176,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		MetricRegistry metrics = new MetricRegistry();
 		Meter createdNode = metrics.meter("Create Node");
 		Timer migrationTimer = metrics.timer("Migration");
-		Branch newRelease;
+		Branch newBranch;
 		try (Tx tx = tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
@@ -208,11 +208,11 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			newRelease = project.getBranchRoot().create("newrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
-		String jobUuid = requestReleaseMigration(newRelease);
+		String jobUuid = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuid);
 	}
 
@@ -222,7 +222,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	 * @param branch
 	 * @return future
 	 */
-	protected String requestReleaseMigration(Branch branch) {
+	protected String requestBranchMigration(Branch branch) {
 		return tx(() -> boot().jobRoot().enqueueBranchMigration(user(), branch).getUuid());
 	}
 }

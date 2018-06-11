@@ -87,7 +87,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.deleteFromRelease(ac, ac.getBranch(), batch, false);
+				node.deleteFromBranch(ac, ac.getBranch(), batch, false);
 				return batch;
 			}).processSync();
 			node.onDeleted(uuid, name, schema, null);
@@ -146,9 +146,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Project project = ac.getProject();
 
 			//TODO Add support for moving nodes across projects.
-			// This is tricky since the release consistency must be taken care of
+			// This is tricky since the branch consistency must be taken care of
 			// One option would be to delete all the version within the source project and create the in the target project
-			// The needed schema versions would need to be present in the target project release as well.
+			// The needed schema versions would need to be present in the target project branch as well.
 
 			// Load the node that should be moved
 			NodeRoot nodeRoot = project.getNodeRoot();
@@ -252,7 +252,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * Handle the add tag request.
 	 * 
 	 * @param ac
-	 *            Action context which also contains the release information.
+	 *            Action context which also contains the branch information.
 	 * @param uuid
 	 *            Uuid of the node to which tags should be added.
 	 * @param tagUuid
@@ -297,15 +297,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Project project = ac.getProject();
-			Branch release = ac.getBranch();
+			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				batch.store(node, release.getUuid(), PUBLISHED, false);
-				batch.store(node, release.getUuid(), DRAFT, false);
-				node.removeTag(tag, release);
+				batch.store(node, branch.getUuid(), PUBLISHED, false);
+				batch.store(node, branch.getUuid(), DRAFT, false);
+				node.removeTag(tag, branch);
 				return batch;
 			}).processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
@@ -429,8 +429,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				Branch release = ac.getBranch(ac.getProject());
-				node.takeOffline(ac, batch, release, languageTag);
+				Branch branch = ac.getBranch(ac.getProject());
+				node.takeOffline(ac, batch, branch, languageTag);
 				return batch;
 			}).processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);

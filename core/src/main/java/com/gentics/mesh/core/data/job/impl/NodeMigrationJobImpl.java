@@ -39,15 +39,15 @@ public class NodeMigrationJobImpl extends JobImpl {
 	 */
 	@Override
 	public void prepare() {
-		Branch release = getRelease();
-		Project project = release.getProject();
+		Branch branch = getBranch();
+		Project project = branch.getProject();
 		SchemaContainerVersion toVersion = getToSchemaVersion();
 		SchemaModel newSchema = toVersion.getSchema();
 
 		// New indices need to be created
 		SearchQueueBatch batch = MeshInternal.get().searchQueue().create();
-		batch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
-		batch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
+		batch.createNodeIndex(project.getUuid(), branch.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
+		batch.createNodeIndex(project.getUuid(), branch.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
 		batch.processSync();
 	}
 
@@ -56,9 +56,9 @@ public class NodeMigrationJobImpl extends JobImpl {
 		try {
 
 			try (Tx tx = DB.get().tx()) {
-				Branch release = getRelease();
-				if (release == null) {
-					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
+				Branch branch = getBranch();
+				if (branch == null) {
+					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
 				}
 
 				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
@@ -76,23 +76,23 @@ public class NodeMigrationJobImpl extends JobImpl {
 					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
 				}
 
-				Project project = release.getProject();
+				Project project = branch.getProject();
 				if (project == null) {
 					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
 				}
 
-				BranchSchemaEdge releaseVersionEdge = release.findReleaseSchemaEdge(toContainerVersion);
-				status.setVersionEdge(releaseVersionEdge);
+				BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
+				status.setVersionEdge(branchVersionEdge);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
-						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + release.getUuid()
+						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for branch {" + branch.getUuid()
 						+ "} in project {" + project.getUuid() + "}");
 
 				status.commit();
 				for (int i = 0; i < 3; i++) {
-					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, status).blockingAwait();
+					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, branch, fromContainerVersion, toContainerVersion, status).blockingAwait();
 					// Check migration result
-					boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(release.getUuid()).hasNext();
+					boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
 					if (i == 3 && hasRemainingContainers) {
 						log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
 						break;
@@ -104,7 +104,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 					}
 				}
 
-				finalizeMigration(project, release, fromContainerVersion);
+				finalizeMigration(project, branch, fromContainerVersion);
 				status.done();
 				tx.success();
 			}
@@ -113,10 +113,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 		}
 	}
 
-	private void finalizeMigration(Project project, Branch release, SchemaContainerVersion fromContainerVersion) {
+	private void finalizeMigration(Project project, Branch branch, SchemaContainerVersion fromContainerVersion) {
 		// Deactivate edge
 		try (Tx tx = DB.get().tx()) {
-			BranchSchemaEdge edge = release.findReleaseSchemaEdge(fromContainerVersion);
+			BranchSchemaEdge edge = branch.findBranchSchemaEdge(fromContainerVersion);
 			if (edge != null) {
 				edge.setActive(false);
 			}
@@ -124,11 +124,11 @@ public class NodeMigrationJobImpl extends JobImpl {
 		}
 		// Remove old indices
 		MeshInternal.get().searchProvider()
-				.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), fromContainerVersion.getUuid(), DRAFT))
+				.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), DRAFT))
 				.blockingAwait();
 		MeshInternal.get().searchProvider()
 				.deleteIndex(
-						NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), fromContainerVersion.getUuid(), PUBLISHED))
+						NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), PUBLISHED))
 				.blockingAwait();
 
 	}

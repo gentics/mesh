@@ -133,7 +133,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				.setUpdateAssignedBranches(false)));
 		assertThat(message).matches("schema_updated_migration_deferred", "content", "2.0");
 
-		// 5. Assign the new schema version to the release
+		// 5. Assign the new schema version to the branch
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		// Wait for migration to complete
@@ -156,14 +156,14 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		int numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestBranch().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
 			User user = user();
 			Language english = english();
 			Node concorde = content("concorde");
 
 			Project project = concorde.getProject();
-			Node parentNode = concorde.getParentNode(releaseUuid);
+			Node parentNode = concorde.getParentNode(branchUuid);
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 			for (int i = 0; i < numAdditionalNodes; i++) {

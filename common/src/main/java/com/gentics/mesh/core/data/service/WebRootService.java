@@ -19,16 +19,16 @@ public interface WebRootService {
 	Path findByProjectPath(InternalActionContext ac, String path);
 
 	/**
-	 * Find the graph field container within the given release with the given path.
+	 * Find the graph field container within the given branch with the given path.
 	 * 
-	 * @param releaseUuid
-	 *            Release to be used to scope the lookup
+	 * @param branchUuid
+	 *            Branch to be used to scope the lookup
 	 * @param path
 	 *            Webroot path to use for the lookup
 	 * @param type
 	 *            Specific type to be looking for
 	 * @return
 	 */
-	NodeGraphFieldContainer findByPath(String releaseUuid, String path, ContainerType type);
+	NodeGraphFieldContainer findByPath(String branchUuid, String path, ContainerType type);
 
 }

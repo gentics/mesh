@@ -66,26 +66,26 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	void removeNode(Node node);
 
 	/**
-	 * Return a list of nodes that were tagged by this tag in the given release
+	 * Return a list of nodes that were tagged by this tag in the given branch
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * 
 	 * @return List of nodes
 	 */
-	List<? extends Node> getNodes(Branch release);
+	List<? extends Node> getNodes(Branch branch);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
 	 * 
 	 * @param requestUser
-	 * @param release
+	 * @param branch
 	 * @param languageTags
 	 * @param type
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Branch release, List<String> languageTags, ContainerType type,
+	TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
 			PagingParameters pagingInfo);
 
 	/**

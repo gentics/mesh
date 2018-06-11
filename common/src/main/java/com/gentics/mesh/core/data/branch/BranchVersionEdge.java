@@ -7,7 +7,7 @@ import com.syncleus.ferma.EdgeFrame;
 /**
  * Common class for {@link BranchSchemaEdge} and {@link BranchMicroschemaEdge} edges
  */
-public interface ReleaseVersionEdge extends EdgeFrame  {
+public interface BranchVersionEdge extends EdgeFrame  {
 
 	public static final String ACTIVE_PROPERTY_KEY = "active";
 
@@ -30,11 +30,11 @@ public interface ReleaseVersionEdge extends EdgeFrame  {
 	void setMigrationStatus(MigrationStatus status);
 
 	/**
-	 * Return the release of this edge.
+	 * Return the branch of this edge.
 	 * 
 	 * @return
 	 */
-	Branch getRelease();
+	Branch getBranch();
 
 	/**
 	 * Return the referenced job.
@@ -51,14 +51,14 @@ public interface ReleaseVersionEdge extends EdgeFrame  {
 	void setJobUuid(String uuid);
 
 	/**
-	 * Check whether the version is active and thus should be considered when handling release schema versions.
+	 * Check whether the version is active and thus should be considered when handling branch schema versions.
 	 * 
 	 * @return
 	 */
 	boolean isActive();
 
 	/**
-	 * Set the active flag of the edge to indicate that the version should no longer be used when considering release schema versions.
+	 * Set the active flag of the edge to indicate that the version should no longer be used when considering branch schema versions.
 	 * 
 	 * @param flag
 	 */

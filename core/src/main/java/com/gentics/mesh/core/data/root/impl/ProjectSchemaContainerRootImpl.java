@@ -19,9 +19,9 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 	public void addSchemaContainer(User user, SchemaContainer schema) {
 		super.addSchemaContainer(user, schema);
 
-		// assign the latest schema version to all releases of the project
-		for (Branch release : getProject().getBranchRoot().findAllIt()) {
-			release.assignSchemaVersion(user, schema.getLatestVersion());
+		// assign the latest schema version to all branches of the project
+		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+			branch.assignSchemaVersion(user, schema.getLatestVersion());
 		}
 	}
 
@@ -29,9 +29,9 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 	public void removeSchemaContainer(SchemaContainer schemaContainer) {
 		super.removeSchemaContainer(schemaContainer);
 
-		// unassign the schema from all releases
-		for (Branch release : getProject().getBranchRoot().findAllIt()) {
-			release.unassignSchema(schemaContainer);
+		// unassign the schema from all branches
+		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+			branch.unassignSchema(schemaContainer);
 		}
 	}
 }

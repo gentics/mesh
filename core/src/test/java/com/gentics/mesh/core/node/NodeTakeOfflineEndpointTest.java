@@ -209,40 +209,40 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testTakeOfflineForRelease() {
+	public void testTakeOfflineForBranch() {
 		Node news = folder("news");
-		Branch newRelease;
-		Branch initialRelease = db().tx(() -> latestRelease());
+		Branch newBranch;
+		Branch initialBranch = db().tx(() -> latestBranch());
 
 		try (Tx tx = tx()) {
 			Project project = project();
-			newRelease = project.getBranchRoot().create("newrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			// save the folder in new release
+			// save the folder in new branch
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.getFields().put("name", FieldUtil.createStringField("News"));
-			call(() -> client().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParametersImpl().setBranch(newRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
-			// publish in initial and new release
-			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialRelease.getName())));
-			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(newRelease.getName())));
+			// publish in initial and new branch
+			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialBranch.getName())));
+			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(newBranch.getName())));
 
-			// take offline in initial release
-			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialRelease.getName()),
+			// take offline in initial branch
+			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialBranch.getName()),
 					new PublishParametersImpl().setRecursive(true)));
 		}
 
 		try (Tx tx = tx()) {
 			// check publish status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParametersImpl().setBranch(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
+					new VersioningParametersImpl().setBranch(initialBranch.getName())))).as("Initial branch publish status").isNotPublished("en")
 							.isNotPublished("de");
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParametersImpl().setBranch(newRelease.getName())))).as("New release publish status").isPublished("en")
+					new VersioningParametersImpl().setBranch(newBranch.getName())))).as("New branch publish status").isPublished("en")
 							.doesNotContain("de");
 
 		}

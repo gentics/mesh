@@ -215,7 +215,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(subNode.getUuid());
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
-			subNode.deleteFromRelease(ac, project().getLatestBranch(), batch, false);
+			subNode.deleteFromBranch(ac, project().getLatestBranch(), batch, false);
 		}
 	}
 
@@ -313,7 +313,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
-				node.deleteFromRelease(ac, project().getLatestBranch(), batch, false);
+				node.deleteFromBranch(ac, project().getLatestBranch(), batch, false);
 				tx2.success();
 			}
 
@@ -377,111 +377,111 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildren() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
+			Branch initialBranch = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = project.getBaseNode().create(user(), folderSchema, project);
-			folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+			folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 			String folderUuid = folder.getUuid();
 			Node subFolder = folder.create(user(), folderSchema, project);
-			subFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubFolder");
+			subFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
 			Node subSubFolder = subFolder.create(user(), folderSchema, project);
-			subSubFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubSubFolder");
+			subSubFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubSubFolder");
 			String subSubFolderUuid = subSubFolder.getUuid();
 
-			// 2. delete folder for initial release
+			// 2. delete folder for initial branch
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
+			subFolder.deleteFromBranch(ac, initialBranch, batch, false);
 
-			// 3. assert for new release
-			assertThat(folder).as("folder").hasNoChildren(initialRelease);
+			// 3. assert for new branch
+			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
-			// 4. assert for initial release
+			// 4. assert for initial branch
 			List<String> nodeUuids = new ArrayList<>();
 			project.getNodeRoot().findAllIt().forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 
 			// 5. assert searchqueuebatch
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
-			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(), initialRelease
+			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(), initialBranch
 					.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
+					initialBranch.getUuid(), ContainerType.DRAFT, "en"));
 			assertThat(batch).containsEntries(affectedElements);
 		}
 	}
 
 	@Test
-	public void testDeleteWithChildrenInRelease() throws InvalidArgumentException {
+	public void testDeleteWithChildrenInBranch() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
+			Branch initialBranch = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = project.getBaseNode().create(user(), folderSchema, project);
-			folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+			folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 			Node subFolder = folder.create(user(), folderSchema, project);
-			subFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubFolder");
+			subFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
 			Node subSubFolder = subFolder.create(user(), folderSchema, project);
-			subSubFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubSubFolder");
+			subSubFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubSubFolder");
 			String subSubFolderUuid = subSubFolder.getUuid();
 
-			// 2. create a new release
-			Branch newRelease = project.getBranchRoot().create("newrelease", user());
+			// 2. create a new branch
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 3. migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(newRelease, null);
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
 
-			// 4. assert nodes in new release
-			assertThat(folder).as("folder").hasOnlyChildren(newRelease, subFolder);
-			assertThat(subFolder).as("subFolder").hasOnlyChildren(newRelease, subSubFolder);
-			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newRelease);
+			// 4. assert nodes in new branch
+			assertThat(folder).as("folder").hasOnlyChildren(newBranch, subFolder);
+			assertThat(subFolder).as("subFolder").hasOnlyChildren(newBranch, subSubFolder);
+			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newBranch);
 
 			SearchQueueBatch batch = createBatch();
-			// 5. reverse folders in new release
+			// 5. reverse folders in new branch
 			subSubFolder.moveTo(mockActionContext(), folder, batch);
 			subFolder.moveTo(mockActionContext(), subSubFolder, batch);
 
-			// 6. assert for new release
-			assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);
-			assertThat(subSubFolder).as("subSubFolder").hasChildren(newRelease, subFolder);
-			assertThat(subFolder).as("subFolder").hasNoChildren(newRelease);
+			// 6. assert for new branch
+			assertThat(folder).as("folder").hasChildren(newBranch, subSubFolder);
+			assertThat(subSubFolder).as("subSubFolder").hasChildren(newBranch, subFolder);
+			assertThat(subFolder).as("subFolder").hasNoChildren(newBranch);
 
-			// 7. assert for initial release
-			assertThat(folder).as("folder").hasChildren(initialRelease, subFolder);
-			assertThat(subFolder).as("subFolder").hasChildren(initialRelease, subSubFolder);
-			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialRelease);
+			// 7. assert for initial branch
+			assertThat(folder).as("folder").hasChildren(initialBranch, subFolder);
+			assertThat(subFolder).as("subFolder").hasChildren(initialBranch, subSubFolder);
+			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialBranch);
 
-			// 8. delete folder for initial release
+			// 8. delete folder for initial branch
 			batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
+			subFolder.deleteFromBranch(ac, initialBranch, batch, false);
 
-			// 9. assert for new release
-			assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);
-			assertThat(subSubFolder).as("subSubFolder").hasChildren(newRelease, subFolder);
-			assertThat(subFolder).as("subFolder").hasNoChildren(newRelease);
+			// 9. assert for new branch
+			assertThat(folder).as("folder").hasChildren(newBranch, subSubFolder);
+			assertThat(subSubFolder).as("subSubFolder").hasChildren(newBranch, subFolder);
+			assertThat(subFolder).as("subFolder").hasNoChildren(newBranch);
 
-			// 10. assert for initial release
+			// 10. assert for initial branch
 			List<Node> nodes = new ArrayList<>();
-			project.getNodeRoot().findAll(mockActionContext("release=" + initialRelease.getName()), new PagingParametersImpl(1, 10000, "name",
+			project.getNodeRoot().findAll(mockActionContext("branch=" + initialBranch.getName()), new PagingParametersImpl(1, 10000, "name",
 					SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
-			assertThat(nodes).as("Nodes in initial release").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
-			assertThat(folder).as("folder").hasNoChildren(initialRelease);
+			assertThat(nodes).as("Nodes in initial branch").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
+			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
 			// 11. assert searchqueuebatch
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
-			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(), initialRelease
+			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(), initialBranch
 					.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
+					initialBranch.getUuid(), ContainerType.DRAFT, "en"));
 			assertThat(batch).containsEntries(affectedElements);
 		}
 	}
@@ -490,7 +490,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeletePublished() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
+			Branch initialBranch = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
@@ -499,7 +499,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				SearchQueueBatch batch = createBatch();
 				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 						GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
-				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
 			});
@@ -521,7 +521,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext("");
 			SearchQueueBatch batch = db().tx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(ac, initialRelease, innerBatch, false);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, innerBatch, false);
 				return innerBatch;
 			});
 
@@ -543,9 +543,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			db().tx(() -> {
 				Map<String, ElementEntry> affectedElements = new HashMap<>();
 				affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), ContainerType.DRAFT, "en"));
+						initialBranch.getUuid(), ContainerType.DRAFT, "en"));
 				affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), ContainerType.PUBLISHED, "en"));
+						initialBranch.getUuid(), ContainerType.PUBLISHED, "en"));
 
 				assertThat(batch).containsEntries(affectedElements);
 				return null;
@@ -554,10 +554,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	}
 
 	@Test
-	public void testDeletePublishedFromRelease() {
+	public void testDeletePublishedFromBranch() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch initialRelease = project.getInitialBranch();
+			Branch initialBranch = project.getInitialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
@@ -566,40 +566,40 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				SearchQueueBatch batch = createBatch();
 				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 						GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
-				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
 			});
 
-			// 2. create new release and migrate nodes
+			// 2. create new branch and migrate nodes
 			tx(() -> {
-				Branch newRelease = project.getBranchRoot().create("newrelease", user());
-				meshDagger().branchMigrationHandler().migrateBranch(newRelease, null);
-				System.out.println("Release UUID: " + newRelease.getUuid());
+				Branch newBranch = project.getBranchRoot().create("newbranch", user());
+				meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+				System.out.println("Branch UUID: " + newBranch.getUuid());
 			});
 
-			// 3. delete from initial release
+			// 3. delete from initial branch
 			InternalActionContext ac = mockActionContext("");
 			SearchQueueBatch batch = tx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(ac, initialRelease, innerBatch, false);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, innerBatch, false);
 				return innerBatch;
 			});
 
-			// 4. assert published and draft gone from initial release
+			// 4. assert published and draft gone from initial branch
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft&release=" + initialRelease.getUuid()), new PagingParametersImpl(1,
+				project.getNodeRoot().findAll(mockActionContext("version=draft&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
 						10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published&release=" + initialRelease.getUuid()), new PagingParametersImpl(1,
+				project.getNodeRoot().findAll(mockActionContext("version=published&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
 						10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 
-			// 5. assert published and draft still there for new release
+			// 5. assert published and draft still there for new branch
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(
@@ -616,9 +616,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			tx(() -> {
 				Map<String, ElementEntry> expectedEntries = new HashMap<>();
 				expectedEntries.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), ContainerType.DRAFT, "en"));
+						initialBranch.getUuid(), ContainerType.DRAFT, "en"));
 				expectedEntries.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), ContainerType.PUBLISHED, "en"));
+						initialBranch.getUuid(), ContainerType.PUBLISHED, "en"));
 				assertThat(batch).containsEntries(expectedEntries);
 			});
 		}

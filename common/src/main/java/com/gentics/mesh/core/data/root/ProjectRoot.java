@@ -26,14 +26,14 @@ public interface ProjectRoot extends RootVertex<Project> {
 
 	/**
 	 * Create a new project with the given name and add it to the aggregation vertex. Assign the provided schema container version to the created initial
-	 * release of the project.
+	 * branch of the project.
 	 * 
 	 * @param projectName
 	 *            Name of the new project.
 	 * @param hostname
-	 *            Hostname of the project which will be assigend to the initial release.
+	 *            Hostname of the project which will be assigend to the initial branch.
 	 * @param ssl
-	 *            SSL flag of the project which will be assigned to the initial release.
+	 *            SSL flag of the project which will be assigned to the initial branch.
 	 * @param creator
 	 *            User that is being used to set the initial creator and editor references.
 	 * @param schemaContainerVersion
@@ -46,14 +46,14 @@ public interface ProjectRoot extends RootVertex<Project> {
 
 	/**
 	 * Create a new project with the given name and add it to the aggregation vertex. Assign the provided schema container version to the created initial
-	 * release of the project.
+	 * branch of the project.
 	 * 
 	 * @param projectName
 	 *            Name of the new project.
 	 * @param hostname
-	 *            Hostname of the project which will be assigned to the initial release.
+	 *            Hostname of the project which will be assigned to the initial branch.
 	 * @param ssl
-	 *            SSL flag of the project which will be assigned to the initial release.
+	 *            SSL flag of the project which will be assigned to the initial branch.
 	 * @param creator
 	 *            User that is being used to set the initial creator and editor references.
 	 * @param schemaContainerVersion

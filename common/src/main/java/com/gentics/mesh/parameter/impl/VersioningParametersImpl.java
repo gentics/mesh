@@ -10,7 +10,7 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 
-//TODO split this class into two since some actions are not versioning specific but release specific 
+//TODO split this class into two since some actions are not versioning specific but branch specific 
 public class VersioningParametersImpl extends AbstractParameters implements VersioningParameters {
 
 	public VersioningParametersImpl(ActionContext ac) {
@@ -22,7 +22,7 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 
 	@Override
 	public void validate() {
-		// TODO validate version pattern and release parameter value
+		// TODO validate version pattern and branch parameter value
 	}
 
 	@Override
@@ -34,10 +34,10 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
-		// release
+		// branch
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDescription(
-				"Specifies the release to be used for loading data. The latest project release will be used if this parameter is omitted.");
+				"Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.");
 		pageParameter.setExample("24cf92691c7641158f92691c76c115ef");
 		pageParameter.setRequired(false);
 		pageParameter.setType(ParamType.STRING);

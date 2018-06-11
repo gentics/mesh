@@ -32,13 +32,13 @@ public interface MicroschemaContainerVersion extends
 
 	/**
 	 * Return an iterator over all draft {@link NodeGraphFieldContainer}'s that contain at least one micronode field (or list of micronodes field) that uses
-	 * this schema version for the given release.
+	 * this schema version for the given branch.
 	 *
-	 * @param releaseUuid
-	 *            Uuid of the release
+	 * @param branchUuid
+	 *            Uuid of the branch
 	 * @return
 	 */
-	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid);
+	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
 
 	/**
 	 * Return an iterator over micronodes which reference this microschema version.

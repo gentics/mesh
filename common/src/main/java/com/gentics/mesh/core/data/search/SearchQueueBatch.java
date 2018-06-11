@@ -48,13 +48,13 @@ public interface SearchQueueBatch {
 	 * {@link NodeContainerEntry#composeIndexName(String, String, String, ContainerType)} for details.
 	 * 
 	 * @param project
-	 * @param release
+	 * @param branch
 	 * @param version
 	 * @param type
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch addNodeIndex(Project project, Branch release, SchemaContainerVersion version, ContainerType type) {
-		return createNodeIndex(project.getUuid(), release.getUuid(), version.getUuid(), type, version.getSchema());
+	default SearchQueueBatch addNodeIndex(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+		return createNodeIndex(project.getUuid(), branch.getUuid(), version.getUuid(), type, version.getSchema());
 	}
 
 	/**
@@ -62,13 +62,13 @@ public interface SearchQueueBatch {
 	 * {@link NodeContainerEntry#composeIndexName(String, String, String, ContainerType)} for details.
 	 * 
 	 * @param projectUuid
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param versionUuid
 	 * @param schema
 	 * @param type
 	 * @return Fluent API
 	 */
-	SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type, Schema schema);
+	SearchQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema);
 
 	/**
 	 * Add the tag family index to the search database. See {@link TagFamilyEntry#composeIndexName(String)} for details.
@@ -118,11 +118,11 @@ public interface SearchQueueBatch {
 	 * 
 	 * @param oldContainer
 	 * @param newContainer
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return Fluent API
 	 */
-	SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String releaseUuid, ContainerType type);
+	SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type);
 
 	/**
 	 * Delete the given element from the its index.
@@ -205,16 +205,16 @@ public interface SearchQueueBatch {
 	 * Add an store entry for the given node. The index handler will automatically handle all languages of the found containers.
 	 * 
 	 * @param node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @param addRelatedElements
 	 *            Whether to also add related elements (e.g: child nodes)
 	 * @return Fluent API
 	 */
-	SearchQueueBatch store(Node node, String releaseUuid, ContainerType type, boolean addRelatedElements);
+	SearchQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedElements);
 
 	/**
-	 * Add a store entry which just contains the node element information. This will effectively store all documents of the node (eg. all releases, all
+	 * Add a store entry which just contains the node element information. This will effectively store all documents of the node (eg. all branches, all
 	 * languages, all types). Use a more restricted {@link #store(Node, String, ContainerType, boolean)} call if you know what needs to be updated to reduce the
 	 * overhead.
 	 * 
@@ -226,33 +226,33 @@ public interface SearchQueueBatch {
 	}
 
 	/**
-	 * Add a store entry which just contains the node element information. This will effectively store all documents of the node for the given release but
+	 * Add a store entry which just contains the node element information. This will effectively store all documents of the node for the given branch but
 	 * include (eg. all languages, all types). Use a more restricted {@link #store(Node, String, ContainerType, boolean)} call if you know what needs to be
 	 * updated to reduce the overhead.
 	 * 
 	 * @param node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch store(Node node, String releaseUuid) {
-		return store(node, releaseUuid, null, false);
+	default SearchQueueBatch store(Node node, String branchUuid) {
+		return store(node, branchUuid, null, false);
 	}
 
-	SearchQueueBatch store(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean addRelatedElements);
+	SearchQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements);
 
 	/**
 	 * Add an delete entry to the batch.
 	 * 
 	 * @param container
 	 *            Affected node container which will provide needed information for the index handler
-	 * @param releaseUuid
-	 *            Release uuid of the container which should be handled
+	 * @param branchUuid
+	 *            Branch uuid of the container which should be handled
 	 * @param type
 	 *            Type of the container which should be removed from the index
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch delete(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean addRelatedEntries);
+	SearchQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedEntries);
 
 	/**
 	 * Store the tag family in the search index.

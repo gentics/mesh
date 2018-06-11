@@ -38,7 +38,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	/**
 	 * Return the latest branch of the project.
 	 * 
-	 * @return release
+	 * @return branch
 	 */
 	default Branch getBranch() {
 		return getBranch(null);
@@ -51,7 +51,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @param project
 	 *            project for overriding the project set in the action context
 	 *
-	 * @return release
+	 * @return branch
 	 */
 	Branch getBranch(Project project);
 

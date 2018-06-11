@@ -301,9 +301,9 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(webEndpoint);
 		addEndpoints(projectBasePath, resources, webEndpoint);
 
-		BranchEndpoint releaseEndpoint = Mockito.spy(new BranchEndpoint());
-		initEndpoint(releaseEndpoint);
-		addEndpoints(projectBasePath, resources, releaseEndpoint);
+		BranchEndpoint branchEndpoint = Mockito.spy(new BranchEndpoint());
+		initEndpoint(branchEndpoint);
+		addEndpoints(projectBasePath, resources, branchEndpoint);
 
 		GraphQLEndpoint graphqlEndpoint = Mockito.spy(new GraphQLEndpoint());
 		initEndpoint(graphqlEndpoint);

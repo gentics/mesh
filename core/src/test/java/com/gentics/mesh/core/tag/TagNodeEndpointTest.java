@@ -65,31 +65,31 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadNodesForTagInRelease() {
-		Branch newRelease;
+	public void testReadNodesForTagInBranch() {
+		Branch newBranch;
 		NodeResponse concorde = new NodeResponse();
 		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
 
-		// Create new release
+		// Create new branch
 		try (Tx tx = tx()) {
-			newRelease = project().getBranchRoot().create("newrelease", user());
+			newBranch = project().getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			Branch initialRelease = initialBranch();
-			// Get for latest release (must be empty)
+			Branch initialBranch = initialBranch();
+			// Get for latest branch (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
+					new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest branch").isNotNull().isEmpty();
 
-			// Get for new release (must be empty)
+			// Get for new branch (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft().setBranch(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
+					new VersioningParametersImpl().draft().setBranch(newBranch.getUuid()))).getData()).as("Nodes tagged in new branch").isNotNull()
 							.isEmpty();
 
-			// Get for initial release
+			// Get for initial branch
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft().setBranch(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
+					new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid()))).getData()).as("Nodes tagged in initial branch")
 							.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		}
 	}
@@ -104,9 +104,9 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 			Node node = content();
 
-			node.addTag(tag1, latestRelease());
-			node.addTag(tag3, latestRelease());
-			node.addTag(tag2, latestRelease());
+			node.addTag(tag1, latestBranch());
+			node.addTag(tag3, latestBranch());
+			node.addTag(tag2, latestBranch());
 
 			role().grantPermissions(tag1, READ_PERM);
 			role().grantPermissions(tag2, READ_PERM);

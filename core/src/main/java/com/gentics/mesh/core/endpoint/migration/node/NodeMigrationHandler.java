@@ -276,7 +276,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema) throws Exception {
 
 		String languageTag = container.getLanguage().getLanguageTag();
-		String releaseUuid = branch.getUuid();
+		String branchUuid = branch.getUuid();
 
 		ac.getVersioningParameters().setVersion("published");
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
@@ -285,10 +285,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), branch, container.getEditor(), container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(migrated, releaseUuid);
+		node.setPublished(migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
-		sqb.store(migrated, releaseUuid, PUBLISHED, false);
+		sqb.store(migrated, branchUuid, PUBLISHED, false);
 		return migrated.getVersion();
 	}
 

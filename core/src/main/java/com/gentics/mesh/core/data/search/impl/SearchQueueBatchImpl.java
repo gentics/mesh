@@ -90,8 +90,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type, Schema schema) {
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, versionUuid, type);
+	public SearchQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema) {
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, versionUuid, type);
 		CreateIndexEntry entry = new CreateIndexEntryImpl(nodeContainerIndexHandler, indexName);
 		entry.setSchema(schema);
 		// entry.getContext().setSchemaContainerVersionUuid(versionUuid);
@@ -117,10 +117,10 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String releaseUuid, ContainerType type) {
+	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type) {
 		MoveEntryContext context = new MoveEntryContextImpl();
 		context.setContainerType(type);
-		context.setBranchUuid(releaseUuid);
+		context.setBranchUuid(branchUuid);
 		context.setOldContainer(oldContainer);
 		context.setNewContainer(newContainer);
 		MoveDocumentEntry entry = new MoveDocumentEntryImpl(nodeContainerIndexHandler, context);
@@ -129,11 +129,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch store(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean addRelatedElements) {
+	public SearchQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements) {
 		Node node = container.getParentNode();
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
-		context.setBranchUuid(releaseUuid);
+		context.setBranchUuid(branchUuid);
 		context.setLanguageTag(container.getLanguage().getLanguageTag());
 		context.setSchemaContainerVersionUuid(container.getSchemaContainerVersion().getUuid());
 		context.setProjectUuid(node.getProject().getUuid());

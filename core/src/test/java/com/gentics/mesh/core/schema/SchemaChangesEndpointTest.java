@@ -650,7 +650,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 		failingLatch(latch);
 
-		// 3. Load the new schema and assign it to the release
+		// 3. Load the new schema and assign it to the branch
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
 		assertEquals("2.0", updatedSchema.getVersion());
 		assertNull("The content field should have been removed", updatedSchema.getField("content"));
@@ -667,16 +667,16 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testMigrationForRelease() throws Exception {
+	public void testMigrationForBranch() throws Exception {
 		SchemaContainer schemaContainer = schemaContainer("content");
 		String schemaUuid = tx(() -> schemaContainer.getUuid());
 		Node content = content();
 		SchemaUpdateRequest request;
-		Branch newRelease;
+		Branch newBranch;
 
 		try (Tx tx = tx()) {
-			newRelease = project().getBranchRoot().create("newrelease", user());
-			content.createGraphFieldContainer(english(), newRelease, user());
+			newBranch = project().getBranchRoot().create("newbranch", user());
+			content.createGraphFieldContainer(english(), newBranch, user());
 			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getSchema().toJson(), SchemaUpdateRequest.class);
 			request.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
 			MeshInternal.get().serverSchemaStorage().clear();
@@ -688,7 +688,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		// 3. Update the schema server side
 		call(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 
-		// 4. assign the new schema version to the initial release
+		// 4. assign the new schema version to the initial branch
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
@@ -696,12 +696,12 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 		failingLatch(latch);
 
-		// node must be migrated for initial release
+		// node must be migrated for initial branch
 		try (Tx tx = tx()) {
 			assertThat(content.getGraphFieldContainer("en", initialBranchUuid(), ContainerType.DRAFT)).isOf(schemaContainer.getLatestVersion());
 
-			// node must not be migrated for new release
-			assertThat(content.getGraphFieldContainer("en", newRelease.getUuid(), ContainerType.DRAFT))
+			// node must not be migrated for new branch
+			assertThat(content.getGraphFieldContainer("en", newBranch.getUuid(), ContainerType.DRAFT))
 					.isOf(schemaContainer.getLatestVersion().getPreviousVersion());
 		}
 	}

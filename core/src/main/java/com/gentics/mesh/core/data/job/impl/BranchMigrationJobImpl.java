@@ -23,26 +23,26 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class ReleaseMigrationJobImpl extends JobImpl {
+public class BranchMigrationJobImpl extends JobImpl {
 
-	private static final Logger log = LoggerFactory.getLogger(ReleaseMigrationJobImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(BranchMigrationJobImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(ReleaseMigrationJobImpl.class, MeshVertexImpl.class);
+		database.addVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
 	public void prepare() {
-		Branch newRelease = getRelease();
-		String newReleaseUuid = newRelease.getUuid();
-		Project project = newRelease.getProject();
+		Branch newBranch = getBranch();
+		String newBranchUuid = newBranch.getUuid();
+		Project project = newBranch.getProject();
 
 		// Add the needed indices and mappings
 		SearchQueueBatch indexCreationBatch = MeshInternal.get().searchQueue().create();
-		for (SchemaContainerVersion schemaVersion : newRelease.findActiveSchemaVersions()) {
+		for (SchemaContainerVersion schemaVersion : newBranch.findActiveSchemaVersions()) {
 			SchemaModel schema = schemaVersion.getSchema();
-			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), PUBLISHED, schema);
-			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), DRAFT, schema);
+			indexCreationBatch.createNodeIndex(project.getUuid(), newBranchUuid, schemaVersion.getUuid(), PUBLISHED, schema);
+			indexCreationBatch.createNodeIndex(project.getUuid(), newBranchUuid, schemaVersion.getUuid(), DRAFT, schema);
 		}
 		indexCreationBatch.processSync();
 	}
@@ -53,20 +53,20 @@ public class ReleaseMigrationJobImpl extends JobImpl {
 		try {
 
 			if (log.isDebugEnabled()) {
-				log.debug("Release migration for job {" + getUuid() + "} was requested");
+				log.debug("Branch migration for job {" + getUuid() + "} was requested");
 			}
 			status.commit();
 
 			try (Tx tx = DB.get().tx()) {
-				Branch release = getRelease();
-				if (release == null) {
-					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} cannot be found.");
+				Branch branch = getBranch();
+				if (branch == null) {
+					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
 				}
-				MeshInternal.get().branchMigrationHandler().migrateBranch(release, status);
+				MeshInternal.get().branchMigrationHandler().migrateBranch(branch, status);
 				status.done();
 			}
 		} catch (Exception e) {
-			status.error(e, "Error while preparing release migration.");
+			status.error(e, "Error while preparing branch migration.");
 			throw e;
 		}
 	}

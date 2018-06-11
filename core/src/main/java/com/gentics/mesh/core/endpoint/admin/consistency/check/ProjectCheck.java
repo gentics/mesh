@@ -3,7 +3,7 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
+import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
@@ -44,7 +44,7 @@ public class ProjectCheck implements ConsistencyCheck {
 
 		checkIn(project, HAS_PROJECT, ProjectRootImpl.class, response, HIGH);
 
-		checkOut(project, HAS_RELEASE_ROOT, ReleaseRootImpl.class, response, HIGH);
+		checkOut(project, HAS_BRANCH_ROOT, BranchRootImpl.class, response, HIGH);
 		checkOut(project, HAS_NODE_ROOT, NodeRootImpl.class, response, HIGH);
 		checkOut(project, HAS_TAGFAMILY_ROOT, TagFamilyRootImpl.class, response, HIGH);
 		checkOut(project, HAS_ROOT_NODE, NodeImpl.class, response, HIGH);

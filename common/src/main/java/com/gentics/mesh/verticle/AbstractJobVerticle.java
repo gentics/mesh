@@ -102,10 +102,10 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 					}
 					action.doOnDispose(() -> {
 						log.debug("Releasing lock {" + lockName + "}");
-						lock.release();
+						lock.branch();
 					}).doFinally(() -> {
 						log.debug("Releasing lock {" + lockName + "}");
-						lock.release();
+						lock.branch();
 					}).subscribe(() -> {
 						log.debug("Action completed");
 					}, error -> {

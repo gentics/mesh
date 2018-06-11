@@ -75,7 +75,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public Provider<TagFamilyEndpoint> tagFamilyEndpoint;
 
 	@Inject
-	public Provider<BranchEndpoint> releaseEndpoint;
+	public Provider<BranchEndpoint> branchEndpoint;
 
 	@Inject
 	public Provider<SchemaEndpoint> schemaEndpoint;
@@ -225,7 +225,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectMicroschemaEndpoint.get());
 		endpoints.add(projectSearchEndpoint.get());
 		endpoints.add(projectRawSearchEndpoint.get());
-		endpoints.add(releaseEndpoint.get());
+		endpoints.add(branchEndpoint.get());
 		endpoints.add(graphqlEndpoint.get());
 
 		// Global verticles

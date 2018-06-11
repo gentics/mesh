@@ -80,32 +80,32 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	/**
-	 * Handle getting the schema versions of a release.
+	 * Handle getting the schema versions of a branch.
 	 * 
 	 * @param ac
 	 * @param uuid
-	 *            Uuid of release to be queried
+	 *            Uuid of branch to be queried
 	 */
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncTx(() -> {
-			Branch release = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return getSchemaVersionsInfo(release);
+			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return getSchemaVersionsInfo(branch);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
-	 * Handle assignment of schema version to a release.
+	 * Handle assignment of schema version to a branch.
 	 * 
 	 * @param ac
 	 * @param uuid
-	 *            Uuid of release
+	 *            Uuid of branch
 	 */
 	public void handleAssignSchemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncTx(() -> {
 			RootVertex<Branch> root = getRootVertex(ac);
-			Branch release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
@@ -116,15 +116,15 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
 					SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
-					SchemaContainerVersion assignedVersion = release.findLatestSchemaVersion(version.getSchemaContainer());
+					SchemaContainerVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
-						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
+						throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
 					}
-					release.assignSchemaVersion(ac.getUser(), version);
+					branch.assignSchemaVersion(ac.getUser(), version);
 				}
 
-				return Tuple.tuple(getSchemaVersionsInfo(release), batch);
+				return Tuple.tuple(getSchemaVersionsInfo(branch), batch);
 			});
 
 			// 1. Process batch and create need indices
@@ -140,32 +140,32 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	/**
-	 * Handle getting the microschema versions of a release.
+	 * Handle getting the microschema versions of a branch.
 	 * 
 	 * @param ac
 	 * @param uuid
-	 *            Uuid of release to be queried
+	 *            Uuid of branch to be queried
 	 */
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncTx(() -> {
-			Branch release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
-			return getMicroschemaVersions(release);
+			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
+			return getMicroschemaVersions(branch);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
-	 * Handle assignment of microschema version to a release.
+	 * Handle assignment of microschema version to a branch.
 	 * 
 	 * @param ac
 	 * @param uuid
-	 *            Uuid of release
+	 *            Uuid of branch
 	 */
 	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncTx(() -> {
 			RootVertex<Branch> root = getRootVertex(ac);
-			Branch release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
@@ -175,14 +175,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
 
-					MicroschemaContainerVersion assignedVersion = release.findLatestMicroschemaVersion(version.getSchemaContainer());
+					MicroschemaContainerVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
-						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
+						throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
 					}
-					release.assignMicroschemaVersion(user, version);
+					branch.assignMicroschemaVersion(user, version);
 				}
-				return getMicroschemaVersions(release);
+				return getMicroschemaVersions(branch);
 			});
 
 			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
@@ -192,14 +192,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	/**
-	 * Get the REST model of the schema versions of the release.
+	 * Get the REST model of the schema versions of the branch.
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @return single emitting the rest model
 	 */
-	protected Single<BranchInfoSchemaList> getSchemaVersionsInfo(Branch release) {
-		return Observable.fromIterable(release.findAllLatestSchemaVersionEdges()).map(edge -> {
+	protected Single<BranchInfoSchemaList> getSchemaVersionsInfo(Branch branch) {
+		return Observable.fromIterable(branch.findAllLatestSchemaVersionEdges()).map(edge -> {
 			SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
 			BranchSchemaInfo info = new BranchSchemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
@@ -213,14 +213,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	/**
-	 * Get the REST model of the microschema versions of the release.
+	 * Get the REST model of the microschema versions of the branch.
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @return single emitting the rest model
 	 */
-	protected Single<BranchInfoMicroschemaList> getMicroschemaVersions(Branch release) {
-		return Observable.fromIterable(release.findAllLatestMicroschemaVersionEdges()).map(edge -> {
+	protected Single<BranchInfoMicroschemaList> getMicroschemaVersions(Branch branch) {
+		return Observable.fromIterable(branch.findAllLatestMicroschemaVersionEdges()).map(edge -> {
 			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
 			BranchMicroschemaInfo info = new BranchMicroschemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
@@ -233,12 +233,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		});
 	}
 
-	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {
+	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String branchUuid) {
 		utils.asyncTx(ac, () -> {
 			Project project = ac.getProject();
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
-			Branch release = project.getBranchRoot().findByUuid(releaseUuid);
+			Branch branch = project.getBranchRoot().findByUuid(branchUuid);
 			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAllIt()) {
 				MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 				MicroschemaContainerVersion currentVersion = latestVersion;
@@ -248,11 +248,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 						break;
 					}
 
-					Job job = jobRoot.enqueueMicroschemaMigration(user, release, currentVersion, latestVersion);
+					Job job = jobRoot.enqueueMicroschemaMigration(user, branch, currentVersion, latestVersion);
 					job.process();
 
 					try (Tx tx = db.tx()) {
-						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(release.getUuid());
+						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(branch.getUuid());
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
 							+ currentVersion.getUuid() + "=" + it.hasNext());
 					}
@@ -268,14 +268,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 * Helper handler which will handle requests for processing remaining not yet migrated nodes.
 	 *
 	 * @param ac
-	 * @param releaseUuid
+	 * @param branchUuid
 	 */
-	public void handleMigrateRemainingNodes(InternalActionContext ac, String releaseUuid) {
+	public void handleMigrateRemainingNodes(InternalActionContext ac, String branchUuid) {
 
 		utils.asyncTx(ac, () -> {
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
-			Branch release = ac.getProject().getBranchRoot().findByUuid(releaseUuid);
+			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
 			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAllIt()) {
 				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 				SchemaContainerVersion currentVersion = latestVersion;
@@ -284,10 +284,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 					if (currentVersion == null) {
 						break;
 					}
-					Job job = jobRoot.enqueueSchemaMigration(user, release, currentVersion, latestVersion);
+					Job job = jobRoot.enqueueSchemaMigration(user, branch, currentVersion, latestVersion);
 					try {
 						job.process();
-						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid()).iterator();
+						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(branch.getUuid()).iterator();
 						log.info("After migration " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - " + currentVersion.getUuid()
 							+ " has unmigrated containers: " + it.hasNext());
 					} catch (Exception e) {

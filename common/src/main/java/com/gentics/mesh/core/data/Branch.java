@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_RELEASE_CREATED;
-import static com.gentics.mesh.Events.EVENT_RELEASE_DELETED;
-import static com.gentics.mesh.Events.EVENT_RELEASE_UPDATED;
+import static com.gentics.mesh.Events.EVENT_BRANCH_CREATED;
+import static com.gentics.mesh.Events.EVENT_BRANCH_DELETED;
+import static com.gentics.mesh.Events.EVENT_BRANCH_UPDATED;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
@@ -17,23 +17,23 @@ import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 
 /**
- * The Release domain model interface.
+ * The Branch domain model interface.
  *
- * A release is a bundle of specific schema versions which are used within a project. Releases can be used to create multiple tree structures within a single
+ * A branch is a bundle of specific schema versions which are used within a project. Branches can be used to create multiple tree structures within a single
  * project.
  * 
- * The release will keep track of assigned versions and also store the information which schema version has ever been assigned to the release.
+ * The branch will keep track of assigned versions and also store the information which schema version has ever been assigned to the branch.
  * 
- * A release has the following responsibilities:
+ * A branch has the following responsibilities:
  * 
  * <ul>
- * <li>Manage assigned releases for the REST API</li>
+ * <li>Manage assigned branches for the REST API</li>
  * <li>Provide information for node migration handlers. A handler must know what version needs to be migrated.</li>
  * <li>Provide information to the search index handler so that a list of indices can be compiled which should be used when searching</li>
  * <ul>
  * 
  * The latest version will be used for the creation of new nodes and should never be be downgraded. The other assigned versions will be used to manage
- * migrations and identify which release specific search indices should be used when using the search indices.
+ * migrations and identify which branch specific search indices should be used when using the search indices.
  * 
  */
 public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex {
@@ -41,9 +41,9 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	String TYPE = "release";
+	String TYPE = "branch";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_RELEASE_CREATED, EVENT_RELEASE_UPDATED, EVENT_RELEASE_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_BRANCH_CREATED, EVENT_BRANCH_UPDATED, EVENT_BRANCH_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -57,14 +57,14 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	static final String SSL = "ssl";
 
 	/**
-	 * Get whether the release is active.
+	 * Get whether the branch is active.
 	 * 
-	 * @return true for active release
+	 * @return true for active branch
 	 */
 	boolean isActive();
 
 	/**
-	 * Set whether the release is active.
+	 * Set whether the branch is active.
 	 * 
 	 * @param active
 	 *            true for active
@@ -73,7 +73,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch setActive(boolean active);
 
 	/**
-	 * Get whether all nodes of the previous release have been migrated.
+	 * Get whether all nodes of the previous branch have been migrated.
 	 * 
 	 * @return true if all nodes have been migrated
 	 */
@@ -89,14 +89,14 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch setMigrated(boolean migrated);
 
 	/**
-	 * Return the configured hostname of the release.
+	 * Return the configured hostname of the branch.
 	 * 
 	 * @return
 	 */
 	String getHostname();
 
 	/**
-	 * Set the hostname of the release.
+	 * Set the hostname of the branch.
 	 * 
 	 * @param hostname
 	 * @return
@@ -104,14 +104,14 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch setHostname(String hostname);
 
 	/**
-	 * Return the ssl flag of the release.
+	 * Return the ssl flag of the branch.
 	 * 
 	 * @return
 	 */
 	Boolean getSsl();
 
 	/**
-	 * Set the ssl flag of the release.
+	 * Set the ssl flag of the branch.
 	 * 
 	 * @param ssl
 	 * @return
@@ -119,37 +119,37 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch setSsl(boolean ssl);
 
 	/**
-	 * Get the next Release.
+	 * Get the next Branch.
 	 * 
-	 * @return next Release
+	 * @return next Branch
 	 */
 	Branch getNextBranch();
 
 	/**
-	 * Set the next Release.
+	 * Set the next Branch.
 	 * 
-	 * @param release
-	 *            next Release
+	 * @param branch
+	 *            next Branch
 	 * @return Fluent API
 	 */
-	Branch setNextBranch(Branch release);
+	Branch setNextBranch(Branch branch);
 
 	/**
-	 * Get the previous Release.
+	 * Get the previous Branch.
 	 * 
-	 * @return previous Release
+	 * @return previous Branch
 	 */
 	Branch getPreviousBranch();
 
 	/**
 	 * Get the root vertex.
 	 * 
-	 * @return release root to which the release belongs
+	 * @return branch root to which the branch belongs
 	 */
 	BranchRoot getRoot();
 
 	/**
-	 * Assign the given schema version to the release and queue a job which will trigger the migration.
+	 * Assign the given schema version to the branch and queue a job which will trigger the migration.
 	 * 
 	 * @param user
 	 * @param schemaContainerVersion
@@ -158,7 +158,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Unassign all schema versions of the given schema from this release.
+	 * Unassign all schema versions of the given schema from this branch.
 	 * 
 	 * @param schemaContainer
 	 * @return Fluent API
@@ -166,7 +166,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch unassignSchema(SchemaContainer schemaContainer);
 
 	/**
-	 * Check whether a version of this schema container is assigned to this release.
+	 * Check whether a version of this schema container is assigned to this branch.
 	 *
 	 * @param schema
 	 *            schema
@@ -175,7 +175,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	boolean contains(SchemaContainer schema);
 
 	/**
-	 * Check whether the given schema container version is assigned to this release.
+	 * Check whether the given schema container version is assigned to this branch.
 	 *
 	 * @param schemaContainerVersion
 	 *            schema container version
@@ -191,7 +191,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Iterable<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
-	 * Assign the given microschema version to the release and queue a job which executes the migration.
+	 * Assign the given microschema version to the branch and queue a job which executes the migration.
 	 * 
 	 * @param user
 	 * 
@@ -201,7 +201,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
-	 * Unassigns all versions of the given microschema from this release.
+	 * Unassigns all versions of the given microschema from this branch.
 	 * 
 	 * @param microschemaContainer
 	 * @return Fluent API
@@ -209,7 +209,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch unassignMicroschema(MicroschemaContainer microschemaContainer);
 
 	/**
-	 * Check whether a version of this microschema container is assigned to this release.
+	 * Check whether a version of this microschema container is assigned to this branch.
 	 *
 	 * @param microschema
 	 *            microschema
@@ -218,7 +218,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	boolean contains(MicroschemaContainer microschema);
 
 	/**
-	 * Check whether the given microschema container version is assigned to this release.
+	 * Check whether the given microschema container version is assigned to this branch.
 	 *
 	 * @param microschemaContainerVersion
 	 *            microschema container version
@@ -256,14 +256,14 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges();
 
 	/**
-	 * Project to which the release belongs.
+	 * Project to which the branch belongs.
 	 * 
-	 * @return Project of the release
+	 * @return Project of the branch
 	 */
 	Project getProject();
 
 	/**
-	 * Assign the release to a specific project.
+	 * Assign the branch to a specific project.
 	 * 
 	 * @param project
 	 * @return Fluent API
@@ -271,37 +271,37 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch setProject(Project project);
 
 	/**
-	 * Return all schema versions which are linked to the release.
+	 * Return all schema versions which are linked to the branch.
 	 * 
 	 * @return
 	 */
 	Iterable<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
 
 	/**
-	 * Return all microschema versions which are linked to the release.
+	 * Return all microschema versions which are linked to the branch.
 	 * 
 	 * @return
 	 */
 	Iterable<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
 
 	/**
-	 * Find the release schema edge for the given version.
+	 * Find the branch schema edge for the given version.
 	 * 
 	 * @param schemaContainerVersion
-	 * @return Found edge between release and version
+	 * @return Found edge between branch and version
 	 */
-	BranchSchemaEdge findReleaseSchemaEdge(SchemaContainerVersion schemaContainerVersion);
+	BranchSchemaEdge findBranchSchemaEdge(SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Find the release microschema edge for the given version.
+	 * Find the branch microschema edge for the given version.
 	 * 
 	 * @param microschemaContainerVersion
-	 * @return Found edge between release and version
+	 * @return Found edge between branch and version
 	 */
-	BranchMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion);
+	BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
-	 * Find the latest schema version which is assigned to the release which matches the provided schema container
+	 * Find the latest schema version which is assigned to the branch which matches the provided schema container
 	 * 
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
@@ -309,7 +309,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer);
 
 	/**
-	 * Find the latest microschema version which is assigned to the release which matches the provided microschema container
+	 * Find the latest microschema version which is assigned to the branch which matches the provided microschema container
 	 * 
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.

@@ -59,7 +59,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	static final String TYPE = "node";
 
-	String RELEASE_UUID_KEY = "releaseUuid";
+	String BRANCH_UUID_KEY = "branchUuid";
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_NODE_CREATED, EVENT_NODE_UPDATED, EVENT_NODE_DELETED);
 
@@ -74,48 +74,48 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	public static final int MAX_TRANSFORMATION_LEVEL = 3;
 
 	/**
-	 * Add the given tag to the list of tags for this node in the given release.
+	 * Add the given tag to the list of tags for this node in the given branch.
 	 * 
 	 * @param tag
-	 * @param release
+	 * @param branch
 	 */
-	void addTag(Tag tag, Branch release);
+	void addTag(Tag tag, Branch branch);
 
 	/**
-	 * Remove the given tag from the list of tags for this node in the given release.
+	 * Remove the given tag from the list of tags for this node in the given branch.
 	 * 
 	 * @param tag
-	 * @param release
+	 * @param branch
 	 */
-	void removeTag(Tag tag, Branch release);
+	void removeTag(Tag tag, Branch branch);
 
 	/**
-	 * Remove all tags for the given release.
+	 * Remove all tags for the given branch.
 	 * 
-	 * @param release
+	 * @param branch
 	 */
-	void removeAllTags(Branch release);
+	void removeAllTags(Branch branch);
 
 	/**
-	 * Return a list of all tags that were assigned to this node in the given release.
+	 * Return a list of all tags that were assigned to this node in the given branch.
 	 *
-	 * @param release
+	 * @param branch
 	 * @return
 	 */
-	List<? extends Tag> getTags(Branch release);
+	List<? extends Tag> getTags(Branch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
 	 * 
 	 * @param user
 	 * @param params
-	 * @param release
+	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch release);
+	TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch);
 
 	/**
-	 * Return the draft field container for the given language in the latest release.
+	 * Return the draft field container for the given language in the latest branch.
 	 * 
 	 * @param language
 	 * @return
@@ -152,24 +152,24 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type);
 
 	/**
-	 * Create a new graph field container for the given language and assign the schema version of the release to the container. The graph field container will
-	 * be the (only) DRAFT version for the language/release. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
+	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will
+	 * be the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
 	 * container will be a clone of the last draft and will have the next version number.
 	 * 
 	 * @param language
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param user
 	 *            user
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch release, User user);
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch branch, User user);
 
 	/**
 	 * Like {@link #createGraphFieldContainer(Language, Branch, User)}, but let the new graph field container be a clone of the given original (if not null).
 	 * 
 	 * @param language
-	 * @param release
+	 * @param branch
 	 * @param editor
 	 *            User which will be set as editor
 	 * @param original
@@ -178,21 +178,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch release, User editor, NodeGraphFieldContainer original,
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch branch, User editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge);
 
 	/**
-	 * Return the draft field containers of the node in the latest release.
+	 * Return the draft field containers of the node in the latest branch.
 	 * 
 	 * @return
 	 */
 	default Iterable<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
-		// FIX ME: We should not rely on specific releases.
+		// FIX ME: We should not rely on specific branchs.
 		return getGraphFieldContainersIt(getProject().getLatestBranch(), DRAFT);
 	}
 
 	/**
-	 * Return a list of all initial graph field containers for the node (in any release).
+	 * Return a list of all initial graph field containers for the node (in any branch).
 	 *
 	 * @return
 	 * @deprecated A new method should be used since loading lists is expensive
@@ -201,28 +201,28 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given release.
+	 * Return a list of graph field containers of given type for the node in the given branch.
 	 *
-	 * @param release
+	 * @param branch
 	 * @param type
 	 * @return
 	 * @deprecated A new method should be used since loading lists is expensive
 	 */
 	@Deprecated
-	default List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch release, ContainerType type) {
-		return getGraphFieldContainers(release.getUuid(), type);
+	default List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
+		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given release.
+	 * Return a list of graph field containers of given type for the node in the given branch.
 	 *
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return
 	 * @deprecated A new method should be used since loading lists is expensive. Use {@link #getGraphFieldContainersIt(String, ContainerType)}
 	 */
 	@Deprecated
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type);
+	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -233,49 +233,49 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type);
 
 	/**
-	 * Return containers of the given type and release.
+	 * Return containers of the given type and branch.
 	 * 
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
-	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String releaseUuid, ContainerType type);
+	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type);
 
 	/**
-	 * Return containers of the given type and release.
+	 * Return containers of the given type and branch.
 	 * 
-	 * @param release
+	 * @param branch
 	 * @param type
 	 * @return
 	 */
-	default Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Branch release, ContainerType type) {
-		return getGraphFieldContainersIt(release.getUuid(), type);
+	default Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Branch branch, ContainerType type) {
+		return getGraphFieldContainersIt(branch.getUuid(), type);
 	}
 
 	/**
-	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release.
+	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
 	 *
 	 * @return
 	 */
 	long getGraphFieldContainerCount();
 
 	/**
-	 * Return a list of language names for draft versions in the latest release
+	 * Return a list of language names for draft versions in the latest branch
 	 * 
 	 * @return
 	 */
 	List<String> getAvailableLanguageNames();
 
 	/**
-	 * Return a list of language names for versions of given type in the given release.
+	 * Return a list of language names for versions of given type in the given branch.
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param type
 	 *            container version type
 	 * @return
 	 */
-	List<String> getAvailableLanguageNames(Branch release, ContainerType type);
+	List<String> getAvailableLanguageNames(Branch branch, ContainerType type);
 
 	/**
 	 * Return the project of the node.
@@ -292,22 +292,22 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setProject(Project project);
 
 	/**
-	 * Return the children for this node for all releases.
+	 * Return the children for this node for all branchs.
 	 * 
 	 * @return
 	 */
 	Iterable<Node> getChildren();
 
 	/**
-	 * Return the children for this node in the given release.
+	 * Return the children for this node in the given branch.
 	 * 
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @return
 	 */
-	Iterable<Node> getChildren(String releaseUuid);
+	Iterable<Node> getChildren(String branchUuid);
 
 	/**
-	 * Return the children for this node. Only fetches nodes from the provided release and also checks permissions.
+	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
 	 */
 	Stream<Node> getChildrenStream(InternalActionContext ac);
 
@@ -316,34 +316,34 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @param requestUser
 	 *            user
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param languageTags
 	 * @param type
 	 *            edge type
 	 * @return
 	 */
-	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, List<String> languageTags, ContainerType type);
+	List<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.
 	 * 
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @return
 	 */
-	Node getParentNode(String releaseUuid);
+	Node getParentNode(String branchUuid);
 
 	/**
 	 * Set the parent node of this node.
 	 * 
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param parentNode
 	 */
-	void setParentNode(String releaseUuid, Node parentNode);
+	void setParentNode(String branchUuid, Node parentNode);
 
 	/**
-	 * Create a child node in this node in the latest release of the project.
+	 * Create a child node in this node in the latest branch of the project.
 	 * 
 	 * @param creator
 	 * @param schemaVersion
@@ -353,29 +353,29 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	Node create(User creator, SchemaContainerVersion schemaVersion, Project project);
 
 	/**
-	 * Create a child node in this node in the given release
+	 * Create a child node in this node in the given branch
 	 * 
 	 * @param creator
 	 * @param schemaVersion
 	 * @param project
-	 * @param release
+	 * @param branch
 	 * @return
 	 */
-	default Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch release) {
-		return create(creator, schemaVersion, project, release, null);
+	default Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch) {
+		return create(creator, schemaVersion, project, branch, null);
 	}
 
 	/**
-	 * Create a child node in this node in the given release
+	 * Create a child node in this node in the given branch
 	 * 
 	 * @param creator
 	 * @param schemaVersion
 	 * @param project
-	 * @param release
+	 * @param branch
 	 * @param uuid
 	 * @return
 	 */
-	Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch release, String uuid);
+	Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -383,14 +383,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 *            Context of the operation
 	 * @param languageTags
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param type
 	 *            edge type
 	 * @param pagingParameter
 	 * @return
 	 */
-	TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String releaseUuid, ContainerType type,
+	TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingParameter);
 
 	/**
@@ -407,24 +407,24 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * is no de version the en version will be selected and returned.
 	 * 
 	 * @param languageTags
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param version
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matches
 	 */
-	NodeGraphFieldContainer findVersion(List<String> languageTags, String releaseUuid, String version);
+	NodeGraphFieldContainer findVersion(List<String> languageTags, String branchUuid, String version);
 
 	/**
 	 * Iterate the version chain from the back in order to find the given version.
 	 * 
 	 * @param languageTag
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param version
 	 * @return Found version or null when no version could be found.
 	 */
-	default NodeGraphFieldContainer findVersion(String languageTag, String releaseUuid, String version) {
-		return findVersion(Arrays.asList(languageTag), releaseUuid, version);
+	default NodeGraphFieldContainer findVersion(String languageTag, String branchUuid, String version) {
+		return findVersion(Arrays.asList(languageTag), branchUuid, version);
 	}
 
 	/**
@@ -493,11 +493,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param batch
-	 * @param release
+	 * @param branch
 	 * @param parameters
 	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch release, PublishParameters parameters);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch branch, PublishParameters parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -519,102 +519,102 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void publish(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
 
 	/**
-	 * Set the graph field container to be the (only) published for the given release
+	 * Set the graph field container to be the (only) published for the given branch
 	 *
 	 * @param container
-	 * @param releaseUuid
+	 * @param branchUuid
 	 */
-	void setPublished(NodeGraphFieldContainer container, String releaseUuid);
+	void setPublished(NodeGraphFieldContainer container, String branchUuid);
 
 	/**
 	 * Take a language of the node offline.
 	 *
 	 * @param ac
 	 * @param batch
-	 * @param release
+	 * @param branch
 	 * @param languageTag
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch release, String languageTag);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch branch, String languageTag);
 
 	/**
-	 * Delete the language container for the given language from the release. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
-	 * and release, and will then delete all "dangling" GFC (GFCs, which are not used by another release).
+	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
+	 * and branch, and will then delete all "dangling" GFC (GFCs, which are not used by another branch).
 	 * 
 	 * @param ac
-	 * @param release
+	 * @param branch
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
 	 * @param batch
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Branch release, Language language, SearchQueueBatch batch, boolean failForLastContainer);
+	void deleteLanguageContainer(InternalActionContext ac, Branch branch, Language language, SearchQueueBatch batch, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
 	 *
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 *            edge type
 	 * @param nodePath
 	 * @param pathStack
 	 * @return
 	 */
-	Path resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
+	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
 	 * 
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param type
 	 *            edge type
 	 * @param segment
 	 * 
 	 * @return Segment information or null if this node is not providing the given segment
 	 */
-	PathSegment getSegment(String releaseUuid, ContainerType type, String segment);
+	PathSegment getSegment(String branchUuid, ContainerType type, String segment);
 
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
 	 * node.
 	 * 
 	 * @param ac
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param type
 	 *            edge type
 	 * @param languageTag
 	 * 
 	 * @return
 	 */
-	String getPath(ActionContext ac, String releaseUuid, ContainerType type, String... languageTag);
+	String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
 	 * of the node.
 	 * 
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param type
 	 *            edge type
 	 * @param languageTag
 	 *
 	 * @return
 	 */
-	String getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
+	String getPathSegment(String branchUuid, ContainerType type, String... languageTag);
 
 	/**
-	 * Delete the node from the given release. This will also delete children from the release.
+	 * Delete the node from the given branch. This will also delete children from the branch.
 	 * 
-	 * If the node is deleted from its last release, it is (permanently) deleted from the db
+	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
 	 *
 	 * @param ac
-	 * @param release
+	 * @param branch
 	 * @param batch
 	 * @param ignoreChecks
 	 */
-	void deleteFromRelease(InternalActionContext ac, Branch release, SearchQueueBatch batch, boolean ignoreChecks);
+	void deleteFromBranch(InternalActionContext ac, Branch branch, SearchQueueBatch batch, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -634,40 +634,40 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Check the publish consistency by validating the following constraints:
 	 * 
 	 * <ul>
-	 * <li>A node can only be published if all parent nodes are also published (within the scope of the release)
+	 * <li>A node can only be published if all parent nodes are also published (within the scope of the branch)
 	 * <li>A published node can only be moved if the target node is also a published node.
 	 * <li>A node can only be taken offline if the node has no children which are still published.
 	 * </ul>
 	 * 
 	 * @param ac
 	 *            Current action context
-	 * @param release
-	 *            Release to be used to check the consistency state
+	 * @param branch
+	 *            Branch to be used to check the consistency state
 	 */
-	void assertPublishConsistency(InternalActionContext ac, Branch release);
+	void assertPublishConsistency(InternalActionContext ac, Branch branch);
 
 	/**
-	 * Create a new published version of the given language in the release.
+	 * Create a new published version of the given language in the branch.
 	 * 
 	 * @param language
 	 *            language
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param user
 	 *            user
 	 * @return published field container
 	 */
-	NodeGraphFieldContainer publish(Language language, Branch release, User user);
+	NodeGraphFieldContainer publish(Language language, Branch branch, User user);
 
 	/**
-	 * Publish the node for the specified release.
+	 * Publish the node for the specified branch.
 	 * 
 	 * @param ac
-	 * @param release
+	 * @param branch
 	 * @param batch
 	 * @return
 	 */
-	void publish(InternalActionContext ac, Branch release, SearchQueueBatch batch);
+	void publish(InternalActionContext ac, Branch branch, SearchQueueBatch batch);
 
 	/**
 	 * Transform the node into a node list item.
@@ -679,7 +679,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 
 	/**
-	 * Delete the node. Please use {@link #deleteFromRelease(Branch, SearchQueueBatch)} if you want to delete the node just from a specific release.
+	 * Delete the node. Please use {@link #deleteFromBranch(Branch, SearchQueueBatch)} if you want to delete the node just from a specific branch.
 	 * 
 	 * @param batch
 	 * @param ignoreChecks
@@ -700,10 +700,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param linkType
-	 * @param release
+	 * @param branch
 	 * @return
 	 */
-	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Branch release);
+	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Branch branch);
 
 	/**
 	 * Return the breadcrumb nodes.
@@ -728,12 +728,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param languageTag
 	 *            language tag
-	 * @param releaseUuid
-	 *            release uuid
+	 * @param branchUuid
+	 *            branch uuid
 	 * @param type
 	 *            edge type
 	 * @return existing edge or null
 	 */
-	EdgeFrame getGraphFieldContainerEdge(String languageTag, String releaseUuid, ContainerType type);
+	EdgeFrame getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type);
 
 }

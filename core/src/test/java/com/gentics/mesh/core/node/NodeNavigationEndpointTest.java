@@ -287,32 +287,32 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testNavigationForRelease() {
+	public void testNavigationForBranch() {
 		Project project = project();
-		String newReleaseName = "newrelease";
+		String newBranchName = "newbranch";
 		String baseNodeUuid = tx(() -> project.getBaseNode().getUuid());
 
-		// latest release
+		// latest branch
 		NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
 				new VersioningParametersImpl().draft()));
 		assertThat(response).hasDepth(1).isValid(4);
 
 		try (Tx tx = tx()) {
-			project.getBranchRoot().create(newReleaseName, user());
+			project.getBranchRoot().create(newBranchName, user());
 			tx.success();
 		}
 
-		// latest release (again)
+		// latest branch (again)
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
 				new VersioningParametersImpl().draft()));
 		assertThat(response).hasDepth(0);
 
-		// latest release by name
+		// latest branch by name
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-				new VersioningParametersImpl().draft().setBranch(newReleaseName)));
+				new VersioningParametersImpl().draft().setBranch(newBranchName)));
 		assertThat(response).hasDepth(0);
 
-		// initial release by name
+		// initial branch by name
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
 				new VersioningParametersImpl().draft().setBranch(INITIAL_RELEASE_NAME)));
 		assertThat(response).hasDepth(1).isValid(4);
@@ -324,7 +324,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testPublishedNavigationForRelease() {
+	public void testPublishedNavigationForBranch() {
 		// TODO
 	}
 }

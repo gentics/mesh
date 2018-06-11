@@ -7,7 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
@@ -46,7 +46,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
+import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -203,11 +203,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		batch.dropIndex(TagFamily.composeIndexName(getUuid()));
 		batch.dropIndex(Tag.composeIndexName(getUuid()));
 
-		// Drop all node indices for all releases and all schema versions
-		for (Branch release : getBranchRoot().findAllIt()) {
-			for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
+		// Drop all node indices for all branches and all schema versions
+		for (Branch branch : getBranchRoot().findAllIt()) {
+			for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
+					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), branch.getUuid(), version.getUuid(), type);
 					if (log.isDebugEnabled()) {
 						log.debug("Adding drop entry for index {" + pubIndex + "}");
 					}
@@ -236,7 +236,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		// Remove the project schema root from the index
 		getSchemaContainerRoot().delete(batch);
 
-		// Remove the release root and all releases
+		// Remove the branch root and all branches
 		getBranchRoot().delete(batch);
 
 		// Finally remove the project node
@@ -288,7 +288,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (getBaseNode() == null) {
 			return;
 		}
-		// All nodes of all releases are related to this project. All
+		// All nodes of all branches are related to this project. All
 		// nodes/containers must be updated if the project name changes.
 		for (Node node : getNodeRoot().findAllIt()) {
 			action.call(node, new GenericEntryContextImpl());
@@ -307,20 +307,20 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Branch getInitialBranch() {
-		return getBranchRoot().getInitialRelease();
+		return getBranchRoot().getInitialBranch();
 	}
 
 	@Override
 	public Branch getLatestBranch() {
-		return getBranchRoot().getLatestRelease();
+		return getBranchRoot().getLatestBranch();
 	}
 
 	@Override
 	public BranchRoot getBranchRoot() {
-		BranchRoot root = out(HAS_RELEASE_ROOT).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
+		BranchRoot root = out(HAS_BRANCH_ROOT).nextOrDefaultExplicit(BranchRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(ReleaseRootImpl.class);
-			linkOut(root, HAS_RELEASE_ROOT);
+			root = getGraph().addFramedVertex(BranchRootImpl.class);
+			linkOut(root, HAS_BRANCH_ROOT);
 		}
 		return root;
 	}

@@ -102,23 +102,23 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return matchesReleaseAndType(item.getId(), branchUuid, type.getCode());
+			return matchesBranchAndType(item.getId(), branchUuid, type.getCode());
 		}, true);
 	}
 
 	/**
-	 * Check whether the node has a field for the release and given type.
+	 * Check whether the node has a field for the branch and given type.
 	 * 
 	 * @param nodeId
 	 *            Object id of the node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param code
 	 * @return
 	 */
-	private boolean matchesReleaseAndType(Object nodeId, String releaseUuid, String code) {
+	private boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
 		FramedGraph graph = getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-				database().createComposedIndexKey(nodeId, releaseUuid, code));
+				database().createComposedIndexKey(nodeId, branchUuid, code));
 		return edges.iterator().hasNext();
 	}
 
@@ -131,18 +131,18 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
-			Branch release = ac.getBranch(element.getProject());
+			Branch branch = ac.getBranch(element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
-			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, release.getUuid(),
+			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
 					ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
-				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_language", uuid, String.join(",", requestedLanguageTags),
-						release.getUuid());
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid, String.join(",", requestedLanguageTags),
+						branch.getUuid());
 			}
 			// Additionally check whether the read published permission could grant read perm for published nodes
-			boolean isPublished = fieldContainer.isPublished(release.getUuid());
+			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
 			if (isPublished && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
 				return element;
 				// The container could be a draft. Check whether READ perm is granted.
@@ -162,18 +162,18 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * 
 	 * @param requestUser
 	 *            user
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param type
 	 *            type
 	 * @param permission
 	 *            permission to filter by
 	 * @return vertex traversal
 	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Branch release, ContainerType type, GraphPermission permission) {
+	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Branch branch, ContainerType type, GraphPermission permission) {
 		return out(getRootLabel()).filter(vertex -> {
 			return requestUser.hasPermissionForId(vertex.getId(), permission);
-		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 	}
 
@@ -240,9 +240,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(), CREATE_PERM);
-		Branch release = ac.getBranch();
-		// BUG: Don't use the latest version. Use the version which is linked to the release!
-		Node node = parentNode.create(requestUser, schemaVersion, project, release, uuid);
+		Branch branch = ac.getBranch();
+		// BUG: Don't use the latest version. Use the version which is linked to the branch!
+		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
@@ -254,9 +254,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
-		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
+		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
-		batch.store(node, release.getUuid(), ContainerType.DRAFT, true);
+		batch.store(node, branch.getUuid(), ContainerType.DRAFT, true);
 		return node;
 	}
 

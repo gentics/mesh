@@ -27,10 +27,10 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
@@ -114,7 +114,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Assert that the index was created and that no job was scheduled. We need no job since no migration is required
 		BranchSchemaEdge edge1;
 		try (Tx tx = tx()) {
-			edge1 = initialBranch().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			edge1 = initialBranch().findBranchSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
 			assertEquals(COMPLETED, edge1.getMigrationStatus());
 			assertNull(edge1.getJobUuid());
 			assertTrue("The assignment should be active.", edge1.isActive());
@@ -149,7 +149,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = boot().schemaContainerRoot().findByName("dummy").getLatestVersion();
 			versionBUuid = versionB.getUuid();
 			assertNotEquals(versionUuid, versionBUuid);
-			edge2 = initialBranch().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			edge2 = initialBranch().findBranchSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
 			assertNotNull(edge2.getJobUuid());
 			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
 			assertTrue("The assignment should be active.", edge2.isActive());
@@ -212,7 +212,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				initialBranchUuid()).hasNext());
 			assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
 
-			edge3 = initialBranch().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			edge3 = initialBranch().findBranchSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(QUEUED, edge3.getMigrationStatus());
 			assertFalse("The previous assignment should be inactive.", edge1.isActive());

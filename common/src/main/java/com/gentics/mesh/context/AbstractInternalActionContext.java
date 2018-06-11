@@ -37,19 +37,19 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	}
 
 	/**
-	 * Cache for project specific releases.
+	 * Cache for project specific branches.
 	 */
-	private Map<Project, Branch> releaseCache = new ConcurrentHashMap<>();
+	private Map<Project, Branch> branchCache = new ConcurrentHashMap<>();
 
 	@Override
 	public Branch getBranch(Project project) {
 		if (project == null) {
 			project = getProject();
 		}
-		return releaseCache.computeIfAbsent(project, p -> {
+		return branchCache.computeIfAbsent(project, p -> {
 			if (p == null) {
 				// TODO i18n
-				throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
+				throw error(INTERNAL_SERVER_ERROR, "Cannot get branch without a project");
 			}
 
 			Branch branch = null;
@@ -61,7 +61,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 					branch = p.getBranchRoot().findByName(branchNameOrUuid);
 				}
 				if (branch == null) {
-					throw error(BAD_REQUEST, "release_error_not_found", branchNameOrUuid);
+					throw error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid);
 				}
 			} else {
 				branch = p.getLatestBranch();

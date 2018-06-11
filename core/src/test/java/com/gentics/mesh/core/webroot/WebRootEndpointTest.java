@@ -451,33 +451,33 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
 		});
 
-		// 2. update nodes in new release
+		// 2. update nodes in new branch
 		db().tx(() -> {
 			updateSlug(folder("news"), "en", "News_new");
 			updateSlug(folder("2015"), "en", "2015_new");
 		});
 
-		// 3. Assert new names in new release
+		// 3. Assert new names in new branch
 		db().tx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, newPath, new VersioningParametersImpl().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 		});
 
-		// 4. Assert new names in initial release
+		// 4. Assert new names in initial branch
 		db().tx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, newPath,
 					new VersioningParametersImpl().draft().setBranch(project().getInitialBranch().getUuid())), NOT_FOUND, "node_not_found_for_path",
 					newPath);
 		});
 
-		// 5. Assert old names in initial release
+		// 5. Assert old names in initial branch
 		db().tx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, initialPath,
 					new VersioningParametersImpl().draft().setBranch(project().getInitialBranch().getUuid())));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		});
 
-		// 6. Assert old names in new release
+		// 6. Assert old names in new branch
 		db().tx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, initialPath, new VersioningParametersImpl().draft()), NOT_FOUND, "node_not_found_for_path",
 					initialPath);
@@ -485,7 +485,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Update the node slug field for the latest release.
+	 * Update the node slug field for the latest branch.
 	 * 
 	 * @param node
 	 *            node
@@ -503,7 +503,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Update the node name for the given release
+	 * Update the node name for the given branch.
 	 * 
 	 * @param node
 	 *            node

@@ -33,9 +33,9 @@ public class NodeDeletionGraphFieldContainerFix {
 	public void repair(NodeGraphFieldContainer container) {
 
 		BootstrapInitializer boot = MeshInternal.get().boot();
-		// Pick the first project we find to fetch the initial releaseUuid
+		// Pick the first project we find to fetch the initial branchUuid
 		Project project = boot.meshRoot().getProjectRoot().findAllIt().iterator().next();
-		String releaseUuid = project.getInitialBranch().getUuid();
+		String branchUuid = project.getInitialBranch().getUuid();
 
 		SchemaContainer schemaContainer = container.getSchemaContainerVersion().getSchemaContainer();
 		// 1. Find the initial version to check whether the whole version history is still intact
@@ -84,18 +84,18 @@ public class NodeDeletionGraphFieldContainerFix {
 		if (published != null) {
 			GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, published, GraphFieldContainerEdgeImpl.class);
 			edge.setLanguageTag(published.getLanguage().getLanguageTag());
-			edge.setReleaseUuid(releaseUuid);
+			edge.setBranchUuid(branchUuid);
 			edge.setType(PUBLISHED);
 		}
 
 		GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, draft, GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(draft.getLanguage().getLanguageTag());
-		edge.setReleaseUuid(releaseUuid);
+		edge.setBranchUuid(branchUuid);
 		edge.setType(DRAFT);
 
 		GraphFieldContainerEdge initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 		initialEdge.setLanguageTag(initial.getLanguage().getLanguageTag());
-		initialEdge.setReleaseUuid(releaseUuid);
+		initialEdge.setBranchUuid(branchUuid);
 		initialEdge.setType(INITIAL);
 
 		SearchQueueBatch batch = MeshInternal.get().searchQueue().create();

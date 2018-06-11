@@ -3,10 +3,10 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_RELEASE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_RELEASE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -36,22 +36,22 @@ import com.gentics.mesh.graphdb.spi.Database;
 /**
  * @see BranchRoot
  */
-public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
+public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(ReleaseRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeType(HAS_RELEASE);
-		database.addEdgeIndex(HAS_RELEASE, true, false, true);
+		database.addVertexType(BranchRootImpl.class, MeshVertexImpl.class);
+		database.addEdgeType(HAS_BRANCH);
+		database.addEdgeIndex(HAS_BRANCH, true, false, true);
 	}
 
 	@Override
 	public Project getProject() {
-		return in(HAS_RELEASE_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return in(HAS_BRANCH_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
 	public Branch create(String name, User creator, String uuid) {
-		Branch latestRelease = getLatestRelease();
+		Branch latestRelease = getLatestBranch();
 
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
@@ -65,20 +65,20 @@ public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements Branc
 		branch.setProject(getProject());
 
 		if (latestRelease == null) {
-			// if this is the first release, make it the initial release
-			setSingleLinkOutTo(branch, HAS_INITIAL_RELEASE);
+			// if this is the first branch, make it the initial branch
+			setSingleLinkOutTo(branch, HAS_INITIAL_BRANCH);
 		} else {
-			// otherwise link the releases
+			// otherwise link the branches
 			latestRelease.setNextBranch(branch);
 		}
 
-		// make the new release the latest
-		setSingleLinkOutTo(branch, HAS_LATEST_RELEASE);
+		// make the new branch the latest
+		setSingleLinkOutTo(branch, HAS_LATEST_BRANCH);
 
-		// set initial permissions on the release
+		// set initial permissions on the branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
 
-		// assign the newest schema versions of all project schemas to the release
+		// assign the newest schema versions of all project schemas to the branch
 		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
 			branch.assignSchemaVersion(creator, schemaContainer.getLatestVersion());
 		}
@@ -92,13 +92,13 @@ public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements Branc
 	}
 
 	@Override
-	public Branch getInitialRelease() {
-		return out(HAS_INITIAL_RELEASE).nextOrDefaultExplicit(BranchImpl.class, null);
+	public Branch getInitialBranch() {
+		return out(HAS_INITIAL_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
-	public Branch getLatestRelease() {
-		return out(HAS_LATEST_RELEASE).nextOrDefaultExplicit(BranchImpl.class, null);
+	public Branch getLatestBranch() {
+		return out(HAS_LATEST_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements Branc
 
 		// Check for completeness of request
 		if (StringUtils.isEmpty(request.getName())) {
-			throw error(BAD_REQUEST, "release_missing_name");
+			throw error(BAD_REQUEST, "branch_missing_name");
 		}
 
 		Project project = getProject();
@@ -121,11 +121,11 @@ public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements Branc
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
 		}
 
-		// Check for uniqueness of release name (per project)
+		// Check for uniqueness of branch name (per project)
 		Branch conflictingRelease = db.checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
 			.getName()));
 		if (conflictingRelease != null) {
-			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", request.getName());
+			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "branch_conflicting_name", request.getName());
 		}
 
 		Branch branch = create(request.getName(), requestUser, uuid);
@@ -135,7 +135,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements Branc
 		if (request.getSsl() != null) {
 			branch.setSsl(request.getSsl());
 		}
-		// A new release was created - We also need to create new indices for the nodes within the release
+		// A new branch was created - We also need to create new indices for the nodes within the branch
 		for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 			batch.addNodeIndex(project, branch, version, DRAFT);
 			batch.addNodeIndex(project, branch, version, PUBLISHED);
@@ -151,7 +151,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements Branc
 
 	@Override
 	public String getRootLabel() {
-		return HAS_RELEASE;
+		return HAS_BRANCH;
 	}
 
 	@Override
@@ -162,15 +162,15 @@ public class ReleaseRootImpl extends AbstractRootVertex<Branch> implements Branc
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		if (log.isDebugEnabled()) {
-			log.debug("Deleting release root {" + getUuid() + "}");
+			log.debug("Deleting branch root {" + getUuid() + "}");
 		}
 
-		// Delete all releases
-		for (Branch release : findAllIt()) {
-			release.delete(batch);
+		// Delete all branches
+		for (Branch branch : findAllIt()) {
+			branch.delete(batch);
 		}
 
-		// All releases are gone. Now delete the root.
+		// All branches are gone. Now delete the root.
 		getElement().remove();
 	}
 }

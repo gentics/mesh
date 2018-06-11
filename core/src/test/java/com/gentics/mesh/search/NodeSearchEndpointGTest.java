@@ -169,7 +169,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testSearchPublishedInRelease() throws Exception {
+	public void testSearchPublishedInBranch() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
@@ -178,17 +178,17 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
-		// Create a new release and migrate the nodes
+		// Create a new branch and migrate the nodes
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		String releaseName = "newrelease";
-		BranchCreateRequest createRelease = new BranchCreateRequest();
-		createRelease.setName(releaseName);
-		call(() -> client().createBranch(PROJECT_NAME, createRelease));
+		String branchName = "newbranch";
+		BranchCreateRequest createBranch = new BranchCreateRequest();
+		createBranch.setName(branchName);
+		call(() -> client().createBranch(PROJECT_NAME, createBranch));
 		failingLatch(latch);
 
-		// Assert that the node can be found within the publish index within the new release
+		// Assert that the node can be found within the publish index within the new branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-				new VersioningParametersImpl().setBranch(releaseName).setVersion("published")));
+				new VersioningParametersImpl().setBranch(branchName).setVersion("published")));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

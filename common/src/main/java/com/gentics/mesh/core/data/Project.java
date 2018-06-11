@@ -137,14 +137,14 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	NodeRoot getNodeRoot();
 
 	/**
-	 * Get the initial release of the project.
+	 * Get the initial branch of the project.
 	 *
 	 * @return
 	 */
 	Branch getInitialBranch();
 
 	/**
-	 * Get the latest release of the project.
+	 * Get the latest branch of the project.
 	 *
 	 * @return
 	 */
@@ -153,7 +153,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	/**
 	 * Return the branch root aggregation vertex of the project. Internally this method will create the branch root when it has not yet been created.
 	 * 
-	 * @return Release root element
+	 * @return Branch root element
 	 */
 	BranchRoot getBranchRoot();
 

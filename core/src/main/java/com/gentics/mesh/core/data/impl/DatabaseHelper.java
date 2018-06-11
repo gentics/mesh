@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
-import com.gentics.mesh.core.data.job.impl.ReleaseMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
+import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
@@ -95,7 +95,7 @@ public final class DatabaseHelper {
 		MicroschemaContainerRootImpl.init(database);
 		ProjectSchemaContainerRootImpl.init(database);
 		ProjectMicroschemaContainerRootImpl.init(database);
-		ReleaseRootImpl.init(database);
+		BranchRootImpl.init(database);
 		JobRootImpl.init(database);
 
 		// Binary
@@ -134,7 +134,7 @@ public final class DatabaseHelper {
 		// Jobs
 		NodeMigrationJobImpl.init(database);
 		MicronodeMigrationJobImpl.init(database);
-		ReleaseMigrationJobImpl.init(database);
+		BranchMigrationJobImpl.init(database);
 
 		// Field changes
 		FieldTypeChangeImpl.init(database);

@@ -111,8 +111,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			// }
 
-			Branch release = ac.getBranch(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+			Branch branch = ac.getBranch(node.getProject());
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
@@ -201,7 +201,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, branch, ContainerType.DRAFT);
 
 			if (latestDraftVersion == null) {
-				// latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
+				// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
 				// TODO Maybe it would be better to just create a new field container for the language?
 				// In that case we would also need to:
 				// * check for segment field conflicts
@@ -512,7 +512,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// TODO should we rename the image, if the extension is wrong?
 					field.getBinary().setImageHeight(result.getImageInfo().getHeight());
 					field.getBinary().setImageWidth(result.getImageInfo().getWidth());
-					batch.store(newDraftVersion, node.getProject().getBranchRoot().getLatestRelease().getUuid(), DRAFT, false);
+					batch.store(newDraftVersion, node.getProject().getBranchRoot().getLatestBranch().getUuid(), DRAFT, false);
 					return batch;
 				});
 				// Finally update the search index and return the updated node

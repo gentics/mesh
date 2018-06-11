@@ -65,7 +65,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	 */
 	public static void init(Database database) {
 		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.RELEASE_UUID_KEY);
+		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
 		database.addEdgeIndex(HAS_TAG, true, false, true);
 	}
 

@@ -705,7 +705,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	// test fails since user node references are not yet release aware
+	// test fails since user node references are not yet branch aware
 	public void testReadUserWithExpandedNodeReference() {
 		String folderUuid;
 		UserCreateRequest newUser;

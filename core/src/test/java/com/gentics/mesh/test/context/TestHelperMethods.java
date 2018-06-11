@@ -166,7 +166,7 @@ public interface TestHelperMethods {
 	}
 
 	/**
-	 * Return the uuid of the initial project release.
+	 * Return the uuid of the initial project branch.
 	 * 
 	 * @return
 	 */
@@ -294,16 +294,16 @@ public interface TestHelperMethods {
 	}
 
 	/**
-	 * Return the latest release of the dummy project.
+	 * Return the latest branch of the dummy project.
 	 * 
 	 * @return
 	 */
-	default Branch latestRelease() {
+	default Branch latestBranch() {
 		return project().getLatestBranch();
 	}
 
 	/**
-	 * Returns the initial release of the dummy project.
+	 * Returns the initial branch of the dummy project.
 	 * 
 	 * @return
 	 */
@@ -436,31 +436,31 @@ public interface TestHelperMethods {
 	}
 
 	/**
-	 * Migrate the node from one release to another
+	 * Migrate the node from one branch to another.
 	 * 
 	 * @param projectName
 	 *            project name
 	 * @param uuid
 	 *            node Uuid
-	 * @param sourceReleaseName
-	 *            source release name
-	 * @param targetReleaseName
-	 *            target release name
+	 * @param sourceBranchName
+	 *            source branch name
+	 * @param targetBranchName
+	 *            target branch name
 	 * @return migrated node
 	 */
-	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
-		// read node from source release
-		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setBranch(sourceReleaseName)
+	default public NodeResponse migrateNode(String projectName, String uuid, String sourceBranchName, String targetBranchName) {
+		// read node from source branch
+		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setBranch(sourceBranchName)
 			.draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
-		// update node for target release
+		// update node for target branch
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(nodeResponse.getLanguage());
 
 		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setBranch(targetReleaseName)));
+		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setBranch(targetBranchName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {

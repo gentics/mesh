@@ -36,10 +36,10 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	}
 
 	/**
-	 * Migrate all nodes from one release to the other
+	 * Migrate all nodes from one branch to the other
 	 * 
 	 * @param newBranch
-	 *            new release
+	 *            new branch
 	 * @param status
 	 */
 	public void migrateBranch(Branch newBranch, MigrationStatusHandler status) {
@@ -49,11 +49,11 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 
 		Branch oldRelease = newBranch.getPreviousBranch();
 		if (oldRelease == null) {
-			throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous release");
+			throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
 		}
 
 		if (!oldRelease.isMigrated()) {
-			throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newBranch.getName() + "}, because previous release {"
+			throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
 				+ oldRelease.getName() + "} is not fully migrated yet.");
 		}
 
@@ -63,7 +63,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		}
 
 		long count = 0;
-		// Iterate over all nodes of the project and migrate them to the new release
+		// Iterate over all nodes of the project and migrate them to the new branch
 		Project project = oldRelease.getProject();
 		for (Node node : project.getNodeRoot().findAllIt()) {
 			SearchQueueBatch sqb = db.tx(() -> {
@@ -94,8 +94,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	}
 
 	/**
-	 * Migrate the node from the old release to the new release. This will effectively create the edges between the new release and the node. Additionally also
-	 * the tags will be update to correspond with the new release structure.
+	 * Migrate the node from the old branch to the new branch. This will effectively create the edges between the new branch and the node. Additionally also
+	 * the tags will be update to correspond with the new branch structure.
 	 * 
 	 * @param node
 	 * @param oldBranch
@@ -112,12 +112,12 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 			initialEdge.setType(INITIAL);
-			initialEdge.setReleaseUuid(newBranch.getUuid());
+			initialEdge.setBranchUuid(newBranch.getUuid());
 
 			GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 			draftEdge.setType(DRAFT);
-			draftEdge.setReleaseUuid(newBranch.getUuid());
+			draftEdge.setBranchUuid(newBranch.getUuid());
 		});
 		SearchQueueBatch batch = searchQueue.create();
 		batch.store(node, newBranch.getUuid(), DRAFT, false);
@@ -126,7 +126,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			edge.setLanguageTag(container.getLanguage().getLanguageTag());
 			edge.setType(PUBLISHED);
-			edge.setReleaseUuid(newBranch.getUuid());
+			edge.setBranchUuid(newBranch.getUuid());
 		});
 		batch.store(node, newBranch.getUuid(), PUBLISHED, false);
 

@@ -38,9 +38,9 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		try {
 
 			try (Tx tx = DB.get().tx()) {
-				Branch release = getRelease();
-				if (release == null) {
-					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
+				Branch branch = getBranch();
+				if (branch == null) {
+					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
 				}
 
 				MicroschemaContainerVersion fromContainerVersion = getFromMicroschemaVersion();
@@ -54,8 +54,8 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				}
 
 				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
-				BranchMicroschemaEdge releaseVersionEdge = release.findReleaseMicroschemaEdge(toContainerVersion);
-				statusHandler.setVersionEdge(releaseVersionEdge);
+				BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
+				statusHandler.setVersionEdge(branchVersionEdge);
 
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
@@ -64,7 +64,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 				statusHandler.commit();
 
-				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(release, fromContainerVersion, toContainerVersion, statusHandler)
+				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(branch, fromContainerVersion, toContainerVersion, statusHandler)
 						.blockingAwait();
 				statusHandler.done();
 			}
