@@ -118,10 +118,10 @@ https://demo.getmesh.io/api/v1/demo/graphql/browser/[Live Demo]
 Alternatively, you can download Gentics Mesh and test the API locally.
 Once authenticated you can access the interactive GraphiQL browser at ```/api/v1/:projectName/graphql/browser/``` .
 
-NOTE: The GraphiQL browser currently does not support the release or version query parameter.
+NOTE: The GraphiQL browser currently does not support the `branch`` or `version` query parameter.
 
 == Limitations
 
 * At the moment, the GraphQL API can currently only be used for read-only operations. Modifying data with via mutations is currently not supported.
 * GraphQL queries are restricted to a specific project. It is not possible to query data across multiple projects.
-* GraphQL queries are restricted to a specific release. The scope of the release can be changed by adding the `?release` query parameter.
+* GraphQL queries are restricted to a specific project branch. The scope of the branch can be changed by adding the `?branch` query parameter.

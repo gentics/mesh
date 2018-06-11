@@ -787,13 +787,13 @@ The ```?resolveLinks``` query parameter can be applied to all API endpoints retu
 In some cases it may be desireable to be able to create links which point to nodes within different projects. 
 In these situations the link should no longer be relative but instead contain the domain and protocol which is used by the project of the referenced node.
 
-You can specifiy the `hostname` and `ssl` flag when creating a project. This will in turn store this information within the created release of the project. Gentics Mesh will make use of this information once you render a foreign node's link using the *short* type.
-The links will automatically start with `https://` if the ssl flag of the release has been set to true. You can update the hostname/ssl flag at any time by updating the release of the project.
+You can specifiy the `hostname` and `ssl` flag when creating a project. This will in turn store this information within the created branch of the project. Gentics Mesh will make use of this information once you render a foreign node's link using the *short* type.
+The links will automatically start with `https://` if the ssl flag of the branch has been set to true. You can update the hostname/ssl flag at any time by updating the branch of the project.
 
 NOTE: Foreign links can only be rendered using the *?resolveLinks=short* type. Other resolver types do not support this mechanism.
 
-NOTE: Foreign links currently don't contain any release reference thus it is not possible to render links to a foreign node within a specific release. 
-      Instead the foreign link resolving mechanism will automatically use the latest release of the node's project to render the links.
+NOTE: Foreign links currently don't contain any branch reference thus it is not possible to render links to a foreign node within a specific branch. 
+      Instead the foreign link resolving mechanism will automatically use the latest branch of the node's project to render the links.
 
 === API endpoints
 
@@ -1507,22 +1507,22 @@ Permissions on a single or multiple nodes are applied via ```/:projectName/nodes
 |======
 
 
-==== How to Grant Permissions on Releases
+==== How to Grant Permissions on project branches
 
-Permissions on a single or multiple releases are applied via ```/releases/:uuid``` path and ```/releases``` path respectively.
+Permissions on a single or multiple branches are applied via ```/api/v1/:projectName/branches/:uuid``` path and ```/api/v1/:projectName/branches``` path respectively.
 
-NOTE: Releases can not be deleted. Hence, permissions for deleting do not apply.
+NOTE: Branches can not be deleted. Hence, permissions for deleting do not apply.
 
 [caption=]
-.Role permissions on a specific release and multiple releases
+.Role permissions on a specific branch and multiple branches
 [options="header"]
 |======
-| Role permission                     | Element path                        | Permission     | Recursive
-| Can create new release              | ```/:projectName/releases```        | Create         | false 
-| Can read all releases               | ```/:projectName/releases```        | Read           | true 
-| Can update all releases             | ```/:projectName/releases```        | Update         | true 
-| Can read the release                | ```/:projectName/releases/:uuid```  | Read           | false 
-| Can update the release              | ```/:projectName/releases/:uuid```  | Update         | false 
+| Role permission                     | Element path                               | Permission     | Recursive
+| Can create new branch               | ```/api/v1/:projectName/branches```        | Create         | false 
+| Can read all branches               | ```/api/v1/:projectName/branches```        | Read           | true 
+| Can update all branches             | ```/api/v1/:projectName/branches```        | Update         | true 
+| Can read the branch                 | ```/api/v1/:projectName/branches/:uuid```  | Read           | false 
+| Can update the branch               | ```/api/v1/:projectName/branches/:uuid```  | Update         | false 
 |======
 
 
@@ -1592,83 +1592,83 @@ IMPORTANT: Gentics Mesh by default returns the ```draft``` version of nodes. Thi
 
 NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readPublished``` permission.
 
-== Content Releases
+== Content Branches
 
-So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
+So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Branches`. A project branch is very similar to branches in a versioning control system.
 
-Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provides a different structure/content.
+Branches can be used to restructure your nodes and change the contents within a specific branch without affecting a different branch which provides a different structure/content.
 
-Structural references for nodes always contain release information. This applies to parent/child relationship or taggings, publish states of nodes. This way releases are completely isolated from each other.
+Structural references for nodes always contain branch information. This applies to parent/child relationship or taggings, publish states of nodes. This way branches are completely isolated from each other.
 
-NOTE: It is currently not possible to migrate from one release to another. Nodes of releases can't be automatically merged to other releases.
+NOTE: It is currently not possible to migrate from one branch to another. Nodes of branches can't be automatically merged to other branches.
 
 Typical usecases are:
 
 * Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions.
-  By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both application versions.
-  Each application versions chooses the correct release for getting nodes.
+  By creating a branch and migrating the nodes to the new branch (new schema versions), it is possible to serve content for both application versions.
+  Each application versions chooses the correct branch for getting nodes.
 
-* Schema versions must be assigned to the release.
-  Each project can have multiple releases.
-  An initial release will automatically be created when creating a project.
+* Schema versions must be assigned to the branch.
+  Each project can have multiple branches.
+  An initial branch will automatically be created when creating a project.
 
-All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release will be used to execute the operation.
+All operations to nodes can be scoped to a specific branch by adding the ```?branch=name``` query parameter. If omitted the latest branch will be used to execute the operation.
 
-TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes.
+TIP: Implementations which use mesh should always reference a specific branch. Otherwise the document structure could change without the implementation being aware of these changes.
 
-=== Creating a Release
+=== Creating a project branch
 
-A release requires an unique name. Existing nodes within the project will automatically be migrated into the release.
-Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
+A branch requires an unique name. Existing nodes within the project will automatically be migrated into the branch.
+Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the branch.
 
-This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.
+This migration is different from a schema version migration. The branch node migration just takes care of making all nodes from the previous branch available in the newly created branch.
 Unlike the schema migration the node migration will not create new language variant versions.
 
 You can use the eventbus bridge or the dedicated ```/api/v1/admin/status/migrations``` endpoint to query the migration status.
-The ```migrated``` JSON property within the release response also indicates whether the node migration has been completed.
+The ```migrated``` JSON property within the branch response also indicates whether the node migration has been completed.
 
 Note: Migrated nodes will still have the same _uuid_ as before.
 
-=== Updating a Release
+=== Updating a project branch
 
-A release can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
+A branch can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
 
-Renaming is useful if you want to change your development release to be the current production release.
+Renaming is useful if you want to change your development branch to be the current production branch.
 
-Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the release.
-
-[source,json]
-----
-include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
-----
-
-It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
+Assigning schema versions to the branch via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the branch.
 
 [source,json]
 ----
-include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
+include::examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/schemas/request-body.json[]
 ----
 
-All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
-Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the release.
+It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/microschemas``` to the branch.
+
+[source,json]
+----
+include::examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/microschemas/request-body.json[]
+----
+
+All nodes which reference the branch via the updated schema version will automatically be migrated to use the newer schema version.
+Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the branch.
 
 The migration will create new versions for the affected node language variants.
 
-NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
+NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the branch. Each schema update created a new schema version. This new version must first be assigned to the branch.
 
-=== Deleting a Release
+=== Deleting a project branch
 
-At the moment it is not possible to delete a release.
+At the moment it is not possible to delete a branch.
 
 === Moving Nodes
 
-Releases enable Gentics Mesh to setup multiple content project tree structures.
-Moving nodes can be scoped to a specific release using the ```?release``` request parameter.
-The project's initial release will be used to execute the move operation if no release has been selected.
+Branches enable Gentics Mesh to setup multiple content project tree structures.
+Moving nodes can be scoped to a specific branch using the ```?branch``` query parameter.
+The project's initial branch will be used to execute the move operation if no branch has been selected.
 
 === Tagging Nodes
 
-The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release.
+The tag operation is also scoped to a specific branch. This way new tags can be assigned to your nodes for a specific branch without affecting the taggings of nodes within an older branch.
 
 NOTE: Tags and tag families are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
 
@@ -1676,31 +1676,31 @@ NOTE: Taggings to nodes are not versioned.
 
 === Deleting Nodes
 
-Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?release=winter2016``` will delete the node and all its sub nodes from the _winter2016_ release.
-The node will be completely removed from the system if no more language variants are referenced within any release.
+Deleting nodes is also branch specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?branch=winter2016``` will delete the node and all its sub nodes from the _winter2016_ branch.
+The node will be completely removed from the system if no more language variants are referenced within any branch.
 
-It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
+It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?branch=winter2016``` from branch _winter2016_.
 
 === Updating Nodes
 
-Releases are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
+Branches are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
 
 Example:
 
-* Create release _summer2016_
-* Create node with language variant _de_ at version _1.0_ in release _summer2016_
-* Create release _winter2016_
-* Update previously created node in release _summer2016_ and thus create version _1.1_
+* Create project branch _summer2016_
+* Create node with language variant _de_ at version _1.0_ in branch _summer2016_
+* Create project branch _winter2016_
+* Update previously created node in branch _summer2016_ and thus create version _1.1_
 
-Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winter2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
+Branch _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winter2016_ branch was created at the specific point of time in which the language variant in branch _summer2016_ was still at version _1.0_.
 
 NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
 
-Additionally creating new nodes in _summer2016_ will not be available in release _winter2016_.
+Additionally creating new nodes in _summer2016_ will not be available in branch _winter2016_.
 
 === Permissions
 
-NOTE: Permissions are not release specific.
+NOTE: Permissions are not branch specific.
 
 == Preview Handling
 
@@ -1895,13 +1895,13 @@ include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body
 
 Migrations can potentially affect a huge amount of nodes depending on the size of your project. As such the migration could take some time to complete. 
 This is why we designed migrations in ways that they can be executed asynchronously.
-Various operations in Gentics Mesh (eg. Schema update, assigning versions to releases, creating releases) may trigger migrations. 
+Various operations in Gentics Mesh (e.g. Schema update, assigning versions to branches, creating branches) may trigger migrations. 
 Before the migration is being executed a job is added to the job queue. You can view the queue via the `/api/v1/admin/jobs` endpoint. 
 These jobs will be processed and execute the actual migration.
 
 By default updating a schema will create a new schema version and the nodes will be migrated to that new version. 
-If you want to deferre this operation you can set the `updateAssignedReleases` query parameter to false when updating a schema/microschema. 
-This leads to a new schema version being created but the version would not be linked to your current release and no migration would be invoked.
+If you want to defer this operation you can set the `updateAssignedBranches` query parameter to false when updating a schema/microschema. 
+This leads to a new schema version being created but the version would not be linked to your current branch and no migration would be invoked.
 
 Once a job has been queued and a migration has been invoked the status can be checked via the `/api/v1/admin/status/migrations` endpoint.
 
@@ -1966,9 +1966,9 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 | mesh.microschema.updated  | Triggered on microschema update
 | mesh.microschema.deleted  | Triggered on microschema deletion
 
-| mesh.release.created  | Triggered on release creation
-| mesh.release.updated  | Triggered on release update
-| mesh.release.deleted  | Triggered on release deletion
+| mesh.branch.created  | Triggered on branch creation
+| mesh.branch.updated  | Triggered on branch update
+| mesh.branch.deleted  | Triggered on branch deletion
 |======
 
 == Clustering

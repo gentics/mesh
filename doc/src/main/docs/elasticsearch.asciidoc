@@ -38,7 +38,7 @@ This is done by nesting the input query inside of an outer boolean query which i
 
 === Limitations
 
-NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
+NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per project branch are stored in the search index.
 
 NOTE: The stored documents within the Elasticsearch indices do not contain all properties which are otherwise available via REST. 
 Only directly accessible values which have minimal dependencies to other elements are stored in order to keep the update effort manageable.

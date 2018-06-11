@@ -66,9 +66,9 @@ If you have not yet setup a database and just start Gentics Mesh with clustering
 
 You can start up additional instances once your initial cluster instance is up and running.
 
-* Enable clusering on an non-clustered instance
+* Enable clustering on an non-clustered instance
 
-Just set the `cluster.enabled` flag and specifiy a `cluster.clusterName` within your `mesh.yml`.
+Just set the `cluster.enabled` flag and specify a `cluster.clusterName` within your `mesh.yml`.
 
 == Node discovery
 
@@ -119,8 +119,8 @@ upload:
 Transactions are directly being handled by link:http://orientdb.com/docs/2.2.x/Transactions.html[OrientDB].
 
 The distribution of data (write) is executed synchronous and will be directly visible on other instances. 
-Operations which modify permissions are handled asynchronous and may take a few miliseconds to propagate throughout the cluster.
-Operations which invoke node, micronode or release migrations can only be executed separately throughout the cluster. 
+Operations which modify permissions are handled asynchronous and may take a few milliseconds to propagate throughout the cluster.
+Operations which invoke node, micronode or branch migrations can only be executed separately throughout the cluster. 
 A running migration on one instance will cause the other instances of the cluster to reject any migration request as long as a migration is active.
 
 == Upgrading a cluster
@@ -169,14 +169,14 @@ Can I add new instances at any time?::
 Yes. New instances can be added at any time.
 
 Are my changes directly visible on other instances?::
-The replication handles this as fast as the network allows but by default replication is happening synchronous to fullfill the `writeQuorum` and asynchronous once the quorum has been satisfied.
+The replication handles this as fast as the network allows but by default replication is happening synchronous to full fill the `writeQuorum` and asynchronous once the quorum has been satisfied.
 which means that it could take a few moments until your changes are propagated throughout the cluster.
 This behaviour is configurable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
 Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.
 
 What happens if the network between my instances fails?::
 The instances will continue to operate normally but will no longer be able to see each other's changes.
-Once the network issue is resolved the instances will update themself and resume normal operation.
+Once the network issue is resolved the instances will update them self and resume normal operation.
 
 I want to use a load balancer to distribute load across my instances. Do I need to handle sticky sessions?::
 Gentics Mesh does not use sessions. Instead a stateless JWT mechanism is used. This means you can direct your traffic to any of clustered instances. No need to setup something special.
