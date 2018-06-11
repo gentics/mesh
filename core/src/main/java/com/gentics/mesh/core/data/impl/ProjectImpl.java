@@ -7,7 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -40,13 +40,13 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
+import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -181,7 +181,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
 			Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
-			baseNode.createGraphFieldContainer(language, getLatestRelease(), creator);
+			baseNode.createGraphFieldContainer(language, getLatestBranch(), creator);
 			setBaseNode(baseNode);
 			// Add the node to the aggregation nodes
 			getNodeRoot().addNode(baseNode);
@@ -203,11 +203,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		batch.dropIndex(TagFamily.composeIndexName(getUuid()));
 		batch.dropIndex(Tag.composeIndexName(getUuid()));
 
-		// Drop all node indices for all releases and all schema versions
-		for (Release release : getReleaseRoot().findAllIt()) {
-			for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
+		// Drop all node indices for all branches and all schema versions
+		for (Branch branch : getBranchRoot().findAllIt()) {
+			for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
+					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), branch.getUuid(), version.getUuid(), type);
 					if (log.isDebugEnabled()) {
 						log.debug("Adding drop entry for index {" + pubIndex + "}");
 					}
@@ -236,8 +236,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		// Remove the project schema root from the index
 		getSchemaContainerRoot().delete(batch);
 
-		// Remove the release root and all releases
-		getReleaseRoot().delete(batch);
+		// Remove the branch root and all branches
+		getBranchRoot().delete(batch);
 
 		// Finally remove the project node
 		getVertex().remove();
@@ -288,7 +288,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (getBaseNode() == null) {
 			return;
 		}
-		// All nodes of all releases are related to this project. All
+		// All nodes of all branches are related to this project. All
 		// nodes/containers must be updated if the project name changes.
 		for (Node node : getNodeRoot().findAllIt()) {
 			action.call(node, new GenericEntryContextImpl());
@@ -306,21 +306,21 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Release getInitialRelease() {
-		return getReleaseRoot().getInitialRelease();
+	public Branch getInitialBranch() {
+		return getBranchRoot().getInitialBranch();
 	}
 
 	@Override
-	public Release getLatestRelease() {
-		return getReleaseRoot().getLatestRelease();
+	public Branch getLatestBranch() {
+		return getBranchRoot().getLatestBranch();
 	}
 
 	@Override
-	public ReleaseRoot getReleaseRoot() {
-		ReleaseRoot root = out(HAS_RELEASE_ROOT).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
+	public BranchRoot getBranchRoot() {
+		BranchRoot root = out(HAS_BRANCH_ROOT).nextOrDefaultExplicit(BranchRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(ReleaseRootImpl.class);
-			linkOut(root, HAS_RELEASE_ROOT);
+			root = getGraph().addFramedVertex(BranchRootImpl.class);
+			linkOut(root, HAS_BRANCH_ROOT);
 		}
 		return root;
 	}

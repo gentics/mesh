@@ -45,7 +45,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.OFF, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.OFF, null,
 					null);
 
 			assertEquals("Check rendered content", content, replacedContent);
@@ -59,7 +59,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.SHORT, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.SHORT, null,
 					null);
 
 			assertEquals("Check rendered content", "/News/News%20Overview.en.html", replacedContent);
@@ -73,7 +73,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.MEDIUM, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.MEDIUM, null,
 					null);
 
 			assertEquals("Check rendered content", "/dummy/News/News%20Overview.en.html", replacedContent);
@@ -87,7 +87,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
@@ -101,7 +101,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} postfix";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
@@ -115,7 +115,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
@@ -129,7 +129,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}} postfix";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
@@ -143,7 +143,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content",
@@ -158,7 +158,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} in between {{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content",
@@ -174,7 +174,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", content, replacedContent);
@@ -188,7 +188,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(" + uuid + ")}}\"'";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
@@ -203,7 +203,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			final String content = "'\"{{mesh.link(" + uuid + ", de)}}\"'";
 
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html\"'", replacedContent);
@@ -218,7 +218,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			final String content = "'\"{{mesh.link('" + uuid + "')}}\"'";
 
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
@@ -233,7 +233,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			final String content = "'\"{{mesh.link(\"" + uuid + "\")}}\"'";
 
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
@@ -248,7 +248,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			final String content = "{{mesh.link(\"" + uuid + "\", \"de\")}}";
 
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html", replacedContent);
@@ -262,7 +262,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
 			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
@@ -279,17 +279,17 @@ public class LinkRendererTest extends AbstractMeshTest {
 			SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
 			Node content = parentNode.create(user(), schemaVersion, project());
-			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, content.getProject().getLatestRelease(), user());
+			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
 			Node content2 = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
-			NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, content2.getProject().getLatestRelease(), user());
+			NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
 			InternalActionContext ac = mockActionContext();
-			replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, "dgasd", null, null, null);
+			replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, "dgasd", null, null, null);
 		}
 	}
 
@@ -311,7 +311,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			// Render the link
 			final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, meshLink, LinkType.FULL, null,
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, meshLink, LinkType.FULL, null,
 					null);
 			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/somefile.dat", replacedContent);
 		}
@@ -326,7 +326,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 					+ "\")}}\">Test</a>DEN";
 			System.out.println("From: " + content);
 			InternalActionContext ac = mockActionContext();
-			String output = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, null, null, null);
+			String output = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, null, null, null);
 			System.out.println("To:   " + output);
 		}
 	}

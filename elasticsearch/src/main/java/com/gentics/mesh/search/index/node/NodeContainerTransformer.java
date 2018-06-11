@@ -401,14 +401,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	/**
-	 * It is required to specify the releaseUuid in order to transform containers.
+	 * It is required to specify the branchUuid in order to transform containers.
 	 *
 	 * @deprecated
 	 */
 	@Override
 	@Deprecated
 	public JsonObject toDocument(NodeGraphFieldContainer object) {
-		throw new NotImplementedException("Use toDocument(container, releaseUuid) instead");
+		throw new NotImplementedException("Use toDocument(container, branchUuid) instead");
 	}
 
 	/**
@@ -424,14 +424,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		return document;
 	}
 
-	public String generateVersion(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
+	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		Node node = container.getParentNode();
 		Project project = node.getProject();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());
 		builder.append("|");
-		builder.append(releaseUuid);
+		builder.append(branchUuid);
 		builder.append("|");
 		builder.append(type.name());
 		builder.append("|");
@@ -443,23 +443,23 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	/**
-	 * @deprecated Use generateVersion(container, releaseUuid) instead
+	 * @deprecated Use generateVersion(container, branchUuid) instead
 	 */
 	@Override
 	@Deprecated
 	public String generateVersion(NodeGraphFieldContainer element) {
-		throw new NotImplementedException("Use generateVersion(container, releaseUuid) instead");
+		throw new NotImplementedException("Use generateVersion(container, branchUuid) instead");
 	}
 
 	/**
 	 * Transform the role to the document which can be stored in ES.
 	 * 
 	 * @param container
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
-	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
+	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -469,13 +469,13 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		addTags(document, node.getTags(node.getProject().getLatestRelease()));
-		addTagFamilies(document, node.getTags(node.getProject().getLatestRelease()));
+		addTags(document, node.getTags(node.getProject().getLatestBranch()));
+		addTagFamilies(document, node.getTags(node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.
-		if (node.getParentNode(releaseUuid) != null) {
-			addParentNodeInfo(document, node.getParentNode(releaseUuid));
+		if (node.getParentNode(branchUuid) != null) {
+			addParentNodeInfo(document, node.getParentNode(branchUuid));
 		}
 
 		String language = container.getLanguage().getLanguageTag();
@@ -494,7 +494,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 		displayField.put("value", container.getDisplayFieldValue());
 		document.put("displayField", displayField);
-		document.put(VERSION_KEY, generateVersion(container, releaseUuid, type));
+		document.put(VERSION_KEY, generateVersion(container, branchUuid, type));
 		return document;
 	}
 

@@ -145,7 +145,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				}
 
 				MicroschemaContainerVersion container = ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference,
-						ac.getRelease());
+						ac.getBranch());
 				return Observable.just(container);
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {

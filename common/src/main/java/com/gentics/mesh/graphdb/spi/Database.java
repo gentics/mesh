@@ -22,11 +22,11 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Completable;
-import io.reactivex.Single;
 
 /**
  * Main description of a graph database.
@@ -377,6 +377,15 @@ public interface Database extends TxFactory {
 	void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex);
 
 	/**
+	 * Create a new vertex type.
+	 * 
+	 * @param clazzOfVertex
+	 * @param superClazzOfVertex
+	 *            Super vertex type. If null "V" will be used.
+	 */
+	void addVertexType(String clazzOfVertex, String superClazzOfVertex);
+
+	/**
 	 * Remove the vertex type with the given name.
 	 * 
 	 * @param string
@@ -521,5 +530,13 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	String getElementVersion(Element element);
+
+	/**
+	 * Change the element type.
+	 * 
+	 * @param vertex
+	 * @param newType
+	 */
+	void changeType(Vertex vertex, String newType);
 
 }

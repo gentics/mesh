@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -166,12 +166,12 @@ public interface TestHelperMethods {
 	}
 
 	/**
-	 * Return the uuid of the initial project release.
+	 * Return the uuid of the initial project branch.
 	 * 
 	 * @return
 	 */
-	default String initialReleaseUuid() {
-		return data().releaseUuid();
+	default String initialBranchUuid() {
+		return data().branchUuid();
 	}
 
 	default String roleUuid() {
@@ -294,21 +294,21 @@ public interface TestHelperMethods {
 	}
 
 	/**
-	 * Return the latest release of the dummy project.
+	 * Return the latest branch of the dummy project.
 	 * 
 	 * @return
 	 */
-	default Release latestRelease() {
-		return project().getLatestRelease();
+	default Branch latestBranch() {
+		return project().getLatestBranch();
 	}
 
 	/**
-	 * Returns the initial release of the dummy project.
+	 * Returns the initial branch of the dummy project.
 	 * 
 	 * @return
 	 */
-	default Release initialRelease() {
-		return project().getInitialRelease();
+	default Branch initialBranch() {
+		return project().getInitialBranch();
 	}
 
 	default UserResponse readUser(String uuid) {
@@ -436,31 +436,31 @@ public interface TestHelperMethods {
 	}
 
 	/**
-	 * Migrate the node from one release to another
+	 * Migrate the node from one branch to another.
 	 * 
 	 * @param projectName
 	 *            project name
 	 * @param uuid
 	 *            node Uuid
-	 * @param sourceReleaseName
-	 *            source release name
-	 * @param targetReleaseName
-	 *            target release name
+	 * @param sourceBranchName
+	 *            source branch name
+	 * @param targetBranchName
+	 *            target branch name
 	 * @return migrated node
 	 */
-	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
-		// read node from source release
-		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName)
+	default public NodeResponse migrateNode(String projectName, String uuid, String sourceBranchName, String targetBranchName) {
+		// read node from source branch
+		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setBranch(sourceBranchName)
 			.draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
-		// update node for target release
+		// update node for target branch
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(nodeResponse.getLanguage());
 
 		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setRelease(targetReleaseName)));
+		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setBranch(targetBranchName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {

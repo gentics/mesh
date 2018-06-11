@@ -10,8 +10,8 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
@@ -33,7 +33,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private Vertx vertx;
 
-	private ReleaseVersionEdge versionEdge;
+	private BranchVersionEdge versionEdge;
 
 	private Job job;
 
@@ -120,7 +120,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setVersionEdge(ReleaseVersionEdge versionEdge) {
+	public void setVersionEdge(BranchVersionEdge versionEdge) {
 		this.versionEdge = versionEdge;
 	}
 

@@ -72,7 +72,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 
@@ -106,7 +106,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 3. Invoke migration
 		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
-		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+		call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
 				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 		// 4. Latch for completion
@@ -128,12 +128,12 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 1. Setup new microschema
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 		request.setName(name);
-		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
 
 		// 2. Invoke migration
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 

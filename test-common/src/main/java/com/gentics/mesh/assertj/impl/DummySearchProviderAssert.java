@@ -15,7 +15,7 @@ import org.assertj.core.api.AbstractAssert;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -158,17 +158,18 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * Assert that the node was stored in the index for given languages and DRAFT and PUBLISHED versions
 	 * 
 	 * @param node
-	 * @param test
+	 * @param project
+	 * @param branch
 	 * @param languages
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert storedAllContainers(Node node, Project project, Release release, String... languages) {
+	public DummySearchProviderAssert storedAllContainers(Node node, Project project, Branch branch, String... languages) {
 		for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 			for (String lang : languages) {
 				String projectUuid = project.getUuid();
-				String releaseUuid = release.getUuid();
+				String branchUuid = branch.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
-				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaVersionUuid, type),
+				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
 						NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
 			}
 		}

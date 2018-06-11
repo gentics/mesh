@@ -4,7 +4,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -224,7 +224,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object releaseFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Release release = gc.getRelease();
+		Branch release = gc.getBranch();
 		return gc.requiresPerm(release, READ_PERM);
 	}
 

@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 public class GenericEntryContextImpl implements GenericEntryContext {
 
 	private String projectUuid;
-	private String releaseUuid;
+	private String branchUuid;
 	private String elementUuid;
 	private ContainerType containerType;
 	private String languageTag;
@@ -30,13 +30,13 @@ public class GenericEntryContextImpl implements GenericEntryContext {
 	}
 
 	@Override
-	public String getReleaseUuid() {
-		return releaseUuid;
+	public String getBranchUuid() {
+		return branchUuid;
 	}
 
 	@Override
-	public GenericEntryContext setReleaseUuid(String releaseUuid) {
-		this.releaseUuid = releaseUuid;
+	public GenericEntryContext setBranchUuid(String branchUuid) {
+		this.branchUuid = branchUuid;
 		return this;
 	}
 
@@ -75,7 +75,7 @@ public class GenericEntryContextImpl implements GenericEntryContext {
 
 	@Override
 	public String toString() {
-		return " type: " + getContainerType() + " release: " + getReleaseUuid() + " project: " + getProjectUuid() + " languageTag: " + languageTag
+		return " type: " + getContainerType() + " branch: " + getBranchUuid() + " project: " + getProjectUuid() + " languageTag: " + languageTag
 				+ " schemaContainerVersionUuid: " + schemaContainerVersionUuid;
 	}
 

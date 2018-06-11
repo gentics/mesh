@@ -191,7 +191,7 @@ public class TxTest extends AbstractMeshTest {
 
 								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
-								reloadedNode.addTag(tag, reloadedProject.getLatestRelease());
+								reloadedNode.addTag(tag, reloadedProject.getLatestBranch());
 								tx.success();
 								if (retry == 0) {
 									try {
@@ -227,7 +227,7 @@ public class TxTest extends AbstractMeshTest {
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
-						reloadedNode.getTags(project().getLatestRelease()).size());
+						reloadedNode.getTags(project().getLatestBranch()).size());
 			}
 		}
 	}

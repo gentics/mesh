@@ -62,8 +62,8 @@ public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAsser
 									// Project uuid does not match up - check next
 									continue;
 								}
-								if (entry.getReleaseUuid() != null && !entry.getReleaseUuid().equals(genericContext.getReleaseUuid())) {
-									// Release uuid does not match up - check next
+								if (entry.getBranchUuid() != null && !entry.getBranchUuid().equals(genericContext.getBranchUuid())) {
+									// Branch uuid does not match up - check next
 									continue;
 								}
 								if (entry.getType() != null && !entry.getType().equals(genericContext.getContainerType())) {

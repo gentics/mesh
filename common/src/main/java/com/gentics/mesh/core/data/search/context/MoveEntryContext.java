@@ -5,9 +5,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 
 public interface MoveEntryContext extends EntryContext {
 
-	String getReleaseUuid();
+	String getBranchUuid();
 
-	MoveEntryContext setReleaseUuid(String uuid);
+	MoveEntryContext setBranchUuid(String uuid);
 
 	ContainerType getContainerType();
 

@@ -100,7 +100,7 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Map<String, IndexInfo> getIndices();
 
 	/**
-	 * Get the names of all selected indices. The action context will be examined to determine the project scope and the release scope. If possible even the
+	 * Get the names of all selected indices. The action context will be examined to determine the project scope and the branch scope. If possible even the
 	 * version type will be extracted from the action context in order to generate the set of indices which are selected.
 	 * 
 	 * @param ac

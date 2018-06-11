@@ -33,6 +33,7 @@ public final class ChangesList {
 		list.add(new MigrateSchemaRawInfo());
 		list.add(new BinaryStorageMigration());
 		list.add(new ChangeNumberStringsToNumber());
+		list.add(new RenameReleasesToBranches());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}

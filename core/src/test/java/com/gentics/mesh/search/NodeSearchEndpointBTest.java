@@ -16,9 +16,9 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -132,7 +132,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testSearchDraftInRelease() throws Exception {
+	public void testSearchDraftInBranch() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
@@ -140,22 +140,22 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()),
 				new VersioningParametersImpl().draft()));
 
-		// 1. Create a new release
+		// 1. Create a new branch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
-		createRelease.setName("newrelease");
-		call(() -> client().createRelease(PROJECT_NAME, createRelease));
+		BranchCreateRequest createBranch = new BranchCreateRequest();
+		createBranch.setName("newbranch");
+		call(() -> client().createBranch(PROJECT_NAME, createBranch));
 		failingLatch(latch);
 
-		// 2. Search within the newly create release
+		// 2. Search within the newly create branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
 				new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		// 3. Search within the initial release
-		String releaseName = db().tx(() -> project().getInitialRelease().getName());
+		// 3. Search within the initial branch
+		String branchName = db().tx(() -> project().getInitialBranch().getName());
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
-				.setRelease(releaseName).draft()));
+				.setBranch(branchName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

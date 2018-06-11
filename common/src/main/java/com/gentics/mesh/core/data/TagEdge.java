@@ -1,20 +1,20 @@
 package com.gentics.mesh.core.data;
 
 /**
- * Interface for edges between nodes and tags. The edges are release specific.
+ * Interface for edges between nodes and tags. The edges are branch specific.
  */
 public interface TagEdge {
 
 	/**
-	 * Get the release Uuid
-	 * @return release Uuid
+	 * Get the branch Uuid
+	 * @return branch Uuid
 	 */
-	String getReleaseUuid();
+	String getBranchUuid();
 
 	/**
-	 * Set the release Uuid
-	 * @param uuid release Uuid
+	 * Set the branch Uuid
+	 * @param uuid branch Uuid
 	 */
-	void setReleaseUuid(String uuid);
+	void setBranchUuid(String uuid);
 
 }

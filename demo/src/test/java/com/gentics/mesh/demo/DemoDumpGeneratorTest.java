@@ -87,10 +87,10 @@ public class DemoDumpGeneratorTest {
 
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
-				String releaseUuid = node.getProject().getInitialRelease().getUuid();
+				String branchUuid = node.getProject().getInitialBranch().getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				ContainerType type = PUBLISHED;
-				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
+				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
 				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag

@@ -10,7 +10,7 @@ import com.gentics.mesh.example.MicroschemaExamples;
 import com.gentics.mesh.example.MiscExamples;
 import com.gentics.mesh.example.NodeExamples;
 import com.gentics.mesh.example.ProjectExamples;
-import com.gentics.mesh.example.ReleaseExamples;
+import com.gentics.mesh.example.BranchExamples;
 import com.gentics.mesh.example.RoleExamples;
 import com.gentics.mesh.example.SchemaExamples;
 import com.gentics.mesh.example.TagExamples;
@@ -40,7 +40,7 @@ public interface InternalEndpoint {
 	GraphQLExamples graphqlExamples = new GraphQLExamples();
 	AdminExamples adminExamples = new AdminExamples();
 	JobExamples jobExamples = new JobExamples();
-	ReleaseExamples releaseExamples = new ReleaseExamples();
+	BranchExamples branchExamples = new BranchExamples();
 	UtilityExamples utilityExamples = new UtilityExamples();
 
 	/**

@@ -57,7 +57,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		// Now delete the remaining german version
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "de", new DeleteParametersImpl().setRecursive(true)));
 		assertThat(trackingSearchProvider()).recordedDeleteEvents(2 + 2);
-		// The node was removed since the node only existed in a single release and had no other languages
+		// The node was removed since the node only existed in a single branch and had no other languages
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
 				"object_not_found_for_uuid", contentUuid());
 

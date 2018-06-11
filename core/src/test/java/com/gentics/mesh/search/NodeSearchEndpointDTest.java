@@ -130,16 +130,16 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 4. Invoke the schema migration
 		GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl()
-				.setUpdateAssignedReleases(false)));
+				.setUpdateAssignedBranches(false)));
 		assertThat(message).matches("schema_updated_migration_deferred", "content", "2.0");
 
-		// 5. Assign the new schema version to the release
+		// 5. Assign the new schema version to the branch
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		// Wait for migration to complete
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestRelease().getUuid()),
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestBranch().getUuid()),
 					new SchemaReferenceImpl().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
@@ -156,19 +156,19 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		int numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
 			User user = user();
 			Language english = english();
 			Node concorde = content("concorde");
 
 			Project project = concorde.getProject();
-			Node parentNode = concorde.getParentNode(releaseUuid);
+			Node parentNode = concorde.getParentNode(branchUuid);
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
 				Node node = parentNode.create(user, schemaVersion, project);
-				NodeGraphFieldContainer fieldContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user);
+				NodeGraphFieldContainer fieldContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
 				fieldContainer.createString("name").setString("Name_" + i);
 				MicronodeGraphField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 				vcardField.getMicronode().createString("firstName").setString("Mickey");
@@ -202,7 +202,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		try (Tx tx = tx()) {
 			Node node = content("concorde");
-			int previousTagCount = node.getTags(project().getLatestRelease()).size();
+			int previousTagCount = node.getTags(project().getLatestBranch()).size();
 			// Create tags:
 			int tagCount = 20;
 			for (int i = 0; i < tagCount; i++) {

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
@@ -14,11 +14,11 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -85,8 +85,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		response.setNodeName(getNodeName());
 
 		Map<String, String> props = response.getProperties();
-		props.put("releaseName", getRelease().getName());
-		props.put("releaseUuid", getRelease().getUuid());
+		props.put("branchName", getBranch().getName());
+		props.put("branchUuid", getBranch().getUuid());
 
 		if (getToSchemaVersion() != null) {
 			SchemaContainer container = getToSchemaVersion().getSchemaContainer();
@@ -157,13 +157,13 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public Release getRelease() {
-		return out(HAS_RELEASE).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public Branch getBranch() {
+		return out(HAS_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
 	}
 
 	@Override
-	public void setRelease(Release release) {
-		setUniqueLinkOutTo(release, HAS_RELEASE);
+	public void setBranch(Branch branch) {
+		setUniqueLinkOutTo(branch, HAS_BRANCH);
 	}
 
 	@Override

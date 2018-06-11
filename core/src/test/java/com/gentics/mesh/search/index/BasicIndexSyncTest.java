@@ -252,7 +252,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			Node node = folder("2015");
-			node.createGraphFieldContainer(german(), initialRelease(), user());
+			node.createGraphFieldContainer(german(), initialBranch(), user());
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
 		assertMetrics("node", 1, 2, 0);
@@ -261,7 +261,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		tx(() -> {
-			NodeGraphFieldContainer draft = content().getGraphFieldContainer(english(), latestRelease(), ContainerType.DRAFT);
+			NodeGraphFieldContainer draft = content().getGraphFieldContainer(english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);
@@ -269,7 +269,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			NodeGraphFieldContainer draft = folder("2015").getGraphFieldContainer(german(), latestRelease(), ContainerType.DRAFT);
+			NodeGraphFieldContainer draft = folder("2015").getGraphFieldContainer(german(), latestBranch(), ContainerType.DRAFT);
 			draft.remove();
 		});
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);

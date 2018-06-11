@@ -5,7 +5,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -87,7 +87,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		GraphQLContext gc = env.getContext();
-		String uuid = gc.getRelease().getUuid();
+		String uuid = gc.getBranch().getUuid();
 		Node parentNode = content.getNode().getParentNode(uuid);
 		// The project root node can have no parent. Lets check this and exit early.
 		if (parentNode == null) {
@@ -106,7 +106,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 
 		Node node = content.getNode();
-		Release release = gc.getRelease();
+		Branch release = gc.getBranch();
 		NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 		// There might not be a container for the selected language (incl. fallback language)
 		if (container == null) {
@@ -142,7 +142,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		GraphQLContext gc = env.getContext();
-		Release release = gc.getRelease();
+		Branch release = gc.getBranch();
 		ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 
 		return content.getNode().getGraphFieldContainers(release, type).stream().map(item -> {
@@ -227,14 +227,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					Node node = content.getNode();
 					// Resolve the given path and return the found container
-					Release release = gc.getRelease();
-					String releaseUuid = release.getUuid();
+					Branch release = gc.getBranch();
+					String branchUuid = release.getUuid();
 					ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 					Stack<String> pathStack = new Stack<>();
 					pathStack.add(nodePath);
 					Path path = new Path();
 					try {
-						node.resolvePath(releaseUuid, type, path, pathStack);
+						node.resolvePath(branchUuid, type, path, pathStack);
 					} catch (GenericRestException e) {
 						// Check whether the path could not be resolved
 						if (e.getStatus() == NOT_FOUND) {
@@ -288,7 +288,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 			Node node = content.getNode();
-			return node.getTags(gc.getUser(), getPagingInfo(env), gc.getRelease());
+			return node.getTags(gc.getUser(), getPagingInfo(env), gc.getBranch());
 		}));
 
 		// TODO Fix name confusion and check what version of schema should be used to determine this type
@@ -321,9 +321,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 			ContainerType containerType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
-			String releaseUuid = gc.getRelease().getUuid();
+			String branchUuid = gc.getBranch().getUuid();
 			String languageTag = container.getLanguage().getLanguageTag();
-			return container.getParentNode().getPath(gc, releaseUuid, containerType, languageTag);
+			return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);
 		}));
 
 		// .edited
@@ -366,7 +366,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (container == null) {
 					return null;
 				}
-				return container.isPublished(gc.getRelease().getUuid());
+				return container.isPublished(gc.getBranch().getUuid());
 			}));
 
 		// .isDraft
@@ -378,7 +378,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (container == null) {
 					return null;
 				}
-				return container.isDraft(gc.getRelease().getUuid());
+				return container.isDraft(gc.getBranch().getUuid());
 			}));
 
 		// .version

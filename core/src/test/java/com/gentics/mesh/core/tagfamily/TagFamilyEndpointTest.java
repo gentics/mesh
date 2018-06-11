@@ -38,7 +38,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -360,7 +360,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testUpdateNodeIndex() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release release = project.getReleaseRoot().getLatestRelease();
+			Branch branch = project.getBranchRoot().getLatestBranch();
 			TagFamily tagfamily = tagFamily("basic");
 
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
@@ -372,14 +372,14 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			int storeCount = 0;
 			for (Tag tag : tagfamily.findAllIt()) {
 				storeCount++;
-				for (Node node : tag.getNodes(release)) {
+				for (Node node : tag.getNodes(branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : new ContainerType[] { ContainerType.DRAFT, ContainerType.PUBLISHED }) {
-							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(release, containerType)) {
+							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(branch, containerType)) {
 								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
-								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release
+								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch
 										.getUuid(), schema.getUuid(), containerType), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
 												fieldContainer.getLanguage().getLanguageTag()));
 							}

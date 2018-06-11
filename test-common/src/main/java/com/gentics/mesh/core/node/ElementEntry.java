@@ -15,7 +15,7 @@ public class ElementEntry {
 	private List<String> languages;
 	private SearchQueueEntryAction action;
 	private String projectUuid;
-	private String releaseUuid;
+	private String branchUuid;
 	private ContainerType type;
 
 	/**
@@ -23,15 +23,15 @@ public class ElementEntry {
 	 * @param action
 	 * @param uuid
 	 * @param projectUuid
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @param languages
 	 */
-	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String releaseUuid, ContainerType type, List<String> languages) {
+	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String branchUuid, ContainerType type, List<String> languages) {
 		this.action = action;
 		this.uuid = uuid;
 		this.projectUuid = projectUuid;
-		this.releaseUuid = releaseUuid;
+		this.branchUuid = branchUuid;
 		this.type = type;
 		this.languages = languages;
 	}
@@ -41,12 +41,12 @@ public class ElementEntry {
 	 * @param action
 	 * @param uuid
 	 * @param projectUuid
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @param languages
 	 */
-	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String releaseUuid, ContainerType type, String... languages) {
-		this(action, uuid, projectUuid, releaseUuid, type, Arrays.asList(languages));
+	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String branchUuid, ContainerType type, String... languages) {
+		this(action, uuid, projectUuid, branchUuid, type, Arrays.asList(languages));
 	}
 
 	/**
@@ -87,8 +87,8 @@ public class ElementEntry {
 		return projectUuid;
 	}
 
-	public String getReleaseUuid() {
-		return releaseUuid;
+	public String getBranchUuid() {
+		return branchUuid;
 	}
 
 	public ContainerType getType() {

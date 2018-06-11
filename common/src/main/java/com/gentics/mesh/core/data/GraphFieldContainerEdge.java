@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.data;
 
 /**
- * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to releases and are either of type "Initial, Draft or
+ * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to branches and are either of type "Initial, Draft or
  * Published"
  */
 public interface GraphFieldContainerEdge {
 
 	String LANGUAGE_TAG_KEY = "languageTag";
 
-	String RELEASE_UUID_KEY = "releaseUuid";
+	String BRANCH_UUID_KEY = "branchUuid";
 
 	String EDGE_TYPE_KEY = "edgeType";
 
@@ -42,18 +42,18 @@ public interface GraphFieldContainerEdge {
 	void setType(ContainerType type);
 
 	/**
-	 * Get the release Uuid
+	 * Get the branch Uuid
 	 * 
-	 * @return release Uuid
+	 * @return branch Uuid
 	 */
-	String getReleaseUuid();
+	String getBranchUuid();
 
 	/**
-	 * Set the release Uuid
+	 * Set the branch Uuid
 	 * 
 	 * @param uuid
-	 *            release Uuid
+	 *            branch Uuid
 	 */
-	void setReleaseUuid(String uuid);
+	void setBranchUuid(String uuid);
 
 }

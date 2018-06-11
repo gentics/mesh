@@ -62,13 +62,13 @@ public class CrossProjectLinkRendererTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			final String content = "{{mesh.link('" + nodeResponse.getUuid() + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, initialReleaseUuid(), ContainerType.DRAFT, content, LinkType.SHORT, null, null);
+			String replacedContent = replacer.replace(ac, initialBranchUuid(), ContainerType.DRAFT, content, LinkType.SHORT, null, null);
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", replacedContent);
 
-			String linkToNode = replacer.resolve(ac, initialReleaseUuid(), ContainerType.DRAFT, nodeResponse.getUuid(), LinkType.SHORT, "en");
+			String linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, nodeResponse.getUuid(), LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 
-			linkToNode = replacer.resolve(ac, initialReleaseUuid(), ContainerType.DRAFT, boot().nodeRoot().findByUuid(nodeResponse.getUuid()),
+			linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, boot().nodeRoot().findByUuid(nodeResponse.getUuid()),
 					LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 		}

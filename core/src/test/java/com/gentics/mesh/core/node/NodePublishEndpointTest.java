@@ -22,7 +22,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -143,13 +143,13 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
-			String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
+			String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
 			String schemaContainerVersionUuid = db().tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
 			PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 			assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
-			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), releaseUuid,
+			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
 					schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -184,13 +184,13 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testGetPublishStatusForRelease() {
+	public void testGetPublishStatusForBranch() {
 		Node node = folder("2015");
 		Project project = project();
-		Release newRelease;
+		Branch newBranch;
 
 		try (Tx tx = tx()) {
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
@@ -203,15 +203,15 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 
 			PublishStatusResponse publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl()
-					.setRelease(initialRelease().getName())));
-			assertThat(publishStatus).as("Initial release publish status").isNotNull().isPublished("en").hasVersion("en", "1.0").doesNotContain("de");
+					.setBranch(initialBranch().getName())));
+			assertThat(publishStatus).as("Initial branch publish status").isNotNull().isPublished("en").hasVersion("en", "1.0").doesNotContain("de");
 
-			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(newRelease
+			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setBranch(newBranch
 					.getName())));
-			assertThat(publishStatus).as("New release publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
+			assertThat(publishStatus).as("New branch publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
 
 			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeParametersImpl()));
-			assertThat(publishStatus).as("New release publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
+			assertThat(publishStatus).as("New branch publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
 		}
 	}
 
@@ -269,12 +269,12 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testPublishNodeForRelease() {
+	public void testPublishNodeForBranch() {
 		Project project = project();
 		Node node = folder("2015");
 
 		try (Tx tx = tx()) {
-			project.getReleaseRoot().create("newrelease", user());
+			project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
@@ -285,9 +285,9 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			update.getFields().put("slug", FieldUtil.createStringField("2015"));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
-			// publish for the initial release
-			PublishStatusResponse publishStatus = call(() -> client().publishNode(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(
-					initialRelease().getName())));
+			// publish for the initial branch
+			PublishStatusResponse publishStatus = call(() -> client().publishNode(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setBranch(
+					initialBranch().getName())));
 			assertThat(publishStatus).as("Initial publish status").isPublished("en").hasVersion("en", "1.0").doesNotContain("de");
 		}
 	}
@@ -341,7 +341,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testPublishLanguage() {
 		String nodeUuid = db().tx(() -> folder("2015").getUuid());
-		String releaseUuid = db().tx(() -> latestRelease().getUuid());
+		String branchUuid = db().tx(() -> latestBranch().getUuid());
 
 		// Only publish the test node. Take all children offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -357,14 +357,14 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		// new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("en");
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"), new VersioningParametersImpl()
-				.published()), NOT_FOUND, "node_error_published_not_found_for_uuid_release_language", nodeUuid, "de", releaseUuid);
+				.published()), NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", nodeUuid, "de", branchUuid);
 
 		// Take english language offline
 		call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"));
 
 		// The node should not be loadable since both languages are offline
 		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"), new VersioningParametersImpl()
-				.published()), NOT_FOUND, "node_error_published_not_found_for_uuid_release_language", nodeUuid, "de", releaseUuid);
+				.published()), NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", nodeUuid, "de", branchUuid);
 
 		// Publish german version
 		PublishStatusModel publishStatus = call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
@@ -391,40 +391,40 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testPublishLanguageForRelease() {
+	public void testPublishLanguageForBranch() {
 		Project project = project();
 		Node node = folder("2015");
-		Release newRelease;
+		Branch newBranch;
 
 		try (Tx tx = tx()) {
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new VersioningParametersImpl().setRelease(
-					initialReleaseUuid()), new PublishParametersImpl().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new VersioningParametersImpl().setBranch(
+					initialBranchUuid()), new PublishParametersImpl().setRecursive(true)));
 
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields().put("name", FieldUtil.createStringField("2015 de"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(initialRelease().getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(initialBranch().getName())));
 
 			update.getFields().put("name", FieldUtil.createStringField("2015 new de"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(newRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(newBranch.getName())));
 			update.setLanguage("en");
 			update.getFields().put("name", FieldUtil.createStringField("2015 new en"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(newRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			PublishStatusModel publishStatus = call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de", new VersioningParametersImpl()
-					.setRelease(initialRelease().getName())));
+					.setBranch(initialBranch().getName())));
 			assertThat(publishStatus).isPublished();
 
-			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease()
-					.getName())))).as("Initial Release Publish Status").isPublished("de").isNotPublished("en");
-			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(newRelease
-					.getName())))).as("New Release Publish Status").isNotPublished("de").isNotPublished("en");
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setBranch(initialBranch()
+					.getName())))).as("Initial Branch Publish Status").isPublished("de").isNotPublished("en");
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setBranch(newBranch
+					.getName())))).as("New Branch Publish Status").isNotPublished("de").isNotPublished("en");
 		}
 	}
 

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
@@ -111,8 +111,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			// }
 
-			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+			Branch branch = ac.getBranch(node.getProject());
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
@@ -189,7 +189,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 		db.tx(() -> {
 			Project project = ac.getProject();
-			Release release = ac.getRelease();
+			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
@@ -198,10 +198,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Load the current latest draft
-			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, release, ContainerType.DRAFT);
+			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, branch, ContainerType.DRAFT);
 
 			if (latestDraftVersion == null) {
-				// latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
+				// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
 				// TODO Maybe it would be better to just create a new field container for the language?
 				// In that case we would also need to:
 				// * check for segment field conflicts
@@ -211,7 +211,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Load the base version field container in order to create the diff
-			NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, release.getUuid(), nodeVersion);
+			NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, branch.getUuid(), nodeVersion);
 			if (baseVersionContainer == null) {
 				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 			}
@@ -248,7 +248,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 			SearchQueueBatch batch = searchQueue.create();
 			// Create a new node version field container to store the upload
-			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
+			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser(), latestDraftVersion, true);
 
 			// Check whether the binary with the given hashsum was already stored
 			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
@@ -286,10 +286,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 			// If the binary field is the segment field, we need to update the webroot info in the node
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-				newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 
-			return batch.store(node, release.getUuid(), DRAFT, false).processAsync().andThen(node.transformToRest(ac, 0));
+			return batch.store(node, branch.getUuid(), DRAFT, false).processAsync().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -450,10 +450,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 				// Update the binary field with the new information
 				SearchQueueBatch sqb = db.tx(() -> {
 					SearchQueueBatch batch = searchQueue.create();
-					Release release = ac.getRelease();
+					Branch branch = ac.getBranch();
 
 					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion,
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser(), latestDraftVersion,
 						true);
 
 					String binaryUuid = initialField.getBinary().getUuid();
@@ -512,7 +512,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// TODO should we rename the image, if the extension is wrong?
 					field.getBinary().setImageHeight(result.getImageInfo().getHeight());
 					field.getBinary().setImageWidth(result.getImageInfo().getWidth());
-					batch.store(newDraftVersion, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
+					batch.store(newDraftVersion, node.getProject().getBranchRoot().getLatestBranch().getUuid(), DRAFT, false);
 					return batch;
 				});
 				// Finally update the search index and return the updated node

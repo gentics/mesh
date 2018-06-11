@@ -7,7 +7,7 @@ import com.gentics.mesh.util.VersionNumber;
 
 public interface VersioningParameters extends ParameterProvider {
 
-	public static final String RELEASE_QUERY_PARAM_KEY = "release";
+	public static final String BRANCH_QUERY_PARAM_KEY = "branch";
 
 	public static final String VERSION_QUERY_PARAM_KEY = "version";
 
@@ -46,23 +46,23 @@ public interface VersioningParameters extends ParameterProvider {
 	}
 
 	/**
-	 * Return the currently configured release name.
+	 * Return the currently configured branch name.
 	 * 
 	 * @return
 	 */
-	default String getRelease() {
-		return getParameter(RELEASE_QUERY_PARAM_KEY);
+	default String getBranch() {
+		return getParameter(BRANCH_QUERY_PARAM_KEY);
 	}
 
 	/**
-	 * Set the release by name or UUID.
+	 * Set the branch by name or UUID.
 	 *
-	 * @param release
+	 * @param branch
 	 *            name or uuid
 	 * @return fluent API
 	 */
-	default VersioningParameters setRelease(String release) {
-		setParameter(RELEASE_QUERY_PARAM_KEY, release);
+	default VersioningParameters setBranch(String branch) {
+		setParameter(BRANCH_QUERY_PARAM_KEY, branch);
 		return this;
 	}
 

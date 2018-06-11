@@ -11,7 +11,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -137,24 +137,24 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	NodeRoot getNodeRoot();
 
 	/**
-	 * Get the initial release of the project.
+	 * Get the initial branch of the project.
 	 *
 	 * @return
 	 */
-	Release getInitialRelease();
+	Branch getInitialBranch();
 
 	/**
-	 * Get the latest release of the project.
+	 * Get the latest branch of the project.
 	 *
 	 * @return
 	 */
-	Release getLatestRelease();
+	Branch getLatestBranch();
 
 	/**
-	 * Return the release root aggregation vertex of the project. Internally this method will create the release root when it has not yet been created.
+	 * Return the branch root aggregation vertex of the project. Internally this method will create the branch root when it has not yet been created.
 	 * 
-	 * @return Release root element
+	 * @return Branch root element
 	 */
-	ReleaseRoot getReleaseRoot();
+	BranchRoot getBranchRoot();
 
 }

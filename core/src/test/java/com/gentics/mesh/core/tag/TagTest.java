@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.endpoint.migration.release.ReleaseMigrationHandler;
+import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -57,11 +57,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	public static final String ENGLISH_NAME = "test english name";
 
-	private ReleaseMigrationHandler releaseMigrationHandler;
+	private BranchMigrationHandler branchMigrationHandler;
 
 	@Before
 	public void setupHandler() {
-		this.releaseMigrationHandler = meshDagger().releaseMigrationHandler();
+		this.branchMigrationHandler = meshDagger().branchMigrationHandler();
 	}
 
 	@Test
@@ -126,7 +126,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
-			Release release = project.getLatestRelease();
+			Branch branch = project.getLatestBranch();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
@@ -136,18 +136,18 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node parentNode = folder("2015");
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project);
 			Language german = boot().languageRoot().findByLanguageTag("de");
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, release, user());
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, branch, user());
 
 			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 			germanContainer.createString("name").setString("german node name");
 
 			// 3. Assign the tag to the node
-			node.addTag(tag, release);
+			node.addTag(tag, branch);
 
 			// 4. Reload the tag and inspect the tagged nodes
 			Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid());
-			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(release).size());
-			Node contentFromTag = reloadedTag.getNodes(release).iterator().next();
+			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(branch).size());
+			Node contentFromTag = reloadedTag.getNodes(branch).iterator().next();
 			NodeGraphFieldContainer fieldContainer = contentFromTag.getLatestDraftFieldContainer(german);
 
 			assertNotNull(contentFromTag);
@@ -158,127 +158,127 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// Remove the file/content and check whether the content was really removed
 			reloadedTag.removeNode(contentFromTag);
 			// TODO verify for removed node
-			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes(release).size());
+			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes(branch).size());
 		}
 
 	}
 
 	@Test
-	public void testNodeTaggingInRelease() throws Exception {
+	public void testNodeTaggingInBranch() throws Exception {
 		try (Tx tx = tx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
+			Branch initialBranch = project.getInitialBranch();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
-			// 2. Create new Release
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			// 2. Create new branch
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
-			// 3. Migrate nodes to new release
-			releaseMigrationHandler.migrateRelease(newRelease, null);
+			// 3. Migrate nodes to new branch
+			branchMigrationHandler.migrateBranch(newBranch, null);
 
 			// 4. Create and Tag a node
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
-			node.addTag(tag, initialRelease);
+			node.addTag(tag, initialBranch);
 
 			// 5. Assert
-			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
 					"uuid").containsOnly(node);
 
-			assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release").isEmpty();
+			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").isEmpty();
 
-			// 6. Tag in new Release
-			node.addTag(tag, newRelease);
+			// 6. Tag in new branch
+			node.addTag(tag, newBranch);
 
 			// 7. Assert again
-			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
 					"uuid").containsOnly(node);
 
-			assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 					.containsOnly(node);
 		}
 	}
 
 	@Test
-	public void testMigrateTagsForRelease() throws Exception {
+	public void testMigrateTagsForBranch() throws Exception {
 		try (Tx tx = tx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
+			Branch initialBranch = project.getInitialBranch();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 
 			// 2. Create and Tag a node
 			Node node = folder("2015");
-			node.removeAllTags(initialRelease);
-			node.addTag(tag, initialRelease);
+			node.removeAllTags(initialBranch);
+			node.addTag(tag, initialBranch);
 
-			// 3. Create new Release
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			// 3. Create new branch
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
-			// 4. Migrate nodes to new release
-			releaseMigrationHandler.migrateRelease(newRelease, null);
+			// 4. Migrate nodes to new branch
+			branchMigrationHandler.migrateBranch(newBranch, null);
 
 			// 5. Assert
-			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
 					"uuid").containsOnly(node);
 
-			assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 					.containsOnly(node);
 		}
 	}
 
 	@Test
-	public void testNodeUntaggingInRelease() throws Exception {
+	public void testNodeUntaggingInBranch() throws Exception {
 		try (Tx tx = tx()) {
-			Release initialRelease = null;
-			Release newRelease = null;
+			Branch initialBranch = null;
+			Branch newBranch = null;
 
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
-			initialRelease = project.getInitialRelease();
+			initialBranch = project.getInitialBranch();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
 			// 2. Create and Tag a node
 			Node node = folder("2015");
-			node.removeAllTags(initialRelease);
-			node.addTag(tag, initialRelease);
+			node.removeAllTags(initialBranch);
+			node.addTag(tag, initialBranch);
 
-			// 3. Create new Release
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			// 3. Create new branch
+			newBranch = project.getBranchRoot().create("newbranch", user());
 
-			// 4. Migrate nodes to new release
-			releaseMigrationHandler.migrateRelease(newRelease, null);
+			// 4. Migrate nodes to new branch
+			branchMigrationHandler.migrateBranch(newBranch, null);
 
-			// 5. Untag in initial Release
-			node.removeTag(tag, initialRelease);
+			// 5. Untag in initial branch
+			node.removeTag(tag, initialBranch);
 
 			// 6. Assert
-			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").isEmpty();
+			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").isEmpty();
 
-			assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 					.containsOnly(node);
 		}
 	}
@@ -474,7 +474,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag
 			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
 			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(), project()
-					.getLatestRelease().getUuid(), ContainerType.DRAFT));
+					.getLatestBranch().getUuid(), ContainerType.DRAFT));
 			SearchQueueBatch batch = createBatch();
 			tag.delete(batch);
 			assertThat(batch).containsEntries(expectedEntries);

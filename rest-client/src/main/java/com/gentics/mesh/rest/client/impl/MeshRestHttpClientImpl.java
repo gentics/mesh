@@ -16,6 +16,12 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchListResponse;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -46,12 +52,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseListResponse;
-import com.gentics.mesh.core.rest.release.ReleaseResponse;
-import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
-import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
-import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -1123,47 +1123,47 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest,
+	public MeshRequest<BranchResponse> createBranch(String projectName, BranchCreateRequest branchCreateRequest,
 		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
+		Objects.requireNonNull(branchCreateRequest, "branchCreateRequest must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases" + getQuery(parameters), ReleaseResponse.class,
-			releaseCreateRequest);
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches" + getQuery(parameters), BranchResponse.class,
+			branchCreateRequest);
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
+	public MeshRequest<BranchResponse> createBranch(String projectName, String uuid, BranchCreateRequest branchCreateRequest,
 		ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
+		Objects.requireNonNull(branchCreateRequest, "branchesCreateRequest must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + uuid + getQuery(parameters), ReleaseResponse.class,
-			releaseCreateRequest);
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + uuid + getQuery(parameters), BranchResponse.class,
+			branchCreateRequest);
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters) {
+	public MeshRequest<BranchResponse> findBranchByUuid(String projectName, String branchUuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + getQuery(parameters), ReleaseResponse.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + getQuery(parameters), BranchResponse.class);
 	}
 
 	@Override
-	public MeshRequest<ReleaseListResponse> findReleases(String projectName, ParameterProvider... parameters) {
+	public MeshRequest<BranchListResponse> findBranches(String projectName, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/releases" + getQuery(parameters), ReleaseListResponse.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches" + getQuery(parameters), BranchListResponse.class);
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> updateRelease(String projectName, String releaseUuid, ReleaseUpdateRequest request) {
+	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid, ReleaseResponse.class, request);
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid, BranchResponse.class, request);
 	}
 
 	@Override
@@ -1178,75 +1178,75 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoSchemaList> getReleaseSchemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/schemas", ReleaseInfoSchemaList.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class);
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-		ReleaseInfoSchemaList schemaVersionReferences) {
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
+		BranchInfoSchemaList schemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/schemas", ReleaseInfoSchemaList.class,
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class,
 			schemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
 		SchemaReference... schemaVersionReferences) {
-		ReleaseInfoSchemaList info = new ReleaseInfoSchemaList();
+		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.add(schemaVersionReferences);
-		return assignReleaseSchemaVersions(projectName, releaseUuid, info);
+		return assignBranchSchemaVersions(projectName, branchUuid, info);
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoMicroschemaList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/microschemas",
-			ReleaseInfoMicroschemaList.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
+			BranchInfoMicroschemaList.class);
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-		ReleaseInfoMicroschemaList microschemaVersionReferences) {
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+		BranchInfoMicroschemaList microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/microschemas",
-			ReleaseInfoMicroschemaList.class, microschemaVersionReferences);
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
+			BranchInfoMicroschemaList.class, microschemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 		MicroschemaReference... microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		ReleaseInfoMicroschemaList list = new ReleaseInfoMicroschemaList();
+		BranchInfoMicroschemaList list = new BranchInfoMicroschemaList();
 		list.add(microschemaVersionReferences);
-		return assignReleaseMicroschemaVersions(projectName, releaseUuid, list);
+		return assignBranchMicroschemaVersions(projectName, branchUuid, list);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> migrateReleaseSchemas(String projectName, String releaseUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchSchemas(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/migrateSchemas", GenericMessageResponse.class);
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/migrateSchemas", GenericMessageResponse.class);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> migrateReleaseMicroschemas(String projectName, String releaseUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchMicroschemas(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/releases/" + releaseUuid + "/migrateMicroschemas",
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/migrateMicroschemas",
 			GenericMessageResponse.class);
 	}
 

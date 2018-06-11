@@ -35,18 +35,18 @@ public class SchemaUpdateParametersImpl extends AbstractParameters implements Sc
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		QueryParameter updateAssigned = new QueryParameter();
-		updateAssigned.setDescription("Update the schema version for all releases which already utilize the schema.");
+		updateAssigned.setDescription("Update the schema version for all branches which already utilize the schema.");
 		updateAssigned.setDefaultValue("true");
 		updateAssigned.setType(ParamType.BOOLEAN);
 		updateAssigned.setDefaultValue("true");
-		parameters.put(UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY, updateAssigned);
+		parameters.put(UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY, updateAssigned);
 
-		QueryParameter releaseNames = new QueryParameter();
-		releaseNames.setDescription(
-				"List of release names which should be included in the update process. By default all releases which use the schema will be updated. You can thus use this parameter to only include a subset of release in the update.");
-		releaseNames.setType(ParamType.STRING);
-		releaseNames.setExample("summerRelease,winterRelease");
-		parameters.put(UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY, releaseNames);
+		QueryParameter branchNames = new QueryParameter();
+		branchNames.setDescription(
+				"List of branch names which should be included in the update process. By default all branches which use the schema will be updated. You can thus use this parameter to only include a subset of branch in the update.");
+		branchNames.setType(ParamType.STRING);
+		branchNames.setExample("summerBranch,winterBranch");
+		parameters.put(UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY, branchNames);
 
 		return parameters;
 	}

@@ -10,8 +10,8 @@ import java.util.function.Consumer;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -51,10 +51,10 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
-		Release release = Tx.getActive().getGraph().addFramedVertex(ReleaseImpl.class);
-		release.assignSchemaVersion(user(), version);
-		project().getReleaseRoot().addItem(release);
-		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), release, user());
+		Branch branch = Tx.getActive().getGraph().addFramedVertex(BranchImpl.class);
+		branch.assignSchemaVersion(user(), version);
+		project().getBranchRoot().addItem(branch);
+		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), branch, user());
 
 		return Tuple.tuple(node, nodeContainer);
 	}

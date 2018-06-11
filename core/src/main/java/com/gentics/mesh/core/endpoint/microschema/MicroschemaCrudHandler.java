@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -87,28 +87,28 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				SearchQueueBatch batch = searchQueue.create();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
-				if (updateParams.getUpdateAssignedReleases()) {
-					Map<Release, MicroschemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
+				if (updateParams.getUpdateAssignedBranches()) {
+					Map<Branch, MicroschemaContainerVersion> referencedBranches = schemaContainer.findReferencedBranches();
 
-					// Assign the created version to the found releases
-					for (Map.Entry<Release, MicroschemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
-						Release release = releaseEntry.getKey();
+					// Assign the created version to the found branches
+					for (Map.Entry<Branch, MicroschemaContainerVersion> branchEntry : referencedBranches.entrySet()) {
+						Branch branch = branchEntry.getKey();
 
-						// Check whether a list of release names was specified and skip releases which were not included in the list.
-						List<String> releaseNames = updateParams.getReleaseNames();
-						if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
+						// Check whether a list of branch names was specified and skip branches which were not included in the list.
+						List<String> branchNames = updateParams.getBranchNames();
+						if (branchNames != null && !branchNames.isEmpty() && !branchNames.contains(branch.getName())) {
 							continue;
 						}
 
-						// Assign the new version to the release
-						release.assignMicroschemaVersion(user, createdVersion);
+						// Assign the new version to the branch
+						branch.assignMicroschemaVersion(user, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());
 			});
 
 			info.v1().processSync();
-			if (updateParams.getUpdateAssignedReleases()) {
+			if (updateParams.getUpdateAssignedBranches()) {
 				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
 				return message(ac, "schema_updated_migration_invoked", name, info.v2());
 			} else {

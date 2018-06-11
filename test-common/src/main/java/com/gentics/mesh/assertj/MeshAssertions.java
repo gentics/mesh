@@ -24,8 +24,8 @@ import com.gentics.mesh.assertj.impl.PermissionInfoAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.PublishStatusModelAssert;
 import com.gentics.mesh.assertj.impl.PublishStatusResponseAssert;
-import com.gentics.mesh.assertj.impl.ReleaseAssert;
-import com.gentics.mesh.assertj.impl.ReleaseResponseAssert;
+import com.gentics.mesh.assertj.impl.BranchAssert;
+import com.gentics.mesh.assertj.impl.BranchResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
@@ -38,11 +38,12 @@ import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -56,7 +57,6 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -153,12 +153,12 @@ public class MeshAssertions extends Assertions {
 		return new MicronodeAssert(actual);
 	}
 
-	public static ReleaseAssert assertThat(Release actual) {
-		return new ReleaseAssert(actual);
+	public static BranchAssert assertThat(Branch actual) {
+		return new BranchAssert(actual);
 	}
 
-	public static ReleaseResponseAssert assertThat(ReleaseResponse actual) {
-		return new ReleaseResponseAssert(actual);
+	public static BranchResponseAssert assertThat(BranchResponse actual) {
+		return new BranchResponseAssert(actual);
 	}
 
 	public static NodeGraphFieldContainerAssert assertThat(NodeGraphFieldContainer actual) {

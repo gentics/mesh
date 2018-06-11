@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
+import com.gentics.mesh.core.endpoint.branch.BranchEndpoint;
 import com.gentics.mesh.core.endpoint.eventbus.EventbusEndpoint;
 import com.gentics.mesh.core.endpoint.group.GroupEndpoint;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaEndpoint;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.endpoint.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.endpoint.node.NodeEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectInfoEndpoint;
-import com.gentics.mesh.core.endpoint.release.ReleaseEndpoint;
 import com.gentics.mesh.core.endpoint.role.RoleEndpoint;
 import com.gentics.mesh.core.endpoint.schema.ProjectSchemaEndpoint;
 import com.gentics.mesh.core.endpoint.schema.SchemaEndpoint;
@@ -75,7 +75,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public Provider<TagFamilyEndpoint> tagFamilyEndpoint;
 
 	@Inject
-	public Provider<ReleaseEndpoint> releaseEndpoint;
+	public Provider<BranchEndpoint> branchEndpoint;
 
 	@Inject
 	public Provider<SchemaEndpoint> schemaEndpoint;
@@ -225,7 +225,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectMicroschemaEndpoint.get());
 		endpoints.add(projectSearchEndpoint.get());
 		endpoints.add(projectRawSearchEndpoint.get());
-		endpoints.add(releaseEndpoint.get());
+		endpoints.add(branchEndpoint.get());
 		endpoints.add(graphqlEndpoint.get());
 
 		// Global verticles

@@ -14,9 +14,9 @@ public class GraphRelationships {
 	 */
 	public static void init(Database db) {
 
-		db.addEdgeType(HAS_INITIAL_RELEASE);
-		db.addEdgeType(HAS_LATEST_RELEASE);
-		db.addEdgeType(HAS_NEXT_RELEASE);
+		db.addEdgeType(HAS_INITIAL_BRANCH);
+		db.addEdgeType(HAS_LATEST_BRANCH);
+		db.addEdgeType(HAS_NEXT_BRANCH);
 		db.addEdgeType(HAS_NODE);
 		db.addEdgeType(HAS_NODE_REFERENCE);
 		db.addEdgeType(ASSIGNED_TO_PROJECT);
@@ -46,7 +46,7 @@ public class GraphRelationships {
 		db.addEdgeType(HAS_USER_ROOT);
 		db.addEdgeType(HAS_LANGUAGE_ROOT);
 		db.addEdgeType(HAS_PROJECT_ROOT);
-		db.addEdgeType(HAS_RELEASE_ROOT);
+		db.addEdgeType(HAS_BRANCH_ROOT);
 
 		// db.addEdgeType(HAS_FIELD);
 		db.addEdgeType(HAS_ITEM);
@@ -59,7 +59,7 @@ public class GraphRelationships {
 		db.addEdgeType(HAS_PARENT_CONTAINER);
 		db.addEdgeType(HAS_SCHEMA_CONTAINER_VERSION);
 
-		// Releases
+		// Branches
 		db.addEdgeType(HAS_SCHEMA_VERSION);
 		db.addEdgeType(HAS_MICROSCHEMA_VERSION);
 
@@ -80,11 +80,11 @@ public class GraphRelationships {
 	// Project
 	public static final String HAS_PROJECT = "HAS_PROJECT";
 
-	// Release
-	public static final String HAS_RELEASE = "HAS_RELEASE";
-	public static final String HAS_INITIAL_RELEASE = "HAS_INITIAL_RELEASE";
-	public static final String HAS_LATEST_RELEASE = "HAS_LATEST_RELEASE";
-	public static final String HAS_NEXT_RELEASE = "HAS_NEXT_RELEASE";
+	// Branch
+	public static final String HAS_BRANCH = "HAS_BRANCH";
+	public static final String HAS_INITIAL_BRANCH = "HAS_INITIAL_BRANCH";
+	public static final String HAS_LATEST_BRANCH = "HAS_LATEST_BRANCH";
+	public static final String HAS_NEXT_BRANCH = "HAS_NEXT_BRANCH";
 
 	// Nodes
 	public static final String HAS_NODE = "HAS_NODE";
@@ -138,7 +138,7 @@ public class GraphRelationships {
 	public static final String HAS_USER_ROOT = "HAS_USER_ROOT";
 	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
-	public static final String HAS_RELEASE_ROOT = "HAS_RELEASE_ROOT";
+	public static final String HAS_BRANCH_ROOT = "HAS_BRANCH_ROOT";
 	public static final String HAS_JOB_ROOT = "HAS_JOB_ROOT";
 
 	// Asset root
@@ -155,7 +155,7 @@ public class GraphRelationships {
 	public static final String HAS_CHANGE = "HAS_CHANGE";
 	public static final String HAS_LATEST_VERSION = "HAS_LATEST_VERSION";
 
-	// Releases
+	// Branches
 	public static final String HAS_SCHEMA_VERSION = "HAS_SCHEMA_VERSION";
 	public static final String HAS_MICROSCHEMA_VERSION = "HAS_MICROSCHEMA_VERSION";
 

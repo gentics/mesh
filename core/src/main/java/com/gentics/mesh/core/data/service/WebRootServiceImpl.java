@@ -35,7 +35,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// First try to locate the content via the url path index
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		NodeGraphFieldContainer containerByWebUrlPath = findByPath(ac.getRelease().getUuid(), path, type);
+		NodeGraphFieldContainer containerByWebUrlPath = findByPath(ac.getBranch().getUuid(), path, type);
 		if (containerByWebUrlPath != null) {
 			return containerByWebUrlPath.getPath(ac);
 		}
@@ -63,19 +63,19 @@ public class WebRootServiceImpl implements WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		return baseNode.resolvePath(ac.getRelease().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
+		return baseNode.resolvePath(ac.getBranch().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
 	}
 
 	@Override
-	public NodeGraphFieldContainer findByPath(String releaseUuid, String path, ContainerType type) {
+	public NodeGraphFieldContainer findByPath(String branchUuid, String path, ContainerType type) {
 
 		String fieldKey = NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY;
 		if (type == ContainerType.PUBLISHED) {
 			fieldKey = NodeGraphFieldContainer.PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY;
 		}
 
-		// Prefix each path with the releaseuuid in order to scope the paths by release
-		String key = releaseUuid + path;
+		// Prefix each path with the branchuuid in order to scope the paths by branch
+		String key = branchUuid + path;
 		return database.findVertex(fieldKey, key, NodeGraphFieldContainerImpl.class);
 	}
 

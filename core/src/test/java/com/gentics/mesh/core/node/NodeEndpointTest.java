@@ -49,7 +49,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -312,11 +312,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testCreateForReleaseByName() {
+	public void testCreateForBranchByName() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release initialRelease = project.getReleaseRoot().getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			Branch initialBranch = project.getBranchRoot().getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
@@ -329,24 +329,24 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
-			NodeResponse nodeResponse = call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease(
-				initialRelease.getName())));
+			NodeResponse nodeResponse = call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setBranch(
+				initialBranch.getName())));
 
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
+				assertThat(newNode.getGraphFieldContainer("en", initialBranch.getUuid(), type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
-				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNull();
+				assertThat(newNode.getGraphFieldContainer("en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNull();
 			}
 		}
 	}
 
 	@Test
-	public void testCreateForReleaseByUuid() {
+	public void testCreateForBranchByUuid() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Release initialRelease = project.getReleaseRoot().getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			Branch initialBranch = project.getBranchRoot().getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
@@ -359,24 +359,24 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
-			NodeResponse nodeResponse = call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease(
-				initialRelease.getUuid())));
+			NodeResponse nodeResponse = call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setBranch(
+				initialBranch.getUuid())));
 
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
+				assertThat(newNode.getGraphFieldContainer("en", initialBranch.getUuid(), type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
-				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNull();
+				assertThat(newNode.getGraphFieldContainer("en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNull();
 			}
 		}
 	}
 
 	@Test
-	public void testCreateForLatestRelease() {
-		Release newRelease;
+	public void testCreateForLatestBranch() {
+		Branch newBranch;
 		try (Tx tx = tx()) {
 			Project project = project();
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
@@ -397,19 +397,19 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialReleaseUuid(), type)).as(type + " Field container for initial release")
+				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid(), type)).as(type + " Field container for initial branch")
 					.isNull();
-				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNotNull()
+				assertThat(newNode.getGraphFieldContainer("en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNotNull()
 					.hasVersion("0.1");
 			}
 		}
 	}
 
 	@Test
-	public void testCreateForBogusRelease() {
+	public void testCreateForBogusBranch() {
 		try (Tx tx = tx()) {
 			Project project = project();
-			project.getReleaseRoot().create("newrelease", user());
+			project.getBranchRoot().create("newbranch", user());
 
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
@@ -422,8 +422,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
-			call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease("bogusrelease")), BAD_REQUEST,
-				"release_error_not_found", "bogusrelease");
+			call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setBranch("bogusbranch")), BAD_REQUEST,
+				"branch_error_not_found", "bogusbranch");
 		}
 	}
 
@@ -568,7 +568,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
 				Node node = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
-				node.createGraphFieldContainer(english(), initialRelease(), user());
+				node.createGraphFieldContainer(english(), initialBranch(), user());
 				assertNotNull(node);
 				role().grantPermissions(node, READ_PERM);
 			}
@@ -685,37 +685,37 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testReadNodesForRelease() {
+	public void testReadNodesForBranch() {
 
-		Release newRelease;
+		Branch newBranch;
 		try (Tx tx = tx()) {
-			newRelease = project().getReleaseRoot().create("newrelease", user());
+			newBranch = project().getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000),
 				new VersioningParametersImpl().draft()));
-			assertThat(restResponse.getData()).as("Node List for latest release").isEmpty();
+			assertThat(restResponse.getData()).as("Node List for latest branch").isEmpty();
 
-			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().setRelease(
-				initialRelease().getName()).draft()));
-			assertThat(restResponse.getData()).as("Node List for initial release").hasSize(getNodeCount());
+			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().setBranch(
+				initialBranch().getName()).draft()));
+			assertThat(restResponse.getData()).as("Node List for initial branch").hasSize(getNodeCount());
 
-			// update a single node in the new release
+			// update a single node in the new branch
 			Node node = folder("2015");
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
-			update.getFields().put("name", FieldUtil.createStringField("2015 new release"));
+			update.getFields().put("name", FieldUtil.createStringField("2015 new branch"));
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 
-			// check whether there is one node in the new release now
+			// check whether there is one node in the new branch now
 			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().draft()));
-			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
+			assertThat(restResponse.getData()).as("Node List for latest branch").hasSize(1);
 
 			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().draft()
-				.setRelease(newRelease.getName())));
-			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
+				.setBranch(newBranch.getName())));
+			assertThat(restResponse.getData()).as("Node List for latest branch").hasSize(1);
 		}
 
 	}
@@ -736,7 +736,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// 3. Assert that the offline nodes are also not loadable if requests via uuid
 			for (Node node : nodes) {
 				call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
-					"node_error_published_not_found_for_uuid_release_language", node.getUuid(), "en", latestRelease().getUuid());
+					"node_error_published_not_found_for_uuid_branch_language", node.getUuid(), "en", latestBranch().getUuid());
 			}
 
 			// Publish a few nodes
@@ -1122,10 +1122,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
-			assertEquals(folder("2015").getParentNode(releaseUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals(folder("2015").getParentNode(branchUuid).getUuid(), response.getParentNode().getUuid());
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
@@ -1145,10 +1145,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
-			assertEquals(folder("2015").getParentNode(releaseUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals(folder("2015").getParentNode(branchUuid).getUuid(), response.getParentNode().getUuid());
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
@@ -1251,14 +1251,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadPublishedVersion() {
 		String uuid = tx(() -> folder("2015").getUuid());
-		String releaseUuid = tx(() -> project().getLatestRelease().getUuid());
+		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 
 		// 1. Take node offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 2. Load node using published options.
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
-			"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
+			"node_error_published_not_found_for_uuid_branch_language", uuid, "en", branchUuid);
 
 		// 3. Publish the node again.
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
@@ -1269,12 +1269,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testReadNodeForRelease() {
+	public void testReadNodeForBranch() {
 		Node node = folder("2015");
-		Release newRelease;
+		Branch newBranch;
 
 		try (Tx tx = tx()) {
-			newRelease = project().getReleaseRoot().create("newrelease", user());
+			newBranch = project().getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
@@ -1282,27 +1282,27 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String uuid = node.getUuid();
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
-			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new release"));
-			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease.getName())));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new branch"));
+			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease().getName())
-				.draft()))).as("Initial Release Version").hasVersion("1.0").hasStringField("name", "2015");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName())
-				.draft()))).as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 in new release");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranch().getName())
+				.draft()))).as("Initial Branch Version").hasVersion("1.0").hasStringField("name", "2015");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getName())
+				.draft()))).as("New Branch Version").hasVersion("0.1").hasStringField("name", "2015 in new branch");
 		}
 
 	}
 
 	@Test
-	public void testReadNodeVersionForRelease() {
+	public void testReadNodeVersionForBranch() {
 		String uuid;
 		Node node = folder("2015");
-		Release newRelease;
+		Branch newBranch;
 
 		try (Tx tx = tx()) {
 			uuid = node.getUuid();
 			Project project = project();
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
@@ -1310,34 +1310,34 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
 
-			// create version 0.1 in new release
-			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.1 new release"));
-			NodeResponse response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(
-				newRelease.getName())));
+			// create version 0.1 in new branch
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.1 new branch"));
+			NodeResponse response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setBranch(
+				newBranch.getName())));
 			assertEquals("0.1", response.getVersion());
 
-			// create version 1.1 in initial release (1.0 is the current published en node)
-			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.1 initial release"));
+			// create version 1.1 in initial branch (1.0 is the current published en node)
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.1 initial branch"));
 			updateRequest.setVersion("1.0");
-			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(initialRelease()
+			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setBranch(initialBranch()
 				.getName())));
 			assertEquals("1.1", response.getVersion());
 
-			// create version 0.2 in new release
-			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 new release"));
+			// create version 0.2 in new branch
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 new branch"));
 			updateRequest.setVersion("0.1");
-			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease
+			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setBranch(newBranch
 				.getName())));
 			assertEquals("0.2", response.getVersion());
 
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease().getName())
-				.setVersion("0.1")))).as("Initial Release Version").hasVersion("0.1").hasStringField("name", "2015");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName())
-				.setVersion("0.1")))).as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 v0.1 new release");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease().getName())
-				.setVersion("1.1")))).as("Initial Release Version").hasVersion("1.1").hasStringField("name", "2015 v1.1 initial release");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName())
-				.setVersion("0.2")))).as("New Release Version").hasVersion("0.2").hasStringField("name", "2015 v0.2 new release");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranch().getName())
+				.setVersion("0.1")))).as("Initial Branch Version").hasVersion("0.1").hasStringField("name", "2015");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getName())
+				.setVersion("0.1")))).as("New Branch Version").hasVersion("0.1").hasStringField("name", "2015 v0.1 new branch");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranch().getName())
+				.setVersion("1.1")))).as("Initial Branch Version").hasVersion("1.1").hasStringField("name", "2015 v1.1 initial branch");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getName())
+				.setVersion("0.2")))).as("New Branch Version").hasVersion("0.2").hasStringField("name", "2015 v0.2 new branch");
 		}
 	}
 
@@ -1515,7 +1515,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 			node = parentNode.create(user(), version, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl, node.getProject().getLatestRelease(), user());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl, node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
 			englishContainer.createString("displayName").setString("displayName");
@@ -1626,10 +1626,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("Dummy Lastname", restNode.getEditor().getLastName());
 
 		String projectUuid = tx(() -> project().getUuid());
-		String releaseUuid = tx(() -> project().getLatestRelease().getUuid());
+		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
+		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
 			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 
@@ -1657,7 +1657,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			// Verify that exactly the selected language was updated
-			String indexName = NodeGraphFieldContainer.composeIndexName(project().getUuid(), project().getLatestRelease().getUuid(), origContainer
+			String indexName = NodeGraphFieldContainer.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
 				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
 			String documentId = NodeGraphFieldContainer.composeDocumentId(uuid, "en");
 			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
@@ -1678,14 +1678,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("name", FieldUtil.createStringField(germanName));
 
 		String projectUuid = tx(() -> project().getUuid());
-		String releaseUuid = tx(() -> project().getLatestRelease().getUuid());
+		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
 		searchProvider().clear().blockingAwait();
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
 		assertEquals("de", restNode.getLanguage());
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
+		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
 			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -1896,34 +1896,34 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testDeleteForRelease() throws Exception {
+	public void testDeleteForBranch() throws Exception {
 		try (Tx tx = tx()) {
 			// 1. get the node
 			Node node = content("concorde");
 			String uuid = node.getUuid();
 
-			// 2. create new release
+			// 2. create new branch
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 3. migrate nodes
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid())));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranch.getUuid())));
 
-			// 4. delete node in new release
-			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getUuid())));
+			// 4. delete node in new branch
+			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getUuid())));
 
 			// 5. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
+			assertThat(node.getGraphFieldContainers(initialBranch, ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
 		}
 	}
 
 	@Test
-	public void testDeletePublishedForRelease() throws Exception {
+	public void testDeletePublishedForBranch() throws Exception {
 		try (Tx tx = tx()) {
 			// 1. get the node
 			Node node = content("concorde");
@@ -1933,26 +1933,26 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SearchQueueBatch batch = createBatch();
 			node.publish(mockActionContext(), batch);
 
-			// 3. create new release
+			// 3. create new branch
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 4. migrate nodes
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid())));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranch.getUuid())));
 
-			// 5. delete node in new release
-			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getUuid())));
+			// 5. delete node in new branch
+			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getUuid())));
 
 			// 6. assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.PUBLISHED)).as("published containers for initial release")
+			assertThat(node.getGraphFieldContainers(initialBranch, ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(initialBranch, ContainerType.PUBLISHED)).as("published containers for initial branch")
 				.isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("published containers for new release").isEmpty();
+			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
 		}
 	}
 

@@ -22,14 +22,14 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -80,21 +80,21 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		project.setName(name);
 		project.getNodeRoot();
 
-		// Create the initial release for the project and add the used schema
+		// Create the initial branch for the project and add the used schema
 		// version to it
-		Release release = project.getReleaseRoot().create(name, creator);
-		release.setMigrated(true);
+		Branch branch = project.getBranchRoot().create(name, creator);
+		branch.setMigrated(true);
 		if (hostname != null) {
-			release.setHostname(hostname);
+			branch.setHostname(hostname);
 		}
 		if (ssl != null) {
-			release.setSsl(ssl);
+			branch.setSsl(ssl);
 		}
-		release.assignSchemaVersion(creator, schemaContainerVersion);
+		branch.assignSchemaVersion(creator, schemaContainerVersion);
 
 		// Assign the provided schema container to the project
 		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
-		// project.getLatestRelease().assignSchemaVersion(creator,
+		// project.getLatestBranch().assignSchemaVersion(creator,
 		// schemaContainerVersion);
 		project.createBaseNode(creator, schemaContainerVersion);
 
@@ -130,9 +130,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			} else {
 				String nestedRootNode = stack.pop();
 				switch (nestedRootNode) {
-				case ReleaseRoot.TYPE:
-					ReleaseRoot releasesRoot = project.getReleaseRoot();
-					return releasesRoot.resolveToElement(stack);
+				case BranchRoot.TYPE:
+					BranchRoot branchRoot = project.getBranchRoot();
+					return branchRoot.resolveToElement(stack);
 				case TagFamilyRoot.TYPE:
 					TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 					return tagFamilyRoot.resolveToElement(stack);
@@ -191,7 +191,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
 		Project project = create(projectName, hostname, ssl, creator, schemaContainerVersion, uuid);
-		Release initialRelease = project.getInitialRelease();
+		Branch initialBranch = project.getInitialBranch();
 
 		// Add project permissions
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
@@ -201,24 +201,24 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getMicroschemaContainerRoot());
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
-		creator.addPermissionsOnRole(this, CREATE_PERM, initialRelease);
+		creator.addPermissionsOnRole(this, CREATE_PERM, initialBranch);
 
 		// Store the project in the index
 		batch.store(project, true);
 
-		String releaseUuid = initialRelease.getUuid();
+		String branchUuid = initialBranch.getUuid();
 		String projectUuid = project.getUuid();
 
 		// 1. Create needed indices
-		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
-		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
+		batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
+		batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
 		batch.createTagIndex(projectUuid);
 		batch.createTagFamilyIndex(projectUuid);
 
 		// 3. Add created basenode to SQB
 		// NodeGraphFieldContainer baseNodeFieldContainer =
 		// project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
-		batch.store(project.getBaseNode(), releaseUuid, ContainerType.DRAFT, false);
+		batch.store(project.getBaseNode(), branchUuid, ContainerType.DRAFT, false);
 
 		return project;
 

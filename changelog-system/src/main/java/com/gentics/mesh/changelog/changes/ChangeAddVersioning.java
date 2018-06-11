@@ -44,10 +44,10 @@ public class ChangeAddVersioning extends AbstractChange {
 			project.addEdge("HAS_RELEASE_ROOT", releaseRoot);
 
 			// Create release and edges
-			String releaseUuid = randomUUID();
+			String branchUuid = randomUUID();
 			Vertex release = getGraph().addVertex("class:ReleaseImpl");
 			release.setProperty("ferma_type", "ReleaseImpl");
-			release.setProperty("uuid", releaseUuid);
+			release.setProperty("uuid", branchUuid);
 			release.setProperty("name", project.getProperty("name"));
 			release.setProperty("active", true);
 			releaseRoot.addEdge("HAS_LATEST_RELEASE", release);
@@ -70,7 +70,7 @@ public class ChangeAddVersioning extends AbstractChange {
 			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
 
 			migrateBaseNode(baseNode, admin);
-			migrateNode(baseNode, releaseUuid);
+			migrateNode(baseNode, branchUuid);
 		}
 
 		// Migrate tags
@@ -209,9 +209,9 @@ public class ChangeAddVersioning extends AbstractChange {
 	 * Migrate the node and assign it's field containers to the release.
 	 * 
 	 * @param node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 */
-	private void migrateNode(Vertex node, String releaseUuid) {
+	private void migrateNode(Vertex node, String branchUuid) {
 
 		// Extract and remove the published property. We'll use it later on to create a published version if needed.
 		boolean isPublished = Boolean.valueOf(node.getProperty("published"));
@@ -221,7 +221,7 @@ public class ChangeAddVersioning extends AbstractChange {
 		Edge editorEdge = null;
 		Iterable<Edge> containerEdges = node.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Edge containerEdge : containerEdges) {
-			containerEdge.setProperty("releaseUuid", releaseUuid);
+			containerEdge.setProperty("branchUuid", branchUuid);
 			containerEdge.setProperty("edgeType", "I");
 
 			// Set version to found container
@@ -246,14 +246,14 @@ public class ChangeAddVersioning extends AbstractChange {
 				int lastIdx = oldPathInfo.lastIndexOf("-");
 				String name = oldPathInfo.substring(0, lastIdx);
 				String folderUuid = oldPathInfo.substring(lastIdx + 1);
-				fieldContainer.setProperty("webrootPathInfo", name + "-" + releaseUuid + "-" + folderUuid);
+				fieldContainer.setProperty("webrootPathInfo", name + "-" + branchUuid + "-" + folderUuid);
 			}
 
 			// Create additional draft edge
 			if (!isPublished) {
 				Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", fieldContainer);
 				draftEdge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
-				draftEdge.setProperty("releaseUuid", releaseUuid);
+				draftEdge.setProperty("branchUuid", branchUuid);
 				draftEdge.setProperty("edgeType", "D");
 				draftEdge.setProperty("languageTag", containerEdge.getProperty("languageTag"));
 			}
@@ -321,7 +321,7 @@ public class ChangeAddVersioning extends AbstractChange {
 				Edge publishedEdge = node.addEdge("HAS_FIELD_CONTAINER", publishedContainer);
 				publishedEdge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
 				publishedEdge.setProperty("languageTag", containerEdge.getProperty("languageTag"));
-				publishedEdge.setProperty("releaseUuid", releaseUuid);
+				publishedEdge.setProperty("branchUuid", branchUuid);
 				publishedEdge.setProperty("edgeType", "P");
 			}
 
@@ -334,14 +334,14 @@ public class ChangeAddVersioning extends AbstractChange {
 		// Migrate tagging
 		Iterable<Edge> tagEdges = node.getEdges(Direction.OUT, "HAS_TAG");
 		for (Edge tagEdge : tagEdges) {
-			tagEdge.setProperty("releaseUuid", releaseUuid);
+			tagEdge.setProperty("branchUuid", branchUuid);
 		}
 
 		// Now check the children and migrate structure
 		Iterable<Edge> childrenEdges = node.getEdges(Direction.IN, "HAS_PARENT_NODE");
 		for (Edge childEdge : childrenEdges) {
-			childEdge.setProperty("releaseUuid", releaseUuid);
-			migrateNode(childEdge.getVertex(Direction.OUT), releaseUuid);
+			childEdge.setProperty("branchUuid", branchUuid);
+			migrateNode(childEdge.getVertex(Direction.OUT), branchUuid);
 		}
 
 		log.info("Granting permissions to node {" + node.getProperty("uuid") + "}");

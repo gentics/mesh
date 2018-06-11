@@ -191,7 +191,7 @@ ul.doc-toc h2 {
                                 <a href="features.html#_versioning">Versioning</a>
                             </li>
                             <li>
-                                <a href="features.html#_content_releases">Content Releases</a>
+                                <a href="features.html#_content_branches">Content Branches</a>
                             </li>
                             <li>
                                 <a href="elasticsearch.html">Search</a>

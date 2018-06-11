@@ -8,43 +8,43 @@ import org.apache.commons.lang.BooleanUtils;
 public interface SchemaUpdateParameters extends ParameterProvider {
 
 	/**
-	 * Query parameter key: {@value #UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY}
+	 * Query parameter key: {@value #UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY}
 	 */
-	public static final String UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY = "updateAssignedReleases";
+	public static final String UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY = "updateAssignedBranches";
 
 	/**
-	 * Query parameter key: {@value #UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY}
+	 * Query parameter key: {@value #UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY}
 	 */
-	public static final String UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY = "updateReleaseNames";
+	public static final String UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY = "updateBranchNames";
 
 	/**
-	 * Return the flag which indicates whether the created schema version should automatically be assigned to the releases which reference the schema.
+	 * Return the flag which indicates whether the created schema version should automatically be assigned to the branches which reference the schema.
 	 * 
 	 * @return
 	 */
-	default boolean getUpdateAssignedReleases() {
-		String value = getParameter(UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY);
+	default boolean getUpdateAssignedBranches() {
+		String value = getParameter(UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY);
 		return BooleanUtils.toBooleanDefaultIfNull(BooleanUtils.toBooleanObject(value), true);
 	}
 
 	/**
-	 * Set the flag which is used to decide whether the schema version should be assigned to all releases which reference the schema.
+	 * Set the flag which is used to decide whether the schema version should be assigned to all branches which reference the schema.
 	 * 
 	 * @param flag
 	 * @return
 	 */
-	default SchemaUpdateParameters setUpdateAssignedReleases(boolean flag) {
-		setParameter(UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY, String.valueOf(flag));
+	default SchemaUpdateParameters setUpdateAssignedBranches(boolean flag) {
+		setParameter(UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY, String.valueOf(flag));
 		return this;
 	}
 
 	/**
-	 * Get the names of the releases which should be updated once the new schema version has been created.
+	 * Get the names of the branches which should be updated once the new schema version has been created.
 	 * 
 	 * @return
 	 */
-	default List<String> getReleaseNames() {
-		String value = getParameter(UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY);
+	default List<String> getBranchNames() {
+		String value = getParameter(UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY);
 		if (value == null) {
 			return null;
 		}
@@ -56,13 +56,13 @@ public interface SchemaUpdateParameters extends ParameterProvider {
 	}
 
 	/**
-	 * Set the names of the releases which should be updated once the new schema version was created.
+	 * Set the names of the branches which should be updated once the new schema version was created.
 	 * 
-	 * @param releaseNames
+	 * @param branchNames
 	 * @return Fluent API
 	 */
-	default SchemaUpdateParameters setReleaseNames(String... releaseNames) {
-		setParameter(UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY, convertToStr(releaseNames));
+	default SchemaUpdateParameters setBranchNames(String... branchNames) {
+		setParameter(UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY, convertToStr(branchNames));
 		return this;
 	}
 

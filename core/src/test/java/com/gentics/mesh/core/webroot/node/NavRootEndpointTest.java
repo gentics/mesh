@@ -79,7 +79,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 
 			// for (NodeGraphFieldContainer container : project().getBaseNode().getGraphFieldContainers()) {
-			// System.out.println(container.isPublished(project().getLatestRelease().getUuid()));
+			// System.out.println(container.isPublished(project().getLatestBranch().getUuid()));
 			// }
 			String path = "/";
 			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).invoke();

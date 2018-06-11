@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.job;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
@@ -52,18 +52,18 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	void setType(MigrationType type);
 
 	/**
-	 * Return the release reference for the job.
+	 * Return the branch reference for the job.
 	 * 
 	 * @return
 	 */
-	Release getRelease();
+	Branch getBranch();
 
 	/**
-	 * Set the release reference for the job.
+	 * Set the branch reference for the job.
 	 * 
-	 * @param release
+	 * @param branch
 	 */
-	void setRelease(Release release);
+	void setBranch(Branch branch);
 
 	/**
 	 * Return the schema version reference.

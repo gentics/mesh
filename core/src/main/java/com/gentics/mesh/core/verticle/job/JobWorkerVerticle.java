@@ -24,7 +24,7 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	public final static String PROJECT_UUID_HEADER = "projectUuid";
 
-	public final static String RELEASE_UUID_HEADER = "releaseUuid";
+	public final static String RELEASE_UUID_HEADER = "branchUuid";
 
 	public final static String UUID_HEADER = "uuid";
 

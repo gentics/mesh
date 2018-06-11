@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -319,7 +319,7 @@ public final class Mocks {
 		when(node.getProject()).thenReturn(project);
 
 		List<? extends Tag> tagList = Arrays.asList(tagA, tagB);
-		Mockito.<List<? extends Tag>> when(node.getTags(any(Release.class))).thenReturn(tagList);
+		Mockito.<List<? extends Tag>> when(node.getTags(any(Branch.class))).thenReturn(tagList);
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();

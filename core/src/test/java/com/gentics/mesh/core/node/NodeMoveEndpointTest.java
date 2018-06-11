@@ -14,7 +14,7 @@ import org.junit.Test;
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -34,42 +34,42 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
 		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = content("concorde");
-			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			String oldParentUuid = sourceNode.getParentNode(branchUuid).getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
 					"node_move_error_targetnode_is_no_folder");
-			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(branchUuid).getUuid());
 		}
 	}
 
 	@Test
 	public void testMoveNodesSame() {
 		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			Node sourceNode = folder("news");
-			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
-			assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			String oldParentUuid = sourceNode.getParentNode(branchUuid).getUuid();
+			assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid()), BAD_REQUEST, "node_move_error_same_nodes");
-			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(branchUuid).getUuid());
 		}
 	}
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
 		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
+			String branchUuid = project().getLatestBranch().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
-			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			String oldParentUuid = sourceNode.getParentNode(branchUuid).getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
 
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
 					"node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 
-			assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode(releaseUuid).getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode(branchUuid).getUuid());
 		}
 	}
 
@@ -79,7 +79,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		Node targetNode = folder("2015");
 
 		try (Tx tx = tx()) {
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(initialReleaseUuid()).getUuid());
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(initialBranchUuid()).getUuid());
 			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
 			tx.success();
 		}
@@ -88,7 +88,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
 					sourceNode.getUuid());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
-					folder("deals").getParentNode(initialReleaseUuid()).getUuid());
+					folder("deals").getParentNode(initialBranchUuid()).getUuid());
 		}
 	}
 
@@ -96,18 +96,18 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	public void testMoveNodeWithPerm() {
 		Node sourceNode = folder("deals");
 		Node targetNode = folder("2015");
-		String releaseUuid = initialReleaseUuid();
+		String branchUuid = initialBranchUuid();
 		String sourceNodeUuid = tx(() -> sourceNode.getUuid());
 		String targetNodeUuid = tx(() -> targetNode.getUuid());
-		String oldSourceParentId = tx(() -> sourceNode.getParentNode(releaseUuid).getUuid());
-		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(releaseUuid).getUuid()));
+		String oldSourceParentId = tx(() -> sourceNode.getParentNode(branchUuid).getUuid());
+		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(branchUuid).getUuid()));
 		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));
 
 		try (Tx tx2 = tx()) {
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
-					sourceNode.getParentNode(releaseUuid).getUuid());
+					sourceNode.getParentNode(branchUuid).getUuid());
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-					targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+					targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
 			assertEquals("A store event for each language variation per version should occure", 4, trackingSearchProvider().getStoreEvents().size());
 		}
 		// TODO assert entries
@@ -130,12 +130,12 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			// 2. Add schema to project
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
 
-			// 3. Assign the schema to the initial release
-			String releaseUuid = project().getLatestRelease().getUuid();
+			// 3. Assign the schema to the initial branch
+			String branchUuid = project().getLatestBranch().getUuid();
 			SchemaReferenceImpl reference = new SchemaReferenceImpl();
 			reference.setName("test");
 			reference.setVersion("1.0");
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid, reference));
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, branchUuid, reference));
 
 			// We don't need to wait for a schema migration because there are no nodes which use the schema
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -157,8 +157,8 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testMoveInRelease() {
-		Release newRelease;
+	public void testMoveInBranch() {
+		Branch newBranch;
 		Project project = project();
 		Node movedNode = folder("deals");
 		Node targetNode = folder("2015");
@@ -168,27 +168,27 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft()))
 					.getParentNode().getUuid();
 
-			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newBranch = project.getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialRelease().getName(), newRelease.getName());
+			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialBranch().getName(), newBranch.getName());
 			assertThat(migrated.getParentNode()).as("Migrated node parent").isNotNull();
 			assertThat(migrated.getParentNode().getUuid()).as("Migrated node parent").isEqualTo(oldParentUuid);
 
-			// 2. Move in initial release
+			// 2. Move in initial branch
 			call(() -> client().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
-					new VersioningParametersImpl().setRelease(initialRelease().getName())));
+					new VersioningParametersImpl().setBranch(initialBranch().getName())));
 
-			// 3. Assert that the node still uses the old parent for the new release
+			// 3. Assert that the node still uses the old parent for the new branch
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft())).getParentNode()
-					.getUuid()).as("Parent Uuid in new release").isEqualTo(oldParentUuid);
+					.getUuid()).as("Parent Uuid in new branch").isEqualTo(oldParentUuid);
 
-			// 4. Assert that the node uses the new parent for the initial release
+			// 4. Assert that the node uses the new parent for the initial branch
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
-					new VersioningParametersImpl().setRelease(initialRelease().getName()).draft())).getParentNode().getUuid())
-							.as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
+					new VersioningParametersImpl().setBranch(initialBranch().getName()).draft())).getParentNode().getUuid())
+							.as("Parent Uuid in initial branch").isEqualTo(targetNode.getUuid());
 		}
 	}
 }

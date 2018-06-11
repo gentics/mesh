@@ -15,7 +15,7 @@ import org.assertj.core.api.AbstractAssert;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
@@ -67,62 +67,62 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	}
 
 	/**
-	 * Assert that the node has the given nodes as children in the release
+	 * Assert that the node has the given nodes as children in the branch.
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param nodes
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasChildren(Release release, Node... nodes) {
-		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
+	public NodeAssert hasChildren(Branch branch, Node... nodes) {
+		Stream<Node> stream = StreamSupport.stream(actual.getChildren(branch.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").contains(nodes);
 		return this;
 	}
 
 	/**
-	 * Assert that the node has no children in the release
+	 * Assert that the node has no children in the branch.
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @return fluent API
 	 */
-	public NodeAssert hasNoChildren(Release release) {
-		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
+	public NodeAssert hasNoChildren(Branch branch) {
+		Stream<Node> stream = StreamSupport.stream(actual.getChildren(branch.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").hasSize(0);
 		return this;
 	}
 
 	/**
-	 * Assert that the node has only the given nodes as children in the release
+	 * Assert that the node has only the given nodes as children in the branch.
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param nodes
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasOnlyChildren(Release release, Node... nodes) {
-		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
+	public NodeAssert hasOnlyChildren(Branch branch, Node... nodes) {
+		Stream<Node> stream = StreamSupport.stream(actual.getChildren(branch.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").containsOnly(nodes);
 		return this;
 	}
 
 	/**
-	 * Assert that the node has none of the given nodes as children in the release
+	 * Assert that the node has none of the given nodes as children in the branch.
 	 * 
-	 * @param release
-	 *            release
+	 * @param branch
+	 *            branch
 	 * @param nodes
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasNotChildren(Release release, Node... nodes) {
-		assertThat(actual.getChildren(release.getUuid())).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").doesNotContain(
+	public NodeAssert hasNotChildren(Branch branch, Node... nodes) {
+		assertThat(actual.getChildren(branch.getUuid())).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").doesNotContain(
 				nodes);
 		return this;
 	}

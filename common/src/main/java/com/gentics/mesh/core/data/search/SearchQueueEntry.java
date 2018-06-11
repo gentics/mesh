@@ -16,7 +16,7 @@ import io.reactivex.functions.Action;
  * <li>Element UUUID - dd5e85cebb7311e49640316caf57479f</li>
  * <li>Element Type - node, tag, role</li>
  * <li>Element Action - delete, update, create</li>
- * <li>Element Context - ProjectUuid, ReleaseUuid</li>
+ * <li>Element Context - ProjectUuid, BranchUuid</li>
  * </ul>
  */
 public interface SearchQueueEntry<T extends EntryContext> extends Comparable<SearchQueueEntry<?>> {

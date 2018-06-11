@@ -9,9 +9,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
-import com.gentics.mesh.core.endpoint.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -71,7 +71,7 @@ public interface TestMeshComponent extends MeshComponent {
 
 	NodeMigrationHandler nodeMigrationHandler();
 
-	ReleaseMigrationHandler releaseMigrationHandler();
+	BranchMigrationHandler branchMigrationHandler();
 
 	MicronodeMigrationHandler micronodeMigrationHandler();
 

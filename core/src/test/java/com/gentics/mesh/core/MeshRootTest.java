@@ -128,7 +128,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			boot().handleMeshVersion();
 		});
 
-		// Upgrade from snapshot to release
+		// Upgrade from snapshot to branch
 		setMeshVersions("1.0.0-SNAPSHOT", "1.0.0");
 		expectException(() -> {
 			boot().handleMeshVersion();
@@ -140,7 +140,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			boot().handleMeshVersion();
 		});
 
-		// Upgrade from snapshot to release - With ignore flag
+		// Upgrade from snapshot to branch - With ignore flag
 		System.setProperty("ignoreSnapshotUpgradeCheck", "true");
 		setMeshVersions("1.0.0-SNAPSHOT", "1.0.0");
 		boot().handleMeshVersion();

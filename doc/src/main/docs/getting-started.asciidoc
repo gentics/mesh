@@ -37,11 +37,11 @@ image:overview.png[Gentics Mesh Overview of Core Concepts, role="img-responsive"
 //* *Permissions*
 //* References /List
 //* Versioning
-//* Content Releases
+//* Content Branches
 
 == Startup
 
-Run Gentics Mesh by executing ```java -jar mesh-demo-X.X.X.jar```. All neccessary configuration files and directories will
+Run Gentics Mesh by executing ```java -jar mesh-demo-X.X.X.jar```. All necessary configuration files and directories will
 be created and an AngularJS demo project is deployed automatically.
 
 Once the demo setup is completed you will be able to access the following urls

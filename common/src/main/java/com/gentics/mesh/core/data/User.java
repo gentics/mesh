@@ -330,9 +330,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * user has READ permission or READ_PUBLISH permission on a published node.
 	 * 
 	 * @param container
-	 * @param releaseUuid
+	 * @param branchUuid
 	 */
-	void failOnNoReadPermission(NodeGraphFieldContainer container, String releaseUuid);
+	void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid);
 
 	/**
 	 * Check whether the admin role was assigned to the user.

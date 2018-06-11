@@ -122,13 +122,13 @@ public final class Events {
 
 	public static final String EVENT_MICROSCHEMA_DELETED = "mesh.microschema.deleted";
 
-	/* Release */
+	/* Branch */
 
-	public static final String EVENT_RELEASE_CREATED = "mesh.release.created";
+	public static final String EVENT_BRANCH_CREATED = "mesh.branch.created";
 
-	public static final String EVENT_RELEASE_UPDATED = "mesh.release.updated";
+	public static final String EVENT_BRANCH_UPDATED = "mesh.branch.updated";
 
-	public static final String EVENT_RELEASE_DELETED = "mesh.release.deleted";
+	public static final String EVENT_BRANCH_DELETED = "mesh.branch.deleted";
 
 	/* Search index related */
 
@@ -242,11 +242,11 @@ public final class Events {
 
 		/* Release */
 
-		events.add(EVENT_RELEASE_CREATED);
+		events.add(EVENT_BRANCH_CREATED);
 
-		events.add(EVENT_RELEASE_UPDATED);
+		events.add(EVENT_BRANCH_UPDATED);
 
-		events.add(EVENT_RELEASE_DELETED);
+		events.add(EVENT_BRANCH_DELETED);
 
 		/* Search Index */
 

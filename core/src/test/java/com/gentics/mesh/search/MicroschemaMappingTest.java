@@ -18,7 +18,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -215,8 +215,8 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 		NodeContainerMappingProvider provider = handler.getMappingProvider();
 
 		tx(() -> {
-			Release release = latestRelease();
-			JsonObject schemaMapping = provider.getMapping(this.schema, release);
+			Branch branch = latestBranch();
+			JsonObject schemaMapping = provider.getMapping(this.schema, branch);
 			assertNotNull(schemaMapping);
 			JsonObject fieldsMapping = schemaMapping
 					.getJsonObject(DEFAULT_TYPE)

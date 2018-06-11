@@ -23,10 +23,10 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -60,7 +60,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		String tagUuid = tx(() -> tag.getUuid());
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
@@ -69,9 +69,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
 				.recordedStoreEvents(2);
 		trackingSearchProvider().printStoreEvents(false);
-		// Document Index: [node-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
-		String draftIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), schemaVersionUuid, DRAFT);
-		String publishedIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), schemaVersionUuid, PUBLISHED);
+		// Document Index: [node-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
+		String draftIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), schemaVersionUuid, DRAFT);
+		String publishedIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), schemaVersionUuid, PUBLISHED);
 		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(draftIndexName + "-"+ nodeUuid + "-en"));
 		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(publishedIndexName + "-"+ nodeUuid + "-en"));
 
@@ -79,7 +79,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
-			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
 		}
 
 		// TODO check for properties of the nested tag
@@ -91,7 +91,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Node node = folder("2015");
 		Tag tag = tag("red");
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 			tx.success();
 		}
@@ -101,7 +101,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
 		}
 	}
 
@@ -111,7 +111,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("red");
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -121,7 +121,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
 		}
 	}
 
@@ -132,7 +132,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 		String tagUuid = tx(() -> tag.getUuid());
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
 		}
 
 		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));
@@ -140,7 +140,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
-			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
 		}
 		// TODO check for properties of the nested tag
 	}
@@ -161,7 +161,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 			tx.success();
 		}
@@ -169,79 +169,79 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN,
 					"error_missing_perm", node.getUuid());
-			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestBranch()).contains(tag));
 		}
 	}
 
 	@Test
-	public void testTaggingAcrossMultipleReleases() throws Exception {
-		String releaseOne = "ReleaseV1";
-		String releaseTwo = "ReleaseV2";
+	public void testTaggingAcrossMultipleBranches() throws Exception {
+		String branchOne = "BranchV1";
+		String branchTwo = "BranchV2";
 
-		// 1. Create release v1
+		// 1. Create branch v1
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		try (Tx tx = tx()) {
-			ReleaseCreateRequest request = new ReleaseCreateRequest();
-			request.setName(releaseOne);
-			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
-			assertThat(releaseResponse).as("Release Response").isNotNull().hasName(releaseOne).isActive().isNotMigrated();
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName(branchOne);
+			BranchResponse branchResponse = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(branchResponse).as("Branch Response").isNotNull().hasName(branchOne).isActive().isNotMigrated();
 		}
 		failingLatch(latch);
 
-		// 2. Tag a node in release v1 with tag "red"
+		// 2. Tag a node in branch v1 with tag "red"
 		try (Tx tx = tx()) {
 			Node node = content();
 			Tag tag = tag("red");
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 		}
 
-		// Assert that the node is tagged with red in release one
+		// Assert that the node is tagged with red in branch one
 		try (Tx tx = tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
-					new VersioningParametersImpl().setRelease(releaseOne)));
+					new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 		}
 
-		// 3. Create release v2
+		// 3. Create branch v2
 		latch = TestUtils.latchForMigrationCompleted(client());
 		try (Tx tx = tx()) {
-			ReleaseCreateRequest request = new ReleaseCreateRequest();
-			request.setName(releaseTwo);
-			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
-			assertThat(releaseResponse).as("Release Response").isNotNull().hasName(releaseTwo).isActive().isNotMigrated();
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName(branchTwo);
+			BranchResponse branchResponse = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(branchResponse).as("Branch Response").isNotNull().hasName(branchTwo).isActive().isNotMigrated();
 		}
 
 		failingLatch(latch);
-		// 4. Tag a node in release v2 with tag "blue"
+		// 4. Tag a node in branch v2 with tag "blue"
 		try (Tx tx = tx()) {
 			Node node = content();
 			Tag tag = tag("blue");
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 		}
 
-		// Assert that the node is tagged with both tags in releaseTwo
+		// Assert that the node is tagged with both tags in branchTwo
 		try (Tx tx = tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
@@ -249,7 +249,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -258,32 +258,32 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
-					new VersioningParametersImpl().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
-					new VersioningParametersImpl().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 		}
 
-		// 5. Remove the tag "red" in release v1
+		// 5. Remove the tag "red" in branch v1
 		try (Tx tx = tx()) {
 			Node node = content();
 			Tag tag = tag("red");
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(),
-					new VersioningParametersImpl().setRelease(releaseOne)));
+					new VersioningParametersImpl().setBranch(branchOne)));
 		}
 
-		// Assert that the node is still tagged with both tags in releaseTwo
+		// Assert that the node is still tagged with both tags in branchTwo
 		try (Tx tx = tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
@@ -291,7 +291,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -300,35 +300,35 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
-					new VersioningParametersImpl().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
-					new VersioningParametersImpl().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 		}
 
-		// Assert that the node is tagged with no tag in release one
+		// Assert that the node is tagged with no tag in branch one
 		try (Tx tx = tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
-			assertEquals("We expected to find no tags for the node in release one.", 0, tagsForNode.getData().size());
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
+			assertEquals("We expected to find no tags for the node in branch one.", 0, tagsForNode.getData().size());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
-			assertEquals("We expected to find no tags for the node in release one.", 0, response.getTags().size());
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
+			assertEquals("We expected to find no tags for the node in branch one.", 0, response.getTags().size());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
-					new VersioningParametersImpl().setRelease(releaseOne)));
+					new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node not be tagged by tag red.", 0,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
@@ -342,7 +342,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -353,7 +353,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestBranch()).contains(tag));
 		}
 	}
 

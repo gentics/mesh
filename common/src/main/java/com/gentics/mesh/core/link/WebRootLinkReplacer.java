@@ -19,7 +19,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.router.APIRouter;
@@ -48,8 +48,8 @@ public class WebRootLinkReplacer {
 	 * Replace the links in the content.
 	 * 
 	 * @param ac
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param edgeType
 	 *            edge type
 	 * @param content
@@ -62,7 +62,7 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(InternalActionContext ac, String releaseUuid, ContainerType edgeType, String content, LinkType type, String projectName,
+	public String replace(InternalActionContext ac, String branchUuid, ContainerType edgeType, String content, LinkType type, String projectName,
 			List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
@@ -106,12 +106,12 @@ public class WebRootLinkReplacer {
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 2) {
-				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
+				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
-				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName,
+				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName,
 						languageTags.toArray(new String[languageTags.size()])));
 			} else {
-				segments.add(resolve(ac, releaseUuid, edgeType, linkArguments[0], type, projectName));
+				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName));
 			}
 
 			lastPos = endPos + END_TAG.length();
@@ -128,8 +128,8 @@ public class WebRootLinkReplacer {
 	 * Resolve the link to the node with uuid (in the given language) into an observable
 	 * 
 	 * @param ac
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param edgeType
 	 *            edge type
 	 * @param uuid
@@ -142,7 +142,7 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return observable of the rendered link
 	 */
-	public String resolve(InternalActionContext ac, String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
+	public String resolve(InternalActionContext ac, String branchUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
 			String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
@@ -164,16 +164,16 @@ public class WebRootLinkReplacer {
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
 		}
-		return resolve(ac, releaseUuid, edgeType, node, type, languageTags);
+		return resolve(ac, branchUuid, edgeType, node, type, languageTags);
 	}
 
 	/**
 	 * Resolve the link to the given node
 	 * 
 	 * @param ac
-	 * @param releaseUuid
-	 *            release UUID which will be used to render the path to the linked node. This uuid will only be used when rendering nodes of the same project.
-	 *            Otherwise the latest release of the node's project will be used.
+	 * @param branchUuid
+	 *            Branch UUID which will be used to render the path to the linked node. This uuid will only be used when rendering nodes of the same project.
+	 *            Otherwise the latest branch of the node's project will be used.
 	 * @param edgeType
 	 *            edge type
 	 * @param node
@@ -184,7 +184,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public String resolve(InternalActionContext ac, String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
+	public String resolve(InternalActionContext ac, String branchUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
 			languageTags = new String[] { defaultLanguage };
@@ -199,16 +199,16 @@ public class WebRootLinkReplacer {
 			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
 		}
 
-		// We need to reset the given releaseUuid if the node is not part of the currently active project.
-		// In that case the latest release of the foreign node project will be used.
+		// We need to reset the given branchUuid if the node is not part of the currently active project.
+		// In that case the latest branch of the foreign node project will be used.
 		Project ourProject = ac.getProject();
 		Project theirProject = node.getProject();
 		if (ourProject != null && !ourProject.equals(theirProject)) {
-			releaseUuid = null;
+			branchUuid = null;
 		}
-		// if no release given, take the latest release of the project
-		if (releaseUuid == null) {
-			releaseUuid = theirProject.getLatestRelease().getUuid();
+		// if no branch given, take the latest branch of the project
+		if (branchUuid == null) {
+			branchUuid = theirProject.getLatestBranch().getUuid();
 		}
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
@@ -217,7 +217,7 @@ public class WebRootLinkReplacer {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + Arrays.toString(languageTags) + " with type " + type.name());
 		}
-		String path = node.getPath(ac, releaseUuid, edgeType, languageTags);
+		String path = node.getPath(ac, branchUuid, edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
 		}
@@ -236,26 +236,26 @@ public class WebRootLinkReplacer {
 	}
 
 	/**
-	 * Return the URL prefix for the given node. The latest release of the node's project will be used to fetch the needed information.
+	 * Return the URL prefix for the given node. The latest branch of the node's project will be used to fetch the needed information.
 	 * 
 	 * @param node
-	 * @return scheme and authority or empty string if the release of the node does not supply the needed information
+	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
 	private String generateSchemeAuthorityForNode(Node node) {
-		Release release = node.getProject().getLatestRelease();
-		String hostname = release.getHostname();
+		Branch branch = node.getProject().getLatestBranch();
+		String hostname = branch.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme
 			return "";
 		}
-		boolean isSSL = BooleanUtils.toBoolean(release.getSsl());
+		boolean isSSL = BooleanUtils.toBoolean(branch.getSsl());
 		StringBuffer buffer = new StringBuffer();
 		if (isSSL) {
 			buffer.append("https://");
 		} else {
 			buffer.append("http://");
 		}
-		buffer.append(release.getHostname());
+		buffer.append(branch.getHostname());
 		return buffer.toString();
 	}
 

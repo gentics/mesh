@@ -69,7 +69,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
-					TransformablePage<? extends Node> nodes = tag.findTaggedNodes(gc.getUser(), gc.getRelease(), null, null, getPagingInfo(env));
+					TransformablePage<? extends Node> nodes = tag.findTaggedNodes(gc.getUser(), gc.getBranch(), null, null, getPagingInfo(env));
 					List<String> languageTags = getLanguageArgument(env);
 
 					// Transform the found nodes into contents

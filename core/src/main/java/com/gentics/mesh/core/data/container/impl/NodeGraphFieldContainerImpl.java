@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.container.impl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -181,12 +181,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 		}
 
-		// Delete the container from all releases and types
-		getReleaseTypes().forEach(tuple -> {
-			String releaseUuid = tuple.v1();
+		// Delete the container from all branches and types
+		getBranchTypes().forEach(tuple -> {
+			String branchUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				batch.delete(this, releaseUuid, type, false);
+				batch.delete(this, branchUuid, type, false);
 			}
 		});
 
@@ -195,16 +195,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
-		String releaseUuid = release.getUuid();
+	public void deleteFromBranch(Branch branch, SearchQueueBatch batch) {
+		String branchUuid = branch.getUuid();
 
-		batch.delete(this, releaseUuid, DRAFT, false);
-		if (isPublished(releaseUuid)) {
-			batch.delete(this, releaseUuid, PUBLISHED, false);
+		batch.delete(this, branchUuid, DRAFT, false);
+		if (isPublished(branchUuid)) {
+			batch.delete(this, branchUuid, PUBLISHED, false);
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
-		// Remove the edge between the node and the container that matches the release
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).or(e -> e.traversal().has(
+		// Remove the edge between the node and the container that matches the branch
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(e -> e.traversal().has(
 			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
 			e -> e.traversal().has(
 				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
@@ -216,9 +216,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
 		super.updateFieldsFromRest(ac, restFields);
-		String releaseUuid = ac.getRelease().getUuid();
+		String branchUuid = ac.getBranch().getUuid();
 
-		updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
+		updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 		updateDisplayFieldValue();
 	}
 
@@ -257,15 +257,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	/**
 	 * Update the webroot url field index and also assert that the new values would not cause a conflict with the existing data.
 	 * 
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param urlFieldValues
 	 * @param propertyName
 	 * @param indexName
 	 */
-	private void updateWebrootUrlFieldsInfo(String releaseUuid, Set<String> urlFieldValues, String propertyName, String indexName) {
+	private void updateWebrootUrlFieldsInfo(String branchUuid, Set<String> urlFieldValues, String propertyName, String indexName) {
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
-			// Prefix each path with the releaseuuid in order to scope the paths by release
-			Set<String> prefixedUrlFieldValues = urlFieldValues.stream().map(e -> releaseUuid + e).collect(Collectors.toSet());
+			// Prefix each path with the branchuuid in order to scope the paths by branch
+			Set<String> prefixedUrlFieldValues = urlFieldValues.stream().map(e -> branchUuid + e).collect(Collectors.toSet());
 
 			// Individually check each url
 			for (String urlFieldValue : prefixedUrlFieldValues) {
@@ -297,18 +297,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
+	public void updateWebrootPathInfo(String branchUuid, String conflictI18n) {
 		Set<String> urlFieldValues = getUrlFieldValues();
-		if (isDraft(releaseUuid)) {
-			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
-			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_URLFIELD_INDEX_NAME);
+		if (isDraft(branchUuid)) {
+			updateWebrootPathInfo(branchUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
+			updateWebrootUrlFieldsInfo(branchUuid, urlFieldValues, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_URLFIELD_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_PROPERTY_KEY, null);
 			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		}
-		if (isPublished(releaseUuid)) {
-			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
-			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME);
+		if (isPublished(branchUuid)) {
+			updateWebrootPathInfo(branchUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
+			updateWebrootUrlFieldsInfo(branchUuid, urlFieldValues, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 			setProperty(PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, null);
@@ -318,8 +318,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	/**
 	 * Update the webroot path info (checking for uniqueness before)
 	 *
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param branchUuid
+	 *            branch Uuid
 	 * @param conflictI18n
 	 *            i18n for the message in case of conflict
 	 * @param type
@@ -329,16 +329,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @param indexName
 	 *            name of the index to check for uniqueness
 	 */
-	protected void updateWebrootPathInfo(String releaseUuid, String conflictI18n, ContainerType type, String propertyName, String indexName) {
+	protected void updateWebrootPathInfo(String branchUuid, String conflictI18n, ContainerType type, String propertyName, String indexName) {
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		// Determine the webroot path of the container parent node
-		String segment = node.getPathSegment(releaseUuid, type, getLanguage().getLanguageTag());
+		String segment = node.getPathSegment(branchUuid, type, getLanguage().getLanguageTag());
 
-		// The webroot uniqueness will be checked by validating that the string [segmentValue-releaseUuid-parentNodeUuid] is only listed once within the given
+		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
 		if (segment != null) {
-			String webRootIndexKey = NodeGraphFieldContainer.composeWebrootIndexKey(segment, releaseUuid, node.getParentNode(releaseUuid));
+			String webRootIndexKey = NodeGraphFieldContainer.composeWebrootIndexKey(segment, branchUuid, node.getParentNode(branchUuid));
 			// check for uniqueness of webroot path
 			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this, webRootIndexKey);
 			if (conflictingContainer != null) {
@@ -359,7 +359,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public Node getParentNode(String uuid) {
 		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-			GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
+			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**
@@ -439,26 +439,26 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public boolean isType(ContainerType type, String releaseUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).has(
+	public boolean isType(ContainerType type, String branchUuid) {
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
 			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		return traversal.hasNext();
 	}
 
 	@Override
-	public Set<Tuple<String, ContainerType>> getReleaseTypes() {
+	public Set<Tuple<String, ContainerType>> getBranchTypes() {
 		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
-		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getReleaseUuid(), edge
+		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getBranchUuid(), edge
 			.getType())));
 		return typeSet;
 	}
 
 	@Override
-	public Set<String> getReleases(ContainerType type) {
-		Set<String> releaseUuids = new HashSet<>();
+	public Set<String> getBranches(ContainerType type) {
+		Set<String> branchUuids = new HashSet<>();
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).frameExplicit(GraphFieldContainerEdgeImpl.class)
-			.forEach(edge -> releaseUuids.add(edge.getReleaseUuid()));
-		return releaseUuids;
+			.forEach(edge -> branchUuids.add(edge.getBranchUuid()));
+		return branchUuids;
 	}
 
 	@Override

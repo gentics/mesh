@@ -20,10 +20,10 @@ import javax.inject.Singleton;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -63,7 +63,7 @@ import io.vertx.core.logging.LoggerFactory;
  * the context information in order to determine which elements need to be stored in or removed from the index.
  * 
  * Additionally the handler may infer the scope of store actions if the context information is lacking certain information. A context which does not include the
- * target language will result in multiple store actions. Each language container will be loaded and stored. This behaviour will also be applied to releases and
+ * target language will result in multiple store actions. Each language container will be loaded and stored. This behaviour will also be applied to branches and
  * project information.
  */
 @Singleton
@@ -104,10 +104,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
 		GenericEntryContext context = entry.getContext();
 		String projectUuid = context.getProjectUuid();
-		String releaseUuid = context.getReleaseUuid();
+		String branchUuid = context.getBranchUuid();
 		String schemaContainerVersionUuid = context.getSchemaContainerVersionUuid();
 		ContainerType type = context.getContainerType();
-		return NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
+		return NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
 	}
 
 	@Override
@@ -127,22 +127,22 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			// Iterate over all projects and construct the index names
 			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-				// Add the draft and published index names per release to the map
-				for (Release release : project.getReleaseRoot().findAllIt()) {
-					// Each release specific index has also document type specific mappings
-					for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
-						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+				// Add the draft and published index names per branch to the map
+				for (Branch branch : project.getBranchRoot().findAllIt()) {
+					// Each branch specific index has also document type specific mappings
+					for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
+						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 							.getUuid(), DRAFT);
-						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 							.getUuid(), PUBLISHED);
 						if (log.isDebugEnabled()) {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "}");
 							log.debug("Adding index to map of known idices {" + publishIndexName + "}");
 						}
-						release.findAllMicroschemaVersions();
+						branch.findAllMicroschemaVersions();
 						// Load the index mapping information for the index
 						SchemaModel schema = containerVersion.getSchema();
-						JsonObject mapping = getMappingProvider().getMapping(schema, release);
+						JsonObject mapping = getMappingProvider().getMapping(schema, branch);
 						JsonObject settings = schema.getElasticsearch();
 						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping);
 						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping);
@@ -169,10 +169,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				SyncMetric metric = new SyncMetric(getType());
 				Set<Completable> actions = new HashSet<>();
 				for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Release release : project.getReleaseRoot().findAllIt()) {
-						for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
+					for (Branch branch : project.getBranchRoot().findAllIt()) {
+						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 							for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-								actions.add(diffAndSync(project, release, version, type, metric));
+								actions.add(diffAndSync(project, branch, version, type, metric));
 							}
 						}
 					}
@@ -183,14 +183,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
-	private Map<String, String> loadVersionsFromGraph(Release release, SchemaContainerVersion version, ContainerType type) {
+	private Map<String, String> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
 		Map<String, String> versions = new HashMap<>();
-		String releaseUuid = release.getUuid();
-		version.getFieldContainers(releaseUuid)
+		String branchUuid = branch.getUuid();
+		version.getFieldContainers(branchUuid)
 			.filter(c -> c.getSchemaContainerVersion().equals(version))
-			.filter(c -> c.isType(type, releaseUuid))
+			.filter(c -> c.isType(type, branchUuid))
 			.forEach(c -> {
-				String v = generateVersion(c, releaseUuid, type);
+				String v = generateVersion(c, branchUuid, type);
 				versions.put(c.getParentNode().getUuid() + "-" + c.getLanguage().getLanguageTag(), v);
 			});
 		return versions;
@@ -211,9 +211,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private Completable diffAndSync(Project project, Release release, SchemaContainerVersion version, ContainerType type, SyncMetric metric)
+	private Completable diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, SyncMetric metric)
 		throws HttpErrorException {
-		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
+		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
 			version.getUuid(), type);
 
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
@@ -221,7 +221,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		try (Tx tx = db.tx()) {
 
 			// 1. Load versions from the local graph (source of truth)
-			Map<String, String> sourceVersions = loadVersionsFromGraph(release, version, type);
+			Map<String, String> sourceVersions = loadVersionsFromGraph(branch, version, type);
 
 			// 2. Load the version from the elasticsearch index (sink)
 			Map<String, String> sinkVersions = loadVersionsFromIndex(indexName);
@@ -245,7 +245,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			String versionUuid = version.getUuid();
 			String projectUuid = project.getUuid();
-			String releaseUuid = release.getUuid();
+			String branchUuid = branch.getUuid();
 
 			// 4. Create the SQB's
 			SearchQueueBatch storeBatch = searchQueue.create();
@@ -255,7 +255,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setContainerType(type);
 				context.setProjectUuid(projectUuid);
-				context.setReleaseUuid(releaseUuid);
+				context.setBranchUuid(branchUuid);
 				context.setLanguageTag(lang);
 				context.setSchemaContainerVersionUuid(versionUuid);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
@@ -269,7 +269,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setContainerType(type);
 				context.setProjectUuid(projectUuid);
-				context.setReleaseUuid(releaseUuid);
+				context.setBranchUuid(branchUuid);
 				context.setSchemaContainerVersionUuid(versionUuid);
 				context.setLanguageTag(lang);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, DELETE_ACTION);
@@ -283,7 +283,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setContainerType(type);
 				context.setProjectUuid(projectUuid);
-				context.setReleaseUuid(releaseUuid);
+				context.setBranchUuid(branchUuid);
 				context.setSchemaContainerVersionUuid(versionUuid);
 				context.setLanguageTag(lang);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
@@ -304,19 +304,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Set<String> indices = new HashSet<>();
 			Project project = ac.getProject();
 			if (project != null) {
-				Release release = ac.getRelease();
+				Branch branch = ac.getBranch();
 				// Locate all schema versions which need to be taken into consideration when choosing the indices
-				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
-					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(), ContainerType
+				for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), version.getUuid(), ContainerType
 						.forVersion(ac.getVersioningParameters().getVersion())));
 				}
 			} else {
 				// The project was not specified. Maybe a global search wants to know which indices must be searched.
-				// In that case we just iterate over all projects and collect index names per release.
+				// In that case we just iterate over all projects and collect index names per branch.
 				for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Release release : currentProject.getReleaseRoot().findAllIt()) {
-						for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
-							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
+					for (Branch branch : currentProject.getBranchRoot().findAllIt()) {
+						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
 								ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 						}
 					}
@@ -353,19 +353,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Step 1 - Check whether we need to handle all releases.
+	 * Step 1 - Check whether we need to handle all branches.
 	 * 
 	 * @param obs
 	 * @param node
 	 * @param context
 	 */
 	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
-		if (context.getReleaseUuid() == null) {
-			for (Release release : node.getProject().getReleaseRoot().findAllIt()) {
-				store(obs, node, release.getUuid(), context);
+		if (context.getBranchUuid() == null) {
+			for (Branch branch : node.getProject().getBranchRoot().findAllIt()) {
+				store(obs, node, branch.getUuid(), context);
 			}
 		} else {
-			store(obs, node, context.getReleaseUuid(), context);
+			store(obs, node, context.getBranchUuid(), context);
 		}
 	}
 
@@ -377,19 +377,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * 
 	 * @param obs
 	 * @param node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param context
 	 */
-	private void store(Set<Single<String>> obs, Node node, String releaseUuid, GenericEntryContext context) {
+	private void store(Set<Single<String>> obs, Node node, String branchUuid, GenericEntryContext context) {
 		if (context.getContainerType() == null) {
 			for (ContainerType type : ContainerType.values()) {
 				// We only want to store DRAFT and PUBLISHED Types
 				if (type == DRAFT || type == PUBLISHED) {
-					store(obs, node, releaseUuid, type, context);
+					store(obs, node, branchUuid, type, context);
 				}
 			}
 		} else {
-			store(obs, node, releaseUuid, context.getContainerType(), context);
+			store(obs, node, branchUuid, context.getContainerType(), context);
 		}
 	}
 
@@ -400,43 +400,43 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * 
 	 * @param obs
 	 * @param node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @param context
 	 */
-	private void store(Set<Single<String>> obs, Node node, String releaseUuid, ContainerType type, GenericEntryContext context) {
+	private void store(Set<Single<String>> obs, Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), releaseUuid, type);
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
 			} else {
-				obs.add(storeContainer(container, releaseUuid, type));
+				obs.add(storeContainer(container, branchUuid, type));
 			}
 		} else {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(releaseUuid, type)) {
-				obs.add(storeContainer(container, releaseUuid, type));
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branchUuid, type)) {
+				obs.add(storeContainer(container, branchUuid, type));
 			}
 		}
 
 	}
 
 	/**
-	 * Step 1 - Check whether we need to handle all releases.
+	 * Step 1 - Check whether we need to handle all branches.
 	 * 
 	 * @param node
 	 * @param context
 	 * @return
 	 */
 	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
-		if (context.getReleaseUuid() == null) {
+		if (context.getBranchUuid() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (Release release : node.getProject().getReleaseRoot().findAllIt()) {
-				obs.add(storeForBulk(node, release.getUuid(), context));
+			for (Branch branch : node.getProject().getBranchRoot().findAllIt()) {
+				obs.add(storeForBulk(node, branch.getUuid(), context));
 			}
 			return Observable.merge(obs);
 		} else {
-			return storeForBulk(node, context.getReleaseUuid(), context);
+			return storeForBulk(node, context.getBranchUuid(), context);
 		}
 	}
 
@@ -447,22 +447,22 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * fallback options and invoke store for all types if the container type has not been specified.
 	 * 
 	 * @param node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param context
 	 * @return
 	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, String releaseUuid, GenericEntryContext context) {
+	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, GenericEntryContext context) {
 		if (context.getContainerType() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
 			for (ContainerType type : ContainerType.values()) {
 				// We only want to store DRAFT and PUBLISHED Types
 				if (type == DRAFT || type == PUBLISHED) {
-					obs.add(storeForBulk(node, releaseUuid, type, context));
+					obs.add(storeForBulk(node, branchUuid, type, context));
 				}
 			}
 			return Observable.merge(obs);
 		} else {
-			return storeForBulk(node, releaseUuid, context.getContainerType(), context);
+			return storeForBulk(node, branchUuid, context.getContainerType(), context);
 		}
 	}
 
@@ -472,24 +472,24 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Invoke store for the possible set of containers. Utilise the given context settings as much as possible.
 	 * 
 	 * @param node
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @param context
 	 * @return
 	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, String releaseUuid, ContainerType type, GenericEntryContext context) {
+	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), releaseUuid, type);
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
 			} else {
-				return storeContainerForBulk(container, releaseUuid, type).toObservable();
+				return storeContainerForBulk(container, branchUuid, type).toObservable();
 			}
 		} else {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(releaseUuid, type)) {
-				obs.add(storeContainerForBulk(container, releaseUuid, type).toObservable());
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branchUuid, type)) {
+				obs.add(storeContainerForBulk(container, branchUuid, type).toObservable());
 			}
 			return Observable.merge(obs);
 		}
@@ -506,36 +506,36 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable move(MoveDocumentEntry entry) {
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
-		String releaseUuid = context.getReleaseUuid();
-		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
-			releaseUuid, type));
+		String branchUuid = context.getBranchUuid();
+		return storeContainer(context.getNewContainer(), branchUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
+			branchUuid, type));
 	}
 
 	/**
 	 * Deletes the container for the index in which it should reside.
 	 * 
 	 * @param container
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
-	private Completable deleteContainer(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
+	private Completable deleteContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		return searchProvider.deleteDocument(container.getIndexName(projectUuid, releaseUuid, type), container.getDocumentId());
+		return searchProvider.deleteDocument(container.getIndexName(projectUuid, branchUuid, type), container.getDocumentId());
 	}
 
 	/**
 	 * Generate an elasticsearch document object from the given container and stores it in the search index.
 	 * 
 	 * @param container
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return Single with affected index name
 	 */
-	public Single<String> storeContainer(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
-		JsonObject doc = transformer.toDocument(container, releaseUuid, type);
+	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
@@ -548,14 +548,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Generate an elasticsearch document object from the given container and stores it in the search index.
 	 * 
 	 * @param container
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return Single with the bulk entry
 	 */
-	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
-		JsonObject doc = transformer.toDocument(container, releaseUuid, type);
+	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
@@ -590,11 +590,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Set<Observable<String>> obs = new HashSet<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (Release release : project.getReleaseRoot().findAllIt()) {
+			for (Branch branch : project.getBranchRoot().findAllIt()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
-					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(release, type)) {
-						String indexName = container.getIndexName(project.getUuid(), release.getUuid(), type);
+					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branch, type)) {
+						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
 						String documentId = container.getDocumentId();
 						obs.add(searchProvider.updateDocument(indexName, documentId, json, true).andThen(Observable.just(indexName)));
 					}
@@ -647,12 +647,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Generate the version for the container that should be transformed.
 	 * 
 	 * @param container
-	 * @param releaseUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
-	public String generateVersion(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
-		return getTransformer().generateVersion(container, releaseUuid, type);
+	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		return getTransformer().generateVersion(container, branchUuid, type);
 	}
 
 }

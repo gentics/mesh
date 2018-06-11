@@ -10,21 +10,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.reactivex.exceptions.CompositeException;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
-import com.gentics.mesh.core.data.job.impl.ReleaseMigrationJobImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
+
+import io.reactivex.exceptions.CompositeException;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class JobTest extends AbstractMeshTest {
@@ -33,12 +34,12 @@ public class JobTest extends AbstractMeshTest {
 	public void testJob() {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			Job job = root.enqueueReleaseMigration(user(), initialRelease());
+			Job job = root.enqueueBranchMigration(user(), initialBranch());
 			assertEquals("The creator of the job was not correct", user().getUuid(), job.getCreator().getUuid());
 			assertNotNull("The creation timestamp was not set.", job.getCreationTimestamp());
 			assertNotNull("The uuid of the job was not set.", job.getUuid());
-			assertEquals("The job release information did not match.", initialReleaseUuid(), job.getRelease().getUuid());
-			assertEquals("The job type did not match.", MigrationType.release, job.getType());
+			assertEquals("The job branch information did not match.", initialBranchUuid(), job.getBranch().getUuid());
+			assertEquals("The job type did not match.", MigrationType.branch, job.getType());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			assertNull("The job error message should be null since it has not yet been marked as failed.", job.getErrorMessage());
 
@@ -79,7 +80,7 @@ public class JobTest extends AbstractMeshTest {
 	public void testJobErrorDetailTruncate() {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			Job job = root.enqueueReleaseMigration(user(), initialRelease());
+			Job job = root.enqueueBranchMigration(user(), initialBranch());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			Exception ex = buildExceptionStackTraceLongerThan(Job.ERROR_DETAIL_MAX_LENGTH * 2);
 			assertThat(ExceptionUtils.getStackTrace(ex).length()).isGreaterThan(Job.ERROR_DETAIL_MAX_LENGTH);
@@ -109,11 +110,11 @@ public class JobTest extends AbstractMeshTest {
 			JobRoot root = boot().jobRoot();
 			root.addItem(tx.addVertex(NodeMigrationJobImpl.class));
 			root.addItem(tx.addVertex(MicronodeMigrationJobImpl.class));
-			root.addItem(tx.addVertex(ReleaseMigrationJobImpl.class));
+			root.addItem(tx.addVertex(BranchMigrationJobImpl.class));
 
 			List<String> list = TestUtils.toList(root.findAllIt()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
 			assertThat(list).containsExactly(NodeMigrationJobImpl.class.getName(), MicronodeMigrationJobImpl.class.getName(),
-					ReleaseMigrationJobImpl.class.getName());
+					BranchMigrationJobImpl.class.getName());
 		}
 	}
 }
