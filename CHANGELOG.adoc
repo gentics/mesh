@@ -16,9 +16,9 @@
 
 CAUTION: The concept of releases has been renamed into branches. The database structure will automatically be updated.
 
+* The following query parameters have been changed: `release` -> `branch`,  `updateAssignedReleases` -> `updateAssignedBranches`, * `updateReleaseNames` -> `updateBranchNames`
 * The `releases` endpoint was renamed to `branches`.
-* The `release` query parameter is now called `branch`.
-* The `mesh.release.created`, `mesh.release.updated`, `mesh.release.deleted` have been changed to `mesh.branch.created`, `mesh.branch.updated`, `mesh.branch.deleted`.
+* The `mesh.release.created`, `mesh.release.updated`, `mesh.release.deleted` events have been changed to `mesh.branch.created`, `mesh.branch.updated`, `mesh.branch.deleted`.
 * The Java REST Models have been renamed. (e.g.: ReleaseCreateRequest -> BranchCreateRequest)
 * I18n messages have been changed accordingly.
 
