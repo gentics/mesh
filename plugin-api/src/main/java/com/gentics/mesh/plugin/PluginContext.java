@@ -101,6 +101,15 @@ public class PluginContext implements RoutingContext {
 		return (JsonObject) rc.data().get("mesh.project");
 	}
 
+	/**
+	 * Return the name of the current project.
+	 * 
+	 * @return
+	 */
+	public String projectName() {
+		return project().getString("name");
+	}
+
 	@Override
 	public HttpServerRequest request() {
 		return rc.request();
@@ -206,6 +215,11 @@ public class PluginContext implements RoutingContext {
 	@Override
 	public RoutingContext addCookie(Cookie cookie) {
 		return rc.addCookie(cookie);
+	}
+
+	@Override
+	public Cookie removeCookie(String arg0, boolean arg1) {
+		return rc.removeCookie(arg0, arg1);
 	}
 
 	@Override

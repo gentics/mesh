@@ -25,6 +25,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Completable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -154,6 +155,16 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	 */
 	public PluginContext wrap(RoutingContext rc) {
 		return new PluginContext(rc);
+	}
+
+	/**
+	 * Return a wrapped routing context handler
+	 * 
+	 * @param rc
+	 * @return
+	 */
+	public Handler<RoutingContext> wrapHandler(Handler<PluginContext> handler) {
+		return rc -> handler.handle(wrap(rc));
 	}
 
 	private void createAdminClient() {
