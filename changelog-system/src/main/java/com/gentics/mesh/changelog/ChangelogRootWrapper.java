@@ -1,10 +1,12 @@
 package com.gentics.mesh.changelog;
 
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
+
 import java.util.Objects;
 
-import com.tinkerpop.blueprints.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * Simple tinkerpop wrapper for the found vertex which represents the changelog root.
@@ -30,7 +32,7 @@ public class ChangelogRootWrapper {
 	 */
 	public boolean hasChange(String uuid) {
 		Objects.requireNonNull(uuid, "The uuid of the change must not be null");
-		for (Vertex vertex : rootVertex.getVertices(Direction.OUT, HAS_CHANGE)) {
+		for (Vertex vertex : rootVertex.vertices(OUT, HAS_CHANGE)) {
 			ChangeWrapper change = new ChangeWrapper(vertex);
 			if (uuid.equals(change.getUuid())) {
 				return true;

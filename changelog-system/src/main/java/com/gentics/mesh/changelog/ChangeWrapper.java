@@ -1,6 +1,6 @@
 package com.gentics.mesh.changelog;
 
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Wrapper object which wraps a change vertex in order to provide getter and setters for various vertex properties.

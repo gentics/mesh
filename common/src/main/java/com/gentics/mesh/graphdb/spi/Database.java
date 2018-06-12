@@ -7,6 +7,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
@@ -18,9 +21,7 @@ import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
 import com.syncleus.ferma.tx.TxFactory;
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;

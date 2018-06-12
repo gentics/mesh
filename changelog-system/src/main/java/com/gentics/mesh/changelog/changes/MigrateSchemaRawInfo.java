@@ -1,11 +1,12 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

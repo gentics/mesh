@@ -1,5 +1,23 @@
 package com.gentics.mesh.core.data.root;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.Stack;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -15,25 +33,9 @@ import com.google.common.collect.Iterators;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Stack;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -85,7 +87,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
-			.map(edge -> edge.getVertex(Direction.IN))
+			.map(edge -> edge.inVertex())
 			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
@@ -193,7 +195,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-				.getId(), getId()));
+				.id(), getId()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}

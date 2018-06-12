@@ -2,9 +2,10 @@ package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 public final class MeshGraphHelper {
 

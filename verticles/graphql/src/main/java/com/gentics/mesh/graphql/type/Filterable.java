@@ -3,8 +3,9 @@ package com.gentics.mesh.graphql.type;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.tinkerpop.blueprints.Vertex;
 
 import graphql.schema.GraphQLArgument;
 

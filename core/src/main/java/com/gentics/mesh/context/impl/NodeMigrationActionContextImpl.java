@@ -11,12 +11,12 @@ import java.util.Set;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -33,12 +33,13 @@ import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.TEdge;
 import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.EdgeTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -47,7 +48,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
-import io.reactivex.Single;
 
 /**
  * Action context implementation which will be used within the node migration.

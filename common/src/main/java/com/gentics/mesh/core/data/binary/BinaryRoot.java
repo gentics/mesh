@@ -2,10 +2,11 @@ package com.gentics.mesh.core.data.binary;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Edge;
 
 /**
  * Aggregation vertex for vertices which represent the binary.

@@ -2,11 +2,12 @@ package com.gentics.mesh.changelog;
 
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -120,8 +121,8 @@ public class ChangelogSystem {
 		try {
 			Vertex root = MeshGraphHelper.getMeshRootVertex(graph);
 			String rev = db.getDatabaseRevision();
-			root.setProperty(MESH_VERSION, currentVersion);
-			root.setProperty(MESH_DB_REV, rev);
+			root.property(MESH_VERSION, currentVersion);
+			root.property(MESH_DB_REV, rev);
 			graph.commit();
 		} finally {
 			graph.shutdown();

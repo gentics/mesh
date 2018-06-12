@@ -1,12 +1,14 @@
 package com.gentics.mesh.changelog.changes;
 
 import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
 
 public class PurgeOldJobs extends AbstractChange {
 
@@ -25,10 +27,10 @@ public class PurgeOldJobs extends AbstractChange {
 
 		// 1. Remove jobs
 		Vertex meshRoot = getMeshRootVertex();
-		Iterator<Vertex> it = meshRoot.getVertices(Direction.OUT, "HAS_JOB_ROOT").iterator();
+		Iterator<Vertex> it = meshRoot.vertices(OUT, "HAS_JOB_ROOT");
 		if (it.hasNext()) {
-			Vertex jobRoot = meshRoot.getVertices(Direction.OUT, "HAS_JOB_ROOT").iterator().next();
-			Iterable<Vertex> jobIt = jobRoot.getVertices(OUT, "HAS_JOB");
+			Vertex jobRoot = meshRoot.vertices(OUT, "HAS_JOB_ROOT").next();
+			Iterable<Vertex> jobIt = jobRoot.vertices(OUT, "HAS_JOB");
 			for (Vertex v : jobIt) {
 				v.remove();
 			}

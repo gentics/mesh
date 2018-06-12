@@ -3,13 +3,13 @@ package com.gentics.mesh.changelog.changes;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.changelog.MeshGraphHelper;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 

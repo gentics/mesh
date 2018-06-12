@@ -1,8 +1,11 @@
 package com.gentics.mesh.changelog.changes;
 
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
+
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
 
 public class ChangeAddPublishFlag extends AbstractChange {
 
@@ -24,12 +27,12 @@ public class ChangeAddPublishFlag extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex nodeRoot = meshRoot.getVertices(Direction.OUT, "HAS_NODE_ROOT").iterator().next();
+		Vertex nodeRoot = meshRoot.vertices(OUT, "HAS_NODE_ROOT").next();
 
 		log.info("Migrating node publish flag..");
 		long i = 0;
 		// Iterate over all nodes
-		for (Vertex node : nodeRoot.getVertices(Direction.OUT, "HAS_NODE")) {
+		for (Vertex node : nodeRoot.vertices(OUT, "HAS_NODE")) {
 			migrateNode(node);
 			i++;
 		}

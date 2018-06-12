@@ -1,13 +1,14 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 public class UpdateReleaseSchemaEdge extends AbstractChange {
 
@@ -24,13 +25,13 @@ public class UpdateReleaseSchemaEdge extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
-		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
-			Iterator<Vertex> it = project.getVertices(Direction.OUT, "HAS_RELEASE_ROOT").iterator();
+		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
+		for (Vertex project : projectRoot.vertices(OUT, "HAS_PROJECT")) {
+			Iterator<Vertex> it = project.vertices(OUT, "HAS_RELEASE_ROOT");
 			if (it.hasNext()) {
 				Vertex releaseRoot = it.next();
 				// Iterate over all releases
-				for (Vertex release : releaseRoot.getVertices(Direction.OUT, "HAS_RELEASE")) {
+				for (Vertex release : releaseRoot.vertices(OUT, "HAS_RELEASE")) {
 					processRelease(release);
 				}
 			}
@@ -44,13 +45,13 @@ public class UpdateReleaseSchemaEdge extends AbstractChange {
 	 * @param release
 	 */
 	private void processRelease(Vertex release) {
-		for (Edge edge : release.getEdges(OUT, "HAS_SCHEMA_VERSION")) {
-			edge.setProperty("active", true);
-			edge.setProperty("migrationStatus", "COMPLETED");
+		for (Edge edge : release.edges(OUT, "HAS_SCHEMA_VERSION")) {
+			edge.property("active", true);
+			edge.property("migrationStatus", "COMPLETED");
 		}
-		for (Edge edge : release.getEdges(OUT, "HAS_MICROSCHEMA_VERSION")) {
-			edge.setProperty("active", true);
-			edge.setProperty("migrationStatus", "COMPLETED");
+		for (Edge edge : release.edges(OUT, "HAS_MICROSCHEMA_VERSION")) {
+			edge.property("active", true);
+			edge.property("migrationStatus", "COMPLETED");
 		}
 	}
 

@@ -1,11 +1,12 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
@@ -24,11 +25,11 @@ public class SanitizeMicroschemaJson extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex microschemaRoot = meshRoot.getVertices(OUT, "HAS_MICROSCHEMA_ROOT").iterator().next();
-		Iterator<Vertex> microschemaIt = microschemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();
+		Vertex microschemaRoot = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT").next();
+		Iterator<Vertex> microschemaIt = microschemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (microschemaIt.hasNext()) {
 			Vertex microschemaVertex = microschemaIt.next();
-			Iterator<Vertex> versionIt = microschemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
+			Iterator<Vertex> versionIt = microschemaVertex.vertices(OUT, "HAS_PARENT_CONTAINER");
 			while (versionIt.hasNext()) {
 				Vertex microschemaVersion = versionIt.next();
 

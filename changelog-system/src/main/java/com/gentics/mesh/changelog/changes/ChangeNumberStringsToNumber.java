@@ -1,13 +1,5 @@
 package com.gentics.mesh.changelog.changes;
 
-import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -16,6 +8,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.core.rest.schema.Schema;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 
 public class ChangeNumberStringsToNumber extends AbstractChange {

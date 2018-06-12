@@ -8,6 +8,11 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -18,9 +23,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * This page implementation will handle paging internally and on-demand. The internal paging will only iterate over as many items as the needed operation
@@ -208,7 +210,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 			GraphPermission perm) {
 
 		// Iterate over all vertices that are managed by this root vertex
-		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+		Spliterator<Edge> itemEdges = graph.edges(indexName, indexKey).spliterator();
 		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
 
 				// Get the vertex from the edge

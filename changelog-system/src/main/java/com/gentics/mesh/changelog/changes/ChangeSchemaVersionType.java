@@ -1,11 +1,12 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
@@ -47,7 +48,7 @@ public class ChangeSchemaVersionType extends AbstractChange {
 				schemaVersion.setProperty("version", String.valueOf(vertexVersion) + ".0");
 
 				// Update the version within the json
-				String json = schemaVersion.getProperty("json");
+				String json = schemaVersion.property("json");
 				JsonObject schema = new JsonObject(json);
 				int version = schema.getInteger("version");
 				schema.remove("version");
@@ -58,16 +59,16 @@ public class ChangeSchemaVersionType extends AbstractChange {
 	}
 
 	private void updateSchemas(Vertex meshRoot) {
-		Vertex schemaRoot = meshRoot.getVertices(OUT, "HAS_ROOT_SCHEMA").iterator().next();
-		Iterator<Vertex> schemaIt = schemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();
+		Vertex schemaRoot = meshRoot.vertices(OUT, "HAS_ROOT_SCHEMA").next();
+		Iterator<Vertex> schemaIt = schemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (schemaIt.hasNext()) {
 			Vertex schemaVertex = schemaIt.next();
-			Iterator<Vertex> versionIt = schemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
+			Iterator<Vertex> versionIt = schemaVertex.vertices(OUT, "HAS_PARENT_CONTAINER");
 			while (versionIt.hasNext()) {
 				Vertex schemaVersion = versionIt.next();
 
 				// Update the version within the vertex
-				int vertexVersion = schemaVersion.getProperty("version");
+				int vertexVersion = schemaVersion.property("version");
 				schemaVersion.removeProperty("version");
 				schemaVersion.setProperty("version", String.valueOf(vertexVersion) + ".0");
 

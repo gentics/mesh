@@ -1,7 +1,7 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,13 +10,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.AbstractChange;
 import com.google.common.io.Files;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * Migrates the old binary format to the new format.
@@ -113,7 +113,7 @@ public class BinaryStorageMigration extends AbstractChange {
 		String hash = oldBinaryField.getProperty(OLD_HASH_KEY);
 		if (hash == null && !file.exists()) {
 			try {
-				for (Edge fieldEdge : oldBinaryField.getEdges(Direction.IN, "HAS_FIELD")) {
+				for (Edge fieldEdge : oldBinaryField.edges(Direction.IN, "HAS_FIELD")) {
 					Vertex container = fieldEdge.getVertex(OUT);
 					String fieldKey = fieldEdge.getProperty(FIELD_KEY_PROPERTY_KEY);
 					for (Vertex node : container.getVertices(IN, "HAS_FIELD_CONTAINER")) {

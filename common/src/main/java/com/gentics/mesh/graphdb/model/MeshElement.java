@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.model;
 
-import com.tinkerpop.blueprints.Element;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 /**
  * Basic interface for graph elements.

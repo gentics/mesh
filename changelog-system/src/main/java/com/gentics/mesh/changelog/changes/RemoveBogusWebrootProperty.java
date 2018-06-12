@@ -1,10 +1,13 @@
 package com.gentics.mesh.changelog.changes;
 
+import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
+
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 public class RemoveBogusWebrootProperty extends AbstractChange {
 
@@ -33,7 +36,7 @@ public class RemoveBogusWebrootProperty extends AbstractChange {
 	private void migrateContainer(Vertex container) {
 
 		boolean isPublished = false;
-		Iterable<Edge> edges = container.getEdges(Direction.IN, "HAS_FIELD_CONTAINER");
+		Iterable<Edge> edges = container.getEdges(IN, "HAS_FIELD_CONTAINER");
 
 		// Check whether the container is published
 		for (Edge edge : edges) {
