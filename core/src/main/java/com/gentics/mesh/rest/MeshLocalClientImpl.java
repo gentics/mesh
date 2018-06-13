@@ -38,7 +38,6 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -793,12 +792,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<UserResponse> me() {
 		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class);
 		authRestHandler.handleMe(ac);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
