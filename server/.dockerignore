@@ -1,6 +1,7 @@
 src
 demo
 data
+data-*
 .vertx
 .settings
 target/classes

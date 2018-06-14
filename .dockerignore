@@ -1,0 +1,11 @@
+demo/elasticsearch
+demo/data
+demo/target
+server/elasticsearch
+server/data*
+server/target
+.vertx
+.settings
+.classpath
+.project
+target

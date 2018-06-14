@@ -1,0 +1,10 @@
+version: "3"
+services:
+  maven:
+    build:
+      context: ..
+      dockerfile: performance-tests/Dockerfile
+    volumes:
+      - /opt/results:/maven/target/results
+      - /opt/.m2:/root/.m2
+    command: ["mvn", "-B", "package"] 
