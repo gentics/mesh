@@ -5,6 +5,6 @@ services:
       context: ..
       dockerfile: performance-tests/Dockerfile
     volumes:
-      - /opt/results:/maven/target/results
+      - /opt/results:/maven/mesh-performance-tests/target/results
       - /opt/.m2:/root/.m2
-    command: ["mvn", "-B", "package"] 
+    command: ["mvn", "-B", "-pl", "!doc,!verticles,!demo,!server", "-Dmaven.javadoc.skip=true", "-Dskip.cluster.tests=true", "-Dskip.unit.tests=true", "package" ]
