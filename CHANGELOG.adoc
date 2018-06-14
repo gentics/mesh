@@ -22,14 +22,17 @@ CAUTION: The concept of releases has been renamed into branches. The database st
 * The Java REST Models have been renamed. (e.g.: ReleaseCreateRequest -> BranchCreateRequest)
 * I18n messages have been changed accordingly.
 
-[[v0.21.2]]
-== 0.21.2 (TBD)
-
 icon:plus[] Elasticsearch: The base64 encoded binary document data will no longer be stored in the search index.
 
 icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.
 
-icon:check[] Core: Increased performance for webroot endpoint
+icon:check[] Core: Increased performance for webroot endpoint.
+
+[[v0.21.2]]
+== 0.21.2 (13.06.2018)
+
+icon:check[] Elasticsearch: A compatibility issue with Elasticsearch instances which were hosted on Amazon AWS has been fixed. Previously the check for installed ES plugins failed.
+
 
 [[v0.21.1]]
 == 0.21.1 (28.05.2018)

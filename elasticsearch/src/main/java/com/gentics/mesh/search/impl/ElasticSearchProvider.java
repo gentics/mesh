@@ -299,11 +299,13 @@ public class ElasticSearchProvider implements SearchProvider {
 			for (String nodeId : nodes.fieldNames()) {
 				JsonObject node = nodes.getJsonObject(nodeId);
 				JsonArray plugins = node.getJsonArray("plugins");
+				if (plugins == null) {
+					continue;
+				}
 				for (int i = 0; i < plugins.size(); i++) {
 					JsonObject plugin = plugins.getJsonObject(i);
 					String name = plugin.getString("name");
 					pluginSet.add(name);
-
 				}
 			}
 			return pluginSet;
