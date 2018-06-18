@@ -77,9 +77,15 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
+@MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
 public class GraphQLEndpointTest extends AbstractMeshTest {
+
+	private static final String CONTENT_UUID = "43ee8f9ff71e4016ae8f9ff71e10161c";
+	private static final String FOLDER_SCHEMA_UUID = "70bf14ed1267446eb70c5f02cfec0e38";
+	private static final String NODE_WITH_LINKS_UUID = "8d2f5769fe114353af5769fe11e35355";
+	private static final String NODE_WITH_NODE_REF_UUID = "e8f5c7875b2f49a7b5c7875b2fa9a718";
+	private static final String NEWS_UUID = "4b1346a2163a4ff89346a2163a9ff883";
 
 	private final String queryName;
 
@@ -115,8 +121,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "node-relations-query", true, "draft" });
 		testData.add(new Object[] { "node-fields-query", true, "draft" });
 		testData.add(new Object[] { "node-fields-no-microschema-query", false, "draft" });
-		testData.add(new Object[] { "node-fields-link-resolve-query", true, "draft" });
-		testData.add(new Object[] { "node-fields-link-resolve-language-query", true, "draft" });
+		testData.add(new Object[] { "node/link/webroot", true, "draft" });
+		testData.add(new Object[] { "node/link/children", true, "draft" });
+		testData.add(new Object[] { "node/link/webroot-language", true, "draft" });
+		testData.add(new Object[] { "node/link/reference", true, "draft" });
 		testData.add(new Object[] { "node-field-list-path-query", true, "draft" });
 		testData.add(new Object[] { "project-query", true, "draft" });
 		testData.add(new Object[] { "tag-query", true, "draft" });
@@ -134,12 +142,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeQuery() throws Exception {
-		String staticUuid = "43ee8f9ff71e4016ae8f9ff71e10161c";
-		String staticSchemaUuid = "70bf14ed1267446eb70c5f02cfec0e38";
-		// String contentUuid = db().tx(() -> content().getUuid());
-		// String creationDate = db().tx(() -> content().getCreationDate());
-		// String uuid = db().tx(() -> folder("2015").getUuid());
-
 		String microschemaUuid = null;
 		if (withMicroschema) {
 			// 1. Create the microschema
@@ -162,13 +164,14 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
+			folder("news").setUuid(NEWS_UUID);
 			Node node2 = content();
-			node2.setUuid(staticUuid);
+			node2.setUuid(CONTENT_UUID);
 			Node node3 = folder("2014");
 
-			// Update schema
+			// Update the folder schema to contain all fields
 			SchemaContainer schemaContainer = schemaContainer("folder");
-			schemaContainer.setUuid(staticSchemaUuid);
+			schemaContainer.setUuid(FOLDER_SCHEMA_UUID);
 			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
@@ -273,7 +276,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createHTML("html").setHtml("some html");
 
 			// htmlLink
-			container.createHTML("htmlLink").setHtml("Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+			container.createHTML("htmlLink").setHtml("Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 			// string
 			container.createString("string").setString("some string");
@@ -282,7 +285,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createString("niceUrl").setString("/some/url");
 
 			// stringLink
-			container.createString("stringLink").setString("Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+			container.createString("stringLink").setString("Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 			// boolean
 			container.createBoolean("boolean").setBoolean(true);
@@ -291,21 +294,21 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Binary binary = MeshInternal.get().boot().binaryRoot().create("hashsumvalue", 1L);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
-					.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));;
+				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
 
 			// stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");
 			stringList.createString("A");
 			stringList.createString("B");
 			stringList.createString("C");
-			stringList.createString("D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+			stringList.createString("D Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 			// htmlList
 			HtmlGraphFieldList htmlList = container.createHTMLList("htmlList");
 			htmlList.createHTML("A");
 			htmlList.createHTML("B");
 			htmlList.createHTML("C");
-			htmlList.createHTML("D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+			htmlList.createHTML("D Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 			// dateList
 			DateGraphFieldList dateList = container.createDateList("dateList");
@@ -374,10 +377,31 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		request.setParentNode(new NodeReference().setUuid(baseNodeUuid));
 		call(() -> client().createNode(PROJECT_NAME, request));
 
-		createLanguageLinkResolvingNode(baseNodeUuid, staticUuid).blockingAwait();
+		// Create a node which contains mesh links
+		createLanguageLinkResolvingNode(NODE_WITH_LINKS_UUID, baseNodeUuid, CONTENT_UUID).blockingAwait();
 
+		// Create referencing node (en)
+		NodeCreateRequest request2 = new NodeCreateRequest();
+		request2.setLanguage("en");
+		request2.setSchema(new SchemaReferenceImpl().setName("folder"));
+		request2.getFields().put("nodeRef", FieldUtil.createNodeField(NODE_WITH_LINKS_UUID));
+		request2.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_WITH_LINKS_UUID));
+		request2.getFields().put("slug", FieldUtil.createStringField("node-with-reference-en"));
+		request2.setParentNode(new NodeReference().setUuid(NEWS_UUID));
+		call(() -> client().createNode(NODE_WITH_NODE_REF_UUID, PROJECT_NAME, request2));
+
+		// Create referencing node content (de)
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("nodeRef", FieldUtil.createNodeField(NODE_WITH_LINKS_UUID));
+		nodeUpdateRequest.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_WITH_LINKS_UUID));
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("node-with-reference-de"));
+		call(() -> client().updateNode(PROJECT_NAME, NODE_WITH_NODE_REF_UUID, nodeUpdateRequest));
+
+		// Now execute the query and assert it
 		GraphQLResponse response = call(
-				() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
+			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
 		System.out.println(response.toJson());
 		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
 	}
@@ -386,7 +410,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date).getTime();
 	}
 
-	private Completable createLanguageLinkResolvingNode(String parentUuid, String referencedUuid) throws Exception {
+	private Completable createLanguageLinkResolvingNode(String nodeUuid, String parentUuid, String referencedUuid) throws Exception {
 
 		Function<String, FieldMap> createFields = language -> {
 			FieldMap map = new FieldMapImpl();
@@ -406,7 +430,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			map.put("htmlList", htmlList);
 
 			map.put("slug", new StringFieldImpl().setString("new-page-" + language));
-
 			return map;
 		};
 
@@ -423,7 +446,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		createRequest.setParentNode(new NodeReference().setUuid(parentUuid));
 		createRequest.setFields(createFields.apply("en"));
 
-		return client().createNode(PROJECT_NAME, createRequest).toSingle()
+		return client().createNode(nodeUuid, PROJECT_NAME, createRequest).toSingle()
 			.flatMap(updateNode)
 			.toCompletable();
 	}

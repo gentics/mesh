@@ -1,6 +1,25 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static graphql.Scalars.GraphQLInt;
+import static graphql.Scalars.GraphQLLong;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLEnumType.newEnum;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Release;
@@ -18,6 +37,7 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.search.SearchHandler;
+
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
@@ -26,24 +46,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLLong;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.GraphQLEnumType.newEnum;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 public abstract class AbstractTypeProvider {
 
@@ -83,18 +85,42 @@ public abstract class AbstractTypeProvider {
 		return newArgument().name("release").type(GraphQLString).description("Release Uuid").build();
 	}
 
+	public List<String> getLanguageArgument(DataFetchingEnvironment env) {
+		return getLanguageArgument(env, (List<String>) null);
+	}
+
+	/**
+	 * Generate a list of language fallbacks and utilize any existing language fallback list from the given content.
+	 * 
+	 * @param env
+	 * @param content
+	 * @return
+	 */
+	public List<String> getLanguageArgument(DataFetchingEnvironment env, NodeContent content) {
+		return getLanguageArgument(env, content.getLanguageFallback());
+	}
+
+	public List<String> getLanguageArgument(DataFetchingEnvironment env, GraphFieldContainer source) {
+		return getLanguageArgument(env, Arrays.asList(source.getLanguage().getLanguageTag()));
+	}
+
 	/**
 	 * Return the lang argument values. The default language will automatically added to the list in order to provide a language fallback.
 	 * 
 	 * @param env
+	 * @param source
 	 * @return
 	 */
-	public List<String> getLanguageArgument(DataFetchingEnvironment env) {
+	public List<String> getLanguageArgument(DataFetchingEnvironment env, List<String> preferedTags) {
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 		List<String> languageTags = new ArrayList<>();
 		List<String> argumentList = env.getArgument("lang");
 		if (argumentList != null) {
 			languageTags.addAll(argumentList);
+		}
+		// Utilize the source container language in order to prefer the language of the parent content.
+		if (preferedTags != null) {
+			languageTags.addAll(preferedTags);
 		}
 		// Only use the default language if no other language has been specified.
 		if (languageTags.isEmpty()) {
@@ -106,15 +132,23 @@ public abstract class AbstractTypeProvider {
 	/**
 	 * Create a new argument for the lang.
 	 * 
+	 * @param withDefaultLang
 	 * @return
 	 */
-	public GraphQLArgument createLanguageTagArg() {
+	public GraphQLArgument createLanguageTagArg(boolean withDefaultLang) {
 
 		// #lang
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
-		return newArgument().name("lang").type(new GraphQLList(GraphQLString)).description(
-			"Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned")
-			.defaultValue(Arrays.asList(defaultLanguage)).build();
+		graphql.schema.GraphQLArgument.Builder arg = newArgument()
+			.name("lang")
+			.type(new GraphQLList(GraphQLString))
+			.description("Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned");
+
+		if (withDefaultLang) {
+			arg.defaultValue(Arrays.asList(defaultLanguage));
+		}
+
+		return arg.build();
 	}
 
 	/**
@@ -375,7 +409,7 @@ public abstract class AbstractTypeProvider {
 
 		Stream<NodeContent> contents = nodeRoot.findAllStream(gc)
 			// Now lets try to load the containers for those found nodes - apply the language fallback
-			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags)))
+			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
 			// Filter nodes without a container
 			.filter(content -> content.getContainer() != null);
 
