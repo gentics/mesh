@@ -21,7 +21,14 @@
 				}
 			}
 		}
-		parent {
+		p1: parent {
+			# [$.data.deNode.parent.uuid=<is-uuid>]
+			uuid
+			# The english fallback is utilized in order to load the node content
+			# [$.data.deNode.p1.language=<is-null>]
+			language
+		}
+		parent(lang: ["en", "de"]) {
 			# [$.data.deNode.parent.uuid=<is-uuid>]
 			uuid
 			# The english fallback is utilized in order to load the node content

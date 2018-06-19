@@ -33,6 +33,8 @@ import graphql.schema.GraphQLTypeReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -186,7 +188,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
-			return new NodeContent(nodeOfContainer, container, null);
+			return new NodeContent(nodeOfContainer, container, Arrays.asList(container.getLanguage().getLanguageTag()));
 		}
 		return null;
 	}

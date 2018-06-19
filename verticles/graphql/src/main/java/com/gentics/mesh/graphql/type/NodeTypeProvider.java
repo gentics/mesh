@@ -11,7 +11,7 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
@@ -23,7 +23,6 @@ import java.util.stream.StreamSupport;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -158,30 +157,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}).collect(Collectors.toList());
 	}
 
-//	/**
-//	 * Handle the language fallback within graphql queries when dealing with nodes. This method loads the container which best matches the current query
-//	 * situation. A list of languages is constructed in order to apply the fallback and load the matching container from the given node.
-//	 * <ul>
-//	 * <li>Check whether the given content has a container. Use the container language to load the container from the node</li>
-//	 * <li>If the content does not provide a container the default mesh language is used to load the container.
-//	 * </ul>
-//	 * 
-//	 * @param gc
-//	 * @param node
-//	 *            Node from which the container will be loaded
-//	 * @param content
-//	 *            Content which may contain a container from which the language information will be used to load the container
-//	 * @return Located container or null if no container could be found
-//	 */
-//	private NodeContent handleLanguageFallback(GraphQLContext gc, Node node, NodeContent content) {
-////		List<String> languageTags = new ArrayList<>();
-////		if (content.getContainer() != null) {
-////			languageTags.add(content.getContainer().getLanguage().getLanguageTag());
-////		} else {
-////			languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
-////		}
-//	}
-
 	public GraphQLObjectType createType(GraphQLContext context) {
 		Builder nodeType = newObject();
 		nodeType.name(NODE_TYPE_NAME);
@@ -256,8 +231,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					// Otherwise return the last segment.
 					PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
 					NodeGraphFieldContainer container = lastSegment.getContainer();
-					Node nodeOfContainer = null;
-					return new NodeContent(nodeOfContainer, container, null);
+					return new NodeContent(null, container, Arrays.asList(container.getLanguage().getLanguageTag()));
 				}
 				return null;
 			}));
@@ -282,8 +256,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			.argument(NodeFilter.filter(context).createFilterArgument()));
 
 		// .parent
-		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(
-			this::parentNodeFetcher));
+		nodeType.field(
+			newFieldDefinition()
+			.name("parent")
+			.description("Parent node")
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME))
+			.argument(createLanguageTagArg(false))
+			.dataFetcher(this::parentNodeFetcher));
 
 		// .tags
 		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((

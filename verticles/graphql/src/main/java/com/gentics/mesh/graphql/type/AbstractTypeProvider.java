@@ -121,13 +121,13 @@ public abstract class AbstractTypeProvider {
 	public List<String> getLanguageArgument(DataFetchingEnvironment env, List<String> preferedLanguages) {
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 		List<String> languageTags = new ArrayList<>();
-		
-		// 1. Any manual specified fallback is prefered
+
+		// 1. Any manual specified fallback is preferred
 		List<String> argumentList = env.getArgument("lang");
 		if (argumentList != null) {
 			languageTags.addAll(argumentList);
 		}
-		// 2. Append any other prefered languages (e.g. languages from previous fallbacks)
+		// 2. Append any other preferred languages (e.g. languages from previous fallbacks)
 		if (preferedLanguages != null) {
 			languageTags.addAll(preferedLanguages);
 		}
