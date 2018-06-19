@@ -387,7 +387,6 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (nodeField != null) {
 					Node node = nodeField.getNode();
 					if (node != null) {
-						// TODO the language should be loaded using the parent node language. 
 						//Note that we would need to check for micronodes which are not language specific!
 						List<String> languageTags = getLanguageArgument(env, source);
 						// Check permissions for the linked node

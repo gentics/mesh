@@ -90,7 +90,7 @@ public abstract class AbstractTypeProvider {
 	}
 
 	/**
-	 * Generate a list of language fallbacks and utilize any existing language fallback list from the given content.
+	 * Generate a language fallback list and utilize any existing language fallback list from the given content.
 	 * 
 	 * @param env
 	 * @param content
@@ -100,6 +100,13 @@ public abstract class AbstractTypeProvider {
 		return getLanguageArgument(env, content.getLanguageFallback());
 	}
 
+	/**
+	 * Generate a language fallback list and utilize the given container language. 
+	 * Prefer the language of the container for the fallback. 
+	 * @param env
+	 * @param source
+	 * @return
+	 */
 	public List<String> getLanguageArgument(DataFetchingEnvironment env, GraphFieldContainer source) {
 		return getLanguageArgument(env, Arrays.asList(source.getLanguage().getLanguageTag()));
 	}
@@ -108,21 +115,23 @@ public abstract class AbstractTypeProvider {
 	 * Return the lang argument values. The default language will automatically added to the list in order to provide a language fallback.
 	 * 
 	 * @param env
-	 * @param source
+	 * @param preferedLanguages
 	 * @return
 	 */
-	public List<String> getLanguageArgument(DataFetchingEnvironment env, List<String> preferedTags) {
+	public List<String> getLanguageArgument(DataFetchingEnvironment env, List<String> preferedLanguages) {
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 		List<String> languageTags = new ArrayList<>();
+		
+		// 1. Any manual specified fallback is prefered
 		List<String> argumentList = env.getArgument("lang");
 		if (argumentList != null) {
 			languageTags.addAll(argumentList);
 		}
-		// Utilize the source container language in order to prefer the language of the parent content.
-		if (preferedTags != null) {
-			languageTags.addAll(preferedTags);
+		// 2. Append any other prefered languages (e.g. languages from previous fallbacks)
+		if (preferedLanguages != null) {
+			languageTags.addAll(preferedLanguages);
 		}
-		// Only use the default language if no other language has been specified.
+		// 3. Only use the default language if no other language has been specified.
 		if (languageTags.isEmpty()) {
 			languageTags.add(defaultLanguage);
 		}
