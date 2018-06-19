@@ -24,9 +24,8 @@
 		parent {
 			# [$.data.deNode.parent.uuid=<is-uuid>]
 			uuid
-			# The node is not in german and thus mesh can't find the container. 
-			# The default language is not used here since a language is already known (via deNode) 
-			# [$.data.deNode.parent.language=<is-null>]
+			# The english fallback is utilized in order to load the node content
+			# [$.data.deNode.parent.language=en]
 			language
 			# Load the node again in a different language
 			node(lang: "en") {
