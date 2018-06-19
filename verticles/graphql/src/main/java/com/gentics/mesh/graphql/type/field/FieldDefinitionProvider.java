@@ -313,7 +313,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags);
-					return new NodeContent(node, itemContainer);
+					return new NodeContent(node, itemContainer, languageTags);
 				});
 				if (filterArgument != null) {
 					nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
@@ -378,7 +378,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLFieldDefinition createNodeDef(FieldSchema schema) {
-		return newFieldDefinition().name(schema.getName()).argument(createLanguageTagArg()).description(schema.getLabel())
+		return newFieldDefinition().name(schema.getName()).argument(createLanguageTagArg(false)).description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
 				GraphFieldContainer source = env.getSource();
@@ -387,13 +387,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (nodeField != null) {
 					Node node = nodeField.getNode();
 					if (node != null) {
-						// TODO the language should be loaded using the parent node language. Note that we would need to check for micronodes which are not
-						// language specific!
-						List<String> languageTags = getLanguageArgument(env);
+						//Note that we would need to check for micronodes which are not language specific!
+						List<String> languageTags = getLanguageArgument(env, source);
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-						return new NodeContent(node, container);
+						return new NodeContent(node, container, languageTags);
 					}
 				}
 				return null;

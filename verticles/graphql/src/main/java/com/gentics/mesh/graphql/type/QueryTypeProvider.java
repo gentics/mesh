@@ -33,6 +33,8 @@ import graphql.schema.GraphQLTypeReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -177,7 +179,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-			return new NodeContent(node, container);
+			return new NodeContent(node, container, languageTags);
 		}
 		String path = env.getArgument("path");
 		if (path != null) {
@@ -186,7 +188,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
-			return new NodeContent(nodeOfContainer, container);
+			return new NodeContent(nodeOfContainer, container, Arrays.asList(container.getLanguage().getLanguageTag()));
 		}
 		return null;
 	}
@@ -240,8 +242,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		if (project != null) {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-			NodeGraphFieldContainer container = node.findVersion(gc, getLanguageArgument(env));
-			return new NodeContent(node, container);
+			List<String> languageTags = getLanguageArgument(env);
+			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+			return new NodeContent(node, container, languageTags);
 		}
 		return null;
 	}
@@ -253,16 +256,18 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLObjectType getRootType(GraphQLContext context) {
-		Project project = context.getProject();
 		Builder root = newObject();
 		root.name("Query");
 
 		// .me
-		root.field(newFieldDefinition().name("me").description("The current user").type(new GraphQLTypeReference(USER_TYPE_NAME))
+		root.field(newFieldDefinition().name("me")
+			.description("The current user")
+			.type(new GraphQLTypeReference(USER_TYPE_NAME))
 			.dataFetcher(this::userMeFetcher).build());
 
 		// .project
-		root.field(newFieldDefinition().name("project").description("Load the project that is active for this GraphQL query.")
+		root.field(newFieldDefinition().name("project")
+			.description("Load the project that is active for this GraphQL query.")
 			.type(new GraphQLTypeReference(PROJECT_TYPE_NAME)).dataFetcher(this::projectFetcher).build());
 
 		// NOT ALLOWED - See class description for details
@@ -270,13 +275,18 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// root.field(newPagingField("projects", "Load page of projects.", (ac) -> boot.projectRoot(), "Project"));
 
 		// .node
-		root.field(newFieldDefinition().name("node").description("Load a node by uuid, uuid and language or webroot path.")
-			.argument(createUuidArg("Node uuid")).argument(createLanguageTagArg()).argument(createPathArg()).dataFetcher(this::nodeFetcher)
+		root.field(newFieldDefinition().name("node")
+			.description("Load a node by uuid, uuid and language or webroot path.")
+			.argument(createUuidArg("Node uuid"))
+			.argument(createLanguageTagArg(true))
+			.argument(createPathArg())
+			.dataFetcher(this::nodeFetcher)
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .nodes
-		root.field(newFieldDefinition().name("nodes").description("Load a page of nodes via the regular nodes list or via a search.")
-			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
+		root.field(newFieldDefinition().name("nodes")
+			.description("Load a page of nodes via the regular nodes list or via a search.")
+			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg(true))
 			.argument(NodeFilter.filter(context).createFilterArgument())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
@@ -295,8 +305,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			}));
 
 		// .baseNode
-		root.field(newFieldDefinition().name("rootNode").description("Return the project root node.").argument(createLanguageTagArg())
-			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(this::rootNodeFetcher).build());
+		root.field(newFieldDefinition()
+			.name("rootNode")
+			.description("Return the project root node.")
+			.argument(createLanguageTagArg(true))
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME))
+			.dataFetcher(this::rootNodeFetcher).build());
 
 		// .tag
 		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), TAG_TYPE_NAME));

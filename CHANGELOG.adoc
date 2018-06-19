@@ -10,6 +10,14 @@
 
 = Gentics Mesh Changelog
 
+
+[[v0.21.3]]
+== 0.21.3 (TBD)
+
+icon:check[] GraphQL: The language fallback handling for node reference fields has been enhanced. The language of the node will now be utilized when no language fallback has been specified.
+
+icon:check[] GraphQL: The language fallback handling has been enhanced. The language fallback will now automatically be passed along to load nested fields.
+
 [[v0.21.2]]
 == 0.21.2 (13.06.2018)
 

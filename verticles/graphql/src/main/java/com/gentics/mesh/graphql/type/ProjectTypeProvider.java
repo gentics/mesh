@@ -7,6 +7,8 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -52,8 +54,9 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		Project project = env.getSource();
 		Node node = project.getBaseNode();
 		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-		NodeGraphFieldContainer container = node.findVersion(gc, getLanguageArgument(env));
-		return new NodeContent(node, container);
+		List<String> languageTags = getLanguageArgument(env);
+		NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+		return new NodeContent(node, container, languageTags);
 	}
 
 	public GraphQLObjectType createType(Project project) {
@@ -65,8 +68,13 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("name").description("The name of the project").type(GraphQLString));
 
 		// .rootNode
-		root.field(newFieldDefinition().name("rootNode").description("The root node of the project").type(new GraphQLTypeReference(NODE_TYPE_NAME))
-				.argument(createLanguageTagArg()).dataFetcher(this::baseNodeFetcher));
+		root.field(
+			newFieldDefinition()
+				.name("rootNode")
+				.description("The root node of the project")
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
+				.argument(createLanguageTagArg(true))
+				.dataFetcher(this::baseNodeFetcher));
 
 		return root.build();
 	}
