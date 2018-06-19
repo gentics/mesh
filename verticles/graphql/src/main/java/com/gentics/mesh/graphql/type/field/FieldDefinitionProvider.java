@@ -195,7 +195,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = htmlField.getHTML();
-					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -210,7 +210,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = field.getString();
-					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
 				}
 				return null;
 			}).build();

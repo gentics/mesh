@@ -20,6 +20,8 @@ icon:check[] GraphQL: The language fallback handling for node reference fields h
 
 icon:check[] GraphQL: The language fallback handling has been enhanced. The language fallback will now automatically be passed along to load nested fields.
 
+icon:check[] GraphQL: The link resolving of html and string fields has been updated. Previously the language of the node which contained the field was not taken into account while resolving mesh links in these fields.
+
 [[v0.21.2]]
 == 0.21.2 (13.06.2018)
 

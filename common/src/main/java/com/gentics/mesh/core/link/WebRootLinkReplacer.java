@@ -168,7 +168,7 @@ public class WebRootLinkReplacer {
 	}
 
 	/**
-	 * Resolve the link to the given node
+	 * Resolve the link to the given node.
 	 * 
 	 * @param ac
 	 * @param releaseUuid

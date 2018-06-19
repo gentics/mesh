@@ -11,6 +11,14 @@
 				# [$.data.deNode.fields.htmlList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 				# [$.data.deNode.fields.htmlList[2]=C Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 				htmlList(linkType: FULL)
+
+				# [$.data.deNode.fields.string=String Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				string(linkType: FULL)
+
+				# [$.data.deNode.fields.html=HTML Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				html(linkType: FULL)
+
+				slug
 			}
 		}
 	}
@@ -27,6 +35,10 @@
 				# [$.data.enNode.fields.htmlList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 				# [$.data.enNode.fields.htmlList[2]=C Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
 				htmlList(linkType: FULL)
+
+				html(linkType: FULL)
+
+				string(linkType: FULL)
 			}
 		}
 	}
