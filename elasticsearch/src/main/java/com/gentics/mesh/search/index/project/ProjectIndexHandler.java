@@ -88,7 +88,7 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		String indexName = Project.composeIndexName();
-		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "project");
 		return Collections.singletonMap(indexName, info);
 	}
 

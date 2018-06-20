@@ -88,7 +88,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		String indexName = User.composeIndexName();
-		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "user");
 		return Collections.singletonMap(indexName, info);
 	}
 }

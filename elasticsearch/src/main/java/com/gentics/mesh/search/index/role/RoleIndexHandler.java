@@ -72,7 +72,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		String indexName = Role.composeIndexName();
-		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "role");
 		return Collections.singletonMap(indexName, info);
 	}
 

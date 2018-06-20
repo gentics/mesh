@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -145,8 +144,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						SchemaModel schema = containerVersion.getSchema();
 						JsonObject mapping = getMappingProvider().getMapping(schema, release);
 						JsonObject settings = schema.getElasticsearch();
-						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping);
-						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping);
+						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
 
 						// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
 						JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
@@ -619,7 +618,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String indexName = "validationDummy";
 		JsonObject mapping = getMappingProvider().getMapping(schema, null);
 		JsonObject settings = schema.getElasticsearch();
-		IndexInfo info = new IndexInfo(indexName, settings, mapping);
+		IndexInfo info = new IndexInfo(indexName, settings, mapping, schema.getName());
 		return Completable.create(sub -> {
 			try {
 				schema.validate();
@@ -639,7 +638,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public JsonObject createIndexSettings(Schema schema) {
 		JsonObject mapping = getMappingProvider().getMapping(schema, null);
 		JsonObject settings = schema.getElasticsearch();
-		IndexInfo info = new IndexInfo("validationDummy", settings, mapping);
+		IndexInfo info = new IndexInfo("validationDummy", settings, mapping, schema.getName());
 		JsonObject fullSettings = searchProvider.createIndexSettings(info);
 		return fullSettings;
 	}

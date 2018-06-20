@@ -90,7 +90,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			for (Project project : root.findAllIt()) {
 				String indexName = TagFamily.composeIndexName(project.getUuid());
-				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tagFamily");
 				indexInfo.put(indexName, info);
 			}
 			return indexInfo;

@@ -10,6 +10,10 @@
 
 = Gentics Mesh Changelog
 
+[[v0.21.4]]
+== 0.21.4 (TBD)
+
+icon:check[] Elasticsearch: The error logging has been enhanced. More detailed information will be logged if an index can't be created.
 
 [[v0.21.3]]
 == 0.21.3 (19.06.2018)
