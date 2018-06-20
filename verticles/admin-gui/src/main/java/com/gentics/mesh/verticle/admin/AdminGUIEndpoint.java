@@ -83,6 +83,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 
 	private void addMeshUiStaticHandler() {
 		StaticHandler handler = StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUiVersion);
+		handler.setDefaultContentEncoding("UTF-8");
 		handler.setIndexPage("index.html");
 		route("/*").method(GET).blockingHandler(handler);
 	}
