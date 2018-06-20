@@ -137,7 +137,7 @@ public class DemoDataProvider {
 	 * Invoke the reindex action to update the search index.
 	 */
 	public void invokeFullIndex() {
-		boot.reindexAll();
+		boot.syncIndex();
 	}
 
 	/**
