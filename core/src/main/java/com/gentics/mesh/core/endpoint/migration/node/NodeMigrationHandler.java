@@ -183,7 +183,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				batch.processSync();
 			}
 		} catch (Exception e1) {
-			log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
+				+ "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 
