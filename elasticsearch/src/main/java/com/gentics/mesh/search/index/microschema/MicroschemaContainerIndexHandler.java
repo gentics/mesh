@@ -88,7 +88,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		String indexName = MicroschemaContainer.composeIndexName();
-		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "microschema");
 		return Collections.singletonMap(indexName, info);
 	}
 

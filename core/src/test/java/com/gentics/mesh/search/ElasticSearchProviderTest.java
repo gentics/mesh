@@ -30,7 +30,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	@Test
 	public void testProvider() throws IOException {
 		ElasticSearchProvider provider = getProvider();
-		provider.createIndex(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
+		provider.createIndex(new IndexInfo("test", new JsonObject(), new JsonObject(), "testSchema")).blockingAwait();
 		String uuid = UUIDUtil.randomUUID();
 		// provider.storeDocument("test", uuid, new JsonObject()).blockingAwait();
 		provider.updateDocument("test", uuid, new JsonObject(), true).blockingAwait();
@@ -42,9 +42,9 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 
 		provider.deleteIndex("testindex").blockingAwait();
 
-		provider.createIndex(new IndexInfo("testindex", new JsonObject(), new JsonObject())).blockingAwait();
+		provider.createIndex(new IndexInfo("testindex", new JsonObject(), new JsonObject(), "testSchema")).blockingAwait();
 
-		provider.createIndex(new IndexInfo("testindex", new JsonObject(), new JsonObject())).blockingAwait();
+		provider.createIndex(new IndexInfo("testindex", new JsonObject(), new JsonObject(), "testSchema")).blockingAwait();
 
 		provider.deleteIndex("testindex").blockingAwait();
 
@@ -64,7 +64,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	@Test
 	public void testIngestPipelineProcessing() {
 		ElasticSearchProvider provider = getProvider();
-		IndexInfo info = new IndexInfo("test", new JsonObject(), new JsonObject());
+		IndexInfo info = new IndexInfo("test", new JsonObject(), new JsonObject(), "testSchema");
 		info.setIngestPipelineSettings(getPipelineConfig(Arrays.asList("data1", "data2")));
 
 		provider.createIndex(info).blockingAwait();
@@ -92,7 +92,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	public void testClear() throws HttpErrorException {
 		ElasticSearchProvider provider = getProvider();
 		SearchClient client = (SearchClient) provider.getClient();
-		IndexInfo info = new IndexInfo("test", new JsonObject(), new JsonObject());
+		IndexInfo info = new IndexInfo("test", new JsonObject(), new JsonObject(), "testSchema");
 		info.setIngestPipelineSettings(getPipelineConfig(Arrays.asList("data1", "data2")));
 
 		client.registerPipeline("othername", getPipelineConfig(Arrays.asList("blub"))).sync();
@@ -134,7 +134,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 			}
 			String name = builder.toString();
 			indices.add(name);
-			provider.createIndex(new IndexInfo(name, new JsonObject(), new JsonObject())).blockingAwait();
+			provider.createIndex(new IndexInfo(name, new JsonObject(), new JsonObject(), "testSchema")).blockingAwait();
 		}
 
 		String names[] = indices.stream().toArray(String[]::new);
@@ -147,7 +147,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	@Test
 	public void testConcurrencyConflictError() {
 		ElasticSearchProvider provider = getProvider();
-		provider.createIndex(new IndexInfo("test", new JsonObject(), new JsonObject())).blockingAwait();
+		provider.createIndex(new IndexInfo("test", new JsonObject(), new JsonObject(), "testSchema")).blockingAwait();
 		provider.storeDocument("test", "1", new JsonObject().put("value", 0)).blockingAwait();
 		Observable.range(1, 2000).flatMapCompletable(i -> provider.updateDocument("test", "1", new JsonObject().put("value", i), false))
 			.blockingAwait();
