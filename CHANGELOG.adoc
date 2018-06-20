@@ -14,6 +14,7 @@
 == 0.21.4 (TBD)
 
 icon:check[] Elasticsearch: The error logging has been enhanced. More detailed information will be logged if an index can't be created.
+icon:check[] UI: Fixed potential encoding issues in the UI on systems which are not using the UTF-8 default charset.
 
 [[v0.21.3]]
 == 0.21.3 (19.06.2018)
