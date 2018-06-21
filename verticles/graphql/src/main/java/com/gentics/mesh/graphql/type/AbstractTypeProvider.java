@@ -213,7 +213,7 @@ public abstract class AbstractTypeProvider {
 		return element;
 	}
 
-	protected MeshVertex handleReleaseSchema(DataFetchingEnvironment env) {
+	protected MeshVertex handleBranchSchema(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Branch release = env.getSource();
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false);

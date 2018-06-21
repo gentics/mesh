@@ -9,7 +9,7 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
@@ -564,7 +564,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			// Generate version 3 which should not be auto assigned to the project branch
 			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false).setBranchNames(
-				INITIAL_RELEASE_NAME));
+				INITIAL_BRANCH_NAME));
 
 			// Assert that version 2 is still assigned to the branch
 			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
@@ -923,7 +923,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			// Generate version 4
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname1", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)
-				.setBranchNames(INITIAL_RELEASE_NAME));
+				.setBranchNames(INITIAL_BRANCH_NAME));
 
 			// Assert that version 4 is assigned to the branch
 			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));

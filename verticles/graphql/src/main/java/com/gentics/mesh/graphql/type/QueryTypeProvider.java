@@ -49,7 +49,7 @@ import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.ReleaseTypeProvider.RELEASE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.BranchTypeProvider.RELEASE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_PAGE_TYPE_NAME;
@@ -126,7 +126,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public BootstrapInitializer boot;
 
 	@Inject
-	public ReleaseTypeProvider releaseTypeProvider;
+	public BranchTypeProvider releaseTypeProvider;
 
 	@Inject
 	public SchemaTypeProvider schemaTypeProvider;
