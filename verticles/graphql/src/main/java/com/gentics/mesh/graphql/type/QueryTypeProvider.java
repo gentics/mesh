@@ -49,7 +49,7 @@ import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.BranchTypeProvider.RELEASE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.BranchTypeProvider.BRANCH_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_PAGE_TYPE_NAME;
@@ -74,7 +74,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
  * Only the currently selected project and global elements (user, roles, groups..) can be queries.
  * 
  * We must enforce this limitation because GraphQL schemas can't handle dynamic types. It is not possible to distinguish between a content schema v1 or projectA
- * and content schema v2 of projectB. It is not possible to access data across releases due to the same reason. A different release may use different schema
+ * and content schema v2 of projectB. It is not possible to access data across branches due to the same reason. A different branch may use different schema
  * versions.
  */
 @Singleton
@@ -126,7 +126,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public BootstrapInitializer boot;
 
 	@Inject
-	public BranchTypeProvider releaseTypeProvider;
+	public BranchTypeProvider branchTypeProvider;
 
 	@Inject
 	public SchemaTypeProvider schemaTypeProvider;
@@ -217,15 +217,15 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	}
 
 	/**
-	 * Data fetcher for the current release.
+	 * Data fetcher for the current branch.
 	 * 
 	 * @param env
 	 * @return
 	 */
-	public Object releaseFetcher(DataFetchingEnvironment env) {
+	public Object branchFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch release = gc.getBranch();
-		return gc.requiresPerm(release, READ_PERM);
+		Branch branch = gc.getBranch();
+		return gc.requiresPerm(branch, READ_PERM);
 	}
 
 	/**
@@ -311,9 +311,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
 			tagFamilySearchHandler, null));
 
-		// .release
-		root.field(newFieldDefinition().name("release").description("Load the release that is active for this GraphQL query.")
-			.type(new GraphQLTypeReference(RELEASE_TYPE_NAME)).dataFetcher(this::releaseFetcher).build());
+		// .branch
+		root.field(newFieldDefinition().name("branch").description("Load the branch that is active for this GraphQL query.")
+			.type(new GraphQLTypeReference(BRANCH_TYPE_NAME)).dataFetcher(this::branchFetcher).build());
 
 		// .schema
 		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
@@ -464,7 +464,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(roleTypeProvider.createType());
 		additionalTypes.add(newPageType(ROLE_PAGE_TYPE_NAME, ROLE_TYPE_NAME));
 
-		additionalTypes.add(releaseTypeProvider.createType());
+		additionalTypes.add(branchTypeProvider.createType());
 
 		additionalTypes.add(pluginProvider.createType());
 		additionalTypes.add(newPageType(PLUGIN_PAGE_TYPE_NAME, PLUGIN_TYPE_NAME));

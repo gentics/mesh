@@ -1,11 +1,33 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -19,32 +41,12 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
+
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * Type provider for the node type. Internally this will map partially to {@link Node} and {@link NodeGraphFieldContainer} vertices.
@@ -106,7 +108,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 
 		Node node = content.getNode();
-		Branch release = gc.getBranch();
+		Branch branch = gc.getBranch();
 		NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 		// There might not be a container for the selected language (incl. fallback language)
 		if (container == null) {
@@ -114,7 +116,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 
 		// Check whether the user is allowed to read the published container
-		boolean isPublished = container.isPublished(release.getUuid());
+		boolean isPublished = container.isPublished(branch.getUuid());
 		if (isPublished) {
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		} else {
@@ -142,10 +144,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		GraphQLContext gc = env.getContext();
-		Branch release = gc.getBranch();
+		Branch branch = gc.getBranch();
 		ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 
-		return content.getNode().getGraphFieldContainers(release, type).stream().map(item -> {
+		return content.getNode().getGraphFieldContainers(branch, type).stream().map(item -> {
 			return new NodeContent(content.getNode(), item);
 		}).collect(Collectors.toList());
 	}
@@ -206,7 +208,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (content == null) {
 					return null;
 				}
-				// TODO handle release!
+				// TODO handle branch!
 				return content.getNode().getAvailableLanguageNames();
 			}));
 
@@ -227,8 +229,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					Node node = content.getNode();
 					// Resolve the given path and return the found container
-					Branch release = gc.getBranch();
-					String branchUuid = release.getUuid();
+					Branch branch = gc.getBranch();
+					String branchUuid = branch.getUuid();
 					ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 					Stack<String> pathStack = new Stack<>();
 					pathStack.add(nodePath);

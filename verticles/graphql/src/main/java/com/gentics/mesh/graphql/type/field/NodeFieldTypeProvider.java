@@ -25,7 +25,7 @@ import static graphql.schema.GraphQLUnionType.newUnionType;
 
 /**
  * This class contains all field specific type code. It provides methods which can be used to generate field types for a specific project. This is done by
- * examining the schemas which are assigned to the project release.
+ * examining the schemas which are assigned to the project branch.
  */
 @Singleton
 public class NodeFieldTypeProvider extends AbstractTypeProvider {
@@ -65,7 +65,7 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	}
 
 	/**
-	 * Generate a map of all schema types which correspond to schemas which are part of the project/release.
+	 * Generate a map of all schema types which correspond to schemas which are part of the project/branch.
 	 * 
 	 * @param project
 	 * @return

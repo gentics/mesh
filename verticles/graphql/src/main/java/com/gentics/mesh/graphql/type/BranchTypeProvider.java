@@ -17,7 +17,7 @@ import graphql.schema.GraphQLTypeReference;
 @Singleton
 public class BranchTypeProvider extends AbstractTypeProvider {
 
-	public static final String RELEASE_TYPE_NAME = "Branch";
+	public static final String BRANCH_TYPE_NAME = "Branch";
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
@@ -27,7 +27,7 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 	}
 
 	public GraphQLObjectType createType() {
-		Builder branchType = newObject().name(RELEASE_TYPE_NAME);
+		Builder branchType = newObject().name(BRANCH_TYPE_NAME);
 		interfaceTypeProvider.addCommonFields(branchType);
 
 		// .name
@@ -47,8 +47,8 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 		);
 
 		// .schemas
-		branchType.field(newPagingFieldWithFetcher("schemas", "Load schemas assigned to this release.",
-				this::handleReleaseSchemas, SCHEMA_PAGE_TYPE_NAME));
+		branchType.field(newPagingFieldWithFetcher("schemas", "Load schemas assigned to this branch.",
+				this::handleBranchSchemas, SCHEMA_PAGE_TYPE_NAME));
 
 		return branchType.build();
 	}
