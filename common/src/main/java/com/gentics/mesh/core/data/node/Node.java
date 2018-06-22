@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.IndexableElement;
@@ -10,7 +11,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -30,11 +30,9 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
-
 import io.reactivex.Single;
 
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -711,7 +709,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	Deque<Node> getBreadcrumbNodes(InternalActionContext ac);
+	List<Node> getBreadcrumbNodes(InternalActionContext ac);
 
 	/**
 	 * Handle the node specific on deleted event.
