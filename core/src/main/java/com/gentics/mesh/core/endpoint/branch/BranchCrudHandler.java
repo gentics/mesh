@@ -76,7 +76,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		throw new NotImplementedException("Release can't be deleted");
+		throw new NotImplementedException("Branch can't be deleted");
 	}
 
 	/**

@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,6 +34,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeNavigationEndpointTest extends AbstractMeshTest {
@@ -314,7 +314,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 		// initial branch by name
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-				new VersioningParametersImpl().draft().setBranch(INITIAL_RELEASE_NAME)));
+				new VersioningParametersImpl().draft().setBranch(INITIAL_BRANCH_NAME)));
 		assertThat(response).hasDepth(1).isValid(4);
 	}
 

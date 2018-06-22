@@ -128,13 +128,13 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Creates the key for the webroot index.
 	 *
 	 * @param segmentValue Value of the segment field
-	 * @param releaseUuid Uuid of the release
+	 * @param branchUuid Uuid of the branch
 	 * @param parent Parent of the node
 	 * @return The composed key
 	 */
-	static String composeWebrootIndexKey(String segmentValue, String releaseUuid, Node parent) {
+	static String composeWebrootIndexKey(String segmentValue, String branchUuid, Node parent) {
 		StringBuilder webRootInfo = new StringBuilder(segmentValue);
-		webRootInfo.append("-").append(releaseUuid);
+		webRootInfo.append("-").append(branchUuid);
 		if (parent != null) {
 			webRootInfo.append("-").append(parent.getUuid());
 		}

@@ -240,7 +240,7 @@ public final class Events {
 
 		events.add(EVENT_MICROSCHEMA_DELETED);
 
-		/* Release */
+		/* Branch */
 
 		events.add(EVENT_BRANCH_CREATED);
 

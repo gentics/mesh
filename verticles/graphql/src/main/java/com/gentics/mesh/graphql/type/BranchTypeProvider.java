@@ -15,42 +15,42 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
 
 @Singleton
-public class ReleaseTypeProvider extends AbstractTypeProvider {
+public class BranchTypeProvider extends AbstractTypeProvider {
 
-	public static final String RELEASE_TYPE_NAME = "Release";
+	public static final String BRANCH_TYPE_NAME = "Branch";
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public ReleaseTypeProvider() {
+	public BranchTypeProvider() {
 	}
 
 	public GraphQLObjectType createType() {
-		Builder releaseType = newObject().name(RELEASE_TYPE_NAME);
-		interfaceTypeProvider.addCommonFields(releaseType);
+		Builder branchType = newObject().name(BRANCH_TYPE_NAME);
+		interfaceTypeProvider.addCommonFields(branchType);
 
 		// .name
-		releaseType.field(newFieldDefinition().name("name").type(GraphQLString));
+		branchType.field(newFieldDefinition().name("name").type(GraphQLString));
 
 		// .migrated
-		releaseType.field(newFieldDefinition().name("migrated").type(GraphQLBoolean));
+		branchType.field(newFieldDefinition().name("migrated").type(GraphQLBoolean));
 
 		// .schema
-		releaseType.field(
+		branchType.field(
 			newFieldDefinition().name("schema").description("Load schema by name or uuid.")
 				.argument(createUuidArg("Uuid of the schema."))
 				.argument(createNameArg("Name of the schema."))
 				.type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
-				.dataFetcher(this::handleReleaseSchema)
+				.dataFetcher(this::handleBranchSchema)
 				.build()
 		);
 
 		// .schemas
-		releaseType.field(newPagingFieldWithFetcher("schemas", "Load schemas assigned to this release.",
-				this::handleReleaseSchemas, SCHEMA_PAGE_TYPE_NAME));
+		branchType.field(newPagingFieldWithFetcher("schemas", "Load schemas assigned to this branch.",
+				this::handleBranchSchemas, SCHEMA_PAGE_TYPE_NAME));
 
-		return releaseType.build();
+		return branchType.build();
 	}
 
 }

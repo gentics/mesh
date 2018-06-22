@@ -196,7 +196,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param sqb
 	 *            Batch to be updated to handle index changes
 	 * @param branch
-	 *            Release in which the migration is running
+	 *            Branch in which the migration is running
 	 * @param node
 	 *            Node of the container
 	 * @param container

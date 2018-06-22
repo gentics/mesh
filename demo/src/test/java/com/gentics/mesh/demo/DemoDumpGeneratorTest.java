@@ -79,12 +79,6 @@ public class DemoDumpGeneratorTest {
 			// Verify that all documents are stored in the index
 			for (Node node : boot.meshRoot().getNodeRoot().findAllIt()) {
 				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
-				// HandleContext context = new HandleContext();
-				// context.setProjectUuid(node.getProject().getUuid());
-				// context.setReleaseUuid(node.getProject().getLatestRelease().getUuid());
-				// context.setContainerType(DRAFT);
-				// UpdateBatchEntry entry = new UpdateBatchEntryImpl(MeshInternal.get().nodeContainerIndexHandler(), node, context, STORE_ACTION);
-
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();

@@ -78,9 +78,9 @@ public abstract class AbstractTypeProvider {
 		return arguments;
 	}
 
-	public GraphQLArgument createReleaseUuidArg() {
-		// #release
-		return newArgument().name("release").type(GraphQLString).description("Release Uuid").build();
+	public GraphQLArgument createBranchUuidArg() {
+		// #branch
+		return newArgument().name("branch").type(GraphQLString).description("Branch Uuid").build();
 	}
 
 	/**
@@ -213,10 +213,10 @@ public abstract class AbstractTypeProvider {
 		return element;
 	}
 
-	protected MeshVertex handleReleaseSchema(DataFetchingEnvironment env) {
+	protected MeshVertex handleBranchSchema(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch release = env.getSource();
-		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false);
+		Branch branch = env.getSource();
+		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
 
 		// We need to handle permissions dedicately since we check the schema container perm and not the schema container version perm.
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
@@ -226,10 +226,10 @@ public abstract class AbstractTypeProvider {
 			.getSchemaContainer(), READ_PERM)).findFirst().get());
 	}
 
-	protected Page<SchemaContainerVersion> handleReleaseSchemas(DataFetchingEnvironment env) {
+	protected Page<SchemaContainerVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch release = env.getSource();
-		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false).filter(
+		Branch branch = env.getSource();
+		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
 			schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
 		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}

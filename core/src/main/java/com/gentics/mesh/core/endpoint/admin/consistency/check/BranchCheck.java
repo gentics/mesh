@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
- * Release specific consistency checks.
+ * Branch specific consistency checks.
  */
 public class BranchCheck implements ConsistencyCheck {
 
@@ -29,22 +29,22 @@ public class BranchCheck implements ConsistencyCheck {
 	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends BranchRoot> it = db.getVerticesForType(BranchRootImpl.class);
 		while (it.hasNext()) {
-			checkReleaseRoot(it.next(), response);
+			checkBranchRoot(it.next(), response);
 		}
 
 		Iterator<? extends Branch> rIt = db.getVerticesForType(BranchImpl.class);
 		while (rIt.hasNext()) {
-			checkRelease(rIt.next(), response);
+			checkBranch(rIt.next(), response);
 		}
 	}
 
-	private void checkReleaseRoot(BranchRoot branchRoot, ConsistencyCheckResponse response) {
+	private void checkBranchRoot(BranchRoot branchRoot, ConsistencyCheckResponse response) {
 		checkIn(branchRoot, HAS_BRANCH_ROOT, ProjectImpl.class, response, HIGH);
 		checkOut(branchRoot, HAS_INITIAL_BRANCH, BranchImpl.class, response, HIGH);
 		checkOut(branchRoot, HAS_LATEST_BRANCH, BranchImpl.class, response, HIGH);
 	}
 
-	private void checkRelease(Branch branch, ConsistencyCheckResponse response) {
+	private void checkBranch(Branch branch, ConsistencyCheckResponse response) {
 		String uuid = branch.getUuid();
 
 		checkIn(branch, HAS_BRANCH, BranchRootImpl.class, response, HIGH);

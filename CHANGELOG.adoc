@@ -21,6 +21,7 @@ CAUTION: The concept of releases has been renamed into branches. The database st
 * The `mesh.release.created`, `mesh.release.updated`, `mesh.release.deleted` events have been changed to `mesh.branch.created`, `mesh.branch.updated`, `mesh.branch.deleted`.
 * The Java REST Models have been renamed. (e.g.: ReleaseCreateRequest -> BranchCreateRequest)
 * I18n messages have been changed accordingly.
+* The GraphQL field `release` has been renamed to `branch`. The type name was also updated.
 
 icon:plus[] Elasticsearch: The base64 encoded binary document data will no longer be stored in the search index.
 

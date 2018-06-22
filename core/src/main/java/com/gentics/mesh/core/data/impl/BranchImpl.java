@@ -432,7 +432,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
-		// TODO Do we need to delete affected nodes as well? Currently only deletion of projects is possible. Release can't be deleted without deleting the
+		// TODO Do we need to delete affected nodes as well? Currently only deletion of projects is possible. Branch can't be deleted without deleting the
 		// project.
 		getVertex().remove();
 	}

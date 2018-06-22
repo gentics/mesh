@@ -57,7 +57,7 @@ public class TestDataProvider {
 	private static final Logger log = LoggerFactory.getLogger(TestDataProvider.class);
 
 	public static final String PROJECT_NAME = "dummy";
-	public static final String INITIAL_RELEASE_NAME = "dummy";
+	public static final String INITIAL_BRANCH_NAME = "dummy";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
