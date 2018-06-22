@@ -51,6 +51,8 @@ icon:plus[] It is now possible to add custom languages by configuration.
 
 icon:check[] UI: Added a scrollbar to the schema dropdown menu. link:https://github.com/gentics/mesh-ui/pull/163[#163]
 
+icon:plus[] Branches: It is now possible to set the "latest" branch of a project.
+
 icon:check[] Core: A inconsistency within the webroot path handling has been fixed. Previously the webroot path uniqueness checks would not work correctly once another branch has been added.
 
 icon:check[] REST: The response error code handling for uploads has been updated. Previously no error 413 was returned when the upload limit was reached.

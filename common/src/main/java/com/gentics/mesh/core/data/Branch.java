@@ -119,6 +119,20 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	Branch setSsl(boolean ssl);
 
 	/**
+	 * Get whether the branch is the latest branch
+	 * 
+	 * @return
+	 */
+	boolean isLatest();
+
+	/**
+	 * Make the branch the latest branch of the project
+	 * 
+	 * @return
+	 */
+	Branch setLatest();
+
+	/**
 	 * Get the next Branch.
 	 * 
 	 * @return next Branch

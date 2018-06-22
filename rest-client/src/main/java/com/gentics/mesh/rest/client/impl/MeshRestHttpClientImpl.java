@@ -1294,6 +1294,15 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<BranchResponse> setLatestBranch(String projectName, String branchUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
+
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/latest",
+			BranchResponse.class);
+	}
+
+	@Override
 	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(request, "request must not be null");

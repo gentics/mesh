@@ -28,11 +28,11 @@ public interface BranchRoot extends RootVertex<Branch> {
 	 * @return new Branch
 	 */
 	default Branch create(String name, User creator) {
-		return create(name, creator, null);
+		return create(name, creator, null, true);
 	}
 
 	/**
-	 * Create a new branch and make it the latest The new branch will be the initial branch, if it is the first created.
+	 * Create a new branch. The new branch will be the initial branch, if it is the first created.
 	 *
 	 * @param name
 	 *            branch name
@@ -40,9 +40,11 @@ public interface BranchRoot extends RootVertex<Branch> {
 	 *            creator
 	 * @param uuid
 	 *            Optional uuid
+	 * @param setLatest
+	 *            True to make it the latest branch
 	 * @return new Branch
 	 */
-	Branch create(String name, User creator, String uuid);
+	Branch create(String name, User creator, String uuid, boolean setLatest);
 
 	/**
 	 * Get the initial branch of this root.
@@ -57,6 +59,12 @@ public interface BranchRoot extends RootVertex<Branch> {
 	 * @return
 	 */
 	Branch getLatestBranch();
+
+	/**
+	 * Set the branch to be the latest branch
+	 * @param branch
+	 */
+	void setLatestBranch(Branch branch);
 
 	/**
 	 * Get the unique index key for names of branches attached to this root.

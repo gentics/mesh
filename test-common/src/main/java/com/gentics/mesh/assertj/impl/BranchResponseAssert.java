@@ -107,4 +107,24 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 		assertThat(actual.isMigrated()).as(descriptionText() + " migrated").isFalse();
 		return this;
 	}
+
+	/**
+	 * Assert that this is the latest branch
+	 * 
+	 * @return fluent API
+	 */
+	public BranchResponseAssert isLatest() {
+		assertThat(actual.isLatest()).as(descriptionText() + " latest").isTrue();
+		return this;
+	}
+
+	/**
+	 * Assert that this is not the latest branch
+	 * 
+	 * @return fluent API
+	 */
+	public BranchResponseAssert isNotLatest() {
+		assertThat(actual.isLatest()).as(descriptionText() + " latest").isFalse();
+		return this;
+	}
 }

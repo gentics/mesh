@@ -4,6 +4,7 @@ import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
@@ -121,18 +122,19 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 		BranchResponse restBranch = new BranchResponse();
 		if (fields.has("name")) {
-			restBranch.setName(getName());
+		restBranch.setName(getName());
 		}
 		if (fields.has("hostname")) {
-			restBranch.setHostname(getHostname());
+		restBranch.setHostname(getHostname());
 		}
 		if (fields.has("ssl")) {
-			restBranch.setSsl(getSsl());
+		restBranch.setSsl(getSsl());
 		}
 		// restRelease.setActive(isActive());
 		if (fields.has("migrated")) {
-			restBranch.setMigrated(isMigrated());
+		restBranch.setMigrated(isMigrated());
 		}
+		restBranch.setLatest(isLatest());
 
 		// Add common fields
 		fillCommonRestFields(ac, fields, restBranch);
@@ -172,6 +174,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public Branch setSsl(boolean ssl) {
 		setProperty(SSL, ssl);
+		return this;
+	}
+
+	@Override
+	public boolean isLatest() {
+		return inE(HAS_LATEST_BRANCH).hasNext();
+	}
+
+	@Override
+	public Branch setLatest() {
+		getRoot().setLatestBranch(this);
 		return this;
 	}
 
@@ -228,14 +241,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
 		SchemaContainer foundSchemaContainer = out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
-			.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
 		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_SCHEMA_VERSION).retain(schemaContainerVersion).nextOrDefaultExplicit(
-			SchemaContainerVersionImpl.class, null);
+				SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
@@ -354,14 +367,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
 		MicroschemaContainer foundMicroschemaContainer = out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid())
-			.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
 		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid())
-			.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
@@ -377,7 +390,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	 *            Container to handle
 	 */
 	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(
-		GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
+			GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaContainerVersion) {

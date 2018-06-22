@@ -27,6 +27,10 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("Flag which indicates whether any active node migration for this branch is still running or whether all nodes have been migrated to this branch.")
 	private boolean migrated;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch.")
+	private boolean latest;
+
 	public BranchResponse() {
 	}
 
@@ -82,5 +86,13 @@ public class BranchResponse extends AbstractGenericRestResponse {
 
 	public void setSsl(Boolean ssl) {
 		this.ssl = ssl;
+	}
+
+	public boolean isLatest() {
+		return latest;
+	}
+
+	public void setLatest(boolean latest) {
+		this.latest = latest;
 	}
 }

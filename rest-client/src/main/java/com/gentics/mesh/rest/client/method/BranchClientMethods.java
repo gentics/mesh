@@ -145,4 +145,13 @@ public interface BranchClientMethods {
 	 * @return
 	 */
 	MeshRequest<GenericMessageResponse> migrateBranchMicroschemas(String projectName, String branchUuid);
+
+	/**
+	 * Set a branch to be the latest branch for the project.
+	 * 
+	 * @param projectName
+	 * @param branchUuid
+	 * @return
+	 */
+	MeshRequest<BranchResponse> setLatestBranch(String projectName, String branchUuid);
 }

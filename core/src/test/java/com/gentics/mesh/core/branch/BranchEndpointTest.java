@@ -24,10 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
@@ -318,6 +322,46 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testCreateAsLatest() {
+		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+
+		String branchName = "Latest";
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(branchName);
+
+		waitForJobs(() -> {
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(response).as("Created branch").hasName(branchName).isLatest();
+
+			BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("New latest branches")
+					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(response);
+		}, COMPLETED, 1);
+	}
+
+	@Test
+	public void testCreateNotAsLatest() {
+		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+		BranchResponse latestBranch = projectBranches.getData().stream().filter(BranchResponse::isLatest).findFirst().get();
+
+		String branchName = "Not Latest";
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(branchName);
+		request.setLatest(false);
+
+		waitForJobs(() -> {
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
+
+			BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("New latest branches")
+					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(latestBranch);
+		}, COMPLETED, 1);
+	}
+
+	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
 
@@ -487,7 +531,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().createBranch(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+		call(() -> client().updateBranch(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test
@@ -519,6 +563,36 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setSsl(ssl);
 		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
 		assertThat(response).as("Updated branch").hasSsl(ssl);
+	}
+
+	@Test
+	public void testSetLatest() {
+		Map<String, String> branchMap = new HashMap<>();
+		for (String branchName : Arrays.asList("Branch 1", "Branch 2", "Branch 3")) {
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName(branchName);
+			request.setLatest(false);
+
+			waitForJobs(() -> {
+				BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+				assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
+				branchMap.put(branchName, response.getUuid());
+			}, COMPLETED, 1);
+		}
+
+		for (int i = 0; i < 2; i++) {
+			for (Map.Entry<String, String> entry : branchMap.entrySet()) {
+				String branchName = entry.getKey();
+				String branchUuid = entry.getValue();
+
+				BranchResponse response = call(() -> client().setLatestBranch(PROJECT_NAME, branchUuid));
+				assertThat(response).as("Latest branch").hasUuid(branchUuid).hasName(branchName).isLatest();
+
+				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("New latest branches")
+						.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(response);
+			}
+		}
 	}
 
 	@Override

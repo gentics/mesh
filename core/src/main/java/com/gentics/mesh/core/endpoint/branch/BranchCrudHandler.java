@@ -17,9 +17,9 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -303,4 +303,17 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Handle requests to make a branch the latest
+	 * 
+	 * @param ac
+	 * @param branchUuid
+	 */
+	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
+		utils.asyncTx(ac, (tx) -> {
+			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
+			branch.setLatest();
+			return branch.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
+	}
 }

@@ -1312,6 +1312,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<BranchResponse> setLatestBranch(String projectName, String branchUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
