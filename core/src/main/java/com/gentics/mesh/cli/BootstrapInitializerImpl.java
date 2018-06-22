@@ -214,7 +214,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(Mesh mesh, boolean forceReindex, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(Mesh mesh, boolean forceIndexSync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.mesh = (MeshImpl) mesh;
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean isClustered = options.getClusterOptions().isEnabled();
@@ -287,7 +287,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		eventManager.registerHandlers();
-		handleLocalData(forceReindex, options, verticleLoader);
+		handleLocalData(forceIndexSync, options, verticleLoader);
 
 		// Load existing plugins
 		pluginManager.init(options);
@@ -397,16 +397,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Handle local data and prepare mesh API.
 	 * 
-	 * @param forceReindex
+	 * @param forceIndexSync
 	 * @param configuration
 	 * @param commandLine
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	private void handleLocalData(boolean forceReindex, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	private void handleLocalData(boolean forceIndexSync, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Invoke reindex as requested
-		if (forceReindex) {
-			reindexAll();
+		if (forceIndexSync) {
+			syncIndex();
 		}
 
 		// Load the verticles
@@ -441,7 +441,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void reindexAll() {
+	public void syncIndex() {
 		SYNC_INDEX_ACTION.invoke();
 	}
 

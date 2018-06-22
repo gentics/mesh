@@ -218,7 +218,7 @@ public interface BootstrapInitializer {
 	/**
 	 * Clear all indices and reindex all elements. This is a blocking action and could potentially take a lot of time.
 	 */
-	void reindexAll();
+	void syncIndex();
 
 	/**
 	 * Register the eventbus event handlers.

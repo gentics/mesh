@@ -99,6 +99,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				processManager.startWatchDog();
 			} catch (IOException | ZipException e) {
 				log.error("Error while starting embedded Elasticsearch server.", e);
+				throw new RuntimeException("Error while starting embedded Elasticsearch server", e);
 			}
 		}
 

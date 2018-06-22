@@ -306,42 +306,50 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		query.put("sort", new JsonArray().add("_doc"));
 
 		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
-		JsonObject result = builder.sync();
-		if (log.isTraceEnabled()) {
-			log.trace("Got response {" + result.encodePrettily() + "}");
-		}
-		JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
-		processHits(hits, versions);
-
-		// Check whether we need to process more scrolls
-		if (hits.size() != 0) {
-			String nextScrollId = result.getString("_scroll_id");
-			try {
-				while (true) {
-					final String currentScroll = nextScrollId;
-					log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
-					JsonObject scrollResult = client.scroll(currentScroll, "1m").sync();
-					JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-					if (log.isTraceEnabled()) {
-						log.trace("Got response {" + scrollHits.encodePrettily() + "}");
-					}
-					if (scrollHits.size() != 0) {
-						processHits(scrollHits, versions);
-						// Update the scrollId for the next fetch
-						nextScrollId = scrollResult.getString("_scroll_id");
-						if (log.isDebugEnabled()) {
-							log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
-						}
-					} else {
-						// The scroll yields no more data. We are done
-						break;
-					}
-				}
-			} finally {
-				// Clearing used scroll in order to free memory in ES
-				client.clearScroll(nextScrollId).sync();
+		JsonObject result = new JsonObject();
+		try {
+			result = builder.sync();
+			if (log.isTraceEnabled()) {
+				log.trace("Got response {" + result.encodePrettily() + "}");
 			}
+			JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
+			processHits(hits, versions);
+
+			// Check whether we need to process more scrolls
+			if (hits.size() != 0) {
+				String nextScrollId = result.getString("_scroll_id");
+				try {
+					while (true) {
+						final String currentScroll = nextScrollId;
+						log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
+						JsonObject scrollResult = client.scroll(currentScroll, "1m").sync();
+						JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
+						if (log.isTraceEnabled()) {
+							log.trace("Got response {" + scrollHits.encodePrettily() + "}");
+						}
+						if (scrollHits.size() != 0) {
+							processHits(scrollHits, versions);
+							// Update the scrollId for the next fetch
+							nextScrollId = scrollResult.getString("_scroll_id");
+							if (log.isDebugEnabled()) {
+								log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
+							}
+						} else {
+							// The scroll yields no more data. We are done
+							break;
+						}
+					}
+				} finally {
+					// Clearing used scroll in order to free memory in ES
+					client.clearScroll(nextScrollId).sync();
+				}
+			}
+		} catch (HttpErrorException e) {
+			log.error("Error while loading version information from index {" + indexName + "}", e.toString());
+			log.error(e);
+			throw e;
 		}
+
 		return versions;
 	}
 
