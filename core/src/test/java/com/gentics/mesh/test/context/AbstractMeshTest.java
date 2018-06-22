@@ -309,7 +309,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
-			JobListResponse response = call(() -> client().findJobs(new PagingParametersImpl().setPerPage(200)));
+			JobListResponse response = call(() -> client().findJobs(new PagingParametersImpl().setPerPage(200L)));
 
 			boolean allDone = true;
 			for (JobResponse info : response.getData()) {

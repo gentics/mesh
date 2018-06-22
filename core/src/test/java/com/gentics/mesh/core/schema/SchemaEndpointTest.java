@@ -182,11 +182,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			// Test default paging parameters
 			SchemaListResponse restResponse = call(() -> client().findSchemas());
-			assertEquals(25, restResponse.getMetainfo().getPerPage());
+			assertNull(restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			assertEquals(25, restResponse.getData().size());
 
-			int perPage = 11;
+			long perPage = 11;
 			restResponse = call(() -> client().findSchemas(new PagingParametersImpl(2, perPage)));
 			assertEquals(perPage, restResponse.getData().size());
 
@@ -195,7 +195,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertEquals("The response did not contain the correct amount of items", 11, restResponse.getData().size());
 			assertEquals(2, restResponse.getMetainfo().getCurrentPage());
 			assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+			assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 			assertEquals(totalSchemas, restResponse.getMetainfo().getTotalCount());
 
 			List<Schema> allSchemas = new ArrayList<>();
@@ -217,9 +217,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			call(() -> client().findSchemas(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			call(() -> client().findSchemas(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+			call(() -> client().findSchemas(new PagingParametersImpl(1, -1L)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			SchemaListResponse list = call(() -> client().findSchemas(new PagingParametersImpl(4242, 25)));
+			SchemaListResponse list = call(() -> client().findSchemas(new PagingParametersImpl(4242, 25L)));
 			assertEquals(4242, list.getMetainfo().getCurrentPage());
 			assertEquals(0, list.getData().size());
 		}
@@ -227,7 +227,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testReadMetaCountOnly() {
-		SchemaListResponse list = call(() -> client().findSchemas(new PagingParametersImpl(1, 0)));
+		SchemaListResponse list = call(() -> client().findSchemas(new PagingParametersImpl(1, 0L)));
 		assertEquals(0, list.getData().size());
 	}
 

@@ -82,6 +82,6 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().searchNodesRaw(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
-			.setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			.setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 	}
 }

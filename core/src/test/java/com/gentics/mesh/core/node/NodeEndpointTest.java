@@ -556,7 +556,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().draft()));
 
 		assertNotNull(restResponse);
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertNull(restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(getNodeCount(), restResponse.getData().size());
 	}
@@ -577,7 +577,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		String firstUuid = null;
 		for (int i = 0; i < 10; i++) {
-			NodeListResponse response = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 100), new VersioningParametersImpl()
+			NodeListResponse response = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 100L), new VersioningParametersImpl()
 				.draft()));
 			if (firstUuid == null) {
 				firstUuid = response.getData().get(0).getUuid();
@@ -610,7 +610,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			}
 
 			assertNotNull(noPermNode.getUuid());
-			int perPage = 11;
+			long perPage = 11;
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage),
 				new VersioningParametersImpl().draft()));
 			assertEquals(perPage, restResponse.getData().size());
@@ -622,7 +622,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 			assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
 			assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+			assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
@@ -640,23 +640,23 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				Collectors.toList());
 			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<NodeListResponse> pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25)).invoke();
+			MeshResponse<NodeListResponse> pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25L)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25)).invoke();
+			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25L)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1)).invoke();
+			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1L)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25), new VersioningParametersImpl()
+			NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25L), new VersioningParametersImpl()
 				.draft()));
 			assertEquals(4242, list.getMetainfo().getCurrentPage());
 			assertEquals(0, list.getData().size());
-			assertEquals(25, list.getMetainfo().getPerPage());
+			assertEquals(25L, list.getMetainfo().getPerPage().longValue());
 			assertEquals(2, list.getMetainfo().getPageCount());
 			assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
 		}
@@ -664,7 +664,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadMultipleOnlyMetadata() {
-		NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 0), new VersioningParametersImpl()
+		NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 0L), new VersioningParametersImpl()
 			.draft()));
 		assertEquals(0, listResponse.getData().size());
 	}
@@ -673,14 +673,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodesWithoutPermissions() throws Exception {
 
 		// TODO add node that has no perms and check the response
-		NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 10), new VersioningParametersImpl()
+		NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 10L), new VersioningParametersImpl()
 			.draft()));
 
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(2, restResponse.getMetainfo().getPageCount());
-		assertEquals(10, restResponse.getMetainfo().getPerPage());
+		assertEquals(10, restResponse.getMetainfo().getPerPage().longValue());
 		assertEquals(getNodeCount(), restResponse.getMetainfo().getTotalCount());
 	}
 
@@ -694,11 +694,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		try (Tx tx = tx()) {
-			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000),
+			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L),
 				new VersioningParametersImpl().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest branch").isEmpty();
 
-			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().setBranch(
+			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L), new VersioningParametersImpl().setBranch(
 				initialBranch().getName()).draft()));
 			assertThat(restResponse.getData()).as("Node List for initial branch").hasSize(getNodeCount());
 
@@ -710,10 +710,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 
 			// check whether there is one node in the new branch now
-			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().draft()));
+			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L), new VersioningParametersImpl().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest branch").hasSize(1);
 
-			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().draft()
+			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L), new VersioningParametersImpl().draft()
 				.setBranch(newBranch.getName())));
 			assertThat(restResponse.getData()).as("Node List for latest branch").hasSize(1);
 		}
@@ -730,7 +730,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// 2. Assert that all nodes are offline. The findNodes method should not find any node because it searches for published nodes by default.
 			NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(),
-				new PagingParametersImpl(1, 1000)));
+				new PagingParametersImpl(1, 1000L)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			// 3. Assert that the offline nodes are also not loadable if requests via uuid
@@ -749,7 +749,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Read a bunch of nodes
 			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1,
-				1000)));
+				1000L)));
 			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid").containsOnlyElementsOf(
 				publishedNodes);
 		}
@@ -765,7 +765,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Assert that the list is now empty since all nodes are offline
 		NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(),
-			new PagingParametersImpl(1, 1000)));
+			new PagingParametersImpl(1, 1000L)));
 		assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 		// Republish all listed
@@ -792,7 +792,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(publishedNodes).hasSize(nodes.size());
 
 			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1,
-				1000)));
+				1000L)));
 			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid").containsOnlyElementsOf(
 				publishedNodes);
 		}
@@ -809,7 +809,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		NodeListResponse initialListResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(),
-			new PagingParametersImpl(1, 1000)));
+			new PagingParametersImpl(1, 1000L)));
 
 		int revoked = 0;
 		for (Node node : nodes) {
@@ -828,9 +828,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Verify also that the read nodes endpoint still finds all nodes
 			NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(),
-				new PagingParametersImpl(1, 1000)));
+				new PagingParametersImpl(1, 1000L)));
 			assertThat(listResponse.getData()).as("Published nodes list").hasSameSizeAs(initialListResponse.getData());
-			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().draft(), new PagingParametersImpl(1, 1000)));
+			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().draft(), new PagingParametersImpl(1, 1000L)));
 			assertThat(listResponse.getData()).as("Draft nodes list").hasSize(initialListResponse.getData().size() - revoked);
 		}
 	}

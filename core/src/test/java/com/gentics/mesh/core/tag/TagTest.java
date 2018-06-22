@@ -288,11 +288,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 10));
+			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 10L));
 			assertEquals(12, tagPage.getTotalElements());
 			assertEquals(10, tagPage.getSize());
 
-			tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 14));
+			tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 14L));
 			assertEquals(tags().size(), tagPage.getTotalElements());
 			assertEquals(12, tagPage.getSize());
 		}
@@ -310,11 +310,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(noPermTag.getUuid());
 			assertEquals(beforeCount + 1, basicTagFamily.computeCount());
 
-			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20));
+			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20L));
 			assertPage(tagfamilyTagpage, beforeCount);
 
 			role().grantPermissions(noPermTag, READ_PERM);
-			Page<? extends Tag> globalTagPage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20));
+			Page<? extends Tag> globalTagPage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20L));
 			assertPage(globalTagPage, beforeCount + 1);
 		}
 	}

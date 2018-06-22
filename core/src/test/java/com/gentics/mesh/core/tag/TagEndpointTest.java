@@ -80,12 +80,12 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			// Test default paging parameters
 			ListResponse<TagResponse> restResponse = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid()));
-			assertEquals(25, restResponse.getMetainfo().getPerPage());
+			assertNull(restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			assertEquals("The response did not contain the correct amount of items. We only have nine basic tags in the test data.", nBasicTags,
 					restResponse.getData().size());
 
-			final int perPage = 4;
+			final long perPage = 4;
 			// Extra Tags + permitted tag
 			int totalTags = nBasicTags;
 			int totalPages = (int) Math.ceil(totalTags / (double) perPage);
@@ -95,13 +95,13 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				TagListResponse tagPage = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(currentPage,
 						perPage)));
 				restResponse = tagPage;
-				int expectedItemsCount = perPage;
+				long expectedItemsCount = perPage;
 				// The last page should only list 5 items
 				if (page == 3) {
 					expectedItemsCount = 1;
 				}
 				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
-				assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+				assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
 						.getCurrentPage());
 				assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
@@ -123,16 +123,16 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(0, perPage)), BAD_REQUEST,
 					"error_page_parameter_must_be_positive", "0");
 
-			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(1, -1)), BAD_REQUEST,
+			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(1, -1L)), BAD_REQUEST,
 					"error_pagesize_parameter", "-1");
 
-			int currentPerPage = 25;
+			long currentPerPage = 25L;
 			totalPages = (int) Math.ceil(totalTags / (double) currentPerPage);
 			TagListResponse tagList = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(4242,
 					currentPerPage)));
 			assertEquals(0, tagList.getData().size());
 			assertEquals(4242, tagList.getMetainfo().getCurrentPage());
-			assertEquals(25, tagList.getMetainfo().getPerPage());
+			assertNull(tagList.getMetainfo().getPerPage());
 			assertEquals(nBasicTags, tagList.getMetainfo().getTotalCount());
 			assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 		}
@@ -143,7 +143,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			MeshResponse<TagListResponse> pageFuture = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0))
+			MeshResponse<TagListResponse> pageFuture = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0L))
 					.invoke();
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);

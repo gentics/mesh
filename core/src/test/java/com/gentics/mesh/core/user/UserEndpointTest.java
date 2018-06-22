@@ -437,23 +437,23 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Test default paging parameters
 		ListResponse<UserResponse> restResponse = call(() -> client().findUsers());
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertNull(restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		// Admin User + Guest User + Dummy User = 3
 		assertEquals(intialUserCount + nUsers, restResponse.getMetainfo().getTotalCount());
 		assertEquals(intialUserCount + nUsers, restResponse.getData().size());
 
-		int perPage = 2;
+		long perPage = 2;
 		int totalUsers = intialUserCount + nUsers;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-		final int currentPerPage = 2;
+		final long currentPerPage = 2;
 		restResponse = call(() -> client().findUsers(new PagingParametersImpl(3, currentPerPage)));
 
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
 		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage
 			+ "}", totalPages, restResponse.getMetainfo().getPageCount());
-		assertEquals(currentPerPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(currentPerPage, restResponse.getMetainfo().getPerPage().longValue());
 		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
 
 		perPage = 11;
@@ -474,29 +474,29 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		call(() -> client().findUsers(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+		call(() -> client().findUsers(new PagingParametersImpl(1, -1L)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-		UserListResponse listResponse = call(() -> client().findUsers(new PagingParametersImpl(4242, 25)));
+		UserListResponse listResponse = call(() -> client().findUsers(new PagingParametersImpl(4242, 25L)));
 
 		assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, listResponse.getData().size());
 		assertEquals("The requested page should be set in the response but it was not", 4242, listResponse.getMetainfo().getCurrentPage());
 		assertEquals("The page count value was not correct.", 1, listResponse.getMetainfo().getPageCount());
 		assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount, listResponse.getMetainfo()
 			.getTotalCount());
-		assertEquals(25, listResponse.getMetainfo().getPerPage());
+		assertNull(listResponse.getMetainfo().getPerPage());
 
 	}
 
 	@Test
 	public void testInvalidPageParameter() {
-		UserListResponse list = call(() -> client().findUsers(new PagingParametersImpl(1, 0)));
+		UserListResponse list = call(() -> client().findUsers(new PagingParametersImpl(1, 0L)));
 		assertEquals(0, list.getData().size());
 		assertTrue(list.getMetainfo().getTotalCount() > 0);
 	}
 
 	@Test
 	public void testInvalidPageParameter2() {
-		call(() -> client().findUsers(new PagingParametersImpl(-1, 25)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+		call(() -> client().findUsers(new PagingParametersImpl(-1, 25L)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
 
 	@Test
@@ -693,7 +693,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			Node node = folder("news");
-			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100), new NodeParametersImpl()
+			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100L), new NodeParametersImpl()
 				.setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
 

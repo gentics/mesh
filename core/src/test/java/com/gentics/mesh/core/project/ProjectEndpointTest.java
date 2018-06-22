@@ -29,6 +29,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -327,11 +328,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse restResponse = future.result();
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertNull(restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
-		int perPage = 11;
+		long perPage = 11;
 		future = client().findProjects(new PagingParametersImpl(3, perPage)).invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -344,7 +345,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 		assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
 
 		List<ProjectResponse> allProjects = new ArrayList<>();
@@ -362,14 +363,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-		call(() -> client().findProjects(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+		call(() -> client().findProjects(new PagingParametersImpl(1, -1L)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-		ProjectListResponse listResponse = call(() -> client().findProjects(new PagingParametersImpl(4242, 25)));
+		ProjectListResponse listResponse = call(() -> client().findProjects(new PagingParametersImpl(4242, 25L)));
 
 		assertNotNull(listResponse.toJson());
 
 		assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
-		assertEquals(25, listResponse.getMetainfo().getPerPage());
+		assertNull(listResponse.getMetainfo().getPerPage());
 		assertEquals(143, listResponse.getMetainfo().getTotalCount());
 		assertEquals(6, listResponse.getMetainfo().getPageCount());
 		assertEquals(0, listResponse.getData().size());
@@ -387,25 +388,25 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 
 		// perPage: 0
-		ProjectListResponse list = call(() -> client().findProjects(new PagingParametersImpl(1, 0)));
+		ProjectListResponse list = call(() -> client().findProjects(new PagingParametersImpl(1, 0L)));
 		assertEquals("The page count should be one.", 0, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be zero", 0, list.getData().size());
 
 		// perPage: 1
-		list = call(() -> client().findProjects(new PagingParametersImpl(1, 1)));
+		list = call(() -> client().findProjects(new PagingParametersImpl(1, 1L)));
 		assertEquals("The page count should be one.", 11, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 1, list.getData().size());
 
 		// perPage: 2
-		list = call(() -> client().findProjects(new PagingParametersImpl(1, 2)));
+		list = call(() -> client().findProjects(new PagingParametersImpl(1, 2L)));
 		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 2, list.getData().size());
 
 		// page: 6
-		list = call(() -> client().findProjects(new PagingParametersImpl(6, 2)));
+		list = call(() -> client().findProjects(new PagingParametersImpl(6, 2L)));
 		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 1, list.getData().size());

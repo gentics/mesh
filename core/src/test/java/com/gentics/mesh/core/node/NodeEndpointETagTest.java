@@ -34,7 +34,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 		callETag(() -> client().findNodes(PROJECT_NAME), etag, true, 304);
 		callETag(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPage(2)), etag, true, 200);
-		callETag(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(2)), etag, true, 200);
+		callETag(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(2L)), etag, true, 200);
 	}
 
 	@Test
@@ -44,7 +44,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		String etag = callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 		callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true, 304);
 		callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPage(2)), etag, true, 200);
-		callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPerPage(2)), etag, true, 200);
+		callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPerPage(2L)), etag, true, 200);
 
 		// Add another tag to the node
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tx(() -> tag("red").getUuid())));
@@ -104,7 +104,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid), etag, true, 304);
 		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPage(2)), etag, true, 200);
-		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPerPage(2)), etag, true, 200);
+		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPerPage(2L)), etag, true, 200);
 
 		// Create a new node in the parent folder
 		NodeCreateRequest request = new NodeCreateRequest();

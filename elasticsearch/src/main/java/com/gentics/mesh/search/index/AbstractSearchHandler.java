@@ -284,8 +284,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * @param pagingInfo
 	 */
 	protected void applyPagingParams(JsonObject request, PagingParameters pagingInfo) {
-		int page = pagingInfo.getPage() - 1;
-		int low = page * pagingInfo.getPerPage();
+		long page = pagingInfo.getPage() - 1;
+		long low = page * pagingInfo.getPerPage();
 		request.put("from", low);
 		request.put("size", pagingInfo.getPerPage());
 	}

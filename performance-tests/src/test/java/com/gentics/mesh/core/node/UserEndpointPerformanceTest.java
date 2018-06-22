@@ -6,7 +6,6 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -15,6 +14,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class UserEndpointPerformanceTest extends AbstractMeshTest {
@@ -58,11 +58,11 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 		String uuid = db().tx(() -> user().getUuid());
 
 		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
-			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100)));
+			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100L)));
 		});
 
 		loggingStopWatch(logger, "user.read-page-25", 200, (step) -> {
-			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(25)));
+			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(25L)));
 		});
 
 		loggingStopWatch(logger, "user.read-by-uuid", 200, (step) -> {

@@ -30,26 +30,29 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 
 	private void init(Stream<? extends T> stream) {
 		AtomicLong pageCounter = new AtomicLong();
-		visibleItems = stream
+		stream = stream
 			.map(item -> {
 				totalCounter.incrementAndGet();
 				return item;
-			})
-			// Apply paging - skip to lower bounds
-			.skip(lowerBound)
-			.map(item -> {
-				// Only add elements to the list if those elements are part of selected the page
-				long elementsInPage = pageCounter.get();
-				if (elementsInPage < perPage) {
-					elementsOfPage.add(item);
-					pageCounter.incrementAndGet();
-				} else {
-					pageFull.set(true);
-					hasNextPage.set(true);
-				}
-				return item;
-			})
-			.iterator();
+			});
+
+		// Apply paging - skip to lower bounds
+		if (lowerBound != null) {
+			stream = stream.skip(lowerBound);
+		}
+
+		visibleItems = stream.map(item -> {
+			// Only add elements to the list if those elements are part of selected the page
+			long elementsInPage = pageCounter.get();
+			if (lowerBound == null || elementsInPage < perPage) {
+				elementsOfPage.add(item);
+				pageCounter.incrementAndGet();
+			} else {
+				pageFull.set(true);
+				hasNextPage.set(true);
+			}
+			return item;
+		}).iterator();
 	}
 
 }

@@ -74,7 +74,7 @@ public abstract class AbstractTypeProvider {
 		arguments.add(newArgument().name("page").defaultValue(1L).description("Page to be selected").type(GraphQLLong).build());
 
 		// #perPage
-		arguments.add(newArgument().name("perPage").defaultValue(25).description("Max count of elements per page").type(GraphQLInt).build());
+		arguments.add(newArgument().name("perPage").description("Max count of elements per page").type(GraphQLLong).build());
 		return arguments;
 	}
 
@@ -352,7 +352,7 @@ public abstract class AbstractTypeProvider {
 		if (page != null) {
 			parameters.setPage(page);
 		}
-		Integer perPage = env.getArgument("perPage");
+		Long perPage = env.getArgument("perPage");
 		if (perPage != null) {
 			parameters.setPerPage(perPage);
 		}

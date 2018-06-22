@@ -22,7 +22,7 @@ public class WrappedPageImpl<T> implements Page<T> {
 	}
 
 	@Override
-	public int getPerPage() {
+	public Long getPerPage() {
 		return wrappedPage.getPerPage();
 	}
 

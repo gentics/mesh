@@ -11,6 +11,8 @@
 = Gentics Mesh Changelog
 
 
+
+
 [[v0.22.0]]
 == 0.22.0 (TBD)
 
@@ -27,6 +29,8 @@ icon:plus[] Elasticsearch: The base64 encoded binary document data will no longe
 icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.
 
 icon:check[] Core: Increased performance for webroot endpoint.
+
+CAUTION: The default value of `25` for the `perPage` parameter has been removed. By default all elements will be returned and no paging will be applied.
 
 [[v0.21.2]]
 == 0.21.2 (13.06.2018)

@@ -76,7 +76,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
-			for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
+			for (long i = 1; i <= expectedMicroschemaContainers + 1; i++) {
 				Page<? extends MicroschemaContainer> page = boot().microschemaContainerRoot().findAll(ac, new PagingParametersImpl(1, i));
 
 				assertEquals(microschemaContainers().size(), page.getTotalElements());

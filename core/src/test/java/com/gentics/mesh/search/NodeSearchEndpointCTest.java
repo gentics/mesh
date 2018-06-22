@@ -89,7 +89,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
-			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
@@ -109,7 +109,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
-			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("No results should be found since the raw field was not added to the teaser schema field", 0, response.getData().size());
 	}
 
@@ -122,7 +122,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		addRawToSchemaField();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
-			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 	}
 
@@ -144,7 +144,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		});
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
-			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 	}
 
@@ -174,7 +174,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		String nodeUuid = db().tx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 
 		NodeUpdateRequest update = new NodeUpdateRequest();
@@ -184,11 +184,11 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new PagingParametersImpl().setPage(1)
-			.setPerPage(2), new VersioningParametersImpl().draft()));
+			.setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newPlain), new PagingParametersImpl().setPage(1)
-			.setPerPage(2), new VersioningParametersImpl().draft()));
+			.setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for '" + newPlain + "' after update", 1, response.getData().size());
 	}
 
@@ -202,7 +202,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		String nodeUuid = db().tx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-			new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 
 		NodeUpdateRequest update = new NodeUpdateRequest();
@@ -212,11 +212,11 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new PagingParametersImpl().setPage(1)
-			.setPerPage(2), new VersioningParametersImpl().draft()));
+			.setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newString), new PagingParametersImpl().setPage(1)
-			.setPerPage(2), new VersioningParametersImpl().draft()));
+			.setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for '" + newString + "' after update", 1, response.getData().size());
 	}
 
@@ -228,7 +228,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"),
 			new PagingParametersImpl().setPage(1)
-				.setPerPage(2),
+				.setPerPage(2L),
 			new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de", "en"), new VersioningParametersImpl()
 				.draft()));
 		assertEquals(1, response.getData().size());
@@ -246,7 +246,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
-			.setPage(1).setPerPage(2), new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
+			.setPage(1).setPerPage(2L), new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {

@@ -69,7 +69,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			root.findAll(mockActionContext(), new PagingParametersImpl(1, 10));
+			root.findAll(mockActionContext(), new PagingParametersImpl(1, 10L));
 		}
 	}
 
