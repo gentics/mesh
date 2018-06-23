@@ -1,7 +1,8 @@
 package com.gentics.mesh.jmh;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -27,14 +28,60 @@ public class JMHContainer extends GenericContainer<JMHContainer> {
 
 	private String name;
 
-	public static LazyFuture<String> prepareDockerImage() {
+	public static LazyFuture<String> prepareDockerImage(String mavenVersion) {
 		ImageFromDockerfile dockerImage = new ImageFromDockerfile("jmh-container", true);
 		dockerImage.withDockerfileFromBuilder(builder -> {
-			builder.from("maven:3.5-jdk-9")
+			builder.from("maven:" + mavenVersion)
 				.add(".", "/maven")
 				.workDir("/maven")
 				.build();
-		}).withFileFromFile("/", new File(".."));
+		});
+
+		try {
+			Files.walk(Paths.get(".."))
+				.filter(Files::isRegularFile)
+				.filter(f -> !f.toString().contains("/target/"))
+				.filter(f -> !f.toString().contains("/services/image-imgscalr/src/test/resources"))
+				.filter(f -> !f.toString().contains("/elasticsearch/src/main/resources"))
+				.filter(f -> !f.toString().contains("/databases/orientdb/src/main/resources"))
+				.filter(f -> !f.toString().contains("/common/src/main/resources/"))
+				.filter(f -> !f.toString().contains("/verticles/graphql/src/main/resources/"))
+				.filter(f -> !f.toString().contains("/core/src/test/resources"))
+				.filter(f -> !f.toString().contains("/demo/src/main/resources"))
+				.filter(f -> !f.toString().contains("/doc/src/main/docs/"))
+				.filter(f -> !f.toString().contains("/doc/src/main/resources/"))
+				.filter(f -> !f.toString().contains("/server/elasticsearch/"))
+				.filter(f -> !f.toString().contains("/demo/elasticsearch/"))
+				.filter(f -> !f.toString().startsWith("../core/plugins/"))
+				.filter(f -> !f.toString().startsWith("../demo/data/"))
+				.filter(f -> !f.toString().startsWith("../server/data/"))
+				.filter(f -> !f.toString().startsWith("../core/data/"))
+				.filter(f -> !f.toString().contains("/.testcontainers"))
+				.filter(f -> !f.toString().contains("/.project"))
+				.filter(f -> !f.toString().contains("/.git/"))
+				.filter(f -> !f.toString().contains("/.github"))
+				.filter(f -> !f.toString().contains("/.idea"))
+				.filter(f -> !f.toString().contains("/.classpath"))
+				.filter(f -> !f.toString().contains("/.settings"))
+				.filter(f -> !f.toString().contains("/.travis"))
+				.filter(f -> !f.toString().contains("/.jenkins"))
+				.filter(f -> !f.toString().contains("/Jenkinsfile"))
+				.filter(f -> !f.toString().contains("/.gitignore"))
+				.filter(f -> !f.toString().contains("/.factorypath"))
+				.filter(f -> !f.toString().contains("/.dockerignore"))
+				.filter(f -> !f.toString().contains("/.gitattributes"))
+				.filter(f -> !f.toString().endsWith(".iml"))
+				.filter(f -> !f.toString().endsWith(".bak"))
+				.filter(f -> !f.toString().endsWith(".orig"))
+				.forEach(file -> {
+					String path = file.toString();
+					path = path.substring(2);
+					dockerImage.withFileFromFile(path, file.toFile());
+				});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		return dockerImage;
 	}
 
@@ -43,9 +90,11 @@ public class JMHContainer extends GenericContainer<JMHContainer> {
 	 * 
 	 * @param name
 	 *            Name of the benchmark run
+	 * @param mavenVersion
+	 * 
 	 */
-	public JMHContainer(String name) {
-		super(prepareDockerImage());
+	public JMHContainer(String name, String mavenVersion) {
+		super(prepareDockerImage(mavenVersion));
 		setWaitStrategy(Wait.forLogMessage("SUCCESS", 1));
 		this.name = name;
 	}
@@ -55,7 +104,7 @@ public class JMHContainer extends GenericContainer<JMHContainer> {
 		withStartupTimeout(Duration.ofMinutes(15));
 		withWorkingDirectory("/maven");
 		// 20 Seconds is enough to potentially download the result files.
-		withCommand("bash", "-c", "mvn -B -Djmh.name=" + name + " test-compile exec:exec && sleep 20");
+		withCommand("bash", "-c", "mvn -B -Djmh.name=" + name + " -Djmh.skip=false test-compile -pl '!demo,!doc,!server' && sleep 20");
 		setStartupAttempts(1);
 		waitingFor(new NoWaitStrategy());
 		setLogConsumers(Arrays.asList(logConsumer, buildLock));

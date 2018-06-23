@@ -20,6 +20,7 @@
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 		<projectRoot>${project.basedir}/..</projectRoot>
 		<jmh.version>1.21</jmh.version>
+		<mh.skip>true</mh.skip>
 	</properties>
 
 	<dependencies>
@@ -61,23 +62,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
-				<configuration>
-					<executable>java</executable>
-					<arguments>
-						<argument>-classpath</argument>
-						<classpath />
-						<argument>com.gentics.mesh.jmh.JMHRunner</argument>
-						<argument>${jmh.name}</argument>
-					</arguments>
-					<addResourcesToClasspath>true</addResourcesToClasspath>
-					<includeProjectDependencies>true</includeProjectDependencies>
-					<classpathScope>test</classpathScope>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
@@ -90,7 +74,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<!-- 
 					<release>8</release>
+					 -->
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -100,6 +86,33 @@
 						<optional>true</optional>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<?m2e ignore ?>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>test-compile</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<skip>${jmh.skip}</skip>
+					<executable>java</executable>
+					<arguments>
+						<argument>-classpath</argument>
+						<classpath />
+						<argument>com.gentics.mesh.jmh.JMHRunner</argument>
+						<argument>${jmh.name}</argument>
+					</arguments>
+					<addResourcesToClasspath>true</addResourcesToClasspath>
+					<includeProjectDependencies>true</includeProjectDependencies>
+					<classpathScope>test</classpathScope>
+				</configuration>
 			</plugin>
 		</plugins>
 
