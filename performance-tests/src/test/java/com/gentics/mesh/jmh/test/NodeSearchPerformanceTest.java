@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.node;
+package com.gentics.mesh.jmh.test;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;

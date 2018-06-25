@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.node;
+package com.gentics.mesh.jmh.test;
 
 import java.io.IOException;
 

@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 
-import com.gentics.mesh.core.node.MyBenchmark;
+import com.gentics.mesh.jmh.test.MyBenchmark;
 
 public class JMHRunner extends AbstractJMHRunner {
 

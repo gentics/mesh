@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.node;
+package com.gentics.mesh.jmh.test;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;

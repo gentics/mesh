@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.node;
+package com.gentics.mesh.jmh.test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
