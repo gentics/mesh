@@ -122,4 +122,9 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	public void clear() {
 	}
 
+	@Override
+	public int size() {
+		return 0;
+	}
+
 }

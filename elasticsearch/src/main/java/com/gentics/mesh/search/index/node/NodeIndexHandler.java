@@ -32,6 +32,8 @@ import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
+import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
@@ -509,6 +511,33 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String releaseUuid = context.getReleaseUuid();
 		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
 			releaseUuid, type));
+	}
+
+	public Observable<? extends BulkEntry> moveForBulk(MoveDocumentEntry entry) {
+		MoveEntryContext context = entry.getContext();
+		ContainerType type = context.getContainerType();
+		String releaseUuid = context.getReleaseUuid();
+
+		NodeGraphFieldContainer oldContainer = context.getOldContainer();
+		String oldProjectUuid = oldContainer.getParentNode().getProject().getUuid();
+		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
+			oldContainer.getSchemaContainerVersion().getUuid(),
+			type);
+		String oldLanguageTag = oldContainer.getLanguage().getLanguageTag();
+		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
+		DeleteBulkEntry deleteEntry = new DeleteBulkEntry(oldIndexName, oldDocumentId);
+
+		NodeGraphFieldContainer newContainer = context.getNewContainer();
+		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
+		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
+			newContainer.getSchemaContainerVersion().getUuid(),
+			type);
+		String newLanguageTag = newContainer.getLanguage().getLanguageTag();
+		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
+		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
+		IndexBulkEntry addEntry = new IndexBulkEntry(newIndexName, newDocumentId, doc, searchProvider.hasIngestPipelinePlugin());
+
+		return Observable.fromArray(addEntry, deleteEntry);
 	}
 
 	/**
