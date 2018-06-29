@@ -11,15 +11,17 @@
 = Gentics Mesh Changelog
 
 [[v0.21.4]]
-== 0.21.4 (TBD)
+== 0.21.4 (29.06.2018)
 
 icon:plus[] Migration: Segment path conflicts will now automatically be resolved during the node migration. Information about actions taken can be found within the response of the job migration.
 
 icon:plus[] Migration: The node migration performance has been greatly enhanced.
 
 icon:check[] Elasticsearch: Start up of Gentics Mesh will now fail early if the embedded Elasticsearch server can't be started. link:https://github.com/gentics/mesh/issues/445[#445]
+
 icon:check[] Elasticsearch: The error logging has been enhanced. More detailed information will be logged if an index can't be created.
-icon:check[] UI: Fixed potential encoding issues in the UI on systems which are not using the UTF-8 default charset.
+
+icon:check[] UI: Fixed potential encoding issues in the UI on systems which are not using the UTF-8 default character set.
 
 [[v0.21.3]]
 == 0.21.3 (19.06.2018)
