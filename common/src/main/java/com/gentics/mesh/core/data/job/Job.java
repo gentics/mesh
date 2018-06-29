@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.util.DateUtils;
 
 /**
@@ -31,6 +32,8 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	String STATUS_PROPERTY_KEY = "status";
 
 	String NODE_NAME_PROPERTY_KEY = "nodeName";
+
+	String WARNING_PROPERTY_KEY = "warnings";
 
 	/**
 	 * The max length before detail error messages will be truncated
@@ -297,5 +300,17 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 		String nodeName = Mesh.mesh().getOptions().getNodeName();
 		setNodeName(nodeName);
 	}
+
+	/**
+	 * Return the stored warnings.
+	 * @return
+	 */
+	JobWarningList getWarnings();
+
+	/**
+	 * Set the list of warnings.
+	 * @param warning
+	 */
+	void setWarnings(JobWarningList warnings);
 
 }

@@ -605,6 +605,15 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	String getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
+	 * Update the path segment and increment any found postfix number.
+	 * 
+	 * @param releaseUuid
+	 * @param type
+	 * @param languageTag
+	 */
+	void postfixPathSegment(String releaseUuid, ContainerType type, String languageTag);
+
+	/**
 	 * Delete the node from the given release. This will also delete children from the release.
 	 * 
 	 * If the node is deleted from its last release, it is (permanently) deleted from the db

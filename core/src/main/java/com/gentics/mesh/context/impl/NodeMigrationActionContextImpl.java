@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -55,6 +56,8 @@ import io.reactivex.Single;
 public class NodeMigrationActionContextImpl extends AbstractInternalActionContext {
 
 	private Map<String, Object> data;
+
+	private Set<ConflictWarning> conflicts = new HashSet<>();
 
 	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
 
@@ -915,6 +918,24 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void setWebrootResponseType(String type) {
 		// Not supported
+	}
+
+	/**
+	 * Add the encountered conflict info to the context.
+	 * 
+	 * @param info
+	 */
+	public void addConflictInfo(ConflictWarning info) {
+		conflicts.add(info);
+	}
+
+	/**
+	 * Get the set of encountered conflicts.
+	 * 
+	 * @return
+	 */
+	public Set<ConflictWarning> getConflicts() {
+		return conflicts;
 	}
 
 }
