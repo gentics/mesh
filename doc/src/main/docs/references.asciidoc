@@ -125,3 +125,14 @@ If-None-Match:W/"1125-7cc5c6fb"
 Gentics Mesh will compare the provided ETag with the current state of the content and return a 304 response if the ETag is the same and the response did not change. Updating the requested resource will alter its ETag and thus another request would return the response which includes the current ETag.
 
 //=== Error Codes
+
+== Using the API RAML Documentation in other Tools
+Gentics Mesh provides the `/raml` endpoint to easily extract the API documentation into third party tools.
+
+Here is a quick guide to import the API into link:https://www.getpostman.com/[Postman]:
+
+* Once the Postman app is started go to "Import" > "Import from Link"
+* Input the URL to the `/raml` endpoint of your Mesh instance.
+* You can also try https://demo.getmesh.io/api/v1/raml to get it form our demo
+
+TIP: Make use of the params and workspace parameters to maximize your productiviy. Check out the link:https://www.getpostman.com/docs/v6/postman/sending_api_requests/requests#url[Postman documentation about URL setup] for more.
