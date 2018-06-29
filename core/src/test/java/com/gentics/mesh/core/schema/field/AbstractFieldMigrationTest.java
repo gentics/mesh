@@ -15,6 +15,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
@@ -155,7 +156,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -316,7 +317,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -489,7 +490,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
@@ -669,7 +670,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -827,7 +828,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 	}
 
 	/**

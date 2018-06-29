@@ -169,6 +169,23 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return null;
 	}
 
+	
+	@Override
+	public void postfixPathSegment(String releaseUuid, ContainerType type, String  languageTag) {
+
+		// Check whether this node is the base node.
+		if (getParentNode(releaseUuid) == null) {
+			return;
+		}
+
+		// Find the first matching container and fallback to other listed languages
+		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, releaseUuid, type);
+		if (container != null) {
+			container.postfixSegmentFieldValue();
+		}
+	}
+
+	
 	@Override
 	public String getPath(ActionContext ac, String releaseUuid, ContainerType type, String... languageTag) {
 		// We want to avoid rending the path again for nodes which we have already handled.

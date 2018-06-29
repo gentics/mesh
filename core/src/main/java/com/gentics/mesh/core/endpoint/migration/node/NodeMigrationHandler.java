@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -66,7 +67,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            status handler which will be used to track the progress
 	 * @return Completable which is completed once the migration finishes
 	 */
-	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
 		MigrationStatusHandler status) {
 
 		// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
@@ -82,7 +83,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			return Completable.error(e);
 		}
 
-		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
 		ac.setRelease(release);
 
@@ -140,7 +140,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 			result = Completable.error(new CompositeException(errorsDetected));
 		}
-
 		return result;
 	}
 
@@ -193,7 +192,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				}
 
 				// 2. Migrate the draft container. This will also update the draft edge.
-				migrateDraftContainer(ac, batch, release, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
+				migrateDraftContainer(ac, batch, release, node, container, toVersion, touchedFields, migrationScripts, newSchema,
+					nextDraftVersion);
 			});
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
@@ -219,7 +219,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @param migrationScripts
 	 * @param newSchema
-	 *            new schema used to serialize the rest model
+	 *            new schema used to serialize the REST model
 	 * @param nextDraftVersion
 	 *            Suggested new draft version
 	 * @throws Exception

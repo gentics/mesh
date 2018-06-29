@@ -144,7 +144,8 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Delete the field container. This will also delete linked elements like lists.
 	 * 
 	 * @param batch
-	 * @param deleteNext true to also delete all "next" containers, false to only delete this container
+	 * @param deleteNext
+	 *            true to also delete all "next" containers, false to only delete this container
 	 */
 	void delete(SearchQueueBatch batch, boolean deleteNext);
 
@@ -183,12 +184,24 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found.
 	 * 
+	 * @param ac
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
-	void updateWebrootPathInfo(String releaseUuid, String conflictI18n);
+	void updateWebrootPathInfo(InternalActionContext ac, String releaseUuid, String conflictI18n);
+
+	/**
+	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 * 
+	 * @param releaseUuid
+	 * @param conflictI18n
+	 */
+	default void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
+		updateWebrootPathInfo(null, releaseUuid, conflictI18n);
+	}
 
 	/**
 	 * Get the Version Number or null if no version set.
@@ -248,8 +261,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void clone(NodeGraphFieldContainer container);
 
 	/**
-	 * Check whether this field container is the initial version for any
-	 * release.
+	 * Check whether this field container is the initial version for any release.
 	 * 
 	 * @return true if it is the initial, false if not
 	 */
@@ -284,8 +296,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	boolean isType(ContainerType type);
 
 	/**
-	 * Check whether this field container is the initial version for the given
-	 * release.
+	 * Check whether this field container is the initial version for the given release.
 	 * 
 	 * @param releaseUuid
 	 *            release Uuid
@@ -397,6 +408,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return Determined segment field value or null if no segment field was specified or yet set
 	 */
 	String getSegmentFieldValue();
+
+	/**
+	 * Update the current segment field and increment any found postfix number.
+	 */
+	void postfixSegmentFieldValue();
 
 	/**
 	 * Return the URL field values for the container.
