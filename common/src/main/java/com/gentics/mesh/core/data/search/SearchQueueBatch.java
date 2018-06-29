@@ -276,4 +276,9 @@ public interface SearchQueueBatch {
 	 */
 	SearchQueueBatch updatePermissions(IndexableElement element);
 
+	/**
+	 * Return the current size of the batch.
+	 */
+	int size();
+
 }

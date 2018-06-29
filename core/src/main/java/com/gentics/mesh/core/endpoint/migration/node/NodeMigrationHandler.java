@@ -96,9 +96,14 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
+		SearchQueueBatch sqb = null;
 		while (fieldContainers.hasNext()) {
 			NodeGraphFieldContainer container = fieldContainers.next();
-			migrateContainer(ac, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
+			// Create a new SQB to handle the ES update
+			if (sqb == null) {
+				sqb = searchQueue.create();
+			}
+			migrateContainer(ac, sqb, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
 
 			if (status != null) {
 				status.incCompleted();
@@ -109,8 +114,20 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					status.commit();
 				}
 			}
+			if (count % 500 == 0) {
+				// Process the batch and reset it
+				log.info("Syncing batch with size: " + sqb.size());
+				sqb.processSync();
+				sqb = null;
+			}
 			count++;
 		}
+		if (sqb != null) {
+			log.info("Syncing last batch with size: " + sqb.size());
+			sqb.processSync();
+			sqb = null;
+		}
+
 		log.info("Migration of " + count + " containers done..");
 		log.info("Encountered {" + errorsDetected.size() + "} errors during node migration.");
 		// TODO prepare errors. They should be easy to understand and to grasp
@@ -131,6 +148,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * Migrates the given container.
 	 * 
 	 * @param ac
+	 * @param batch
 	 * @param container
 	 *            Container to be migrated
 	 * @param toVersion
@@ -141,7 +159,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @return
 	 */
-	private void migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, SchemaContainerVersion toVersion,
+	private void migrateContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, NodeGraphFieldContainer container,
+		SchemaContainerVersion toVersion,
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release, SchemaModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
@@ -150,8 +169,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		}
 		try {
 			// Run the actual migration in a dedicated transaction
-			SearchQueueBatch batch = db.tx((tx) -> {
-				SearchQueueBatch sqb = searchQueue.create();
+			db.tx((tx) -> {
 
 				Node node = container.getParentNode();
 				String languageTag = container.getLanguage().getLanguageTag();
@@ -166,7 +184,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					boolean hasSameOldSchemaVersion = container != null
 						&& container.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
 					if (hasSameOldSchemaVersion) {
-						nextDraftVersion = migratePublishedContainer(ac, sqb, release, node, oldPublished, toVersion, touchedFields, migrationScripts,
+						nextDraftVersion = migratePublishedContainer(ac, batch, release, node, oldPublished, toVersion, touchedFields,
+							migrationScripts,
 							newSchema);
 						nextDraftVersion = nextDraftVersion.nextDraft();
 					}
@@ -174,14 +193,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				}
 
 				// 2. Migrate the draft container. This will also update the draft edge.
-				migrateDraftContainer(ac, sqb, release, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
-
-				return sqb;
+				migrateDraftContainer(ac, batch, release, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
 			});
-			// Process the search queue batch in order to update the search index
-			if (batch != null) {
-				batch.processSync();
-			}
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
 				+ "} during schema migration.", e1);

@@ -93,7 +93,6 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 		default:
 			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
 		}
-
 	}
 
 	@Override

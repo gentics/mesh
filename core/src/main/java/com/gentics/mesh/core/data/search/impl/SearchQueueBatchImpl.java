@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -249,22 +250,22 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return Completable.defer(() -> {
 			Completable obs = Completable.complete();
 
-			List<? extends SearchQueueEntry> nonStoreEntries = getEntries()
+			List<? extends SearchQueueEntry> nonBulkEntries = getEntries()
 				.stream()
-				.filter(i -> i.getElementAction() != STORE_ACTION)
+				.filter(i -> !i.isBulkable())
 				.collect(Collectors.toList());
 
-			List<? extends SearchQueueEntry> storeEntries = getEntries()
+			List<? extends SearchQueueEntry> bulkEntries = getEntries()
 				.stream()
-				.filter(i -> i.getElementAction() == STORE_ACTION)
+				.filter(i -> i.isBulkable())
 				.collect(Collectors.toList());
 
-			if (!nonStoreEntries.isEmpty()) {
-				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
+			if (!nonBulkEntries.isEmpty()) {
+				obs = Completable.concat(nonBulkEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
 			}
 			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
-			if (!storeEntries.isEmpty()) {
-				Observable<BulkEntry> bulks = Observable.fromIterable(storeEntries)
+			if (!bulkEntries.isEmpty()) {
+				Observable<BulkEntry> bulks = Observable.fromIterable(bulkEntries)
 					.flatMap(SearchQueueEntry::processForBulk);
 
 				AtomicLong counter = new AtomicLong();
@@ -308,6 +309,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	@Override
 	public void clear() {
 		entries.clear();
+	}
+
+	@Override
+	public int size() {
+		return entries.size();
 	}
 
 }
