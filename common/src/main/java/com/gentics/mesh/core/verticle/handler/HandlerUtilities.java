@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
@@ -133,6 +134,7 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
 		AtomicBoolean created = new AtomicBoolean(false);
+		GenericParameters genericParameters = ac.getGenericParameters();
 		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 
@@ -155,9 +157,13 @@ public class HandlerUtilities {
 					boolean updated = updateElement.update(ac, batch);
 					return Tuple.tuple(updated, batch);
 				});
+
+				RM model = null;
 				SearchQueueBatch b = tuple.v2();
 				Boolean isUpdated = tuple.v1();
-				RestModel model = updateElement.transformToRestSync(ac, 0);
+				if (!genericParameters.getOmitResponse()) {
+					model = updateElement.transformToRestSync(ac, 0);
+				}
 				info = new ResultInfo(model, b);
 				if (isUpdated) {
 					updateElement.onUpdated();
@@ -170,13 +176,15 @@ public class HandlerUtilities {
 				});
 				SearchQueueBatch b = tuple.v2();
 				T createdElement = tuple.v1();
-				RM model = createdElement.transformToRestSync(ac, 0);
+				RM model = null;
+				if (!genericParameters.getOmitResponse()) {
+					model = createdElement.transformToRestSync(ac, 0);
+				}
 				String path = createdElement.getAPIPath(ac);
 				info = new ResultInfo(model, b);
 				info.setProperty("path", path);
-				// String path = info.getProperty("path");
-				ac.setLocation(path);
 				createdElement.onCreated();
+				ac.setLocation(path);
 			}
 
 			// 3. The updating transaction has succeeded. Now lets store it in the index
@@ -185,7 +193,13 @@ public class HandlerUtilities {
 				info2.getBatch().processSync();
 				return info2.getModel();
 			});
-		}, model -> ac.send(model, created.get() ? CREATED : OK));
+		}, model -> {
+			if (model == null) {
+				ac.send(created.get() ? CREATED : OK);
+			} else {
+				ac.send(model, created.get() ? CREATED : OK);
+			}
+		});
 	}
 
 	/**

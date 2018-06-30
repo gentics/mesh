@@ -1524,7 +1524,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "error_language_not_set");
 		}
-		Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(requestModel.getLanguage());
+
+		// Set the language tag parameter here in order to return the updated language in the response
+		String languageTag = requestModel.getLanguage();
+		NodeParameters nodeParameters = ac.getNodeParameters();
+		nodeParameters.setLanguages(languageTag);
+
+		Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(languageTag);
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}
