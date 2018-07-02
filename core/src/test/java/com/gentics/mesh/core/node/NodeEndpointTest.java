@@ -1,5 +1,58 @@
 package com.gentics.mesh.core.node;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.WebRootResponse;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -22,7 +75,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -30,59 +82,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.util.UUIDUtil;
-import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -1409,9 +1408,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de"),
 			new VersioningParametersImpl().setVersion("draft")));
 
+
+		List<NodeReference> breadcrumb = response.getBreadcrumb();
 		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", response.getBreadcrumb().getFirst().getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0", response.getBreadcrumb().getLast().getPath());
+		assertEquals("/api/v1/dummy/webroot/", breadcrumb.get(0).getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0", breadcrumb.get(1).getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", breadcrumb.get(2).getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", breadcrumb.get(3).getPath());
 
 	}
 
@@ -1421,22 +1424,30 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = content("news_2014");
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setResolveLinks(
 				LinkType.FULL), new VersioningParametersImpl().draft()));
-			assertTrue(response.getBreadcrumb().getFirst().getUuid().equals(folder("2014").getUuid()));
-			assertTrue(response.getBreadcrumb().getFirst().getDisplayName().equals("2014"));
-			assertTrue(response.getBreadcrumb().getLast().getUuid().equals(folder("news").getUuid()));
-			assertTrue(response.getBreadcrumb().getLast().getDisplayName().equals("News"));
-			assertEquals("/api/v1/dummy/webroot/News/2014", response.getBreadcrumb().getFirst().getPath());
-			assertEquals("/api/v1/dummy/webroot/News", response.getBreadcrumb().getLast().getPath());
-			assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
+			assertNull(response.getBreadcrumb().get(0).getDisplayName());
+			assertEquals(response.getBreadcrumb().get(1).getUuid(), folder("news").getUuid());
+			assertEquals("News", response.getBreadcrumb().get(1).getDisplayName());
+			assertEquals(response.getBreadcrumb().get(2).getUuid(), folder("2014").getUuid());
+			assertEquals("2014", response.getBreadcrumb().get(2).getDisplayName());
+			assertEquals(response.getBreadcrumb().get(3).getUuid(), node.getUuid());
+			assertEquals("News_2014 english title", response.getBreadcrumb().get(3).getDisplayName());
+			assertEquals("/api/v1/dummy/webroot/", response.getBreadcrumb().get(0).getPath());
+			assertEquals("/api/v1/dummy/webroot/News", response.getBreadcrumb().get(1).getPath());
+			assertEquals("/api/v1/dummy/webroot/News/2014", response.getBreadcrumb().get(2).getPath());
+			assertEquals("/api/v1/dummy/webroot/News/2014/News_2014.en.html", response.getBreadcrumb().get(3).getPath());
+			assertEquals("Only four items should be listed in the breadcrumb", 4, response.getBreadcrumb().size());
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
-			assertTrue(response.getBreadcrumb().getFirst().getUuid().equals(folder("2014").getUuid()));
-			assertTrue(response.getBreadcrumb().getFirst().getDisplayName().equals("2014"));
-			assertTrue(response.getBreadcrumb().getLast().getUuid().equals(folder("news").getUuid()));
-			assertTrue(response.getBreadcrumb().getLast().getDisplayName().equals("News"));
-			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().getFirst().getPath());
-			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().getLast().getPath());
-			assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
+			assertNull(response.getBreadcrumb().get(0).getDisplayName());
+			assertEquals(response.getBreadcrumb().get(1).getUuid(), folder("news").getUuid());
+			assertEquals("News", response.getBreadcrumb().get(1).getDisplayName());
+			assertEquals(response.getBreadcrumb().get(2).getUuid(), folder("2014").getUuid());
+			assertEquals("2014", response.getBreadcrumb().get(2).getDisplayName());
+			assertEquals(response.getBreadcrumb().get(3).getUuid(), response.getUuid());
+			assertEquals("News_2014 english title", response.getBreadcrumb().get(3).getDisplayName());
+			response.getBreadcrumb().forEach(element ->
+				assertNull("No path should be rendered since by default the linkType is OFF", element.getPath()));
+			assertEquals("Only 4 items should be listed in the breadcrumb", 4, response.getBreadcrumb().size());
 		}
 	}
 
@@ -1987,4 +1998,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 	}
 
+	@Test
+	public void testRootNodeBreadcrumb() {
+		WebRootResponse node = client().webroot(PROJECT_NAME, "/").toSingle().blockingGet();
+		List<NodeReference> breadcrumb = node.getNodeResponse().getBreadcrumb();
+		assertEquals(1, breadcrumb.size());
+		assertEquals(node.getNodeResponse().getUuid(), breadcrumb.get(0).getUuid());
+	}
 }

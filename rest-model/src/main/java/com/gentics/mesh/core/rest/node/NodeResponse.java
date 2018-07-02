@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -23,6 +16,11 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.NodeParameters;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * POJO for the node rest response model.
@@ -89,7 +87,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.")
-	private Deque<NodeReference> breadcrumb = new ArrayDeque<>();
+	private List<NodeReference> breadcrumb = new ArrayList<>();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Version of the node content.")
@@ -325,7 +323,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public Deque<NodeReference> getBreadcrumb() {
+	public List<NodeReference> getBreadcrumb() {
 		return breadcrumb;
 	}
 
@@ -335,7 +333,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @param breadcrumb
 	 * @return Fluent API
 	 */
-	public NodeResponse setBreadcrumb(Deque<NodeReference> breadcrumb) {
+	public NodeResponse setBreadcrumb(List<NodeReference> breadcrumb) {
 		this.breadcrumb = breadcrumb;
 		return this;
 	}

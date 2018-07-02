@@ -74,15 +74,24 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
 {
   "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
   "creator" : {
-    "uuid" : "a93e95f316114659be95f31611265997"
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a"
   },
-  "created" : "2017-05-29T09:56:16Z",
+  "created" : "2018-02-23T16:30:44Z",
   "editor" : {
-    "uuid" : "a93e95f316114659be95f31611265997"
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a"
   },
-  "edited" : "2017-05-29T09:56:22Z",
+  "edited" : "2018-03-16T15:28:04Z",
   "language" : "en",
-  "availableLanguages" : [ "en" ],
+  "availableLanguages" : {
+    "en" : {
+      "published" : true,
+      "version" : "3.0",
+      "publisher" : {
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
+      },
+      "publishDate" : "2018-03-16T15:28:04Z"
+    }
+  },
   "languagePaths" : {
     "en" : "/automobiles/ford-gt"
   },
@@ -117,16 +126,17 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
   "schema" : {
     "name" : "vehicle",
     "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
-    "version" : 1
+    "version" : "3.0"
   },
   "container" : false,
   "displayField" : "name",
+  "displayName" : "Ford GT",
   "fields" : {
     "slug" : "ford-gt",
     "name" : "Ford GT",
     "weight" : 1520,
     "SKU" : 1,
-    "price" : 139995,
+    "price" : 4.1E49,
     "stocklevel" : 20,
     "description" : "The Ford GT is an American mid-engine two-seater sports car that was produced by Ford for the 2005 through 2006 model years.",
     "vehicleImage" : {
@@ -135,10 +145,19 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
       "languagePaths" : {
         "en" : "/images/ford-gt.jpg"
       }
-    }
+    },
+    "somedate" : "2018-03-16T11:05:00Z"
   },
   "path" : "/automobiles/ford-gt",
   "breadcrumb" : [ {
+    "projectName" : "demo",
+    "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+    "path" : "/",
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "3021de5632e94fe8a1de5632e95fe87c"
+    }
+  }, {
     "projectName" : "demo",
     "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
     "displayName" : "Automobiles",
@@ -147,18 +166,24 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
       "name" : "category",
       "uuid" : "2ca2362b041247c4a2362b041227c4da"
     }
+  }, {
+    "projectName" : "demo",
+    "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
+    "displayName" : "Ford GT",
+    "path" : "/automobiles/ford-gt",
+    "schema" : {
+      "name" : "vehicle",
+      "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de"
+    }
   } ],
-  "version" : {
-    "uuid" : "677bf76c8c624e2fbbf76c8c62be2fa0",
-    "number" : "1.0"
-  },
+  "version" : "3.1",
   "permissions" : {
     "create" : false,
     "read" : true,
     "update" : false,
     "delete" : false,
     "publish" : false,
-    "readPublished" : false
+    "readPublished" : true
   }
 }
 ----
@@ -206,24 +231,33 @@ The same can be achieved using the node specific navigation endpoint. In this ca
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navigation?resolveLinks=short&maxDepth=1
+https://demo.getmesh.io/api/v1/demo/nodes/688f7beae8d240bf8f7beae8d2a0bf2e/navigation?resolveLinks=short&maxDepth=1
 
 [source,json]
 ----
 {
-  "uuid" : "72dbee3975054fce9bee397505cfcec5",
+  "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
   "node" : {
-    "uuid" : "72dbee3975054fce9bee397505cfcec5",
+    "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
     "creator" : {
-      "uuid" : "a93e95f316114659be95f31611265997"
+      "uuid" : "e5861ba26b914b21861ba26b91ab211a"
     },
-    "created" : "2017-05-29T09:55:43Z",
+    "created" : "2018-07-02T10:48:53Z",
     "editor" : {
-      "uuid" : "a93e95f316114659be95f31611265997"
+      "uuid" : "e5861ba26b914b21861ba26b91ab211a"
     },
-    "edited" : "2017-05-29T09:56:22Z",
+    "edited" : "2018-07-02T10:49:13Z",
     "language" : "en",
-    "availableLanguages" : [ "en" ],
+    "availableLanguages" : {
+      "en" : {
+        "published" : true,
+        "version" : "1.0",
+        "publisher" : {
+          "uuid" : "e5861ba26b914b21861ba26b91ab211a"
+        },
+        "publishDate" : "2018-07-02T10:49:13Z"
+      }
+    },
     "languagePaths" : {
       "en" : "/"
     },
@@ -234,7 +268,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
     },
     "childrenInfo" : {
       "folder" : {
-        "schemaUuid" : "5cc780af998c4d228780af998ccd2240",
+        "schemaUuid" : "839ef8b50bf9493e9ef8b50bf9e93e24",
         "count" : 1
       },
       "category" : {
@@ -244,25 +278,30 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
     },
     "schema" : {
       "name" : "folder",
-      "uuid" : "5cc780af998c4d228780af998ccd2240",
-      "version" : 1
+      "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24",
+      "version" : "1.0"
     },
     "container" : true,
     "displayField" : "name",
     "fields" : { },
     "path" : "/",
-    "breadcrumb" : [ ],
-    "version" : {
-      "uuid" : "df10370c82be422290370c82be62229f",
-      "number" : "1.0"
-    },
+    "breadcrumb" : [ {
+      "projectName" : "demo",
+      "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+      "path" : "/",
+      "schema" : {
+        "name" : "folder",
+        "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
+      }
+    } ],
+    "version" : "1.0",
     "permissions" : {
       "create" : false,
       "read" : true,
       "update" : false,
       "delete" : false,
       "publish" : false,
-      "readPublished" : false
+      "readPublished" : true
     }
   },
   "children" : [ {
@@ -270,25 +309,34 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
     "node" : {
       "uuid" : "15d5ef7a9abf416d95ef7a9abf316d68",
       "creator" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "created" : "2017-05-29T09:56:10Z",
+      "created" : "2018-07-02T10:49:04Z",
       "editor" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "edited" : "2017-05-29T09:56:22Z",
+      "edited" : "2018-07-02T10:49:13Z",
       "language" : "en",
-      "availableLanguages" : [ "en" ],
+      "availableLanguages" : {
+        "en" : {
+          "published" : true,
+          "version" : "1.0",
+          "publisher" : {
+            "uuid" : "e5861ba26b914b21861ba26b91ab211a"
+          },
+          "publishDate" : "2018-07-02T10:49:13Z"
+        }
+      },
       "languagePaths" : {
         "en" : "/images"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "5cc780af998c4d228780af998ccd2240"
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
         }
       },
       "tags" : [ ],
@@ -299,33 +347,48 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
       "childrenInfo" : {
         "vehicleImage" : {
           "schemaUuid" : "b12272150db4490ea272150db4190e72",
-          "count" : 10
+          "count" : 11
         }
       },
       "schema" : {
         "name" : "folder",
-        "uuid" : "5cc780af998c4d228780af998ccd2240",
-        "version" : 1
+        "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24",
+        "version" : "1.0"
       },
       "container" : true,
       "displayField" : "name",
+      "displayName" : "Vehicle Images",
       "fields" : {
         "slug" : "images",
         "name" : "Vehicle Images"
       },
       "path" : "/images",
-      "breadcrumb" : [ ],
-      "version" : {
-        "uuid" : "b1f2c06e45db4e0db2c06e45dbfe0d25",
-        "number" : "1.0"
-      },
+      "breadcrumb" : [ {
+        "projectName" : "demo",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
+        }
+      }, {
+        "projectName" : "demo",
+        "uuid" : "15d5ef7a9abf416d95ef7a9abf316d68",
+        "displayName" : "Vehicle Images",
+        "path" : "/images",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
+        }
+      } ],
+      "version" : "1.0",
       "permissions" : {
         "create" : false,
         "read" : true,
         "update" : false,
         "delete" : false,
         "publish" : false,
-        "readPublished" : false
+        "readPublished" : true
       }
     }
   }, {
@@ -333,25 +396,34 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
     "node" : {
       "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
       "creator" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "created" : "2017-05-29T09:56:16Z",
+      "created" : "2018-07-02T10:49:08Z",
       "editor" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "edited" : "2017-05-29T09:56:22Z",
+      "edited" : "2018-07-02T10:49:13Z",
       "language" : "en",
-      "availableLanguages" : [ "en" ],
+      "availableLanguages" : {
+        "en" : {
+          "published" : true,
+          "version" : "1.0",
+          "publisher" : {
+            "uuid" : "e5861ba26b914b21861ba26b91ab211a"
+          },
+          "publishDate" : "2018-07-02T10:49:13Z"
+        }
+      },
       "languagePaths" : {
         "en" : "/automobiles"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "5cc780af998c4d228780af998ccd2240"
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
         }
       },
       "tags" : [ ],
@@ -362,33 +434,48 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
       "childrenInfo" : {
         "vehicle" : {
           "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
-          "count" : 5
+          "count" : 6
         }
       },
       "schema" : {
         "name" : "category",
         "uuid" : "2ca2362b041247c4a2362b041227c4da",
-        "version" : 1
+        "version" : "1.0"
       },
       "container" : true,
       "displayField" : "name",
+      "displayName" : "Automobiles",
       "fields" : {
         "name" : "Automobiles",
         "slug" : "automobiles"
       },
       "path" : "/automobiles",
-      "breadcrumb" : [ ],
-      "version" : {
-        "uuid" : "2cadceaea20343e8adceaea20313e842",
-        "number" : "1.0"
-      },
+      "breadcrumb" : [ {
+        "projectName" : "demo",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
+        }
+      }, {
+        "projectName" : "demo",
+        "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+        "displayName" : "Automobiles",
+        "path" : "/automobiles",
+        "schema" : {
+          "name" : "category",
+          "uuid" : "2ca2362b041247c4a2362b041227c4da"
+        }
+      } ],
+      "version" : "1.0",
       "permissions" : {
         "create" : false,
         "read" : true,
         "update" : false,
         "delete" : false,
         "publish" : false,
-        "readPublished" : false
+        "readPublished" : true
       }
     }
   }, {
@@ -396,25 +483,34 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
     "node" : {
       "uuid" : "21203632520b4d19a03632520b2d19c1",
       "creator" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "created" : "2017-05-29T09:56:19Z",
+      "created" : "2018-07-02T10:49:12Z",
       "editor" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "edited" : "2017-05-29T09:56:22Z",
+      "edited" : "2018-07-02T10:49:13Z",
       "language" : "en",
-      "availableLanguages" : [ "en" ],
+      "availableLanguages" : {
+        "en" : {
+          "published" : true,
+          "version" : "1.0",
+          "publisher" : {
+            "uuid" : "e5861ba26b914b21861ba26b91ab211a"
+          },
+          "publishDate" : "2018-07-02T10:49:13Z"
+        }
+      },
       "languagePaths" : {
         "en" : "/aircrafts"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "5cc780af998c4d228780af998ccd2240"
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
         }
       },
       "tags" : [ ],
@@ -431,27 +527,42 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
       "schema" : {
         "name" : "category",
         "uuid" : "2ca2362b041247c4a2362b041227c4da",
-        "version" : 1
+        "version" : "1.0"
       },
       "container" : true,
       "displayField" : "name",
+      "displayName" : "Aircraft",
       "fields" : {
         "name" : "Aircraft",
         "slug" : "aircrafts"
       },
       "path" : "/aircrafts",
-      "breadcrumb" : [ ],
-      "version" : {
-        "uuid" : "cb34cedeeb9c4d3db4cedeeb9c0d3d01",
-        "number" : "1.0"
-      },
+      "breadcrumb" : [ {
+        "projectName" : "demo",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
+        }
+      }, {
+        "projectName" : "demo",
+        "uuid" : "21203632520b4d19a03632520b2d19c1",
+        "displayName" : "Aircraft",
+        "path" : "/aircrafts",
+        "schema" : {
+          "name" : "category",
+          "uuid" : "2ca2362b041247c4a2362b041227c4da"
+        }
+      } ],
+      "version" : "1.0",
       "permissions" : {
         "create" : false,
         "read" : true,
         "update" : false,
         "delete" : false,
         "publish" : false,
-        "readPublished" : false
+        "readPublished" : true
       }
     }
   }, {
@@ -459,25 +570,34 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
     "node" : {
       "uuid" : "eb2ebdcc0e894a9eaebdcc0e896a9e1d",
       "creator" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "created" : "2017-05-29T09:56:21Z",
+      "created" : "2018-07-02T10:49:13Z",
       "editor" : {
-        "uuid" : "a93e95f316114659be95f31611265997"
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
       },
-      "edited" : "2017-05-29T09:56:22Z",
+      "edited" : "2018-07-02T10:49:13Z",
       "language" : "en",
-      "availableLanguages" : [ "en" ],
+      "availableLanguages" : {
+        "en" : {
+          "published" : true,
+          "version" : "1.0",
+          "publisher" : {
+            "uuid" : "e5861ba26b914b21861ba26b91ab211a"
+          },
+          "publishDate" : "2018-07-02T10:49:13Z"
+        }
+      },
       "languagePaths" : {
         "en" : "/yachts"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "5cc780af998c4d228780af998ccd2240"
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
         }
       },
       "tags" : [ ],
@@ -494,27 +614,42 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
       "schema" : {
         "name" : "category",
         "uuid" : "2ca2362b041247c4a2362b041227c4da",
-        "version" : 1
+        "version" : "1.0"
       },
       "container" : true,
       "displayField" : "name",
+      "displayName" : "Yachts",
       "fields" : {
         "name" : "Yachts",
         "slug" : "yachts"
       },
       "path" : "/yachts",
-      "breadcrumb" : [ ],
-      "version" : {
-        "uuid" : "4bc10d889134438e810d889134038ed9",
-        "number" : "1.0"
-      },
+      "breadcrumb" : [ {
+        "projectName" : "demo",
+        "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
+        }
+      }, {
+        "projectName" : "demo",
+        "uuid" : "eb2ebdcc0e894a9eaebdcc0e896a9e1d",
+        "displayName" : "Yachts",
+        "path" : "/yachts",
+        "schema" : {
+          "name" : "category",
+          "uuid" : "2ca2362b041247c4a2362b041227c4da"
+        }
+      } ],
+      "version" : "1.0",
       "permissions" : {
         "create" : false,
         "read" : true,
         "update" : false,
         "delete" : false,
         "publish" : false,
-        "readPublished" : false
+        "readPublished" : true
       }
     }
   } ]
@@ -524,9 +659,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navig
 == Breadcrumbs
 
 Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property.
-The property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on link:building-blocks.html#_node[node].
-
-NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself.
+The property provides an array of node references representing the path from the project root down to the current node. For more details see the documentation on link:building-blocks.html#_node[node].
 
 In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_.
 
@@ -564,15 +697,24 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
 {
   "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
   "creator" : {
-    "uuid" : "a93e95f316114659be95f31611265997"
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a"
   },
-  "created" : "2017-05-29T09:56:16Z",
+  "created" : "2018-07-02T10:49:09Z",
   "editor" : {
-    "uuid" : "a93e95f316114659be95f31611265997"
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a"
   },
-  "edited" : "2017-05-29T09:56:22Z",
+  "edited" : "2018-07-02T10:49:13Z",
   "language" : "en",
-  "availableLanguages" : [ "en" ],
+  "availableLanguages" : {
+    "en" : {
+      "published" : true,
+      "version" : "1.0",
+      "publisher" : {
+        "uuid" : "e5861ba26b914b21861ba26b91ab211a"
+      },
+      "publishDate" : "2018-07-02T10:49:13Z"
+    }
+  },
   "languagePaths" : {
     "en" : "/automobiles/ford-gt"
   },
@@ -607,10 +749,11 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
   "schema" : {
     "name" : "vehicle",
     "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
-    "version" : 1
+    "version" : "1.0"
   },
   "container" : false,
   "displayField" : "name",
+  "displayName" : "Ford GT",
   "fields" : {
     "slug" : "ford-gt",
     "name" : "Ford GT",
@@ -630,6 +773,14 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
   "path" : "/automobiles/ford-gt",
   "breadcrumb" : [ {
     "projectName" : "demo",
+    "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+    "path" : "/",
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "839ef8b50bf9493e9ef8b50bf9e93e24"
+    }
+  }, {
+    "projectName" : "demo",
     "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
     "displayName" : "Automobiles",
     "path" : "/automobiles",
@@ -637,18 +788,24 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
       "name" : "category",
       "uuid" : "2ca2362b041247c4a2362b041227c4da"
     }
+  }, {
+    "projectName" : "demo",
+    "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
+    "displayName" : "Ford GT",
+    "path" : "/automobiles/ford-gt",
+    "schema" : {
+      "name" : "vehicle",
+      "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de"
+    }
   } ],
-  "version" : {
-    "uuid" : "677bf76c8c624e2fbbf76c8c62be2fa0",
-    "number" : "1.0"
-  },
+  "version" : "1.0",
   "permissions" : {
     "create" : false,
     "read" : true,
     "update" : false,
     "delete" : false,
     "publish" : false,
-    "readPublished" : false
+    "readPublished" : true
   }
 }
 ----

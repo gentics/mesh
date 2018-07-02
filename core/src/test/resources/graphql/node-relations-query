@@ -13,9 +13,9 @@
 				# [$.data.deNode.children.elements[2].language=en]
 				language
 				breadcrumb {
-					# [$.data.deNode.children.elements[0].breadcrumb[0].path=/News]
-					# [$.data.deNode.children.elements[1].breadcrumb[0].path=/News]
-					# [$.data.deNode.children.elements[2].breadcrumb[0].path=/News]
+					# [$.data.deNode.children.elements[0].breadcrumb[1].path=/News]
+					# [$.data.deNode.children.elements[1].breadcrumb[1].path=/News]
+					# [$.data.deNode.children.elements[2].breadcrumb[1].path=/News]
 					path
 					language
 				}

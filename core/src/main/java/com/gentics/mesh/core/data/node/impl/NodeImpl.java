@@ -822,47 +822,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param restNode
 	 */
 	private void setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
-		String branchUuid = ac.getBranch(getProject()).getUuid();
-		Node current = this.getParentNode(branchUuid);
-		// The project basenode has no breadcrumb
-		if (current == null) {
-			return;
-		}
-
-		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
-		while (current != null) {
-			// Don't add the base node to the breadcrumb
-			// TODO should we add the basenode to the breadcrumb?
-			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
-				break;
-			}
-			NodeReference reference = current.transformToReference(ac);
-			breadcrumb.add(reference);
-			current = current.getParentNode(branchUuid);
-		}
-		restNode.setBreadcrumb(breadcrumb);
+		List<NodeReference> breadcrumbs = getBreadcrumbNodeStream(ac)
+			.map(node -> node.transformToReference(ac))
+			.collect(Collectors.toList());
+		restNode.setBreadcrumb(breadcrumbs);
 	}
 
 	@Override
-	public Deque<Node> getBreadcrumbNodes(InternalActionContext ac) {
+	public List<Node> getBreadcrumbNodes(InternalActionContext ac) {
+		return getBreadcrumbNodeStream(ac).collect(Collectors.toList());
+	}
+
+	private Stream<Node> getBreadcrumbNodeStream(InternalActionContext ac) {
 		String branchUuid = ac.getBranch(getProject()).getUuid();
-		Node current = this.getParentNode(branchUuid);
-		// The project basenode has no breadcrumb
-		if (current == null) {
-			return new ArrayDeque<>();
-		}
+		Node current = this;
 
 		Deque<Node> breadcrumb = new ArrayDeque<>();
 		while (current != null) {
-			// Don't add the base node to the breadcrumb
-			// TODO should we add the basenode to the breadcrumb?
-			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
-				break;
-			}
-			breadcrumb.add(current);
+			breadcrumb.addFirst(current);
 			current = current.getParentNode(branchUuid);
 		}
-		return breadcrumb;
+
+		return breadcrumb.stream();
 	}
 
 	@Override
