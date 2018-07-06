@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -154,11 +155,28 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyResponse restTagFamily = new TagFamilyResponse();
-		restTagFamily.setName(getName());
+		GenericParameters generic = ac.getGenericParameters();
+		Set<String> fields = generic.getFields();
 
-		fillCommonRestFields(ac, restTagFamily);
-		setRolePermissions(ac, restTagFamily);
+		TagFamilyResponse restTagFamily = new TagFamilyResponse();
+		if (fields.isEmpty() || fields.contains("uuid")) {
+			restTagFamily.setUuid(getUuid());
+
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return restTagFamily;
+			}
+		}
+
+		if (fields.isEmpty() || fields.contains("name")) {
+			restTagFamily.setName(getName());
+		}
+
+		fillCommonRestFields(ac, fields, restTagFamily);
+
+		if (fields.isEmpty() || fields.contains("perms")) {
+			setRolePermissions(ac, restTagFamily);
+		}
 
 		return restTagFamily;
 	}
@@ -192,7 +210,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
-		if(!getName().equals(newName)) {
+		if (!getName().equals(newName)) {
 			this.setName(newName);
 			batch.store(this, true);
 			return true;
@@ -203,7 +221,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Tag tag : findAllIt()) {
 				tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);

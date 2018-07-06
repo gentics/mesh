@@ -158,12 +158,9 @@ public class HandlerUtilities {
 					return Tuple.tuple(updated, batch);
 				});
 
-				RM model = null;
 				SearchQueueBatch b = tuple.v2();
 				Boolean isUpdated = tuple.v1();
-				if (!genericParameters.getOmitResponse()) {
-					model = updateElement.transformToRestSync(ac, 0);
-				}
+				RM model = updateElement.transformToRestSync(ac, 0); 
 				info = new ResultInfo(model, b);
 				if (isUpdated) {
 					updateElement.onUpdated();
@@ -174,12 +171,10 @@ public class HandlerUtilities {
 					created.set(true);
 					return Tuple.tuple(root.create(ac, batch, uuid), batch);
 				});
+
 				SearchQueueBatch b = tuple.v2();
 				T createdElement = tuple.v1();
-				RM model = null;
-				if (!genericParameters.getOmitResponse()) {
-					model = createdElement.transformToRestSync(ac, 0);
-				}
+				RM model = createdElement.transformToRestSync(ac, 0);
 				String path = createdElement.getAPIPath(ac);
 				info = new ResultInfo(model, b);
 				info.setProperty("path", path);

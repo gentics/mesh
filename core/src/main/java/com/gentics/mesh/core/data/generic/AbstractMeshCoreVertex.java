@@ -62,37 +62,49 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {
-		model.setUuid(getUuid());
+	public void fillCommonRestFields(InternalActionContext ac, Set<String> fields, GenericRestResponse model) {
+		if (fields.isEmpty() || fields.contains("uuid")) {
+			model.setUuid(getUuid());
+		}
 
 		if (this instanceof EditorTrackingVertex) {
 			EditorTrackingVertex edited = (EditorTrackingVertex) this;
 
-			User editor = edited.getEditor();
-			if (editor != null) {
-				model.setEditor(editor.transformToReference());
-			} else {
-				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
+			if (fields.isEmpty() || fields.contains("editor")) {
+				User editor = edited.getEditor();
+				if (editor != null) {
+					model.setEditor(editor.transformToReference());
+				} else {
+					log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
+				}
 			}
 
-			String date = edited.getLastEditedDate();
-			model.setEdited(date);
+			if (fields.isEmpty() || fields.contains("edited")) {
+				String date = edited.getLastEditedDate();
+				model.setEdited(date);
+			}
 		}
 
 		if (this instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex created = (CreatorTrackingVertex) this;
-			User creator = created.getCreator();
-			if (creator != null) {
-				model.setCreator(creator.transformToReference());
+			if (fields.isEmpty() || fields.contains("creator")) {
+				User creator = created.getCreator();
+				if (creator != null) {
+					model.setCreator(creator.transformToReference());
+				}
 			}
-			String date = created.getCreationDate();
-			model.setCreated(date);
+			if (fields.isEmpty() || fields.contains("created")) {
+				String date = created.getCreationDate();
+				model.setCreated(date);
+			}
 		}
 
-		// When this is a node migration, do not set user permissions
-		if (!(ac instanceof NodeMigrationActionContextImpl)) {
-			PermissionInfo permissionInfo = ac.getUser().getPermissionInfo(this);
-			model.setPermissions(permissionInfo);
+		if (fields.isEmpty() || fields.contains("perms")) {
+			// When this is a node migration, do not set user permissions
+			if (!(ac instanceof NodeMigrationActionContextImpl)) {
+				PermissionInfo permissionInfo = ac.getUser().getPermissionInfo(this);
+				model.setPermissions(permissionInfo);
+			}
 		}
 	}
 

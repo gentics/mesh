@@ -1,32 +1,38 @@
 package com.gentics.mesh.parameter;
 
-import org.apache.commons.lang.BooleanUtils;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public interface GenericParameters extends ParameterProvider {
 
 	/**
-	 * Query parameter key: {@value #OMIT_RESPONSE_PARAM_KEY}
+	 * Query parameter key: {@value #FIELDS_PARAM_KEY}
 	 */
-	public static final String OMIT_RESPONSE_PARAM_KEY = "omitResponse";
+	public static final String FIELDS_PARAM_KEY = "fields";
 
 	/**
-	 * Return the flag which indicates whether the response should be omitted.
+	 * Return the fields which should be included in the response.
 	 * 
 	 * @return
 	 */
-	default boolean getOmitResponse() {
-		String value = getParameter(OMIT_RESPONSE_PARAM_KEY);
-		return BooleanUtils.toBooleanDefaultIfNull(BooleanUtils.toBooleanObject(value), false);
+	default Set<String> getFields() {
+		String value = getParameter(FIELDS_PARAM_KEY);
+		if(value==null|| value.isEmpty()) {
+			return new HashSet<>();
+		} else {
+			return new HashSet<String>(Arrays.asList(value.split(",")));
+		}
 	}
 
 	/**
-	 * Set the flag which is used omit the response.
+	 * Set the fields which should be included in the response.
 	 * 
-	 * @param flag
+	 * @param fields
 	 * @return
 	 */
-	default GenericParameters setOmitResponse(boolean flag) {
-		setParameter(OMIT_RESPONSE_PARAM_KEY, String.valueOf(flag));
+	default GenericParameters setFields(String... fields) {
+		setParameter(FIELDS_PARAM_KEY, String.join(",", fields));
 		return this;
 	}
 

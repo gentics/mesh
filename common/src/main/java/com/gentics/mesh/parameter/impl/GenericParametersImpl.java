@@ -35,10 +35,10 @@ public class GenericParametersImpl extends AbstractParameters implements Generic
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		QueryParameter updateAssigned = new QueryParameter();
-		updateAssigned.setDescription("Omit the response from the request. This is useful to speed up element creation.");
-		updateAssigned.setType(ParamType.BOOLEAN);
-		updateAssigned.setDefaultValue("false");
-		parameters.put(OMIT_RESPONSE_PARAM_KEY, updateAssigned);
+		updateAssigned.setDescription("Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.");
+		updateAssigned.setType(ParamType.STRING);
+		updateAssigned.setDefaultValue("");
+		parameters.put(FIELDS_PARAM_KEY, updateAssigned);
 
 		return parameters;
 	}

@@ -792,7 +792,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {
+			public void fillCommonRestFields(InternalActionContext ac, Set<String> fields, GenericRestResponse model) {
 				// TODO Auto-generated method stub
 			}
 

@@ -67,6 +67,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -585,6 +586,30 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("The first element in the page should not change but it changed in run {" + i + "}", firstUuid, response.getData().get(0)
 				.getUuid());
 		}
+
+	}
+
+	@Test
+	public void testReadNodeWithFieldLimit() {
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new GenericParametersImpl().setFields("uuid")));
+		// not empty
+		assertThat(response.getUuid()).isNotEmpty();
+
+		// empty
+		assertThat(response.getAvailableLanguages()).isNull();
+		assertThat(response.getChildrenInfo()).isEmpty();
+		assertThat(response.getFields()).isEmpty();
+
+		response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new GenericParametersImpl().setFields("uuid", "fields")));
+
+		// not empty
+		System.out.println(response.toJson());
+		assertThat(response.getUuid()).isNotEmpty();
+		assertThat(response.getFields()).isNotEmpty();
+
+		// empty
+		assertThat(response.getAvailableLanguages()).isNull();
+		assertThat(response.getChildrenInfo()).isEmpty();
 
 	}
 

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import java.util.Set;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -39,9 +41,11 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 * Add common fields to the given rest model object. The method will add common files like creator, editor, uuid, permissions, edited, created.
 	 * 
 	 * @param model
+	 * @param fields
+	 *            Set of fields which should be included. All fields will be included if no selective fields have been specified.
 	 * @param ac
 	 */
-	void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model);
+	void fillCommonRestFields(InternalActionContext ac, Set<String> fields, GenericRestResponse model);
 
 	/**
 	 * Add role permissions to given rest model object.
@@ -72,8 +76,10 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	/**
 	 * Method which is being invoked once the element has been deleted.
 	 * 
-	 * @param uuid UUID of the element which was deleted
-	 * @param name Name of the element which was deleted
+	 * @param uuid
+	 *            UUID of the element which was deleted
+	 * @param name
+	 *            Name of the element which was deleted
 	 */
 	void onDeleted(String uuid, String name);
 

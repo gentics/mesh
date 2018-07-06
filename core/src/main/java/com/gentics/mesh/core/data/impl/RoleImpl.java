@@ -35,6 +35,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
@@ -95,7 +96,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout", MeshInternal.get().database().createComposedIndexKey(vertex
-				.getId(), getId()));
+			.getId(), getId()));
 		return edges.iterator().hasNext();
 	}
 
@@ -110,13 +111,21 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public RoleResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		Set<String> fields = generic.getFields();
+
 		RoleResponse restRole = new RoleResponse();
-		restRole.setName(getName());
 
-		setGroups(ac, restRole);
-		fillCommonRestFields(ac, restRole);
+		if (fields.isEmpty() || fields.contains("name")) {
+			restRole.setName(getName());
+		}
+
+		if (fields.isEmpty() || fields.contains("groups")) {
+			setGroups(ac, restRole);
+		}
+		fillCommonRestFields(ac, fields, restRole);
+
 		setRolePermissions(ac, restRole);
-
 		return restRole;
 	}
 
@@ -132,7 +141,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		Object indexKey = MeshInternal.get().database().createComposedIndexKey(vertex.getId(), getId());
 
 		long edgesRemoved = Arrays.stream(permissions).map(perm -> "e." + perm.label() + "_inout").flatMap(key -> StreamSupport.stream(graph.getEdges(
-				key, indexKey).spliterator(), false)).peek(Edge::remove).count();
+			key, indexKey).spliterator(), false)).peek(Edge::remove).count();
 
 		if (edgesRemoved > 0) {
 			PermissionStore.invalidate();

@@ -37,6 +37,9 @@ public class ServerRunner {
 		// options.getClusterOptions().setEnabled(true);
 		// options.getSearchOptions().setUrl(null);
 		// options.getSearchOptions().setStartEmbedded(false);
+		options.getSearchOptions().setUrl(null);
+		options.getSearchOptions().setStartEmbedded(false);
+		options.getStorageOptions().setDirectory("/media/nvm/docker/data/graphdb");
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {

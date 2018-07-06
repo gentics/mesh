@@ -15,6 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -39,14 +40,15 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * @see Tag
@@ -88,20 +90,32 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		Set<String> fields = generic.getFields();
+
 		TagResponse restTag = new TagResponse();
-
-		TagFamily tagFamily = getTagFamily();
-		if (tagFamily != null) {
-			TagFamilyReference tagFamilyReference = new TagFamilyReference();
-			tagFamilyReference.setName(tagFamily.getName());
-			tagFamilyReference.setUuid(tagFamily.getUuid());
-			restTag.setTagFamily(tagFamilyReference);
+		if (fields.isEmpty() || fields.contains("uuid")) {
+			restTag.setUuid(getUuid());
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return restTag;
+			}
 		}
-		restTag.setName(getName());
+		if (fields.isEmpty() || fields.contains("tagFamily")) {
+			TagFamily tagFamily = getTagFamily();
+			if (tagFamily != null) {
+				TagFamilyReference tagFamilyReference = new TagFamilyReference();
+				tagFamilyReference.setName(tagFamily.getName());
+				tagFamilyReference.setUuid(tagFamily.getUuid());
+				restTag.setTagFamily(tagFamilyReference);
+			}
+		}
+		if (fields.isEmpty() || fields.contains("name")) {
+			restTag.setName(getName());
+		}
 
-		fillCommonRestFields(ac, restTag);
+		fillCommonRestFields(ac, fields, restTag);
 		setRolePermissions(ac, restTag);
-
 		return restTag;
 	}
 
@@ -144,7 +158,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser user, Release release, List<String> languageTags, ContainerType type,
-			PagingParameters pagingInfo) {
+		PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(release, languageTags, type);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
 	}
@@ -167,7 +181,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Release release, List<String> languageTags, ContainerType type) {
 
 		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark().outE(
-				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
+			HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
 
 		if (type != null) {
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
@@ -190,7 +204,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			Tag foundTagWithSameName = tagFamily.findByName(newTagName);
 			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily
-						.getName());
+					.getName());
 			}
 
 			if (!newTagName.equals(getName())) {

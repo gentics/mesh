@@ -60,6 +60,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
 
@@ -162,11 +163,18 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectResponse restProject = new ProjectResponse();
-		restProject.setName(getName());
-		restProject.setRootNode(getBaseNode().transformToReference(ac));
+		GenericParameters generic = ac.getGenericParameters();
+		Set<String> fields = generic.getFields();
 
-		fillCommonRestFields(ac, restProject);
+		ProjectResponse restProject = new ProjectResponse();
+		if (fields.isEmpty() || fields.contains("name")) {
+			restProject.setName(getName());
+		}
+		if (fields.isEmpty() || fields.contains("rootNode")) {
+			restProject.setRootNode(getBaseNode().transformToReference(ac));
+		}
+
+		fillCommonRestFields(ac, fields, restProject);
 		setRolePermissions(ac, restProject);
 
 		return restProject;
@@ -271,7 +279,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			getSchemaContainerRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			getMicroschemaContainerRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
