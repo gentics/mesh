@@ -23,6 +23,8 @@ icon:check[] Elasticsearch: The error logging has been enhanced. More detailed i
 
 icon:check[] UI: Fixed potential encoding issues in the UI on systems which are not using the UTF-8 default character set.
 
+icon:check[] Core: Fixed a bug that caused an unwanted schema migration when a schema update without any changes was invoked. This was the case with the `elasticsearch` properties.
+
 [[v0.21.3]]
 == 0.21.3 (19.06.2018)
 
