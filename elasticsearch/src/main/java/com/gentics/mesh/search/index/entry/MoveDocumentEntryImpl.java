@@ -26,17 +26,7 @@ public class MoveDocumentEntryImpl extends AbstractEntry<MoveEntryContext> imple
 	}
 
 	@Override
-	public Completable process() {
-		switch (elementAction) {
-		case MOVE_ACTION:
-			return indexHandler.move(this).doOnComplete(onProcessAction);
-		default:
-			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
-		}
-	}
-
-	@Override
-	public Observable<? extends BulkEntry> processForBulk() {
+	public Observable<? extends BulkEntry> process() {
 		switch (elementAction) {
 		case MOVE_ACTION:
 			return indexHandler.moveForBulk(this).doOnComplete(onProcessAction);
@@ -45,10 +35,4 @@ public class MoveDocumentEntryImpl extends AbstractEntry<MoveEntryContext> imple
 		}
 
 	}
-
-	@Override
-	public boolean isBulkable() {
-		return true;
-	}
-
 }

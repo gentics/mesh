@@ -41,15 +41,4 @@ public abstract class AbstractEntry<T extends EntryContext> implements SearchQue
 	public T getContext() {
 		return context;
 	}
-
-	@Override
-	public boolean isBulkable() {
-		return false;
-	}
-
-	@Override
-	public Observable<? extends BulkEntry> processForBulk() {
-		return Observable.empty();
-	}
-
 }

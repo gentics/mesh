@@ -61,25 +61,7 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 	}
 
 	@Override
-	public Completable process() {
-		switch (elementAction) {
-		case STORE_ACTION:
-			return indexHandler.store(this).doOnComplete(onProcessAction);
-
-		case DELETE_ACTION:
-			return indexHandler.delete(this).doOnComplete(onProcessAction);
-
-		case UPDATE_ROLE_PERM_ACTION:
-			return indexHandler.updatePermission(this).doOnComplete(onProcessAction);
-
-		default:
-			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
-		}
-
-	}
-
-	@Override
-	public Observable<? extends BulkEntry> processForBulk() {
+	public Observable<? extends BulkEntry> process() {
 		switch (elementAction) {
 		case STORE_ACTION:
 			return indexHandler.storeForBulk(this).doOnComplete(onProcessAction);
@@ -105,10 +87,5 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 		String context = getContext() != null ? getContext().toString() : "null";
 		return "Update Entry {" + getElementAction() + "} for {" + elementUuid + "} and handler {" + indexHandler.getClass().getSimpleName()
 			+ "} with context {" + context + "}";
-	}
-
-	@Override
-	public boolean isBulkable() {
-		return true;
 	}
 }
