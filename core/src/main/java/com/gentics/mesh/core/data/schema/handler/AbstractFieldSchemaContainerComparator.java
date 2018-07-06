@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.util.CompareUtils;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -200,6 +201,28 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 			changes.add(change);
 		}
 	}
+
+	/**
+	 * Compare the given Elasticsearch properties and add a schema change entry to the given list of changes.
+	 *
+	 * @param changes
+	 * @param key
+	 * @param objectA
+	 * @param objectB
+	 * @param classOfFC
+	 */
+	protected void compareAndAddSchemaElasticSearchProperty(List<SchemaChangeModel> changes, String key, JsonObject objectA, JsonObject objectB,
+															Class<? extends FC> classOfFC) {
+		// Empty objects and null/missing values should be treated the same
+		if (objectA != null && objectA.size() == 0) {
+			objectA = null;
+		}
+		if (objectB != null && objectB.size() == 0) {
+			objectB = null;
+		}
+		compareAndAddSchemaProperty(changes, key, objectA, objectB, classOfFC);
+	}
+
 
 	/**
 	 * Return the specific update change for the field container.
