@@ -8,9 +8,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +37,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
+import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
@@ -608,7 +611,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * We need to handle permission update requests for nodes here since the action must affect multiple documents in multiple indices .
 	 */
 	@Override
-	public Completable updatePermission(UpdateDocumentEntry entry) {
+	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
 		Node node = getRootVertex().findByUuid(uuid);
 		if (node == null) {
@@ -616,7 +619,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		} else {
 			Project project = node.getProject();
 
-			Set<Observable<String>> obs = new HashSet<>();
+			List<UpdateBulkEntry> entries = new ArrayList<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
 			for (Release release : project.getReleaseRoot().findAllIt()) {
@@ -625,16 +628,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(release, type)) {
 						String indexName = container.getIndexName(project.getUuid(), release.getUuid(), type);
 						String documentId = container.getDocumentId();
-						obs.add(searchProvider.updateDocument(indexName, documentId, json, true).andThen(Observable.just(indexName)));
+						entries.add(new UpdateBulkEntry(indexName, documentId, json, true));
 					}
 				}
 			}
-			return Observable.merge(obs).toList().flatMapCompletable(list -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Updated object in index.");
-				}
-				return searchProvider.refreshIndex(list.stream().toArray(String[]::new));
-			});
+
+			return Observable.fromIterable(entries);
 		}
 	}
 

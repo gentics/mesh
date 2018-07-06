@@ -127,24 +127,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable updatePermission(UpdateDocumentEntry entry) {
-		String uuid = entry.getElementUuid();
-		T element = getRootVertex().findByUuid(uuid);
-		if (element == null) {
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
-		} else {
-			String indexName = composeIndexNameFromEntry(entry);
-			String documentId = composeDocumentIdFromEntry(entry);
-			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).andThen(searchProvider
-				.refreshIndex(indexName)).doOnComplete(() -> {
-					if (log.isDebugEnabled()) {
-						log.debug("Updated object in index.");
-					}
-				});
-		}
-	}
-
-	@Override
 	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
 		T element = getRootVertex().findByUuid(uuid);
@@ -159,33 +141,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable delete(UpdateDocumentEntry entry) {
-		String indexName = composeIndexNameFromEntry(entry);
-		String documentId = composeDocumentIdFromEntry(entry);
-		// We don't need to resolve the uuid and load the graph object in this case.
-		return searchProvider.deleteDocument(indexName, documentId);
-	}
-
-	@Override
 	public Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		return Observable.just(new DeleteBulkEntry(indexName, documentId));
-	}
-
-	@Override
-	public Completable store(UpdateDocumentEntry entry) {
-		return Completable.defer(() -> {
-			try (Tx tx = db.tx()) {
-				String uuid = entry.getElementUuid();
-				T element = getRootVertex().findByUuid(uuid);
-				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
-				} else {
-					return store(element, entry);
-				}
-			}
-		});
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 /**
  * Entry which instructs the index handler to create the index using the provided information.
  */
-public interface CreateIndexEntry extends SearchQueueEntry<GenericEntryContext> {
+public interface CreateIndexEntry extends SeperateSearchQueueEntry<GenericEntryContext> {
 
 	/**
 	 * Return the configured schema for the index entry.

@@ -53,13 +53,15 @@ public class UpdateBulkEntry extends AbstractBulkEntry {
 			.put("_index", installationPrefix + getIndexName())
 			.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
+		JsonObject doc = new JsonObject()
+			.put("doc", payload);
 
 		if (usePipeline) {
 			settings.put("pipeline", installationPrefix + getIndexName());
 		}
 
 		metaData.put(getBulkAction().id(), settings);
-		return new StringBuilder().append(metaData.encode()).append("\n").append(payload.encode()).toString();
+		return new StringBuilder().append(metaData.encode()).append("\n").append(doc.encode()).toString();
 	}
 
 }
