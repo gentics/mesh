@@ -67,6 +67,7 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -80,6 +81,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
 public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -94,6 +96,18 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 		// TODO assert groups
 		// TODO assert perms
+	}
+
+	@Test
+	public void testReadByUUIDRaw() throws IOException {
+		String uuid = userUuid();
+		JsonObject json = httpGetNowJson("/api/v1/users/" + uuid, client().getAuthentication().getToken(),
+			new GenericParametersImpl().setFields("uuid"));
+		assertEquals(uuid, json.getString("uuid"));
+		assertFalse(json.containsKey("lastname"));
+		assertFalse(json.containsKey("firstname"));
+		assertFalse(json.containsKey("username"));
+		System.out.println(json.encodePrettily());
 	}
 
 	@Test
@@ -129,7 +143,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	/**
-	 * Test that the user is able to update itself even without the assigned perm and being logged out. The reset token should grant the right to update himself.
+	 * Test that the user is able to update itself even without the assigned perm and being logged out. The reset token should grant the right to update
+	 * himself.
 	 */
 	@Test
 	public void testUpdateUsingToken() {

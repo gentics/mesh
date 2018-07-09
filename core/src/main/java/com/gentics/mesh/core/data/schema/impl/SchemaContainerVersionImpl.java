@@ -41,6 +41,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.VertexFrame;
 
@@ -106,11 +108,14 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public SchemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
 		// Load the schema and add/overwrite some properties
 		// Use getSchema to utilise the schema storage
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
 		SchemaContainer container = getSchemaContainer();
-		container.fillCommonRestFields(ac, restSchema);
+		container.fillCommonRestFields(ac, fields, restSchema);
 		container.setRolePermissions(ac, restSchema);
 		return restSchema;
 

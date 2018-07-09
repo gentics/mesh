@@ -36,7 +36,9 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -142,13 +144,19 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public GroupResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
 		GroupResponse restGroup = new GroupResponse();
-		restGroup.setName(getName());
+		if (fields.has("name")) {
+			restGroup.setName(getName());
+		}
+		if (fields.has("roles")) {
+			setRoles(ac, restGroup);
+		}
+		fillCommonRestFields(ac, fields, restGroup);
 
-		setRoles(ac, restGroup);
-		fillCommonRestFields(ac, restGroup);
 		setRolePermissions(ac, restGroup);
-
 		return restGroup;
 	}
 
@@ -205,7 +213,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (User user : getUsers()) {
 				user.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);

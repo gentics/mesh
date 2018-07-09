@@ -35,6 +35,8 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.VertexFrame;
 
@@ -100,12 +102,17 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	public MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+		
 		// Load the microschema and add/overwrite some properties
 		MicroschemaResponse microschema = JsonUtil.readValue(getJson(), MicroschemaResponse.class);
+		// TODO apply fields filtering here
+
 		// Role permissions
 		MicroschemaContainer container = getSchemaContainer();
 		container.setRolePermissions(ac, microschema);
-		container.fillCommonRestFields(ac, microschema);
+		container.fillCommonRestFields(ac, fields, microschema);
 
 		return microschema;
 	}

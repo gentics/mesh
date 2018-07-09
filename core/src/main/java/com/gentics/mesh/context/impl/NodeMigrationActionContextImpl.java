@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.TEdge;
@@ -40,6 +41,7 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -48,7 +50,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
-import io.reactivex.Single;
 
 /**
  * Action context implementation which will be used within the node migration.
@@ -792,7 +793,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {
+			public void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model) {
 				// TODO Auto-generated method stub
 			}
 

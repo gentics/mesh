@@ -103,6 +103,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.DeleteParameters;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -111,6 +112,7 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
@@ -169,9 +171,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return null;
 	}
 
-	
 	@Override
-	public void postfixPathSegment(String releaseUuid, ContainerType type, String  languageTag) {
+	public void postfixPathSegment(String releaseUuid, ContainerType type, String languageTag) {
 
 		// Check whether this node is the base node.
 		if (getParentNode(releaseUuid) == null) {
@@ -185,7 +186,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 	}
 
-	
 	@Override
 	public String getPath(ActionContext ac, String releaseUuid, ContainerType type, String... languageTag) {
 		// We want to avoid rending the path again for nodes which we have already handled.
@@ -301,7 +301,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type) {
-		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class);
+		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
+			.frameExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -580,24 +581,54 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
 		NodeResponse restNode = new NodeResponse();
+		if (fields.has("uuid")) {
+			restNode.setUuid(getUuid());
+
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return restNode;
+			}
+		}
+
 		SchemaContainer container = getSchemaContainer();
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
 		Release release = ac.getRelease(getProject());
-		restNode.setAvailableLanguages(getLanguageInfo(ac));
-		setFields(ac, release, restNode, level, languageTags);
-		setParentNodeInfo(ac, release, restNode);
-		setRolePermissions(ac, restNode);
-		setChildrenInfo(ac, release, restNode);
-		setTagsToRest(ac, restNode, release);
-		fillCommonRestFields(ac, restNode);
-		setBreadcrumbToRest(ac, restNode);
-		setPathsToRest(ac, restNode, release);
-		setProjectReference(ac, restNode);
+		if (fields.has("languages")) {
+			restNode.setAvailableLanguages(getLanguageInfo(ac));
+		}
+		if (fields.has("fields")) {
+			setFields(ac, release, restNode, level, languageTags);
+		}
+		if (fields.has("parent")) {
+			setParentNodeInfo(ac, release, restNode);
+		}
+		if (fields.has("perms")) {
+			setRolePermissions(ac, restNode);
+		}
+		if (fields.has("children")) {
+			setChildrenInfo(ac, release, restNode);
+		}
+		if (fields.has("tags")) {
+			setTagsToRest(ac, restNode, release);
+		}
+		fillCommonRestFields(ac, fields, restNode);
+		if (fields.has("breadcrumb")) {
+			setBreadcrumbToRest(ac, restNode);
+		}
+		if (fields.has("path")) {
+			setPathsToRest(ac, restNode, release);
+		}
+		if (fields.has("project")) {
+			setProjectReference(ac, restNode);
+		}
+
 		return restNode;
 	}
 
@@ -1524,7 +1555,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "error_language_not_set");
 		}
-		Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(requestModel.getLanguage());
+
+		// Set the language tag parameter here in order to return the updated language in the response
+		String languageTag = requestModel.getLanguage();
+		NodeParameters nodeParameters = ac.getNodeParameters();
+		nodeParameters.setLanguages(languageTag);
+
+		Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(languageTag);
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}
@@ -1748,7 +1785,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (initial != null) {
 			// Remove the initial edge
 			initial.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
-					.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
 
 			// starting with the old intial, delete all GFC that have no previous and are not initial (for other releases)
 			dangling = initial;
