@@ -187,7 +187,7 @@ public class TestDataProvider {
 		Role role = userInfo.getRole();
 		for (MeshVertex meshVertex : elements) {
 			if (log.isTraceEnabled()) {
-				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().id() + "} with role {" + role.getElement().id() + "}");
 			}
 			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}

@@ -38,10 +38,10 @@ public class MigrateSchemaRawInfo extends AbstractChange {
 			Iterator<Vertex> versionIt = microschemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
 			while (versionIt.hasNext()) {
 				Vertex microschemaVersion = versionIt.next();
-				String json = microschemaVersion.getProperty("json");
+				String json = microschemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				migrateFields(schema);
-				microschemaVersion.setProperty("json", schema.toString());
+				microschemaVersion.property("json", schema.toString());
 			}
 		}
 
@@ -52,10 +52,10 @@ public class MigrateSchemaRawInfo extends AbstractChange {
 			Iterator<Vertex> versionIt = schemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
 			while (versionIt.hasNext()) {
 				Vertex schemaVersion = versionIt.next();
-				String json = schemaVersion.getProperty("json");
+				String json = schemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				migrateFields(schema);
-				schemaVersion.setProperty("json", schema.toString());
+				schemaVersion.property("json", schema.toString());
 			}
 		}
 	}

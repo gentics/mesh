@@ -26,7 +26,7 @@ public class SanitizeSchemaNames extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex microschemaRoot = meshRoot.getVertices(OUT, "HAS_MICROSCHEMA_ROOT").iterator().next();
+		Vertex microschemaRoot = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT").next();
 		Iterator<Vertex> microschemaIt = microschemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (microschemaIt.hasNext()) {
 			Vertex microschemaVertex = microschemaIt.next();
@@ -35,12 +35,12 @@ public class SanitizeSchemaNames extends AbstractChange {
 			while (versionIt.hasNext()) {
 				Vertex microschemaVersion = versionIt.next();
 				fixName(microschemaVersion);
-				String json = microschemaVersion.getProperty("json");
+				String json = microschemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				String name = schema.getString("name");
 				name = name.replaceAll("-", "_");
 				schema.put("name", name);
-				microschemaVersion.setProperty("json", schema.toString());
+				microschemaVersion.property("json", schema.toString());
 			}
 		}
 
@@ -53,22 +53,22 @@ public class SanitizeSchemaNames extends AbstractChange {
 			while (versionIt.hasNext()) {
 				Vertex schemaVersion = versionIt.next();
 				fixName(schemaVersion);
-				String json = schemaVersion.getProperty("json");
+				String json = schemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				String name = schema.getString("name");
 				name = name.replaceAll("-", "_");
 				schema.put("name", name);
-				schemaVersion.setProperty("json", schema.toString());
+				schemaVersion.property("json", schema.toString());
 			}
 		}
 
 	}
 
 	private void fixName(Vertex schemaVertex) {
-		String name = schemaVertex.getProperty("name");
+		String name = schemaVertex.value("name");
 		if (!isEmpty(name)) {
 			name = name.replaceAll("-", "_");
-			schemaVertex.setProperty("name", name);
+			schemaVertex.property("name", name);
 		}
 	}
 

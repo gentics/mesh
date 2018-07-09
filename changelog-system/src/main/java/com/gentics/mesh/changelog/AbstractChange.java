@@ -5,12 +5,12 @@ import java.util.UUID;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.TransactionalGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -22,7 +22,7 @@ public abstract class AbstractChange implements Change {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
 
-	private TransactionalGraph graph;
+	private Graph graph;
 
 	private Database db;
 
@@ -75,12 +75,12 @@ public abstract class AbstractChange implements Change {
 	}
 
 	@Override
-	public void setGraph(TransactionalGraph graph) {
+	public void setGraph(Graph graph) {
 		this.graph = graph;
 	}
 
 	@Override
-	public TransactionalGraph getGraph() {
+	public Graph getGraph() {
 		return graph;
 	}
 
@@ -146,8 +146,8 @@ public abstract class AbstractChange implements Change {
 
 	public void debug(Element element) {
 		System.out.println("---");
-		for (String key : element.getPropertyKeys()) {
-			System.out.println(key + " : " + element.getProperty(key));
+		for (String key : element.keys()) {
+			System.out.println(key + " : " + element.value(key));
 		}
 		System.out.println("---");
 	}

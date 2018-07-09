@@ -30,11 +30,11 @@ public class ChangeFixReleaseRelationship extends AbstractChange {
 	public void apply() {
 		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
 		Vertex projectRoot = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT").next();
-		for (Vertex project : projectRoot.vertices(OUT, "HAS_PROJECT")) {
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(OUT, "HAS_PROJECT")) {
 			Iterator<Vertex> it = project.vertices(OUT, "HAS_RELEASE_ROOT");
 			if (it.hasNext()) {
 				Vertex releaseRoot = it.next();
-				for (Vertex release : releaseRoot.vertices(OUT, "HAS_RELEASE")) {
+				for (Vertex release : (Iterable<Vertex>) () -> releaseRoot.vertices(OUT, "HAS_RELEASE")) {
 					// Assign the release to the project
 					release.addEdge("ASSIGNED_TO_PROJECT", project);
 				}

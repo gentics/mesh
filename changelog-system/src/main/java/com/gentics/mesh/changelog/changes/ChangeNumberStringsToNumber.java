@@ -57,14 +57,14 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 
 
 	private Schema buildSchemaFromVertex(Vertex schemaVertex, String className) {
-		return schemaMap.computeIfAbsent(schemaVertex.getProperty(UUID), uuid -> {
+		return schemaMap.computeIfAbsent(schemaVertex.value(UUID), uuid -> {
 			Schema schema = new Schema();
 			schema.type = className;
 			schema.uuid = uuid;
-			Object val = schemaVertex.getProperty("version");
+			Object val = schemaVertex.value("version");
 			schema.version = String.valueOf(val);
 
-			String json = schemaVertex.getProperty(JSON_FIELD);
+			String json = schemaVertex.value(JSON_FIELD);
 			if (json == null) {
 				return schema;
 			}
@@ -86,13 +86,13 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	private void updateProperty(String propertyName, Vertex node) {
-		Object obj = node.getProperty(propertyName);
+		Object obj = node.value(propertyName);
 		if (obj == null) {
 			return;
 		}
 		if (!(obj instanceof String)) {
 			if (log.isDebugEnabled()) {
-				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName, node.getProperty(UUID), obj.getClass(), obj);
+				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName, node.value(UUID), obj.getClass(), obj);
 			}
 			return;
 		}
@@ -101,18 +101,18 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		try {
 			numVal = format.parse(strVal);
 		} catch (ParseException e) {
-			log.warn("Could not parse the number '{}', for field '{}' in node {}", strVal, propertyName, node.getId());
+			log.warn("Could not parse the number '{}', for field '{}' in node {}", strVal, propertyName, node.id());
 			numVal = 0;
 		}
-		node.removeProperty(propertyName);
-		node.setProperty(propertyName, numVal);
+		node.property(propertyName).remove();
+		node.property(propertyName, numVal);
 	}
 
 	private void updateLists(Vertex container, Map<String, JsonObject> fieldMap) {
-		for (Vertex listElement: container.getVertices(Direction.OUT, HAS_LIST)) {
-			String fieldName = listElement.getProperty(FIELD_KEY);
+		for (Vertex listElement: container.vertices(Direction.OUT, HAS_LIST)) {
+			String fieldName = listElement.value(FIELD_KEY);
 			if (fieldMap.containsKey(fieldName) && NUMBER_TYPE.equals(fieldMap.get(fieldName).getString(FIELD_LIST_TYPE_KEY))) {
-				listElement.getPropertyKeys().stream()
+				listElement.keys().stream()
 						.filter(k -> k.startsWith(ITEM_PREFIX))
 						.forEach(k -> updateProperty(k, listElement));
 			}
@@ -129,7 +129,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 
 	public void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
 		long count = 0;
-		for (Vertex vertex : schemaVertex.getVertices(Direction.IN, label)) {
+		for (Vertex vertex : schemaVertex.vertices(Direction.IN, label)) {
 			count++;
 			updateFields(vertex, fieldMap);
 			updateLists(vertex, fieldMap);
@@ -142,7 +142,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	public void convertViaSchema(String schemaVersionClassName, String label) {
-		for (Vertex schemaVertex : getGraph().getVertices("@class", schemaVersionClassName)) {
+		for (Vertex schemaVertex : getGraph().vertices("@class", schemaVersionClassName)) {
 			Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
 			if (!schema.fieldMap.isEmpty()) {
 				log.info("Update vertices for {}", schema);

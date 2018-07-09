@@ -855,7 +855,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (index != null) {
 				Object recordId = index.get(key);
 				if (recordId != null) {
-					if (recordId.equals(element.getElement().getId())) {
+					if (recordId.equals(element.getElement().id())) {
 						return null;
 					} else {
 						return (T) graph.getFramedVertexExplicit(element.getClass(), recordId);

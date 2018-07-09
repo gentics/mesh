@@ -102,7 +102,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return matchesBranchAndType(item.getId(), branchUuid, type.getCode());
+			return matchesBranchAndType(item.id(), branchUuid, type.getCode());
 		}, true);
 	}
 

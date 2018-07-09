@@ -2,12 +2,12 @@ package com.gentics.mesh.changelog;
 
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.TransactionalGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -42,7 +42,7 @@ public class ChangelogSystem {
 		boolean reindex = false;
 		for (Change change : list) {
 			// Execute each change in a new transaction
-			TransactionalGraph graph = db.rawTx();
+			Graph graph = db.rawTx();
 			change.setDb(db);
 			change.setGraph(graph);
 			try {
@@ -80,7 +80,7 @@ public class ChangelogSystem {
 	 * Mark all changelog entries as applied. This is useful if you resolved issues manually or if you want to create a fresh mesh database dump.
 	 */
 	public void markAllAsApplied(List<Change> list) {
-		TransactionalGraph graph = db.rawTx();
+		Graph graph = db.rawTx();
 		try {
 			for (Change change : list) {
 				change.setGraph(graph);
@@ -117,7 +117,7 @@ public class ChangelogSystem {
 		log.info("Updating stored database revision and mesh version.");
 		// Version is okay. So lets store the version and the updated revision.
 		String currentVersion = Mesh.getPlainVersion();
-		TransactionalGraph graph = db.rawTx();
+		Graph graph = db.rawTx();
 		try {
 			Vertex root = MeshGraphHelper.getMeshRootVertex(graph);
 			String rev = db.getDatabaseRevision();

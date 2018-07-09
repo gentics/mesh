@@ -1,7 +1,8 @@
 package com.gentics.mesh.changelog;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.TransactionalGraph;
 
 /**
  * Interface for a mesh graph database change. A change may alter graph structure, content and indices.
@@ -46,14 +47,14 @@ public interface Change {
 	 * 
 	 * @param graph
 	 */
-	void setGraph(TransactionalGraph graph);
+	void setGraph(Graph graph);
 
 	/**
 	 * Return the graph that is currently set for the change.
 	 * 
 	 * @return
 	 */
-	TransactionalGraph getGraph();
+	Graph getGraph();
 
 	/**
 	 * Persist the info that the change has been applied to the graph.

@@ -8,12 +8,13 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.ext.interopt.InteroptVertexFrame;
 
 /**
  * A mesh vertex is a mesh element that exposes various graph OGM specific methods. We use the interface abstraction in order to hide certain ferma methods
  * which would otherwise clutter the API.
  */
-public interface MeshVertex extends MeshElement, VertexFrame {
+public interface MeshVertex extends MeshElement, InteroptVertexFrame {
 
 	String UUID_KEY = "uuid";
 

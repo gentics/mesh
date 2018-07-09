@@ -26,12 +26,12 @@ public class UpdateReleaseSchemaEdge extends AbstractChange {
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
-		for (Vertex project : projectRoot.vertices(OUT, "HAS_PROJECT")) {
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(OUT, "HAS_PROJECT")) {
 			Iterator<Vertex> it = project.vertices(OUT, "HAS_RELEASE_ROOT");
 			if (it.hasNext()) {
 				Vertex releaseRoot = it.next();
 				// Iterate over all releases
-				for (Vertex release : releaseRoot.vertices(OUT, "HAS_RELEASE")) {
+				for (Vertex release : (Iterable<Vertex>) () -> releaseRoot.vertices(OUT, "HAS_RELEASE")) {
 					processRelease(release);
 				}
 			}
@@ -45,11 +45,11 @@ public class UpdateReleaseSchemaEdge extends AbstractChange {
 	 * @param release
 	 */
 	private void processRelease(Vertex release) {
-		for (Edge edge : release.edges(OUT, "HAS_SCHEMA_VERSION")) {
+		for (Edge edge : (Iterable<Edge>) () -> release.edges(OUT, "HAS_SCHEMA_VERSION")) {
 			edge.property("active", true);
 			edge.property("migrationStatus", "COMPLETED");
 		}
-		for (Edge edge : release.edges(OUT, "HAS_MICROSCHEMA_VERSION")) {
+		for (Edge edge : (Iterable<Edge>) () -> release.edges(OUT, "HAS_MICROSCHEMA_VERSION")) {
 			edge.property("active", true);
 			edge.property("migrationStatus", "COMPLETED");
 		}

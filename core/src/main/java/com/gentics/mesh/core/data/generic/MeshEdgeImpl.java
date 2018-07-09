@@ -3,9 +3,9 @@ package com.gentics.mesh.core.data.generic;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.ext.AbstractInterceptingEdgeFrame;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Edge;
@@ -17,7 +17,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
  * @see MeshEdge
  */
 @GraphElement
-public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
+public class MeshEdgeImpl extends AbstractInterceptingEdgeFrame implements MeshEdge {
 
 	private Object id;
 

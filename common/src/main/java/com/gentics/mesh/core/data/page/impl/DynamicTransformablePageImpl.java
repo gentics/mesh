@@ -145,7 +145,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 		// Only handle elements which are visible to the user
 		if (perm != null) {
-			stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
+			stream = stream.filter(item -> requestUser.hasPermissionForId(item.id(), perm));
 		}
 
 		if (extraFilter != null) {

@@ -4,9 +4,8 @@ import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Objects;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-
-import com.tinkerpop.blueprints.TransactionalGraph;
 
 /**
  * Simple tinkerpop wrapper for the found vertex which represents the changelog root.
@@ -17,9 +16,9 @@ public class ChangelogRootWrapper {
 	public static final String HAS_CHANGE = "HAS_CHANGE";
 
 	private Vertex rootVertex;
-	private TransactionalGraph graph;
+	private Graph graph;
 
-	public ChangelogRootWrapper(TransactionalGraph graph, Vertex vertex) {
+	public ChangelogRootWrapper(Graph graph, Vertex vertex) {
 		this.graph = graph;
 		this.rootVertex = vertex;
 	}

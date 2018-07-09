@@ -33,7 +33,7 @@ public class SanitizeMicroschemaJson extends AbstractChange {
 			while (versionIt.hasNext()) {
 				Vertex microschemaVersion = versionIt.next();
 
-				String json = microschemaVersion.getProperty("json");
+				String json = microschemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				schema.remove("editor");
 				schema.remove("edited");
@@ -41,7 +41,7 @@ public class SanitizeMicroschemaJson extends AbstractChange {
 				schema.remove("created");
 				schema.remove("rolePerms");
 				schema.remove("permissions");
-				microschemaVersion.setProperty("json", schema.toString());
+				microschemaVersion.property("json", schema.toString());
 			}
 		}
 

@@ -33,7 +33,7 @@ public class ChangeSanitizeSchemaJson extends AbstractChange {
 			while (versionIt.hasNext()) {
 				Vertex schemaVersion = versionIt.next();
 
-				String json = schemaVersion.getProperty("json");
+				String json = schemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				schema.remove("editor");
 				schema.remove("edited");
@@ -41,7 +41,7 @@ public class ChangeSanitizeSchemaJson extends AbstractChange {
 				schema.remove("created");
 				schema.remove("rolePerms");
 				schema.remove("permissions");
-				schemaVersion.setProperty("json", schema.toString());
+				schemaVersion.property("json", schema.toString());
 			}
 		}
 

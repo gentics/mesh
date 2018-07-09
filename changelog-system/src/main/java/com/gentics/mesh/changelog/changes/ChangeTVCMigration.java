@@ -58,24 +58,24 @@ public class ChangeTVCMigration extends AbstractChange {
 		}
 
 		Vertex meshRoot = getMeshRootVertex();
-		meshRoot.removeProperty("databaseVersion");
-		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
+		meshRoot.property("databaseVersion").remove();
+		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
 
 		// Delete bogus vertices
 		List<String> ids = Arrays.asList("#70:4", "#79:148", "#62:5");
 		for (String id : ids) {
-			Vertex vertex = getGraph().getVertex(id);
+			Vertex vertex = getGraph().vertices(id).next();
 			getGraph().removeVertex(vertex);
 		}
 
 		migrateSchemaContainers();
 
-		Vertex schemaRoot = meshRoot.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+		Vertex schemaRoot = meshRoot.vertices(Direction.OUT, "HAS_ROOT_SCHEMA").next();
 		migrateSchemaContainerRootEdges(schemaRoot);
 
 		// Iterate over all projects
-		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
-			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
+		for (Vertex project : projectRoot.vertices(Direction.OUT, "HAS_PROJECT")) {
+			Vertex baseNode = project.vertices(Direction.OUT, "HAS_ROOT_NODE").next();
 			migrateNode(baseNode, project);
 			migrateTagFamilies(project);
 			Vertex projectSchemaRoot = project.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
@@ -91,8 +91,8 @@ public class ChangeTVCMigration extends AbstractChange {
 	 * The edge label has change. Migrate existing edges.
 	 */
 	private void migrateSchemaContainerRootEdges(Vertex schemaRoot) {
-		for (Edge edge : schemaRoot.getEdges(Direction.OUT, "HAS_SCHEMA_CONTAINER")) {
-			Vertex container = edge.getVertex(Direction.IN);
+		for (Edge edge : (Iterable<Edge>) () -> schemaRoot.edges(Direction.OUT, "HAS_SCHEMA_CONTAINER")) {
+			Vertex container = edge.inVertex();
 			schemaRoot.addEdge("HAS_SCHEMA_CONTAINER_ITEM", container);
 			edge.remove();
 		}
@@ -102,20 +102,20 @@ public class ChangeTVCMigration extends AbstractChange {
 
 		int i = 0;
 		log.info("Migrating vertices");
-		for (Vertex vertex : getGraph().getVertices()) {
-			String type = vertex.getProperty("ferma_type");
+		for (Vertex vertex : (Iterable<Vertex>) () -> getGraph().vertices()) {
+			String type = vertex.value("ferma_type");
 			if (type != null && type.endsWith("TagGraphFieldContainerImpl")) {
-				vertex.setProperty("ferma_type", "com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl");
+				vertex.property("ferma_type", "com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl");
 				i++;
 			}
 
 			if (type != null && type.endsWith("SchemaContainerImpl")) {
-				vertex.setProperty("ferma_type", "com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl");
+				vertex.property("ferma_type", "com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl");
 				i++;
 			}
 
 			if (type != null && type.endsWith("NodeGraphFieldContainerImpl")) {
-				vertex.setProperty("ferma_type", "com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl");
+				vertex.property("ferma_type", "com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl");
 				i++;
 			}
 
@@ -124,9 +124,9 @@ public class ChangeTVCMigration extends AbstractChange {
 
 		log.info("Migrating edges");
 		i = 0;
-		for (Edge edge : getGraph().getEdges()) {
-			if ("com.gentics.mesh.core.data.node.field.impl.nesting.NodeGraphFieldImpl".equals(edge.getProperty("ferma_type"))) {
-				edge.setProperty("ferma_type", "com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl");
+		for (Edge edge : (Iterable<Edge>) () -> getGraph().edges()) {
+			if ("com.gentics.mesh.core.data.node.field.impl.nesting.NodeGraphFieldImpl".equals(edge.value("ferma_type"))) {
+				edge.property("ferma_type", "com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl");
 				i++;
 			}
 		}
@@ -138,7 +138,7 @@ public class ChangeTVCMigration extends AbstractChange {
 		Vertex creator;
 		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
 		if (!creatorIterator.hasNext()) {
-			log.error("The element {" + element.getProperty("uuid") + "} has no {" + edge + "}. Using admin instead.");
+			log.error("The element {" + element.value("uuid") + "} has no {" + edge + "}. Using admin instead.");
 			creator = findAdmin();
 			element.addEdge(edge, creator);
 		} else {
@@ -150,10 +150,10 @@ public class ChangeTVCMigration extends AbstractChange {
 	private Vertex findAdmin() {
 		Vertex admin = null;
 		Iterator<Vertex> langIt = getMeshRootVertex().getVertices(Direction.OUT, "HAS_USER_ROOT").iterator().next()
-				.getVertices(Direction.OUT, "HAS_USER").iterator();
+			.getVertices(Direction.OUT, "HAS_USER").iterator();
 		while (langIt.hasNext()) {
 			Vertex user = langIt.next();
-			if (user.getProperty("username").equals("admin")) {
+			if (user.value("username").equals("admin")) {
 				admin = user;
 			}
 		}
@@ -161,45 +161,45 @@ public class ChangeTVCMigration extends AbstractChange {
 	}
 
 	private void migrateTagFamilies(Vertex project) {
-		Vertex tagFamilyRoot = project.getVertices(Direction.OUT, "HAS_TAGFAMILY_ROOT").iterator().next();
-		for (Vertex tagFamily : tagFamilyRoot.getVertices(Direction.OUT, "HAS_TAG_FAMILY")) {
+		Vertex tagFamilyRoot = project.vertices(Direction.OUT, "HAS_TAGFAMILY_ROOT").next();
+		for (Vertex tagFamily : (Iterable<Vertex>) () -> tagFamilyRoot.vertices(Direction.OUT, "HAS_TAG_FAMILY")) {
 
 			// Check dates
-			Object tagFamilyCreationTimeStamp = tagFamily.getProperty("creation_timestamp");
+			Object tagFamilyCreationTimeStamp = tagFamily.property("creation_timestamp");
 			if (tagFamilyCreationTimeStamp == null) {
-				tagFamily.setProperty("creation_timestamp", System.currentTimeMillis());
+				tagFamily.property("creation_timestamp", System.currentTimeMillis());
 			}
-			Object tagFamilyEditTimeStamp = tagFamily.getProperty("last_edited_timestamp");
+			Object tagFamilyEditTimeStamp = tagFamily.property("last_edited_timestamp");
 			if (tagFamilyEditTimeStamp == null) {
-				tagFamily.setProperty("last_edited_timestamp", System.currentTimeMillis());
+				tagFamily.property("last_edited_timestamp", System.currentTimeMillis());
 			}
 
 			// Create a new tag root vertex for the tagfamily and link the tags to this vertex instead to the tag family itself.
 			Vertex tagRoot = getGraph().addVertex("class:TagRootImpl");
-			tagRoot.setProperty("ferma_type", "com.gentics.mesh.core.data.root.impl.TagRootImpl");
-			tagRoot.setProperty("uuid", randomUUID());
+			tagRoot.property("ferma_type", "com.gentics.mesh.core.data.root.impl.TagRootImpl");
+			tagRoot.property("uuid", randomUUID());
 			for (Edge tagEdge : tagFamily.getEdges(Direction.OUT, "HAS_TAG")) {
-				Vertex tag = tagEdge.getVertex(Direction.IN);
+				Vertex tag = tagEdge.inVertex();
 				tagEdge.remove();
 				tagRoot.addEdge("HAS_TAG", tag);
 				tag.getEdges(Direction.OUT, "HAS_TAGFAMILY_ROOT").forEach(edge -> edge.remove());
 				tag.addEdge("HAS_TAGFAMILY_ROOT", tagFamily);
 				if (!tag.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
-					log.error("Tag {" + tag.getProperty("uuid") + " has no project assigned to it. Fixing it...");
+					log.error("Tag {" + tag.property("uuid") + " has no project assigned to it. Fixing it...");
 					tag.addEdge("ASSIGNED_TO_PROJECT", project);
 				}
-				Object creationTimeStamp = tag.getProperty("creation_timestamp");
+				Object creationTimeStamp = tag.property("creation_timestamp");
 				if (creationTimeStamp == null) {
-					tag.setProperty("creation_timestamp", System.currentTimeMillis());
+					tag.property("creation_timestamp", System.currentTimeMillis());
 				}
-				Object editTimeStamp = tag.getProperty("last_edited_timestamp");
+				Object editTimeStamp = tag.property("last_edited_timestamp");
 				if (editTimeStamp == null) {
-					tag.setProperty("last_edited_timestamp", System.currentTimeMillis());
+					tag.property("last_edited_timestamp", System.currentTimeMillis());
 				}
 			}
 			tagFamily.addEdge("HAS_TAG_ROOT", tagRoot);
 			if (!tagFamily.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
-				log.error("TagFamily {" + tagFamily.getProperty("uuid") + " has no project assigned to it. Fixing it...");
+				log.error("TagFamily {" + tagFamily.property("uuid") + " has no project assigned to it. Fixing it...");
 				tagFamily.addEdge("ASSIGNED_TO_PROJECT", project);
 			}
 
@@ -226,13 +226,13 @@ public class ChangeTVCMigration extends AbstractChange {
 	 */
 	private void migrateSchemaContainers() {
 		log.info("Migrating schema containers");
-		for (Vertex schemaContainer : getGraph().getVertices()) {
-			String type = schemaContainer.getProperty("ferma_type");
+		for (Vertex schemaContainer : (Iterable<Vertex>) () -> getGraph().vertices()) {
+			String type = schemaContainer.value("ferma_type");
 			if (type != null && type.endsWith("SchemaContainerImpl")) {
-				String name = schemaContainer.getProperty("name");
+				String name = schemaContainer.value("name");
 				log.info("Migrating schema {" + name + "}");
-				String json = schemaContainer.getProperty("json");
-				schemaContainer.removeProperty("json");
+				String json = schemaContainer.value("json");
+				schemaContainer.property("json").remove();
 				try {
 					JSONObject schema = new JSONObject(json);
 					// TVC does not use segment fields. Remove the segment field properties from the schema
@@ -278,11 +278,11 @@ public class ChangeTVCMigration extends AbstractChange {
 				}
 
 				Vertex version = getGraph().addVertex("class:SchemaContainerVersionImpl");
-				version.setProperty("uuid", randomUUID());
-				version.setProperty("name", name);
-				version.setProperty("json", json);
-				version.setProperty("version", 1);
-				version.setProperty("ferma_type", "com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl");
+				version.property("uuid", randomUUID());
+				version.property("name", name);
+				version.property("json", json);
+				version.property("version", 1);
+				version.property("ferma_type", "com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl");
 				schemaContainer.addEdge("HAS_LATEST_VERSION", version);
 				schemaContainer.addEdge("HAS_PARENT_CONTAINER", version);
 			}
@@ -328,7 +328,7 @@ public class ChangeTVCMigration extends AbstractChange {
 	 * @param project
 	 */
 	private void migrateNode(Vertex node, Vertex project) {
-		String uuid = node.getProperty("uuid");
+		String uuid = node.value("uuid");
 		log.info("Migrating node {" + uuid + "}");
 		Iterator<Vertex> it = node.getVertices(Direction.OUT, "HAS_PARENT_NODE").iterator();
 		Vertex parentNode = null;
@@ -337,56 +337,56 @@ public class ChangeTVCMigration extends AbstractChange {
 		}
 
 		if (!node.getVertices(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
-			log.error("Node {" + node.getProperty("uuid") + "} has no project assigned to it. Fixing inconsistency...");
+			log.error("Node {" + node.value("uuid") + "} has no project assigned to it. Fixing inconsistency...");
 			node.addEdge("ASSIGNED_TO_PROJECT", project);
 		}
 
 		// Check whether the node has binary property information. We need to migrate those to a new binary graph field.
-		String fileName = node.getProperty("binaryFilename");
+		String fileName = node.value("binaryFilename");
 		if (fileName != null) {
 			String oldPath = getSegmentedPath(uuid);
 			File oldBinaryFile = new File("data" + File.separator + "binaryFilesOld" + File.separator + oldPath + File.separator + uuid + ".bin");
 
-			node.removeProperty("binaryFilename");
-			Object fileSize = node.getProperty("binaryFileSize");
-			node.removeProperty("binaryFileSize");
+			node.value("binaryFilename");
+			Object fileSize = node.value("binaryFileSize");
+			node.value("binaryFileSize");
 
-			node.removeProperty("binarySha512Sum");
+			node.value("binarySha512Sum");
 
 			String sha512sum = hashFile(oldBinaryFile.getAbsolutePath());
-			String mimeType = node.getProperty("binaryContentType");
-			node.removeProperty("binaryContentType");
+			String mimeType = node.value("binaryContentType");
+			node.property("binaryContentType").remove();
 
-			Object dpi = node.getProperty("binaryImageDPI");
-			node.removeProperty("binaryImageDPI");
+			Object dpi = node.value("binaryImageDPI");
+			node.property("binaryImageDPI").remove();
 
-			Object width = node.getProperty("binaryImageWidth");
-			node.removeProperty("binaryImageWidth");
+			Object width = node.value("binaryImageWidth");
+			node.property("binaryImageWidth").remove();
 
-			Object height = node.getProperty("binaryImageHeight");
-			node.removeProperty("binaryImageHeight");
+			Object height = node.value("binaryImageHeight");
+			node.property("binaryImageHeight").remove();
 
 			Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 			// Create the binary field for all found containers
 			for (Vertex container : containers) {
 				Vertex binaryField = getGraph().addVertex("class:BinaryGraphFieldImpl");
 				String binaryFieldUuid = randomUUID();
-				binaryField.setProperty("uuid", binaryFieldUuid);
-				binaryField.setProperty("ferma_type", "com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl");
-				binaryField.setProperty("binaryFileSize", fileSize);
-				binaryField.setProperty("binaryFilename", fileName);
-				binaryField.setProperty("binarySha512Sum", sha512sum);
-				binaryField.setProperty("binaryContentType", mimeType);
+				binaryField.property("uuid", binaryFieldUuid);
+				binaryField.property("ferma_type", "com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl");
+				binaryField.property("binaryFileSize", fileSize);
+				binaryField.property("binaryFilename", fileName);
+				binaryField.property("binarySha512Sum", sha512sum);
+				binaryField.property("binaryContentType", mimeType);
 				if (dpi != null) {
-					binaryField.setProperty("binaryImageDPI", dpi);
+					binaryField.property("binaryImageDPI", dpi);
 				}
 				if (width != null) {
-					binaryField.setProperty("binaryImageWidth", width);
+					binaryField.property("binaryImageWidth", width);
 				}
 				if (height != null) {
-					binaryField.setProperty("binaryImageHeight", height);
+					binaryField.property("binaryImageHeight", height);
 				}
-				binaryField.setProperty("fieldkey", "binary");
+				binaryField.property("fieldkey", "binary");
 				container.addEdge("HAS_FIELD", binaryField);
 
 				// Finally migrate the binary filesystem data
@@ -394,7 +394,7 @@ public class ChangeTVCMigration extends AbstractChange {
 				if (oldBinaryFile.exists()) {
 					String path = getSegmentedPath(binaryFieldUuid);
 					File newBinaryFile = new File(
-							"data" + File.separator + "binaryFiles" + File.separator + path + File.separator + binaryFieldUuid + ".bin");
+						"data" + File.separator + "binaryFiles" + File.separator + path + File.separator + binaryFieldUuid + ".bin");
 					try {
 						FileUtils.copyFile(oldBinaryFile, newBinaryFile);
 					} catch (IOException e) {
@@ -408,7 +408,7 @@ public class ChangeTVCMigration extends AbstractChange {
 		// Create edge between NGFCs and schema versions
 		Vertex schemaContainer = node.getVertices(Direction.OUT, "HAS_SCHEMA_CONTAINER").iterator().next();
 		Vertex schemaVersion = schemaContainer.getVertices(Direction.OUT, "HAS_LATEST_VERSION").iterator().next();
-		String json = schemaVersion.getProperty("json");
+		String json = schemaVersion.value("json");
 		String segmentField = null;
 		try {
 			JSONObject schema = new JSONObject(json);
@@ -422,15 +422,15 @@ public class ChangeTVCMigration extends AbstractChange {
 		Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Vertex container : containers) {
 
-			//Fix date fields which were stored in seconds instead of miliseconds
-			for (String key : container.getPropertyKeys()) {
+			// Fix date fields which were stored in seconds instead of miliseconds
+			for (String key : container.valueKeys()) {
 				if (key.endsWith("-date")) {
-					Long date = Long.valueOf(container.getProperty(key));
+					Long date = Long.valueOf(container.value(key));
 					// Check whether the timestamp is seconds based or miliseconds based
 					if (date < 10081440150L) {
 						Long newDate = date * 1000;
 						log.info("Fixing date for field {" + key + "} from " + date + " to " + newDate);
-						container.setProperty(key, String.valueOf(newDate));
+						container.property(key, String.valueOf(newDate));
 					}
 				}
 			}
@@ -438,26 +438,26 @@ public class ChangeTVCMigration extends AbstractChange {
 			container.addEdge("HAS_SCHEMA_CONTAINER_VERSION", schemaVersion);
 			// Add webrootPathInfo property (SegmentValue-ParentFolderUuid)
 			if (segmentField != null) {
-				String segmentFieldValue = container.getProperty(segmentField + "-string");
+				String segmentFieldValue = container.value(segmentField + "-string");
 				if (!StringUtils.isEmpty(segmentFieldValue)) {
 					String webRootPath = segmentFieldValue;
 					if (parentNode != null) {
-						webRootPath += "-" + parentNode.getProperty("uuid");
+						webRootPath += "-" + parentNode.value("uuid");
 					}
-					String id = uuid + "-" + container.getProperty("uuid");
+					String id = uuid + "-" + container.value("uuid");
 					if (webrootIndexMap.containsKey(webRootPath)) {
 						log.error("Found conflicting node:" + id + " with webroot path info " + webRootPath);
 						// Randomize the value
 						segmentFieldValue = segmentFieldValue + "_" + randomUUID();
-						container.setProperty(segmentField + "-string", segmentFieldValue);
+						container.property(segmentField + "-string", segmentFieldValue);
 						// Set the new webroot path
 						webRootPath = segmentFieldValue;
 						if (parentNode != null) {
-							webRootPath += "-" + parentNode.getProperty("uuid");
+							webRootPath += "-" + parentNode.value("uuid");
 						}
 					}
 					webrootIndexMap.put(webRootPath, id);
-					container.setProperty("webrootPathInfo", webRootPath);
+					container.property("webrootPathInfo", webRootPath);
 				}
 			}
 		}

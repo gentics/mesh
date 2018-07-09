@@ -19,8 +19,8 @@ public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldContainer containerB = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			containerA.getElement().setProperty(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, "test");
-			containerB.getElement().setProperty(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, "test");
+			containerA.getElement().property(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, "test");
+			containerB.getElement().property(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, "test");
 			tx.success();
 		}
 	}
@@ -30,8 +30,8 @@ public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldContainer containerB = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			containerA.getElement().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");
-			containerB.getElement().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");
+			containerA.getElement().property(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");
+			containerB.getElement().property(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");
 			tx.success();
 		}
 	}

@@ -88,7 +88,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.inVertex())
-			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))
+			.filter(vertex -> user.hasPermissionForId(vertex.id(), READ_PERM))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 

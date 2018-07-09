@@ -29,7 +29,7 @@ public class CreateMissingDraftEdges extends AbstractChange {
 		Vertex projectRoot = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT").next();
 
 		// Iterate over all projects
-		for (Vertex project : projectRoot.vertices(OUT, "HAS_PROJECT")) {
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(OUT, "HAS_PROJECT")) {
 			// Migrate all nodes of the project
 			Vertex baseNode = project.vertices(OUT, "HAS_ROOT_NODE").next();
 			migrateNode(baseNode);
@@ -44,12 +44,12 @@ public class CreateMissingDraftEdges extends AbstractChange {
 	private void migrateNode(Vertex node) {
 
 		boolean foundDraft = false;
-		Iterable<Edge> edges = node.edges(OUT, "HAS_FIELD_CONTAINER");
+		Iterator<Edge> edges = node.edges(OUT, "HAS_FIELD_CONTAINER");
 		Edge referenceEdge = null;
 		Vertex possibleDraftContainer = null;
-		// Determine whether a draft edge exists and locate the publish edge. 
-		//The publish edge will be copied to create the missing draft edge.
-		for (Edge edge : edges) {
+		// Determine whether a draft edge exists and locate the publish edge.
+		// The publish edge will be copied to create the missing draft edge.
+		for (Edge edge : (Iterable<Edge>) () -> edges) {
 			String type = edge.value("edgeType");
 			if ("D".equals(type)) {
 				foundDraft = true;
@@ -82,7 +82,7 @@ public class CreateMissingDraftEdges extends AbstractChange {
 
 		// Now check the children and migrate structure
 		Iterator<Edge> childrenEdges = node.edges(IN, "HAS_PARENT_NODE");
-		for (Edge childEdge : (Iterable<Edge>)s() -> childrenEdges) {
+		for (Edge childEdge : (Iterable<Edge>) () -> childrenEdges) {
 			migrateNode(childEdge.outVertex());
 		}
 

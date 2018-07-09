@@ -2,7 +2,6 @@ package com.gentics.mesh.changelog.changes;
 
 import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
 
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -36,11 +35,11 @@ public class RemoveBogusWebrootProperty extends AbstractChange {
 	private void migrateContainer(Vertex container) {
 
 		boolean isPublished = false;
-		Iterable<Edge> edges = container.getEdges(IN, "HAS_FIELD_CONTAINER");
+		Iterable<Edge> edges = (Iterable<Edge>) () -> container.edges(IN, "HAS_FIELD_CONTAINER");
 
 		// Check whether the container is published
 		for (Edge edge : edges) {
-			String type = edge.getProperty("edgeType");
+			String type = edge.value("edgeType");
 			if ("P".equals(type)) {
 				isPublished = true;
 			}
@@ -48,9 +47,9 @@ public class RemoveBogusWebrootProperty extends AbstractChange {
 
 		// The container is not published anywhere. Remove the bogus publish webroot info which otherwise causes publish webroot conflicts with new versions.
 		if (!isPublished) {
-			if (container.getProperty(WEBROOT_PUB) != null) {
-				log.info("Found inconsistency on container {" + container.getProperty("uuid") + "}");
-				container.removeProperty(WEBROOT_PUB);
+			if (container.value(WEBROOT_PUB) != null) {
+				log.info("Found inconsistency on container {" + container.value("uuid") + "}");
+				container.property(WEBROOT_PUB).remove();
 				log.info("Inconsistency fixed");
 			}
 		}

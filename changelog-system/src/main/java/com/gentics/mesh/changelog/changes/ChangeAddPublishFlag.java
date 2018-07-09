@@ -43,17 +43,17 @@ public class ChangeAddPublishFlag extends AbstractChange {
 	private void migrateNode(Vertex node) {
 
 		// Extract and remove the published flag from the node
-		String publishFlag = node.getProperty("published");
-		node.removeProperty("published");
+		String publishFlag = node.value("published");
+		node.property("published").remove();
 
 		// Set the published flag to all node graph field containers
-		Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
+		Iterable<Vertex> containers = (Iterable<Vertex>) () -> node.vertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Vertex container : containers) {
 			if (publishFlag != null) {
-				container.setProperty("published", publishFlag);
+				container.property("published", publishFlag);
 			}
 		}
-		log.info("Migrated node {" + node.getProperty("uuid") + "}");
+		log.info("Migrated node {" + node.property("uuid") + "}");
 	}
 
 }

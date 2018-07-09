@@ -85,8 +85,8 @@ public class RenameReleasesToBranches extends AbstractChange {
 		log.info("Migrated {" + n + "} edges");
 
 		// Migrate job properties
-		for (Vertex root : meshRoot.vertices(OUT, "HAS_JOB_ROOT")) {
-			for (Vertex job : root.vertices(OUT, "HAS_JOB")) {
+		for (Vertex root : (Iterable<Vertex>) () -> meshRoot.vertices(OUT, "HAS_JOB_ROOT")) {
+			for (Vertex job : (Iterable<Vertex>) () -> root.vertices(OUT, "HAS_JOB")) {
 				migrateProperty(job, "releaseName", "branchName");
 				migrateProperty(job, "releaseUuid", "branchUuid");
 				String type = job.value("ferma_type");
@@ -101,7 +101,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 	private void migrateProperty(Vertex vertex, String oldPropertyKey, String newPropertyKey) {
 		log.info("Migrating vertex: " + vertex.id());
 		String value = vertex.value(oldPropertyKey);
-		vertex.removeProperty(oldPropertyKey);
+		vertex.property(oldPropertyKey).remove();
 		if (value != null) {
 			vertex.property(newPropertyKey, value);
 		}
@@ -109,7 +109,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 	private void migrateProperty(Edge edge, String label, String oldPropertyKey, String newPropertyKey) {
 		String value = edge.value(oldPropertyKey);
-		edge.removeProperty(oldPropertyKey);
+		edge.property(oldPropertyKey).remove();
 		if (value != null) {
 			edge.property(newPropertyKey, value);
 		}
