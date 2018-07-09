@@ -15,7 +15,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -42,6 +41,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -91,17 +91,17 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	@Override
 	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
-		Set<String> fields = generic.getFields();
+		FieldsSet fields = generic.getFields();
 
 		TagResponse restTag = new TagResponse();
-		if (fields.isEmpty() || fields.contains("uuid")) {
+		if (fields.has("uuid")) {
 			restTag.setUuid(getUuid());
 			// Performance shortcut to return now and ignore the other checks
 			if (fields.size() == 1) {
 				return restTag;
 			}
 		}
-		if (fields.isEmpty() || fields.contains("tagFamily")) {
+		if (fields.has("tagFamily")) {
 			TagFamily tagFamily = getTagFamily();
 			if (tagFamily != null) {
 				TagFamilyReference tagFamilyReference = new TagFamilyReference();
@@ -110,7 +110,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				restTag.setTagFamily(tagFamilyReference);
 			}
 		}
-		if (fields.isEmpty() || fields.contains("name")) {
+		if (fields.has("name")) {
 			restTag.setName(getName());
 		}
 

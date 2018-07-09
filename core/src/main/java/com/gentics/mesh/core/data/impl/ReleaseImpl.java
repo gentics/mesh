@@ -15,8 +15,6 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
-import java.util.Set;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -52,6 +50,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 
@@ -117,20 +116,20 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	@Override
 	public ReleaseResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
-		Set<String> fields = generic.getFields();
+		FieldsSet fields = generic.getFields();
 
 		ReleaseResponse restRelease = new ReleaseResponse();
-		if (fields.isEmpty() || fields.contains("name")) {
+		if (fields.has("name")) {
 			restRelease.setName(getName());
 		}
-		if (fields.isEmpty() || fields.contains("hostname")) {
+		if (fields.has("hostname")) {
 			restRelease.setHostname(getHostname());
 		}
-		if (fields.isEmpty() || fields.contains("ssl")) {
+		if (fields.has("ssl")) {
 			restRelease.setSsl(getSsl());
 		}
 		// restRelease.setActive(isActive());
-		if (fields.isEmpty() || fields.contains("migrated")) {
+		if (fields.has("migrated")) {
 			restRelease.setMigrated(isMigrated());
 		}
 

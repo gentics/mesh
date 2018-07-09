@@ -112,6 +112,7 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
@@ -581,11 +582,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
 		GenericParameters generic = ac.getGenericParameters();
-		Set<String> fields = generic.getFields();
+		FieldsSet fields = generic.getFields();
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
 		NodeResponse restNode = new NodeResponse();
-		if (fields.isEmpty() || fields.contains("uuid")) {
+		if (fields.has("uuid")) {
 			restNode.setUuid(getUuid());
 
 			// Performance shortcut to return now and ignore the other checks
@@ -599,32 +600,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
 		Release release = ac.getRelease(getProject());
-		if (fields.isEmpty() || fields.contains("languages")) {
+		if (fields.has("languages")) {
 			restNode.setAvailableLanguages(getLanguageInfo(ac));
 		}
-		if (fields.isEmpty() || fields.contains("fields")) {
+		if (fields.has("fields")) {
 			setFields(ac, release, restNode, level, languageTags);
 		}
-		if (fields.isEmpty() || fields.contains("parent")) {
+		if (fields.has("parent")) {
 			setParentNodeInfo(ac, release, restNode);
 		}
-		if (fields.isEmpty() || fields.contains("perms")) {
+		if (fields.has("perms")) {
 			setRolePermissions(ac, restNode);
 		}
-		if (fields.isEmpty() || fields.contains("children")) {
+		if (fields.has("children")) {
 			setChildrenInfo(ac, release, restNode);
 		}
-		if (fields.isEmpty() || fields.contains("tags")) {
+		if (fields.has("tags")) {
 			setTagsToRest(ac, restNode, release);
 		}
 		fillCommonRestFields(ac, fields, restNode);
-		if (fields.isEmpty() || fields.contains("breadcrumb")) {
+		if (fields.has("breadcrumb")) {
 			setBreadcrumbToRest(ac, restNode);
 		}
-		if (fields.isEmpty() || fields.contains("path")) {
+		if (fields.has("path")) {
 			setPathsToRest(ac, restNode, release);
 		}
-		if (fields.isEmpty() || fields.contains("project")) {
+		if (fields.has("project")) {
 			setProjectReference(ac, restNode);
 		}
 

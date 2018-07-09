@@ -60,6 +60,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -339,28 +340,28 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
-		Set<String> fields = generic.getFields();
+		FieldsSet fields = generic.getFields();
 		UserResponse restUser = new UserResponse();
 
-		if (fields.isEmpty() || fields.contains("username")) {
+		if (fields.has("username")) {
 			restUser.setUsername(getUsername());
 		}
-		if (fields.isEmpty() || fields.contains("emailAddress")) {
+		if (fields.has("emailAddress")) {
 			restUser.setEmailAddress(getEmailAddress());
 		}
-		if (fields.isEmpty() || fields.contains("firstname")) {
+		if (fields.has("firstname")) {
 			restUser.setFirstname(getFirstname());
 		}
-		if (fields.isEmpty() || fields.contains("lastname")) {
+		if (fields.has("lastname")) {
 			restUser.setLastname(getLastname());
 		}
-		if (fields.isEmpty() || fields.contains("enabled")) {
+		if (fields.has("enabled")) {
 			restUser.setEnabled(isEnabled());
 		}
-		if (fields.isEmpty() || fields.contains("nodeReference")) {
+		if (fields.has("nodeReference")) {
 			setNodeReference(ac, restUser, level);
 		}
-		if (fields.isEmpty() || fields.contains("groups")) {
+		if (fields.has("groups")) {
 			setGroups(ac, restUser);
 		}
 		fillCommonRestFields(ac, fields, restUser);

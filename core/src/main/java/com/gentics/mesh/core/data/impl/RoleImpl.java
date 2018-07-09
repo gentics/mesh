@@ -37,6 +37,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -112,15 +113,15 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public RoleResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
-		Set<String> fields = generic.getFields();
+		FieldsSet fields = generic.getFields();
 
 		RoleResponse restRole = new RoleResponse();
 
-		if (fields.isEmpty() || fields.contains("name")) {
+		if (fields.has("name")) {
 			restRole.setName(getName());
 		}
 
-		if (fields.isEmpty() || fields.contains("groups")) {
+		if (fields.has("groups")) {
 			setGroups(ac, restRole);
 		}
 		fillCommonRestFields(ac, fields, restRole);

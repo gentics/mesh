@@ -1,8 +1,7 @@
 package com.gentics.mesh.parameter;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.parameter.value.FieldsSetImpl;
 
 public interface GenericParameters extends ParameterProvider {
 
@@ -16,12 +15,12 @@ public interface GenericParameters extends ParameterProvider {
 	 * 
 	 * @return
 	 */
-	default Set<String> getFields() {
+	default FieldsSet getFields() {
 		String value = getParameter(FIELDS_PARAM_KEY);
 		if(value==null|| value.isEmpty()) {
-			return new HashSet<>();
+			return new FieldsSetImpl();
 		} else {
-			return new HashSet<String>(Arrays.asList(value.split(",")));
+			return new FieldsSetImpl(value);
 		}
 	}
 

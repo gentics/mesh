@@ -38,6 +38,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -144,13 +145,13 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public GroupResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
-		Set<String> fields = generic.getFields();
+		FieldsSet fields = generic.getFields();
 
 		GroupResponse restGroup = new GroupResponse();
-		if (fields.isEmpty() || fields.contains("name")) {
+		if (fields.has("name")) {
 			restGroup.setName(getName());
 		}
-		if (fields.isEmpty() || fields.contains("roles")) {
+		if (fields.has("roles")) {
 			setRoles(ac, restGroup);
 		}
 		fillCommonRestFields(ac, fields, restGroup);

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -62,15 +63,15 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public void fillCommonRestFields(InternalActionContext ac, Set<String> fields, GenericRestResponse model) {
-		if (fields.isEmpty() || fields.contains("uuid")) {
+	public void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model) {
+		if (fields.has("uuid")) {
 			model.setUuid(getUuid());
 		}
 
 		if (this instanceof EditorTrackingVertex) {
 			EditorTrackingVertex edited = (EditorTrackingVertex) this;
 
-			if (fields.isEmpty() || fields.contains("editor")) {
+			if (fields.has("editor")) {
 				User editor = edited.getEditor();
 				if (editor != null) {
 					model.setEditor(editor.transformToReference());
@@ -79,7 +80,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				}
 			}
 
-			if (fields.isEmpty() || fields.contains("edited")) {
+			if (fields.has("edited")) {
 				String date = edited.getLastEditedDate();
 				model.setEdited(date);
 			}
@@ -87,19 +88,19 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		if (this instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex created = (CreatorTrackingVertex) this;
-			if (fields.isEmpty() || fields.contains("creator")) {
+			if (fields.has("creator")) {
 				User creator = created.getCreator();
 				if (creator != null) {
 					model.setCreator(creator.transformToReference());
 				}
 			}
-			if (fields.isEmpty() || fields.contains("created")) {
+			if (fields.has("created")) {
 				String date = created.getCreationDate();
 				model.setCreated(date);
 			}
 		}
 
-		if (fields.isEmpty() || fields.contains("perms")) {
+		if (fields.has("perms")) {
 			// When this is a node migration, do not set user permissions
 			if (!(ac instanceof NodeMigrationActionContextImpl)) {
 				PermissionInfo permissionInfo = ac.getUser().getPermissionInfo(this);

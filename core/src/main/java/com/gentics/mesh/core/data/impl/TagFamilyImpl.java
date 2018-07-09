@@ -45,12 +45,13 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * @see TagFamily
@@ -156,10 +157,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
-		Set<String> fields = generic.getFields();
+		FieldsSet fields = generic.getFields();
 
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
-		if (fields.isEmpty() || fields.contains("uuid")) {
+		if (fields.has("uuid")) {
 			restTagFamily.setUuid(getUuid());
 
 			// Performance shortcut to return now and ignore the other checks
@@ -168,13 +169,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			}
 		}
 
-		if (fields.isEmpty() || fields.contains("name")) {
+		if (fields.has("name")) {
 			restTagFamily.setName(getName());
 		}
 
 		fillCommonRestFields(ac, fields, restTagFamily);
 
-		if (fields.isEmpty() || fields.contains("perms")) {
+		if (fields.has("perms")) {
 			setRolePermissions(ac, restTagFamily);
 		}
 
