@@ -103,7 +103,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		// Assert job warnings
 		JobListResponse jobs = call(() -> client().findJobs());
 		JobResponse job = jobs.getData().get(0);
-		assertEquals("node-conflict", job.getWarnings().get(0).getType());
+		assertEquals("node-conflict-resolution", job.getWarnings().get(0).getType());
 
 	}
 
