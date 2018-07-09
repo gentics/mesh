@@ -17,7 +17,7 @@ public interface GenericParameters extends ParameterProvider {
 	 */
 	default FieldsSet getFields() {
 		String value = getParameter(FIELDS_PARAM_KEY);
-		if(value==null|| value.isEmpty()) {
+		if (value == null || value.isEmpty()) {
 			return new FieldsSetImpl();
 		} else {
 			return new FieldsSetImpl(value);
