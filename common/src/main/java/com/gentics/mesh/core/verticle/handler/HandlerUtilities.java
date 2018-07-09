@@ -160,7 +160,7 @@ public class HandlerUtilities {
 
 				SearchQueueBatch b = tuple.v2();
 				Boolean isUpdated = tuple.v1();
-				RM model = updateElement.transformToRestSync(ac, 0); 
+				RM model = updateElement.transformToRestSync(ac, 0);
 				info = new ResultInfo(model, b);
 				if (isUpdated) {
 					updateElement.onUpdated();
@@ -188,13 +188,7 @@ public class HandlerUtilities {
 				info2.getBatch().processSync();
 				return info2.getModel();
 			});
-		}, model -> {
-			if (model == null) {
-				ac.send(created.get() ? CREATED : OK);
-			} else {
-				ac.send(model, created.get() ? CREATED : OK);
-			}
-		});
+		}, model -> ac.send(model, created.get() ? CREATED : OK));
 	}
 
 	/**
