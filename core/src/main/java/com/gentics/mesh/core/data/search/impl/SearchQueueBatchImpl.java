@@ -4,12 +4,9 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -63,8 +60,8 @@ import io.vertx.core.logging.LoggerFactory;
 public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	private String batchId;
-	private SortedSet<BulkSearchQueueEntry<?>> bulkEntries = new TreeSet<>();
-	private SortedSet<SeperateSearchQueueEntry<?>> seperateEntries = new TreeSet<>();
+	private List<BulkSearchQueueEntry<?>> bulkEntries = new ArrayList<>();
+	private List<SeperateSearchQueueEntry<?>> seperateEntries = new ArrayList<>();
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
 

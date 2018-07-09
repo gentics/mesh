@@ -59,7 +59,6 @@ public class UpdateBulkEntry extends AbstractBulkEntry {
 		if (usePipeline) {
 			settings.put("pipeline", installationPrefix + getIndexName());
 		}
-
 		metaData.put(getBulkAction().id(), settings);
 		return new StringBuilder().append(metaData.encode()).append("\n").append(doc.encode()).toString();
 	}

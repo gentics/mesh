@@ -10,7 +10,6 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 /**

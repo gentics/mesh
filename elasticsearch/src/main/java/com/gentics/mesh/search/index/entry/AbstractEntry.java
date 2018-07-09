@@ -2,10 +2,8 @@ package com.gentics.mesh.search.index.entry;
 
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 
-import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 
 /**
