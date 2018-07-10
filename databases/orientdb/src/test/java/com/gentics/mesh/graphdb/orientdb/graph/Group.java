@@ -1,14 +1,15 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.ext.AbstractInterceptingVertexFrame;
 
 @GraphElement
 public class Group extends AbstractInterceptingVertexFrame {
 
-	public List<? extends Person> getMembers() {
-		return out("HAS_MEMBER").has(Person.class).toListExplicit(Person.class);
+	public Stream<? extends Person> getMembers() {
+		return out("HAS_MEMBER").stream(Person.class);
 	}
 
 	public void addMember(Person person) {

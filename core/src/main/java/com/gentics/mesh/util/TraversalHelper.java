@@ -3,8 +3,8 @@ package com.gentics.mesh.util;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.EdgeTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 
 /**
@@ -18,10 +18,9 @@ public final class TraversalHelper {
 	 * @param traversal
 	 *            Traversal to be debugged
 	 */
-	public static void debug(VertexTraversal<?, ?, ?> traversal) {
-		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
+	public static void debug(VertexTraversal traversal) {
+		for (MeshVertexImpl v : traversal.ita(MeshVertexImpl.class)) {
 			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
-
 		}
 	}
 
@@ -30,9 +29,9 @@ public final class TraversalHelper {
 	 * 
 	 * @param traversal
 	 */
-	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
-		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
-			System.out.println(e.getElement().getId() + "from " + e.inV().next() + " to " + e.outV().next());
+	public static void debug(EdgeTraversal traversal) {
+		for (MeshEdgeImpl e : traversal.ita(MeshEdgeImpl.class)) {
+			System.out.println(e.getElement().id() + "from " + e.inV().next() + " to " + e.outV().next());
 			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
 	}

@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -101,8 +101,8 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 	}
 
 	@Override
-	public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
-		return out(HAS_USER).in(HAS_ROLE).out(permission.label());
+	public VertexTraversal getPermTraversal(GraphPermission permission) {
+		return traverse( g -> g.out(HAS_USER).in(HAS_ROLE).out(permission.label()));
 	}
 
 }

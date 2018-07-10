@@ -6,17 +6,17 @@ import static com.tinkerpop.blueprints.Direction.IN;
 import java.util.Iterator;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.ext.interopt.EdgeTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -70,7 +70,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 
 		// Check all existing containers in order to find existing ones
 		U container = null;
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, language.getLanguageTag());
+		EdgeTraversal edgeTraversal = traverse(g -> g.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, language.getLanguageTag()));
 		if (edgeTraversal.hasNext()) {
 			container = edgeTraversal.next().inV().has(classOfU).nextOrDefault(classOfU, null);
 		}

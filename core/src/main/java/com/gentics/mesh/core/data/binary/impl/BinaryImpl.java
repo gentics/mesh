@@ -31,7 +31,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	@Override
 	public Iterable<? extends BinaryGraphField> findFields() {
-		return inE(HAS_FIELD).frameExplicit(BinaryGraphFieldImpl.class);
+		return inE(HAS_FIELD).ita(BinaryGraphFieldImpl.class);
 	}
 
 	@Override

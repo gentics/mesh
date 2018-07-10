@@ -17,11 +17,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -41,12 +41,12 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.EdgeTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * @see Tag
@@ -62,8 +62,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public List<? extends Node> getNodes(Branch branch) {
-		return TagEdgeImpl.getNodeTraversal(this, branch).toListExplicit(NodeImpl.class);
+	public Iterable<? extends Node> getNodes(Branch branch) {
+		return TagEdgeImpl.getNodeTraversal(this, branch).ita(NodeImpl.class);
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
@@ -145,7 +145,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	@Override
 	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser user, Branch branch, List<String> languageTags, ContainerType type,
 			PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(branch, languageTags, type);
+		VertexTraversal traversal = getTaggedNodesTraversal(branch, languageTags, type);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
 	}
 
@@ -164,9 +164,9 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	 *            Optional type of the node containers to filter by
 	 * @return Traversal which can be used to locate the nodes
 	 */
-	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Branch branch, List<String> languageTags, ContainerType type) {
+	protected VertexTraversal getTaggedNodesTraversal(Branch branch, List<String> languageTags, ContainerType type) {
 
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, branch).mark().outE(
+		EdgeTraversal<?, ?, ? extends VertexTraversal> traversal = TagEdgeImpl.getNodeTraversal(this, branch).mark().outE(
 				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid());
 
 		if (type != null) {

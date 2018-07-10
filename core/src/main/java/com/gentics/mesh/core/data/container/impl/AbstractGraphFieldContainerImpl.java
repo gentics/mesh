@@ -3,11 +3,16 @@ package com.gentics.mesh.core.data.container.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.traversal.FP.has;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.security.InvalidParameterException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,7 +65,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.ext.interopt.EdgeTraversal;
 
 /**
  * Abstract implementation for a field container. A {@link GraphFieldContainer} is used to store {@link GraphField} instances.
@@ -194,7 +199,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public MicronodeGraphField getMicronode(String key) {
-		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(MicronodeGraphFieldImpl.class, null);
+		return traverse(g -> g.outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)).nextOrDefaultExplicit(MicronodeGraphFieldImpl.class,
+			null);
 	}
 
 	@Override
@@ -206,7 +212,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public BinaryGraphField getBinary(String key) {
-		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
+		return traverse(g -> g.outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)).nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
 	}
 
 	@Override
@@ -281,7 +287,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public <T extends ListGraphField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey) {
-		return out(HAS_LIST).has(classOfT).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey).nextOrDefaultExplicit(classOfT, null);
+		return traverse(g -> g.out(HAS_LIST).filter(has(classOfT)).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey)).nextOrDefaultExplicit(classOfT,
+			null);
 	}
 
 	/**
@@ -380,7 +387,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public void deleteFieldEdge(String key) {
-		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		EdgeTraversal traversal = traverse(g -> g.outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key));
 		if (traversal.hasNext()) {
 			traversal.next().remove();
 		}
@@ -393,14 +400,13 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			.filter(this::isNodeReferenceType)
 			.collect(Collectors.groupingBy(FieldSchema::getType));
 
-		Function<FieldTypes, List<FieldSchema>> getFields = type ->
-			Optional.ofNullable(affectedFields.get(type.toString())).orElse(Collections.emptyList());
+		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
+			.orElse(Collections.emptyList());
 
 		return Stream.of(
 			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
 			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
-			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
-		).flatMap(Function.identity())::iterator;
+			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)).flatMap(Function.identity())::iterator;
 	}
 
 	/**
@@ -413,7 +419,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	/**
 	 * Gets the node from a node field.
-	 * @param field The node field to get the node from
+	 * 
+	 * @param field
+	 *            The node field to get the node from
 	 * @return Gets the node as a stream or an empty stream if the node field is not set
 	 */
 	private Stream<Node> getNodeFromNodeField(FieldSchema field) {
@@ -424,8 +432,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	/**
-	 * Gets the nodes that are referenced by a micronode in the given field.
-	 * This includes all node fields and node list fields in the micronode.
+	 * Gets the nodes that are referenced by a micronode in the given field. This includes all node fields and node list fields in the micronode.
 	 */
 	private Stream<? extends Node> getNodesFromMicronode(FieldSchema field) {
 		return Optional.ofNullable(getMicronode(field.getName()))
@@ -434,15 +441,13 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	/**
-	 * Gets the nodes that are referenced by a list field.
-	 * In case of a node list, all nodes in that list are returned.
-	 * In case of a micronode list, all nodes referenced by all node fields and node list fields in all microschemas are returned.
-	 * Otherwise an empty stream is returned.
+	 * Gets the nodes that are referenced by a list field. In case of a node list, all nodes in that list are returned. In case of a micronode list, all nodes
+	 * referenced by all node fields and node list fields in all microschemas are returned. Otherwise an empty stream is returned.
 	 */
 	private Stream<? extends Node> getNodesFromList(FieldSchema field) {
 		ListFieldSchema list;
 		if (field instanceof ListFieldSchema) {
-			list = (ListFieldSchema)field;
+			list = (ListFieldSchema) field;
 		} else {
 			throw new InvalidParameterException("Invalid field type");
 		}

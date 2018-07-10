@@ -258,7 +258,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10));
 			assertEquals(2, roles.getSize());
-			assertEquals(1, extraRole.getGroups().size());
+			assertEquals(1, extraRole.getGroups().count());
 
 			// assertEquals(2, roles.getTotalElements());
 		}

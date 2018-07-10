@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data.schema;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -170,7 +170,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * 
 	 * @return Found branches of this version
 	 */
-	List<? extends Branch> getBranches();
+	Stream<? extends Branch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.

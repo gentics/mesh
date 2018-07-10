@@ -4,6 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BIN
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -11,8 +14,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * @see BinaryRoot
@@ -53,7 +54,7 @@ public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-					.getId(), getId()));
+					.id(), getId()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}

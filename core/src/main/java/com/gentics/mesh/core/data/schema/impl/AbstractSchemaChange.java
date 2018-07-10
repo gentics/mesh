@@ -31,7 +31,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<?> getNextChange() {
-		return (SchemaChange) out(HAS_CHANGE).nextOrDefault(null);
+		return traverse(g -> g.out(HAS_CHANGE)).nextOrDefault(SchemaChange.class, null);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<?> getPreviousChange() {
-		return (SchemaChange) in(HAS_CHANGE).nextOrDefault(null);
+		return traverse(g -> g.in(HAS_CHANGE)).nextOrDefault(SchemaChange.class, null);
 	}
 
 	@Override

@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -22,10 +24,6 @@ import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.ext.AbstractInterceptingVertexFrame;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 /**
  * @see MeshVertex
@@ -120,10 +118,6 @@ public class MeshVertexImpl extends AbstractInterceptingVertexFrame implements M
 		this.uuid = uuid;
 	}
 
-	public Vertex getVertex() {
-		return getElement();
-	}
-
 	public String getFermaType() {
 		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
 	}
@@ -153,28 +147,28 @@ public class MeshVertexImpl extends AbstractInterceptingVertexFrame implements M
 		}
 	}
 
-	@Override
-	public Vertex getElement() {
-		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
-		// transaction finishes
-		FramedGraph fg = Tx.getActive().getGraph();
-		if (fg == null) {
-			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
-		}
-
-		Vertex vertexForId = fg.getVertex(id);
-		if (vertexForId == null) {
-			throw new RuntimeException("No vertex for Id {" + id + "} could be found within the graph");
-		}
-		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
-
-		// Unwrap wrapped vertex
-		if (vertex instanceof WrappedElement) {
-			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
-		}
-		return (Vertex) vertex;
-	}
+//	@Override
+//	public Vertex getElement() {
+//		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
+//		// transaction finishes
+//		FramedGraph fg = Tx.getActive().getGraph();
+//		if (fg == null) {
+//			throw new RuntimeException(
+//				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+//		}
+//
+//		Vertex vertexForId = fg.getVertex(id);
+//		if (vertexForId == null) {
+//			throw new RuntimeException("No vertex for Id {" + id + "} could be found within the graph");
+//		}
+//		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
+//
+//		// Unwrap wrapped vertex
+//		if (vertex instanceof WrappedElement) {
+//			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+//		}
+//		return (Vertex) vertex;
+//	}
 
 	@Override
 	public String getElementVersion() {

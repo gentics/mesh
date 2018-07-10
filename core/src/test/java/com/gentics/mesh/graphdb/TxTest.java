@@ -227,7 +227,7 @@ public class TxTest extends AbstractMeshTest {
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
-						reloadedNode.getTags(project().getLatestBranch()).size());
+						reloadedNode.getTags(project().getLatestBranch()).count());
 			}
 		}
 	}

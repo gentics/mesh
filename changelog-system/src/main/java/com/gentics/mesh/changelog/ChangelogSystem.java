@@ -67,7 +67,7 @@ public class ChangelogSystem {
 				graph.rollback();
 				return false;
 			} finally {
-				graph.shutdown();
+				graph.close();
 			}
 		}
 		if (reindex) {
@@ -88,7 +88,7 @@ public class ChangelogSystem {
 				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
 		} finally {
-			graph.shutdown();
+			graph.close();
 		}
 	}
 

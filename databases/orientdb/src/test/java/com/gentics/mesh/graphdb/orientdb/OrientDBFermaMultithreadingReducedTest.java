@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb.orientdb;
 
 import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.runAndWait;
+import static com.gentics.mesh.util.StreamUtil.toIterable;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
@@ -77,11 +78,11 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 
 	private void readPerson(Person person) {
 		person.getName();
-		for (Person p : person.getFriends()) {
+		for (Person p : toIterable(person.getFriends())) {
 			p.getName();
-			for (Person p2 : person.getFriends()) {
+			for (Person p2 : toIterable(person.getFriends())) {
 				p2.getName();
-				for (Person p3 : p2.getFriends()) {
+				for (Person p3 : toIterable(p2.getFriends())) {
 					p3.getName();
 				}
 			}

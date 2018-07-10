@@ -52,12 +52,12 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 	@Ignore
 	public void testAsyncTxRetryHandling2() throws Exception {
 		// Test creation of user in current thread
-		int nFriendsBefore;
+		long nFriendsBefore;
 		try (Tx tx = db.tx()) {
 			p = addPersonWithFriends(tx.getGraph(), "Person2");
 			manipulatePerson(tx.getGraph(), p);
 			tx.success();
-			nFriendsBefore = p.getFriends().size();
+			nFriendsBefore = p.getFriends().count();
 		}
 
 		CyclicBarrier b = new CyclicBarrier(3);
@@ -94,7 +94,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		System.out.println("Asserting");
 		try (Tx tx = db.tx()) {
 			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
-			int nFriendsAfter = p.getFriends().size();
+			long nFriendsAfter = p.getFriends().count();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
 		}
 
@@ -104,12 +104,12 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 	@Ignore
 	public void testTxConflictHandling() throws InterruptedException, BrokenBarrierException, TimeoutException {
 		// Test creation of user in current thread
-		int nFriendsBefore;
+		long nFriendsBefore;
 		try (Tx tx = db.tx()) {
 			p = addPersonWithFriends(tx.getGraph(), "Person2");
 			manipulatePerson(tx.getGraph(), p);
 			tx.success();
-			nFriendsBefore = p.getFriends().size();
+			nFriendsBefore = p.getFriends().count();
 		}
 
 		CyclicBarrier b = new CyclicBarrier(3);
@@ -121,7 +121,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		Thread.sleep(1000);
 		try (Tx tx = db.tx()) {
 			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
-			int nFriendsAfter = p.getFriends().size();
+			long nFriendsAfter = p.getFriends().count();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
 		}
 

@@ -10,7 +10,6 @@ import com.syncleus.ferma.ext.interopt.EdgeTraversal;
 import com.syncleus.ferma.ext.interopt.VertexTraversal;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.gremlin.Tokens;
 
 /**
  * This type resolver will use the Java class stored in the 'java_class' on the element.
@@ -36,7 +35,7 @@ public class MeshTypeResolver implements TypeResolver {
 		final Class<T> nodeKind = (Class<T>) this.reflectionCache.forName(nodeClazz);
 
 		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
-				|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
+			|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
 			return nodeKind;
 		} else {
 			return kind;
@@ -63,25 +62,25 @@ public class MeshTypeResolver implements TypeResolver {
 	}
 
 	@Override
-	public VertexTraversal<?, ?, ?> hasType(final VertexTraversal<?, ?, ?> traverser, final Class<?> type) {
+	public VertexTraversal hasType(final VertexTraversal traverser, final Class<?> type) {
 		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, ?> hasType(final EdgeTraversal<?, ?, ?> traverser, final Class<?> type) {
+	public EdgeTraversal hasType(final EdgeTraversal traverser, final Class<?> type) {
 		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
 	}
 
 	@Override
-	public VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type) {
+	public VertexTraversal hasNotType(VertexTraversal traverser, Class<?> type) {
 		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, ?> hasNotType(EdgeTraversal<?, ?, ?> traverser, Class<?> type) {
+	public EdgeTraversal hasNotType(EdgeTraversal traverser, Class<?> type) {
 		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
 	}

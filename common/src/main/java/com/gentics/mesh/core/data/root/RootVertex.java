@@ -31,7 +31,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.google.common.collect.Iterators;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
@@ -45,17 +44,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
 	Database database();
-
-	/**
-	 * Return a list of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
-	 * 
-	 * @deprecated Use {@link #findAllIt()} instead.
-	 * @return
-	 */
-	@Deprecated
-	default List<? extends T> findAll() {
-		return out(getRootLabel()).toListExplicit(getPersistanceClass());
-	}
 
 	/**
 	 * Iterate over all items and return the count.
@@ -72,18 +60,19 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default Iterable<? extends T> findAllIt() {
-		return out(getRootLabel()).frameExplicit(getPersistanceClass());
+		return out(getRootLabel()).ita(getPersistanceClass());
 	}
 
 	/**
-	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
-	 * This also checks permissions.
+	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
+	 * permissions.
 	 *
-	 * @param ac The context of the request
+	 * @param ac
+	 *            The context of the request
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 
 		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
@@ -99,7 +88,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default Iterable<? extends T> findAllDynamic() {
-		return out(getRootLabel()).frame(getPersistanceClass());
+		return traverse(g -> g.out(getRootLabel())).frame(getPersistanceClass());
 	}
 
 	/**
@@ -151,7 +140,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Found element or null if element with the name could not be found
 	 */
 	default T findByName(String name) {
-		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
+		return traverse(g -> g.out(getRootLabel()).has("name", name)).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	/**

@@ -68,17 +68,17 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 	@Override
 	public Iterable<? extends SCV> findAll() {
-		return out(HAS_PARENT_CONTAINER).frameExplicit(getContainerVersionClass());
+		return traverse(g -> g.out(HAS_PARENT_CONTAINER)).frameExplicit(getContainerVersionClass());
 	}
 
 	@Override
 	public SCV findVersionByUuid(String uuid) {
-		return out(HAS_PARENT_CONTAINER).has("uuid", uuid).nextOrDefaultExplicit(getContainerVersionClass(), null);
+		return traverse(g -> g.out(HAS_PARENT_CONTAINER).has("uuid", uuid)).nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 
 	@Override
 	public SCV findVersionByRev(String version) {
-		return out(HAS_PARENT_CONTAINER).has(AbstractGraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY, version)
+		return traverse(g -> g.out(HAS_PARENT_CONTAINER).has(AbstractGraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY, version))
 				.nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 

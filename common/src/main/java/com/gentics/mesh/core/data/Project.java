@@ -4,14 +4,14 @@ import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_DELETED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -113,7 +113,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * 
 	 * @return
 	 */
-	List<? extends Language> getLanguages();
+	Stream<? extends Language> getLanguages();
 
 	/**
 	 * Unassign the language from the project.

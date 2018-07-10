@@ -45,9 +45,9 @@ public class NodeCheck implements ConsistencyCheck {
 		//checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 
 		boolean isBaseNode = false;
-		Project project = node.out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		Project project = node.out(ASSIGNED_TO_PROJECT).nextOrDefaultExplicit(ProjectImpl.class, null);
 		if (project != null) {
-			Project rootNodeProject = node.in(HAS_ROOT_NODE).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+			Project rootNodeProject = node.in(HAS_ROOT_NODE).nextOrDefaultExplicit(ProjectImpl.class, null);
 			if (rootNodeProject != null) {
 				isBaseNode = true;
 				if (!project.equals(rootNodeProject)) {

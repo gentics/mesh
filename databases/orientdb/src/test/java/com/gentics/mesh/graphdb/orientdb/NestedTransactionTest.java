@@ -36,7 +36,7 @@ public class NestedTransactionTest {
 	public void testNestedTransaction() {
 		try {
 			db.tx((tx) -> {
-				Vertex v = tx.getGraph().addVertex(null);
+				Vertex v = tx.addVertex(null);
 				System.out.println("Outer");
 				db.tx((tx2) -> {
 					long count = tx2.getGraph().v().count();

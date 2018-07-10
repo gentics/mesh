@@ -4,8 +4,8 @@ import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
 import static com.gentics.mesh.Events.EVENT_GROUP_DELETED;
 import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -79,18 +79,18 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	void removeRole(Role role);
 
 	/**
-	 * Return a list of users that are assigned to the group.
+	 * Return a stream of users that are assigned to the group.
 	 * 
-	 * @return List of users
+	 * @return Stream of users
 	 */
-	List<? extends User> getUsers();
+	Iterable<? extends User> getUsers();
 
 	/**
-	 * Return the a list of roles that are assigned to the group.
+	 * Return the a stream of roles that are assigned to the group.
 	 * 
-	 * @return List of roles
+	 * @return Stream of roles
 	 */
-	List<? extends Role> getRoles();
+	Iterable<? extends Role> getRoles();
 
 	/**
 	 * Check whether the user has been assigned to the group.

@@ -1,5 +1,49 @@
 package com.gentics.mesh.core.data.node.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.INITIAL;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.ContainerType.forVersion;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.StreamUtil.toIterable;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.tinkerpop.blueprints.Direction.IN;
+import static com.tinkerpop.blueprints.Direction.OUT;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -19,6 +63,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -76,59 +121,17 @@ import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.EdgeTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.NotImplementedException;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.ContainerType.forVersion;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see Node
@@ -263,26 +266,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends Tag> getTags(Branch branch) {
-		return TagEdgeImpl.getTagTraversal(this, branch).toListExplicit(TagImpl.class);
+	public Stream<? extends Tag> getTags(Branch branch) {
+		return TagEdgeImpl.getTagTraversal(this, branch).stream(TagImpl.class);
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers() {
-		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, INITIAL.getCode()).inV().toListExplicit(
-			NodeGraphFieldContainerImpl.class);
+	public Iterable<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers() {
+		return () -> traverse(g -> g.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, INITIAL.getCode()).inV())
+			.frameExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
-		List<? extends NodeGraphFieldContainerImpl> list = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().toListExplicit(NodeGraphFieldContainerImpl.class);
-		return list;
+	public Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
+		Stream<? extends NodeGraphFieldContainerImpl> stream = traverse(
+			g -> g.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()).toStreamExplicit(NodeGraphFieldContainerImpl.class);
+		return toIterable(stream);
 	}
 
 	@Override
 	public Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type) {
-		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class);
+		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
+			.frameExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -402,7 +407,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public EdgeFrame getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag).has(
+		EdgeTraversal edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		if (edgeTraversal.hasNext()) {
 			return edgeTraversal.next();
@@ -418,10 +423,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	protected List<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
+	protected Stream<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+		EdgeTraversal edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
 			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return edgeTraversal.toList();
+		return edgeTraversal.stream(MeshEdgeImpl.class);
 	}
 
 	@Override
@@ -433,12 +438,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void removeTag(Tag tag, Branch branch) {
-		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(tag).back().removeAll();
+		traverse(g -> g.outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(tag).back()).removeAll();
 	}
 
 	@Override
 	public void removeAllTags(Branch branch) {
-		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).removeAll();
+		traverse(g -> g.outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())).removeAll();
 	}
 
 	@Override
@@ -453,9 +458,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Iterable<Node> getChildren() {
-		Iterator<VertexFrame> it = in(HAS_PARENT_NODE).iterator();
-		Iterable<VertexFrame> iterable = () -> it;
-		Stream<Node> stream = StreamSupport.stream(iterable.spliterator(), false).map(frame -> frame.reframe(NodeImpl.class));
+		Stream<Node> stream = in(HAS_PARENT_NODE).stream(MeshVertexImpl.class).map(frame -> frame.reframe(NodeImpl.class));
 		return () -> stream.iterator();
 	}
 
@@ -511,7 +514,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void setParentNode(String branchUuid, Node parent) {
-		outE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid).removeAll();
+		traverse(g -> g.outE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid)).removeAll();
 		addFramedEdge(HAS_PARENT_NODE, parent).setProperty(BRANCH_UUID_KEY, branchUuid);
 	}
 
@@ -765,7 +768,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, Branch branch) {
-		for (Tag tag : getTags(branch)) {
+		for (Tag tag : toIterable(getTags(branch))) {
 			TagReference reference = tag.transformToReference();
 			restNode.getTags().add(reference);
 		}
@@ -1107,7 +1110,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Remove the published edge for each found container
 		List<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
-		getGraphFieldContainerEdges(branchUuid, PUBLISHED).stream().forEach(EdgeFrame::remove);
+		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
 		// Reset the webroot property for each published container
 		published.forEach(c -> {
 			c.setProperty(NodeGraphFieldContainer.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
@@ -1366,19 +1369,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            edge type
 	 * @return vertex traversal
 	 */
-	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser, String branchUuid, List<String> languageTags,
+	private VertexTraversal getChildrenTraversal(MeshAuthUser requestUser, String branchUuid, List<String> languageTags,
 		ContainerType type) {
 		String permLabel = type == PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
 
-		VertexTraversal<?, ?, ?> traversal = null;
+		VertexTraversal traversal = null;
 		if (branchUuid != null) {
-			traversal = inE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid).outV();
+			traversal = traverse(g -> g.inE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid).outV());
 		} else {
 			traversal = in(HAS_PARENT_NODE);
 		}
 		traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
 		if (branchUuid != null || type != null) {
-			EdgeTraversal<?, ?, ?> edgeTraversal = traversal.mark().outE(HAS_FIELD_CONTAINER);
+			EdgeTraversal edgeTraversal = traversal.mark().outE(HAS_FIELD_CONTAINER);
 			if (branchUuid != null) {
 				edgeTraversal = edgeTraversal.has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid);
 			}
@@ -1393,14 +1396,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					return languageTags.contains(languageTag);
 				});
 			}
-			traversal = (VertexTraversal<?, ?, ?>) edgeTraversal.outV().back();
+			traversal = (VertexTraversal) edgeTraversal.outV().back();
 		}
 		return traversal;
 	}
 
 	@Override
-	public List<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
-		return getChildrenTraversal(requestUser, branchUuid, languageTags, type).toListExplicit(NodeImpl.class);
+	public Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
+		return getChildrenTraversal(requestUser, branchUuid, languageTags, type).stream(NodeImpl.class);
 	}
 
 	@Override
@@ -1434,7 +1437,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch) {
-		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
+		VertexTraversal traversal = TagEdgeImpl.getTagTraversal(this, branch);
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
@@ -1685,13 +1688,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		setParentNode(branchUuid, targetNode);
 
 		// Update published graph field containers
-		getGraphFieldContainers(branchUuid, PUBLISHED).stream().forEach(container -> {
+		getGraphFieldContainers(branchUuid, PUBLISHED).forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
 		batch.store(this, branchUuid, PUBLISHED, false);
 
 		// Update draft graph field containers
-		getGraphFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
+		getGraphFieldContainers(branchUuid, DRAFT).forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
 		batch.store(this, branchUuid, DRAFT, false);
@@ -1729,7 +1732,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (initial != null) {
 			// Remove the initial edge
 			initial.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
-					.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
 
 			// starting with the old intial, delete all GFC that have no previous and are not initial (for other branches)
 			dangling = initial;
@@ -1746,9 +1749,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// 3. Check whether this was be the last container of the node for this branch
 		DeleteParameters parameters = ac.getDeleteParameters();
 		if (failForLastContainer) {
-			List<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(branch.getUuid(), DRAFT);
-			List<? extends NodeGraphFieldContainer> publishContainers = getGraphFieldContainers(branch.getUuid(), PUBLISHED);
-			boolean wasLastContainer = draftContainers.isEmpty() && publishContainers.isEmpty();
+			Stream<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(branch.getUuid(), DRAFT);
+			Stream<? extends NodeGraphFieldContainer> publishContainers = getGraphFieldContainers(branch.getUuid(), PUBLISHED);
+			boolean wasLastContainer = !draftContainers.iterator().hasNext() && !publishContainers.iterator().hasNext();
 
 			if (!parameters.isRecursive() && wasLastContainer) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_last_container_for_branch");
@@ -1807,12 +1810,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		FramedGraph graph = Tx.getActive().getGraph();
-		String indexName = type == ContainerType.PUBLISHED ?
-			NodeGraphFieldContainer.PUBLISHED_WEBROOT_INDEX_NAME :
-			NodeGraphFieldContainer.WEBROOT_INDEX_NAME;
+		String indexName = type == ContainerType.PUBLISHED ? NodeGraphFieldContainer.PUBLISHED_WEBROOT_INDEX_NAME
+			: NodeGraphFieldContainer.WEBROOT_INDEX_NAME;
 		String key = NodeGraphFieldContainer.composeWebrootIndexKey(segment, branchUuid, this);
 
-		Iterator<? extends NodeGraphFieldContainerImpl> childNodeIt = graph.getFramedVertices(indexName, key, NodeGraphFieldContainerImpl.class).iterator();
+		Iterator<? extends NodeGraphFieldContainerImpl> childNodeIt = graph.getFramedVertices(indexName, key, NodeGraphFieldContainerImpl.class);
 		if (childNodeIt.hasNext()) {
 			Node childNode = childNodeIt.next().getParentNode();
 			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
@@ -1899,7 +1901,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		keyBuilder.append(expandedFields);
 
 		// branch specific tags
-		for (Tag tag : getTags(branch)) {
+		for (Tag tag : toIterable(getTags(branch))) {
 			// Tags can't be moved across branches thus we don't need to add the
 			// tag family etag
 			keyBuilder.append(tag.getETag(ac));

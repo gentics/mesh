@@ -21,7 +21,7 @@ public interface BinaryRoot extends MeshVertex {
 	 * @return
 	 */
 	default public Iterable<? extends Binary> findAll() {
-		return out(getRootLabel()).frameExplicit(getPersistanceClass());
+		return out(getRootLabel()).ita(getPersistanceClass());
 	}
 
 	/**

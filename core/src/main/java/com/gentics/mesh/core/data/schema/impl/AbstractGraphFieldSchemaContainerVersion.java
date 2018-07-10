@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.traversal.FP.has;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -38,7 +39,7 @@ import com.gentics.mesh.json.JsonUtil;
  *            Schema container type
  */
 public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
-		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> {
+	extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> {
 
 	@Override
 	public void setName(String name) {
@@ -76,7 +77,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public SchemaChange<?> getNextChange() {
-		return (SchemaChange<?>) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
+		return traverse(g -> g.out(HAS_SCHEMA_CONTAINER)).nextOrDefault(SchemaChange.class, null);
 	}
 
 	@Override
@@ -86,7 +87,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public SchemaChange<?> getPreviousChange() {
-		return (SchemaChange<?>) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
+		return traverse(g -> g.in(HAS_SCHEMA_CONTAINER)).nextOrDefault(SchemaChange.class, null);
 	}
 
 	@Override
@@ -96,12 +97,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public SCV getNextVersion() {
-		return out(HAS_VERSION).has(getContainerVersionClass()).nextOrDefaultExplicit(getContainerVersionClass(), null);
+		return traverse(g -> g.out(HAS_VERSION).filter(has(getContainerVersionClass()))).nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 
 	@Override
 	public SCV getPreviousVersion() {
-		return in(HAS_VERSION).has(getContainerVersionClass()).nextOrDefaultExplicit(getContainerVersionClass(), null);
+		return traverse(g -> g.in(HAS_VERSION).filter(has(getContainerVersionClass()))).nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 
 	@Override
@@ -226,7 +227,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public SchemaChangesListModel diff(InternalActionContext ac, FieldSchemaContainerComparator comparator,
-			FieldSchemaContainer fieldContainerModel) {
+		FieldSchemaContainer fieldContainerModel) {
 		SchemaChangesListModel list = new SchemaChangesListModel();
 		fieldContainerModel.validate();
 		list.getChanges().addAll(comparator.diff(transformToRestSync(ac, 0), fieldContainerModel));

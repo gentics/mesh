@@ -10,7 +10,6 @@ import java.util.stream.StreamSupport;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.core.data.TransformableElement;
@@ -21,7 +20,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 
 /**
@@ -118,13 +117,13 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param clazz
 	 *            Element class used to reframe the found elements
 	 */
-	public DynamicTransformablePageImpl(User user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, GraphPermission perm,
+	public DynamicTransformablePageImpl(User user, VertexTraversal traversal, PagingParameters pagingInfo, GraphPermission perm,
 			Class<? extends T> clazz) {
 		this(user, pagingInfo, null, true);
 		init(clazz, traversal, perm);
 	}
 
-	private void init(Class<? extends T> clazz, VertexTraversal<?, ?, ?> traversal, GraphPermission perm) {
+	private void init(Class<? extends T> clazz, VertexTraversal traversal, GraphPermission perm) {
 		// Iterate over all vertices that are managed by this root vertex
 		Stream<Vertex> stream = StreamSupport.stream(traversal.spliterator(), false).map(item -> {
 			return item.getElement();

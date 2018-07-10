@@ -4,9 +4,9 @@ import static com.gentics.mesh.Events.EVENT_ROLE_CREATED;
 import static com.gentics.mesh.Events.EVENT_ROLE_DELETED;
 import static com.gentics.mesh.Events.EVENT_ROLE_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
@@ -77,11 +77,11 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	Set<GraphPermission> getPermissions(MeshVertex element);
 
 	/**
-	 * Return a list of groups to which this role was assigned.
+	 * Return a stream of groups to which this role was assigned.
 	 * 
-	 * @return List of groups
+	 * @return Stream of groups
 	 */
-	List<? extends Group> getGroups();
+	Stream<? extends Group> getGroups();
 
 	/**
 	 * Return a page of groups to which this role was assigned.

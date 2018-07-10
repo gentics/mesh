@@ -1,9 +1,38 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static com.syncleus.ferma.traversal.FP.has;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.apache.commons.collections.CollectionUtils;
+
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -45,36 +74,10 @@ import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversal.FP;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.collections.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 /**
  * @see NodeGraphFieldContainer
@@ -107,7 +110,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public SchemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_SCHEMA_CONTAINER_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER_VERSION).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -358,8 +361,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Node getParentNode(String uuid) {
-		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
+		return traverse(g -> g.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
+			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, uuid)).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**
@@ -368,7 +371,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @return parent node
 	 */
 	public Node getParentNode() {
-		Node parentNode = in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
+		Node parentNode = traverse(g -> g.in(HAS_FIELD_CONTAINER)).nextOrDefaultExplicit(NodeImpl.class, null);
 		if (parentNode == null) {
 			// the field container is not directly linked to its Node, get the
 			// initial field container
@@ -405,7 +408,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Iterable<? extends NodeGraphFieldContainer> getNextVersions() {
-		return out(HAS_VERSION).frameExplicit(NodeGraphFieldContainerImpl.class);
+		return out(HAS_VERSION).ita(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -415,12 +418,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean hasPreviousVersion() {
-		return inE(HAS_VERSION).hasNext();
+		return traverse((g) -> g.inE(HAS_VERSION)).getRawTraversal().hasNext();
 	}
 
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
-		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		return traverse((g) -> g.in(HAS_VERSION).filter(has(NodeGraphFieldContainerImpl.class))).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 	}
 
 	@Override
@@ -434,30 +437,30 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isType(ContainerType type) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return traversal.hasNext();
+		return traverse((g) -> g.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())).getRawTraversal().hasNext();
 	}
 
 	@Override
 	public boolean isType(ContainerType type, String branchUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
-			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return traversal.hasNext();
+		return traverse((g) -> g.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
+			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())).getRawTraversal().hasNext();
 	}
 
 	@Override
 	public Set<Tuple<String, ContainerType>> getBranchTypes() {
 		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
-		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getBranchUuid(), edge
-			.getType())));
+		traverse((g) -> g.inE(HAS_FIELD_CONTAINER)).frameExplicit(GraphFieldContainerEdgeImpl.class)
+			.forEachRemaining(edge -> typeSet.add(Tuple.tuple(edge.getBranchUuid(), edge
+				.getType())));
 		return typeSet;
 	}
 
 	@Override
 	public Set<String> getBranches(ContainerType type) {
 		Set<String> branchUuids = new HashSet<>();
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).frameExplicit(GraphFieldContainerEdgeImpl.class)
-			.forEach(edge -> branchUuids.add(edge.getBranchUuid()));
+		traverse((g) -> g.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()))
+			.frameExplicit(GraphFieldContainerEdgeImpl.class)
+			.forEachRemaining(edge -> branchUuids.add(edge.getBranchUuid()));
 		return branchUuids;
 	}
 
@@ -576,8 +579,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
-		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).has(
-			"uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
+		return traverse((g) -> g.outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).has(
+			"uuid", version.getUuid()).back()).toListExplicit(MicronodeGraphFieldImpl.class);
 	}
 
 	@Override
@@ -600,7 +603,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return traverse((g) -> g.out(HAS_EDITOR)).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 	@Override

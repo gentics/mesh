@@ -9,7 +9,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 
 /**
  * @see TagEdge
@@ -30,7 +30,7 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Branch branch) {
+	public static VertexTraversal getTagTraversal(VertexFrame vertex, Branch branch) {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV();
 	}
 
@@ -41,7 +41,7 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Branch branch) {
+	public static VertexTraversal getNodeTraversal(Tag tag, Branch branch) {
 		return tag.inE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).outV();
 	}
 

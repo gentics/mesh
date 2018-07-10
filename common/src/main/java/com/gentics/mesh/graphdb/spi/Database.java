@@ -8,6 +8,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.Mesh;
@@ -21,7 +22,6 @@ import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
 import com.syncleus.ferma.tx.TxFactory;
-import com.tinkerpop.blueprints.TransactionalGraph;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -431,7 +431,7 @@ public interface Database extends TxFactory {
 	 * 
 	 * @return
 	 */
-	TransactionalGraph rawTx();
+	Graph rawTx();
 
 	/**
 	 * Return the vendor name.

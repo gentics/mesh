@@ -175,11 +175,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public Vertex getVertex() {
-				return null;
-			}
-
-			@Override
 			public void delete(SearchQueueBatch batch) {
 
 			}
@@ -383,12 +378,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public Vertex getElement() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
 			public <T> T addFramedEdge(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
 				// TODO Auto-generated method stub
 				return null;
@@ -420,78 +409,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public TEdge addFramedEdgeExplicit(String label, VertexFrame inVertex) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> out(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> out(String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> in(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> in(String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> both(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> both(String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> outE(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> outE(String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> inE(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> inE(String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> bothE(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> bothE(String... labels) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -623,12 +540,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public VertexTraversal<?, ?, ?> traversal() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
 			public com.google.gson.JsonObject toJson() {
 				// TODO Auto-generated method stub
 				return null;
@@ -661,13 +572,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void remove() {
 				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void setElement(Element element) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
@@ -708,43 +612,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void removeTypeResolution() {
 				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> v() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> e() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> v(Object... ids) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> e(Object... ids) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
-				// TODO Auto-generated method stub
-				return null;
 			}
 
 			@Override

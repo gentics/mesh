@@ -623,7 +623,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public <T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		FramedGraph fermaGraph = Tx.getActive().getGraph();
-		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
+		Iterator<? extends Element> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
 

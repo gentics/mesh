@@ -216,7 +216,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
-		SchemaContainer foundSchemaContainer = out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
+		SchemaContainer foundSchemaContainer = traverse(
+			g -> g.out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid()))
 				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
@@ -224,7 +225,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
 		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_SCHEMA_VERSION).retain(schemaContainerVersion).nextOrDefaultExplicit(
-				SchemaContainerVersionImpl.class, null);
+			SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
@@ -253,33 +254,38 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions() {
-		return outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class);
+		return traverse(g -> g.outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV())
+			.frameExplicit(SchemaContainerVersionImpl.class);
 	}
 
 	@Override
 	public Iterable<? extends BranchSchemaEdge> findAllSchemaVersionEdges() {
-		return outE(HAS_SCHEMA_VERSION).frameExplicit(BranchSchemaEdgeImpl.class);
+		return outE(HAS_SCHEMA_VERSION).ita(BranchSchemaEdgeImpl.class);
 	}
 
 	@Override
 	public Iterable<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges() {
-		return outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class);
+		return outE(HAS_MICROSCHEMA_VERSION).ita(BranchMicroschemaEdgeImpl.class);
 	}
 
 	@Override
 	public Iterable<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
-		return Observable.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
-				.getMicroschemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce((a, b) -> a
-						.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b)).blockingIterable();
+		return Observable.fromIterable(outE(HAS_MICROSCHEMA_VERSION).ita(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
+			.getMicroschemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce(
+				(a, b) -> a
+					.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b))
+			.blockingIterable();
 	}
 
 	@Override
 	public Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
-		return Observable.fromIterable(outE(HAS_SCHEMA_VERSION).frameExplicit(BranchSchemaEdgeImpl.class)).groupBy(it -> it
-				.getSchemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce((a, b) -> a.getSchemaContainerVersion()
-						.compareTo(b.getSchemaContainerVersion()) > 0 ? a : b)).blockingIterable();
+		return Observable.fromIterable(outE(HAS_SCHEMA_VERSION).ita(BranchSchemaEdgeImpl.class)).groupBy(it -> it
+			.getSchemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce(
+				(a, b) -> a.getSchemaContainerVersion()
+					.compareTo(b.getSchemaContainerVersion()) > 0 ? a : b))
+			.blockingIterable();
 	}
 
 	@Override
@@ -338,21 +344,23 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
-		MicroschemaContainer foundMicroschemaContainer = out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid())
+		MicroschemaContainer foundMicroschemaContainer = traverse(
+			g -> g.out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid()))
 				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
-		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid())
+		MicroschemaContainerVersion foundMicroschemaContainerVersion = traverse(
+			g -> g.out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid()))
 				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
 	@Override
 	public Iterable<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() {
-		return out(HAS_MICROSCHEMA_VERSION).frameExplicit(MicroschemaContainerVersionImpl.class);
+		return out(HAS_MICROSCHEMA_VERSION).ita(MicroschemaContainerVersionImpl.class);
 	}
 
 	/**
@@ -362,7 +370,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	 *            Container to handle
 	 */
 	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(
-			GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
+		GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaContainerVersion) {
@@ -427,7 +435,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
 		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaContainerVersion).back().nextOrDefaultExplicit(
-				BranchMicroschemaEdgeImpl.class, null);
+			BranchMicroschemaEdgeImpl.class, null);
 	}
 
 	@Override

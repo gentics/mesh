@@ -1,7 +1,20 @@
 package com.gentics.mesh.core.data.node;
 
+import static com.gentics.mesh.Events.EVENT_NODE_CREATED;
+import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
+import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.stream.Stream;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.IndexableElement;
@@ -10,7 +23,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -32,18 +44,6 @@ import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
 
 import io.reactivex.Single;
-
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.Events.EVENT_NODE_CREATED;
-import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
-import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 
 /**
  * The Node Domain Model interface.
@@ -97,12 +97,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void removeAllTags(Branch branch);
 
 	/**
-	 * Return a list of all tags that were assigned to this node in the given branch.
+	 * Return a stream of all tags that were assigned to this node in the given branch.
 	 *
 	 * @param branch
 	 * @return
 	 */
-	List<? extends Tag> getTags(Branch branch);
+	Stream<? extends Tag> getTags(Branch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -195,34 +195,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Return a list of all initial graph field containers for the node (in any branch).
 	 *
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
-
-	/**
-	 * Return a list of graph field containers of given type for the node in the given branch.
-	 *
-	 * @param branch
-	 * @param type
-	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
-	 */
-	@Deprecated
-	default List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
-		return getGraphFieldContainers(branch.getUuid(), type);
-	}
-
-	/**
-	 * Return a list of graph field containers of given type for the node in the given branch.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive. Use {@link #getGraphFieldContainersIt(String, ContainerType)}
-	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
+	Iterable<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
 	 * Return containers of the given type
@@ -323,7 +297,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @return
 	 */
-	List<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
+	Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.

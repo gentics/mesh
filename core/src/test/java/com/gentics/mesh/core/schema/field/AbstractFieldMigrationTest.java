@@ -154,7 +154,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
@@ -315,7 +315,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
@@ -382,7 +382,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the micronode
 		Job job = project().getLatestBranch().assignMicroschemaVersion(user(), versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		if (job != null) {
 			triggerAndWaitForJob(job.getUuid());
 		} else {
@@ -488,7 +488,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
@@ -668,7 +668,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
@@ -729,7 +729,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the micronode
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
@@ -826,7 +826,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
 	}
 
@@ -874,7 +874,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB);
-		Tx.getActive().getGraph().commit();
+		Tx.getActive().commit();
 		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
 	}
 

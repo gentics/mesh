@@ -1,24 +1,20 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -131,18 +127,18 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Branch> getBranches() {
-		return in(HAS_MICROSCHEMA_VERSION).toListExplicit(BranchImpl.class);
+	public Stream<? extends Branch> getBranches() {
+		return in(HAS_MICROSCHEMA_VERSION).stream(BranchImpl.class);
 	}
 
 	@Override
 	public Iterable<Job> referencedJobsViaTo() {
-		return in(HAS_TO_VERSION).frame(Job.class);
+		return () -> traverse(g -> g.in(HAS_TO_VERSION)).frame(Job.class);
 	}
 
 	@Override
 	public Iterable<Job> referencedJobsViaFrom() {
-		return in(HAS_FROM_VERSION).frame(Job.class);
+		return () -> traverse(g -> g.in(HAS_FROM_VERSION)).frame(Job.class);
 	}
 
 	@Override

@@ -14,13 +14,14 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;

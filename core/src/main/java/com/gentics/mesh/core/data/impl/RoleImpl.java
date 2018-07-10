@@ -6,11 +6,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.util.StreamUtil.toIterable;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -37,8 +38,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 
@@ -70,13 +72,13 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public List<? extends Group> getGroups() {
-		return out(HAS_ROLE).toListExplicit(GroupImpl.class);
+	public Stream<? extends Group> getGroups() {
+		return out(HAS_ROLE).stream(GroupImpl.class);
 	}
 
 	@Override
 	public Page<? extends Group> getGroups(User user, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = out(HAS_ROLE);
+		VertexTraversal traversal = out(HAS_ROLE);
 		return new DynamicTransformablePageImpl<Group>(user, traversal, pagingInfo, READ_PERM, GroupImpl.class);
 	}
 
@@ -121,7 +123,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	private void setGroups(InternalActionContext ac, RoleResponse restRole) {
-		for (Group group : getGroups()) {
+		for (Group group : toIterable(getGroups())) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
@@ -191,7 +193,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (Group group : getGroups()) {
+		for (Group group : toIterable(getGroups())) {
 			action.call(group, null);
 		}
 	}

@@ -42,7 +42,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 			Person p = tx.getGraph().addFramedVertex(Person.class);
 			p.setName("personName");
 			System.out.println(p.getId());
-			System.out.println(p.getElement().getId());
+			System.out.println(p.getElement().id());
 			System.out.println(((OrientVertex) p.getElement()).getBaseClassName());
 			System.out.println(((OrientVertex) p.getElement()).getElementType());
 			System.out.println(((OrientVertex) p.getElement()).getType());

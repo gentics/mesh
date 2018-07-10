@@ -33,3 +33,10 @@ for (Edge edge : (Iterable<Edge>)() -> v.eEdges(OUT, "HAS_ITEM)) {
 ## GraphDB
 
 * `TransactionalGraph` -> ?
+
+## Problems
+
+* mark() deprecated
+* retain() deprecated
+* FramedTransactionalGraph removed
+* WrappedFramedGraph commit? How?

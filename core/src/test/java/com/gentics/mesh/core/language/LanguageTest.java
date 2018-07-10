@@ -52,9 +52,9 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testLanguageIndex() {
 		try (Tx tx = tx()) {
 			stopWatch("languageindex.read", 50000, (step) -> {
-				Iterable<Vertex> it = tx.getGraph().getVertices("LanguageImpl.languageTag", "en");
+				Iterable<Vertex> it = tx.getGraph().vertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
-				Iterable<Vertex> it2 = tx.getGraph().getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY,
+				Iterable<Vertex> it2 = tx.getGraph().vertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY,
 						"en");
 				assertTrue(it2.iterator().hasNext());
 				Vertex vertex = it2.iterator().next();

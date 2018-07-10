@@ -25,8 +25,8 @@ import com.gentics.mesh.graphdb.spi.Database;
  * See {@link MicroschemaContainer}
  */
 public class MicroschemaContainerImpl extends
-		AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
-		implements MicroschemaContainer {
+	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
+	implements MicroschemaContainer {
 
 	@Override
 	protected Class<MicroschemaContainerImpl> getContainerClass() {
@@ -70,12 +70,12 @@ public class MicroschemaContainerImpl extends
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return traverse(g -> g.out(HAS_CREATOR)).nextOrDefault(UserImpl.class, null);
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return traverse(g -> g.out(HAS_EDITOR)).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 }

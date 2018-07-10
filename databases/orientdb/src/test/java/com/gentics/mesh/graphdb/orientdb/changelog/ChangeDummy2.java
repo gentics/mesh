@@ -1,7 +1,8 @@
 package com.gentics.mesh.graphdb.orientdb.changelog;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * Change which adds fancy moped.
@@ -22,7 +23,7 @@ public class ChangeDummy2 extends AbstractChange {
 	public void apply() {
 		Vertex meshRootVertex = getMeshRootVertex();
 		Vertex mopedVertex = getGraph().addVertex("TheMoped2");
-		mopedVertex.setProperty("name", "moped2");
+		mopedVertex.property("name", "moped2");
 		meshRootVertex.addEdge("HAS_MOPED2", mopedVertex);
 		log.info("Added moped2");
 	}

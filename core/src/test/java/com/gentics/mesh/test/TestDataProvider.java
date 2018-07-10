@@ -115,7 +115,7 @@ public class TestDataProvider {
 		try (Tx tx = db.tx()) {
 			boot.initMandatoryData();
 			boot.initOptionalData(true);
-			tx.getGraph().commit();
+			tx.commit();
 			schemaContainers.clear();
 			microschemaContainers.clear();
 			tagFamilies.clear();
@@ -142,7 +142,7 @@ public class TestDataProvider {
 			if (getSize() == FULL) {
 				addContents();
 			}
-			tx.getGraph().commit();
+			tx.commit();
 
 			long startPerm = System.currentTimeMillis();
 			addPermissions(tagFamilies.values());
@@ -168,7 +168,7 @@ public class TestDataProvider {
 			addPermissions(boot.microschemaContainerRoot());
 			addPermissions(boot.schemaContainerRoot());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
-			tx.getGraph().commit();
+			tx.commit();
 		}
 
 		long duration = System.currentTimeMillis() - start;

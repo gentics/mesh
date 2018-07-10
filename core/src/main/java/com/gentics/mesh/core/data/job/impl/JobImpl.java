@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRA
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
+import static com.syncleus.ferma.traversal.FP.has;
 
 import java.util.Map;
 
@@ -168,7 +169,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public SchemaContainerVersion getFromSchemaVersion() {
-		return out(HAS_FROM_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return traverse(g -> g.out(HAS_FROM_VERSION).filter(has(SchemaContainerVersionImpl.class)))
+			.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -178,7 +180,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public SchemaContainerVersion getToSchemaVersion() {
-		return out(HAS_TO_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return traverse(g -> g.out(HAS_TO_VERSION).filter(has(SchemaContainerVersionImpl.class)))
+			.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -188,7 +191,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public MicroschemaContainerVersion getFromMicroschemaVersion() {
-		return out(HAS_FROM_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return traverse(g -> g.out(HAS_FROM_VERSION).filter(has(MicroschemaContainerVersionImpl.class)))
+			.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -198,7 +202,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public MicroschemaContainerVersion getToMicroschemaVersion() {
-		return out(HAS_TO_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return traverse(g -> g.out(HAS_TO_VERSION).filter(has(MicroschemaContainerVersionImpl.class)))
+			.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override

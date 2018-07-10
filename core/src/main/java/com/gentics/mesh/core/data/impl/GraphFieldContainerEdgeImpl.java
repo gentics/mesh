@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -14,10 +16,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.annotations.GraphElement;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.Traversal;
-import com.syncleus.ferma.traversals.TraversalFunction;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.EdgeTraversal;
 
 /**
  * @see GraphFieldContainerEdge
@@ -29,7 +28,7 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
 		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "branch_type_lang", "out", GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY,
-				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
+			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
 	}
 
 	/**
@@ -39,8 +38,8 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	 * @param languageTags
 	 * @return
 	 */
-	public static EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> filterLanguages(
-			EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal, List<String> languageTags) {
+	public static EdgeTraversal filterLanguages(
+		EdgeTraversal traversal, List<String> languageTags) {
 		if (languageTags != null && languageTags.size() > 0) {
 			LanguageRestrictionFunction[] pipes = new LanguageRestrictionFunction[languageTags.size()];
 			for (int i = 0; i < languageTags.size(); i++) {
@@ -61,15 +60,15 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	}
 
 	public MeshVertexImpl getStartNode() {
-		return inV().nextOrDefault(MeshVertexImpl.class, null);
+		return traverse(g -> g.inV()).nextOrDefault(MeshVertexImpl.class, null);
 	}
 
 	public AbstractBasicGraphFieldContainerImpl getContainer() {
-		return outV().nextOrDefault(AbstractBasicGraphFieldContainerImpl.class, null);
+		return traverse(g -> g.outV()).nextOrDefault(AbstractBasicGraphFieldContainerImpl.class, null);
 	}
 
 	public NodeGraphFieldContainer getNodeContainer() {
-		return inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+		return traverse(g ->g.inV()).nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 	}
 
 	@Override

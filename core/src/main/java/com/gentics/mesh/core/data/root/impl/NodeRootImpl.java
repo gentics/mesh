@@ -20,12 +20,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -48,7 +48,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.core.logging.Logger;
@@ -88,7 +88,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Page<? extends Node> findAll(MeshAuthUser user, List<String> languageTags, PagingParameters pagingInfo) throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = user.getPermTraversal(READ_PERM);
+		VertexTraversal traversal = user.getPermTraversal(READ_PERM);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
 	}
 
@@ -170,7 +170,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 *            permission to filter by
 	 * @return vertex traversal
 	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Branch branch, ContainerType type, GraphPermission permission) {
+	protected VertexTraversal getAllTraversal(MeshAuthUser requestUser, Branch branch, ContainerType type, GraphPermission permission) {
 		return out(getRootLabel()).filter(vertex -> {
 			return requestUser.hasPermissionForId(vertex.getId(), permission);
 		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())

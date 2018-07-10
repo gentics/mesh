@@ -58,7 +58,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			group.addUser(user);
 			group.addUser(user);
 
-			assertEquals("The group should contain one member.", 1, group.getUsers().size());
+			assertEquals("The group should contain one member.", 1, group.getUsers().count());
 
 			User userOfGroup = group.getUsers().iterator().next();
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
@@ -174,7 +174,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			Group group = group();
 			assertEquals("joe1_group", group.getName());
 			assertNotNull(group.getUsers());
-			assertEquals(1, group.getUsers().size());
+			assertEquals(1, group.getUsers().count());
 			assertNotNull(group.getUuid());
 		}
 	}

@@ -55,7 +55,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	@Override
 	public Project getProject() {
-		Project project = in(HAS_TAGFAMILY_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		Project project = in(HAS_TAGFAMILY_ROOT).nextOrDefaultExplicit(ProjectImpl.class, null);
 		return project;
 	}
 

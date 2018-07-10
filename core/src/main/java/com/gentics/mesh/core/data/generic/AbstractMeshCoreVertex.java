@@ -40,7 +40,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public Iterable<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return in(perm.label()).frameExplicit(RoleImpl.class);
+		return in(perm.label()).ita(RoleImpl.class);
 	}
 
 	@Override

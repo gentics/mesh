@@ -100,7 +100,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public MicroschemaContainerVersion getSchemaContainerVersion() {
 		return out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class,
-				null);
+			null);
 	}
 
 	@Override
@@ -122,8 +122,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		if (container == null) {
 			// the micronode may be part of a list field
-			container = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class,
-					null);
+			container = traverse(g -> g.in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class)).nextOrDefaultExplicit(
+				NodeGraphFieldContainerImpl.class, null);
 		}
 
 		return container;
@@ -149,7 +149,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
-			int level) {
+		int level) {
 
 		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());

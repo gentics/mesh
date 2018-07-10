@@ -25,7 +25,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	 * @return project
 	 */
 	protected Project getProject() {
-		return in(HAS_MICROSCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return in(HAS_MICROSCHEMA_ROOT).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override

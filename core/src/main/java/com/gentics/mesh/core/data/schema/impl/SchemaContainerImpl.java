@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
@@ -55,8 +55,8 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public List<? extends SchemaContainerRoot> getRoots() {
-		return in(HAS_SCHEMA_CONTAINER_ITEM).toListExplicit(SchemaContainerRootImpl.class);
+	public Iterable<? extends SchemaContainerRoot> getRoots() {
+		return in(HAS_SCHEMA_CONTAINER_ITEM).ita(SchemaContainerRootImpl.class);
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public Iterable<? extends NodeImpl> getNodes() {
-		return in(HAS_SCHEMA_CONTAINER).frameExplicit(NodeImpl.class);
+		return in(HAS_SCHEMA_CONTAINER).ita(NodeImpl.class);
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 	@Override

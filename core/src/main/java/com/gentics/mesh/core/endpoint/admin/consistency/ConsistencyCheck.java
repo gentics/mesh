@@ -1,9 +1,14 @@
 package com.gentics.mesh.core.endpoint.admin.consistency;
 
+import static com.syncleus.ferma.traversal.FP.has;
+
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.FramedGraph;
 
 /**
  * A consistency check must identify and log database inconsistencies.
@@ -32,7 +37,8 @@ public interface ConsistencyCheck {
 	 */
 	default <N extends MeshVertex> void checkIn(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResponse response,
 		InconsistencySeverity severity, Edge... edges) {
-		N ref = vertex.in(edgeLabel).has(clazz).nextOrDefaultExplicit(clazz, null);
+		FramedGraph fg = vertex.getGraph();
+		N ref = fg.traverse(g -> vertex.in(edgeLabel).filter(has(clazz))).nextOrDefaultExplicit(clazz, null);
 		if (ref == null) {
 			response.addInconsistency(String.format("%s: incoming edge %s from %s not found", vertex.getClass().getSimpleName(), edgeLabel, clazz
 				.getSimpleName()), vertex.getUuid(), severity);
@@ -92,7 +98,7 @@ public interface ConsistencyCheck {
 	 * @return
 	 */
 	default Edge in(String label, Class<? extends MeshVertex> clazz) {
-		return v -> v.in(label).has(clazz).nextOrDefault(clazz, null);
+		return v -> v.in(label).filter(has(clazz)).nextOrDefault(clazz, null);
 	}
 
 	/**
@@ -103,7 +109,7 @@ public interface ConsistencyCheck {
 	 * @return
 	 */
 	default Edge out(String label, Class<? extends MeshVertex> clazz) {
-		return v -> v.out(label).has(clazz).nextOrDefault(clazz, null);
+		return v -> v.out(label).filter(has(clazz)).nextOrDefault(clazz, null);
 	}
 
 	/**

@@ -11,9 +11,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -38,7 +40,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.ext.interopt.VertexTraversal;
 
 import io.reactivex.Single;
 
@@ -68,8 +70,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public List<? extends User> getUsers() {
-		return in(HAS_USER).toListExplicit(UserImpl.class);
+	public Iterable<? extends User> getUsers() {
+		return in(HAS_USER).ita(UserImpl.class);
 	}
 
 	@Override
@@ -92,8 +94,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public List<? extends Role> getRoles() {
-		return in(HAS_ROLE).toListExplicit(RoleImpl.class);
+	public Iterable<? extends Role> getRoles() {
+		return in(HAS_ROLE).ita(RoleImpl.class);
 	}
 
 	@Override
@@ -120,23 +122,24 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public boolean hasRole(Role role) {
-		return in(HAS_ROLE).retain(role).hasNext();
+		return in(HAS_ROLE).rawStream().ret.retain(role).hasNext();
 	}
 
 	@Override
 	public boolean hasUser(User user) {
-		return in(HAS_USER).retain(user).hasNext();
+		P<Vertex> predicate = P.within(user.getVertex());
+		return traverse(g -> g.in(HAS_USER).where(predicate)).getRawTraversal().hasNext();
 	}
 
 	@Override
 	public TransformablePage<? extends User> getVisibleUsers(MeshAuthUser user, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER);
+		VertexTraversal traversal = in(HAS_USER);
 		return new DynamicTransformablePageImpl<User>(user, traversal, pagingInfo, READ_PERM, UserImpl.class);
 	}
 
 	@Override
 	public TransformablePage<? extends Role> getRoles(User user, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
+		VertexTraversal traversal = in(HAS_ROLE);
 		return new DynamicTransformablePageImpl<Role>(user, traversal, pagingInfo, READ_PERM, RoleImpl.class);
 	}
 
