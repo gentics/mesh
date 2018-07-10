@@ -65,7 +65,7 @@ public class ChangeTVCMigration extends AbstractChange {
 		List<String> ids = Arrays.asList("#70:4", "#79:148", "#62:5");
 		for (String id : ids) {
 			Vertex vertex = getGraph().vertices(id).next();
-			getGraph().removeVertex(vertex);
+			vertex.remove();
 		}
 
 		migrateSchemaContainers();
@@ -74,11 +74,11 @@ public class ChangeTVCMigration extends AbstractChange {
 		migrateSchemaContainerRootEdges(schemaRoot);
 
 		// Iterate over all projects
-		for (Vertex project : projectRoot.vertices(Direction.OUT, "HAS_PROJECT")) {
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(Direction.OUT, "HAS_PROJECT")) {
 			Vertex baseNode = project.vertices(Direction.OUT, "HAS_ROOT_NODE").next();
 			migrateNode(baseNode, project);
 			migrateTagFamilies(project);
-			Vertex projectSchemaRoot = project.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+			Vertex projectSchemaRoot = project.vertices(Direction.OUT, "HAS_ROOT_SCHEMA").next();
 			migrateSchemaContainerRootEdges(projectSchemaRoot);
 		}
 
@@ -136,7 +136,7 @@ public class ChangeTVCMigration extends AbstractChange {
 
 	private Vertex getOrFixUserReference(Vertex element, String edge) {
 		Vertex creator;
-		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
+		Iterator<Vertex> creatorIterator = element.vertices(Direction.OUT, edge);
 		if (!creatorIterator.hasNext()) {
 			log.error("The element {" + element.value("uuid") + "} has no {" + edge + "}. Using admin instead.");
 			creator = findAdmin();
@@ -149,8 +149,8 @@ public class ChangeTVCMigration extends AbstractChange {
 
 	private Vertex findAdmin() {
 		Vertex admin = null;
-		Iterator<Vertex> langIt = getMeshRootVertex().getVertices(Direction.OUT, "HAS_USER_ROOT").iterator().next()
-			.getVertices(Direction.OUT, "HAS_USER").iterator();
+		Iterator<Vertex> langIt = getMeshRootVertex().vertices(Direction.OUT, "HAS_USER_ROOT").next()
+			.vertices(Direction.OUT, "HAS_USER");
 		while (langIt.hasNext()) {
 			Vertex user = langIt.next();
 			if (user.value("username").equals("admin")) {
@@ -178,13 +178,13 @@ public class ChangeTVCMigration extends AbstractChange {
 			Vertex tagRoot = getGraph().addVertex("class:TagRootImpl");
 			tagRoot.property("ferma_type", "com.gentics.mesh.core.data.root.impl.TagRootImpl");
 			tagRoot.property("uuid", randomUUID());
-			for (Edge tagEdge : tagFamily.getEdges(Direction.OUT, "HAS_TAG")) {
+			for (Edge tagEdge : (Iterable<Edge>) () -> tagFamily.edges(Direction.OUT, "HAS_TAG")) {
 				Vertex tag = tagEdge.inVertex();
 				tagEdge.remove();
 				tagRoot.addEdge("HAS_TAG", tag);
-				tag.getEdges(Direction.OUT, "HAS_TAGFAMILY_ROOT").forEach(edge -> edge.remove());
+				tag.edges(Direction.OUT, "HAS_TAGFAMILY_ROOT").forEachRemaining(edge -> edge.remove());
 				tag.addEdge("HAS_TAGFAMILY_ROOT", tagFamily);
-				if (!tag.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+				if (!tag.edges(Direction.OUT, "ASSIGNED_TO_PROJECT").hasNext()) {
 					log.error("Tag {" + tag.property("uuid") + " has no project assigned to it. Fixing it...");
 					tag.addEdge("ASSIGNED_TO_PROJECT", project);
 				}
@@ -198,7 +198,7 @@ public class ChangeTVCMigration extends AbstractChange {
 				}
 			}
 			tagFamily.addEdge("HAS_TAG_ROOT", tagRoot);
-			if (!tagFamily.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+			if (!tagFamily.edges(Direction.OUT, "ASSIGNED_TO_PROJECT").hasNext()) {
 				log.error("TagFamily {" + tagFamily.property("uuid") + " has no project assigned to it. Fixing it...");
 				tagFamily.addEdge("ASSIGNED_TO_PROJECT", project);
 			}
@@ -211,9 +211,9 @@ public class ChangeTVCMigration extends AbstractChange {
 
 	private void purgeSearchQueue() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex sqRoot = meshRoot.getVertices(Direction.OUT, "HAS_SEARCH_QUEUE_ROOT").iterator().next();
-		for (Vertex batch : sqRoot.getVertices(Direction.OUT, "HAS_BATCH")) {
-			for (Vertex entry : batch.getVertices(Direction.OUT, "HAS_ITEM")) {
+		Vertex sqRoot = meshRoot.vertices(Direction.OUT, "HAS_SEARCH_QUEUE_ROOT").next();
+		for (Vertex batch : (Iterable<Vertex>) () -> sqRoot.vertices(Direction.OUT, "HAS_BATCH")) {
+			for (Vertex entry : (Iterable<Vertex>) () -> batch.vertices(Direction.OUT, "HAS_ITEM")) {
 				entry.remove();
 			}
 			batch.remove();
@@ -330,13 +330,13 @@ public class ChangeTVCMigration extends AbstractChange {
 	private void migrateNode(Vertex node, Vertex project) {
 		String uuid = node.value("uuid");
 		log.info("Migrating node {" + uuid + "}");
-		Iterator<Vertex> it = node.getVertices(Direction.OUT, "HAS_PARENT_NODE").iterator();
+		Iterator<Vertex> it = node.vertices(Direction.OUT, "HAS_PARENT_NODE");
 		Vertex parentNode = null;
 		if (it.hasNext()) {
 			parentNode = it.next();
 		}
 
-		if (!node.getVertices(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+		if (!node.vertices(Direction.OUT, "ASSIGNED_TO_PROJECT").hasNext()) {
 			log.error("Node {" + node.value("uuid") + "} has no project assigned to it. Fixing inconsistency...");
 			node.addEdge("ASSIGNED_TO_PROJECT", project);
 		}
@@ -366,7 +366,7 @@ public class ChangeTVCMigration extends AbstractChange {
 			Object height = node.value("binaryImageHeight");
 			node.property("binaryImageHeight").remove();
 
-			Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
+			Iterable<Vertex> containers = (Iterable<Vertex>) () -> node.vertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 			// Create the binary field for all found containers
 			for (Vertex container : containers) {
 				Vertex binaryField = getGraph().addVertex("class:BinaryGraphFieldImpl");
@@ -406,8 +406,8 @@ public class ChangeTVCMigration extends AbstractChange {
 		}
 
 		// Create edge between NGFCs and schema versions
-		Vertex schemaContainer = node.getVertices(Direction.OUT, "HAS_SCHEMA_CONTAINER").iterator().next();
-		Vertex schemaVersion = schemaContainer.getVertices(Direction.OUT, "HAS_LATEST_VERSION").iterator().next();
+		Vertex schemaContainer = node.vertices(Direction.OUT, "HAS_SCHEMA_CONTAINER").next();
+		Vertex schemaVersion = schemaContainer.vertices(Direction.OUT, "HAS_LATEST_VERSION").next();
 		String json = schemaVersion.value("json");
 		String segmentField = null;
 		try {
@@ -419,11 +419,11 @@ public class ChangeTVCMigration extends AbstractChange {
 			throw new RuntimeException("Could not parse schema json {" + json + "}", e);
 		}
 
-		Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
+		Iterable<Vertex> containers = (Iterable<Vertex>) () -> node.vertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Vertex container : containers) {
 
 			// Fix date fields which were stored in seconds instead of miliseconds
-			for (String key : container.valueKeys()) {
+			for (String key : container.keys()) {
 				if (key.endsWith("-date")) {
 					Long date = Long.valueOf(container.value(key));
 					// Check whether the timestamp is seconds based or miliseconds based
@@ -463,9 +463,9 @@ public class ChangeTVCMigration extends AbstractChange {
 		}
 
 		// Now check the children and migrate structure
-		Iterable<Edge> childrenEdges = node.getEdges(Direction.IN, "HAS_PARENT_NODE");
+		Iterable<Edge> childrenEdges = (Iterable<Edge>) () -> node.edges(Direction.IN, "HAS_PARENT_NODE");
 		for (Edge childEdge : childrenEdges) {
-			migrateNode(childEdge.getVertex(Direction.OUT), project);
+			migrateNode(childEdge.outVertex(), project);
 		}
 
 	}

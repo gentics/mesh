@@ -215,7 +215,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 				// Get the vertex from the edge
 				.map(itemEdge -> {
-					return itemEdge.getVertex(vertexDirection);
+					return itemEdge.vertices(vertexDirection).next();
 				});
 		applyPagingAndPermChecks(stream, clazz, perm);
 

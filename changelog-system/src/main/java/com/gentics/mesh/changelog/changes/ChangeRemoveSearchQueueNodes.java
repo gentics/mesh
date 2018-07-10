@@ -23,8 +23,8 @@ public class ChangeRemoveSearchQueueNodes extends AbstractChange {
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex searchQueueRoot = meshRoot.vertices(OUT, "HAS_SEARCH_QUEUE_ROOT").next();
 
-		for (Vertex batch : searchQueueRoot.vertices(OUT, "HAS_BATCH")) {
-			for (Vertex entry : batch.vertices(OUT, "HAS_ITEM")) {
+		for (Vertex batch : (Iterable<Vertex>) () -> searchQueueRoot.vertices(OUT, "HAS_BATCH")) {
+			for (Vertex entry : (Iterable<Vertex>) () -> batch.vertices(OUT, "HAS_ITEM")) {
 				entry.remove();
 			}
 			batch.remove();

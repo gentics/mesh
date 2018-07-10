@@ -1,6 +1,5 @@
 package com.gentics.mesh.changelog.changes;
 
-import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
 import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -29,29 +28,29 @@ public class RenameReleasesToBranches extends AbstractChange {
 		Vertex meshRoot = getMeshRootVertex();
 
 		Vertex projectRoot = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT").next();
-		for (Vertex project : projectRoot.vertices(OUT, "HAS_PROJECT")) {
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(OUT, "HAS_PROJECT")) {
 
-			Iterable<Edge> it = project.edges(OUT, "HAS_RELEASE_ROOT");
+			Iterable<Edge> it = (Iterable<Edge>) () -> project.edges(OUT, "HAS_RELEASE_ROOT");
 			for (Edge edge : it) {
 				migrateEdge(edge, "HAS_BRANCH_ROOT", true);
 
 				// Iterate over all releases
 				Vertex in = edge.inVertex();
 				migrateType(in, "BranchRootImpl");
-				for (Edge edge1 : in.edges(OUT, "HAS_RELEASE")) {
+				for (Edge edge1 : (Iterable<Edge>) () -> in.edges(OUT, "HAS_RELEASE")) {
 					Vertex release = edge1.inVertex();
 					migrateType(release, "BranchImpl");
-					for (Edge nextReleaseEdge : release.edges(OUT, "HAS_NEXT_RELEASE")) {
+					for (Edge nextReleaseEdge : (Iterable<Edge>) () -> release.edges(OUT, "HAS_NEXT_RELEASE")) {
 						migrateEdge(nextReleaseEdge, "HAS_NEXT_BRANCH", true);
 					}
 					migrateEdge(edge1, "HAS_BRANCH", true);
 				}
 
-				for (Edge edge1 : in.edges(OUT, "HAS_INITIAL_RELEASE")) {
+				for (Edge edge1 : (Iterable<Edge>) () -> in.edges(OUT, "HAS_INITIAL_RELEASE")) {
 					migrateEdge(edge1, "HAS_INITIAL_BRANCH", true);
 				}
 
-				for (Edge edge1 : in.edges(OUT, "HAS_LATEST_RELEASE")) {
+				for (Edge edge1 : (Iterable<Edge>) () -> in.edges(OUT, "HAS_LATEST_RELEASE")) {
 					migrateEdge(edge1, "HAS_LATEST_BRANCH", true);
 				}
 			}
@@ -59,7 +58,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 		}
 
 		long n = 0;
-		for (Edge edge : getGraph().getEdges()) {
+		for (Edge edge : (Iterable<Edge>) () -> getGraph().edges()) {
 			String label = edge.label();
 			boolean update = false;
 			if (label.equals("HAS_TAG")) {

@@ -37,7 +37,7 @@ public class ChangeAddVersioning extends AbstractChange {
 		Vertex admin = findAdmin();
 
 		// Iterate over all projects
-		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(Direction.OUT, "HAS_PROJECT")) {
 			Vertex releaseRoot = getGraph().addVertex("class:ReleaseRootImpl");
 			releaseRoot.property("ferma_type", "ReleaseRootImpl");
 			releaseRoot.property("uuid", randomUUID());
@@ -67,7 +67,7 @@ public class ChangeAddVersioning extends AbstractChange {
 			getOrFixUserReference(project, "HAS_CREATOR");
 
 			// Migrate all nodes of the project
-			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
+			Vertex baseNode = project.vertices(Direction.OUT, "HAS_ROOT_NODE").next();
 
 			migrateBaseNode(baseNode, admin);
 			migrateNode(baseNode, branchUuid);
@@ -80,15 +80,15 @@ public class ChangeAddVersioning extends AbstractChange {
 		migrateUsers(meshRoot);
 
 		// Strip all package paths from all ferma type properties
-		for (Vertex vertex : getGraph().getVertices()) {
+		for (Vertex vertex : (Iterable<Vertex>) () -> getGraph().vertices()) {
 			migrateType(vertex);
 		}
-		for (Edge edge : getGraph().getEdges()) {
+		for (Edge edge : (Iterable<Edge>) () -> getGraph().edges()) {
 			migrateType(edge);
 		}
 
 		// Migrate TranslatedImpl edges to GraphFieldContainerEdgeImpl
-		for (Edge edge : getGraph().getEdges("ferma_type", "TranslatedImpl")) {
+		for (Edge edge : (Iterable<Edge>) () -> getGraph().edges("ferma_type", "TranslatedImpl")) {
 			edge.property("ferma_type", "GraphFieldContainerEdgeImpl");
 		}
 
@@ -111,8 +111,8 @@ public class ChangeAddVersioning extends AbstractChange {
 	 */
 	private void migrateTags(Vertex meshRoot) {
 		Vertex tagRoot = meshRoot.vertices(Direction.OUT, "HAS_TAG_ROOT").next();
-		for (Vertex tag : tagRoot.getVertices(Direction.OUT, "HAS_TAG")) {
-			Iterator<Vertex> tagFieldIterator = tag.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER").iterator();
+		for (Vertex tag : (Iterable<Vertex>) () -> tagRoot.vertices(Direction.OUT, "HAS_TAG")) {
+			Iterator<Vertex> tagFieldIterator = tag.vertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 			Vertex tagFieldContainer = tagFieldIterator.next();
 			if (tagFieldIterator.hasNext()) {
 				fail("The tag with uuid {" + tag.value("uuid") + "} got more then one field container.");
@@ -141,7 +141,7 @@ public class ChangeAddVersioning extends AbstractChange {
 		Vertex schemaVersion = schemaContainer.vertices(Direction.OUT, "HAS_LATEST_VERSION").next();
 
 		Vertex english = findEnglish();
-		Iterator<Edge> it = baseNode.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER").iterator();
+		Iterator<Edge> it = baseNode.edges(Direction.OUT, "HAS_FIELD_CONTAINER");
 
 		// The base node has no field containers. Lets create the default one
 		if (!it.hasNext()) {
@@ -165,8 +165,8 @@ public class ChangeAddVersioning extends AbstractChange {
 
 	private Vertex findAdmin() {
 		Vertex admin = null;
-		Iterator<Vertex> langIt = getMeshRootVertex().getVertices(Direction.OUT, "HAS_USER_ROOT").iterator().next()
-			.getVertices(Direction.OUT, "HAS_USER").iterator();
+		Iterator<Vertex> langIt = getMeshRootVertex().vertices(Direction.OUT, "HAS_USER_ROOT").next()
+			.vertices(Direction.OUT, "HAS_USER");
 		while (langIt.hasNext()) {
 			Vertex user = langIt.next();
 			if (user.property("username").equals("admin")) {
@@ -179,7 +179,7 @@ public class ChangeAddVersioning extends AbstractChange {
 	private Vertex findEnglish() {
 		Vertex english = null;
 		Iterator<Vertex> langIt = getMeshRootVertex().vertices(Direction.OUT, "HAS_LANGUAGE_ROOT").next()
-			.getVertices(Direction.OUT, "HAS_LANGUAGE").iterator();
+			.vertices(Direction.OUT, "HAS_LANGUAGE");
 		while (langIt.hasNext()) {
 			Vertex language = langIt.next();
 			if (language.value("languageTag").equals("en")) {
@@ -219,7 +219,7 @@ public class ChangeAddVersioning extends AbstractChange {
 		log.info("Migrating node: " + node.property("uuid") + " published: " + String.valueOf(isPublished));
 
 		Edge editorEdge = null;
-		Iterable<Edge> containerEdges = node.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER");
+		Iterable<Edge> containerEdges = (Iterable<Edge>) () -> node.edges(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Edge containerEdge : containerEdges) {
 			containerEdge.property("branchUuid", branchUuid);
 			containerEdge.property("edgeType", "I");
@@ -262,7 +262,7 @@ public class ChangeAddVersioning extends AbstractChange {
 			Vertex creator = getOrFixUserReference(node, "HAS_CREATOR");
 
 			// Migrate editor edge from node to field container
-			Iterator<Edge> editorIterator = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator();
+			Iterator<Edge> editorIterator = node.edges(Direction.OUT, "HAS_EDITOR");
 			if (!editorIterator.hasNext()) {
 				log.error("Could not find editor for node {" + node.property("uuid") + "}. Using creator to set editor.");
 				fieldContainer.addEdge("HAS_EDITOR", creator);
@@ -332,13 +332,13 @@ public class ChangeAddVersioning extends AbstractChange {
 		}
 
 		// Migrate tagging
-		Iterable<Edge> tagEdges = node.getEdges(Direction.OUT, "HAS_TAG");
+		Iterable<Edge> tagEdges = (Iterable<Edge>) () -> node.edges(Direction.OUT, "HAS_TAG");
 		for (Edge tagEdge : tagEdges) {
 			tagEdge.property("branchUuid", branchUuid);
 		}
 
 		// Now check the children and migrate structure
-		Iterable<Edge> childrenEdges = node.getEdges(Direction.IN, "HAS_PARENT_NODE");
+		Iterable<Edge> childrenEdges = (Iterable<Edge>) () -> node.edges(Direction.IN, "HAS_PARENT_NODE");
 		for (Edge childEdge : childrenEdges) {
 			childEdge.property("branchUuid", branchUuid);
 			migrateNode(childEdge.outVertex(), branchUuid);
@@ -346,21 +346,21 @@ public class ChangeAddVersioning extends AbstractChange {
 
 		log.info("Granting permissions to node {" + node.value("uuid") + "}");
 		// Grant publish permission to all roles+objects which grant update
-		for (Edge edge : node.getEdges(Direction.IN, "HAS_UPDATE_PERMISSION")) {
+		for (Edge edge : (Iterable<Edge>) () -> node.edges(Direction.IN, "HAS_UPDATE_PERMISSION")) {
 			Vertex role = edge.outVertex();
 			role.addEdge("HAS_PUBLISH_PERMISSION", node);
 		}
 
 		// Grant read published permission to all roles+objects which grant read
-		for (Edge edge : node.getEdges(Direction.IN, "HAS_READ_PERMISSION")) {
-			Vertex role = edge.getVertex(Direction.OUT);
+		for (Edge edge : (Iterable<Edge>) () -> node.edges(Direction.IN, "HAS_READ_PERMISSION")) {
+			Vertex role = edge.outVertex();
 			role.addEdge("HAS_READ_PUBLISHED_PERMISSION", node);
 		}
 	}
 
 	private Vertex getOrFixUserReference(Vertex element, String edge) {
 		Vertex creator;
-		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
+		Iterator<Vertex> creatorIterator = element.vertices(Direction.OUT, edge);
 		if (!creatorIterator.hasNext()) {
 			log.error("The element {" + element.value("uuid") + "} has no {" + edge + "}. Using admin instead.");
 			creator = findAdmin();

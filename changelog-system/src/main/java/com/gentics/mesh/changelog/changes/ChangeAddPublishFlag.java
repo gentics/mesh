@@ -32,7 +32,7 @@ public class ChangeAddPublishFlag extends AbstractChange {
 		log.info("Migrating node publish flag..");
 		long i = 0;
 		// Iterate over all nodes
-		for (Vertex node : nodeRoot.vertices(OUT, "HAS_NODE")) {
+		for (Vertex node : (Iterable<Vertex>) () -> nodeRoot.vertices(OUT, "HAS_NODE")) {
 			migrateNode(node);
 			i++;
 		}

@@ -71,7 +71,7 @@ public class BinaryStorageMigration extends AbstractChange {
 			FileUtils.moveDirectory(dataTargetFolder(), dataSourceFolder());
 		} catch (Exception e) {
 			throw new RuntimeException("Could not move data folder to backup location {" + dataTargetFolder().getAbsolutePath()
-					+ "}. Maybe the permissions not allowing this?");
+				+ "}. Maybe the permissions not allowing this?");
 		}
 
 		// Create binary root
@@ -82,7 +82,7 @@ public class BinaryStorageMigration extends AbstractChange {
 		meshRoot.addEdge("HAS_BINARY_ROOT", binaryRoot).property("uuid", randomUUID());
 
 		// Iterate over all binary fields and convert them to edges to binaries
-		Iterable<Vertex> it = getGraph().getVertices("@class", "BinaryGraphFieldImpl");
+		Iterable<Vertex> it = (Iterable<Vertex>) () -> getGraph().vertices("@class", "BinaryGraphFieldImpl");
 		for (Vertex binaryField : it) {
 			migrateField(binaryField, binaryRoot);
 		}
@@ -113,12 +113,12 @@ public class BinaryStorageMigration extends AbstractChange {
 		String hash = oldBinaryField.value(OLD_HASH_KEY);
 		if (hash == null && !file.exists()) {
 			try {
-				for (Edge fieldEdge : oldBinaryField.edges(Direction.IN, "HAS_FIELD")) {
-					Vertex container = fieldEdge.getVertex(OUT);
+				for (Edge fieldEdge : (Iterable<Edge>) () -> oldBinaryField.edges(Direction.IN, "HAS_FIELD")) {
+					Vertex container = fieldEdge.outVertex();
 					String fieldKey = fieldEdge.value(FIELD_KEY_PROPERTY_KEY);
-					for (Vertex node : container.getVertices(IN, "HAS_FIELD_CONTAINER")) {
+					for (Vertex node : (Iterable<Vertex>) () -> container.vertices(IN, "HAS_FIELD_CONTAINER")) {
 						log.warn("Binary field {" + fieldKey + "} in node {" + node.property("uuid")
-								+ "} has no binary data file. Touching the file.");
+							+ "} has no binary data file. Touching the file.");
 					}
 				}
 
@@ -158,7 +158,7 @@ public class BinaryStorageMigration extends AbstractChange {
 		Set<Edge> oldEdges = new HashSet<>();
 
 		// Iterate over all field edges and create a new edge which will replace it.
-		for (Edge fieldEdge : oldBinaryField.getEdges(Direction.IN, "HAS_FIELD")) {
+		for (Edge fieldEdge : (Iterable<Edge>) () -> oldBinaryField.edges(Direction.IN, "HAS_FIELD")) {
 			oldEdges.add(fieldEdge);
 			Vertex container = fieldEdge.outVertex();
 			String fieldKey = fieldEdge.value(FIELD_KEY_PROPERTY_KEY);
@@ -287,7 +287,7 @@ public class BinaryStorageMigration extends AbstractChange {
 	}
 
 	private Vertex findBinary(String hash, Vertex binaryRoot) {
-		for (Vertex binary : binaryRoot.vertices(OUT, "HAS_BINARY")) {
+		for (Vertex binary : (Iterable<Vertex>) () -> binaryRoot.vertices(OUT, "HAS_BINARY")) {
 			String foundHash = binary.value(NEW_HASH_KEY);
 			if (foundHash.equals(hash)) {
 				return binary;
