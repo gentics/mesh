@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
 
@@ -38,6 +39,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -76,6 +78,9 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
 		GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		SearchClient client = searchProvider.getClient();
+		if (client==null) {
+			throw error(HttpResponseStatus.SERVICE_UNAVAILABLE, "search_error_elasticsearch_not_available");
+		}
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {Containers}");
 		}
