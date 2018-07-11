@@ -12,6 +12,10 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class SearchStatusResponse implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether Elasticsearch is available and search queries can be executed.")
+	boolean available = false;
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether a index synchronization is currently running.")
 	boolean indexSyncRunning = false;
@@ -27,16 +31,26 @@ public class SearchStatusResponse implements RestModel {
 		return indexSyncRunning;
 	}
 
-	public void setIndexSyncRunning(boolean indexSyncRunning) {
+	public SearchStatusResponse setIndexSyncRunning(boolean indexSyncRunning) {
 		this.indexSyncRunning = indexSyncRunning;
+		return this;
 	}
 
 	public Map<String, Object> getMetrics() {
 		return metrics;
 	}
 
-	public void setMetrics(Map<String, Object> metrics) {
+	public SearchStatusResponse setMetrics(Map<String, Object> metrics) {
 		this.metrics = metrics;
+		return this;
 	}
 
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public SearchStatusResponse setAvailable(boolean available) {
+		this.available = available;
+		return this;
+	}
 }

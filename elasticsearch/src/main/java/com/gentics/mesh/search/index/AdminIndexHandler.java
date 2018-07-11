@@ -29,6 +29,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.eventbus.Message;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Singleton
 public class AdminIndexHandler {
 
@@ -51,19 +54,21 @@ public class AdminIndexHandler {
 	}
 
 	public void handleStatus(InternalActionContext ac) {
-		db.tx(() -> {
-			SearchStatusResponse statusResponse = new SearchStatusResponse();
-			// TODO fetch state
-			// statusResponse.setReindexRunning(REINDEX_FLAG.get());
+		Map<String,Object> metrics = new HashMap<>();
+		// TODO fetch state
+		// statusResponse.setReindexRunning(REINDEX_FLAG.get());
 
-			// Aggregate all local metrics from all handlers
-			for (IndexHandler<?> handler : registry.getHandlers()) {
-				String type = handler.getType();
-				statusResponse.getMetrics().put(type, handler.getMetrics());
-			}
+		// Aggregate all local metrics from all handlers
+		for (IndexHandler<?> handler : registry.getHandlers()) {
+			String type = handler.getType();
+			metrics.put(type, handler.getMetrics());
+		}
 
-			return Observable.just(statusResponse);
-		}).subscribe(message -> ac.send(message, OK), ac::fail);
+		searchProvider.isAvailable().map(available ->
+			new SearchStatusResponse()
+				.setMetrics(metrics)
+				.setAvailable(available)
+		).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
 	private void triggerSync(InternalActionContext ac) {

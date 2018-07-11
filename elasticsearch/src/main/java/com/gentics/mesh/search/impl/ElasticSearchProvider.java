@@ -619,4 +619,16 @@ public class ElasticSearchProvider implements SearchProvider {
 	public String installationPrefix() {
 		return options.getSearchOptions().getPrefix();
 	}
+
+	@Override
+	public Single<Boolean> isAvailable() {
+		try {
+			return client.clusterHealth().async()
+				.timeout(1, TimeUnit.SECONDS)
+				.map(ignore -> true)
+				.onErrorReturnItem(false);
+		} catch (HttpErrorException e) {
+			return Single.just(false);
+		}
+	}
 }
