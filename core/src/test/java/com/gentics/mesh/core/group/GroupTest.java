@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.testcontainers.shaded.com.google.common.collect.Iterators;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -143,10 +143,9 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
-			SearchQueueBatch batch = createBatch();
 			assertNotNull(group);
 			String uuid = group.getUuid();
-			group.delete(batch);
+			group.delete(createDeletionContext());
 			group = meshRoot().getGroupRoot().findByUuid(uuid);
 			assertNull(group);
 		}
@@ -202,11 +201,11 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			group().addUser(user());
 
 			// TODO add users to group?
-			SearchQueueBatch batch = createBatch();
-			group.delete(batch);
+			DeletionContext context = createDeletionContext();
+			group.delete(context);
 			assertElement(meshRoot().getGroupRoot(), uuid, false);
 			assertElement(meshRoot().getUserRoot(), userUuid, true);
-			assertEquals(1, batch.getEntries().size());
+			assertEquals(1, context.batch().getEntries().size());
 		}
 
 	}

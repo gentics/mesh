@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_
 import java.util.Iterator;
 import java.util.List;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -26,7 +27,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -160,11 +160,11 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		// Delete change
 		SchemaChange<?> change = getNextChange();
 		if (change != null) {
-			change.delete(batch);
+			change.delete(context);
 		}
 		// Delete referenced jobs
 		for (Job job : referencedJobsViaFrom()) {

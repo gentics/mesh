@@ -44,6 +44,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -1341,7 +1342,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch, boolean ignoreChecks) {
+	public void delete(DeletionContext context, boolean ignoreChecks) {
 		if (!ignoreChecks) {
 			// Prevent deletion of basenode
 			if (getProject().getBaseNode().getUuid().equals(getUuid())) {
@@ -1354,26 +1355,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		// TODO Only affect a specific release?
 		for (Node child : getChildren()) {
-			child.delete(batch);
+			child.delete(context);
 		}
-		// delete all initial containers (which will delete all containers)
+		// Delete all initial containers (which will delete all containers)
 		for (NodeGraphFieldContainer container : getAllInitialGraphFieldContainers()) {
-			container.delete(batch);
+			container.delete(context);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node {" + getUuid() + "} vertex.");
 		}
 		getElement().remove();
-
+		context.process();
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
-		delete(batch, false);
+	public void delete(DeletionContext context) {
+		delete(context, false);
 	}
 
 	@Override
-	public void deleteFromRelease(InternalActionContext ac, Release release, SearchQueueBatch batch, boolean ignoreChecks) {
+	public void deleteFromRelease(InternalActionContext ac, Release release, DeletionContext context, boolean ignoreChecks) {
 
 		DeleteParameters parameters = ac.getDeleteParameters();
 
@@ -1384,17 +1385,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!parameters.isRecursive()) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
 			}
-			child.deleteFromRelease(ac, release, batch, ignoreChecks);
+			child.deleteFromRelease(ac, release, context, ignoreChecks);
 		}
 
 		// 2. Delete all language containers
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(release, DRAFT)) {
-			deleteLanguageContainer(ac, release, container.getLanguage(), batch, false);
+			deleteLanguageContainer(ac, release, container.getLanguage(), context, false);
 		}
 
 		// 3. Now check if the node has no more field containers in any release. We can delete it in those cases
 		if (getGraphFieldContainerCount() == 0) {
-			delete(batch);
+			delete(context);
 		} else {
 			// Otherwise we need to remove the "parent" edge for the release
 			// first remove the "parent" edge (because the node itself will
@@ -1756,13 +1757,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch,
+	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, DeletionContext context,
 		boolean failForLastContainer) {
 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
 		NodeGraphFieldContainer container = getGraphFieldContainer(language, release, PUBLISHED);
 		if (container != null) {
-			takeOffline(ac, batch, release, language.getLanguageTag());
+			takeOffline(ac, context.batch(), release, language.getLanguageTag());
 		}
 
 		// 2. Load the draft container and remove it from the release
@@ -1770,7 +1771,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
 		}
-		container.deleteFromRelease(release, batch);
+		container.deleteFromRelease(release, context);
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
 		// starting with the old draft, delete all GFC that have no next and are not draft (for other releases)
@@ -1778,7 +1779,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		while (dangling != null && !dangling.isDraft() && !dangling.hasNextVersion()) {
 			NodeGraphFieldContainer toDelete = dangling;
 			dangling = toDelete.getPreviousVersion();
-			toDelete.delete(batch);
+			toDelete.delete(context);
 		}
 
 		NodeGraphFieldContainer initial = getGraphFieldContainer(language, release, INITIAL);
@@ -1795,7 +1796,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// (multiple "next" would have to belong to different releases, and for every release, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
 				dangling = toDelete.getNextVersions().iterator().next();
-				toDelete.delete(batch, false);
+				toDelete.delete(context, false);
 			}
 		}
 
@@ -1811,7 +1812,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			// Also delete the node and children
 			if (parameters.isRecursive() && wasLastContainer) {
-				deleteFromRelease(ac, release, batch, false);
+				deleteFromRelease(ac, release, context, false);
 			}
 		}
 

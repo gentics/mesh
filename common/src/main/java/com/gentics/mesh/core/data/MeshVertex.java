@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -26,10 +27,10 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
 	 * 
-	 * @param batch
-	 *            Batch to be updated with new entries
+	 * @param context
+	 *            Deletion context which keeps track of the deletion process
 	 */
-	void delete(SearchQueueBatch batch);
+	void delete(DeletionContext context);
 
 	/**
 	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.

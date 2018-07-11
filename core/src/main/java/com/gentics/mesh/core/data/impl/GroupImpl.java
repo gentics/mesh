@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
@@ -176,15 +177,17 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		// TODO don't allow deletion of the admin group
-		batch.delete(this, true);
+		context.batch().delete(this, true);
 
 		Set<? extends User> affectedUsers = getUsers().stream().collect(Collectors.toSet());
 		getElement().remove();
 		for (User user : affectedUsers) {
 			user.updateShortcutEdges();
+			context.inc();
 		}
+		context.process();
 		PermissionStore.invalidate();
 	}
 

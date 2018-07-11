@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -13,7 +14,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -53,14 +53,14 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		for (MicroschemaContainerVersion version : findAll()) {
 			if (version.findMicronodes().hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
 			}
-			version.delete(batch);
+			version.delete(context);
 		}
-		super.delete(batch);
+		super.delete(context);
 	}
 
 	@Override

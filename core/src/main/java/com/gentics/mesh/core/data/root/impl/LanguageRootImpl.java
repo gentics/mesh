@@ -9,6 +9,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -92,7 +93,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		throw new NotImplementedException("The language root should never be deleted.");
 	}
 

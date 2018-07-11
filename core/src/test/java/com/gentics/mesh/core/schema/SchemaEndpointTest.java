@@ -45,11 +45,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -452,9 +452,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(reloaded.getNodes()).isNotEmpty();
-			SearchQueueBatch batch = createBatch();
+			DeletionContext context = createDeletionContext();
 			for (Node node : reloaded.getNodes()) {
-				node.delete(batch);
+				node.delete(context);
 			}
 			assertThat(reloaded.getNodes()).isEmpty();
 			tx.success();

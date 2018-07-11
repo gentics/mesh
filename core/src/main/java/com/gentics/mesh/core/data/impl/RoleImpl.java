@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
@@ -160,9 +161,9 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		// TODO don't allow deletion of admin role
-		batch.delete(this, true);
+		context.batch().delete(this, true);
 		// Update all document in the index which reference the uuid of the role
 		for (GraphPermission perm : Arrays.asList(READ_PERM, READ_PUBLISHED_PERM)) {
 			for (MeshVertex element : getElementsWithPermission(perm)) {
@@ -171,12 +172,12 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 					continue;
 				}
 				if (element instanceof IndexableElement) {
-					batch.updatePermissions((IndexableElement) element);
+					context.batch().updatePermissions((IndexableElement) element);
 				}
 			}
 		}
 		getVertex().remove();
-
+		context.process();
 		PermissionStore.invalidate();
 	}
 

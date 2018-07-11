@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
@@ -57,7 +58,6 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -147,12 +147,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
-		delete(batch, true);
+	public void delete(DeletionContext context) {
+		delete(context, true);
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch, boolean deleteNext) {
+	public void delete(DeletionContext context, boolean deleteNext) {
 		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frame(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(this);
@@ -183,7 +183,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		if (deleteNext) {
 			// Recursively delete all versions of the container
 			for (NodeGraphFieldContainer next : getNextVersions()) {
-				next.delete(batch);
+				next.delete(context);
 			}
 		}
 
@@ -192,7 +192,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			String releaseUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				batch.delete(this, releaseUuid, type, false);
+				context.batch().delete(this, releaseUuid, type, false);
 			}
 		});
 
@@ -201,12 +201,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
+	public void deleteFromRelease(Release release, DeletionContext context) {
 		String releaseUuid = release.getUuid();
 
-		batch.delete(this, releaseUuid, DRAFT, false);
+		context.batch().delete(this, releaseUuid, DRAFT, false);
 		if (isPublished(releaseUuid)) {
-			batch.delete(this, releaseUuid, PUBLISHED, false);
+			context.batch().delete(this, releaseUuid, PUBLISHED, false);
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
 		// Remove the edge between the node and the container that matches the release

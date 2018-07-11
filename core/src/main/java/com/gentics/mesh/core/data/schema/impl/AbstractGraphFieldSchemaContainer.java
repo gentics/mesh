@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.Release;
@@ -128,9 +129,9 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		// TODO should all references be updated to a new fallback schema?
-		batch.delete(this, true);
+		context.batch().delete(this, true);
 		getElement().remove();
 		// TODO delete versions and nodes as well
 	}

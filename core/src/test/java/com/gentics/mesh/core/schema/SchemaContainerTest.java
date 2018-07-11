@@ -12,6 +12,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -19,7 +20,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -133,12 +133,12 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			SearchQueueBatch batch = createBatch();
+			DeletionContext context = createDeletionContext();
 			String uuid = getSchemaContainer().getUuid();
 			for (Node node : getSchemaContainer().getNodes()) {
-				node.delete(batch);
+				node.delete(context);
 			}
-			getSchemaContainer().delete(batch);
+			getSchemaContainer().delete(context);
 			assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid));
 		}
 	}
@@ -165,8 +165,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
-			SearchQueueBatch batch = createBatch();
-			newContainer.delete(batch);
+			newContainer.delete(createDeletionContext());
 			assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid));
 		}
 	}

@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -91,11 +92,11 @@ public class HandlerUtilities {
 			}
 
 			database.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				DeletionContext context = searchQueue.createDeletionContext();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
-					element.delete(batch);
-					return batch;
+					element.delete(context);
+					return context.batch();
 				} else {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}

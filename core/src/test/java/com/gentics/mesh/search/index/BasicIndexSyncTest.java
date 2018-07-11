@@ -15,13 +15,13 @@ import org.mockito.Mockito;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -239,8 +239,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Now manually delete the project
 		tx(() -> {
 			Project project = boot().projectRoot().findByName("project_2");
-			SearchQueueBatch batch = Mockito.mock(SearchQueueBatch.class);
-			project.delete(batch);
+			DeletionContext context = Mockito.mock(DeletionContext.class);
+			project.delete(context);
 		});
 		// Assert that the deletion was detected
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);

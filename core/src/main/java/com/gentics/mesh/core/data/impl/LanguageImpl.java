@@ -4,6 +4,7 @@ import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -71,7 +72,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		throw new NotImplementedException();
 	}
 

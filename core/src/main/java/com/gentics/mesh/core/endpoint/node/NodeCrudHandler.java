@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -86,9 +87,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.deleteFromRelease(ac, ac.getRelease(), batch, false);
-				return batch;
+				DeletionContext context = searchQueue.createDeletionContext();
+				node.deleteFromRelease(ac, ac.getRelease(), context, false);
+				return context.batch();
 			}).processSync();
 			node.onDeleted(uuid, name, schema, null);
 
@@ -119,9 +120,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			SchemaContainer schema = node.getSchemaContainer();
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.deleteLanguageContainer(ac, ac.getRelease(), language, batch, true);
-				return batch;
+				DeletionContext context = searchQueue.createDeletionContext();
+				node.deleteLanguageContainer(ac, ac.getRelease(), language, context, true);
+				return context.batch();
 			}).processSync();
 			node.onDeleted(uuid, name, schema, languageTag);
 			return null;
@@ -145,7 +146,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		utils.asyncTx(ac, () -> {
 			Project project = ac.getProject();
 
-			//TODO Add support for moving nodes across projects.
+			// TODO Add support for moving nodes across projects.
 			// This is tricky since the release consistency must be taken care of
 			// One option would be to delete all the version within the source project and create the in the target project
 			// The needed schema versions would need to be present in the target project release as well.

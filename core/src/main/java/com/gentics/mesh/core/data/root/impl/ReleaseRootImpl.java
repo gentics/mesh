@@ -15,6 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -160,17 +161,19 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting release root {" + getUuid() + "}");
 		}
 
 		// Delete all releases
 		for (Release release : findAllIt()) {
-			release.delete(batch);
+			release.delete(context);
+			context.process();
 		}
 
 		// All releases are gone. Now delete the root.
 		getElement().remove();
+		context.process();
 	}
 }

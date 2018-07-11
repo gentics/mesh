@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -64,17 +65,18 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		// TODO add check to prevent deletion of MeshRoot.tagRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag root {" + getUuid() + "}");
 		}
 		// Delete all the tags of the tag root
 		for (Tag tag : findAllIt()) {
-			tag.delete(batch);
+			tag.delete(context);
 		}
 		// Now delete the tag root element
 		getElement().remove();
+		context.process();
 	}
 
 	@Override

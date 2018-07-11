@@ -16,12 +16,14 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
@@ -200,30 +202,27 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(DeletionContext context) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + getName() + "}");
 		}
 
-		// Remove the project from the index
-		batch.delete(this, false);
-
-		// Drop the project specific indices
-		batch.dropIndex(TagFamily.composeIndexName(getUuid()));
-		batch.dropIndex(Tag.composeIndexName(getUuid()));
-
+		Set<String> indices = new HashSet<>();
 		// Drop all node indices for all releases and all schema versions
 		for (Release release : getReleaseRoot().findAllIt()) {
 			for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
+					String index = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
 					if (log.isDebugEnabled()) {
-						log.debug("Adding drop entry for index {" + pubIndex + "}");
+						log.debug("Adding drop entry for index {" + index + "}");
 					}
-					batch.dropIndex(pubIndex);
+					indices.add(index);
 				}
 			}
 		}
+
+		// Remove the project from the index
+		context.batch().delete(this, false);
 
 		// Create a dummy batch which we will use to handle deletion for
 		// elements which must not update the batch since the documents are
@@ -232,10 +231,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
 
 		// Remove the tagfamilies from the index
-		getTagFamilyRoot().delete(dummyBatch);
+		getTagFamilyRoot().delete(new DeletionContext(dummyBatch));
 
-		// Remove all other project nodes from the index
-		getNodeRoot().delete(dummyBatch);
+		// Remove the nodes in the project hierarchy
+		getBaseNode().delete(context, true);
 
 		// Unassign the schema from the container
 		for (SchemaContainer container : getSchemaContainerRoot().findAllIt()) {
@@ -243,13 +242,23 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 
 		// Remove the project schema root from the index
-		getSchemaContainerRoot().delete(batch);
+		getSchemaContainerRoot().delete(context);
 
 		// Remove the release root and all releases
-		getReleaseRoot().delete(batch);
+		getReleaseRoot().delete(context);
 
 		// Finally remove the project node
 		getVertex().remove();
+		context.process(true);
+
+		for (String index : indices) {
+			context.dropIndex(index);
+		}
+
+		// Drop the project specific indices
+		context.dropIndex(TagFamily.composeIndexName(getUuid()));
+		context.dropIndex(Tag.composeIndexName(getUuid()));
+		context.batch().processSync();
 	}
 
 	@Override

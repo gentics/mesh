@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
+import com.gentics.mesh.context.DeletionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.ContainerType;
@@ -544,11 +545,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param release
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
-	 * @param batch
+	 * @param context
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch, boolean failForLastContainer);
+	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, DeletionContext context, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -620,10 +621,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @param ac
 	 * @param release
-	 * @param batch
+	 * @param context
 	 * @param ignoreChecks
 	 */
-	void deleteFromRelease(InternalActionContext ac, Release release, SearchQueueBatch batch, boolean ignoreChecks);
+	void deleteFromRelease(InternalActionContext ac, Release release, DeletionContext context, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -688,12 +689,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 
 	/**
-	 * Delete the node. Please use {@link #deleteFromRelease(Release, SearchQueueBatch)} if you want to delete the node just from a specific release.
+	 * Delete the node. Please use {@link #deleteFromRelease(Release, DeletionContext)} if you want to delete the node just from a specific release.
 	 * 
-	 * @param batch
+	 * @param context
 	 * @param ignoreChecks
 	 */
-	void delete(SearchQueueBatch batch, boolean ignoreChecks);
+	void delete(DeletionContext context, boolean ignoreChecks);
 
 	/**
 	 * Handle the update tags request.
