@@ -27,6 +27,8 @@ CAUTION: The concept of releases has been renamed into branches. The database st
 
 icon:plus[] Elasticsearch: The base64 encoded binary document data will no longer be stored in the search index.
 
+icon:plus[] Elasticsearch: The `/search/status` endpoint now has a new field `available`, which shows if Elasticsearch is currently ready to process search queries.
+
 icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.
 
 icon:check[] Core: Increased performance for webroot endpoint.

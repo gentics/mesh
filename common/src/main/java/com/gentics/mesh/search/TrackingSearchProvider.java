@@ -217,4 +217,9 @@ public class TrackingSearchProvider implements SearchProvider {
 		return Mesh.mesh().getOptions().getSearchOptions().getPrefix();
 	}
 
+	@Override
+	public Single<Boolean> isAvailable() {
+		return Single.just(true);
+	}
+
 }
