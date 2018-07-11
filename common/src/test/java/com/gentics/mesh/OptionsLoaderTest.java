@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 public class OptionsLoaderTest {
@@ -45,6 +46,8 @@ public class OptionsLoaderTest {
 		envMap.put(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
 		envMap.put(HttpServerConfig.MESH_HTTP_CORS_ORIGIN_PATTERN_ENV, "*");
 		envMap.put(HttpServerConfig.MESH_HTTP_CORS_ENABLE_ENV, "true");
+		envMap.put(VertxOptions.MESH_VERTX_EVENT_POOL_SIZE_ENV, "41");
+		envMap.put(VertxOptions.MESH_VERTX_WORKER_POOL_SIZE_ENV, "42");
 		set(envMap);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
@@ -53,6 +56,8 @@ public class OptionsLoaderTest {
 		assertEquals("https://somewhere.com", options.getSearchOptions().getUrl());
 		assertTrue(options.isInitClusterMode());
 		assertTrue(options.getHttpServerOptions().getEnableCors());
+		assertEquals(41, options.getVertxOptions().getEventPoolSize());
+		assertEquals(42, options.getVertxOptions().getWorkerPoolSize());
 		assertEquals("*", options.getHttpServerOptions().getCorsAllowedOriginPattern());
 	}
 

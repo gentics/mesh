@@ -13,6 +13,8 @@
 [[v0.21.5]]
 == 0.21.5 (TBD)
 
+icon:check[] Config: Fix handling of `MESH_VERTX_WORKER_POOL_SIZE` and `MESH_VERTX_EVENT_POOL_SIZE` environment variables. These variables were previously ignored.
+
 icon:plus[] REST: The amount of fields which will be returned can now be tuned using the `?fields` query parameter. The parameter can be used to improve the write performance by only including the `uuid` parameter in the response. 
 
 icon:check[] REST: The node update response will now contain the updated node in the correct language. Any provided language parameter will be ignored.
