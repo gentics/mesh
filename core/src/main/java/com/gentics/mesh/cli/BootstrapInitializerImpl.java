@@ -36,7 +36,6 @@ import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.core.cache.PermissionStore;
-import com.gentics.mesh.core.console.ConsoleProvider;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -130,9 +129,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public Lazy<CoreVerticleLoader> loader;
-
-	@Inject
-	public ConsoleProvider console;
 
 	private static MeshRoot meshRoot;
 
@@ -481,7 +477,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					"You disabled the upgrade check for snapshot upgrades. Please note that upgrading a snapshot version to a release version could create unforseen errors since the snapshot may have altered your data in a way which was not anticipated by the release.");
 				log.warn("Press any key to continue. This warning will only be shown once.");
 				try {
-					console.read();
+					System.in.read();
 				} catch (IOException e) {
 					throw new RuntimeException("Startup aborted", e);
 				}
