@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -137,26 +137,26 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
 	 * well.
 	 * 
-	 * @param context
+	 * @param bac
 	 */
-	void delete(DeletionContext context);
+	void delete(BulkActionContext bac);
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
 	 * 
-	 * @param context
+	 * @param bac
 	 * @param deleteNext
 	 *            true to also delete all "next" containers, false to only delete this container
 	 */
-	void delete(DeletionContext context, boolean deleteNext);
+	void delete(BulkActionContext bac, boolean deleteNext);
 
 	/**
 	 * "Delete" the field container from the release. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
 	 *
 	 * @param release
-	 * @param context
+	 * @param bac
 	 */
-	void deleteFromRelease(Release release, DeletionContext context);
+	void deleteFromRelease(Release release, BulkActionContext bac);
 
 	/**
 	 * Return the display field value for this container.

@@ -5,7 +5,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -22,7 +22,7 @@ public class TagFamilyTest extends AbstractMeshTest {
 			for (int i = 0; i < 200; i++) {
 				t.create("green" + i, project(), user());
 			}
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			t.delete(context);
 			context.process(true);
 			assertThat(trackingSearchProvider()).recordedDeleteEvents(nTags + 200 + 1);

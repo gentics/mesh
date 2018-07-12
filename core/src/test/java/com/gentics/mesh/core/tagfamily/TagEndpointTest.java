@@ -17,7 +17,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
@@ -157,7 +157,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testDelete() {
 		try (Tx tx = tx()) {
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
 			try (Tx tx2 = tx()) {
 				TagFamily tagFamily = tagFamily("colors");
@@ -272,7 +272,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			String uuid = tagFamily.getUuid();
 			TagFamily foundTagFamily = root.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			tagFamily.delete(context);
 			// TODO check for attached nodes
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);

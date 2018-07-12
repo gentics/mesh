@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
@@ -54,7 +54,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
-import com.gentics.mesh.core.data.search.impl.DummySearchQueueBatch;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -202,7 +201,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + getName() + "}");
 		}
@@ -222,19 +221,19 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 
 		// Remove the project from the index
-		context.batch().delete(this, false);
+		bac.batch().delete(this, false);
 
 		// Create a dummy batch which we will use to handle deletion for
 		// elements which must not update the batch since the documents are
 		// deleted by dedicated
 		// index deletion entries.
-		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
+		//DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
 
 		// Remove the tagfamilies from the index
-		getTagFamilyRoot().delete(new DeletionContext(dummyBatch));
+		getTagFamilyRoot().delete(bac);
 
 		// Remove the nodes in the project hierarchy
-		getBaseNode().delete(context, true);
+		getBaseNode().delete(bac, true);
 
 		// Unassign the schema from the container
 		for (SchemaContainer container : getSchemaContainerRoot().findAllIt()) {
@@ -242,23 +241,23 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 
 		// Remove the project schema root from the index
-		getSchemaContainerRoot().delete(context);
+		getSchemaContainerRoot().delete(bac);
 
 		// Remove the release root and all releases
-		getReleaseRoot().delete(context);
+		getReleaseRoot().delete(bac);
 
 		// Finally remove the project node
 		getVertex().remove();
-		context.process(true);
+		bac.process(true);
 
 		for (String index : indices) {
-			context.dropIndex(index);
+			bac.dropIndex(index);
 		}
 
 		// Drop the project specific indices
-		context.dropIndex(TagFamily.composeIndexName(getUuid()));
-		context.dropIndex(Tag.composeIndexName(getUuid()));
-		context.batch().processSync();
+		bac.dropIndex(TagFamily.composeIndexName(getUuid()));
+		bac.dropIndex(Tag.composeIndexName(getUuid()));
+		bac.batch().processSync();
 	}
 
 	@Override

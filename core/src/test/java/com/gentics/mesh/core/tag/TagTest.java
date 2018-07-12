@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -349,7 +349,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(tags().size(), root.computeCount());
 			root.addTag(tag);
 			assertEquals(tags().size(), root.computeCount());
-			root.delete(createDeletionContext());
+			root.delete(createBulkContext());
 		}
 	}
 
@@ -431,7 +431,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Tag tag = tagFamily.create("someTag", project(), user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
-			tag.delete(createDeletionContext());
+			tag.delete(createBulkContext());
 			assertNull(meshRoot().getTagRoot().findByUuid(uuid));
 		}
 	}
@@ -475,7 +475,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
 			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(), project()
 				.getLatestRelease().getUuid(), ContainerType.DRAFT));
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			tag.delete(context);
 			assertThat(context.batch()).containsEntries(expectedEntries);
 		}

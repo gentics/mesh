@@ -18,7 +18,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
@@ -100,7 +100,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 				}
 			}
 
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			Project project = project();
 			project.delete(context);
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
@@ -179,7 +179,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			Project project = meshRoot().getProjectRoot().create("newProject", null, null, user(), schemaContainer("folder").getLatestVersion());
 			assertNotNull(project);
 			String uuid = project.getUuid();
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull(foundProject);
 			project.delete(context);

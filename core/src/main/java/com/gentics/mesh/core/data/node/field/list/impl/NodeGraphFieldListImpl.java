@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -109,7 +109,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		getElement().remove();
 	}
 

@@ -21,12 +21,12 @@ public class ProjectEndpointDeleteTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 
+		// Create a lot of test nodes
 		for (int i = 0; i < 100; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 			schemaReference.setName("content");
 			schemaReference.setUuid(schemaUuid);
-			// No language code set
 			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			request.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));

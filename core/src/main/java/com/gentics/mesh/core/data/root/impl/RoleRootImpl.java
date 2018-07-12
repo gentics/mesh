@@ -10,7 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -101,7 +101,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		throw error(INTERNAL_SERVER_ERROR, "The global role root can't be deleted.");
 	}
 

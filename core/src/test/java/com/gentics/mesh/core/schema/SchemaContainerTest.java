@@ -12,7 +12,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -133,7 +133,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			for (Node node : getSchemaContainer().getNodes()) {
 				node.delete(context);
@@ -165,7 +165,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
-			newContainer.delete(createDeletionContext());
+			newContainer.delete(createBulkContext());
 			assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid));
 		}
 	}

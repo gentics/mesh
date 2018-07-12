@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import java.util.Iterator;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -100,7 +100,7 @@ public class NodeDeletionGraphFieldContainerFix {
 		initialEdge.setType(INITIAL);
 
 		SearchQueueBatch batch = MeshInternal.get().searchQueue().create();
-		DeletionContext context = new DeletionContext(batch);
+		BulkActionContext context = new BulkActionContext(batch);
 		node.delete(context);
 
 	}

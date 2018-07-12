@@ -26,7 +26,7 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.ContainerType;
@@ -468,7 +468,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext bac) {
 		// TODO don't allow this for the admin user
 		// disable();
 		// TODO we should not really delete users. Instead we should remove
@@ -478,9 +478,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		context.batch().delete(this, false);
+		bac.batch().delete(this, false);
 		getElement().remove();
-		context.process();
+		bac.process();
 		PermissionStore.invalidate();
 	}
 

@@ -10,7 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Iterator;
 import java.util.List;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -70,7 +70,7 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends NodeImpl> it = getNodes().iterator();
 		if (!it.hasNext()) {

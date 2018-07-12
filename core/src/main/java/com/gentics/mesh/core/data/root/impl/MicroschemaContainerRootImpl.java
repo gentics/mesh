@@ -10,7 +10,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Release;
@@ -89,7 +89,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void delete(DeletionContext batch) {
+	public void delete(BulkActionContext batch) {
 		throw new NotImplementedException();
 	}
 

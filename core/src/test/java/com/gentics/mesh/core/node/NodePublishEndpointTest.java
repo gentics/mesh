@@ -19,12 +19,12 @@ import java.util.Map.Entry;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -55,9 +55,9 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			InternalActionContext ac = mockActionContext("recursive=true");
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
-			SearchQueueBatch batch = createBatch();
-			parentFolder.publish(ac, batch);
-			subFolder.takeOffline(ac, batch);
+			BulkActionContext bac = createBulkContext();
+			parentFolder.publish(ac, bac);
+			subFolder.takeOffline(ac, bac);
 			subFolderUuid = subFolder.getUuid();
 			parentFolderUuid = parentFolder.getUuid();
 			tx.success();

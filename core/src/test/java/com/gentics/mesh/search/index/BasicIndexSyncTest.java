@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -239,7 +239,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Now manually delete the project
 		tx(() -> {
 			Project project = boot().projectRoot().findByName("project_2");
-			DeletionContext context = Mockito.mock(DeletionContext.class);
+			BulkActionContext context = Mockito.mock(BulkActionContext.class);
 			project.delete(context);
 		});
 		// Assert that the deletion was detected

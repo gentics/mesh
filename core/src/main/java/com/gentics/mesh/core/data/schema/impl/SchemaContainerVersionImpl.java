@@ -16,7 +16,7 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -172,7 +172,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		// Delete change
 		SchemaChange<?> change = getNextChange();
 		if (change != null) {

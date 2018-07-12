@@ -13,7 +13,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -93,17 +93,17 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamilyRoot {" + getUuid() + "}");
 		}
 		for (TagFamily tagFamily : findAllIt()) {
-			tagFamily.delete(context);
-			context.process();
+			tagFamily.delete(bac);
+			bac.process();
 		}
 		getElement().remove();
-		context.inc();
-		context.process();
+		bac.inc();
+		bac.process();
 	}
 
 	@Override

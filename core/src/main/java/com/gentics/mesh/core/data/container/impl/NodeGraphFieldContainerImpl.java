@@ -28,7 +28,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
@@ -147,12 +147,20 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		delete(context, true);
 	}
 
 	@Override
-	public void delete(DeletionContext context, boolean deleteNext) {
+	public void delete(BulkActionContext bac, boolean deleteNext) {
+
+		if (deleteNext) {
+			// Recursively delete all versions of the container
+			for (NodeGraphFieldContainer next : getNextVersions()) {
+				next.delete(bac);
+			}
+		}
+
 		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frame(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(this);
@@ -180,28 +188,22 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		// We don't need to handle node fields since those are only edges and will automatically be removed
 
-		if (deleteNext) {
-			// Recursively delete all versions of the container
-			for (NodeGraphFieldContainer next : getNextVersions()) {
-				next.delete(context);
-			}
-		}
-
 		// Delete the container from all releases and types
 		getReleaseTypes().forEach(tuple -> {
 			String releaseUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				context.batch().delete(this, releaseUuid, type, false);
+				bac.batch().delete(this, releaseUuid, type, false);
 			}
 		});
 
 		getElement().remove();
+		bac.inc();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromRelease(Release release, DeletionContext context) {
+	public void deleteFromRelease(Release release, BulkActionContext context) {
 		String releaseUuid = release.getUuid();
 
 		context.batch().delete(this, releaseUuid, DRAFT, false);

@@ -16,7 +16,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
@@ -141,21 +141,21 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + getName() + "}");
 		}
-		context.batch().delete(this, true);
+		bac.batch().delete(this, true);
 
 		// Nodes which used this tag must be updated in the search index for all releases
 		for (Release release : getProject().getReleaseRoot().findAllIt()) {
 			String releaseUuid = release.getUuid();
 			for (Node node : getNodes(release)) {
-				context.batch().store(node, releaseUuid);
+				bac.batch().store(node, releaseUuid);
 			}
 		}
 		getVertex().remove();
-		context.process();
+		bac.process();
 	}
 
 	@Override

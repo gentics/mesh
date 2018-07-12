@@ -17,7 +17,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -184,19 +184,19 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
 
 		// Delete all the tags of the tag root
 		for (Tag tag : findAllIt()) {
-			tag.delete(context);
+			tag.delete(bac);
 		}
-		context.batch().delete(this, false);
+		bac.batch().delete(this, false);
 		// Now delete the tag root element
 		getElement().remove();
-		context.process();
+		bac.process();
 	}
 
 	@Override

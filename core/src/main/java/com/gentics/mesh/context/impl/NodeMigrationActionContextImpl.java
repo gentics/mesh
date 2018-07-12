@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -185,7 +185,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void delete(DeletionContext context) {
+			public void delete(BulkActionContext context) {
 
 			}
 

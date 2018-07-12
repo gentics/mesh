@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -30,7 +30,7 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 * @param context
 	 *            Deletion context which keeps track of the deletion process
 	 */
-	void delete(DeletionContext context);
+	void delete(BulkActionContext context);
 
 	/**
 	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.

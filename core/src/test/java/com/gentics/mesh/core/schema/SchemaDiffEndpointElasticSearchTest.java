@@ -13,10 +13,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import io.vertx.core.json.JsonObject;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;

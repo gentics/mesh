@@ -9,11 +9,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Context which tracks the active deletion operation.
+ * Context which tracks recursive and bulk actions.
+ * 
+ * Some operations may affect a lot of elements and thus it is needed to commit the transaction at specific safe points in order to reduce the memory footprint.
  */
-public class DeletionContext {
+public class BulkActionContext {
 
-	private static final Logger log = LoggerFactory.getLogger(DeletionContext.class);
+	private static final Logger log = LoggerFactory.getLogger(BulkActionContext.class);
 
 	private static final int DEFAULT_BATCH_SIZE = 100;
 
@@ -21,7 +23,7 @@ public class DeletionContext {
 
 	private SearchQueueBatch batch;
 
-	public DeletionContext(SearchQueueBatch batch) {
+	public BulkActionContext(SearchQueueBatch batch) {
 		this.batch = batch;
 	}
 
@@ -42,7 +44,7 @@ public class DeletionContext {
 	}
 
 	/**
-	 * Process the deletion by processing the batch and committing the transaction. The method will also automatically increase the counter.
+	 * Process the actions by processing the batch and committing the transaction. The method will also automatically increase the counter.
 	 * 
 	 * @param force
 	 *            Force the commit / process even if the batch is not yet full

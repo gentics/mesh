@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -81,7 +81,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchMissingVertex() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
-			DeletionContext context = Mockito.mock(DeletionContext.class);
+			BulkActionContext context = Mockito.mock(BulkActionContext.class);
 			content("honda nr").delete(context);
 			tx.success();
 		}

@@ -44,7 +44,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -1111,24 +1111,34 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void publish(InternalActionContext ac, Release release, SearchQueueBatch batch) {
+	public void publish(InternalActionContext ac, Release release, BulkActionContext bac) {
 		String releaseUuid = release.getUuid();
 		PublishParameters parameters = ac.getPublishParameters();
 
-		batch.store(this, releaseUuid, ContainerType.PUBLISHED, false);
+		bac.batch().store(this, releaseUuid, ContainerType.PUBLISHED, false);
 
 		// Handle recursion
 		if (parameters.isRecursive()) {
 			// TODO handle specific release
 			for (Node child : getChildren()) {
-				child.publish(ac, release, batch);
+				child.publish(ac, release, bac);
 			}
 		}
 		assertPublishConsistency(ac, release);
 	}
 
 	@Override
-	public void publish(InternalActionContext ac, SearchQueueBatch batch) {
+	public void publish(InternalActionContext ac, BulkActionContext bac) {
+
+		// Handle recursion first
+		PublishParameters parameters = ac.getPublishParameters();
+		if (parameters.isRecursive()) {
+			// TODO handle specific release
+			for (Node node : getChildren()) {
+				node.publish(ac, bac);
+			}
+		}
+
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
@@ -1138,20 +1148,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> publish(c.getLanguage(), release, ac.getUser()));
 
-		PublishParameters parameters = ac.getPublishParameters();
-		if (parameters.isRecursive()) {
-			// TODO handle specific release
-			for (Node node : getChildren()) {
-				node.publish(ac, batch);
-			}
-		}
 
 		assertPublishConsistency(ac, release);
-		batch.store(this, releaseUuid, PUBLISHED, false);
+		bac.batch().store(this, releaseUuid, PUBLISHED, false);
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters) {
+	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Release release, PublishParameters parameters) {
+
+ 		// Handle recursion first to start at the leafs
+		if (parameters.isRecursive()) {
+			for (Node node : getChildren()) {
+				node.takeOffline(ac, bac, release, parameters);
+			}
+		}
+		
 		List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, PUBLISHED);
 
 		String releaseUuid = release.getUuid();
@@ -1159,34 +1170,29 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Remove the published edge for each found container
 		List<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(releaseUuid, PUBLISHED);
 		getGraphFieldContainerEdges(releaseUuid, PUBLISHED).stream().forEach(EdgeFrame::remove);
+		
 		// Reset the webroot property for each published container
 		published.forEach(c -> {
 			c.setProperty(NodeGraphFieldContainer.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 			c.setProperty(NodeGraphFieldContainer.PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		});
 
-		// Handle recursion
-		if (parameters.isRecursive()) {
-			for (Node node : getChildren()) {
-				node.takeOffline(ac, batch, release, parameters);
-			}
-		}
-
 		assertPublishConsistency(ac, release);
 
 		// Remove the published node from the index
 		for (NodeGraphFieldContainer container : publishedContainers) {
-			batch.delete(container, releaseUuid, PUBLISHED, false);
+			bac.batch().delete(container, releaseUuid, PUBLISHED, false);
 		}
+		bac.process();
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch) {
+	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
 		Database db = MeshInternal.get().database();
 		Release release = ac.getRelease(getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		db.tx(() -> {
-			takeOffline(ac, batch, release, parameters);
+			takeOffline(ac, bac, release, parameters);
 			return this;
 		});
 	}
@@ -1217,7 +1223,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void publish(InternalActionContext ac, SearchQueueBatch batch, String languageTag) {
+	public void publish(InternalActionContext ac, BulkActionContext bac, String languageTag) {
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
@@ -1238,11 +1244,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		publish(draftVersion.getLanguage(), release, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
-		batch.store(this, release.getUuid(), PUBLISHED, false);
+		bac.batch().store(this, release.getUuid(), PUBLISHED, false);
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, String languageTag) {
+	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Release release, String languageTag) {
 		String releaseUuid = release.getUuid();
 
 		// 1. Locate the published container
@@ -1258,7 +1264,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		assertPublishConsistency(ac, release);
 
 		// 3. Invoke a delete on the document since it must be removed from the published index
-		batch.delete(published, releaseUuid, PUBLISHED, false);
+		bac.batch().delete(published, releaseUuid, PUBLISHED, false);
+		bac.process();
 	}
 
 	@Override
@@ -1342,7 +1349,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void delete(DeletionContext context, boolean ignoreChecks) {
+	public void delete(BulkActionContext bac, boolean ignoreChecks) {
 		if (!ignoreChecks) {
 			// Prevent deletion of basenode
 			if (getProject().getBaseNode().getUuid().equals(getUuid())) {
@@ -1355,26 +1362,27 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		// TODO Only affect a specific release?
 		for (Node child : getChildren()) {
-			child.delete(context);
+			child.delete(bac);
+			bac.process();
 		}
 		// Delete all initial containers (which will delete all containers)
 		for (NodeGraphFieldContainer container : getAllInitialGraphFieldContainers()) {
-			container.delete(context);
+			container.delete(bac);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node {" + getUuid() + "} vertex.");
 		}
 		getElement().remove();
-		context.process();
+		bac.process();
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		delete(context, false);
 	}
 
 	@Override
-	public void deleteFromRelease(InternalActionContext ac, Release release, DeletionContext context, boolean ignoreChecks) {
+	public void deleteFromRelease(InternalActionContext ac, Release release, BulkActionContext context, boolean ignoreChecks) {
 
 		DeleteParameters parameters = ac.getDeleteParameters();
 
@@ -1757,13 +1765,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, DeletionContext context,
+	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, BulkActionContext context,
 		boolean failForLastContainer) {
 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
 		NodeGraphFieldContainer container = getGraphFieldContainer(language, release, PUBLISHED);
 		if (container != null) {
-			takeOffline(ac, context.batch(), release, language.getLanguageTag());
+			takeOffline(ac, context, release, language.getLanguageTag());
 		}
 
 		// 2. Load the draft container and remove it from the release

@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.testcontainers.shaded.com.google.common.collect.Iterators;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -145,7 +145,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
-			group.delete(createDeletionContext());
+			group.delete(createBulkContext());
 			group = meshRoot().getGroupRoot().findByUuid(uuid);
 			assertNull(group);
 		}
@@ -201,7 +201,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			group().addUser(user());
 
 			// TODO add users to group?
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			group.delete(context);
 			assertElement(meshRoot().getGroupRoot(), uuid, false);
 			assertElement(meshRoot().getUserRoot(), userUuid, true);

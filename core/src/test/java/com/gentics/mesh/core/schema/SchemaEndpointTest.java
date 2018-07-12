@@ -45,7 +45,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -452,7 +452,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(reloaded.getNodes()).isNotEmpty();
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			for (Node node : reloaded.getNodes()) {
 				node.delete(context);
 			}

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.ContainerType;
@@ -475,30 +475,30 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Publish the node (all languages)
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @return
 	 */
-	void publish(InternalActionContext ac, SearchQueueBatch batch);
+	void publish(InternalActionContext ac, BulkActionContext bac);
 
 	/**
 	 * Take the node offline (all languages)
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac);
 
 	/**
 	 * Take the node offline.
 	 * 
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @param release
 	 * @param parameters
 	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac, Release release, PublishParameters parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -513,11 +513,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Publish a language of the node
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @param languageTag
 	 * @return
 	 */
-	void publish(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
+	void publish(InternalActionContext ac, BulkActionContext bac, String languageTag);
 
 	/**
 	 * Set the graph field container to be the (only) published for the given release
@@ -531,11 +531,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Take a language of the node offline.
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @param release
 	 * @param languageTag
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, String languageTag);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac, Release release, String languageTag);
 
 	/**
 	 * Delete the language container for the given language from the release. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
@@ -549,7 +549,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, DeletionContext context, boolean failForLastContainer);
+	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, BulkActionContext context, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -621,10 +621,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @param ac
 	 * @param release
-	 * @param context
+	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void deleteFromRelease(InternalActionContext ac, Release release, DeletionContext context, boolean ignoreChecks);
+	void deleteFromRelease(InternalActionContext ac, Release release, BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -674,10 +674,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param release
-	 * @param batch
+	 * @param bac
 	 * @return
 	 */
-	void publish(InternalActionContext ac, Release release, SearchQueueBatch batch);
+	void publish(InternalActionContext ac, Release release, BulkActionContext bac);
 
 	/**
 	 * Transform the node into a node list item.
@@ -689,12 +689,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 
 	/**
-	 * Delete the node. Please use {@link #deleteFromRelease(Release, DeletionContext)} if you want to delete the node just from a specific release.
+	 * Delete the node. Please use {@link #deleteFromRelease(Release, BulkActionContext)} if you want to delete the node just from a specific release.
 	 * 
-	 * @param context
+	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void delete(DeletionContext context, boolean ignoreChecks);
+	void delete(BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Handle the update tags request.

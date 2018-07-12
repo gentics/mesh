@@ -45,6 +45,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -52,7 +53,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -1955,8 +1955,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String uuid = node.getUuid();
 
 			// 2. publish the node
-			SearchQueueBatch batch = createBatch();
-			node.publish(mockActionContext(), batch);
+			BulkActionContext bac = createBulkContext();
+			node.publish(mockActionContext(), bac);
 
 			// 3. create new release
 			Project project = project();

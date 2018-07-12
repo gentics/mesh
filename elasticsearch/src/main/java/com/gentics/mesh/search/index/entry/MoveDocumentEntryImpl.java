@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 /**

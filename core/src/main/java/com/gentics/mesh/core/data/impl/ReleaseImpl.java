@@ -16,7 +16,7 @@ import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -446,7 +446,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		// TODO Do we need to delete affected nodes as well? Currently only deletion of projects is possible. Release can't be deleted without deleting the
 		// project.
 		getVertex().remove();

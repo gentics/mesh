@@ -4,9 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.Base64;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -15,8 +12,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.util.RxUtil;
-
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;

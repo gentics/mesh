@@ -17,7 +17,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -329,7 +329,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid = role.getUuid();
 			role = boot().roleRoot().findByUuid(uuid);
 			assertNotNull(role);
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			role.delete(context);
 			Role foundRole = boot().roleRoot().findByUuid(uuid);
 			assertNull(foundRole);
@@ -381,7 +381,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
 			String uuid;
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			try (Tx tx2 = tx()) {
 				Role role = role();
 				uuid = role.getUuid();

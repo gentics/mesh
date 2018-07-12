@@ -17,7 +17,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -177,7 +177,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			schema.setName("test");
 			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
 			assertNotNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			container.delete(context);
 			assertNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 		}

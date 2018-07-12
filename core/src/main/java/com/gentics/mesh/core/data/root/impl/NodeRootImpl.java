@@ -19,7 +19,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -198,7 +198,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		// TODO maybe add a check to prevent deletion of meshRoot.nodeRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node root {" + getUuid() + "}");

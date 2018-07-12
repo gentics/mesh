@@ -23,7 +23,7 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -214,7 +214,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node folder = folder("2015");
 			Node subNode = folder.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
 			subNode.deleteFromRelease(ac, project().getLatestRelease(), context, false);
 		}
@@ -310,7 +310,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			uuid = node.getUuid();
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
@@ -393,7 +393,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String subSubFolderUuid = subSubFolder.getUuid();
 
 			// 2. delete folder for initial release
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			subFolder.deleteFromRelease(ac, initialRelease, context, false);
@@ -460,7 +460,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialRelease);
 
 			// 8. delete folder for initial release
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			subFolder.deleteFromRelease(ac, initialRelease, context, false);
@@ -497,11 +497,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 1. create folder and publish
 			String folderUuid = db().tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
-				SearchQueueBatch batch = createBatch();
-				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+				BulkActionContext bac = createBulkContext();
+				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				folder.publish(mockActionContext(), batch);
+				folder.publish(mockActionContext(), bac);
 				return folder.getUuid();
 			});
 
@@ -520,8 +520,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 3. delete
 			InternalActionContext ac = mockActionContext("");
-			DeletionContext context = db().tx(() -> {
-				DeletionContext innerContext = createDeletionContext();
+			BulkActionContext context = db().tx(() -> {
+				BulkActionContext innerContext = createBulkContext();
 				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(ac, initialRelease, innerContext, false);
 				return innerContext;
 			});
@@ -564,11 +564,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 1. create folder and publish
 			String folderUuid = tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
-				SearchQueueBatch batch = createBatch();
-				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+				BulkActionContext bac = createBulkContext();
+				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				folder.publish(mockActionContext(), batch);
+				folder.publish(mockActionContext(), bac);
 				return folder.getUuid();
 			});
 
@@ -581,7 +581,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 3. delete from initial release
 			InternalActionContext ac = mockActionContext("");
-			DeletionContext context = createDeletionContext();
+			BulkActionContext context = createBulkContext();
 			tx(() -> {
 				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(ac, initialRelease, context, false);
 			});

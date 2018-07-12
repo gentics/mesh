@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.BACKUP;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -21,7 +22,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -87,7 +88,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				DeletionContext context = searchQueue.createDeletionContext();
+				BulkActionContext context = searchQueue.createBulkContext();
 				node.deleteFromRelease(ac, ac.getRelease(), context, false);
 				return context.batch();
 			}).processSync();
@@ -120,7 +121,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			SchemaContainer schema = node.getSchemaContainer();
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				DeletionContext context = searchQueue.createDeletionContext();
+				BulkActionContext context = searchQueue.createBulkContext();
 				node.deleteLanguageContainer(ac, ac.getRelease(), language, context, true);
 				return context.batch();
 			}).processSync();
@@ -343,9 +344,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch sqb = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.publish(ac, batch);
-				return batch;
+				BulkActionContext bac = searchQueue.createBulkContext();
+				node.publish(ac, bac);
+				return bac.batch();
 			});
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -364,9 +365,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			SearchQueueBatch batch = searchQueue.create();
-			node.takeOffline(ac, batch);
-			return batch.processAsync().andThen(Single.just(Optional.empty()));
+			BulkActionContext bac = searchQueue.createBulkContext();
+			node.takeOffline(ac, bac);
+			return bac.batch().processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -405,9 +406,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch sqb = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.publish(ac, batch, languageTag);
-				return batch;
+				BulkActionContext bac = searchQueue.createBulkContext();
+				node.publish(ac, bac, languageTag);
+				return bac.batch();
 			});
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac, languageTag)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -429,10 +430,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				BulkActionContext bac = searchQueue.createBulkContext();
 				Release release = ac.getRelease(ac.getProject());
-				node.takeOffline(ac, batch, release, languageTag);
-				return batch;
+				node.takeOffline(ac, bac, release, languageTag);
+				return bac.batch();
 			}).processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}

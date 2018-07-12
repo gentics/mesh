@@ -6,7 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
@@ -106,7 +106,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		getElement().remove();
 	}
 

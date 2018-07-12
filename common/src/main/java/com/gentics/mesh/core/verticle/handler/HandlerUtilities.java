@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -92,7 +92,7 @@ public class HandlerUtilities {
 			}
 
 			database.tx(() -> {
-				DeletionContext context = searchQueue.createDeletionContext();
+				BulkActionContext context = searchQueue.createBulkContext();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
 					element.delete(context);

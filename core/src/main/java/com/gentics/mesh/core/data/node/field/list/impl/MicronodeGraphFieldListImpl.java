@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -200,7 +200,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		getList().stream().map(MicronodeGraphField::getMicronode).forEach(micronode -> {
 			micronode.delete(null);
 		});
