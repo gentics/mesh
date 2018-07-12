@@ -130,7 +130,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		statusEndpoint.method(GET);
 		statusEndpoint.description("Returns the search index status.");
 		statusEndpoint.produces(APPLICATION_JSON);
-		statusEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Search index status.");
+		statusEndpoint.exampleResponse(OK, miscExamples.searchStatusJson(), "Search index status.");
 		statusEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			adminHandler.handleStatus(ac);
