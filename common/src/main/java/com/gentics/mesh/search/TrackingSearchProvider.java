@@ -219,7 +219,7 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	@Override
 	public Single<Boolean> isAvailable() {
-		return Single.just(true);
+		return Single.just(false);
 	}
 
 }
