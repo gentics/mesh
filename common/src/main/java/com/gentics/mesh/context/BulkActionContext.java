@@ -19,7 +19,8 @@ public class BulkActionContext {
 
 	private static final int DEFAULT_BATCH_SIZE = 100;
 
-	private final AtomicLong counter = new AtomicLong(0);
+	private final AtomicLong batchCounter = new AtomicLong(1);
+	private final AtomicLong elementCounter = new AtomicLong(0);
 
 	private SearchQueueBatch batch;
 
@@ -33,7 +34,7 @@ public class BulkActionContext {
 	 * @return
 	 */
 	public long inc() {
-		return counter.incrementAndGet();
+		return elementCounter.incrementAndGet();
 	}
 
 	/**
@@ -50,12 +51,13 @@ public class BulkActionContext {
 	 *            Force the commit / process even if the batch is not yet full
 	 */
 	public void process(boolean force) {
-		if (counter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
-			log.info("Processing transaction. I counted {" + counter.get() + "} elements.");
+		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
+			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
 			batch.processSync();
 			Tx.getActive().getGraph().commit();
 			// Reset the counter back to zero
-			counter.set(0);
+			elementCounter.set(0);
+			batchCounter.incrementAndGet();
 		}
 	}
 

@@ -9,6 +9,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
+import javax.annotation.meta.When;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -22,6 +24,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -240,6 +243,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(() -> {
 			Project project = boot().projectRoot().findByName("project_2");
 			BulkActionContext context = Mockito.mock(BulkActionContext.class);
+			Mockito.when(context.batch()).thenReturn(Mockito.mock(SearchQueueBatch.class));
 			project.delete(context);
 		});
 		// Assert that the deletion was detected

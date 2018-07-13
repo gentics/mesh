@@ -154,7 +154,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				bac.batch().store(node, releaseUuid);
 			}
 		}
-		getVertex().remove();
+		getElement().remove();
 		bac.process();
 	}
 

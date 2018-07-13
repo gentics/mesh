@@ -1130,15 +1130,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac) {
 
-		// Handle recursion first
-		PublishParameters parameters = ac.getPublishParameters();
-		if (parameters.isRecursive()) {
-			// TODO handle specific release
-			for (Node node : getChildren()) {
-				node.publish(ac, bac);
-			}
-		}
-
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
@@ -1147,9 +1138,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> publish(c.getLanguage(), release, ac.getUser()));
-
-		assertPublishConsistency(ac, release);
 		bac.batch().store(this, releaseUuid, PUBLISHED, false);
+		assertPublishConsistency(ac, release);
+
+		// Handle recursion after publishing the current node.
+		// This is done to ensure the publish consistency.
+		// Even if the publishing process stops at the initial
+		// level the consistency is correct.
+		PublishParameters parameters = ac.getPublishParameters();
+		if (parameters.isRecursive()) {
+			// TODO handle specific release
+			for (Node node : getChildren()) {
+				node.publish(ac, bac);
+			}
+		}
+		bac.process();
 	}
 
 	@Override
