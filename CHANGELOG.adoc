@@ -13,7 +13,7 @@
 [[v0.21.5]]
 == 0.21.5 (TBD)
 
-icon:check[] Memory: The memory footprint for deletion operations has been greatly reduced.
+icon:check[] Memory: The memory footprint for deletion, publish and unpublish operations has been greatly reduced.
 
 icon:check[] Config: Fix handling of `MESH_VERTX_WORKER_POOL_SIZE` and `MESH_VERTX_EVENT_POOL_SIZE` environment variables. These variables were previously ignored.
 
