@@ -6,12 +6,14 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
@@ -157,19 +159,26 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
 
 		// Check that the node is still alive in the other release
-		NodeResponse responseB = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(SECOND_BRANCH_NAME)));
+		NodeResponse responseB = call(
+			() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(SECOND_BRANCH_NAME)));
 		assertEquals("en", responseB.getLanguage());
+		assertFalse(responseB.getFields().isEmpty());
 
 		// And deleted in the first release
-		NodeResponse responseA = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
+		NodeResponse responseA = call(
+			() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
 		assertNull(responseA.getLanguage());
-		System.out.println(responseA.toJson());
+		assertTrue(responseA.getFields().isEmpty());
 
-		// TODO load children of parent in branch 1, 2
-		NodeListResponse childrenA = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
-		System.out.println(childrenA.toJson());
-		NodeListResponse childrenB = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setRelease(SECOND_BRANCH_NAME)));
-		System.out.println(childrenB.toJson());
+		NodeListResponse childrenA = call(
+			() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
+		Optional<NodeResponse> childA = childrenA.getData().stream().filter(n -> n.getUuid().equals(uuid)).findFirst();
+		assertFalse("The node was deleted from the release and should not be present.", childA.isPresent());
+
+		NodeListResponse childrenB = call(
+			() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setRelease(SECOND_BRANCH_NAME)));
+		Optional<NodeResponse> childB = childrenB.getData().stream().filter(n -> n.getUuid().equals(uuid)).findFirst();
+		assertTrue(childB.isPresent());
 
 	}
 
