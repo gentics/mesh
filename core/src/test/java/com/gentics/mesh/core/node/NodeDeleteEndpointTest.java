@@ -8,6 +8,7 @@ import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
@@ -109,7 +111,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		grantAdminRole();
 		final String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		final String parentNodeUuid = tx(() -> folder("news").getUuid());
-		final String SECOND_RELEASE_NAME = "release2";
+		final String SECOND_BRANCH_NAME = "branch2";
 
 		// 1. Create node in release a
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -139,7 +141,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		// 5. Create new release
 		waitForJobs(() -> {
 			ReleaseCreateRequest releaseCreateRequest = new ReleaseCreateRequest();
-			releaseCreateRequest.setName(SECOND_RELEASE_NAME);
+			releaseCreateRequest.setName(SECOND_BRANCH_NAME);
 			call(() -> client().createRelease(PROJECT_NAME, releaseCreateRequest));
 		}, MigrationStatus.COMPLETED, 1);
 
@@ -148,17 +150,27 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		updateNode(6, uuid, INITIAL_RELEASE_NAME);
 
 		// Create two drafts in release B
-		updateNode(5, uuid, SECOND_RELEASE_NAME);
-		updateNode(6, uuid, SECOND_RELEASE_NAME);
+		updateNode(5, uuid, SECOND_BRANCH_NAME);
+		updateNode(6, uuid, SECOND_BRANCH_NAME);
 
 		// Delete node in release A
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
 
 		// Check that the node is still alive in the other release
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(SECOND_RELEASE_NAME)));
+		NodeResponse responseB = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(SECOND_BRANCH_NAME)));
+		assertEquals("en", responseB.getLanguage());
+
 		// And deleted in the first release
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)), NOT_FOUND,
-			"object_not_found_for_version");
+		NodeResponse responseA = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
+		assertNull(responseA.getLanguage());
+		System.out.println(responseA.toJson());
+
+		// TODO load children of parent in branch 1, 2
+		NodeListResponse childrenA = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setRelease(INITIAL_RELEASE_NAME)));
+		System.out.println(childrenA.toJson());
+		NodeListResponse childrenB = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setRelease(SECOND_BRANCH_NAME)));
+		System.out.println(childrenB.toJson());
+
 	}
 
 	private void updateNode(int i, String uuid, String release) {
