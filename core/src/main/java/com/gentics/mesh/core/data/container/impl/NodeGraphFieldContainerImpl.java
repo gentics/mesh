@@ -147,8 +147,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
-		delete(context, true);
+	public void delete(BulkActionContext bac) {
+		delete(bac, true);
 	}
 
 	@Override

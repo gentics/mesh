@@ -483,7 +483,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
 				initialRelease.getUuid(), ContainerType.DRAFT, "en"));
-			assertThat(batch).containsEntries(affectedElements);
+			assertThat(context.batch()).containsEntries(affectedElements);
 		}
 	}
 
