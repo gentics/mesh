@@ -17,7 +17,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.crypto.KeyStoreHelper;
-import com.gentics.mesh.dagger.DaggerTestMeshComponent;
+import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -41,6 +41,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 public class MeshTestContext extends TestWatcher {
+
+	static {
+		System.setProperty("mesh.test", "true");
+	}
 
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
 
@@ -376,7 +380,7 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public void initDagger(MeshOptions options, TestSize size) throws Exception {
 		log.info("Initializing dagger context");
-		meshDagger = DaggerTestMeshComponent.builder().configuration(options).build();
+		meshDagger = DaggerMeshComponent.builder().configuration(options).build();
 		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {

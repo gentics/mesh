@@ -6,6 +6,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import dagger.Module;
@@ -23,7 +24,12 @@ public class SearchProviderModule {
 		// options have been specified
 		if (options.getSearchOptions().getUrl() == null) {
 			// searchProvider = new TrackingSearchProvider();
-			searchProvider = new DevNullSearchProvider();
+			String scope = System.getProperty("mesh.test");
+			if (scope != null) {
+				searchProvider = new TrackingSearchProvider();
+			} else {
+				searchProvider = new DevNullSearchProvider();
+			}
 		} else {
 			searchProvider = elasticsearchProvider;
 		}
