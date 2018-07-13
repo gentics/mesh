@@ -52,8 +52,8 @@ public class BulkActionContext {
 	public void process(boolean force) {
 		if (counter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction. I counted {" + counter.get() + "} elements.");
-			Tx.getActive().getGraph().commit();
 			batch.processSync();
+			Tx.getActive().getGraph().commit();
 			// Reset the counter back to zero
 			counter.set(0);
 		}
