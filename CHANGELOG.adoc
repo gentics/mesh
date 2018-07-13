@@ -13,6 +13,8 @@
 [[v0.21.5]]
 == 0.21.5 (TBD)
 
+icon:check[] REST: The order of elements within a micronode list field will now be correctly preserved. Previously the order would change once the list reached a size of about 20 elements. link:https://github.com/gentics/mesh/issues/469[#469]
+
 icon:check[] Memory: The memory footprint for deletion, publish and unpublish operations has been greatly reduced.
 
 icon:check[] Config: Fix handling of `MESH_VERTX_WORKER_POOL_SIZE` and `MESH_VERTX_EVENT_POOL_SIZE` environment variables. These variables were previously ignored.

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -29,7 +30,9 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	protected T addItem(String key, MeshVertex vertex) {
-		return addFramedEdge(HAS_ITEM, vertex, getListType());
+		T edge = addFramedEdge(HAS_ITEM, vertex, getListType());
+		edge.setFieldKey(key);
+		return edge;
 	}
 
 	@Override
@@ -39,7 +42,20 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 
 	@Override
 	public List<? extends T> getList() {
-		return outE(HAS_ITEM).has(getListType()).toListExplicit(getListType());
+		List<? extends T> list = outE(HAS_ITEM).has(getListType()).toListExplicit(getListType());
+		return list.stream().sorted((a, b) -> {
+			String bk = b.getFieldKey();
+			String ak = a.getFieldKey();
+			if (bk == null) {
+				bk = "0";
+			}
+			if (ak == null) {
+				ak = "0";
+			}
+			long bv = Long.valueOf(bk);
+			long av = Long.valueOf(ak);
+			return Long.compare(av, bv);
+		}).collect(Collectors.toList());
 	}
 
 	@Override
