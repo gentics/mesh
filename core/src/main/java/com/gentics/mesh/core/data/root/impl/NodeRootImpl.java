@@ -198,23 +198,20 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		// TODO maybe add a check to prevent deletion of meshRoot.nodeRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
 		// Delete all containers of all nodes
 		for (Node node : findAllIt()) {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(INITIAL)) {
-				container.delete(context);
-			}
-			// Finally remove the node element itself
-			node.getElement().remove();
-			context.inc();
+			// We don't need to handle recursion because we delete the root sequentially
+			node.deleteFully(bac, false);
+			bac.inc();
 		}
 		// All nodes are gone. Lets remove the node root element.
 		getElement().remove();
-		context.inc();
+		bac.inc();
 	}
 
 	/**

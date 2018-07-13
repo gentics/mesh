@@ -1148,7 +1148,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> publish(c.getLanguage(), release, ac.getUser()));
 
-
 		assertPublishConsistency(ac, release);
 		bac.batch().store(this, releaseUuid, PUBLISHED, false);
 	}
@@ -1156,13 +1155,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Release release, PublishParameters parameters) {
 
- 		// Handle recursion first to start at the leafs
+		// Handle recursion first to start at the leafs
 		if (parameters.isRecursive()) {
 			for (Node node : getChildren()) {
 				node.takeOffline(ac, bac, release, parameters);
 			}
 		}
-		
+
 		List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, PUBLISHED);
 
 		String releaseUuid = release.getUuid();
@@ -1170,7 +1169,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Remove the published edge for each found container
 		List<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(releaseUuid, PUBLISHED);
 		getGraphFieldContainerEdges(releaseUuid, PUBLISHED).stream().forEach(EdgeFrame::remove);
-		
+
 		// Reset the webroot property for each published container
 		published.forEach(c -> {
 			c.setProperty(NodeGraphFieldContainer.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
@@ -1365,6 +1364,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			child.delete(bac);
 			bac.process();
 		}
+
 		// Delete all initial containers (which will delete all containers)
 		for (NodeGraphFieldContainer container : getAllInitialGraphFieldContainers()) {
 			container.delete(bac);
@@ -1379,6 +1379,24 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void delete(BulkActionContext context) {
 		delete(context, false);
+	}
+
+	@Override
+	public void deleteFully(BulkActionContext bac, boolean recursive) {
+
+		if (recursive) {
+			for (Node child : getChildren()) {
+				child.deleteFully(bac, recursive);
+			}
+		}
+
+		for (NodeGraphFieldContainer container : getGraphFieldContainersIt(INITIAL)) {
+			container.delete(bac);
+		}
+
+		// Finally remove the node element itself
+		getElement().remove();
+		bac.process();
 	}
 
 	@Override

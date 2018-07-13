@@ -549,7 +549,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, BulkActionContext context, boolean failForLastContainer);
+	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, BulkActionContext context,
+		boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -745,5 +746,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return existing edge or null
 	 */
 	EdgeFrame getGraphFieldContainerEdge(String languageTag, String releaseUuid, ContainerType type);
+
+	/**
+	 * Fully delete the node. Not that this delete operation will delete all versions of the node and also the node itself (from all branches).
+	 * 
+	 * @param bac
+	 * @param recursive
+	 */
+	void deleteFully(BulkActionContext bac, boolean recursive);
 
 }

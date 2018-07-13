@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
@@ -232,8 +233,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		// Remove the tagfamilies from the index
 		getTagFamilyRoot().delete(bac);
 
+		//getNodeRoot().delete(bac);
 		// Remove the nodes in the project hierarchy
-		getBaseNode().delete(bac, true);
+		Node base = getBaseNode();
+		base.deleteFully(bac, true);
 
 		// Unassign the schema from the container
 		for (SchemaContainer container : getSchemaContainerRoot().findAllIt()) {
