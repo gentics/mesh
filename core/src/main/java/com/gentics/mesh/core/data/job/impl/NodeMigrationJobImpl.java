@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
@@ -17,6 +18,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -85,12 +88,14 @@ public class NodeMigrationJobImpl extends JobImpl {
 				status.setVersionEdge(branchVersionEdge);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
-						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for branch {" + branch.getUuid()
-						+ "} in project {" + project.getUuid() + "}");
+					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
+					+ "} in project {" + project.getUuid() + "}");
 
 				status.commit();
+				NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 				for (int i = 0; i < 3; i++) {
-					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, branch, fromContainerVersion, toContainerVersion, status).blockingAwait();
+					MeshInternal.get().nodeMigrationHandler().migrateNodes(ac, project, branch, fromContainerVersion, toContainerVersion, status)
+						.blockingAwait();
 					// Check migration result
 					boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
 					if (i == 3 && hasRemainingContainers) {
@@ -98,11 +103,20 @@ public class NodeMigrationJobImpl extends JobImpl {
 						break;
 					} else if (hasRemainingContainers) {
 						log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
-								+ fromContainerVersion.getVersion() + "} invoking migration again.");
+							+ fromContainerVersion.getVersion() + "} invoking migration again.");
 					} else {
 						break;
 					}
 				}
+
+				JobWarningList warnings = new JobWarningList();
+				if (!ac.getConflicts().isEmpty()) {
+					for (ConflictWarning conflict : ac.getConflicts()) {
+						log.info("Encountered conflict {" + conflict + "} which was automatically resolved.");
+						warnings.add(conflict);
+					}
+				}
+				setWarnings(warnings);
 
 				finalizeMigration(project, branch, fromContainerVersion);
 				status.done();
@@ -124,12 +138,12 @@ public class NodeMigrationJobImpl extends JobImpl {
 		}
 		// Remove old indices
 		MeshInternal.get().searchProvider()
-				.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), DRAFT))
-				.blockingAwait();
+			.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), DRAFT))
+			.blockingAwait();
 		MeshInternal.get().searchProvider()
-				.deleteIndex(
-						NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), PUBLISHED))
-				.blockingAwait();
+			.deleteIndex(
+				NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), PUBLISHED))
+			.blockingAwait();
 
 	}
 

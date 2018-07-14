@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -91,11 +92,11 @@ public class HandlerUtilities {
 			}
 
 			database.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				BulkActionContext context = searchQueue.createBulkContext();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
-					element.delete(batch);
-					return batch;
+					element.delete(context);
+					return context.batch();
 				} else {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}
@@ -155,9 +156,10 @@ public class HandlerUtilities {
 					boolean updated = updateElement.update(ac, batch);
 					return Tuple.tuple(updated, batch);
 				});
+
 				SearchQueueBatch b = tuple.v2();
 				Boolean isUpdated = tuple.v1();
-				RestModel model = updateElement.transformToRestSync(ac, 0);
+				RM model = updateElement.transformToRestSync(ac, 0);
 				info = new ResultInfo(model, b);
 				if (isUpdated) {
 					updateElement.onUpdated();
@@ -168,15 +170,15 @@ public class HandlerUtilities {
 					created.set(true);
 					return Tuple.tuple(root.create(ac, batch, uuid), batch);
 				});
+
 				SearchQueueBatch b = tuple.v2();
 				T createdElement = tuple.v1();
 				RM model = createdElement.transformToRestSync(ac, 0);
 				String path = createdElement.getAPIPath(ac);
 				info = new ResultInfo(model, b);
 				info.setProperty("path", path);
-				// String path = info.getProperty("path");
-				ac.setLocation(path);
 				createdElement.onCreated();
+				ac.setLocation(path);
 			}
 
 			// 3. The updating transaction has succeeded. Now lets store it in the index

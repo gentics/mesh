@@ -16,6 +16,7 @@ import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
@@ -49,6 +50,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 
@@ -113,21 +116,29 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
 
 		BranchResponse restBranch = new BranchResponse();
-		restBranch.setName(getName());
-		restBranch.setHostname(getHostname());
-		restBranch.setSsl(getSsl());
-		// restBranch.setActive(isActive());
-		restBranch.setMigrated(isMigrated());
+		if (fields.has("name")) {
+			restBranch.setName(getName());
+		}
+		if (fields.has("hostname")) {
+			restBranch.setHostname(getHostname());
+		}
+		if (fields.has("ssl")) {
+			restBranch.setSsl(getSsl());
+		}
+		// restRelease.setActive(isActive());
+		if (fields.has("migrated")) {
+			restBranch.setMigrated(isMigrated());
+		}
 
 		// Add common fields
-		fillCommonRestFields(ac, restBranch);
+		fillCommonRestFields(ac, fields, restBranch);
 
 		// Role permissions
 		setRolePermissions(ac, restBranch);
-
-		// Merge and complete
 		return restBranch;
 	}
 
@@ -217,14 +228,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
 		SchemaContainer foundSchemaContainer = out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
-				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+			.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
 		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_SCHEMA_VERSION).retain(schemaContainerVersion).nextOrDefaultExplicit(
-				SchemaContainerVersionImpl.class, null);
+			SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
@@ -270,16 +281,20 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	public Iterable<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
 		return Observable.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
-				.getMicroschemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce((a, b) -> a
-						.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b)).blockingIterable();
+			.getMicroschemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce(
+				(a, b) -> a
+					.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b))
+			.blockingIterable();
 	}
 
 	@Override
 	public Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
 		return Observable.fromIterable(outE(HAS_SCHEMA_VERSION).frameExplicit(BranchSchemaEdgeImpl.class)).groupBy(it -> it
-				.getSchemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce((a, b) -> a.getSchemaContainerVersion()
-						.compareTo(b.getSchemaContainerVersion()) > 0 ? a : b)).blockingIterable();
+			.getSchemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce(
+				(a, b) -> a.getSchemaContainerVersion()
+					.compareTo(b.getSchemaContainerVersion()) > 0 ? a : b))
+			.blockingIterable();
 	}
 
 	@Override
@@ -339,14 +354,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
 		MicroschemaContainer foundMicroschemaContainer = out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid())
-				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+			.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
 		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid())
-				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+			.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
@@ -362,7 +377,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	 *            Container to handle
 	 */
 	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(
-			GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
+		GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaContainerVersion) {
@@ -431,9 +446,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
-		// TODO Do we need to delete affected nodes as well? Currently only deletion of projects is possible. Branch can't be deleted without deleting the
-		// project.
+	public void delete(BulkActionContext context) {
 		getVertex().remove();
 	}
 

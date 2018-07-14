@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -124,7 +125,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext context) {
 		if (MeshInternal.get().boot().meshRoot().getSchemaContainerRoot() == this) {
 			throw error(INTERNAL_SERVER_ERROR, "Deletion of the global schema root is not possible");
 		}
@@ -132,6 +133,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			log.debug("Deleting schema container root {" + getUuid() + "}");
 		}
 		getElement().remove();
+		context.inc();
 	}
 
 	@Override

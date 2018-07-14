@@ -24,12 +24,12 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -358,9 +358,9 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
-			SearchQueueBatch batch = createBatch();
-			folder("news").publish(mockActionContext(), batch);
-			folder("2015").publish(mockActionContext(), batch);
+			BulkActionContext bac = createBulkContext();
+			folder("news").publish(mockActionContext(), bac);
+			folder("2015").publish(mockActionContext(), bac);
 			tx.success();
 		}
 
@@ -402,9 +402,9 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 1. Publish nodes
 		db().tx(() -> {
-			SearchQueueBatch batch = createBatch();
-			folder("news").publish(mockActionContext(), batch);
-			folder("2015").publish(mockActionContext(), batch);
+			BulkActionContext bac = createBulkContext();
+			folder("news").publish(mockActionContext(), bac);
+			folder("2015").publish(mockActionContext(), bac);
 			return null;
 		});
 

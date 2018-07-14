@@ -1,9 +1,39 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.apache.commons.collections.CollectionUtils;
+
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -28,7 +58,8 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.error.NameConflictException;
+import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -41,40 +72,15 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.traversals.EdgeTraversal;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.collections.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 /**
  * @see NodeGraphFieldContainer
@@ -141,12 +147,20 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
-		delete(batch, true);
+	public void delete(BulkActionContext bac) {
+		delete(bac, true);
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch, boolean deleteNext) {
+	public void delete(BulkActionContext bac, boolean deleteNext) {
+
+		if (deleteNext) {
+			// Recursively delete all versions of the container
+			for (NodeGraphFieldContainer next : getNextVersions()) {
+				next.delete(bac);
+			}
+		}
+
 		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frame(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(this);
@@ -174,33 +188,27 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		// We don't need to handle node fields since those are only edges and will automatically be removed
 
-		if (deleteNext) {
-			// Recursively delete all versions of the container
-			for (NodeGraphFieldContainer next : getNextVersions()) {
-				next.delete(batch);
-			}
-		}
-
 		// Delete the container from all branches and types
 		getBranchTypes().forEach(tuple -> {
 			String branchUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				batch.delete(this, branchUuid, type, false);
+				bac.batch().delete(this, branchUuid, type, false);
 			}
 		});
 
 		getElement().remove();
+		bac.inc();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromBranch(Branch branch, SearchQueueBatch batch) {
+	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
 
-		batch.delete(this, branchUuid, DRAFT, false);
+		bac.batch().delete(this, branchUuid, DRAFT, false);
 		if (isPublished(branchUuid)) {
-			batch.delete(this, branchUuid, PUBLISHED, false);
+			bac.batch().delete(this, branchUuid, PUBLISHED, false);
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
 		// Remove the edge between the node and the container that matches the branch
@@ -218,7 +226,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		super.updateFieldsFromRest(ac, restFields);
 		String branchUuid = ac.getBranch().getUuid();
 
-		updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
+		updateWebrootPathInfo(ac, branchUuid, "node_conflicting_segmentfield_update");
 		updateDisplayFieldValue();
 	}
 
@@ -297,17 +305,17 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void updateWebrootPathInfo(String branchUuid, String conflictI18n) {
+	public void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n) {
 		Set<String> urlFieldValues = getUrlFieldValues();
 		if (isDraft(branchUuid)) {
-			updateWebrootPathInfo(branchUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
+			updateWebrootPathInfo(ac,branchUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
 			updateWebrootUrlFieldsInfo(branchUuid, urlFieldValues, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_URLFIELD_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_PROPERTY_KEY, null);
 			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		}
 		if (isPublished(branchUuid)) {
-			updateWebrootPathInfo(branchUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
+			updateWebrootPathInfo(ac, branchUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
 			updateWebrootUrlFieldsInfo(branchUuid, urlFieldValues, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
@@ -318,6 +326,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	/**
 	 * Update the webroot path info (checking for uniqueness before)
 	 *
+     * @param ac
 	 * @param branchUuid
 	 *            branch Uuid
 	 * @param conflictI18n
@@ -329,9 +338,49 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @param indexName
 	 *            name of the index to check for uniqueness
 	 */
-	protected void updateWebrootPathInfo(String branchUuid, String conflictI18n, ContainerType type, String propertyName, String indexName) {
+	protected void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n, ContainerType type, String propertyName, String indexName) {
+		final int MAX_NUMBER = 255;
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
+		String languageTag = getLanguage().getLanguageTag();
+		// Handle node migration conflicts automagically
+
+		if (ac instanceof NodeMigrationActionContextImpl) {
+			NodeMigrationActionContextImpl nmac = (NodeMigrationActionContextImpl) ac;
+			ConflictWarning info = null;
+			for (int i = 0; i < MAX_NUMBER; i++) {
+				try {
+					if (updateWebrootPathInfo(node, languageTag, branchUuid, segmentFieldName, conflictI18n, type, propertyName, indexName)) {
+						break;
+					}
+				} catch (NameConflictException e) {
+					// Only throw the exception if we tried multiple renames
+					if (i >= MAX_NUMBER) {
+						throw e;
+					} else {
+						// Generate some information about the found conflict
+						info = new ConflictWarning();
+						info.setNodeUuid(node.getUuid());
+						info.setBranchUuid(branchUuid);
+						info.setType(type.name());
+						info.setLanguageTag(languageTag);
+						info.setFieldName(segmentFieldName);
+						node.postfixPathSegment(branchUuid, type, languageTag);
+					}
+				}
+			}
+			// We encountered a conflict which was resolved. Lets add that info to the context
+			if (info != null) {
+				nmac.addConflictInfo(info);
+			}
+		} else {
+			updateWebrootPathInfo(node, languageTag, branchUuid, segmentFieldName, conflictI18n, type, propertyName, indexName);
+		}
+
+	}
+
+	private boolean updateWebrootPathInfo(Node node, String languageTag, String branchUuid, String segmentFieldName, String conflictI18n,
+		ContainerType type, String propertyName, String indexName) {
 		// Determine the webroot path of the container parent node
 		String segment = node.getPathSegment(branchUuid, type, getLanguage().getLanguageTag());
 
@@ -350,9 +399,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					.getLanguageTag(), conflictI18n, segmentFieldName, segment);
 			} else {
 				setProperty(propertyName, webRootIndexKey);
+				return true;
 			}
 		} else {
 			setProperty(propertyName, null);
+			return true;
 		}
 	}
 
@@ -625,6 +676,32 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public void postfixSegmentFieldValue() {
+		String segmentFieldKey = getSchemaContainerVersion().getSchema().getSegmentField();
+		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
+		if (segmentFieldKey == null) {
+			return;
+		}
+
+		// 2. Try to load the path segment using the string field
+		StringGraphField stringField = getString(segmentFieldKey);
+		if (stringField != null) {
+			String oldValue = stringField.getString();
+			if (oldValue != null) {
+				stringField.setString(UniquenessUtil.suggestNewName(oldValue));
+			}
+		}
+
+		// 3. Try to load the path segment using the binary field since the string field could not be found
+		if (stringField == null) {
+			BinaryGraphField binaryField = getBinary(segmentFieldKey);
+			if (binaryField != null) {
+				binaryField.postfixFileName();
+			}
+		}
 	}
 
 	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {

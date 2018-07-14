@@ -5,10 +5,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
-import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 /**
  * @see MoveDocumentEntry
@@ -24,13 +25,13 @@ public class MoveDocumentEntryImpl extends AbstractEntry<MoveEntryContext> imple
 	}
 
 	@Override
-	public Completable process() {
+	public Observable<? extends BulkEntry> process() {
 		switch (elementAction) {
 		case MOVE_ACTION:
-			return indexHandler.move(this).doOnComplete(onProcessAction);
+			return indexHandler.moveForBulk(this).doOnComplete(onProcessAction);
 		default:
 			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
 		}
-	}
 
+	}
 }

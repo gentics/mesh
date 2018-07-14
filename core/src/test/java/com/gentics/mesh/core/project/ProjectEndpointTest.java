@@ -79,6 +79,7 @@ import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
@@ -118,7 +119,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
 		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
-				.setVersion("draft")));
+			.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
@@ -156,7 +157,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// Verify that the new routes have been created
 		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
-				.setVersion("draft")));
+			.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		JsonObject eventInfo = fut.get(10, TimeUnit.SECONDS);
@@ -313,7 +314,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			for (int i = 0; i < nProjects; i++) {
 				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, user(), schemaContainer("folder")
-						.getLatestVersion());
+					.getLatestVersion());
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
@@ -357,7 +358,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// Verify that the no perm project is not part of the response
 		List<ProjectResponse> filteredProjectList = allProjects.parallelStream().filter(restProject -> restProject.getName().equals(
-				noPermProjectName)).collect(Collectors.toList());
+			noPermProjectName)).collect(Collectors.toList());
 		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
 		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -589,8 +590,23 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 
 		Set<String> indices = new HashSet<>();
+		Set<Tuple<String, String>> documentDeletes = new HashSet<>();
 		try (Tx tx = tx()) {
 			Project project = project();
+			for (Node node : project.getNodeRoot().findAll()) {
+				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
+					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+						ngfc.getSchemaContainerVersion().getUuid(), PUBLISHED);
+					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguage().getLanguageTag());
+					documentDeletes.add(Tuple.tuple(idx, did));
+				}
+				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), DRAFT)) {
+					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+						ngfc.getSchemaContainerVersion().getUuid(), DRAFT);
+					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguage().getLanguageTag());
+					documentDeletes.add(Tuple.tuple(idx, did));
+				}
+			}
 
 			// 1. Determine a list all project indices which must be dropped
 			for (Branch branch : project.getBranchRoot().findAllIt()) {
@@ -607,13 +623,16 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// 3. Assert that the indices have been dropped and the project has been
 		// deleted from the project index
+		for (Tuple<String, String> entry : documentDeletes) {
+			assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
+		}
 		assertThat(trackingSearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
 		assertThat(trackingSearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
 		assertThat(trackingSearchProvider()).hasDrop(Tag.composeIndexName(uuid));
 		for (String index : indices) {
 			assertThat(trackingSearchProvider()).hasDrop(index);
 		}
-		assertThat(trackingSearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 1 + 8, 2 + indices.size(), 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
@@ -706,7 +725,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		try (Tx tx = tx()) {
 			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
-					.spliterator(), true).count();
+				.spliterator(), true).count();
 			long nProjectsAfter = meshRoot().getProjectRoot().computeCount();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);

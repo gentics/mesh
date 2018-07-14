@@ -1,5 +1,32 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.ContainerType;
@@ -31,8 +58,10 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -335,18 +364,33 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
 		UserResponse restUser = new UserResponse();
 
-		restUser.setUsername(getUsername());
-		restUser.setEmailAddress(getEmailAddress());
-		restUser.setFirstname(getFirstname());
-		restUser.setLastname(getLastname());
-		restUser.setEnabled(isEnabled());
-
-		setNodeReference(ac, restUser, level);
-		setGroups(ac, restUser);
+		if (fields.has("username")) {
+			restUser.setUsername(getUsername());
+		}
+		if (fields.has("emailAddress")) {
+			restUser.setEmailAddress(getEmailAddress());
+		}
+		if (fields.has("firstname")) {
+			restUser.setFirstname(getFirstname());
+		}
+		if (fields.has("lastname")) {
+			restUser.setLastname(getLastname());
+		}
+		if (fields.has("enabled")) {
+			restUser.setEnabled(isEnabled());
+		}
+		if (fields.has("nodeReference")) {
+			setNodeReference(ac, restUser, level);
+		}
+		if (fields.has("groups")) {
+			setGroups(ac, restUser);
+		}
+		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
-		fillCommonRestFields(ac, restUser);
 
 		return restUser;
 	}
@@ -448,7 +492,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext bac) {
 		// TODO don't allow this for the admin user
 		// disable();
 		// TODO we should not really delete users. Instead we should remove
@@ -458,8 +502,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		batch.delete(this, false);
+		bac.batch().delete(this, false);
 		getElement().remove();
+		bac.process();
 		PermissionStore.invalidate();
 	}
 

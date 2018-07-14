@@ -17,7 +17,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -37,6 +36,7 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -157,7 +157,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testDelete() {
 		try (Tx tx = tx()) {
-			SearchQueueBatch batch = createBatch();
+			BulkActionContext context = createBulkContext();
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
 			try (Tx tx2 = tx()) {
 				TagFamily tagFamily = tagFamily("colors");
@@ -195,10 +195,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 					i++;
 				}
 
-				tagFamily.delete(batch);
+				tagFamily.delete(context);
 				tx2.success();
 			}
-			assertThat(batch).containsEntries(affectedElements);
+			assertThat(context.batch()).containsEntries(affectedElements);
 		}
 	}
 
@@ -272,8 +272,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			String uuid = tagFamily.getUuid();
 			TagFamily foundTagFamily = root.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
-			SearchQueueBatch batch = createBatch();
-			tagFamily.delete(batch);
+			BulkActionContext context = createBulkContext();
+			tagFamily.delete(context);
 			// TODO check for attached nodes
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(project);

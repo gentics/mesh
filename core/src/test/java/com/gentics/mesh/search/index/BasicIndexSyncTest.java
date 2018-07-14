@@ -9,12 +9,15 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
+import javax.annotation.meta.When;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -239,8 +242,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Now manually delete the project
 		tx(() -> {
 			Project project = boot().projectRoot().findByName("project_2");
-			SearchQueueBatch batch = Mockito.mock(SearchQueueBatch.class);
-			project.delete(batch);
+			BulkActionContext context = Mockito.mock(BulkActionContext.class);
+			Mockito.when(context.batch()).thenReturn(Mockito.mock(SearchQueueBatch.class));
+			project.delete(context);
 		});
 		// Assert that the deletion was detected
 		waitForEvent(INDEX_SYNC_EVENT, ElasticsearchSyncVerticle::invokeSync);

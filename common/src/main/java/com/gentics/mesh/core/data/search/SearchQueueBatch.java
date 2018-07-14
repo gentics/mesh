@@ -140,7 +140,15 @@ public interface SearchQueueBatch {
 	 * @param entry
 	 * @return Added entry
 	 */
-	SearchQueueEntry<?> addEntry(SearchQueueEntry<?> entry);
+	BulkSearchQueueEntry<?> addEntry(BulkSearchQueueEntry<?> entry);
+
+	/**
+	 * Add an entry to this batch.
+	 *
+	 * @param entry
+	 * @return Added entry
+	 */
+	SeperateSearchQueueEntry<?> addEntry(SeperateSearchQueueEntry<?> entry);
 
 	/**
 	 * Return a list of entries for this batch.
@@ -275,5 +283,10 @@ public interface SearchQueueBatch {
 	 * @return Fluent API
 	 */
 	SearchQueueBatch updatePermissions(IndexableElement element);
+
+	/**
+	 * Return the current size of the batch.
+	 */
+	int size();
 
 }

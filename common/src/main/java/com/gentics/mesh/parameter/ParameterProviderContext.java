@@ -2,6 +2,7 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -50,6 +51,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default SchemaUpdateParameters getSchemaUpdateParameters() {
 		return new SchemaUpdateParametersImpl(this);
+	}
+
+	default GenericParameters getGenericParameters() {
+		return new GenericParametersImpl(this);
 	}
 
 }

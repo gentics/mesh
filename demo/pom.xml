@@ -124,6 +124,7 @@
 					</execution>
 					<execution>
 						<id>yarn build</id>
+						<?m2e ignore ?>
 						<goals>
 							<goal>yarn</goal>
 						</goals>

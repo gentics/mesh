@@ -10,8 +10,10 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.BulkSearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.SeperateSearchQueueEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.rest.schema.Schema;
 
@@ -64,7 +66,12 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueEntry addEntry(SearchQueueEntry entry) {
+	public BulkSearchQueueEntry<?> addEntry(BulkSearchQueueEntry<?> entry) {
+		return null;
+	}
+
+	@Override
+	public SeperateSearchQueueEntry<?> addEntry(SeperateSearchQueueEntry<?> entry) {
 		return null;
 	}
 
@@ -120,6 +127,11 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 
 	@Override
 	public void clear() {
+	}
+
+	@Override
+	public int size() {
+		return 0;
 	}
 
 }

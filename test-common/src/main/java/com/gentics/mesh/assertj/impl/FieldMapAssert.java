@@ -16,4 +16,8 @@ public class FieldMapAssert extends AbstractAssert<FieldMapAssert, FieldMap> {
 		assertTrue("We expect the fieldmap to be empty but it was not", actual.isEmpty());
 	}
 
+	public void isNotEmpty() {
+		assertTrue("We expect the fieldmap to be not empty but it was", !actual.isEmpty());
+	}
+
 }

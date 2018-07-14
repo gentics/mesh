@@ -16,6 +16,7 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -41,6 +41,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.VertexFrame;
 
@@ -106,11 +108,14 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public SchemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
 		// Load the schema and add/overwrite some properties
 		// Use getSchema to utilise the schema storage
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
 		SchemaContainer container = getSchemaContainer();
-		container.fillCommonRestFields(ac, restSchema);
+		container.fillCommonRestFields(ac, fields, restSchema);
 		container.setRolePermissions(ac, restSchema);
 		return restSchema;
 
@@ -167,7 +172,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext context) {
 		// Delete change
 		SchemaChange<?> change = getNextChange();
 		if (change != null) {

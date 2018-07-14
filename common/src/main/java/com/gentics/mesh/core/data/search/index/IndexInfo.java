@@ -9,13 +9,22 @@ public class IndexInfo {
 	private String indexName;
 	private JsonObject indexSettings;
 	private JsonObject indexMappings;
-
+	private String sourceInfo;
 	private JsonObject ingestPipelineSettings;
 
-	public IndexInfo(String indexName, JsonObject indexSettings, JsonObject indexMappings) {
+	/**
+	 * Create a new index info which contains the information that is needed to create an index.
+	 * 
+	 * @param indexName
+	 * @param indexSettings
+	 * @param indexMappings
+	 * @param sourceInfo
+	 */
+	public IndexInfo(String indexName, JsonObject indexSettings, JsonObject indexMappings, String sourceInfo) {
 		this.indexName = indexName;
 		this.indexSettings = indexSettings;
 		this.indexMappings = indexMappings;
+		this.sourceInfo = sourceInfo;
 	}
 
 	public String getIndexName() {
@@ -43,9 +52,13 @@ public class IndexInfo {
 		return this;
 	}
 
+	public String getSourceInfo() {
+		return sourceInfo;
+	}
+
 	@Override
 	public String toString() {
-		return "Info for index: " + indexName;
+		return "Info for index: " + indexName + " {" + sourceInfo + "}";
 	}
 
 }

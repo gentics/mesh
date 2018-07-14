@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -110,7 +110,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));
 			role.grantPermissions(extraNode, READ_PERM);
 			assertEquals("We already got a permission edge. No additional edge should have been created.", 1, countEdges(role, READ_PERM.label(),
-					Direction.OUT));
+				Direction.OUT));
 		}
 	}
 
@@ -184,7 +184,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			User user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(meshRoot().getGroupRoot(),
-					CREATE_PERM));
+				CREATE_PERM));
 		}
 	}
 
@@ -230,8 +230,9 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue("The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
-								+ node.getUuid() + "} but it should since the parent object got this role permission.", role.hasPermission(permission,
-										node));
+							+ node.getUuid() + "} but it should since the parent object got this role permission.",
+							role.hasPermission(permission,
+								node));
 					}
 				}
 			}
@@ -328,8 +329,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid = role.getUuid();
 			role = boot().roleRoot().findByUuid(uuid);
 			assertNotNull(role);
-			SearchQueueBatch batch = createBatch();
-			role.delete(batch);
+			BulkActionContext context = createBulkContext();
+			role.delete(context);
 			Role foundRole = boot().roleRoot().findByUuid(uuid);
 			assertNull(foundRole);
 		}
@@ -380,11 +381,11 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
 			String uuid;
-			SearchQueueBatch batch = createBatch();
+			BulkActionContext context = createBulkContext();
 			try (Tx tx2 = tx()) {
 				Role role = role();
 				uuid = role.getUuid();
-				role.delete(batch);
+				role.delete(context);
 				tx2.success();
 			}
 			assertElement(boot().roleRoot(), uuid, false);
@@ -398,7 +399,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// assertThat(groupEntry).isPresent();
 			// assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
 
-			assertEquals("The role and all the documents which had permissions on the role must be updated.", 2 + 30, batch.getEntries().size());
+			assertEquals("The role and all the documents which had permissions on the role must be updated.", 2 + 30, context.batch().getEntries().size());
 		}
 	}
 

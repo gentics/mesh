@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
@@ -472,30 +473,30 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Publish the node (all languages)
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @return
 	 */
-	void publish(InternalActionContext ac, SearchQueueBatch batch);
+	void publish(InternalActionContext ac, BulkActionContext bac);
 
 	/**
 	 * Take the node offline (all languages)
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac);
 
 	/**
 	 * Take the node offline.
 	 * 
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @param branch
 	 * @param parameters
 	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch branch, PublishParameters parameters);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, PublishParameters parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -510,11 +511,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Publish a language of the node
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @param languageTag
 	 * @return
 	 */
-	void publish(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
+	void publish(InternalActionContext ac, BulkActionContext bac, String languageTag);
 
 	/**
 	 * Set the graph field container to be the (only) published for the given branch
@@ -528,11 +529,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Take a language of the node offline.
 	 *
 	 * @param ac
-	 * @param batch
+	 * @param bac
 	 * @param branch
 	 * @param languageTag
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Branch branch, String languageTag);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag);
 
 	/**
 	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
@@ -542,11 +543,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
-	 * @param batch
+	 * @param bac
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Branch branch, Language language, SearchQueueBatch batch, boolean failForLastContainer);
+	void deleteLanguageContainer(InternalActionContext ac, Branch branch, Language language, BulkActionContext bac, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -603,16 +604,25 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	String getPathSegment(String branchUuid, ContainerType type, String... languageTag);
 
 	/**
+	 * Update the path segment and increment any found postfix number.
+	 * 
+	 * @param releaseUuid
+	 * @param type
+	 * @param languageTag
+	 */
+	void postfixPathSegment(String releaseUuid, ContainerType type, String languageTag);
+
+	/**
 	 * Delete the node from the given branch. This will also delete children from the branch.
 	 * 
 	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
 	 *
 	 * @param ac
 	 * @param branch
-	 * @param batch
+	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void deleteFromBranch(InternalActionContext ac, Branch branch, SearchQueueBatch batch, boolean ignoreChecks);
+	void deleteFromBranch(InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -662,10 +672,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param branch
-	 * @param batch
+	 * @param bac
 	 * @return
 	 */
-	void publish(InternalActionContext ac, Branch branch, SearchQueueBatch batch);
+	void publish(InternalActionContext ac, Branch branch, BulkActionContext bac);
 
 	/**
 	 * Transform the node into a node list item.
@@ -679,10 +689,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Delete the node. Please use {@link #deleteFromBranch(Branch, SearchQueueBatch)} if you want to delete the node just from a specific branch.
 	 * 
-	 * @param batch
+	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void delete(SearchQueueBatch batch, boolean ignoreChecks);
+	void delete(BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Handle the update tags request.
@@ -733,5 +743,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return existing edge or null
 	 */
 	EdgeFrame getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type);
+
+	/**
+	 * Fully delete the node. Not that this delete operation will delete all versions of the node and also the node itself (from all branches).
+	 * 
+	 * @param bac
+	 * @param recursive
+	 */
+	void deleteFully(BulkActionContext bac, boolean recursive);
 
 }

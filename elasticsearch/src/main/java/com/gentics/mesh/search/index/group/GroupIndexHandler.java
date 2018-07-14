@@ -61,7 +61,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		String indexName = Group.composeIndexName();
-		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "group");
 		return Collections.singletonMap(indexName, info);
 	}
 

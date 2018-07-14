@@ -15,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -601,6 +602,10 @@ public interface TestHelperMethods {
 
 	default public SearchQueueBatch createBatch() {
 		return MeshInternal.get().searchQueue().create();
+	}
+
+	default public BulkActionContext createBulkContext() {
+		return MeshInternal.get().searchQueue().createBulkContext();
 	}
 
 	default public Map<String, User> users() {

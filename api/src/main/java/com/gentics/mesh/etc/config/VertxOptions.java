@@ -16,9 +16,9 @@ public class VertxOptions implements Option {
 
 	public static final int DEFAULT_EVENT_POOL_SIZE = 2 * Runtime.getRuntime().availableProcessors();
 
-	private static final String MESH_VERTX_WORKER_POOL_SIZE_ENV = "MESH_VERTX_WORKER_POOL_SIZE";
+	public static final String MESH_VERTX_WORKER_POOL_SIZE_ENV = "MESH_VERTX_WORKER_POOL_SIZE";
 
-	private static final String MESH_VERTX_EVENT_POOL_SIZE_ENV = "MESH_VERTX_EVENT_POOL_SIZE";
+	public static final String MESH_VERTX_EVENT_POOL_SIZE_ENV = "MESH_VERTX_EVENT_POOL_SIZE";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure worker pool size. Default is: " + DEFAULT_WORKER_POOL_SIZE)

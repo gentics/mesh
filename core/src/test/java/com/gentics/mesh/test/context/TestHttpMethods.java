@@ -44,12 +44,27 @@ public interface TestHttpMethods extends TestHelperMethods {
 		return httpGet(path, params).execute().body().string();
 	}
 
+	default String httpGetNow(String path, String token, ParameterProvider... params) throws IOException {
+		return httpGet(path, token, params).execute().body().string();
+	}
+
+	default JsonObject httpGetNowJson(String path, String token, ParameterProvider... params) throws IOException {
+		return new JsonObject(httpGetNow(path, token, params));
+	}
+
 	default Call httpGet(@NotNull String path, ParameterProvider... params) {
+		return httpGet(path, null, params);
+	}
+
+	default Call httpGet(@NotNull String path, String token, ParameterProvider... params) {
 		HttpUrl url = this.prepareUrl(path, params);
 
 		Request.Builder b = new Request.Builder();
 		b.url(url);
 		b.method("GET", null);
+		if (token != null) {
+			b.addHeader("Cookie", "mesh.token=" + token);
+		}
 
 		return this.httpClient().newCall(b.build());
 	}

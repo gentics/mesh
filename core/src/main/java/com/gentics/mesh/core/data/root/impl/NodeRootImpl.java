@@ -19,6 +19,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -197,21 +198,20 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext bac) {
 		// TODO maybe add a check to prevent deletion of meshRoot.nodeRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
 		// Delete all containers of all nodes
 		for (Node node : findAllIt()) {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(INITIAL)) {
-				container.delete(batch);
-			}
-			// Finally remove the node element itself
-			node.getElement().remove();
+			// We don't need to handle recursion because we delete the root sequentially
+			node.deleteFully(bac, false);
+			bac.inc();
 		}
 		// All nodes are gone. Lets remove the node root element.
 		getElement().remove();
+		bac.inc();
 	}
 
 	/**

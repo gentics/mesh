@@ -84,7 +84,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		String indexName = SchemaContainer.composeIndexName();
-		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "schema");
 		return Collections.singletonMap(indexName, info);
 	}
 

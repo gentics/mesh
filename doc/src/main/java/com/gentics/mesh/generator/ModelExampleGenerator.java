@@ -24,8 +24,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.util.TokenUtil;
 
-import io.vertx.core.json.JsonObject;
-
 public class ModelExampleGenerator extends AbstractGenerator {
 
 	public ModelExampleGenerator(File outputFolder) throws IOException {

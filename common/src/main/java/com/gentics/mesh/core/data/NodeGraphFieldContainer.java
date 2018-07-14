@@ -1,5 +1,14 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.INITIAL;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -154,25 +163,26 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
 	 * well.
 	 * 
-	 * @param batch
+	 * @param bac
 	 */
-	void delete(SearchQueueBatch batch);
+	void delete(BulkActionContext bac);
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
 	 * 
-	 * @param batch
-	 * @param deleteNext true to also delete all "next" containers, false to only delete this container
+	 * @param bac
+	 * @param deleteNext
+	 *            true to also delete all "next" containers, false to only delete this container
 	 */
-	void delete(SearchQueueBatch batch, boolean deleteNext);
+	void delete(BulkActionContext bac, boolean deleteNext);
 
 	/**
 	 * "Delete" the field container from the branch. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
 	 *
 	 * @param branch
-	 * @param batch
+	 * @param bac
 	 */
-	void deleteFromBranch(Branch branch, SearchQueueBatch batch);
+	void deleteFromBranch(Branch branch, BulkActionContext bac);
 
 	/**
 	 * Return the display field value for this container.
@@ -201,12 +211,24 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found.
 	 * 
+	 * @param ac
 	 * @param branchUuid
 	 *            branch Uuid
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
-	void updateWebrootPathInfo(String branchUuid, String conflictI18n);
+	void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n);
+
+	/**
+	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 * 
+	 * @param branchUuid
+	 * @param conflictI18n
+	 */
+	default void updateWebrootPathInfo(String branchUuid, String conflictI18n) {
+		updateWebrootPathInfo(null, branchUuid, conflictI18n);
+	}
 
 	/**
 	 * Get the Version Number or null if no version set.
@@ -415,6 +437,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return Determined segment field value or null if no segment field was specified or yet set
 	 */
 	String getSegmentFieldValue();
+
+	/**
+	 * Update the current segment field and increment any found postfix number.
+	 */
+	void postfixSegmentFieldValue();
 
 	/**
 	 * Return the URL field values for the container.

@@ -10,7 +10,6 @@
 
 = Gentics Mesh Changelog
 
-
 [[v0.22.0]]
 == 0.22.0 (TBD)
 
@@ -32,6 +31,45 @@ icon:plus[] Elasticsearch: The `/search/status` endpoint now has a new field `av
 icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.
 
 icon:check[] Core: Increased performance for webroot endpoint.
+
+[[v0.21.5]]
+== 0.21.5 (14.07.2018)
+
+icon:check[] REST: The order of elements within a micronode list field will now be correctly preserved. Previously the order would change once the list reached a size of about 20 elements. link:https://github.com/gentics/mesh/issues/469[#469]
+
+icon:check[] Memory: The memory footprint for deletion, publish and unpublish operations has been greatly reduced.
+
+icon:check[] Config: Fixed handling of `MESH_VERTX_WORKER_POOL_SIZE` and `MESH_VERTX_EVENT_POOL_SIZE` environment variables. These variables were previously ignored.
+
+icon:plus[] REST: The amount of fields which will be returned can now be tuned using the `?fields` query parameter. The parameter can be used to improve the write performance by only including the `uuid` parameter in the response. 
+
+icon:check[] REST: The node update response will now contain the updated node in the correct language. Any provided language parameter will be ignored.
+
+[[v0.21.4]]
+== 0.21.4 (09.07.2018)
+
+icon:plus[] Migration: Segment path conflicts will now automatically be resolved during the node migration. Information about actions taken can be found within the response of the job migration.
+
+icon:plus[] Migration: The node migration performance has been greatly enhanced. link:https://github.com/gentics/mesh/issues/453[#453]
+
+icon:check[] Elasticsearch: Start up of Gentics Mesh will now fail early if the embedded Elasticsearch server can't be started. link:https://github.com/gentics/mesh/issues/445[#445]
+
+icon:check[] Elasticsearch: The error logging has been enhanced. More detailed information will be logged if an index can't be created.
+
+icon:check[] UI: Fixed potential encoding issues in the UI on systems which are not using the UTF-8 default character set.
+
+icon:check[] Core: Fixed a bug that caused an unwanted schema migration when a schema update without any changes was invoked. This was the case with the `elasticsearch` properties.
+
+[[v0.21.3]]
+== 0.21.3 (19.06.2018)
+
+icon:check[] GraphQL: Fixed a bug that caused an error when multiple queries where executed concurrently.
+
+icon:check[] GraphQL: The language fallback handling for node reference fields has been enhanced. The language of the node will now be utilized when no language fallback has been specified.
+
+icon:check[] GraphQL: The language fallback handling has been enhanced. The language fallback will now automatically be passed along to load nested fields.
+
+icon:check[] GraphQL: The link resolving of html and string fields has been updated. Previously the language of the node which contained the field was not taken into account while resolving mesh links in these fields.
 
 [[v0.21.2]]
 == 0.21.2 (13.06.2018)

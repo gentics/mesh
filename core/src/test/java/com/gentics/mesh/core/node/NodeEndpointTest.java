@@ -1,58 +1,5 @@
 package com.gentics.mesh.core.node;
 
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.util.UUIDUtil;
-import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -75,6 +22,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -82,6 +30,62 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.WebRootResponse;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -584,6 +588,30 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("The first element in the page should not change but it changed in run {" + i + "}", firstUuid, response.getData().get(0)
 				.getUuid());
 		}
+
+	}
+
+	@Test
+	public void testReadNodeWithFieldLimit() {
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new GenericParametersImpl().setFields("uuid")));
+		// not empty
+		assertThat(response.getUuid()).isNotEmpty();
+
+		// empty
+		assertThat(response.getAvailableLanguages()).isNull();
+		assertThat(response.getChildrenInfo()).isEmpty();
+		assertThat(response.getFields()).isEmpty();
+
+		response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new GenericParametersImpl().setFields("uuid", "fields")));
+
+		// not empty
+		System.out.println(response.toJson());
+		assertThat(response.getUuid()).isNotEmpty();
+		assertThat(response.getFields()).isNotEmpty();
+
+		// empty
+		assertThat(response.getAvailableLanguages()).isNull();
+		assertThat(response.getChildrenInfo()).isEmpty();
 
 	}
 
@@ -1941,8 +1969,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String uuid = node.getUuid();
 
 			// 2. publish the node
-			SearchQueueBatch batch = createBatch();
-			node.publish(mockActionContext(), batch);
+			BulkActionContext bac = createBulkContext();
+			node.publish(mockActionContext(), bac);
 
 			// 3. create new branch
 			Project project = project();

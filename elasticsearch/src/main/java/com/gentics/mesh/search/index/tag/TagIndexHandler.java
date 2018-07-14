@@ -98,7 +98,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
 			for (Project project : projectRoot.findAllIt()) {
 				String indexName = Tag.composeIndexName(project.getUuid());
-				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tag");
 				indexInfo.put(indexName, info);
 			}
 			return indexInfo;

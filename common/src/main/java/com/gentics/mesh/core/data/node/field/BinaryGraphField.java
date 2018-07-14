@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.util.UniquenessUtil;
 
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
@@ -48,6 +49,25 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	default BinaryGraphField setFileName(String fileName) {
 		setProperty(BINARY_FILENAME_PROPERTY_KEY, fileName);
 		return this;
+	}
+
+	/**
+	 * Increment any found postfix number in the filename.
+	 * 
+	 * e.g:
+	 * <ul>
+	 * <li>test.txt -> test_1.txt</li>
+	 * <li>test -> test_1</li>
+	 * <li>test.blub.txt -> test.blub_1.txt</li>
+	 * <ul>
+	 * 
+	 */
+	default void postfixFileName() {
+		String oldName = getFileName();
+		if (oldName != null && !oldName.isEmpty()) {
+			setFileName(UniquenessUtil.suggestNewName(oldName));
+		}
+
 	}
 
 	/**
@@ -148,4 +168,5 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	boolean isIngestableDocument();
+
 }
