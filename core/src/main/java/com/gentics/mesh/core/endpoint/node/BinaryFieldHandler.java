@@ -13,7 +13,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +22,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.binary.BinaryDataProcessor;
+import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -58,7 +59,9 @@ import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -90,15 +93,24 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private BinaryStorage binaryStorage;
 
+	private BinaryProcessorRegistry binaryProcessorRegistry;
+
 	@Inject
-	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-		BinaryFieldResponseHandler binaryFieldResponseHandler, BinaryStorage binaryStorage) {
+	public BinaryFieldHandler(ImageManipulator imageManipulator,
+		Database db,
+		Lazy<BootstrapInitializer> boot,
+		SearchQueue searchQueue,
+		BinaryFieldResponseHandler binaryFieldResponseHandler,
+		BinaryStorage binaryStorage,
+		BinaryProcessorRegistry binaryProcessorRegistry) {
+
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.binaryStorage = binaryStorage;
+		this.binaryProcessorRegistry = binaryProcessorRegistry;
 	}
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
@@ -306,82 +318,24 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 *            Whether to store the data in the binary store
 	 */
 	private void processUpload(ActionContext ac, FileUpload ul, BinaryGraphField field, boolean storeBinary) {
-		String uploadFile = ul.uploadedFileName();
 
-		Binary binary = field.getBinary();
-		String hash = binary.getSHA512Sum();
-		String binaryUuid = binary.getUuid();
+		// Process the upload and extract needed information
 		String contentType = ul.contentType();
-		boolean isProcessableImage = NodeUtil.isProcessableImage(contentType);
+		Observable<BinaryDataProcessor> processors = Observable.fromIterable(binaryProcessorRegistry.getProcessors(contentType));
+		Completable processed = processors.flatMapCompletable(p -> p.process(ac, ul, field));
 
-		// Calculate how many streams will connect to the data stream
-		int neededDataStreams = 0;
-		if (isProcessableImage) {
-			neededDataStreams++;
-		}
+		// Store the data
+		Completable store = Completable.complete();
 		if (storeBinary) {
-			neededDataStreams++;
+			Binary binary = field.getBinary();
+			String binaryUuid = binary.getUuid();
+			String uploadFile = ul.uploadedFileName();
+			AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
+			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
+			store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).toCompletable();
 		}
 
-		if (neededDataStreams > 0) {
-			// Only gather image info for actual images. Otherwise return an empty image info object.
-			Single<Optional<ImageInfo>> imageInfo = Single.just(Optional.empty());
-			if (isProcessableImage) {
-				imageInfo = processImageInfo(ac, uploadFile);
-			}
-
-			// Store the data
-			Single<Long> store = Single.just(ul.size());
-			if (storeBinary) {
-				AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
-				Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-				store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size()));
-			}
-
-			// Handle the data in parallel
-			TransformationResult info = Single.zip(imageInfo, store, (imageinfoOpt, size) -> {
-				ImageInfo iinfo = null;
-				if (imageinfoOpt.isPresent()) {
-					iinfo = imageinfoOpt.get();
-				}
-				return new TransformationResult(hash, 0, iinfo, null);
-			}).blockingGet();
-			// Only add image information if image properties were found
-			if (info.getImageInfo() != null) {
-				binary.setImageHeight(info.getImageInfo().getHeight());
-				binary.setImageWidth(info.getImageInfo().getWidth());
-				field.setImageDominantColor(info.getImageInfo().getDominantColor());
-			}
-
-		}
-
-		field.setFileName(ul.fileName());
-		field.getBinary().setSize(ul.size());
-		field.setMimeType(contentType);
-	}
-
-	/**
-	 * Processes the given file and extracts the image info. The image info is cached within the action context in case the method is called again (e.g.: due to
-	 * tx retry). In that case the previously loaded image info is returned.
-	 * 
-	 * @param ac
-	 * @param file
-	 * @return
-	 */
-	private Single<Optional<ImageInfo>> processImageInfo(ActionContext ac, String file) {
-		// Caches the image info in the action context so that it does not need to be
-		// calculated again if the transaction failed
-		ImageInfo imageInfo = ac.get("imageInfo");
-		if (imageInfo != null) {
-			return Single.just(Optional.of(imageInfo));
-		} else {
-			return imageManipulator.readImageInfo(file).doOnSuccess(ii -> {
-				ac.put("imageInfo", ii);
-			}).map(Optional::of).onErrorReturn(e -> {
-				// suppress error
-				return Optional.empty();
-			});
-		}
+		Completable.mergeArray(processed, store).blockingAwait();
 	}
 
 	/**
