@@ -6,6 +6,10 @@ import com.gentics.mesh.handler.ActionContext;
 import io.reactivex.Completable;
 import io.vertx.ext.web.FileUpload;
 
+/**
+ * A binary data processor accepts a fileupload in order to extract specific information from the data. The found data can later be stored in the binary field
+ * to be finally persisted along with the binary data.
+ */
 public interface BinaryDataProcessor {
 
 	/**
