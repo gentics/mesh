@@ -368,7 +368,6 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	private void addMetadataMapping(JsonObject binaryProps) {
 		JsonObject locationInfo = new JsonObject();
 		locationInfo.put("type", GEOPOINT);
-		locationInfo.put("index", true);
 
 		JsonObject metadataProps = new JsonObject();
 		metadataProps.put("location", locationInfo);
