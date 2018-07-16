@@ -6,6 +6,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.util.UniquenessUtil;
@@ -194,7 +195,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @return
 	 */
-	Map<String, String> getMetadata();
+	Map<String, String> getMetadataProperties();
 
 	/**
 	 * Set the location information.
@@ -280,4 +281,11 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);
 			});
 	}
+
+	/**
+	 * Return the {@link BinaryMetadata} REST model of the field.
+	 * 
+	 * @return
+	 */
+	BinaryMetadata getMetadata();
 }

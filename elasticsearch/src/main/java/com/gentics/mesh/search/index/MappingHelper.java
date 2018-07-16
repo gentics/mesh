@@ -23,6 +23,7 @@ public final class MappingHelper {
 	public static final String LONG = "long";
 	public static final String DOUBLE = "double";
 	public static final String BINARY = "binary";
+	public static final String GEOPOINT = "geo_point";
 
 	// Index Types
 	public static final boolean DONT_INDEX_VALUE = false;

@@ -6,6 +6,7 @@ import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.DONT_INDEX_VALUE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
+import static com.gentics.mesh.search.index.MappingHelper.GEOPOINT;
 import static com.gentics.mesh.search.index.MappingHelper.INDEX_VALUE;
 import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;
 import static com.gentics.mesh.search.index.MappingHelper.LONG;
@@ -157,7 +158,6 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			fieldProps.put(field.getName(), fieldInfo);
 		}
 		return mapping;
-
 	}
 
 	/**
@@ -322,6 +322,9 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 		// Add mapping for fields which were added by the ingest plugin
 		addBinaryFieldIngestMapping(binaryProps, customIndexOptions);
+
+		// .metadata - Add metadata properties which are mostly dynamic string values
+		addMetadataMapping(binaryProps);
 	}
 
 	private void addBinaryFieldIngestMapping(JsonObject binaryProps, JsonObject customIndexOptions) {
@@ -359,8 +362,22 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject contentFieldInfo = new JsonObject();
 		contentFieldInfo.put("type", OBJECT);
 		contentFieldInfo.put("properties", contentProps);
-
 		binaryProps.put("file", contentFieldInfo);
+	}
+
+	private void addMetadataMapping(JsonObject binaryProps) {
+		JsonObject locationInfo = new JsonObject();
+		locationInfo.put("type", GEOPOINT);
+		locationInfo.put("index", true);
+
+		JsonObject metadataProps = new JsonObject();
+		metadataProps.put("location", locationInfo);
+
+		JsonObject metadataInfo = new JsonObject();
+		metadataInfo.put("type", OBJECT);
+		metadataInfo.put("properties", metadataProps);
+		metadataInfo.put("dynamic", true);
+		binaryProps.put("metadata", metadataInfo);
 	}
 
 	/**

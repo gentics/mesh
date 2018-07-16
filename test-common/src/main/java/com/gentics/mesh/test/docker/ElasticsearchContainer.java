@@ -13,18 +13,18 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
  */
 public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {
 
-	public static final String VERSION = "6.1.2";
+	public static final String VERSION = "6.3.1";
 
-	private static ImageFromDockerfile image = prepareDockerImage(true);
+	private static ImageFromDockerfile image = prepareDockerImage();
 
 	public ElasticsearchContainer() {
 		super(image);
 	}
 
-	private static ImageFromDockerfile prepareDockerImage(boolean b) {
+	private static ImageFromDockerfile prepareDockerImage() {
 		try {
 			ImageFromDockerfile dockerImage = new ImageFromDockerfile("elasticsearch", false);
-			String dockerFile = IOUtils.toString(ElasticsearchContainer.class.getResourceAsStream("/elasticsearch/Dockerfile"), Charset.defaultCharset());
+			String dockerFile = IOUtils.toString(ElasticsearchContainer.class.getResourceAsStream("/elasticsearch/Dockerfile.ingest"), Charset.defaultCharset());
 			dockerFile = dockerFile.replace("%VERSION%", VERSION);
 			dockerImage.withFileFromString("Dockerfile", dockerFile);
 			return dockerImage;

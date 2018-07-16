@@ -172,28 +172,9 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		restModel.setFocalPoint(getImageFocalPoint());
 		restModel.setDominantColor(getImageDominantColor());
 
-		BinaryMetadata metaData = getBinaryMetadata();
+		BinaryMetadata metaData = getMetadata();
 		restModel.setMetadata(metaData);
 		return restModel;
-	}
-
-	private BinaryMetadata getBinaryMetadata() {
-		BinaryMetadata metaData = new BinaryMetadata();
-		for (Entry<String, String> entry : getMetadata().entrySet()) {
-			metaData.add(entry.getKey(), entry.getValue());
-		}
-
-		// Now set the GPS information
-		Double lat = getLocationLatitude();
-		Double lon = getLocationLongitude();
-		if (lat != null && lon != null) {
-			metaData.setLocation(lon, lat);
-		}
-		Integer alt = getLocationAltitude();
-		if (alt != null && metaData.getLocation() != null) {
-			metaData.getLocation().setAlt(alt);
-		}
-		return metaData;
 	}
 
 	@Override
@@ -323,7 +304,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 			boolean matchingMetadata = true;
 			if (binaryField.getMetadata() != null) {
-				BinaryMetadata graphMetadata = getBinaryMetadata();
+				BinaryMetadata graphMetadata = getMetadata();
 				BinaryMetadata restMetadata = binaryField.getMetadata();
 				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
 			}
@@ -348,7 +329,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public Map<String, String> getMetadata() {
+	public Map<String, String> getMetadataProperties() {
 		List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
 
 		Map<String, String> metadata = new HashMap<>();
@@ -358,6 +339,26 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			metadata.put(name, value);
 		}
 		return metadata;
+	}
+
+	@Override
+	public BinaryMetadata getMetadata() {
+		BinaryMetadata metaData = new BinaryMetadata();
+		for (Entry<String, String> entry : getMetadataProperties().entrySet()) {
+			metaData.add(entry.getKey(), entry.getValue());
+		}
+
+		// Now set the GPS information
+		Double lat = getLocationLatitude();
+		Double lon = getLocationLongitude();
+		if (lat != null && lon != null) {
+			metaData.setLocation(lon, lat);
+		}
+		Integer alt = getLocationAltitude();
+		if (alt != null && metaData.getLocation() != null) {
+			metaData.getLocation().setAlt(alt);
+		}
+		return metaData;
 	}
 
 	@Override
