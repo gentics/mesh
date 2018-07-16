@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.data.node.field;
 
+import java.util.Map;
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.util.UniquenessUtil;
 
@@ -22,6 +26,14 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	String BINARY_IMAGE_FOCAL_POINT_X = "binaryImageFocalPointX";
 
 	String BINARY_IMAGE_FOCAL_POINT_Y = "binaryImageFocalPointY";
+
+	String META_DATA_PROPERTY_PREFIX = "metadata_";
+
+	String BINARY_LAT_KEY = "metadata-lat";
+
+	String BINARY_LON_KEY = "metadata-lon";
+
+	String BINARY_ALT_KEY = "metadata-alt";
 
 	/**
 	 * Return the binary filename.
@@ -169,4 +181,87 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 */
 	boolean isIngestableDocument();
 
+	/**
+	 * Set the metadata property.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	void setMetadata(String key, String value);
+
+	/**
+	 * Return the metadata properties.
+	 * 
+	 * @return
+	 */
+	Map<String, String> getMetadata();
+
+	/**
+	 * Set the location information.
+	 * 
+	 * @param loc
+	 */
+	default void setLocation(Location loc) {
+		Objects.requireNonNull(loc, "A valid location object needs to be supplied. Got null.");
+		setLocationLatitude(loc.getLat());
+		setLocationLongitude(loc.getLon());
+		Integer alt = loc.getAlt();
+		if (alt != null) {
+			setLocationAltitude(alt);
+		}
+	}
+
+	/**
+	 * Return the location latitude.
+	 * 
+	 * @return
+	 */
+	default Double getLocationLatitude() {
+		return getProperty(BINARY_LAT_KEY);
+	}
+
+	/**
+	 * Set the location latitude.
+	 * 
+	 * @param lat
+	 */
+	default void setLocationLatitude(double lat) {
+		setProperty(BINARY_LAT_KEY, lat);
+	}
+
+	/**
+	 * Return the location longitude.
+	 * 
+	 * @return
+	 */
+	default Double getLocationLongitude() {
+		return getProperty(BINARY_LON_KEY);
+	}
+
+	/**
+	 * Set the location longitude.
+	 * 
+	 * @param lon
+	 */
+	default void setLocationLongitude(double lon) {
+		setProperty(BINARY_LON_KEY, lon);
+	}
+
+	/**
+	 * Return the location altitude.
+	 * 
+	 * @return
+	 */
+	default Integer getLocationAltitude() {
+		return getProperty(BINARY_ALT_KEY);
+	}
+
+	/**
+	 * Set the location altitude.
+	 * 
+	 * @param alt
+	 */
+	default void setLocationAltitude(int alt) {
+		setProperty(BINARY_ALT_KEY, alt);
+	}
 }

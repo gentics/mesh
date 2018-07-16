@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 
 public class BinaryFieldImpl implements BinaryField {
@@ -50,6 +51,10 @@ public class BinaryFieldImpl implements BinaryField {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.")
 	private FocalPoint focalPoint;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Metadata of the upload. This object may contain exif data of images or meta data from PDF files.")
+	private BinaryMetadata metaData;
 
 	@Override
 	public String getBinaryUuid() {
@@ -147,6 +152,17 @@ public class BinaryFieldImpl implements BinaryField {
 	@Override
 	public BinaryField setFocalPoint(FocalPoint point) {
 		this.focalPoint = point;
+		return this;
+	}
+
+	@Override
+	public BinaryMetadata getMetaData() {
+		return metaData;
+	}
+
+	@Override
+	public BinaryField setMetaData(BinaryMetadata metaData) {
+		this.metaData = metaData;
 		return this;
 	}
 

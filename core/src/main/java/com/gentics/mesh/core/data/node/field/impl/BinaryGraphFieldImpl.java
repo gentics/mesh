@@ -5,9 +5,14 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
@@ -19,6 +24,7 @@ import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
@@ -150,6 +156,24 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 		restModel.setFocalPoint(getImageFocalPoint());
 		restModel.setDominantColor(getImageDominantColor());
+
+		BinaryMetadata metaData = new BinaryMetadata();
+		for (Entry<String, String> entry : getMetadata().entrySet()) {
+			metaData.add(entry.getKey(), entry.getValue());
+		}
+		
+		// Now set the GPS information
+		Double lat = getLocationLatitude();
+		Double lon = getLocationLongitude();
+		if (lat != null && lon != null) {
+			metaData.setLocation(lon, lat);
+		}
+		Integer alt = getLocationAltitude();
+		if (alt != null && metaData.getLocation() != null) {
+			metaData.getLocation().setAlt(alt);
+		}
+
+		restModel.setMetaData(metaData);
 		return restModel;
 	}
 
@@ -295,6 +319,24 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		}
 		mimeType = mimeType.toLowerCase();
 		return allowedTypes.contains(mimeType);
+	}
+
+	@Override
+	public Map<String, String> getMetadata() {
+		List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
+
+		Map<String, String> metadata = new HashMap<>();
+		for (String key : keys) {
+			String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
+			String value = getProperty(key);
+			metadata.put(name, value);
+		}
+		return metadata;
+	}
+
+	@Override
+	public void setMetadata(String key, String value) {
+		setProperty(META_DATA_PROPERTY_PREFIX + key, value);
 	}
 
 }

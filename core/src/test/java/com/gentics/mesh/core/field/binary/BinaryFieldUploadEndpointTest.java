@@ -36,6 +36,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -246,6 +247,48 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
 			}
 		}
+	}
+
+	@Test
+	public void testUploadExif() throws IOException {
+		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		InputStream ins = getClass().getResourceAsStream("/pictures/exifImage2.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		nodeCreateRequest.setSchemaName("binary_content");
+		NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.jpg", "image/jpeg"));
+
+		NodeResponse node2 = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+		System.out.println(node2.toJson());
+
+	}
+
+	@Test
+	public void testUploadPDF() throws IOException {
+		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		InputStream ins = getClass().getResourceAsStream("/testfiles/test.pdf");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		nodeCreateRequest.setSchemaName("binary_content");
+		NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.pdf", "application/pdf"));
+
+		NodeResponse node2 = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+		System.out.println(node2.toJson());
+
 	}
 
 	@Test
