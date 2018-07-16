@@ -39,7 +39,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Map of webroot paths per language. This property will only be populated if the "
-			+ NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY + " query parameter has been set accordingly.")
+		+ NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY + " query parameter has been set accordingly.")
 	private Map<String, String> languagePaths;
 
 	@JsonProperty(required = false)
@@ -84,7 +84,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Webroot path to the node content. Will only be provided if the " + NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY
-			+ " query parameter has been set accordingly.")
+		+ " query parameter has been set accordingly.")
 	private String path;
 
 	@JsonProperty(required = true)
@@ -204,6 +204,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	/**
 	 * Return the display field value for the node.
+	 * 
 	 * @return Display field value
 	 */
 	public String getDisplayName() {
@@ -212,7 +213,9 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	/**
 	 * Set the display field value for the node.
-	 * @param displayName Display field value
+	 * 
+	 * @param displayName
+	 *            Display field value
 	 */
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
@@ -364,6 +367,20 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	@Override
 	public String getType() {
 		return FieldTypes.NODE.toString();
+	}
+
+	/**
+	 * Helper method which convert the response into an update request.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	public NodeUpdateRequest toRequest() {
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.setLanguage(getLanguage());
+		request.setVersion(getVersion());
+		request.setFields(getFields());
+		return request;
 	}
 
 }

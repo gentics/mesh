@@ -225,7 +225,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @param lat
 	 */
-	default void setLocationLatitude(double lat) {
+	default void setLocationLatitude(Double lat) {
 		setProperty(BINARY_LAT_KEY, lat);
 	}
 
@@ -243,7 +243,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @param lon
 	 */
-	default void setLocationLongitude(double lon) {
+	default void setLocationLongitude(Double lon) {
 		setProperty(BINARY_LON_KEY, lon);
 	}
 
@@ -261,7 +261,23 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @param alt
 	 */
-	default void setLocationAltitude(int alt) {
+	default void setLocationAltitude(Integer alt) {
 		setProperty(BINARY_ALT_KEY, alt);
+	}
+
+	/**
+	 * Clear the metadata properties.
+	 */
+	default void clearMetadata() {
+		setLocationAltitude(null);
+		setLocationLongitude(null);
+		setLocationLatitude(null);
+
+		// Remove all other metadata properties
+		getPropertyKeys().stream()
+			.filter(e -> e.startsWith(META_DATA_PROPERTY_PREFIX))
+			.forEach(e -> {
+				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);
+			});
 	}
 }

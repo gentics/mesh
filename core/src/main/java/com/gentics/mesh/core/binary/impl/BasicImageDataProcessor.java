@@ -14,6 +14,8 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Completable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -21,6 +23,8 @@ import io.vertx.ext.web.FileUpload;
  */
 @Singleton
 public class BasicImageDataProcessor extends AbstractBinaryProcessor {
+
+	private static final Logger log = LoggerFactory.getLogger(BasicImageDataProcessor.class);
 
 	private ImageManipulator imageManipulator;
 
@@ -36,9 +40,12 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 
 	@Override
 	public Completable process(ActionContext ac, FileUpload upload, BinaryGraphField field) {
-		Optional<ImageInfo> infoOpt = imageManipulator.readImageInfo(upload.fileName()).doOnSuccess(ii -> {
+		Optional<ImageInfo> infoOpt = imageManipulator.readImageInfo(upload.uploadedFileName()).doOnSuccess(ii -> {
 			ac.put("imageInfo", ii);
 		}).map(Optional::of).onErrorReturn(e -> {
+			if (log.isDebugEnabled()) {
+				log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
+			}
 			// suppress error
 			return Optional.empty();
 		}).blockingGet();

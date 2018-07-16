@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
@@ -132,6 +133,20 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			}
 			graphBinaryField.setMimeType(binaryField.getMimeType());
 		}
+
+		// Handle Update - Metadata
+		BinaryMetadata metaData = binaryField.getMetadata();
+		if (metaData != null) {
+			graphBinaryField.clearMetadata();
+			for (Entry<String, String> entry : metaData.getMap().entrySet()) {
+				graphBinaryField.setMetadata(entry.getKey(), entry.getValue());
+			}
+			Location loc = metaData.getLocation();
+			if (loc != null) {
+				graphBinaryField.setLocation(loc);
+			}
+		}
+
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
@@ -157,11 +172,17 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		restModel.setFocalPoint(getImageFocalPoint());
 		restModel.setDominantColor(getImageDominantColor());
 
+		BinaryMetadata metaData = getBinaryMetadata();
+		restModel.setMetadata(metaData);
+		return restModel;
+	}
+
+	private BinaryMetadata getBinaryMetadata() {
 		BinaryMetadata metaData = new BinaryMetadata();
 		for (Entry<String, String> entry : getMetadata().entrySet()) {
 			metaData.add(entry.getKey(), entry.getValue());
 		}
-		
+
 		// Now set the GPS information
 		Double lat = getLocationLatitude();
 		Double lon = getLocationLongitude();
@@ -172,9 +193,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		if (alt != null && metaData.getLocation() != null) {
 			metaData.getLocation().setAlt(alt);
 		}
-
-		restModel.setMetaData(metaData);
-		return restModel;
+		return metaData;
 	}
 
 	@Override
@@ -301,7 +320,14 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 				String hashSumB = binaryField.getSha512sum();
 				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
 			}
-			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum;
+
+			boolean matchingMetadata = true;
+			if (binaryField.getMetadata() != null) {
+				BinaryMetadata graphMetadata = getBinaryMetadata();
+				BinaryMetadata restMetadata = binaryField.getMetadata();
+				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
+			}
+			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata;
 		}
 		return false;
 	}

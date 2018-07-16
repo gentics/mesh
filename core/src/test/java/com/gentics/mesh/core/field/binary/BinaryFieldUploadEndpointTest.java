@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -28,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.metadata.Metadata;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -39,7 +39,9 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
@@ -266,7 +268,21 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.jpg", "image/jpeg"));
 
 		NodeResponse node2 = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
-		System.out.println(node2.toJson());
+		BinaryMetadata metadata = node2.getFields().getBinaryField("binary").getMetadata();
+		assertEquals(13.920556, metadata.getLocation().getLon().doubleValue(), 0.01);
+		assertEquals(47.6725, metadata.getLocation().getLat().doubleValue(), 0.01);
+		assertEquals(1727, metadata.getLocation().getAlt().intValue());
+		assertEquals("4.2 mm", metadata.get("Focal_Length"));
+
+		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
+		BinaryField field = nodeUpdateRequest.getFields().getBinaryField("binary");
+		field.getMetadata().clear();
+		field.getMetadata().add("dummy", "value");
+		nodeUpdateRequest.getFields().put("binary", field);
+		NodeResponse node3 = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest));
+
+		BinaryMetadata metadata3 = node3.getFields().getBinaryField("binary").getMetadata();
+		assertEquals("value", metadata3.get("dummy"));
 
 	}
 
@@ -633,10 +649,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertEquals("The data did not contain correct image width information.", 1160, binaryField.getWidth().intValue());
 			assertEquals("The data did not contain correct image height information.", 1376, binaryField.getHeight().intValue());
 
-			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName).invoke();
-			latchFor(downloadFuture);
-			assertSuccess(downloadFuture);
-			NodeDownloadResponse downloadResponse = downloadFuture.result();
+			NodeDownloadResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName));
 			assertNotNull(downloadResponse);
 			assertEquals(size, downloadResponse.getBuffer().length());
 			assertNotNull("The first byte of the response could not be loaded.", downloadResponse.getBuffer().getByte(1));

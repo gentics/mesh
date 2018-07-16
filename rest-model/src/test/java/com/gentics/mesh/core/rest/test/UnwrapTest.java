@@ -15,13 +15,13 @@ public class UnwrapTest {
 		metadata.setLocation(42.0, 41.0);
 		metadata.add("ene", "muh");
 		metadata.add("name", "muhue2");
-		model.setMetaData(metadata);
+		model.setMetadata(metadata);
 
 		String json = model.toJson();
 		System.out.println(json);
 		BinaryFieldImpl model2 = JsonUtil.readValue(json,	BinaryFieldImpl.class);
-		System.out.println(model2.getMetaData().getLocation());
-		System.out.println(model2.getMetaData().getMap().toString());
+		System.out.println(model2.getMetadata().getLocation());
+		System.out.println(model2.getMetadata().getMap().toString());
 		System.out.println(model2.toJson());
 
 	}

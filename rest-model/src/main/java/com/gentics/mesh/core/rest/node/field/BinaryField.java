@@ -175,7 +175,7 @@ public interface BinaryField extends Field {
 	 * 
 	 * @return
 	 */
-	BinaryMetadata getMetaData();
+	BinaryMetadata getMetadata();
 
 	/**
 	 * Set the binary metadata.
@@ -183,6 +183,6 @@ public interface BinaryField extends Field {
 	 * @param metaData
 	 * @return
 	 */
-	BinaryField setMetaData(BinaryMetadata metaData);
+	BinaryField setMetadata(BinaryMetadata metaData);
 
 }

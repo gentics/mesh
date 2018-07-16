@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.node.field.binary;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -23,15 +24,21 @@ public class BinaryMetadata implements RestModel {
 	private Location location;
 
 	public BinaryMetadata() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public Location getLocation() {
 		return location;
 	}
 
-	public void setLocation(Location location) {
+	/**
+	 * Set the location.
+	 * 
+	 * @param location
+	 * @return Fluent API
+	 */
+	public BinaryMetadata setLocation(Location location) {
 		this.location = location;
+		return this;
 	}
 
 	@JsonAnySetter
@@ -44,8 +51,45 @@ public class BinaryMetadata implements RestModel {
 		return dynamicProperties;
 	}
 
+	/**
+	 * Set the location information.
+	 * 
+	 * @param lon
+	 * @param lat
+	 * @return Fluent API
+	 */
 	@JsonIgnore
-	public void setLocation(double lon, double lat) {
+	public BinaryMetadata setLocation(double lon, double lat) {
 		setLocation(new Location(lon, lat));
+		return this;
+	}
+
+	@JsonIgnore
+	public String get(String key) {
+		return dynamicProperties.get(key);
+	}
+
+	/**
+	 * Remove all metadata information.
+	 * 
+	 * @return Fluent API
+	 */
+	@JsonIgnore
+	public BinaryMetadata clear() {
+		dynamicProperties.clear();
+		location = null;
+		return this;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof BinaryMetadata) {
+			BinaryMetadata metadata = (BinaryMetadata) obj;
+			boolean sameLocation = Objects.equals(getLocation(), metadata.getLocation());
+			boolean sameProperties = Objects.equals(getMap(), metadata.getMap());
+			return sameLocation && sameProperties;
+		} else {
+			return false;
+		}
 	}
 }
