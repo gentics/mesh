@@ -23,6 +23,7 @@ A detailed description of this feature can be found in our https://getmesh.io/do
 Existing binary fields will not be automatically be processed to provide the metadata.
 ____
 
+icon:check[] Image: Focal point information within binary fields will now be utilized when invoking a download request which contains `?crop=fp&height=200&width=100`. Previously the stored information was not used and no focal point cropping was executed. link:https://github.com/gentics/mesh/issues/417[#417]
 
 [[v0.21.5]]
 == 0.21.5 (14.07.2018)

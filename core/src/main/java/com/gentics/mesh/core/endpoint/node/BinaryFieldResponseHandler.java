@@ -13,7 +13,9 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.http.MeshHeaders;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.RxUtil;
@@ -69,12 +71,21 @@ public class BinaryFieldResponseHandler {
 			response.putHeader(ETAG, etagHeaderValue);
 			String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
 
+			ImageManipulationParameters imageParams = ac.getImageParameters();
 			if (requestETag != null && requestETag.equals(etagHeaderValue)) {
 				response.setStatusCode(NOT_MODIFIED.code()).end();
-			} else if (binaryField.hasProcessableImage() && ac.getImageParameters().hasResizeParams()) {
+			} else if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
+
+				// We can maybe enhance the parameters using stored parameters.
+				if (!imageParams.hasFocalPoint()) {
+					FocalPoint fp = binaryField.getImageFocalPoint();
+					if (fp != null) {
+						imageParams.setFocalPoint(fp);
+					}
+				}
 				// Resize the image if needed
 				Flowable<Buffer> data = binary.getStream();
-				Flowable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, ac.getImageParameters())
+				Flowable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, imageParams)
 					.toFlowable()
 					.map(fileWithProps -> {
 						response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
