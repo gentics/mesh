@@ -90,7 +90,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 			parser.parse(inputstream, handler, metadata, context);
 			if (log.isDebugEnabled()) {
-				log.info("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
+				log.debug("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
 			}
 
 			String[] metadataNames = metadata.names();
@@ -126,7 +126,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 					log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.");
 				}
 
-				log.info("Adding property {" + name + "}={" + value + "}");
+				log.debug("Adding property {" + name + "}={" + value + "}");
 				field.setMetadata(name, value);
 			}
 
