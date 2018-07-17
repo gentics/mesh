@@ -893,11 +893,19 @@ In some cases you may want to show just a single area of the image. In this case
 [TIP]
 https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.35&fpz=3.0&w=800&h=600&crop=fp&fpdebug=true
 
+It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request. 
+In those cases it is not needed to specify the `fpx` and `fpy` parameter. Gentics Mesh will automatically load the missing parameter from the binary field if possible.
+
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpz=1.2&w=800&h=600&crop=fp&fpdebug=true
+
+
 === Transform and Update an Image
 
 Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. 
 The image manipulation parameters then are part of the request body. 
-This will effectivly override the currently stored image with the image of the resulting operation.
+This will effectively override the currently stored image with the image of the resulting operation.
 
 Endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
 

@@ -107,7 +107,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// Handle Update - Focal point
 		FocalPoint newFocalPoint = binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
-			Point imageSize = graphBinaryField.getBinary().getImageSize();
+			Binary binary = graphBinaryField.getBinary();
+			Point imageSize = binary.getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
 					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(),

@@ -225,6 +225,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 		ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setPayloadObject(nodeUpdateRequest);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());

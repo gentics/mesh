@@ -169,6 +169,6 @@ public class BinaryFieldImpl implements BinaryField {
 	@Override
 	@JsonIgnore
 	public boolean hasValues() {
-		return getDominantColor() != null || getFileName() != null && getMimeType() != null;
+		return getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null;
 	}
 }
