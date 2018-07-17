@@ -14,7 +14,6 @@ import java.util.Date;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
@@ -81,7 +80,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchMissingVertex() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
-			BulkActionContext context = Mockito.mock(BulkActionContext.class);
+			BulkActionContext context = createBulkContext();
 			content("honda nr").delete(context);
 			tx.success();
 		}
