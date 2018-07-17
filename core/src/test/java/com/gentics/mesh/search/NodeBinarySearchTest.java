@@ -8,9 +8,13 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -97,28 +101,29 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testGeolocationSearch() throws Exception {
-
-//		try (Tx tx = tx()) {
-//			recreateIndices();
-//			tx.success();
-//		}
-
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		InputStream ins = getClass().getResourceAsStream("/pictures/exifImage2.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
+		List<String> images = Arrays.asList("android-gps.jpg", "iphone-gps.jpg", "android-africa-gps.jpg");
+		for (String image : images) {
+			InputStream ins = getClass().getResourceAsStream("/pictures/" + image);
+			byte[] bytes = IOUtils.toByteArray(ins);
+			Buffer buffer = Buffer.buffer(bytes);
 
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-		nodeCreateRequest.setSchemaName("binary_content");
-		NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.jpg", "image/jpeg"));
-
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+			nodeCreateRequest.setSchemaName("binary_content");
+			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, image, "image/jpeg"));
+		}
 		String query = getESText("geosearch.es");
 		NodeListResponse result = call(() -> client().searchNodes(PROJECT_NAME, query));
-		assertThat(result.getData()).hasSize(1);
+		assertThat(result.getData()).hasSize(2);
+		// Only the two images should be found
+		List<String> foundImages = result.getData().stream().map(n -> n.getFields().getBinaryField("binary").getFileName())
+			.collect(Collectors.toList());
+		assertTrue(foundImages.contains("android-gps.jpg"));
+		assertTrue(foundImages.contains("android-africa-gps.jpg"));
 	}
 
 	@Test

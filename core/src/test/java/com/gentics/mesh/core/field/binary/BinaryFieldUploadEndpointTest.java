@@ -255,7 +255,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		InputStream ins = getClass().getResourceAsStream("/pictures/exifImage2.jpg");
+		InputStream ins = getClass().getResourceAsStream("/pictures/iphone2-gps.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 

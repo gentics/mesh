@@ -225,7 +225,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							binaryFieldMetadataInfo.put("location", locationInfo);
 							locationInfo.put("lon", loc.getLon());
 							locationInfo.put("lat", loc.getLat());
-							//locationInfo.put("alt", loc.getAlt());
+							// Add height outside of object to prevent ES error
+							binaryFieldMetadataInfo.put("location-z", loc.getAlt());
 						}
 					}
 

@@ -10,6 +10,20 @@
 
 = Gentics Mesh Changelog
 
+[[v0.22.0]] (TBD)
+
+icon:bullhorn[] Metadata extraction
+
+[quote]
+____
+This version of Gentics Mesh introduces the __Metadata extraction__ of file uploads (PDF, Images).
+GPS information of images will now be added to the search index. That information can be used to run link:https://getmesh.io/docs/beta/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries].
+A detailed description of this feature can be found in our https://getmesh.io/docs/beta/features.html#_metadata_handling[File Uploads Documentation].
+
+Existing binary fields will not be automatically be processed to provide the metadata.
+____
+
+
 [[v0.21.5]]
 == 0.21.5 (14.07.2018)
 
