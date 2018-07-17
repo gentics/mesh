@@ -959,7 +959,35 @@ For more information on available settings have a look at the link:administratio
 
 === Metadata handling
 
-Metadata information of uploads will automatically be extracted and added the `metadata` object of the binary field. Currently `jpeg`, `png` and `pdf` files will be processed.
+Metadata information of uploads will automatically be extracted and added the `metadata` object of the binary field. 
+
+Currently the following __mime-types__ are supported:
+
+Doc:
+
+* `application/pdf`
+*	`application/msword`
+* `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+
+Image:
+
+* `image/jpeg`
+* `image/jpg`
+* `image/png`
+
+Audio:
+
+* `audio/flac`
+* `audio/mp3`
+* `audio/ogg`
+* `audio/x-matroska`
+
+Video:
+
+* `video/ogg`
+* `video/mp4`
+* `video/x-matroska`
+
 
 The GPS information of images will be processed and provided in a `location` object. A geopoint will automatically be stored for the document in the search index. This way it is possible to run link:https://getmesh.io/docs/beta/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries] to locate images within a specific area.
 

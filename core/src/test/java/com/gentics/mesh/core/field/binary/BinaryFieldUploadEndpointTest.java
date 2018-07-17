@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.tika.metadata.Metadata;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -255,7 +254,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		InputStream ins = getClass().getResourceAsStream("/pictures/iphone2-gps.jpg");
+		InputStream ins = getClass().getResourceAsStream("/pictures/android-gps.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 
@@ -287,23 +286,24 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testUploadPDF() throws IOException {
+	public void testUploadFilesForTika() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		InputStream ins = getClass().getResourceAsStream("/testfiles/test.pdf");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
+		List<String> files = Arrays.asList("small.mp4", "small.ogv", "small.webm", "test.pdf", "test.docx");
+		for (String file : files) {
+			InputStream ins = getClass().getResourceAsStream("/testfiles/" + file);
+			byte[] bytes = IOUtils.toByteArray(ins);
+			Buffer buffer = Buffer.buffer(bytes);
 
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-		nodeCreateRequest.setSchemaName("binary_content");
-		NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+			nodeCreateRequest.setSchemaName("binary_content");
+			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.pdf", "application/pdf"));
-
-		NodeResponse node2 = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
-		System.out.println(node2.toJson());
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, file, "application/pdf"));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+		}
 
 	}
 

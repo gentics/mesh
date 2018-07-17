@@ -39,9 +39,24 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	public TikaBinaryProcessor() {
 		// Accepted types
 		acceptedTypes.add("application/pdf");
+		acceptedTypes.add("application/msword");
+		acceptedTypes.add("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+		// image
 		acceptedTypes.add("image/jpeg");
 		acceptedTypes.add("image/jpg");
 		acceptedTypes.add("image/png");
+
+		// audio
+		acceptedTypes.add("audio/flac");
+		acceptedTypes.add("audio/mp3");
+		acceptedTypes.add("audio/ogg");
+		acceptedTypes.add("audio/x-matroska");
+
+		// video
+		acceptedTypes.add("video/mp4");
+		acceptedTypes.add("video/ogg");
+		acceptedTypes.add("video/x-matroska");
 
 		// Attribute keys to ignore
 		skipSet.add("Content-Type");
