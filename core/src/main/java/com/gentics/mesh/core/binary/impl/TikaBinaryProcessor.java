@@ -83,10 +83,15 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		return Completable.defer(() -> {
 
 			File uploadFile = new File(upload.uploadedFileName());
-			BodyContentHandler handler = new BodyContentHandler();
-			Metadata metadata = new Metadata();
 			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
+				Metadata metadata = new Metadata();
 				ParseContext context = new ParseContext();
+				BodyContentHandler handler = new BodyContentHandler();
+
+				// PDF files need to be parsed fully
+				if (upload.contentType().toLowerCase().startsWith("application/pdf")) {
+					handler = new BodyContentHandler(-1);
+				}
 
 				parser.parse(inputstream, handler, metadata, context);
 				if (log.isDebugEnabled()) {

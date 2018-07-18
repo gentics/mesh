@@ -281,12 +281,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadFilesForTika() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		List<String> files = Arrays.asList("small.mp4", "small.ogv", "small.webm", "test.pdf", "test.docx");
+		List<String> files = Arrays.asList("small.mp4", "small.ogv", "test.pdf", "test.docx");
 		for (String file : files) {
 			Buffer buffer = getBuffer("/testfiles/" + file);
 			NodeResponse node = createNode(parentNodeUuid);
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, file, "application/pdf"));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+			NodeResponse node2 = call(
+				() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, file, "application/pdf"));
+			assertFalse("Metadata could not be found for file {" + file + "}",
+				node2.getFields().getBinaryField("binary").getMetadata().getMap().isEmpty());
 		}
 
 	}

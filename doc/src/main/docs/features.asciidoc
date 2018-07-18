@@ -1110,6 +1110,8 @@ The metadata of a binary field can also be updated in order to remove, add new o
 
 NOTE: The metadata within the image data itself will not be updated.
 
+NOTE: Uploading a binary to a field will override any custom metadata with the freshly parsed metadata of the upload.
+
 Example response:
 [source,json]
 ----

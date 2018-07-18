@@ -20,7 +20,7 @@ This version of Gentics Mesh introduces the __Metadata extraction__ of file uplo
 GPS information of images will now be added to the search index. That information can be used to run link:https://getmesh.io/docs/beta/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries].
 A detailed description of this feature can be found in our https://getmesh.io/docs/beta/features.html#_metadata_handling[File Uploads Documentation].
 
-Existing binary fields will not be automatically be processed to provide the metadata.
+Existing binary fields will not be automatically be processed to provide the metadata. You need to manually re-upload the data in order to generate the metadata properties.
 ____
 
 icon:check[] Image: Focal point information within binary fields will now be utilized when invoking a download request which contains `?crop=fp&height=200&width=100`. Previously the stored information was not used and no focal point cropping was executed. link:https://github.com/gentics/mesh/issues/417[#417]

@@ -366,10 +366,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	}
 
 	private void addMetadataMapping(JsonObject binaryProps) {
+		JsonObject metadataProps = new JsonObject();
+
+		// .location
 		JsonObject locationInfo = new JsonObject();
 		locationInfo.put("type", GEOPOINT);
-
-		JsonObject metadataProps = new JsonObject();
 		metadataProps.put("location", locationInfo);
 
 		JsonObject metadataInfo = new JsonObject();
