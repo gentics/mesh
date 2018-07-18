@@ -41,8 +41,8 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	private Database db;
 
 	private static List<ConsistencyCheck> checks = Arrays.asList(new GroupCheck(), new MicroschemaContainerCheck(), new NodeCheck(),
-			new ProjectCheck(), new ReleaseCheck(), new RoleCheck(), new SchemaContainerCheck(), new TagCheck(), new TagFamilyCheck(),
-			new UserCheck(), new GraphFieldContainerCheck());
+		new ProjectCheck(), new ReleaseCheck(), new RoleCheck(), new SchemaContainerCheck(), new TagCheck(), new TagFamilyCheck(),
+		new UserCheck(), new GraphFieldContainerCheck());
 
 	/**
 	 * Get the list of checks
@@ -59,8 +59,10 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Invoke the consistency check. 
+	 * Invoke the consistency check.
+	 * 
 	 * @param ac
+	 *            Action context
 	 */
 	public void invokeCheck(InternalActionContext ac) {
 		db.asyncTx((tx) -> {
@@ -79,7 +81,9 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	/**
 	 * Invoke the consistency check and repair
+	 * 
 	 * @param ac
+	 *            Action Context
 	 */
 	public void invokeRepair(InternalActionContext ac) {
 		db.asyncTx((tx) -> {

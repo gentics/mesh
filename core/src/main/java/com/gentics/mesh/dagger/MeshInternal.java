@@ -20,7 +20,7 @@ public interface MeshInternal {
 	 * @param options
 	 *            Mesh options which should be injected in the dagger context
 	 * 
-	 * @return
+	 * @return Created or found dagger context
 	 */
 	static MeshComponent create(MeshOptions options) {
 		if (applicationComponent.get() == null) {
@@ -51,6 +51,7 @@ public interface MeshInternal {
 	 * Set the component (useful for testing)
 	 * 
 	 * @param component
+	 *            Component to be set
 	 */
 	static void set(MeshComponent component) {
 		applicationComponent.set(component);

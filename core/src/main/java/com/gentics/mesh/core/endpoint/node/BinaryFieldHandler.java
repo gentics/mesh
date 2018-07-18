@@ -59,9 +59,7 @@ import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -321,21 +319,24 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 		// Process the upload and extract needed information
 		String contentType = ul.contentType();
-		Observable<BinaryDataProcessor> processors = Observable.fromIterable(binaryProcessorRegistry.getProcessors(contentType));
-		Completable processed = processors.flatMapCompletable(p -> p.process(ac, ul, field));
+		for (BinaryDataProcessor p : binaryProcessorRegistry.getProcessors(contentType)) {
+			try {
+				p.process(ul, field);
+			} catch (Exception e) {
+				log.warn("Processing of upload {" + ul.fileName() + "/" + ul.uploadedFileName() + "} in handler {" + p.getClass() + "}", e);
+			}
+		}
 
 		// Store the data
-		Completable store = Completable.complete();
 		if (storeBinary) {
 			Binary binary = field.getBinary();
 			String binaryUuid = binary.getUuid();
 			String uploadFile = ul.uploadedFileName();
 			AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
 			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-			store = binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).toCompletable();
+			binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).blockingGet();
 		}
 
-		Completable.mergeArray(processed, store).blockingAwait();
 	}
 
 	/**

@@ -5,9 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.handler.ActionContext;
 
-import io.reactivex.Completable;
 import io.vertx.ext.web.FileUpload;
 
 @Singleton
@@ -23,10 +21,9 @@ public class BasicUploadDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Completable process(ActionContext ac, FileUpload upload, BinaryGraphField field) {
+	public void process(FileUpload upload, BinaryGraphField field) {
 		field.setFileName(upload.fileName());
 		field.getBinary().setSize(upload.size());
 		field.setMimeType(upload.contentType());
-		return Completable.complete();
 	}
 }

@@ -17,9 +17,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
-import com.gentics.mesh.handler.ActionContext;
 
-import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -79,68 +77,68 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Completable process(ActionContext ac, FileUpload upload, BinaryGraphField field) {
-		return Completable.defer(() -> {
+	public void process(FileUpload upload, BinaryGraphField field) {
 
-			File uploadFile = new File(upload.uploadedFileName());
-			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
-				Metadata metadata = new Metadata();
-				ParseContext context = new ParseContext();
-				BodyContentHandler handler = new BodyContentHandler();
+		File uploadFile = new File(upload.uploadedFileName());
+		try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
+			Metadata metadata = new Metadata();
+			ParseContext context = new ParseContext();
+			BodyContentHandler handler = new BodyContentHandler();
 
-				// PDF files need to be parsed fully
-				if (upload.contentType().toLowerCase().startsWith("application/pdf")) {
-					handler = new BodyContentHandler(-1);
-				}
-
-				parser.parse(inputstream, handler, metadata, context);
-				if (log.isDebugEnabled()) {
-					log.debug("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
-				}
-
-				String[] metadataNames = metadata.names();
-				Location loc = new Location();
-				for (String name : metadataNames) {
-					String value = metadata.get(name);
-					name = sanitizeName(name);
-					if (skipSet.contains(name)) {
-						log.debug("Skipping entry {" + name + "} because it is on the skip set.");
-						continue;
-					}
-					if (value == null) {
-						log.debug("Skipping entry {" + name + "} because value is null.");
-						continue;
-					}
-
-					// Dedicated handling of GPS information
-					try {
-						if (name.equals("geo_lat")) {
-							loc.setLat(Double.valueOf(value));
-							continue;
-						}
-						if (name.equals("geo_long")) {
-							loc.setLon(Double.valueOf(value));
-							continue;
-						}
-						if (name.equals("GPS_Altitude")) {
-							String v = value.replaceAll(" .*", "");
-							loc.setAlt(Integer.parseInt(v));
-							continue;
-						}
-					} catch (NumberFormatException e) {
-						log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.", e);
-					}
-
-					log.debug("Adding property {" + name + "}={" + value + "}");
-					field.setMetadata(name, value);
-				}
-
-				if (loc.isPresent()) {
-					field.setLocation(loc);
-				}
+			// PDF files need to be parsed fully
+			if (upload.contentType().toLowerCase().startsWith("application/pdf")) {
+				handler = new BodyContentHandler(-1);
 			}
-			return Completable.complete();
-		}).onErrorComplete();
+
+			parser.parse(inputstream, handler, metadata, context);
+			if (log.isDebugEnabled()) {
+				log.debug("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
+			}
+
+			String[] metadataNames = metadata.names();
+			Location loc = new Location();
+			for (String name : metadataNames) {
+				String value = metadata.get(name);
+				name = sanitizeName(name);
+				if (skipSet.contains(name)) {
+					log.debug("Skipping entry {" + name + "} because it is on the skip set.");
+					continue;
+				}
+				if (value == null) {
+					log.debug("Skipping entry {" + name + "} because value is null.");
+					continue;
+				}
+
+				// Dedicated handling of GPS information
+				try {
+					if (name.equals("geo_lat")) {
+						loc.setLat(Double.valueOf(value));
+						continue;
+					}
+					if (name.equals("geo_long")) {
+						loc.setLon(Double.valueOf(value));
+						continue;
+					}
+					if (name.equals("GPS_Altitude")) {
+						String v = value.replaceAll(" .*", "");
+						loc.setAlt(Integer.parseInt(v));
+						continue;
+					}
+				} catch (NumberFormatException e) {
+					log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.", e);
+				}
+
+				log.debug("Adding property {" + name + "}={" + value + "}");
+				field.setMetadata(name, value);
+			}
+
+			if (loc.isPresent()) {
+				field.setLocation(loc);
+			}
+		} catch (Exception e) {
+			log.warn("Tika processing of upload failed", e);
+		}
+
 	}
 
 	/**

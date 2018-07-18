@@ -10,10 +10,9 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
 
-import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -39,27 +38,24 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Completable process(ActionContext ac, FileUpload upload, BinaryGraphField field) {
-		Optional<ImageInfo> infoOpt = imageManipulator.readImageInfo(upload.uploadedFileName()).doOnSuccess(ii -> {
-			ac.put("imageInfo", ii);
-		}).map(Optional::of).onErrorReturn(e -> {
-			if (log.isDebugEnabled()) {
-				log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
-			}
-			// suppress error
-			return Optional.empty();
-		}).blockingGet();
+	public void process(FileUpload upload, BinaryGraphField field) {
+		Optional<ImageInfo> infoOpt = imageManipulator.readImageInfo(upload.uploadedFileName()).map(Optional::of)
+			.onErrorResumeNext(e -> {
+				if (log.isDebugEnabled()) {
+					log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
+				}
+				return Single.just(Optional.empty());
+			}).blockingGet();
 
-		// We found image information so lets store it.
+		
 		if (infoOpt.isPresent()) {
+			ImageInfo info = infoOpt.get();
 			Binary binary = field.getBinary();
-			ImageInfo imageInfo = infoOpt.get();
-			binary.setImageHeight(imageInfo.getHeight());
-			binary.setImageWidth(imageInfo.getWidth());
-			field.setImageDominantColor(imageInfo.getDominantColor());
+			binary.setImageHeight(info.getHeight());
+			binary.setImageWidth(info.getWidth());
+			field.setImageDominantColor(info.getDominantColor());
 		}
 
-		return Completable.complete();
 	}
 
 }
