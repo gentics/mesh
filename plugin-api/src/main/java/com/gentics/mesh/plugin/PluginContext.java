@@ -209,8 +209,8 @@ public class PluginContext implements RoutingContext {
 	}
 
 	@Override
-	public @Nullable Cookie removeCookie(String name) {
-		return rc.removeCookie(name);
+	public @Nullable Cookie removeCookie(String name, boolean invalidate) {
+		return rc.removeCookie(name, invalidate);
 	}
 
 	@Override
