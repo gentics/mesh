@@ -83,58 +83,59 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		return Completable.defer(() -> {
 
 			File uploadFile = new File(upload.uploadedFileName());
-			BodyContentHandler handler = new BodyContentHandler(-1);
+			BodyContentHandler handler = new BodyContentHandler();
 			Metadata metadata = new Metadata();
-			FileInputStream inputstream = new FileInputStream(uploadFile);
-			ParseContext context = new ParseContext();
+			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
+				ParseContext context = new ParseContext();
 
-			parser.parse(inputstream, handler, metadata, context);
-			if (log.isDebugEnabled()) {
-				log.debug("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
-			}
-
-			String[] metadataNames = metadata.names();
-			Location loc = new Location();
-			for (String name : metadataNames) {
-				String value = metadata.get(name);
-				name = sanitizeName(name);
-				if (skipSet.contains(name)) {
-					log.debug("Skipping entry {" + name + "} because it is on the skip set.");
-					continue;
-				}
-				if (value == null) {
-					log.debug("Skipping entry {" + name + "} because value is null.");
-					continue;
+				parser.parse(inputstream, handler, metadata, context);
+				if (log.isDebugEnabled()) {
+					log.debug("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
 				}
 
-				// Dedicated handling of GPS information
-				try {
-					if (name.equals("geo_lat")) {
-						loc.setLat(Double.valueOf(value));
+				String[] metadataNames = metadata.names();
+				Location loc = new Location();
+				for (String name : metadataNames) {
+					String value = metadata.get(name);
+					name = sanitizeName(name);
+					if (skipSet.contains(name)) {
+						log.debug("Skipping entry {" + name + "} because it is on the skip set.");
 						continue;
 					}
-					if (name.equals("geo_long")) {
-						loc.setLon(Double.valueOf(value));
+					if (value == null) {
+						log.debug("Skipping entry {" + name + "} because value is null.");
 						continue;
 					}
-					if (name.equals("GPS_Altitude")) {
-						String v = value.replaceAll(" .*", "");
-						loc.setAlt(Integer.parseInt(v));
-						continue;
+
+					// Dedicated handling of GPS information
+					try {
+						if (name.equals("geo_lat")) {
+							loc.setLat(Double.valueOf(value));
+							continue;
+						}
+						if (name.equals("geo_long")) {
+							loc.setLon(Double.valueOf(value));
+							continue;
+						}
+						if (name.equals("GPS_Altitude")) {
+							String v = value.replaceAll(" .*", "");
+							loc.setAlt(Integer.parseInt(v));
+							continue;
+						}
+					} catch (NumberFormatException e) {
+						log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.", e);
 					}
-				} catch (NumberFormatException e) {
-					log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.");
+
+					log.debug("Adding property {" + name + "}={" + value + "}");
+					field.setMetadata(name, value);
 				}
 
-				log.debug("Adding property {" + name + "}={" + value + "}");
-				field.setMetadata(name, value);
-			}
-
-			if (loc.isPresent()) {
-				field.setLocation(loc);
+				if (loc.isPresent()) {
+					field.setLocation(loc);
+				}
 			}
 			return Completable.complete();
-		});
+		}).onErrorComplete();
 	}
 
 	/**

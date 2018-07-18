@@ -19,14 +19,12 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -182,10 +180,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		Map<String, Buffer> data = new HashMap<>();
 		for (String field : fields) {
-			InputStream ins = getClass().getResourceAsStream("/pictures/" + field + ".jpg");
-			assertNotNull("The image for field {" + field + "} could not be found", ins);
-			byte[] bytes = IOUtils.toByteArray(ins);
-			Buffer buffer = Buffer.buffer(bytes);
+			Buffer buffer = getBuffer("/pictures/" + field + ".jpg");
 			data.put(field, buffer);
 		}
 
@@ -253,25 +248,16 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
-
-		InputStream ins = getClass().getResourceAsStream("/pictures/android-gps.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
-
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-		nodeCreateRequest.setSchemaName("binary_content");
-		NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-
+		Buffer buffer = getBuffer("/pictures/android-gps.jpg");
+		NodeResponse node = createNode(parentNodeUuid);
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.jpg", "image/jpeg"));
 
 		NodeResponse node2 = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
-		BinaryMetadata metadata = node2.getFields().getBinaryField("binary").getMetadata();
-		assertEquals(13.920556, metadata.getLocation().getLon().doubleValue(), 0.01);
-		assertEquals(47.6725, metadata.getLocation().getLat().doubleValue(), 0.01);
-		assertEquals(1727, metadata.getLocation().getAlt().intValue());
-		assertEquals("4.2 mm", metadata.get("Focal_Length"));
+		BinaryMetadata metadata2 = node2.getFields().getBinaryField("binary").getMetadata();
+		assertEquals(13.920556, metadata2.getLocation().getLon().doubleValue(), 0.01);
+		assertEquals(47.6725, metadata2.getLocation().getLat().doubleValue(), 0.01);
+		assertEquals(1727, metadata2.getLocation().getAlt().intValue());
+		assertEquals("4.2 mm", metadata2.get("Focal_Length"));
 
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
 		BinaryField field = nodeUpdateRequest.getFields().getBinaryField("binary");
@@ -283,6 +269,12 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		BinaryMetadata metadata3 = node3.getFields().getBinaryField("binary").getMetadata();
 		assertEquals("value", metadata3.get("dummy"));
 
+		// Upload the image again and check that the metadata will be updated
+		NodeResponse node4 = call(
+			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", node3.getVersion(), "binary", buffer, "test.jpg", "image/jpeg"));
+		BinaryMetadata metadata4 = node4.getFields().getBinaryField("binary").getMetadata();
+		assertEquals(13.920556, metadata4.getLocation().getLon().doubleValue(), 0.01);
+
 	}
 
 	@Test
@@ -291,16 +283,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		List<String> files = Arrays.asList("small.mp4", "small.ogv", "small.webm", "test.pdf", "test.docx");
 		for (String file : files) {
-			InputStream ins = getClass().getResourceAsStream("/testfiles/" + file);
-			byte[] bytes = IOUtils.toByteArray(ins);
-			Buffer buffer = Buffer.buffer(bytes);
-
-			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-			nodeCreateRequest.setLanguage("en");
-			nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-			nodeCreateRequest.setSchemaName("binary_content");
-			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-
+			Buffer buffer = getBuffer("/testfiles/" + file);
+			NodeResponse node = createNode(parentNodeUuid);
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, file, "application/pdf"));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
 		}
@@ -657,6 +641,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertEquals(contentType, downloadResponse.getContentType());
 			assertEquals(fileName, downloadResponse.getFilename());
 		}
+	}
+
+	private NodeResponse createNode(String parentNodeUuid) {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		nodeCreateRequest.setSchemaName("binary_content");
+		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 	}
 
 }
