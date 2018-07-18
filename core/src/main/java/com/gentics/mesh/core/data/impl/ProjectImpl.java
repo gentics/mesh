@@ -54,7 +54,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
-import com.gentics.mesh.core.data.search.impl.DummySearchQueueBatch;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -221,21 +220,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 		}
 
-		// Remove the project from the index
-		bac.batch().delete(this, false);
-
-		// Create a dummy batch which we will use to handle deletion for
-		// elements which must not update the batch since the documents are
-		// deleted by dedicated
-		// index deletion entries.
-		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
-
-		// Remove the tagfamilies from the index
-		getTagFamilyRoot().delete(bac);
-
 		// Remove the nodes in the project hierarchy
 		Node base = getBaseNode();
 		base.deleteFully(bac, true);
+
+		// Remove the tagfamilies from the index
+		getTagFamilyRoot().delete(bac);
 
 		// Finally also remove the node root
 		getNodeRoot().delete(bac);
@@ -253,6 +243,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		// Finally remove the project node
 		getVertex().remove();
+
+		// Remove the project from the index
+		bac.batch().delete(this, false);
+
 		bac.process(true);
 
 		for (String index : indices) {
