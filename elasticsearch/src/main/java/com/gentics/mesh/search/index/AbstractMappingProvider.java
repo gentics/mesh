@@ -28,6 +28,11 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 		JsonObject typeMapping = new JsonObject();
 		typeMapping.put("properties", mappingProperties);
 
+		// All mappings must be strict. We don't allow automatic type detection 
+		// since this may cause problems if the type changes in between documents.
+		typeMapping.put("date_detection", false);
+		typeMapping.put("numeric_detection", false);
+
 		mapping.put(DEFAULT_TYPE, typeMapping);
 		return mapping;
 	}

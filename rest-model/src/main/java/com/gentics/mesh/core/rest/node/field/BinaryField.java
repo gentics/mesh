@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node.field;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 
 /**
@@ -168,5 +169,20 @@ public interface BinaryField extends Field {
 	 */
 	@JsonIgnore
 	boolean hasValues();
+
+	/**
+	 * Return the binary metadata.
+	 * 
+	 * @return
+	 */
+	BinaryMetadata getMetadata();
+
+	/**
+	 * Set the binary metadata.
+	 * 
+	 * @param metaData
+	 * @return
+	 */
+	BinaryField setMetadata(BinaryMetadata metaData);
 
 }

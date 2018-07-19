@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -46,6 +47,8 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.SearchProvider;
@@ -203,6 +206,27 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						// Images, Videos etc can't be processed by the ingest plugin
 						if (searchProvider.hasIngestPipelinePlugin() && binaryField.isIngestableDocument()) {
 							binaryFieldInfo.put("data", binary.getBase64Content().blockingGet());
+						}
+					}
+
+					// Add the metadata
+					BinaryMetadata metadata = binaryField.getMetadata();
+					if (metadata != null) {
+						JsonObject binaryFieldMetadataInfo = new JsonObject();
+						binaryFieldInfo.put("metadata", binaryFieldMetadataInfo);
+
+						for (Entry<String, String> entry : metadata.getMap().entrySet()) {
+							binaryFieldMetadataInfo.put(entry.getKey(), entry.getValue());
+						}
+
+						Location loc = metadata.getLocation();
+						if (loc != null) {
+							JsonObject locationInfo = new JsonObject();
+							binaryFieldMetadataInfo.put("location", locationInfo);
+							locationInfo.put("lon", loc.getLon());
+							locationInfo.put("lat", loc.getLat());
+							// Add height outside of object to prevent ES error
+							binaryFieldMetadataInfo.put("location-z", loc.getAlt());
 						}
 					}
 

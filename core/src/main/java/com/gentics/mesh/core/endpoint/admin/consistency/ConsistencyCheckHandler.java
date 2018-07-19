@@ -59,8 +59,10 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Invoke the consistency check. 
+	 * Invoke the consistency check.
+	 * 
 	 * @param ac
+	 *            Action context
 	 */
 	public void invokeCheck(InternalActionContext ac) {
 		db.asyncTx((tx) -> {
@@ -79,7 +81,9 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	/**
 	 * Invoke the consistency check and repair
+	 * 
 	 * @param ac
+	 *            Action Context
 	 */
 	public void invokeRepair(InternalActionContext ac) {
 		db.asyncTx((tx) -> {

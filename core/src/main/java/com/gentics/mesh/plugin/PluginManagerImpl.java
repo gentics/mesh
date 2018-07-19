@@ -103,7 +103,8 @@ public class PluginManagerImpl implements PluginManager {
 	@Override
 	public Single<String> deploy(String deploymentName) {
 		DeploymentOptions options = new DeploymentOptions();
-		options.setIsolationGroup(deploymentName);
+		// No longer supported in java 9
+		//options.setIsolationGroup(deploymentName);
 
 		return applyRollbackChecks(Mesh.rxVertx()
 			.rxDeployVerticle(deploymentName, options), deploymentName);
@@ -131,7 +132,8 @@ public class PluginManagerImpl implements PluginManager {
 		String name = "filesystem:" + relative;
 		log.debug("Deploying file using name {" + name + "}");
 		DeploymentOptions options = new DeploymentOptions();
-		options.setIsolationGroup(name);
+		// No longer supported in java 9
+		//options.setIsolationGroup(name);
 
 		return applyRollbackChecks(Mesh.rxVertx().rxDeployVerticle(name, options), name);
 	}

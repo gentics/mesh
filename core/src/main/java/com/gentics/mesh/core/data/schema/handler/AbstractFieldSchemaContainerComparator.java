@@ -214,11 +214,11 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	protected void compareAndAddSchemaElasticSearchProperty(List<SchemaChangeModel> changes, String key, JsonObject objectA, JsonObject objectB,
 															Class<? extends FC> classOfFC) {
 		// Empty objects and null/missing values should be treated the same
-		if (objectA != null && objectA.size() == 0) {
-			objectA = null;
+		if (objectA == null) {
+			objectA = new JsonObject();
 		}
-		if (objectB != null && objectB.size() == 0) {
-			objectB = null;
+		if (objectB == null) {
+			objectB = new JsonObject();
 		}
 		compareAndAddSchemaProperty(changes, key, objectA, objectB, classOfFC);
 	}

@@ -21,7 +21,6 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -30,6 +29,8 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
@@ -56,6 +57,7 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
@@ -404,7 +406,6 @@ public class DemoDataProvider {
 					}
 				}
 			}
-			// englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
 			NodeResponse createdNode = call(() -> client.createNode(project.getName(), nodeCreateRequest));
 			uuidMapping.put(createdNode.getUuid(), uuid);
 
@@ -421,9 +422,19 @@ public class DemoDataProvider {
 				byte[] bytes = IOUtils.toByteArray(ins);
 				Buffer fileData = Buffer.buffer(bytes);
 
-				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image",
-					fileData, filenName, contentType));
+				NodeResponse resp = call(
+					() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image",
+						fileData, filenName, contentType));
 
+				Float fpx = binNode.getFloat("fpx");
+				Float fpy = binNode.getFloat("fpy");
+				if (fpx != null && fpy != null) {
+					NodeUpdateRequest update = resp.toRequest();
+					BinaryField image = update.getFields().getBinaryField("image");
+					image.setFocalPoint(fpx, fpy);
+					update.getFields().put("image", image);
+					call(() -> client.updateNode(PROJECT_NAME, createdNode.getUuid(), update));
+				}
 			}
 
 			// Add tags to node

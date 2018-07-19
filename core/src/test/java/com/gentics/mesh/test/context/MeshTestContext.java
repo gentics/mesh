@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.Wait;
 
 import com.gentics.mesh.Mesh;
@@ -52,7 +51,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private static MeshOptions meshOptions = new MeshOptions();
 
-	public static GenericContainer<?> elasticsearch;
+	public static ElasticsearchContainer elasticsearch;
 
 	public static KeycloakContainer keycloak;
 

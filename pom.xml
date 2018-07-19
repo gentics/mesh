@@ -44,7 +44,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.5.5</version>
+		<version>3.5.6</version>
 	</parent>
 
 	<developers>
@@ -335,6 +335,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
+					<jvm>${env.JAVA_1_8_HOME}/bin/java</jvm>
 					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>

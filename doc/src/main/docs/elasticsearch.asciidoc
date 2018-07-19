@@ -141,7 +141,7 @@ Endpoint: ```/api/v1/search/roles```
 
 Endpoint: ```/api/v1/search/nodes```
 
-*Search nodes by schema name*
+==== Search nodes by schema name
 
 Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
 The found nodes will be sorted ascending by creator.
@@ -161,6 +161,8 @@ The found nodes will be sorted ascending by creator.
   }
 }
 ----
+
+==== Search nodes by micronode
 
 *Search nodes by micronode field values*
 
@@ -193,6 +195,8 @@ Find all nodes which have a micronode list field (vcardlist) that contain at lea
 }
 ----
 
+==== Search tagged nodes
+
 *Search nodes which are tagged 'Solar' and 'Blue'*
 
 The tags field is a nested field and thus a nested query must be used to match the two tags. Please note that you need to use `match_phrase` because you want to match the whole tag name. Using `match` would cause elasticsearch to match any of trigram found within the tag name value. 
@@ -223,6 +227,41 @@ The tags field is a nested field and thus a nested query must be used to match t
   }
 }
 ----
+
+==== Search nodes by geolocation of images
+
+*Search images which were taken in specific areas*
+
+GPS information from images will automatically be extracted and added to the search index. It is possible to run a link:https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-queries.html[geo search] to locate images within a specific area.
+
+[source,json]
+----
+{
+    "query": {
+        "bool" : {
+            "must" : {
+                "match_all" : {}
+            },
+            "filter" : {
+                "geo_bounding_box" : {
+                    "fields.binary.metadata.location" : {
+                        "top_left" : {
+                            "lat" : 50.0,
+                            "lon" : 10.0
+                        },
+                        "bottom_right" : {
+                            "lat" : -40.0,
+                            "lon" : 19.0
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+----
+
+
 
 [[projects]]
 === Projects

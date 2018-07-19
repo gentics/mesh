@@ -39,9 +39,9 @@
 	<logger name="com.gentics.mesh.core.verticle.node.NodeMigrationVerticle" level="ERROR" />
 	<logger name="com.gentics.mesh.core.data.node.handler.NodeMigrationHandler" level="ERROR" />
 	<logger name="com.gentics" level="DEBUG" />
+	<logger name="com.gentics.mesh.core.binary.impl" level="DEBUG" />
 	 -->
 	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
-	
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
 	</root>

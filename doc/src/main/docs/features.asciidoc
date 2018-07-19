@@ -1050,11 +1050,19 @@ In some cases you may want to show just a single area of the image. In this case
 [TIP]
 https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.35&fpz=3.0&w=800&h=600&crop=fp&fpdebug=true
 
+It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request. 
+In those cases it is not needed to specify the `fpx` and `fpy` parameter. Gentics Mesh will automatically load the missing parameter from the binary field if possible.
+
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpz=1.2&w=800&h=600&crop=fp&fpdebug=true
+
+
 === Transform and Update an Image
 
 Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. 
 The image manipulation parameters then are part of the request body. 
-This will effectivly override the currently stored image with the image of the resulting operation.
+This will effectively override the currently stored image with the image of the resulting operation.
 
 Endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
 
@@ -1113,6 +1121,183 @@ Gentics Mesh stores all binary files on the filesystem. The default directory ``
 The upload limit can be configured in bytes using the ```uploadOptions.byteLimit``` setting.
 
 For more information on available settings have a look at the link:administration-guide.html#_settings[administration guide].
+
+=== Metadata handling
+
+Metadata information of uploads will automatically be extracted and added the `metadata` object of the binary field. 
+
+Currently the following __mime-types__ are supported:
+
+Doc:
+
+* `application/pdf`
+*	`application/msword`
+* `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+
+Image:
+
+* `image/jpeg`
+* `image/jpg`
+* `image/png`
+
+Audio:
+
+* `audio/flac`
+* `audio/mp3`
+* `audio/ogg`
+* `audio/x-matroska`
+
+Video:
+
+* `video/ogg`
+* `video/mp4`
+* `video/x-matroska`
+
+
+The GPS information of images will be processed and provided in a `location` object. A geopoint will automatically be stored for the document in the search index. This way it is possible to run link:https://getmesh.io/docs/beta/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries] to locate images within a specific area.
+
+Example response:
+[source,json]
+----
+{
+…
+  "fields" : {
+    "binary" : {
+      "binaryUuid" : "304a132ca8e740f68a132ca8e710f60d",
+      "fileName" : "android-africa-gps.jpg",
+      "width" : 200,
+      "height" : 150,
+      "sha512sum" : "0dbd4fcfc27be88aae7f78848b75e55f30983b0bccdf187f483e3c1e28d11b697e765254c1b52ea79a2c1cfa6fb6b749c4500baceb5ed70ee22646515fff94e7",
+      "fileSize" : 29354,
+      "mimeType" : "image/jpeg",
+      "dominantColor" : "#a5a4a1",
+      "metadata" : {
+        "location" : {
+          "lon" : 18.408889,
+          "lat" : -33.961111
+        },
+        "date" : "2018-07-17T13:16:37",
+        "exif_ExposureTime" : "0.016666666666666666",
+        "Compression" : "JPEG (old-style)",
+        "Image_Height" : "376 pixels",
+        "Resolution_Units" : "inch",
+        "Thumbnail_Width_Pixels" : "0",
+        "File_Size" : "29354 bytes",
+        "White_Balance_Mode" : "Auto white balance",
+        "Focal_Length_35" : "26 mm",
+        "tiff_YResolution" : "72.0",
+        "Exif_Image_Height" : "150 pixels",
+        "Max_Aperture_Value" : "f/1.7",
+        "Metering_Mode" : "Center weighted average",
+        "F-Number" : "f/1.7",
+        "tiff_BitsPerSample" : "8",
+        "modified" : "2018-07-17T13:16:37",
+        "w_comments" : "Komischer Hamser",
+        "tiff_Make" : "samsung",
+        "Exif_Version" : "2.20",
+        "Exif_Image_Width" : "200 pixels",
+        "Scene_Capture_Type" : "Standard",
+        "YCbCr_Positioning" : "Center of pixel array",
+        "Date/Time_Original" : "2018:02:17 18:03:22",
+        "Creation-Date" : "2018-02-17T19:03:22",
+        "Make" : "samsung",
+        "Orientation" : "Top, left side (Horizontal / normal)",
+        "Exposure_Program" : "Program normal",
+        "ISO_Speed_Ratings" : "64",
+        "exif_Flash" : "false",
+        "meta_creation-date" : "2018-02-17T19:03:22",
+        "Focal_Length" : "4.2 mm",
+        "tiff_ResolutionUnit" : "Inch",
+        "Number_of_Components" : "3",
+        "Resolution_Unit" : "Inch",
+        "Exposure_Mode" : "Auto exposure",
+        "Number_of_Tables" : "2 Huffman tables",
+        "GPS_Latitude_Ref" : "S",
+        "dcterms_created" : "2018-02-17T19:03:22",
+        "Software" : "GIMP 2.8.18",
+        "FlashPix_Version" : "1.00",
+        "exif_DateTimeOriginal" : "2018-02-17T19:03:22",
+        "Date/Time_Digitized" : "2018:02:17 18:03:22",
+        "Data_Precision" : "8 bits",
+        "exif_IsoSpeedRatings" : "64",
+        "Last-Modified" : "2018-07-17T13:16:37",
+        "tiff_ImageWidth" : "200",
+        "Last-Save-Date" : "2018-07-17T13:16:37",
+        "tiff_Software" : "GIMP 2.8.18",
+        "File_Modified_Date" : "Tue Jul 17 14:06:48 +02:00 2018",
+        "Image_Width" : "504 pixels",
+        "tiff_ImageLength" : "150",
+        "tiff_Orientation" : "1",
+        "GPS_Latitude" : "-33° 57' 40\"",
+        "Compression_Type" : "Progressive, Huffman",
+        "GPS_Longitude_Ref" : "E",
+        "Thumbnail_Offset" : "886 bytes",
+        "Flash" : "Flash did not fire",
+        "exif_FocalLength" : "4.2",
+        "Exposure_Time" : "1/60 sec",
+        "Makernote" : "[98 values]",
+        "Comments" : "Animal in africa",
+        "tiff_Model" : "SM-G955F",
+        "Y_Resolution" : "72 dots per inch",
+        "Date/Time" : "2018:07:17 11:16:37",
+        "Thumbnail_Height_Pixels" : "0",
+        "Component_1" : "Y component: Quantization table 0, Sampling factors 1 horiz/1 vert",
+        "Thumbnail_Length" : "4435 bytes",
+        "JPEG_Comment" : "Animal in africa",
+        "exif_FNumber" : "1.7",
+        "X_Resolution" : "72 dots per inch",
+        "Component_3" : "Cr component: Quantization table 1, Sampling factors 1 horiz/1 vert",
+        "dcterms_modified" : "2018-07-17T13:16:37",
+        "Component_2" : "Cb component: Quantization table 1, Sampling factors 1 horiz/1 vert",
+        "Color_Space" : "sRGB",
+        "Model" : "SM-G955F",
+        "GPS_Longitude" : "18° 24' 32\"",
+        "comment" : "Animal in africa",
+        "Unique_Image_ID" : "F12LLJA00SM F12LLKG01GM",
+        "meta_save-date" : "2018-07-17T13:16:37",
+        "tiff_XResolution" : "72.0"
+      }
+    }
+  },
+…
+}
+----
+
+The metadata of a binary field can also be updated in order to remove, add new or update existing meta attributes.
+
+NOTE: The metadata within the image data itself will not be updated.
+
+NOTE: Uploading a binary to a field will override any custom metadata with the freshly parsed metadata of the upload.
+
+Example response:
+[source,json]
+----
+{
+…
+  "fields" : {
+    "binary" : {
+      "binaryUuid" : "304a132ca8e740f68a132ca8e710f60d",
+      "fileName" : "android-africa-gps.jpg",
+      "width" : 200,
+      "height" : 150,
+      "sha512sum" : "0dbd4fcfc27be88aae7f78848b75e55f30983b0bccdf187f483e3c1e28d11b697e765254c1b52ea79a2c1cfa6fb6b749c4500baceb5ed70ee22646515fff94e7",
+      "fileSize" : 29354,
+      "mimeType" : "image/jpeg",
+      "dominantColor" : "#a5a4a1",
+      "metadata" : {
+        "location" : {
+          "lon" : 18.408889,
+          "lat" : -33.961111
+        },
+        "description": "Image of an angry animal in africa",
+        "animal_name": "Procavia capensis"
+      }
+    }
+  },
+…
+}
+----
+
 
 [[multilanguage]]
 == Multi-Language
