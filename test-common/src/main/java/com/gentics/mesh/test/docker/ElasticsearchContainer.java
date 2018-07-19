@@ -15,17 +15,19 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
 	public static final String VERSION = "6.3.1";
 
-	private static ImageFromDockerfile image = prepareDockerImage();
-
-	public ElasticsearchContainer() {
-		super(image);
+	public ElasticsearchContainer(boolean withIngestPlugin) {
+		super(prepareDockerImage(withIngestPlugin));
 	}
 
-	private static ImageFromDockerfile prepareDockerImage() {
+	private static ImageFromDockerfile prepareDockerImage(boolean withIngestPlugin) {
 		try {
 			ImageFromDockerfile dockerImage = new ImageFromDockerfile("elasticsearch", false);
-			String dockerFile = IOUtils.toString(ElasticsearchContainer.class.getResourceAsStream("/elasticsearch/Dockerfile.ingest"), Charset.defaultCharset());
+			String dockerFile = IOUtils.toString(ElasticsearchContainer.class.getResourceAsStream("/elasticsearch/Dockerfile.ingest"),
+				Charset.defaultCharset());
 			dockerFile = dockerFile.replace("%VERSION%", VERSION);
+			if (!withIngestPlugin) {
+				dockerFile = dockerFile.replace("RUN", "#RUN");
+			}
 			dockerImage.withFileFromString("Dockerfile", dockerFile);
 			return dockerImage;
 		} catch (Exception e) {
@@ -36,7 +38,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 	@Override
 	protected void configure() {
 		addEnv("discovery.type", "single-node");
-		//addEnv("xpack.security.enabled", "false");
+		// addEnv("xpack.security.enabled", "false");
 		withExposedPorts(9200);
 		withStartupTimeout(Duration.ofSeconds(250L));
 		waitingFor(Wait.forHttp("/"));

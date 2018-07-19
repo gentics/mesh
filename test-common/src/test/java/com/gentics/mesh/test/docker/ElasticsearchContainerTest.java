@@ -6,7 +6,7 @@ import org.junit.Test;
 public class ElasticsearchContainerTest {
 
 	@ClassRule
-	public static ElasticsearchContainer server = new ElasticsearchContainer();
+	public static ElasticsearchContainer server = new ElasticsearchContainer(true);
 
 	@Test
 	public void testContainer() {

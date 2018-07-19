@@ -87,7 +87,7 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 		// file.content
 		NodeListResponse response = call(
 			() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.binary.file.content", "Lorem ipsum dolor sit amet")));
-		assertEquals("Exactly one node should be found for the given content.", 0, response.getData().size());
+		assertEquals("No content should be found for the given content since the field was not added to the index.", 0, response.getData().size());
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.file.content.raw", "Lorem ipsum dolor sit amet")));
 		assertEquals("Exactly one node should be found for the given content.", 0, response.getData().size());
