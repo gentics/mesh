@@ -28,6 +28,8 @@ icon:plus[] Elasticsearch: The base64 encoded binary document data will no longe
 
 icon:plus[] Elasticsearch: The `/search/status` endpoint now has a new field `available`, which shows if Elasticsearch is currently ready to process search queries.
 
+icon:plus[] GraphQl: It is now possible to filter schemas by their container flag.
+
 icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.
 
 icon:check[] Core: Increased performance for webroot endpoint.
