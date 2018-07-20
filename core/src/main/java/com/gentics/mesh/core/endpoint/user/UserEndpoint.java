@@ -12,6 +12,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -132,6 +133,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
+		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -150,6 +152,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		readAll.addQueryParameters(NodeParametersImpl.class);
 		readAll.addQueryParameters(VersioningParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = wrap(rc);

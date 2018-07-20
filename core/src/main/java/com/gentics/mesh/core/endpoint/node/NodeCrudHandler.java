@@ -202,14 +202,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
 			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(),
 				ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+
 			// Handle etag
-			String etag = page.getETag(ac);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				throw new NotModifiedException();
-			} else {
-				return page.transformToRest(ac, 0).blockingGet();
+			if (ac.getGenericParameters().getETag()) {
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				}
 			}
+			return page.transformToRest(ac, 0).blockingGet();
 		}, model -> ac.send(model, OK));
 
 	}
@@ -236,13 +238,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			try {
 				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
 				// Handle etag
-				String etag = tagPage.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					return Single.error(new NotModifiedException());
-				} else {
-					return tagPage.transformToRest(ac, 0);
+				if (ac.getGenericParameters().getETag()) {
+					String etag = tagPage.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						return Single.error(new NotModifiedException());
+					}
 				}
+				return tagPage.transformToRest(ac, 0);
 			} catch (Exception e) {
 				throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 			}

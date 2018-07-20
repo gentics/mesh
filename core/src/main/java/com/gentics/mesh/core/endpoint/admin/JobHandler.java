@@ -60,13 +60,14 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
 
 			// Handle etag
-			String etag = page.getETag(ac);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				throw new NotModifiedException();
-			} else {
-				return page.transformToRest(ac, 0).blockingGet();
+			if (ac.getGenericParameters().getETag()) {
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				}
 			}
+			return page.transformToRest(ac, 0).blockingGet();
 		}, (e) -> ac.send(e, OK));
 	}
 

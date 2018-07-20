@@ -34,11 +34,18 @@ public class GenericParametersImpl extends AbstractParameters implements Generic
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
-		QueryParameter updateAssigned = new QueryParameter();
-		updateAssigned.setDescription("Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.");
-		updateAssigned.setType(ParamType.STRING);
-		updateAssigned.setDefaultValue("");
-		parameters.put(FIELDS_PARAM_KEY, updateAssigned);
+		QueryParameter fieldsParam = new QueryParameter();
+		fieldsParam.setDescription("Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.");
+		fieldsParam.setType(ParamType.STRING);
+		fieldsParam.setDefaultValue("");
+		parameters.put(FIELDS_PARAM_KEY, fieldsParam);
+
+		QueryParameter etagParam = new QueryParameter();
+		etagParam.setDescription(
+			"Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.");
+		etagParam.setType(ParamType.BOOLEAN);
+		etagParam.setDefaultValue("true");
+		parameters.put(FIELDS_PARAM_KEY, etagParam);
 
 		return parameters;
 	}

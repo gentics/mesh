@@ -107,7 +107,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertFalse(json.containsKey("lastname"));
 		assertFalse(json.containsKey("firstname"));
 		assertFalse(json.containsKey("username"));
-		System.out.println(json.encodePrettily());
 	}
 
 	@Test

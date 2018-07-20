@@ -12,6 +12,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -184,6 +185,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, groupExamples.getGroupResponse1("Admin Group"), "Loaded group.");
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
+		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
@@ -201,6 +203,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readAll.exampleResponse(OK, groupExamples.getGroupListResponse(), "List response which contains the found  groups.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(wrap(rc));
 		});

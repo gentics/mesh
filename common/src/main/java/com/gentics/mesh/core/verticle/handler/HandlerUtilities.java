@@ -206,13 +206,16 @@ public class HandlerUtilities {
 		asyncTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, perm);
-			String etag = element.getETag(ac);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				throw new NotModifiedException();
-			} else {
-				return element.transformToRestSync(ac, 0);
+
+			// Handle etag
+			if (ac.getGenericParameters().getETag()) {
+				String etag = element.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				}
 			}
+			return element.transformToRestSync(ac, 0);
 		}, (model) -> ac.send(model, OK));
 
 	}
@@ -232,13 +235,14 @@ public class HandlerUtilities {
 			TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
 
 			// Handle etag
-			String etag = page.getETag(ac);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				throw new NotModifiedException();
-			} else {
-				return page.transformToRest(ac, 0).blockingGet();
+			if (ac.getGenericParameters().getETag()) {
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				}
 			}
+			return page.transformToRest(ac, 0).blockingGet();
 		}, (e) -> ac.send(e, OK));
 	}
 

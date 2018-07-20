@@ -19,6 +19,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -203,6 +204,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
+		endpoint.addQueryParameters(GenericParametersImpl.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -220,6 +222,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the node.");
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParametersImpl.class);
+		getTags.addQueryParameters(GenericParametersImpl.class);
 		getTags.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -302,6 +305,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(NodeParametersImpl.class);
+		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -321,6 +325,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(VersioningParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(NodeParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
