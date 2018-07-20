@@ -59,7 +59,8 @@ public interface GenericParameters extends ParameterProvider {
 	 * 
 	 * @param includeEtag
 	 */
-	default void setETag(boolean includeEtag) {
+	default GenericParameters setETag(boolean includeEtag) {
 		setParameter(ETAG_PARAM_KEY, String.valueOf(includeEtag));
+		return this;
 	}
 }

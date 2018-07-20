@@ -56,6 +56,12 @@ public final class ClientHelper {
 	 * @return
 	 */
 	public static <T> String callETag(ClientHandler<T> handler) {
+		String etag = callETagRaw(handler);
+		assertNotNull("The etag of the response should not be null", etag);
+		return etag;
+	}
+
+	public static <T> String callETagRaw(ClientHandler<T> handler) {
 		MeshResponse<T> response;
 		try {
 			response = handler.handle().invoke();
@@ -64,9 +70,7 @@ public final class ClientHelper {
 		}
 		latchFor(response);
 		assertSuccess(response);
-		String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
-		assertNotNull("The etag of the response should not be null", etag);
-		return etag;
+		return ETag.extract(response.getRawResponse().getHeader(ETAG));
 	}
 
 	/**
