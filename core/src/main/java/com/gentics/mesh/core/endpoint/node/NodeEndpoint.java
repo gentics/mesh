@@ -346,9 +346,6 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	// TODO filter by project name
-	// TODO handle depth
-	// TODO update other fields as well?
-	// TODO Update user information
 	// TODO use schema and only handle those i18n properties that were specified
 	// within the schema.
 	private void addUpdateHandler() {

@@ -360,49 +360,49 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Create the new container
-		NodeGraphFieldContainerImpl container = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NodeGraphFieldContainerImpl newContainer = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (original != null) {
-			container.setEditor(editor);
-			container.setLastEditedTimestamp();
-			container.setLanguage(language);
-			container.setSchemaContainerVersion(original.getSchemaContainerVersion());
+			newContainer.setEditor(editor);
+			newContainer.setLastEditedTimestamp();
+			newContainer.setLanguage(language);
+			newContainer.setSchemaContainerVersion(original.getSchemaContainerVersion());
 		} else {
-			container.setEditor(editor);
-			container.setLastEditedTimestamp();
-			container.setLanguage(language);
+			newContainer.setEditor(editor);
+			newContainer.setLastEditedTimestamp();
+			newContainer.setLanguage(language);
 			// We need create a new container with no reference. So use the latest version available to use.
-			container.setSchemaContainerVersion(branch.findLatestSchemaVersion(getSchemaContainer()));
+			newContainer.setSchemaContainerVersion(branch.findLatestSchemaVersion(getSchemaContainer()));
 		}
 		if (previous != null) {
 			// set the next version number
-			container.setVersion(previous.getVersion().nextDraft());
-			previous.setNextVersion(container);
+			newContainer.setVersion(previous.getVersion().nextDraft());
+			previous.setNextVersion(newContainer);
 		} else {
 			// set the initial version number
-			container.setVersion(new VersionNumber());
+			newContainer.setVersion(new VersionNumber());
 		}
 
 		// clone the original or the previous container
 		if (original != null) {
-			container.clone(original);
+			newContainer.clone(original);
 		} else if (previous != null) {
-			container.clone(previous);
+			newContainer.clone(previous);
 		}
 
 		// remove existing draft edge
 		if (draftEdge != null) {
 			previous.setProperty(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, null);
 			previous.setProperty(NodeGraphFieldContainerImpl.WEBROOT_URLFIELD_PROPERTY_KEY, null);
-			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
+			newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 			draftEdge.remove();
 		}
 		// We need to update the display field property since we created a new
 		// node graph field container.
-		container.updateDisplayFieldValue();
+		newContainer.updateDisplayFieldValue();
 
 		if (handleDraftEdge) {
 			// create a new draft edge
-			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
 			edge.setLanguageTag(languageTag);
 			edge.setBranchUuid(branchUuid);
 			edge.setType(DRAFT);
@@ -410,13 +410,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// if there is no initial edge, create one
 		if (getGraphFieldContainerEdge(languageTag, branchUuid, INITIAL) == null) {
-			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
 			initialEdge.setLanguageTag(languageTag);
 			initialEdge.setBranchUuid(branchUuid);
 			initialEdge.setType(INITIAL);
 		}
 
-		return container;
+		return newContainer;
 	}
 
 	@Override

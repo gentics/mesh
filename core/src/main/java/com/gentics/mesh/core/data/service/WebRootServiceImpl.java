@@ -35,7 +35,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// First try to locate the content via the url path index
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		NodeGraphFieldContainer containerByWebUrlPath = findByPath(ac.getBranch().getUuid(), path, type);
+		NodeGraphFieldContainer containerByWebUrlPath = findByUrlFieldPath(ac.getBranch().getUuid(), path, type);
 		if (containerByWebUrlPath != null) {
 			return containerByWebUrlPath.getPath(ac);
 		}
@@ -67,7 +67,7 @@ public class WebRootServiceImpl implements WebRootService {
 	}
 
 	@Override
-	public NodeGraphFieldContainer findByPath(String branchUuid, String path, ContainerType type) {
+	public NodeGraphFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type) {
 
 		String fieldKey = NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY;
 		if (type == ContainerType.PUBLISHED) {
