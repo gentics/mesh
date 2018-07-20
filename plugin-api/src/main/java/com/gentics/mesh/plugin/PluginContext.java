@@ -75,7 +75,7 @@ public class PluginContext implements RoutingContext {
 	 * Extract the token value from the header.
 	 * 
 	 * @param rc
-	 * @return
+	 * @return Token value or null if no token could be found
 	 */
 	private String parseHeader(RoutingContext rc) {
 		HttpServerRequest request = rc.request();
@@ -93,9 +93,9 @@ public class PluginContext implements RoutingContext {
 	}
 
 	/**
-	 * Return the current project name.
+	 * Return the current project info.
 	 * 
-	 * @return
+	 * @return Project info
 	 */
 	public JsonObject project() {
 		return (JsonObject) rc.data().get("mesh.project");
@@ -104,7 +104,7 @@ public class PluginContext implements RoutingContext {
 	/**
 	 * Return the name of the current project.
 	 * 
-	 * @return
+	 * @return Project name
 	 */
 	public String projectName() {
 		return project().getString("name");
@@ -139,7 +139,9 @@ public class PluginContext implements RoutingContext {
 	 * End the request using the model as a response.
 	 * 
 	 * @param restModel
+	 *            REST Model of the response
 	 * @param status
+	 *            Status of the response
 	 */
 	public void send(RestModel restModel, HttpResponseStatus status) {
 		send(restModel.toJson(), status, HttpConstants.APPLICATION_JSON);
@@ -149,8 +151,11 @@ public class PluginContext implements RoutingContext {
 	 * End the request using the provided response.
 	 * 
 	 * @param body
+	 *            Content to be send
 	 * @param status
+	 *            Status of the response
 	 * @param contentType
+	 *            Content type of the response
 	 */
 	public void send(String body, HttpResponseStatus status, String contentType) {
 		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
@@ -162,6 +167,7 @@ public class PluginContext implements RoutingContext {
 	 * End the request without a body and just the status code.
 	 * 
 	 * @param status
+	 *            Status of the response
 	 */
 	public void send(HttpResponseStatus status) {
 		rc.response().setStatusCode(status.code()).end();

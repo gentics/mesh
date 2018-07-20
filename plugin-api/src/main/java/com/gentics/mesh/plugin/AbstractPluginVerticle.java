@@ -52,7 +52,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	/**
 	 * Return the preconfigured object mapper which is used to transform YAML documents.
 	 * 
-	 * @return
+	 * @return Object mapper for yaml
 	 */
 	public static ObjectMapper getYAMLMapper() {
 		YAMLFactory factory = new YAMLFactory();
@@ -151,7 +151,8 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	 * Return a wrapped routing context.
 	 * 
 	 * @param rc
-	 * @return
+	 *            Vert.x routing context
+	 * @return Wrapped context
 	 */
 	public PluginContext wrap(RoutingContext rc) {
 		return new PluginContext(rc);
@@ -160,8 +161,9 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	/**
 	 * Return a wrapped routing context handler
 	 * 
-	 * @param rc
-	 * @return
+	 * @param handler
+	 *            Handler to be wrapped
+	 * @return Wrapped handler
 	 */
 	public Handler<RoutingContext> wrapHandler(Handler<PluginContext> handler) {
 		return rc -> handler.handle(wrap(rc));
@@ -177,7 +179,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	/**
 	 * Return the plugin base directory in which the config and the storage folder resides.
 	 * 
-	 * @return
+	 * @return Plugin base dir
 	 */
 	protected File getPluginBaseDir() {
 		MeshOptions options = Mesh.mesh().getOptions();
@@ -189,7 +191,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	/**
 	 * Return the plugin configuration file.
 	 * 
-	 * @return
+	 * @return Plugin configuration file
 	 */
 	protected File getConfigFile() {
 		return new File(getPluginBaseDir(), "config.yml");
