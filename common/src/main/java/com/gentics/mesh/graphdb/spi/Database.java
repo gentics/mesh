@@ -13,6 +13,8 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.syncleus.ferma.EdgeFrame;
+import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
@@ -290,8 +292,10 @@ public interface Database extends TxFactory {
 	 * @param indexPostfix
 	 *            postfix of the index
 	 * @param fields
+	 * @param unique
+	 *            Whether to create a unique key index or not
 	 */
-	void addCustomEdgeIndex(String label, String indexPostfix, String... fields);
+	void addCustomEdgeIndex(String label, String indexPostfix, FieldMap fields, boolean unique);
 
 	/**
 	 * Create a composed index key
@@ -335,7 +339,7 @@ public interface Database extends TxFactory {
 	 *            index key to check
 	 * @return the conflicting element or null if no conflict exists
 	 */
-	<T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key);
+	<T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key);
 
 	/**
 	 * Check whether the value can be put into the given index for a new element of given class.
@@ -510,6 +514,16 @@ public interface Database extends TxFactory {
 	 * @return Found element or null if no element was found
 	 */
 	<T extends MeshElement> T findVertex(String propertyKey, Object propertyValue, Class<T> clazz);
+
+	/**
+	 * Find the edge with the given key/value setup. Indices which provide this information will automatically be utilized.
+	 * 
+	 * @param propertyKey
+	 * @param propertyValue
+	 * @param clazz
+	 * @return Found element or null if no element was found
+	 */
+	<T extends EdgeFrame> T findEdge(String propertyKey, Object propertyValue, Class<T> clazz);
 
 	/**
 	 * Generate the database revision change by generating a hash over all database changes and the database vendor version.

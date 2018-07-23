@@ -123,10 +123,10 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		batch.store(node, newBranch.getUuid(), DRAFT, false);
 
 		node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
-			GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(container.getLanguage().getLanguageTag());
-			edge.setType(PUBLISHED);
-			edge.setBranchUuid(newBranch.getUuid());
+			GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+			publishEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+			publishEdge.setType(PUBLISHED);
+			publishEdge.setBranchUuid(newBranch.getUuid());
 		});
 		batch.store(node, newBranch.getUuid(), PUBLISHED, false);
 

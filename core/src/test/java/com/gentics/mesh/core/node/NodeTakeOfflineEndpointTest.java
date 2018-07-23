@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_PROPERTY_KEY;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -15,8 +17,9 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -74,8 +77,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
-					NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
+				for (String property : Arrays.asList(WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_PROPERTY_KEY)) {
 					assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
 						.as("Property " + property + " for " + language).isNotNull();
 				}
@@ -88,11 +90,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have only the draft webrootpath properties set
 		try (Tx tx2 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
+				String property = WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
 					.as("Property " + property + " for " + language).isNotNull();
 
-				property = NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY;
+				property = PUBLISHED_WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
 					.as("Property " + property + " for " + language).isNull();
 

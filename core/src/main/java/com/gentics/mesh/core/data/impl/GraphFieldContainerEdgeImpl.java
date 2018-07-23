@@ -1,16 +1,23 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING_SET;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.annotations.GraphElement;
@@ -28,8 +35,22 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	public static void init(Database db) {
 		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "branch_type_lang", "out", GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY,
-				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
+
+		FieldMap fields = new FieldMap();
+		fields.put("out", LINK);
+		fields.put(BRANCH_UUID_KEY, STRING);
+		fields.put(EDGE_TYPE_KEY, STRING);
+		fields.put(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, STRING);
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "branch_type_lang", fields, false);
+
+		// Webroot index:
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_INDEX_NAME, FieldMap.create(WEBROOT_PROPERTY_KEY, STRING), true);
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, PUBLISHED_WEBROOT_INDEX_NAME, FieldMap.create(PUBLISHED_WEBROOT_PROPERTY_KEY, STRING), true);
+
+		// Webroot url field index:
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_URLFIELD_INDEX_NAME, FieldMap.create(WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET), true);
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME,FieldMap.create(PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET), true);
+
 	}
 
 	/**
@@ -40,7 +61,7 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	 * @return
 	 */
 	public static EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> filterLanguages(
-			EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal, List<String> languageTags) {
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal, List<String> languageTags) {
 		if (languageTags != null && languageTags.size() > 0) {
 			LanguageRestrictionFunction[] pipes = new LanguageRestrictionFunction[languageTags.size()];
 			for (int i = 0; i < languageTags.size(); i++) {
@@ -52,10 +73,12 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 		}
 	}
 
+	@Override
 	public String getLanguageTag() {
 		return getProperty(LANGUAGE_TAG_KEY);
 	}
 
+	@Override
 	public void setLanguageTag(String languageTag) {
 		setProperty(LANGUAGE_TAG_KEY, languageTag);
 	}
@@ -64,12 +87,19 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 		return inV().nextOrDefault(MeshVertexImpl.class, null);
 	}
 
-	public AbstractBasicGraphFieldContainerImpl getContainer() {
+	@Override
+	public BasicFieldContainer getContainer() {
 		return outV().nextOrDefault(AbstractBasicGraphFieldContainerImpl.class, null);
 	}
 
+	@Override
 	public NodeGraphFieldContainer getNodeContainer() {
 		return inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+	}
+
+	@Override
+	public Node getNode() {
+		return outV().nextOrDefault(NodeImpl.class, null);
 	}
 
 	@Override
