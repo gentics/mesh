@@ -19,6 +19,7 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
@@ -88,7 +89,7 @@ public class MeshTestContext extends TestWatcher {
 					setupIndexHandlers();
 				}
 				if (settings.startServer()) {
-					setupRestEndpoints();
+					setupRestEndpoints(settings);
 				}
 			}
 		} catch (Exception e) {
@@ -157,7 +158,7 @@ public class MeshTestContext extends TestWatcher {
 		return description.getAnnotation(MeshTestSetting.class);
 	}
 
-	private void setupRestEndpoints() throws Exception {
+	private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
 		log.info("Using port:  " + port);
@@ -165,7 +166,8 @@ public class MeshTestContext extends TestWatcher {
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
-			client = MeshRestClient.create("localhost", port, false, Mesh.vertx());
+			boolean ssl = settings.ssl();
+			client = MeshRestClient.create("localhost", port, ssl, Mesh.vertx());
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().blockingGet();
 		}
@@ -299,7 +301,13 @@ public class MeshTestContext extends TestWatcher {
 		String exportPath = newFolder("exports");
 		meshOptions.getStorageOptions().setExportDirectory(exportPath);
 
-		meshOptions.getHttpServerOptions().setPort(port);
+		HttpServerConfig httpOptions = meshOptions.getHttpServerOptions();
+		httpOptions.setPort(port);
+		if (settings.ssl()) {
+			httpOptions.setSsl(true);
+			httpOptions.setCertPath("src/test/resources/ssl/cert.pem");
+			httpOptions.setKeyPath("src/test/resources/ssl/key.pem");
+		}
 		// The database provider will switch to in memory mode when no directory has been specified.
 
 		String graphPath = null;

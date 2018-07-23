@@ -501,6 +501,17 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testUpdateHostname2() {
+		String hostname = "new.hostname";
+
+		BranchUpdateRequest request = new BranchUpdateRequest();
+		request.setHostname(hostname);
+		request.setName(INITIAL_BRANCH_NAME);
+		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
+		assertThat(response).as("Updated branch").hasHostname(hostname);
+	}
+
+	@Test
 	public void testUpdateSsl() {
 		Boolean ssl = true;
 

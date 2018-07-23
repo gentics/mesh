@@ -72,4 +72,11 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	boolean clusterMode() default false;
+
+	/**
+	 * Flag which indicates whether SSL should be used.
+	 * 
+	 * @return
+	 */
+	boolean ssl() default false;
 }

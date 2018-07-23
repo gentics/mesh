@@ -37,6 +37,8 @@ icon:check[] GraphQL: Fixed a bug that caused an error when multiple queries whe
 
 icon:check[] Core: Increased performance for webroot endpoint.
 
+icon:plus[] REST: Re-enabled SSL options. It is now possible to configure SSL via `MESH_HTTP_SSL_KEY_PATH`, `MESH_HTTP_SSL_CERT_PATH`, `MESH_HTTP_SSL_ENABLE` environment options.
+
 [[v0.22.0]]
 == 0.22.0 (19.07.2018)
 
