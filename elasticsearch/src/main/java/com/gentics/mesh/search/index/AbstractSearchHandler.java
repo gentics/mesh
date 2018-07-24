@@ -189,7 +189,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}
-		if (pagingInfo.getPerPage() < 0) {
+		Long perPage = pagingInfo.getPerPage();
+		if (perPage != null && perPage < 0) {
 			throw new InvalidArgumentException("The pageSize must always be zero or greater than zero");
 		}
 
@@ -285,9 +286,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 */
 	protected void applyPagingParams(JsonObject request, PagingParameters pagingInfo) {
 		long page = pagingInfo.getPage() - 1;
-		long low = page * pagingInfo.getPerPage();
-		request.put("from", low);
-		request.put("size", pagingInfo.getPerPage());
+		Long perPage = pagingInfo.getPerPage();
+		if (perPage != null) {
+			long low = page * perPage;
+			request.put("from", low);
+			request.put("size", pagingInfo.getPerPage());
+		}
 	}
 
 	/**
@@ -302,15 +306,16 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		long total = info.getLong("total");
 		metaInfo.setTotalCount(total);
 		int totalPages = 0;
-		if (pagingInfo.getPerPage() != 0) {
-			totalPages = (int) Math.ceil(total / (double) pagingInfo.getPerPage());
+		Long perPage = pagingInfo.getPerPage();
+		if (perPage != null && perPage != 0) {
+			totalPages = (int) Math.ceil(total / (double) perPage);
 		}
 		// Cap totalpages to 1
 		totalPages = totalPages == 0 ? 1 : totalPages;
 
 		metaInfo.setCurrentPage(pagingInfo.getPage());
 		metaInfo.setPageCount(totalPages);
-		metaInfo.setPerPage(pagingInfo.getPerPage());
+		metaInfo.setPerPage(perPage);
 		return metaInfo;
 	}
 
