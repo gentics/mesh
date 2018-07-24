@@ -64,7 +64,7 @@ public class PagingMetaInfo {
 	 *            Per page count
 	 * @return Fluent API
 	 */
-	public PagingMetaInfo setPerPage(long perPage) {
+	public PagingMetaInfo setPerPage(Long perPage) {
 		this.perPage = perPage;
 		return this;
 	}

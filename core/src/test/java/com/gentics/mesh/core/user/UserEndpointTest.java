@@ -497,6 +497,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("The page count value was not correct.", 1, listResponse.getMetainfo().getPageCount());
 		assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount, listResponse.getMetainfo()
 			.getTotalCount());
+		assertEquals(25L, listResponse.getMetainfo().getPerPage().longValue());
+
+		listResponse = call(() -> client().findUsers(new PagingParametersImpl(4242)));
 		assertNull(listResponse.getMetainfo().getPerPage());
 
 	}
