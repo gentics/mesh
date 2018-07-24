@@ -462,7 +462,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
-			node.publish(ac, createBatch(), "en");
+			node.publish(ac, createBulkContext(), "en");
 
 			project().getLatestBranch().assignSchemaVersion(user(), versionB);
 			tx.success();

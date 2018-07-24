@@ -47,14 +47,14 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
 		}
 
-		Branch oldRelease = newBranch.getPreviousBranch();
-		if (oldRelease == null) {
+		Branch oldBranch = newBranch.getPreviousBranch();
+		if (oldBranch == null) {
 			throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
 		}
 
-		if (!oldRelease.isMigrated()) {
+		if (!oldBranch.isMigrated()) {
 			throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
-				+ oldRelease.getName() + "} is not fully migrated yet.");
+				+ oldBranch.getName() + "} is not fully migrated yet.");
 		}
 
 		if (status != null) {
@@ -64,10 +64,10 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 
 		long count = 0;
 		// Iterate over all nodes of the project and migrate them to the new branch
-		Project project = oldRelease.getProject();
+		Project project = oldBranch.getProject();
 		for (Node node : project.getNodeRoot().findAllIt()) {
 			SearchQueueBatch sqb = db.tx(() -> {
-				return migrateNode(node, oldRelease, newBranch);
+				return migrateNode(node, oldBranch, newBranch);
 			});
 			if (sqb != null) {
 				sqb.processSync();

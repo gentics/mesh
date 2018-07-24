@@ -195,6 +195,20 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	}
 
 	/**
+	 * Load the resource and return the buffer with the data.
+	 * 
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	protected Buffer getBuffer(String path) throws IOException {
+		InputStream ins = getClass().getResourceAsStream(path);
+		assertNotNull("The resource for path {" + path + "} could not be found", ins);
+		byte[] bytes = IOUtils.toByteArray(ins);
+		return Buffer.buffer(bytes);
+	}
+
+	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
 	 *
 	 * @param action

@@ -2,13 +2,16 @@ package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.callETag;
+import static com.gentics.mesh.test.ClientHelper.callETagRaw;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -26,6 +29,15 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 			callETag(() -> client().findUsers(new PagingParametersImpl().setPage(2)), etag, true, 200);
 
 		}
+	}
+
+	@Test
+	public void testReadWithoutETag() {
+		String etag = callETagRaw(() -> client().findUsers(new GenericParametersImpl().setETag(false)));
+		assertNull("The etag should not have been generated.", etag);
+
+		etag = callETagRaw(() -> client().findUserByUuid(userUuid(), new GenericParametersImpl().setETag(false)));
+		assertNull("The etag should not have been generated.", etag);
 	}
 
 	@Test

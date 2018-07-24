@@ -65,7 +65,9 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 		// .nodes
 		tagType.field(newFieldDefinition().name("nodes").description("Nodes which are tagged with the tag.")
-				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).argument(createPagingArgs()).argument(createLanguageTagArg())
+				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
+				.argument(createPagingArgs())
+				.argument(createLanguageTagArg(true))
 				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
@@ -75,7 +77,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 					// Transform the found nodes into contents
 					List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
 						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-						return new NodeContent(node, container);
+						return new NodeContent(node, container, languageTags);
 					}).collect(Collectors.toList());
 					return new WrappedPageImpl<NodeContent>(contents, nodes);
 				}));

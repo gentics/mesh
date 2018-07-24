@@ -14,6 +14,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
@@ -121,6 +122,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.method(GET);
 		readOne.description("Read the specified tag from the tag family.");
 		readOne.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Loaded tag.");
+		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -137,6 +139,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");

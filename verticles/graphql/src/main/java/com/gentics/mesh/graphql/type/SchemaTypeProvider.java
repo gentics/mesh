@@ -64,7 +64,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 //		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
 //			GraphQLContext gc = env.getContext();
 //			SchemaContainer schema = env.getSource();
-//			return schema.findReferencedReleases().keySet().stream().map(Release::getProject).distinct()
+//			return schema.findReferencedBranches().keySet().stream().map(Branch::getProject).distinct()
 //					.filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM)).collect(Collectors.toList());
 //		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
 
@@ -95,7 +95,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			).spliterator(), false)
 			.map(node -> {
 				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-				return new NodeContent(node, container);
+				return new NodeContent(node, container, languageTags);
 			});
 
 			return applyNodeFilter(env, nodes);

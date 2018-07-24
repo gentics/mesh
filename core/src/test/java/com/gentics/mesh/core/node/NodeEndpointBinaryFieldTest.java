@@ -24,6 +24,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -31,6 +33,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -195,6 +199,44 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			NodeDownloadResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
 			assertEquals(binaryLen, response.getBuffer().length());
 		}
+	}
+
+	/**
+	 * Test downloading an image which already has a preconfigured focal point.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testDownloadBinaryFieldWithPresetFocalPoint() throws IOException {
+
+		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		InputStream ins = getClass().getResourceAsStream("/pictures/android-gps.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+
+		// Create the node
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		nodeCreateRequest.setSchemaName("binary_content");
+		NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		// Upload the image
+		NodeResponse node2 = call(
+			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.jpg", "image/jpeg"));
+
+		// Update the stored focalpoint
+		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
+		BinaryField field = nodeUpdateRequest.getFields().getBinaryField("binary");
+		field.setFocalPoint(0.4f, 0.2f);
+		nodeUpdateRequest.getFields().put("binary", field);
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest));
+
+		// Download the data using the REST API
+		call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary",
+			new ImageManipulationParametersImpl().setCropMode(CropMode.FOCALPOINT).setWidth(200).setHeight(300)));
+
 	}
 
 	@Test

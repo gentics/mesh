@@ -16,12 +16,14 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
@@ -52,7 +54,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
-import com.gentics.mesh.core.data.search.impl.DummySearchQueueBatch;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -60,6 +61,8 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
 
@@ -162,11 +165,18 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectResponse restProject = new ProjectResponse();
-		restProject.setName(getName());
-		restProject.setRootNode(getBaseNode().transformToReference(ac));
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
 
-		fillCommonRestFields(ac, restProject);
+		ProjectResponse restProject = new ProjectResponse();
+		if (fields.has("name")) {
+			restProject.setName(getName());
+		}
+		if (fields.has("rootNode")) {
+			restProject.setRootNode(getBaseNode().transformToReference(ac));
+		}
+
+		fillCommonRestFields(ac, fields, restProject);
 		setRolePermissions(ac, restProject);
 
 		return restProject;
@@ -191,42 +201,35 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + getName() + "}");
 		}
 
-		// Remove the project from the index
-		batch.delete(this, false);
 
-		// Drop the project specific indices
-		batch.dropIndex(TagFamily.composeIndexName(getUuid()));
-		batch.dropIndex(Tag.composeIndexName(getUuid()));
-
-		// Drop all node indices for all branches and all schema versions
+		Set<String> indices = new HashSet<>();
+		// Drop all node indices for all releases and all schema versions
 		for (Branch branch : getBranchRoot().findAllIt()) {
 			for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), branch.getUuid(), version.getUuid(), type);
+					String index = NodeGraphFieldContainer.composeIndexName(getUuid(), branch.getUuid(), version.getUuid(), type);
 					if (log.isDebugEnabled()) {
-						log.debug("Adding drop entry for index {" + pubIndex + "}");
+						log.debug("Adding drop entry for index {" + index + "}");
 					}
-					batch.dropIndex(pubIndex);
+					indices.add(index);
 				}
 			}
 		}
 
-		// Create a dummy batch which we will use to handle deletion for
-		// elements which must not update the batch since the documents are
-		// deleted by dedicated
-		// index deletion entries.
-		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
+		// Remove the nodes in the project hierarchy
+		Node base = getBaseNode();
+		base.deleteFully(bac, true);
 
 		// Remove the tagfamilies from the index
-		getTagFamilyRoot().delete(dummyBatch);
+		getTagFamilyRoot().delete(bac);
 
-		// Remove all other project nodes from the index
-		getNodeRoot().delete(dummyBatch);
+		// Finally also remove the node root
+		getNodeRoot().delete(bac);
 
 		// Unassign the schema from the container
 		for (SchemaContainer container : getSchemaContainerRoot().findAllIt()) {
@@ -234,13 +237,27 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 
 		// Remove the project schema root from the index
-		getSchemaContainerRoot().delete(batch);
+		getSchemaContainerRoot().delete(bac);
 
 		// Remove the branch root and all branches
-		getBranchRoot().delete(batch);
+		getBranchRoot().delete(bac);
 
 		// Finally remove the project node
 		getVertex().remove();
+
+		// Remove the project from the index
+		bac.batch().delete(this, false);
+
+		bac.process(true);
+
+		for (String index : indices) {
+			bac.dropIndex(index);
+		}
+
+		// Drop the project specific indices
+		bac.dropIndex(TagFamily.composeIndexName(getUuid()));
+		bac.dropIndex(Tag.composeIndexName(getUuid()));
+		bac.batch().processSync();
 	}
 
 	@Override
@@ -271,7 +288,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			getSchemaContainerRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			getMicroschemaContainerRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);

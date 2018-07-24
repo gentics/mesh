@@ -2,11 +2,13 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.callETag;
+import static com.gentics.mesh.test.ClientHelper.callETagRaw;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -31,10 +34,22 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadMultiple() {
 		String etag = callETag(() -> client().findNodes(PROJECT_NAME));
-
 		callETag(() -> client().findNodes(PROJECT_NAME), etag, true, 304);
 		callETag(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPage(2)), etag, true, 200);
 		callETag(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(2L)), etag, true, 200);
+	}
+
+	@Test
+	public void testReadWithoutETag() {
+		String etag = callETagRaw(() -> client().findNodes(PROJECT_NAME, new GenericParametersImpl().setETag(false)));
+		assertNull("The etag should not have been generated.", etag);
+
+		etag = callETagRaw(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new GenericParametersImpl().setETag(false)));
+		assertNull("The etag should not have been generated.", etag);
+
+		String folderUuid = tx(() -> folder("2015").getUuid());
+		etag = callETagRaw(() -> client().findNodeChildren(PROJECT_NAME, folderUuid, new GenericParametersImpl().setETag(false)));
+		assertNull("The etag should not have been generated.", etag);
 	}
 
 	@Test

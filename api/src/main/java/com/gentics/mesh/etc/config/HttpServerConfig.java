@@ -23,11 +23,18 @@ public class HttpServerConfig implements Option {
 
 	public static final int DEFAULT_HTTP_PORT = 8080;
 
+	public static final String DEFAULT_CERT_PATH = "config/cert.pem";
+	public static final String DEFAULT_KEY_PATH = "config/key.pem";
+
 	public static final String MESH_HTTP_PORT_ENV = "MESH_HTTP_PORT";
 	public static final String MESH_HTTP_HOST_ENV = "MESH_HTTP_HOST";
 	public static final String MESH_HTTP_CORS_ORIGIN_PATTERN_ENV = "MESH_HTTP_CORS_ORIGIN_PATTERN";
 	public static final String MESH_HTTP_CORS_ENABLE_ENV = "MESH_HTTP_CORS_ENABLE";
-	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV ="MESH_HTTP_CORS_ALLOW_CREDENTIALS";
+
+	public static final String MESH_HTTP_SSL_ENABLE_ENV = "MESH_HTTP_SSL_ENABLE";
+	public static final String MESH_HTTP_SSL_CERT_PATH_ENV = "MESH_HTTP_SSL_CERT_PATH";
+	public static final String MESH_HTTP_SSL_KEY_PATH_ENV = "MESH_HTTP_SSL_KEY_PATH";
+	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV = "MESH_HTTP_CORS_ALLOW_CREDENTIALS";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port. Default is: " + DEFAULT_HTTP_PORT)
@@ -53,6 +60,21 @@ public class HttpServerConfig implements Option {
 	@JsonPropertyDescription("Flag which indicates whether CORS handling should be enabled.")
 	@EnvironmentVariable(name = MESH_HTTP_CORS_ENABLE_ENV, description = "Override the configured CORS enable flag.")
 	private Boolean enableCors = false;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether SSL support be enabled.")
+	@EnvironmentVariable(name = MESH_HTTP_SSL_ENABLE_ENV, description = "Override the configured SSL enable flag.")
+	private Boolean ssl = false;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether SSL support be enabled.")
+	@EnvironmentVariable(name = MESH_HTTP_SSL_CERT_PATH_ENV, description = "Override the configured SSL enable flag.")
+	private String certPath = DEFAULT_CERT_PATH;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Path to the SSL private key. Default: " + DEFAULT_KEY_PATH)
+	@EnvironmentVariable(name = MESH_HTTP_SSL_KEY_PATH_ENV, description = "Override the configured SSL enable flag.")
+	private String keyPath = DEFAULT_KEY_PATH;
 
 	public HttpServerConfig() {
 	}
@@ -167,6 +189,33 @@ public class HttpServerConfig implements Option {
 	 */
 	public HttpServerConfig setCorsAllowCredentials(boolean allowCredentials) {
 		this.corsAllowCredentials = allowCredentials;
+		return this;
+	}
+
+	public Boolean getSsl() {
+		return ssl;
+	}
+
+	public HttpServerConfig setSsl(Boolean ssl) {
+		this.ssl = ssl;
+		return this;
+	}
+
+	public String getCertPath() {
+		return certPath;
+	}
+
+	public HttpServerConfig setCertPath(String certPath) {
+		this.certPath = certPath;
+		return this;
+	}
+
+	public String getKeyPath() {
+		return keyPath;
+	}
+
+	public HttpServerConfig setKeyPath(String keyPath) {
+		this.keyPath = keyPath;
 		return this;
 	}
 

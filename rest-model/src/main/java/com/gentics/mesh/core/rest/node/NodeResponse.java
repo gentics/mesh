@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -24,6 +17,11 @@ import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.NodeParameters;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * POJO for the node rest response model.
  */
@@ -39,7 +37,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Map of webroot paths per language. This property will only be populated if the "
-			+ NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY + " query parameter has been set accordingly.")
+		+ NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY + " query parameter has been set accordingly.")
 	private Map<String, String> languagePaths;
 
 	@JsonProperty(required = false)
@@ -84,12 +82,12 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Webroot path to the node content. Will only be provided if the " + NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY
-			+ " query parameter has been set accordingly.")
+		+ " query parameter has been set accordingly.")
 	private String path;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.")
-	private Deque<NodeReference> breadcrumb = new ArrayDeque<>();
+	private List<NodeReference> breadcrumb = new ArrayList<>();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Version of the node content.")
@@ -204,6 +202,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	/**
 	 * Return the display field value for the node.
+	 * 
 	 * @return Display field value
 	 */
 	public String getDisplayName() {
@@ -212,7 +211,9 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	/**
 	 * Set the display field value for the node.
-	 * @param displayName Display field value
+	 * 
+	 * @param displayName
+	 *            Display field value
 	 */
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
@@ -325,7 +326,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public Deque<NodeReference> getBreadcrumb() {
+	public List<NodeReference> getBreadcrumb() {
 		return breadcrumb;
 	}
 
@@ -335,7 +336,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @param breadcrumb
 	 * @return Fluent API
 	 */
-	public NodeResponse setBreadcrumb(Deque<NodeReference> breadcrumb) {
+	public NodeResponse setBreadcrumb(List<NodeReference> breadcrumb) {
 		this.breadcrumb = breadcrumb;
 		return this;
 	}
@@ -364,6 +365,20 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	@Override
 	public String getType() {
 		return FieldTypes.NODE.toString();
+	}
+
+	/**
+	 * Helper method which convert the response into an update request.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	public NodeUpdateRequest toRequest() {
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.setLanguage(getLanguage());
+		request.setVersion(getVersion());
+		request.setFields(getFields());
+		return request;
 	}
 
 }

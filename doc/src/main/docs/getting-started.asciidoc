@@ -2,17 +2,35 @@
 
 Here you will find everything to get you started with Gentics Mesh. 
 
-If you don't have much time:
+Gentics Mesh is a headless CMS which provides developers with HTTP based API's to accessing and manage contents.
 
-* Try the <<Quickstart>> for playing around with Gentics Mesh and it's user interface.
-* Head over to the <<tldr,TL;DR>> section to find out everything you need to know and what makes Gentics Mesh special.
+== Headless CMS vs. Regular CMS
 
+A headless CMS just provides an API (REST/GraphQL) instead of serving or rendering the pages directly. The template handling is done in your front-end. This gives the developers the freedom to choose the technology stack they like. The CMS no longer dictates this.
 
 == Quickstart
 
+If you don't have much time:
+
+* Try the link:https://demo.getmesh.io/mesh-ui/[UI] with login (admin/admin) for playing around with Gentics Mesh and it's user interface.
+* Changes can be viewed in the link:https://demo.getmesh.io/demo/[demo front-end]
+* You can also 
++++
+<a href="https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=%7B%0A%20%20node(path%3A%20%22%2Fyachts%2Fpelorus%22)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" target="_blank">explore the GraphQL API</a>
++++
+* Head over to the <<tldr,TL;DR>> section to find out everything you need to know and what makes Gentics Mesh special.
+
+
+=== Run with docker
+
+The easiest way to run Gentics Mesh is using docker.
+
+[source,bash]
 ----
-Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
+docker run -p 8080:8080 gentics/mesh-demo
 ----
+
+=== Or download the jar
 
 . Download Gentics Mesh from http://getmesh.io/Download into an *empty* folder
 . Start the JAR-file by executing ```java -jar mesh-demo-X.X.X.jar```
@@ -22,6 +40,23 @@ Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
 == TL;DR
 
 image:overview.png[Gentics Mesh Overview of Core Concepts, role="img-responsive"]
+
+__Features:__
+
+* link:references.html#_rest_api[REST API]
+* link:graphql.html[GraphQL API]
+* link:features.html#_file_upload[File Upload]
+* link:features.html#imagemanipulation[Image Manipulation]
+* link:features.html#_link_resolving[Link handling]
+* link:elasticsearch.html[Powerful search]
+* link:building-blocks.html#_user[Users, Groups, Roles]
+* link:authentication.html#_oauth2[Keycloak / OAuth 2 support]
+* link:features.html#_versioning[Versioning]
+* link:features.html#_eventbus_bridge_websocket[Web Socket]
+* link:clustering.html[Clustering]
+* link:plugin-system.html[Plugin System]
+
+== Intro
 
 * You organize your contents and media assets in *projects*. 
 * A *schema* is used to define the structure of a content type (e.g. product, blogpost). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).

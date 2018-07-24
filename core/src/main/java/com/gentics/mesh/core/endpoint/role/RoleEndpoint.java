@@ -12,6 +12,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -123,6 +124,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, roleExamples.getRoleResponse1("Admin Role"), "Loaded role.");
+		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
@@ -139,6 +141,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, roleExamples.getRoleListResponse(), "Loaded list of roles.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);

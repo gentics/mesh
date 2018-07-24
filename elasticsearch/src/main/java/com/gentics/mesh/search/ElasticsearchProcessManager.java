@@ -185,7 +185,12 @@ public final class ElasticsearchProcessManager {
 			if (isWindows()) {
 				javaBinPath = "bin/java.exe";
 			}
-			return new File(javaHome, javaBinPath).getAbsolutePath();
+			File javaBin = new File(javaHome, javaBinPath);
+			if (!javaBin.exists()) {
+				throw new FileNotFoundException(
+					"Could not find java executable using JAVA_HOME {" + javaHome + "} - Was looking in {" + javaBin.getAbsolutePath() + "}");
+			}
+			return javaBin.getAbsolutePath();
 		} else {
 			return "java";
 		}

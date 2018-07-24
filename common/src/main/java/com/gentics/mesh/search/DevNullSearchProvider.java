@@ -134,4 +134,9 @@ public class DevNullSearchProvider implements SearchProvider {
 		return Mesh.mesh().getOptions().getSearchOptions().getPrefix();
 	}
 
+	@Override
+	public Single<Boolean> isAvailable() {
+		return Single.just(false);
+	}
+
 }

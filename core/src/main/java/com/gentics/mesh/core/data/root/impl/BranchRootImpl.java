@@ -15,6 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -160,17 +161,19 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting branch root {" + getUuid() + "}");
 		}
 
 		// Delete all branches
 		for (Branch branch : findAllIt()) {
-			branch.delete(batch);
+			branch.delete(bac);
+			bac.process();
 		}
 
 		// All branches are gone. Now delete the root.
 		getElement().remove();
+		bac.process();
 	}
 }

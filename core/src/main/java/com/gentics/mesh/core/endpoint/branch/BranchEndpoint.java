@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
@@ -139,6 +140,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch"), "Loaded branch.");
+		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -155,6 +157,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readAll.description("Load multiple branches and return a paged list response.");
 		readAll.exampleResponse(OK, versioningExamples.createBranchListResponse(), "Loaded branches.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
 			InternalActionContext ac = wrap(rc);

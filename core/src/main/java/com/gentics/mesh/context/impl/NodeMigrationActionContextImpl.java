@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -25,10 +26,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.TEdge;
@@ -39,6 +42,7 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -47,7 +51,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
-import io.reactivex.Single;
 
 /**
  * Action context implementation which will be used within the node migration.
@@ -55,6 +58,8 @@ import io.reactivex.Single;
 public class NodeMigrationActionContextImpl extends AbstractInternalActionContext {
 
 	private Map<String, Object> data;
+
+	private Set<ConflictWarning> conflicts = new HashSet<>();
 
 	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
 
@@ -180,7 +185,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void delete(SearchQueueBatch batch) {
+			public void delete(BulkActionContext context) {
 
 			}
 
@@ -789,7 +794,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {
+			public void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model) {
 				// TODO Auto-generated method stub
 			}
 
@@ -915,6 +920,24 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void setWebrootResponseType(String type) {
 		// Not supported
+	}
+
+	/**
+	 * Add the encountered conflict info to the context.
+	 * 
+	 * @param info
+	 */
+	public void addConflictInfo(ConflictWarning info) {
+		conflicts.add(info);
+	}
+
+	/**
+	 * Get the set of encountered conflicts.
+	 * 
+	 * @return
+	 */
+	public Set<ConflictWarning> getConflicts() {
+		return conflicts;
 	}
 
 }

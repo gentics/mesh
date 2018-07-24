@@ -1,0 +1,10 @@
+{
+	node(path:"/") {
+		# [$.data.node.breadcrumb.length()=1]
+		# [$.data.node.breadcrumb[0].path=/]
+		breadcrumb {
+			path
+		}
+	}
+}
+# [$.errors=<is-undefined>]

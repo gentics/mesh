@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -86,9 +87,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.deleteFromBranch(ac, ac.getBranch(), batch, false);
-				return batch;
+				BulkActionContext context = searchQueue.createBulkContext();
+				node.deleteFromBranch(ac, ac.getBranch(), context, false);
+				return context.batch();
 			}).processSync();
 			node.onDeleted(uuid, name, schema, null);
 
@@ -119,9 +120,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			SchemaContainer schema = node.getSchemaContainer();
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.deleteLanguageContainer(ac, ac.getBranch(), language, batch, true);
-				return batch;
+				BulkActionContext context = searchQueue.createBulkContext();
+				node.deleteLanguageContainer(ac, ac.getBranch(), language, context, true);
+				return context.batch();
 			}).processSync();
 			node.onDeleted(uuid, name, schema, languageTag);
 			return null;
@@ -145,7 +146,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		utils.asyncTx(ac, () -> {
 			Project project = ac.getProject();
 
-			//TODO Add support for moving nodes across projects.
+			// TODO Add support for moving nodes across projects.
 			// This is tricky since the branch consistency must be taken care of
 			// One option would be to delete all the version within the source project and create the in the target project
 			// The needed schema versions would need to be present in the target project branch as well.
@@ -201,14 +202,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
 			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(),
 				ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+
 			// Handle etag
-			String etag = page.getETag(ac);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				throw new NotModifiedException();
-			} else {
-				return page.transformToRest(ac, 0).blockingGet();
+			if (ac.getGenericParameters().getETag()) {
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				}
 			}
+			return page.transformToRest(ac, 0).blockingGet();
 		}, model -> ac.send(model, OK));
 
 	}
@@ -235,13 +238,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			try {
 				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
 				// Handle etag
-				String etag = tagPage.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					return Single.error(new NotModifiedException());
-				} else {
-					return tagPage.transformToRest(ac, 0);
+				if (ac.getGenericParameters().getETag()) {
+					String etag = tagPage.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						return Single.error(new NotModifiedException());
+					}
 				}
+				return tagPage.transformToRest(ac, 0);
 			} catch (Exception e) {
 				throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 			}
@@ -342,9 +346,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch sqb = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.publish(ac, batch);
-				return batch;
+				BulkActionContext bac = searchQueue.createBulkContext();
+				node.publish(ac, bac);
+				return bac.batch();
 			});
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -363,9 +367,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			SearchQueueBatch batch = searchQueue.create();
-			node.takeOffline(ac, batch);
-			return batch.processAsync().andThen(Single.just(Optional.empty()));
+			BulkActionContext bac = searchQueue.createBulkContext();
+			node.takeOffline(ac, bac);
+			return bac.batch().processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -404,9 +408,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch sqb = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				node.publish(ac, batch, languageTag);
-				return batch;
+				BulkActionContext bac = searchQueue.createBulkContext();
+				node.publish(ac, bac, languageTag);
+				return bac.batch();
 			});
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac, languageTag)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -428,10 +432,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				BulkActionContext bac = searchQueue.createBulkContext();
 				Branch branch = ac.getBranch(ac.getProject());
-				node.takeOffline(ac, batch, branch, languageTag);
-				return batch;
+				node.takeOffline(ac, bac, branch, languageTag);
+				return bac.batch();
 			}).processAsync().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}

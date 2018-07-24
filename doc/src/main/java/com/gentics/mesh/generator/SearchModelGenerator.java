@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.dagger.DaggerTestMeshComponent;
+import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
@@ -106,7 +106,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		meshDagger = DaggerTestMeshComponent.builder().configuration(new MeshOptions()).build();
+		System.setProperty("mesh.test", "true");
+		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).build();
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {

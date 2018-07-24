@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 
 /**
@@ -9,10 +11,20 @@ public class NodeContent {
 
 	Node node;
 	NodeGraphFieldContainer container;
+	List<String> languageFallback;
 
-	public NodeContent(Node node, NodeGraphFieldContainer container) {
+	/**
+	 * Create a new node content.
+	 * 
+	 * @param node
+	 * @param container
+	 * @param languageFallback
+	 *            Language fallback list which was used to load the content
+	 */
+	public NodeContent(Node node, NodeGraphFieldContainer container, List<String> languageFallback) {
 		this.node = node;
 		this.container = container;
+		this.languageFallback = languageFallback;
 	}
 
 	public Node getNode() {
@@ -24,6 +36,10 @@ public class NodeContent {
 
 	public NodeGraphFieldContainer getContainer() {
 		return container;
+	}
+
+	public List<String> getLanguageFallback() {
+		return languageFallback;
 	}
 
 }

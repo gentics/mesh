@@ -1,9 +1,15 @@
 package com.gentics.mesh.core.data.node.field;
 
+import java.util.Map;
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.util.UniquenessUtil;
 
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
@@ -21,6 +27,14 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	String BINARY_IMAGE_FOCAL_POINT_X = "binaryImageFocalPointX";
 
 	String BINARY_IMAGE_FOCAL_POINT_Y = "binaryImageFocalPointY";
+
+	String META_DATA_PROPERTY_PREFIX = "metadata_";
+
+	String BINARY_LAT_KEY = "metadata-lat";
+
+	String BINARY_LON_KEY = "metadata-lon";
+
+	String BINARY_ALT_KEY = "metadata-alt";
 
 	/**
 	 * Return the binary filename.
@@ -48,6 +62,25 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	default BinaryGraphField setFileName(String fileName) {
 		setProperty(BINARY_FILENAME_PROPERTY_KEY, fileName);
 		return this;
+	}
+
+	/**
+	 * Increment any found postfix number in the filename.
+	 * 
+	 * e.g:
+	 * <ul>
+	 * <li>test.txt -> test_1.txt</li>
+	 * <li>test -> test_1</li>
+	 * <li>test.blub.txt -> test.blub_1.txt</li>
+	 * <ul>
+	 * 
+	 */
+	default void postfixFileName() {
+		String oldName = getFileName();
+		if (oldName != null && !oldName.isEmpty()) {
+			setFileName(UniquenessUtil.suggestNewName(oldName));
+		}
+
 	}
 
 	/**
@@ -148,4 +181,111 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	boolean isIngestableDocument();
+
+	/**
+	 * Set the metadata property.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	void setMetadata(String key, String value);
+
+	/**
+	 * Return the metadata properties.
+	 * 
+	 * @return
+	 */
+	Map<String, String> getMetadataProperties();
+
+	/**
+	 * Set the location information.
+	 * 
+	 * @param loc
+	 */
+	default void setLocation(Location loc) {
+		Objects.requireNonNull(loc, "A valid location object needs to be supplied. Got null.");
+		setLocationLatitude(loc.getLat());
+		setLocationLongitude(loc.getLon());
+		Integer alt = loc.getAlt();
+		if (alt != null) {
+			setLocationAltitude(alt);
+		}
+	}
+
+	/**
+	 * Return the location latitude.
+	 * 
+	 * @return
+	 */
+	default Double getLocationLatitude() {
+		return getProperty(BINARY_LAT_KEY);
+	}
+
+	/**
+	 * Set the location latitude.
+	 * 
+	 * @param lat
+	 */
+	default void setLocationLatitude(Double lat) {
+		setProperty(BINARY_LAT_KEY, lat);
+	}
+
+	/**
+	 * Return the location longitude.
+	 * 
+	 * @return
+	 */
+	default Double getLocationLongitude() {
+		return getProperty(BINARY_LON_KEY);
+	}
+
+	/**
+	 * Set the location longitude.
+	 * 
+	 * @param lon
+	 */
+	default void setLocationLongitude(Double lon) {
+		setProperty(BINARY_LON_KEY, lon);
+	}
+
+	/**
+	 * Return the location altitude.
+	 * 
+	 * @return
+	 */
+	default Integer getLocationAltitude() {
+		return getProperty(BINARY_ALT_KEY);
+	}
+
+	/**
+	 * Set the location altitude.
+	 * 
+	 * @param alt
+	 */
+	default void setLocationAltitude(Integer alt) {
+		setProperty(BINARY_ALT_KEY, alt);
+	}
+
+	/**
+	 * Clear the metadata properties.
+	 */
+	default void clearMetadata() {
+		setLocationAltitude(null);
+		setLocationLongitude(null);
+		setLocationLatitude(null);
+
+		// Remove all other metadata properties
+		getPropertyKeys().stream()
+			.filter(e -> e.startsWith(META_DATA_PROPERTY_PREFIX))
+			.forEach(e -> {
+				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);
+			});
+	}
+
+	/**
+	 * Return the {@link BinaryMetadata} REST model of the field.
+	 * 
+	 * @return
+	 */
+	BinaryMetadata getMetadata();
 }

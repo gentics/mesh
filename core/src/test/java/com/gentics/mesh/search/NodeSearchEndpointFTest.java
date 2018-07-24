@@ -14,10 +14,9 @@ import java.util.Date;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -81,8 +80,8 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchMissingVertex() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
-			SearchQueueBatch batch = Mockito.mock(SearchQueueBatch.class);
-			content("honda nr").delete(batch);
+			BulkActionContext context = createBulkContext();
+			content("honda nr").delete(context);
 			tx.success();
 		}
 

@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
@@ -30,7 +31,9 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.dagger.DB;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
@@ -83,6 +86,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		response.setStartDate(getStartDate());
 		response.setCompletionCount(getCompletionCount());
 		response.setNodeName(getNodeName());
+		response.setWarnings(getWarnings().getData());
 
 		Map<String, String> props = response.getProperties();
 		props.put("branchName", getBranch().getName());
@@ -103,6 +107,22 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 			props.put("toVersion", getToMicroschemaVersion().getVersion());
 		}
 		return response;
+	}
+
+	@Override
+	public JobWarningList getWarnings() {
+		String json = getProperty(WARNING_PROPERTY_KEY);
+		if (json == null) {
+			return new JobWarningList();
+		} else {
+			return JsonUtil.readValue(json, JobWarningList.class);
+		}
+	}
+
+	@Override
+	public void setWarnings(JobWarningList warnings) {
+		String json = JsonUtil.toJson(warnings);
+		setProperty(WARNING_PROPERTY_KEY, json);
 	}
 
 	@Override
@@ -207,7 +227,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext context) {
 		remove();
 	}
 

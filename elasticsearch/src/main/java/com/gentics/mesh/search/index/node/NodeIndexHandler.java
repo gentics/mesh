@@ -8,9 +8,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,7 +34,10 @@ import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
+import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
+import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
@@ -144,8 +149,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						SchemaModel schema = containerVersion.getSchema();
 						JsonObject mapping = getMappingProvider().getMapping(schema, branch);
 						JsonObject settings = schema.getElasticsearch();
-						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping);
-						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping);
+						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
 
 						// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
 						JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
@@ -511,6 +516,33 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			branchUuid, type));
 	}
 
+	public Observable<? extends BulkEntry> moveForBulk(MoveDocumentEntry entry) {
+		MoveEntryContext context = entry.getContext();
+		ContainerType type = context.getContainerType();
+		String releaseUuid = context.getBranchUuid();
+
+		NodeGraphFieldContainer oldContainer = context.getOldContainer();
+		String oldProjectUuid = oldContainer.getParentNode().getProject().getUuid();
+		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
+			oldContainer.getSchemaContainerVersion().getUuid(),
+			type);
+		String oldLanguageTag = oldContainer.getLanguage().getLanguageTag();
+		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
+		DeleteBulkEntry deleteEntry = new DeleteBulkEntry(oldIndexName, oldDocumentId);
+
+		NodeGraphFieldContainer newContainer = context.getNewContainer();
+		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
+		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
+			newContainer.getSchemaContainerVersion().getUuid(),
+			type);
+		String newLanguageTag = newContainer.getLanguage().getLanguageTag();
+		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
+		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
+		IndexBulkEntry addEntry = new IndexBulkEntry(newIndexName, newDocumentId, doc, searchProvider.hasIngestPipelinePlugin());
+
+		return Observable.fromArray(addEntry, deleteEntry);
+	}
+
 	/**
 	 * Deletes the container for the index in which it should reside.
 	 * 
@@ -579,7 +611,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * We need to handle permission update requests for nodes here since the action must affect multiple documents in multiple indices .
 	 */
 	@Override
-	public Completable updatePermission(UpdateDocumentEntry entry) {
+	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
 		Node node = getRootVertex().findByUuid(uuid);
 		if (node == null) {
@@ -587,7 +619,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		} else {
 			Project project = node.getProject();
 
-			Set<Observable<String>> obs = new HashSet<>();
+			List<UpdateBulkEntry> entries = new ArrayList<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
 			for (Branch branch : project.getBranchRoot().findAllIt()) {
@@ -596,16 +628,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branch, type)) {
 						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
 						String documentId = container.getDocumentId();
-						obs.add(searchProvider.updateDocument(indexName, documentId, json, true).andThen(Observable.just(indexName)));
+						entries.add(new UpdateBulkEntry(indexName, documentId, json, true));
 					}
 				}
 			}
-			return Observable.merge(obs).toList().flatMapCompletable(list -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Updated object in index.");
-				}
-				return searchProvider.refreshIndex(list.stream().toArray(String[]::new));
-			});
+
+			return Observable.fromIterable(entries);
 		}
 	}
 
@@ -618,7 +646,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String indexName = "validationDummy";
 		JsonObject mapping = getMappingProvider().getMapping(schema, null);
 		JsonObject settings = schema.getElasticsearch();
-		IndexInfo info = new IndexInfo(indexName, settings, mapping);
+		IndexInfo info = new IndexInfo(indexName, settings, mapping, schema.getName());
 		return Completable.create(sub -> {
 			try {
 				schema.validate();
@@ -638,7 +666,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public JsonObject createIndexSettings(Schema schema) {
 		JsonObject mapping = getMappingProvider().getMapping(schema, null);
 		JsonObject settings = schema.getElasticsearch();
-		IndexInfo info = new IndexInfo("validationDummy", settings, mapping);
+		IndexInfo info = new IndexInfo("validationDummy", settings, mapping, schema.getName());
 		JsonObject fullSettings = searchProvider.createIndexSettings(info);
 		return fullSettings;
 	}

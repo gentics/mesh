@@ -181,6 +181,17 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	}
 
 	/**
+	 * Check whether focal point parameters have been set.
+	 * 
+	 * @return
+	 */
+	default boolean hasFocalPoint() {
+		String x = getParameter(FOCAL_POINT_X_QUERY_PARAM_KEY);
+		String y = getParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY);
+		return x != null && y != null;
+	}
+
+	/**
 	 * Get the focal point that has been set in the image parameter.
 	 * 
 	 * @return

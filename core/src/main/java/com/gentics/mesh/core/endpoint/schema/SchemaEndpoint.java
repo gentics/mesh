@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -161,6 +162,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.description("Load the schema with the given uuid.");
 		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
+		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("schemaUuid");
@@ -178,6 +180,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		readAll.description("Read multiple schemas and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.handler(rc -> {
 			InternalActionContext ac = wrap(rc);

@@ -29,6 +29,6 @@ public interface WebRootService {
 	 *            Specific type to be looking for
 	 * @return
 	 */
-	NodeGraphFieldContainer findByPath(String branchUuid, String path, ContainerType type);
+	NodeGraphFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type);
 
 }

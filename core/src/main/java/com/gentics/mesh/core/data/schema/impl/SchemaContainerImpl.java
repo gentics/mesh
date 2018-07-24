@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Iterator;
 import java.util.List;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -70,13 +70,13 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext context) {
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends NodeImpl> it = getNodes().iterator();
 		if (!it.hasNext()) {
-			batch.delete(this, true);
+			context.batch().delete(this, true);
 			for(SchemaContainerVersion v : findAll()) {
-				v.delete(batch);
+				v.delete(context);
 			}
 			remove();
 		} else {

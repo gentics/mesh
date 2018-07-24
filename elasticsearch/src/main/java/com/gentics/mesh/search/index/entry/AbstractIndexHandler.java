@@ -127,24 +127,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable updatePermission(UpdateDocumentEntry entry) {
-		String uuid = entry.getElementUuid();
-		T element = getRootVertex().findByUuid(uuid);
-		if (element == null) {
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
-		} else {
-			String indexName = composeIndexNameFromEntry(entry);
-			String documentId = composeDocumentIdFromEntry(entry);
-			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).andThen(searchProvider
-				.refreshIndex(indexName)).doOnComplete(() -> {
-					if (log.isDebugEnabled()) {
-						log.debug("Updated object in index.");
-					}
-				});
-		}
-	}
-
-	@Override
 	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
 		T element = getRootVertex().findByUuid(uuid);
@@ -159,33 +141,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable delete(UpdateDocumentEntry entry) {
-		String indexName = composeIndexNameFromEntry(entry);
-		String documentId = composeDocumentIdFromEntry(entry);
-		// We don't need to resolve the uuid and load the graph object in this case.
-		return searchProvider.deleteDocument(indexName, documentId);
-	}
-
-	@Override
 	public Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		return Observable.just(new DeleteBulkEntry(indexName, documentId));
-	}
-
-	@Override
-	public Completable store(UpdateDocumentEntry entry) {
-		return Completable.defer(() -> {
-			try (Tx tx = db.tx()) {
-				String uuid = entry.getElementUuid();
-				T element = getRootVertex().findByUuid(uuid);
-				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
-				} else {
-					return store(element, entry);
-				}
-			}
-		});
 	}
 
 	@Override
@@ -195,7 +154,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				String uuid = entry.getElementUuid();
 				T element = getRootVertex().findByUuid(uuid);
 				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, getType());
 				} else {
 					return storeForBulk(element, entry);
 				}
@@ -306,42 +265,50 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		query.put("sort", new JsonArray().add("_doc"));
 
 		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
-		JsonObject result = builder.sync();
-		if (log.isTraceEnabled()) {
-			log.trace("Got response {" + result.encodePrettily() + "}");
-		}
-		JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
-		processHits(hits, versions);
-
-		// Check whether we need to process more scrolls
-		if (hits.size() != 0) {
-			String nextScrollId = result.getString("_scroll_id");
-			try {
-				while (true) {
-					final String currentScroll = nextScrollId;
-					log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
-					JsonObject scrollResult = client.scroll(currentScroll, "1m").sync();
-					JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-					if (log.isTraceEnabled()) {
-						log.trace("Got response {" + scrollHits.encodePrettily() + "}");
-					}
-					if (scrollHits.size() != 0) {
-						processHits(scrollHits, versions);
-						// Update the scrollId for the next fetch
-						nextScrollId = scrollResult.getString("_scroll_id");
-						if (log.isDebugEnabled()) {
-							log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
-						}
-					} else {
-						// The scroll yields no more data. We are done
-						break;
-					}
-				}
-			} finally {
-				// Clearing used scroll in order to free memory in ES
-				client.clearScroll(nextScrollId).sync();
+		JsonObject result = new JsonObject();
+		try {
+			result = builder.sync();
+			if (log.isTraceEnabled()) {
+				log.trace("Got response {" + result.encodePrettily() + "}");
 			}
+			JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
+			processHits(hits, versions);
+
+			// Check whether we need to process more scrolls
+			if (hits.size() != 0) {
+				String nextScrollId = result.getString("_scroll_id");
+				try {
+					while (true) {
+						final String currentScroll = nextScrollId;
+						log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
+						JsonObject scrollResult = client.scroll(currentScroll, "1m").sync();
+						JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
+						if (log.isTraceEnabled()) {
+							log.trace("Got response {" + scrollHits.encodePrettily() + "}");
+						}
+						if (scrollHits.size() != 0) {
+							processHits(scrollHits, versions);
+							// Update the scrollId for the next fetch
+							nextScrollId = scrollResult.getString("_scroll_id");
+							if (log.isDebugEnabled()) {
+								log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
+							}
+						} else {
+							// The scroll yields no more data. We are done
+							break;
+						}
+					}
+				} finally {
+					// Clearing used scroll in order to free memory in ES
+					client.clearScroll(nextScrollId).sync();
+				}
+			}
+		} catch (HttpErrorException e) {
+			log.error("Error while loading version information from index {" + indexName + "}", e.toString());
+			log.error(e);
+			throw e;
 		}
+
 		return versions;
 	}
 

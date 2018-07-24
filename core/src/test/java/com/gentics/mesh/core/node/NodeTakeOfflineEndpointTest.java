@@ -14,20 +14,49 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
+
+	@Test
+	public void testTakeNodeOzfflineManyChildren() {
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+
+		// Create a lot of test nodes
+		for (int i = 0; i < 1000; i++) {
+			NodeCreateRequest request = new NodeCreateRequest();
+			SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
+			schemaReference.setName("content");
+			schemaReference.setUuid(schemaUuid);
+			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			request.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.setSchema(schemaReference);
+			request.setLanguage("en");
+			request.setParentNodeUuid(parentNodeUuid);
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
+		}
+
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+
+	}
 
 	@Test
 	public void testTakeNodeOffline() {
@@ -46,9 +75,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
-						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
+					NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
 					assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-							.as("Property " + property + " for " + language).isNotNull();
+						.as("Property " + property + " for " + language).isNotNull();
 				}
 			}
 		}
@@ -61,11 +90,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			for (String language : Arrays.asList("en", "de")) {
 				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-						.as("Property " + property + " for " + language).isNotNull();
+					.as("Property " + property + " for " + language).isNotNull();
 
 				property = NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-						.as("Property " + property + " for " + language).isNull();
+					.as("Property " + property + " for " + language).isNull();
 
 			}
 		}
@@ -97,7 +126,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 			// 6. Assert that both are offline
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
-					.isNotPublished("de");
+				.isNotPublished("de");
 		}
 	}
 
@@ -141,11 +170,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
-					.isNotPublished("de");
+				.isNotPublished("de");
 			// The request should work fine if we call it again
 			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
-					.isNotPublished("de");
+				.isNotPublished("de");
 		}
 	}
 
@@ -204,7 +233,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "de"));
 
 		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
-				news2015Uuid);
+			news2015Uuid);
 
 	}
 

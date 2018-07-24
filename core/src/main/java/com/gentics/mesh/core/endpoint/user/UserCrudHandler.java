@@ -130,7 +130,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	/**
-	 * Handle the api key generation action for the user.
+	 * Handle the API key generation action for the user.
 	 * 
 	 * @param ac
 	 * @param userUuid
@@ -142,7 +142,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
-			// 2. Generate the api key for the user
+			// 2. Generate the API key for the user
 			UserAPITokenResponse apiKeyRespose = db.tx(() -> {
 				String tokenId = TokenUtil.randomToken(); 
 				String apiToken = authProvider.generateAPIToken(user, tokenId, null);
@@ -160,7 +160,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	/**
-	 * Delete the stored api key token code in order to invalidate the API key.
+	 * Delete the stored API key token code in order to invalidate the API key.
 	 * 
 	 * @param ac
 	 * @param userUuid
@@ -172,7 +172,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
-			// 2. Generate the api key for the user
+			// 2. Generate the API key for the user
 			GenericMessageResponse message = db.tx(() -> {
 				user.resetAPIToken();
 				return message(ac, "api_key_invalidated");

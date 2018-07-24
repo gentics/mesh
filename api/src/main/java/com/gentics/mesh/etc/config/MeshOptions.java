@@ -397,6 +397,7 @@ public class MeshOptions implements Option {
 		getHttpServerOptions().overrideWithEnv();
 		getAuthenticationOptions().overrideWithEnv();
 		getImageOptions().overrideWithEnv();
+		getVertxOptions().overrideWithEnv();
 	}
 
 }

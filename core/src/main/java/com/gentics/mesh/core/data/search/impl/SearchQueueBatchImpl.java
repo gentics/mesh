@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -21,14 +22,17 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.BulkSearchQueueEntry;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.SeperateSearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
+import com.gentics.mesh.core.data.search.context.EntryContext;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
@@ -56,7 +60,8 @@ import io.vertx.core.logging.LoggerFactory;
 public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	private String batchId;
-	private List<SearchQueueEntry<?>> entries = new ArrayList<>();
+	private List<BulkSearchQueueEntry<?>> bulkEntries = new ArrayList<>();
+	private List<SeperateSearchQueueEntry<?>> seperateEntries = new ArrayList<>();
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
 
@@ -215,20 +220,30 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueEntry addEntry(SearchQueueEntry entry) {
-		entries.add(entry);
+	public BulkSearchQueueEntry<?> addEntry(BulkSearchQueueEntry<?> entry) {
+		bulkEntries.add(entry);
+		return entry;
+	}
+
+	@Override
+	public SeperateSearchQueueEntry<?> addEntry(SeperateSearchQueueEntry<?> entry) {
+		seperateEntries.add(entry);
 		return entry;
 	}
 
 	@Override
 	public List<? extends SearchQueueEntry> getEntries() {
-		entries.sort((o1, o2) -> o1.getElementAction().compareTo(o2.getElementAction()));
+		List<SearchQueueEntry<? extends EntryContext>> entries = Stream.concat(
+			bulkEntries.stream(),
+			seperateEntries.stream()
+		).collect(Collectors.toList());
 
 		if (log.isDebugEnabled()) {
 			for (SearchQueueEntry entry : entries) {
 				log.debug("Loaded entry {" + entry.toString() + "} for batch {" + getBatchId() + "}");
 			}
 		}
+
 		return entries;
 	}
 
@@ -249,23 +264,13 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return Completable.defer(() -> {
 			Completable obs = Completable.complete();
 
-			List<? extends SearchQueueEntry> nonStoreEntries = getEntries()
-				.stream()
-				.filter(i -> i.getElementAction() != STORE_ACTION)
-				.collect(Collectors.toList());
-
-			List<? extends SearchQueueEntry> storeEntries = getEntries()
-				.stream()
-				.filter(i -> i.getElementAction() == STORE_ACTION)
-				.collect(Collectors.toList());
-
-			if (!nonStoreEntries.isEmpty()) {
-				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
+			if (!seperateEntries.isEmpty()) {
+				obs = Completable.concat(seperateEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
 			}
 			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
-			if (!storeEntries.isEmpty()) {
-				Observable<BulkEntry> bulks = Observable.fromIterable(storeEntries)
-					.flatMap(SearchQueueEntry::processForBulk);
+			if (!bulkEntries.isEmpty()) {
+				Observable<BulkEntry> bulks = Observable.fromIterable(bulkEntries)
+					.flatMap(BulkSearchQueueEntry::process);
 
 				AtomicLong counter = new AtomicLong();
 				Completable bulkProcessing = bulks
@@ -307,7 +312,13 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public void clear() {
-		entries.clear();
+		bulkEntries.clear();
+		seperateEntries.clear();
+	}
+
+	@Override
+	public int size() {
+		return bulkEntries.size() + seperateEntries.size();
 	}
 
 }

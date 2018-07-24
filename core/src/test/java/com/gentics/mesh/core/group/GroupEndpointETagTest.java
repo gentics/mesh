@@ -1,18 +1,21 @@
 package com.gentics.mesh.core.group;
 
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.callETag;
+import static com.gentics.mesh.test.ClientHelper.callETagRaw;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class GroupEndpointETagTest extends AbstractMeshTest {
@@ -26,6 +29,15 @@ public class GroupEndpointETagTest extends AbstractMeshTest {
 			callETag(() -> client().findGroups(), etag, true, 304);
 			callETag(() -> client().findGroups(new PagingParametersImpl().setPage(2)), etag, true, 200);
 		}
+	}
+
+	@Test
+	public void testReadWithoutETag() {
+		String etag = callETagRaw(() -> client().findGroups(new GenericParametersImpl().setETag(false)));
+		assertNull("The etag should not have been generated.", etag);
+
+		etag = callETagRaw(() -> client().findGroupByUuid(groupUuid(), new GenericParametersImpl().setETag(false)));
+		assertNull("The etag should not have been generated.", etag);
 	}
 
 	@Test

@@ -241,4 +241,10 @@ public interface SearchProvider {
 	 */
 	String installationPrefix();
 
+	/**
+	 * Check if the search provider is ready to process search queries.
+	 *
+	 * @return
+	 */
+	Single<Boolean> isAvailable();
 }

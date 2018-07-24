@@ -13,14 +13,15 @@ import io.vertx.core.Verticle;
 import io.vertx.ext.web.Router;
 
 /**
- * Interface for a Gentics Mesh plugin. Plugins are essentially verticles which can be deployed and undeployed. After deployment a plugin needs to register itself at the plugin manager.
+ * Interface for a Gentics Mesh plugin. Plugins are essentially verticles which can be deployed and undeployed. After deployment a plugin needs to register
+ * itself at the plugin manager.
  */
 public interface Plugin extends Verticle {
 
 	/**
 	 * Shortcut for loading the name from the {@link #getManifest()}
 	 * 
-	 * @return
+	 * @return Name of the plugin
 	 */
 	default String getName() {
 		return getManifest().getName();
@@ -29,7 +30,7 @@ public interface Plugin extends Verticle {
 	/**
 	 * Shortcut for loading the api name from the {@link #getManifest()}
 	 * 
-	 * @return
+	 * @return API name of the plugin
 	 */
 	default String getAPIName() {
 		return getManifest().getApiName();
@@ -47,14 +48,14 @@ public interface Plugin extends Verticle {
 	/**
 	 * Return the plugin manifest.
 	 * 
-	 * @return
+	 * @return Manifest of the plugin
 	 */
 	PluginManifest getManifest();
 
 	/**
 	 * Method which can be used to initialize the plugin.
 	 * 
-	 * @return
+	 * @return Completable which completes once the plugin has been initialized
 	 */
 	Completable initialize();
 
@@ -68,14 +69,14 @@ public interface Plugin extends Verticle {
 	/**
 	 * Return the deployment Id of the plugin.
 	 * 
-	 * @return
+	 * @return Deployment ID of the plugin verticle
 	 */
 	String deploymentID();
 
 	/**
 	 * Return the response which describes the plugin.
 	 * 
-	 * @return
+	 * @return Plugin Response REST model
 	 */
 	default PluginResponse toResponse() {
 		PluginResponse response = new PluginResponse();
@@ -121,7 +122,7 @@ public interface Plugin extends Verticle {
 	/**
 	 * Return the rx java variant of Vert.x
 	 * 
-	 * @return
+	 * @return RX Java variant Vert.x Instance
 	 */
 	default io.vertx.reactivex.core.Vertx getRxVertx() {
 		return new io.vertx.reactivex.core.Vertx(getVertx());

@@ -6,3 +6,4 @@ keystore.jceks
 /.testcontainers*
 /*.jar
 /felix-cache
+/.apt_generated_tests/

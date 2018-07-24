@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.job;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.core.rest.job.warning.JobWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
@@ -58,6 +61,10 @@ public class JobResponse extends AbstractResponse {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the Gentics Mesh instance on which the job was executed.")
 	private String nodeName;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("List of warnings which were encoutered while executing the job.")
+	private List<JobWarning> warnings = new ArrayList<>();
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
@@ -214,4 +221,30 @@ public class JobResponse extends AbstractResponse {
 		this.nodeName = nodeName;
 	}
 
+	/**
+	 * Return the list of job warnings.
+	 * 
+	 * @return
+	 */
+	public List<JobWarning> getWarnings() {
+		return warnings;
+	}
+
+	/**
+	 * Add a new warning to the list of job warnings.
+	 * 
+	 * @param warning
+	 */
+	public void addWarning(JobWarning warning) {
+		this.warnings.add(warning);
+	}
+
+	/**
+	 * Set the list of warnings.
+	 * 
+	 * @param warnings
+	 */
+	public void setWarnings(List<JobWarning> warnings) {
+		this.warnings = warnings;
+	}
 }

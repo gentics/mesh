@@ -84,15 +84,15 @@ public class NodeCheck implements ConsistencyCheck {
 	private void checkGraphFieldContainerUniqueness(Node node, ContainerType type, ConsistencyCheckResponse response) {
 		String uuid = node.getUuid();
 
-		Set<String> languageAndReleaseSet = new HashSet<>();
+		Set<String> languageAndBranchSet = new HashSet<>();
 		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())
 				.frameExplicit(GraphFieldContainerEdgeImpl.class)) {
-			String languageAndRelease = String.format("%s - %s", edge.getBranchUuid(), edge.getLanguageTag());
-			if (languageAndReleaseSet.contains(languageAndRelease)) {
+			String languageAndBranch = String.format("%s - %s", edge.getBranchUuid(), edge.getLanguageTag());
+			if (languageAndBranchSet.contains(languageAndBranch)) {
 				response.addInconsistency(String.format("The node has more than one GFC of type %s, language %s for branch %s", type,
 						edge.getLanguageTag(), edge.getBranchUuid()), uuid, HIGH);
 			} else {
-				languageAndReleaseSet.add(languageAndRelease);
+				languageAndBranchSet.add(languageAndBranch);
 			}
 		}
 	}

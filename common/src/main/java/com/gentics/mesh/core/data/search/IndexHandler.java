@@ -52,30 +52,12 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Class<?> getElementClass();
 
 	/**
-	 * Delete the document with the given UUID and document type from the search index.
-	 * 
-	 * @param entry
-	 *            search queue entry
-	 * @return
-	 */
-	Completable delete(UpdateDocumentEntry entry);
-
-	/**
 	 * Process the entry and generate bulk entries.
 	 * 
 	 * @param entry
 	 * @return
 	 */
 	Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry);
-
-	/**
-	 * Load the given element and invoke store(T element) to store it in the index.
-	 * 
-	 * @param entry
-	 *            search queue entry
-	 * @return
-	 */
-	Completable store(UpdateDocumentEntry entry);
 
 	/**
 	 * Process the update entry into bulk entries which can be used form a bulk update request.
@@ -137,14 +119,6 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * @return
 	 */
 	Completable createIndex(CreateIndexEntry entry);
-
-	/**
-	 * Update the permissions for the document which is identified by the entry.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	Completable updatePermission(UpdateDocumentEntry entry);
 
 	/**
 	 * Generate the version for the given element.

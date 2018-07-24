@@ -99,6 +99,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				processManager.startWatchDog();
 			} catch (IOException | ZipException e) {
 				log.error("Error while starting embedded Elasticsearch server.", e);
+				throw new RuntimeException("Error while starting embedded Elasticsearch server", e);
 			}
 		}
 
@@ -324,11 +325,11 @@ public class ElasticSearchProvider implements SearchProvider {
 		Completable indexCreation = client.createIndex(indexName, json).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Create index {" + indexName + "} response: {" + response.toString() + "}");
+					log.debug("Create index {" + indexName + "} - {" + info.getSourceInfo() + "} response: {" + response.toString() + "}");
 				}
 			}).toCompletable()
 			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
-			.compose(withTimeoutAndLog("Creating index {" + indexName + "}", true));
+			.compose(withTimeoutAndLog("Creating index {" + indexName + "} for {" + info.getSourceInfo() + "}", true));
 
 		if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
 			return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
@@ -588,7 +589,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (error instanceof TimeoutException) {
 						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 					} else {
-						log.error("Request failed {" + msg + "}", error);
+						log.error("Request failed {" + msg + "}", error.toString());
+						log.error(error);
 					}
 				});
 			return ignoreError ? t.onErrorComplete() : t;
@@ -618,5 +620,17 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public String installationPrefix() {
 		return options.getSearchOptions().getPrefix();
+	}
+
+	@Override
+	public Single<Boolean> isAvailable() {
+		try {
+			return client.clusterHealth().async()
+				.timeout(1, TimeUnit.SECONDS)
+				.map(ignore -> true)
+				.onErrorReturnItem(false);
+		} catch (HttpErrorException e) {
+			return Single.just(false);
+		}
 	}
 }

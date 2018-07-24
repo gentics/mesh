@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -33,7 +34,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.node.ElementEntry;
@@ -185,10 +185,10 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			node.addTag(tag, initialBranch);
 
 			// 5. Assert
-			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").usingElementComparatorOnFields("uuid", "name")
-					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
-					"uuid").containsOnly(node);
+			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
+				.containsOnly(tag);
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+				"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").isEmpty();
 			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").isEmpty();
@@ -197,15 +197,15 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			node.addTag(tag, newBranch);
 
 			// 7. Assert again
-			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").usingElementComparatorOnFields("uuid", "name")
-					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
-					"uuid").containsOnly(node);
+			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
+				.containsOnly(tag);
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+				"uuid").containsOnly(node);
 
-			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
-					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
-					.containsOnly(node);
+			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
+				.containsOnly(tag);
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
+				.containsOnly(node);
 		}
 	}
 
@@ -349,7 +349,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(tags().size(), root.computeCount());
 			root.addTag(tag);
 			assertEquals(tags().size(), root.computeCount());
-			root.delete(createBatch());
+			root.delete(createBulkContext());
 		}
 	}
 
@@ -431,7 +431,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Tag tag = tagFamily.create("someTag", project(), user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
-			tag.delete(createBatch());
+			tag.delete(createBulkContext());
 			assertNull(meshRoot().getTagRoot().findByUuid(uuid));
 		}
 	}
@@ -474,10 +474,10 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag
 			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
 			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(), project()
-					.getLatestBranch().getUuid(), ContainerType.DRAFT));
-			SearchQueueBatch batch = createBatch();
-			tag.delete(batch);
-			assertThat(batch).containsEntries(expectedEntries);
+				.getLatestBranch().getUuid(), ContainerType.DRAFT));
+			BulkActionContext context = createBulkContext();
+			tag.delete(context);
+			assertThat(context.batch()).containsEntries(expectedEntries);
 		}
 	}
 

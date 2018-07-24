@@ -1,11 +1,35 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -19,32 +43,12 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
+
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * Type provider for the node type. Internally this will map partially to {@link Node} and {@link NodeGraphFieldContainer} vertices.
@@ -94,7 +98,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
-		return handleLanguageFallback(gc, parentNode, content);
+
+		List<String> languageTags =  getLanguageArgument(env, content);
+		return new NodeContent(parentNode, parentNode.findVersion(gc, languageTags), languageTags);
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
@@ -106,7 +112,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 
 		Node node = content.getNode();
-		Branch release = gc.getBranch();
+		Branch branch = gc.getBranch();
 		NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 		// There might not be a container for the selected language (incl. fallback language)
 		if (container == null) {
@@ -114,14 +120,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 
 		// Check whether the user is allowed to read the published container
-		boolean isPublished = container.isPublished(release.getUuid());
+		boolean isPublished = container.isPublished(branch.getUuid());
 		if (isPublished) {
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		} else {
 			// Otherwise the container is a draft and we need to use the regular read permission
 			gc.requiresPerm(node, READ_PERM);
 		}
-		return new NodeContent(node, container);
+		return new NodeContent(node, container, languageTags);
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
@@ -132,7 +138,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 
 		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
-			return handleLanguageFallback(gc, node, content);
+			List<String> languageTags =  getLanguageArgument(env, content);
+			return new NodeContent(node, node.findVersion(gc, languageTags), languageTags);
 		}).collect(Collectors.toList());
 	}
 
@@ -142,37 +149,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		GraphQLContext gc = env.getContext();
-		Branch release = gc.getBranch();
+		Branch branch = gc.getBranch();
 		ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 
-		return content.getNode().getGraphFieldContainers(release, type).stream().map(item -> {
-			return new NodeContent(content.getNode(), item);
+		Stream<? extends NodeGraphFieldContainer> stream = StreamSupport
+			.stream(content.getNode().getGraphFieldContainersIt(branch, type).spliterator(), false);
+		return stream.map(item -> {
+			return new NodeContent(content.getNode(), item, content.getLanguageFallback());
 		}).collect(Collectors.toList());
-	}
-
-	/**
-	 * Handle the language fallback within graphql queries when dealing with nodes. This method loads the container which best matches the current query
-	 * situation. A list of languages is constructed in order to apply the fallback and load the matching container from the given node.
-	 * <ul>
-	 * <li>Check whether the given content has a container. Use the container language to load the container from the node</li>
-	 * <li>If the content does not provide a container the default mesh language is used to load the container.
-	 * </ul>
-	 * 
-	 * @param gc
-	 * @param node
-	 *            Node from which the container will be loaded
-	 * @param content
-	 *            Content which may contain a container from which the language information will be used to load the container
-	 * @return Located container or null if no container could be found
-	 */
-	private NodeContent handleLanguageFallback(GraphQLContext gc, Node node, NodeContent content) {
-		List<String> languageTags = new ArrayList<>();
-		if (content.getContainer() != null) {
-			languageTags.add(content.getContainer().getLanguage().getLanguageTag());
-		} else {
-			languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
-		}
-		return new NodeContent(node, node.findVersion(gc, languageTags));
 	}
 
 	public GraphQLObjectType createType(GraphQLContext context) {
@@ -206,7 +190,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (content == null) {
 					return null;
 				}
-				// TODO handle release!
+				// TODO handle branch!
 				return content.getNode().getAvailableLanguageNames();
 			}));
 
@@ -227,8 +211,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					Node node = content.getNode();
 					// Resolve the given path and return the found container
-					Branch release = gc.getBranch();
-					String branchUuid = release.getUuid();
+					Branch branch = gc.getBranch();
+					String branchUuid = branch.getUuid();
 					ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 					Stack<String> pathStack = new Stack<>();
 					pathStack.add(nodePath);
@@ -250,8 +234,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					// Otherwise return the last segment.
 					PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
 					NodeGraphFieldContainer container = lastSegment.getContainer();
-					Node nodeOfContainer = null;
-					return new NodeContent(nodeOfContainer, container);
+					return new NodeContent(null, container, Arrays.asList(container.getLanguage().getLanguageTag()));
 				}
 				return null;
 			}));
@@ -264,20 +247,25 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 
-			List<String> languageTags = getLanguageArgument(env);
+			List<String> languageTags = getLanguageArgument(env, content);
 
 			Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
-				.map(item -> new NodeContent(item, item.findVersion(gc, languageTags)))
+				.map(item -> new NodeContent(item, item.findVersion(gc, languageTags), languageTags))
 				.filter(item -> item.getContainer() != null);
 
 			return applyNodeFilter(env, nodes);
 		}, NODE_PAGE_TYPE_NAME)
-			.argument(createLanguageTagArg())
+			.argument(createLanguageTagArg(false))
 			.argument(NodeFilter.filter(context).createFilterArgument()));
 
 		// .parent
-		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(
-			this::parentNodeFetcher));
+		nodeType.field(
+			newFieldDefinition()
+			.name("parent")
+			.description("Parent node")
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME))
+			.argument(createLanguageTagArg(false))
+			.dataFetcher(this::parentNodeFetcher));
 
 		// .tags
 		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
@@ -306,8 +294,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// Content specific fields
 
 		// .node
-		nodeType.field(newFieldDefinition().name("node").description("Load the node with a different language.").argument(createLanguageTagArg())
-			.argument(createLanguageTagArg()).dataFetcher(this::nodeLanguageFetcher).type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
+		nodeType.field(
+			newFieldDefinition()
+				.name("node")
+				.description("Load the node with a different language.")
+				.argument(createLanguageTagArg(false))
+				.dataFetcher(this::nodeLanguageFetcher)
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
+				.build());
 
 		// .path
 		nodeType.field(newFieldDefinition().name("path").description("Webroot path of the content.").type(GraphQLString).dataFetcher(env -> {

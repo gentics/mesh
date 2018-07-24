@@ -1,0 +1,13 @@
+{
+	nodes(filter: {
+    schema: {
+        isContainer: true
+    }
+  }) {
+    # [$.data.nodes.elements.length()=2]
+    elements {
+      isContainer
+    }
+  }
+}
+# [$.errors=<is-undefined>]

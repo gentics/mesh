@@ -45,7 +45,7 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 		compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.isContainer(), schemaB.isContainer(), Schema.class);
 
 		// .elasticsearch
-		compareAndAddSchemaProperty(changes, ELASTICSEARCH_KEY, schemaA.getElasticsearch(), schemaB.getElasticsearch(), Schema.class);
+		compareAndAddSchemaElasticSearchProperty(changes, ELASTICSEARCH_KEY, schemaA.getElasticsearch(), schemaB.getElasticsearch(), Schema.class);
 
 		return changes;
 	}

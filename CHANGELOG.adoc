@@ -10,27 +10,106 @@
 
 = Gentics Mesh Changelog
 
+[[expected]]
+== Planned Future Changes
 
+* The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
+[[v0.24.0]]
+== 0.24.0 (TBD)
 
-[[v0.22.0]]
-== 0.22.0 (TBD)
+CAUTION: The default value of `25` for the `perPage` parameter has been removed. By default all elements will be returned and no paging will be applied.
+
+[[v0.23.0]]
+== 0.23.0 (24.07.2018)
+
+CAUTION: The breadcrumb of the REST node response and the breadcrumb of the node type in GraphQL has changed. The first element is now the root node of the project followed by its descendants including the currently queried node. Previously the order was reversed. Additionally the root node and the current were missing. link:https://github.com/gentics/mesh/issues/398[#398]
 
 CAUTION: The concept of releases has been renamed into branches. The database structure will automatically be updated.
 
-* The following query parameters have been changed: `release` -> `branch`,  `updateAssignedReleases` -> `updateAssignedBranches`, * `updateReleaseNames` -> `updateBranchNames`
+* The following query parameters have been changed: `release` -> `branch`,  `updateAssignedReleases` -> `updateAssignedBranches`, `updateReleaseNames` -> `updateBranchNames`
 * The `releases` endpoint was renamed to `branches`.
 * The `mesh.release.created`, `mesh.release.updated`, `mesh.release.deleted` events have been changed to `mesh.branch.created`, `mesh.branch.updated`, `mesh.branch.deleted`.
 * The Java REST Models have been renamed. (e.g.: ReleaseCreateRequest -> BranchCreateRequest)
 * I18n messages have been changed accordingly.
+* The GraphQL field `release` has been renamed to `branch`. The type name was also updated.
 
 icon:plus[] Elasticsearch: The base64 encoded binary document data will no longer be stored in the search index.
 
-icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.
+icon:plus[] Elasticsearch: The `/search/status` endpoint now has a new field `available`, which shows if Elasticsearch is currently ready to process search queries.
+
+icon plus[] Elasticsearch: An error was fixed which was thrown when Elasticsearch was disabled and a re-sync was scheduled.
+
+icon:plus[] REST: Added `?etag=false` query parameter which can be used to omit the etag value generation in order to increase performance when etags are not needed.
+
+icon:plus[] REST: Added `?fields=uuid,username` query parameter which can be used to filter the response to only include the listed fields within a response. The filters work for most responses and can be used to increase write performance for REST.
+
+icon:plus[] GraphQL: It is now possible to filter schemas by their container flag.
+
+icon:check[] GraphQL: Fixed a bug that caused an error when multiple queries where executed concurrently.
 
 icon:check[] Core: Increased performance for webroot endpoint.
 
-CAUTION: The default value of `25` for the `perPage` parameter has been removed. By default all elements will be returned and no paging will be applied.
+icon:plus[] REST: Re-enabled SSL options. It is now possible to configure SSL via `MESH_HTTP_SSL_KEY_PATH`, `MESH_HTTP_SSL_CERT_PATH`, `MESH_HTTP_SSL_ENABLE` environment options.
+
+[[v0.22.0]]
+== 0.22.0 (19.07.2018)
+
+icon:bullhorn[] Metadata extraction
+
+[quote]
+____
+This version of Gentics Mesh introduces the __Metadata extraction__ of file uploads (PDF, Images).
+GPS information of images will now be added to the search index. That information can be used to run link:https://getmesh.io/docs/beta/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries].
+A detailed description of this feature can be found in our https://getmesh.io/docs/beta/features.html#_metadata_handling[File Uploads Documentation].
+
+Existing binary fields will not be automatically be processed to provide the metadata. You need to manually re-upload the data in order to generate the metadata properties.
+____
+
+icon:check[] Image: Focal point information within binary fields will now be utilized when invoking a download request which contains `?crop=fp&height=200&width=100`. Previously the stored information was not used and no focal point cropping was executed. link:https://github.com/gentics/mesh/issues/417[#417]
+
+icon:check[] Schema: A minor issue within the schema diff mechanism has been fixed. Previously the `elasticsearch` property was not correctly handled if an empty object has been provided during an update.
+
+[[v0.21.5]]
+== 0.21.5 (14.07.2018)
+
+icon:check[] REST: The order of elements within a micronode list field will now be correctly preserved. Previously the order would change once the list reached a size of about 20 elements. link:https://github.com/gentics/mesh/issues/469[#469]
+
+icon:check[] Memory: The memory footprint for deletion, publish and unpublish operations has been greatly reduced.
+
+icon:check[] Config: Fixed handling of `MESH_VERTX_WORKER_POOL_SIZE` and `MESH_VERTX_EVENT_POOL_SIZE` environment variables. These variables were previously ignored.
+
+icon:check[] REST: The node update response will now contain the updated node in the correct language. Any provided language parameter will be ignored.
+
+icon:plus[] REST: The amount of fields which will be returned can now be tuned using the `?fields` query parameter. The parameter can be used to improve the write performance by only including the `uuid` parameter in the response. 
+
+icon:plus[] Core: The core Vert.x library was updated to version 3.5.3
+
+[[v0.21.4]]
+== 0.21.4 (09.07.2018)
+
+icon:plus[] Migration: Segment path conflicts will now automatically be resolved during the node migration. Information about actions taken can be found within the response of the job migration.
+
+icon:plus[] Migration: The node migration performance has been greatly enhanced. link:https://github.com/gentics/mesh/issues/453[#453]
+
+icon:check[] Elasticsearch: Start up of Gentics Mesh will now fail early if the embedded Elasticsearch server can't be started. link:https://github.com/gentics/mesh/issues/445[#445]
+
+icon:check[] Elasticsearch: The error logging has been enhanced. More detailed information will be logged if an index can't be created.
+
+icon:check[] UI: Fixed potential encoding issues in the UI on systems which are not using the UTF-8 default character set.
+
+icon:check[] Core: Fixed a bug that caused an unwanted schema migration when a schema update without any changes was invoked. This was the case with the `elasticsearch` properties.
+
+[[v0.21.3]]
+== 0.21.3 (19.06.2018)
+
+icon:check[] GraphQL: Fixed a bug that caused an error when multiple queries where executed concurrently.
+
+icon:check[] GraphQL: The language fallback handling for node reference fields has been enhanced. The language of the node will now be utilized when no language fallback has been specified.
+
+icon:check[] GraphQL: The language fallback handling has been enhanced. The language fallback will now automatically be passed along to load nested fields.
+
+icon:check[] GraphQL: The link resolving of html and string fields has been updated. Previously the language of the node which contained the field was not taken into account while resolving mesh links in these fields.
 
 [[v0.21.2]]
 == 0.21.2 (13.06.2018)

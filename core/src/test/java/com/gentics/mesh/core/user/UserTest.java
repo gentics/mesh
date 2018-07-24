@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -33,7 +34,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -252,8 +252,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertTrue(user.isEnabled());
 			assertNotNull(user);
 			String uuid = user.getUuid();
-			SearchQueueBatch batch = createBatch();
-			user.delete(batch);
+			BulkActionContext context = createBulkContext();
+			user.delete(context);
 			User foundUser = root.getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}
@@ -308,7 +308,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
 			newGroup.addRole(roleWithAllPerm);
 			roleWithAllPerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
-					GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
+				GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
 
 			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
 			newGroup.addRole(roleWithCreatePerm);
@@ -320,21 +320,23 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			ac.data().clear();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
-						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
-								+ perm.name() + "}", newUser.hasPermission(targetNode, perm));
+					"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
+						+ perm.name() + "}",
+					newUser.hasPermission(targetNode, perm));
 			}
 
 			// roleWithAllPerm
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}", roleWithAllPerm
-						.hasPermission(perm, targetNode));
+					.hasPermission(perm, targetNode));
 			}
 
 			// roleWithNoPerm
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertFalse(
-						"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
-								+ perm.name() + "}", roleWithNoPerm.hasPermission(perm, targetNode));
+					"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
+						+ perm.name() + "}",
+					roleWithNoPerm.hasPermission(perm, targetNode));
 			}
 
 			// roleWithDeletePerm
@@ -358,8 +360,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// roleWithCreatePerm
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
-						"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
-								+ perm.name() + "}", roleWithCreatePerm.hasPermission(perm, targetNode));
+					"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
+						+ perm.name() + "}",
+					roleWithCreatePerm.hasPermission(perm, targetNode));
 			}
 		}
 
@@ -439,8 +442,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid = user.getUuid();
 			assertEquals(1, user.getGroups().size());
 			assertTrue(user.isEnabled());
-			SearchQueueBatch batch = createBatch();
-			user.delete(batch);
+			BulkActionContext context = createBulkContext();
+			user.delete(context);
 			User foundUser = meshRoot().getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}

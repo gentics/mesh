@@ -33,6 +33,8 @@ import graphql.schema.GraphQLTypeReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +51,7 @@ import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.ReleaseTypeProvider.RELEASE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.BranchTypeProvider.BRANCH_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_PAGE_TYPE_NAME;
@@ -74,7 +76,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
  * Only the currently selected project and global elements (user, roles, groups..) can be queries.
  * 
  * We must enforce this limitation because GraphQL schemas can't handle dynamic types. It is not possible to distinguish between a content schema v1 or projectA
- * and content schema v2 of projectB. It is not possible to access data across releases due to the same reason. A different release may use different schema
+ * and content schema v2 of projectB. It is not possible to access data across branches due to the same reason. A different branch may use different schema
  * versions.
  */
 @Singleton
@@ -126,7 +128,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public BootstrapInitializer boot;
 
 	@Inject
-	public ReleaseTypeProvider releaseTypeProvider;
+	public BranchTypeProvider branchTypeProvider;
 
 	@Inject
 	public SchemaTypeProvider schemaTypeProvider;
@@ -177,7 +179,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-			return new NodeContent(node, container);
+			return new NodeContent(node, container, languageTags);
 		}
 		String path = env.getArgument("path");
 		if (path != null) {
@@ -186,7 +188,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
-			return new NodeContent(nodeOfContainer, container);
+			return new NodeContent(nodeOfContainer, container, Arrays.asList(container.getLanguage().getLanguageTag()));
 		}
 		return null;
 	}
@@ -217,15 +219,15 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	}
 
 	/**
-	 * Data fetcher for the current release.
+	 * Data fetcher for the current branch.
 	 * 
 	 * @param env
 	 * @return
 	 */
-	public Object releaseFetcher(DataFetchingEnvironment env) {
+	public Object branchFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch release = gc.getBranch();
-		return gc.requiresPerm(release, READ_PERM);
+		Branch branch = gc.getBranch();
+		return gc.requiresPerm(branch, READ_PERM);
 	}
 
 	/**
@@ -240,8 +242,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		if (project != null) {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-			NodeGraphFieldContainer container = node.findVersion(gc, getLanguageArgument(env));
-			return new NodeContent(node, container);
+			List<String> languageTags = getLanguageArgument(env);
+			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+			return new NodeContent(node, container, languageTags);
 		}
 		return null;
 	}
@@ -253,16 +256,18 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLObjectType getRootType(GraphQLContext context) {
-		Project project = context.getProject();
 		Builder root = newObject();
 		root.name("Query");
 
 		// .me
-		root.field(newFieldDefinition().name("me").description("The current user").type(new GraphQLTypeReference(USER_TYPE_NAME))
+		root.field(newFieldDefinition().name("me")
+			.description("The current user")
+			.type(new GraphQLTypeReference(USER_TYPE_NAME))
 			.dataFetcher(this::userMeFetcher).build());
 
 		// .project
-		root.field(newFieldDefinition().name("project").description("Load the project that is active for this GraphQL query.")
+		root.field(newFieldDefinition().name("project")
+			.description("Load the project that is active for this GraphQL query.")
 			.type(new GraphQLTypeReference(PROJECT_TYPE_NAME)).dataFetcher(this::projectFetcher).build());
 
 		// NOT ALLOWED - See class description for details
@@ -270,13 +275,18 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// root.field(newPagingField("projects", "Load page of projects.", (ac) -> boot.projectRoot(), "Project"));
 
 		// .node
-		root.field(newFieldDefinition().name("node").description("Load a node by uuid, uuid and language or webroot path.")
-			.argument(createUuidArg("Node uuid")).argument(createLanguageTagArg()).argument(createPathArg()).dataFetcher(this::nodeFetcher)
+		root.field(newFieldDefinition().name("node")
+			.description("Load a node by uuid, uuid and language or webroot path.")
+			.argument(createUuidArg("Node uuid"))
+			.argument(createLanguageTagArg(true))
+			.argument(createPathArg())
+			.dataFetcher(this::nodeFetcher)
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .nodes
-		root.field(newFieldDefinition().name("nodes").description("Load a page of nodes via the regular nodes list or via a search.")
-			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
+		root.field(newFieldDefinition().name("nodes")
+			.description("Load a page of nodes via the regular nodes list or via a search.")
+			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg(true))
 			.argument(NodeFilter.filter(context).createFilterArgument())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
@@ -295,8 +305,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			}));
 
 		// .baseNode
-		root.field(newFieldDefinition().name("rootNode").description("Return the project root node.").argument(createLanguageTagArg())
-			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(this::rootNodeFetcher).build());
+		root.field(newFieldDefinition()
+			.name("rootNode")
+			.description("Return the project root node.")
+			.argument(createLanguageTagArg(true))
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME))
+			.dataFetcher(this::rootNodeFetcher).build());
 
 		// .tag
 		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), TAG_TYPE_NAME));
@@ -311,9 +325,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
 			tagFamilySearchHandler, null));
 
-		// .release
-		root.field(newFieldDefinition().name("release").description("Load the release that is active for this GraphQL query.")
-			.type(new GraphQLTypeReference(RELEASE_TYPE_NAME)).dataFetcher(this::releaseFetcher).build());
+		// .branch
+		root.field(newFieldDefinition().name("branch").description("Load the branch that is active for this GraphQL query.")
+			.type(new GraphQLTypeReference(BRANCH_TYPE_NAME)).dataFetcher(this::branchFetcher).build());
 
 		// .schema
 		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
@@ -464,7 +478,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(roleTypeProvider.createType());
 		additionalTypes.add(newPageType(ROLE_PAGE_TYPE_NAME, ROLE_TYPE_NAME));
 
-		additionalTypes.add(releaseTypeProvider.createType());
+		additionalTypes.add(branchTypeProvider.createType());
 
 		additionalTypes.add(pluginProvider.createType());
 		additionalTypes.add(newPageType(PLUGIN_PAGE_TYPE_NAME, PLUGIN_TYPE_NAME));

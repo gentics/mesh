@@ -1,13 +1,17 @@
 package com.gentics.mesh.graphql.filter;
 
+import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.mesh.json.JsonUtil;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLEnumValueDefinition;
 
@@ -52,6 +56,11 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 			new MappedFilter<>("name", "Filters by name", StringFilter.filter(), SchemaContainer::getName),
 			FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid)),
 			new MappedFilter<>("created", "Filters by schema creation timestamp", DateFilter.filter(), SchemaContainer::getCreationTimestamp),
+			new MappedFilter<>("isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).isContainer()),
 			new MappedFilter<>("edited", "Filters by schema update timestamp", DateFilter.filter(), SchemaContainer::getLastEditedTimestamp));
+	}
+
+	private SchemaModel getLatestVersion(SchemaContainer schema) {
+		return JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 	}
 }

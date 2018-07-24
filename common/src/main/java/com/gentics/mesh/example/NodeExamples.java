@@ -1,34 +1,5 @@
 package com.gentics.mesh.example;
 
-import static com.gentics.mesh.FieldUtil.createBooleanField;
-import static com.gentics.mesh.FieldUtil.createDateField;
-import static com.gentics.mesh.FieldUtil.createHtmlField;
-import static com.gentics.mesh.FieldUtil.createMicronodeField;
-import static com.gentics.mesh.FieldUtil.createMicronodeListField;
-import static com.gentics.mesh.FieldUtil.createNewMicronodeField;
-import static com.gentics.mesh.FieldUtil.createNodeField;
-import static com.gentics.mesh.FieldUtil.createNodeListField;
-import static com.gentics.mesh.FieldUtil.createNumberField;
-import static com.gentics.mesh.FieldUtil.createNumberListField;
-import static com.gentics.mesh.FieldUtil.createStringField;
-import static com.gentics.mesh.FieldUtil.createStringListField;
-import static com.gentics.mesh.core.rest.common.Permission.CREATE;
-import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.raml.model.ParamType;
-import org.raml.model.parameter.FormParameter;
-
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -49,6 +20,32 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.Tuple;
+import org.raml.model.ParamType;
+import org.raml.model.parameter.FormParameter;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.gentics.mesh.FieldUtil.createBooleanField;
+import static com.gentics.mesh.FieldUtil.createDateField;
+import static com.gentics.mesh.FieldUtil.createHtmlField;
+import static com.gentics.mesh.FieldUtil.createMicronodeField;
+import static com.gentics.mesh.FieldUtil.createMicronodeListField;
+import static com.gentics.mesh.FieldUtil.createNewMicronodeField;
+import static com.gentics.mesh.FieldUtil.createNodeField;
+import static com.gentics.mesh.FieldUtil.createNodeListField;
+import static com.gentics.mesh.FieldUtil.createNumberField;
+import static com.gentics.mesh.FieldUtil.createNumberListField;
+import static com.gentics.mesh.FieldUtil.createStringField;
+import static com.gentics.mesh.FieldUtil.createStringListField;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 public class NodeExamples extends AbstractExamples {
 
@@ -102,7 +99,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setPermissions(READ, UPDATE, DELETE, CREATE);
 
 		// breadcrumb
-		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
+		List<NodeReference> breadcrumb = new ArrayList<>();
 		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
@@ -178,7 +175,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setPermissions(READ, CREATE);
 
 		// breadcrumb
-		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
+		List<NodeReference> breadcrumb = new ArrayList<>();
 		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));

@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
@@ -16,7 +17,6 @@ import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
@@ -104,7 +104,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public void delete(SearchQueueBatch batch) {
+	public void delete(BulkActionContext context) {
 		getElement().remove();
 	}
 

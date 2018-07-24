@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.data.search;
 
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 
-import io.reactivex.Completable;
-import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 
 /**
@@ -29,13 +26,6 @@ public interface SearchQueueEntry<T extends EntryContext> extends Comparable<Sea
 	SearchQueueEntryAction getElementAction();
 
 	/**
-	 * Process the entry.
-	 * 
-	 * @return
-	 */
-	Completable process();
-
-	/**
 	 * Return the context of the entry. The context contains information about the origin and scope of the action. This is later used to apply the desired
 	 * action only to a specific index.
 	 * 
@@ -56,19 +46,5 @@ public interface SearchQueueEntry<T extends EntryContext> extends Comparable<Sea
 	 * @param onProcessAction
 	 */
 	void setOnProcessAction(Action onProcessAction);
-
-	/**
-	 * Return whether the entry can be processed as a bulk request.
-	 * 
-	 * @return
-	 */
-	boolean isBulkable();
-
-	/**
-	 * Process the entry and generate bulk entries.
-	 * 
-	 * @return
-	 */
-	Observable<? extends BulkEntry> processForBulk();
 
 }
