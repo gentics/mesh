@@ -16,9 +16,11 @@
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
 [[v0.24.0]]
-== 0.24.0 (TBD)
+== 0.24.0 (25.07.2018)
 
 CAUTION: The default value of `25` for the `perPage` parameter has been removed. By default all elements will be returned and no paging will be applied.
+
+icon:check[] Core: A regression within the webroot performance enhancement fix of `0.23.0` has been fixed.
 
 [[v0.23.0]]
 == 0.23.0 (24.07.2018)
