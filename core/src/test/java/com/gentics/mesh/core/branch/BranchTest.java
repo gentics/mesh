@@ -72,7 +72,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			Branch branchTwo = branchRoot.create("Two", user());
 			Branch branchThree = branchRoot.create("Three", user());
 
-			Page<? extends Branch> page = branchRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25));
+			Page<? extends Branch> page = branchRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertThat(page).isNotNull();
 			ArrayList<Branch> arrayList = new ArrayList<Branch>();
 			page.iterator().forEachRemaining(r -> arrayList.add(r));

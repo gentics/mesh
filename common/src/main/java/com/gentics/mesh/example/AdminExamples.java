@@ -47,7 +47,7 @@ public class AdminExamples {
 		list.getMetainfo().setTotalCount(3);
 		list.getMetainfo().setPageCount(1);
 		list.getMetainfo().setCurrentPage(1);
-		list.getMetainfo().setPerPage(25);
+		list.getMetainfo().setPerPage(25L);
 		return list;
 	}
 

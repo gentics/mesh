@@ -27,13 +27,13 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 		if (page < 1) {
 			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
-		int perPage = getPerPage();
-		if (perPage < 0) {
+		Long perPage = getPerPage();
+		if (perPage != null && perPage < 0) {
 			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 	}
 
-	public PagingParametersImpl(long page, int perPage, String sortBy, SortOrder order) {
+	public PagingParametersImpl(long page, Long perPage, String sortBy, SortOrder order) {
 		super();
 		setPage(page);
 		setPerPage(perPage);
@@ -55,8 +55,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 *            Page number
 	 */
 	public PagingParametersImpl(int page) {
-		// TODO use reference for default page size
-		this(page, 25);
+		this(page, null);
 	}
 
 	/**
@@ -67,7 +66,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 * @param perPage
 	 *            Per page count
 	 */
-	public PagingParametersImpl(int page, int perPage) {
+	public PagingParametersImpl(int page, Long perPage) {
 		this(page, perPage, "uuid", SortOrder.ASCENDING);
 	}
 
@@ -94,7 +93,6 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 
 		// perPage
 		QueryParameter perPageParameter = new QueryParameter();
-		perPageParameter.setDefaultValue(String.valueOf(DEFAULT_PAGE_SIZE));
 		perPageParameter.setDescription("Number of elements per page.");
 		perPageParameter.setExample("42");
 		perPageParameter.setRequired(false);

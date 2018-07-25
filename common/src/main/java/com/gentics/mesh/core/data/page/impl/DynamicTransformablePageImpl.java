@@ -30,7 +30,7 @@ import com.tinkerpop.blueprints.Vertex;
  * @param <T>
  */
 public class DynamicTransformablePageImpl<T extends TransformableElement<? extends RestModel>> extends AbstractDynamicPage<T>
-		implements TransformablePage<T> {
+	implements TransformablePage<T> {
 
 	private User requestUser;
 
@@ -77,7 +77,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * 
 	 */
 	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
-			Predicate<Vertex> extraFilter, boolean frameExplicitly) {
+		Predicate<Vertex> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.getId(), Direction.IN, root.getGraph(), perm);
 	}
@@ -97,7 +97,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Paging parameters
 	 */
 	public DynamicTransformablePageImpl(User requestUser, String indexName, Object indexKey, Class<T> clazz, PagingParameters pagingInfo,
-			GraphPermission perm, Predicate<Vertex> extraFilter, boolean frameExplicitly) {
+		GraphPermission perm, Predicate<Vertex> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(clazz, indexName, indexKey, Direction.OUT, Tx.getActive().getGraph(), perm);
 	}
@@ -117,7 +117,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Element class used to reframe the found elements
 	 */
 	public DynamicTransformablePageImpl(User user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, GraphPermission perm,
-			Class<? extends T> clazz) {
+		Class<? extends T> clazz) {
 		this(user, pagingInfo, null, true);
 		init(clazz, traversal, perm);
 	}
@@ -150,39 +150,41 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 			stream = stream.filter(extraFilter);
 		}
 
-		visibleItems = stream
+		stream = stream
 
-				.map(item -> {
-					totalCounter.incrementAndGet();
-					return item;
-				})
+			.map(item -> {
+				totalCounter.incrementAndGet();
+				return item;
+			});
 
-				// Apply paging - skip to lower bounds
-				.skip(lowerBound)
+		// Apply paging - skip to lower bounds
+		if (lowerBound != null) {
+			stream = stream.skip(lowerBound);
+		}
 
-				.map(item -> {
-					// Only add elements to the list if those elements are part of selected the page
-					long elementsInPage = pageCounter.get();
-					if (elementsInPage < perPage) {
-						T element;
+		visibleItems = stream.map(item -> {
+			// Only add elements to the list if those elements are part of selected the page
+			long elementsInPage = pageCounter.get();
+			if (perPage == null || elementsInPage < perPage) {
+				T element;
 
-						// Check how we need to frame the found element
-						if (frameExplicitly) {
-							element = graph.frameElementExplicit(item, clazz);
-						} else {
-							element = graph.frameElement(item, clazz);
-						}
-						elementsOfPage.add(element);
-						pageCounter.incrementAndGet();
-						return element;
-					} else {
-						pageFull.set(true);
-						hasNextPage.set(true);
-					}
-					return null;
-				})
+				// Check how we need to frame the found element
+				if (frameExplicitly) {
+					element = graph.frameElementExplicit(item, clazz);
+				} else {
+					element = graph.frameElement(item, clazz);
+				}
+				elementsOfPage.add(element);
+				pageCounter.incrementAndGet();
+				return element;
+			} else {
+				pageFull.set(true);
+				hasNextPage.set(true);
+			}
+			return null;
+		})
 
-				.iterator();
+			.iterator();
 
 	}
 
@@ -205,16 +207,16 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Graph permission to filter by
 	 */
 	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
-			GraphPermission perm) {
+		GraphPermission perm) {
 
 		// Iterate over all vertices that are managed by this root vertex
 		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();
 		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
 
-				// Get the vertex from the edge
-				.map(itemEdge -> {
-					return itemEdge.getVertex(vertexDirection);
-				});
+			// Get the vertex from the edge
+			.map(itemEdge -> {
+				return itemEdge.getVertex(vertexDirection);
+			});
 		applyPagingAndPermChecks(stream, clazz, perm);
 
 	}

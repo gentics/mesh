@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -147,21 +148,21 @@ public class AdminPluginEndpoinTest extends AbstractMeshTest {
 
 		call(() -> client().findPlugin("bogus"), NOT_FOUND, "admin_plugin_error_plugin_not_found", "bogus");
 		PluginListResponse pluginList = call(() -> client().findPlugins());
-		assertEquals(25, pluginList.getMetainfo().getPerPage());
+		assertNull(pluginList.getMetainfo().getPerPage());
 		assertEquals(1, pluginList.getMetainfo().getCurrentPage());
 		assertEquals(1, pluginList.getMetainfo().getPageCount());
 		assertEquals(1, pluginList.getMetainfo().getTotalCount());
 
-		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1)));
-		assertEquals(1, pluginList.getMetainfo().getPerPage());
+		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1L)));
+		assertEquals(1, pluginList.getMetainfo().getPerPage().longValue());
 		assertEquals(1, pluginList.getMetainfo().getCurrentPage());
 		assertEquals(1, pluginList.getMetainfo().getPageCount());
 		assertEquals(1, pluginList.getMetainfo().getTotalCount());
 
 		GenericMessageResponse msg = call(() -> client().undeployPlugin(response.getUuid()));
 		assertThat(msg).matches("admin_plugin_undeployed", response.getUuid());
-		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1)));
-		assertEquals(1, pluginList.getMetainfo().getPerPage());
+		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1L)));
+		assertEquals(1, pluginList.getMetainfo().getPerPage().longValue());
 		assertEquals(1, pluginList.getMetainfo().getCurrentPage());
 		assertEquals(0, pluginList.getMetainfo().getPageCount());
 		assertEquals(0, pluginList.getMetainfo().getTotalCount());
@@ -233,10 +234,10 @@ public class AdminPluginEndpoinTest extends AbstractMeshTest {
 			call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(CLONE_PLUGIN_DEPLOYMENT_NAME)));
 		}
 
-		PluginListResponse result = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(10).setPage(10)));
+		PluginListResponse result = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(10L).setPage(10)));
 		PluginResponse lastElement = result.getData().get(9);
 		assertEquals("Clone Plugin 100", lastElement.getName());
-		assertEquals(10, result.getMetainfo().getPerPage());
+		assertEquals(10, result.getMetainfo().getPerPage().longValue());
 		assertEquals(10, result.getMetainfo().getCurrentPage());
 		assertEquals(10, result.getMetainfo().getPageCount());
 		assertEquals(100, result.getMetainfo().getTotalCount());

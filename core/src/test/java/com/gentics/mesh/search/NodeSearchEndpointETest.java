@@ -31,12 +31,12 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+				new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"), new PagingParametersImpl().setPage(1)
-				.setPerPage(2), new VersioningParametersImpl().draft()));
+				.setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("We added the delete action and therefore the document should no longer be part of the index.", 0, response.getData().size());
 
 	}
@@ -99,7 +99,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		json += "			}";
 
 		String search = json;
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2L),
 				new VersioningParametersImpl().draft()));
 		assertEquals(0, response.getData().size());
 
@@ -113,7 +113,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().createNode(PROJECT_NAME, create));
 
 		// Search again and make sure we found our document
-		response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
+		response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2L),
 				new VersioningParametersImpl().draft()));
 		assertEquals("Check search result after document creation", 1, response.getData().size());
 	}

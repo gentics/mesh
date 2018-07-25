@@ -60,7 +60,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private Observable<NodeResponse> getNodesBySchema(String schemaName) throws JSONException {
-		return client().findNodes(PROJECT_NAME, new NodeParametersImpl().setLanguages("en", "de"), new PagingParametersImpl().setPerPage(10000))
+		return client().findNodes(PROJECT_NAME, new NodeParametersImpl().setLanguages("en", "de"), new PagingParametersImpl().setPerPage(10000L))
 				.toObservable().flatMapIterable(ListResponse::getData).filter(nr -> nr.getSchema().getName().equals(schemaName));
 	}
 

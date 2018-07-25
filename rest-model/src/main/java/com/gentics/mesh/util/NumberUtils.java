@@ -25,6 +25,24 @@ public final class NumberUtils extends org.apache.commons.lang.math.NumberUtils 
 		}
 	}
 
+	/**
+	 * Parse the given string into a long and return the default value when the input string is null or empty.
+	 * 
+	 * @param str
+	 * @param defaultValue
+	 * @return
+	 */
+	public static Long toLong(String str, Long defaultValue) {
+		if (StringUtils.isEmpty(str)) {
+			return defaultValue;
+		}
+		try {
+			return Long.valueOf(str);
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+
 	public static int compare(Number x, Number y) {
 		if (isSpecial(x) || isSpecial(y))
 			return Double.compare(x.doubleValue(), y.doubleValue());
@@ -52,7 +70,7 @@ public final class NumberUtils extends org.apache.commons.lang.math.NumberUtils 
 			return new BigDecimal(number.toString());
 		} catch (final NumberFormatException e) {
 			throw new RuntimeException("The given number (\"" + number + "\" of class " + number.getClass().getName()
-					+ ") does not have a parsable string representation", e);
+				+ ") does not have a parsable string representation", e);
 		}
 	}
 }

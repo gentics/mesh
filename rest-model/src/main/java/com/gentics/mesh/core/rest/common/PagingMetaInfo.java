@@ -14,7 +14,7 @@ public class PagingMetaInfo {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Number of elements which can be included in a single page.")
-	private long perPage;
+	private Long perPage;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Number of the pages which can be found for the given per page count.")
@@ -53,7 +53,7 @@ public class PagingMetaInfo {
 	 * 
 	 * @return Per page count
 	 */
-	public long getPerPage() {
+	public Long getPerPage() {
 		return perPage;
 	}
 
@@ -64,7 +64,7 @@ public class PagingMetaInfo {
 	 *            Per page count
 	 * @return Fluent API
 	 */
-	public PagingMetaInfo setPerPage(long perPage) {
+	public PagingMetaInfo setPerPage(Long perPage) {
 		this.perPage = perPage;
 		return this;
 	}

@@ -9,7 +9,7 @@
 		# [$.data.nodes.pageCount=1]
 		pageCount
 
-		# [$.data.nodes.perPage=25]
+		# [$.data.nodes.perPage=<is-null>]
 		perPage
 
 		# [$.data.nodes.size=19]

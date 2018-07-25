@@ -119,11 +119,11 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			Page<? extends User> page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 6));
+			Page<? extends User> page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 6L));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 
-			page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 15));
+			page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 15L));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 		}
@@ -133,7 +133,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends User> page = boot().userRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25));
+			Page<? extends User> page = boot().userRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -198,7 +198,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParametersImpl(1, 10));
+			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParametersImpl(1, 10L));
 
 			assertEquals(2, userPage.getTotalElements());
 		}

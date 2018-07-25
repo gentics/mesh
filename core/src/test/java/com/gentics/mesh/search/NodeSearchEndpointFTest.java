@@ -60,7 +60,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
-			.setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			.setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -86,7 +86,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("fields.content", "the"), new PagingParametersImpl().setPage(1)
-			.setPerPage(2)));
+			.setPerPage(2L)));
 		assertEquals(0, response.getData().size());
 		assertEquals(0, response.getMetainfo().getTotalCount());
 	}
@@ -102,7 +102,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
-			.setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+			.setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 	}
 
 }

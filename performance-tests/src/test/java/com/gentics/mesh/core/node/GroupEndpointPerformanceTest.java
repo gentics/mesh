@@ -32,11 +32,11 @@ public class GroupEndpointPerformanceTest extends AbstractMeshTest {
 		String uuid = db().tx(() -> group().getUuid());
 
 		loggingStopWatch(logger, "group.read-page-100", 200, (step) -> {
-			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(100)));
+			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(100L)));
 		});
 
 		loggingStopWatch(logger, "group.read-page-25", 200, (step) -> {
-			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(25)));
+			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(25L)));
 		});
 
 		loggingStopWatch(logger, "group.read-by-uuid", 200, (step) -> {

@@ -58,7 +58,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		String json = getESText("userWildcard.es");
 
-		UserListResponse list = call(() -> client().searchUsers(json, new PagingParametersImpl(2, 25)));
+		UserListResponse list = call(() -> client().searchUsers(json, new PagingParametersImpl(2, 25L)));
 		assertEquals("The page should be full.", 25, list.getData().size());
 		assertEquals("The page did not match.", 2, list.getMetainfo().getCurrentPage());
 		assertEquals("The page count did not match.", 4, list.getMetainfo().getPageCount());
@@ -273,7 +273,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		}
 
 		UserListResponse list = call(
-			() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0)));
+			() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0L)));
 		assertEquals(0, list.getData().size());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 	}

@@ -13,8 +13,12 @@
 [[expected]]
 == Planned Future Changes
 
-* The default page size of `25` will be removed in a future version. The default value for paging caused implementation issues when paging was not considered. By default paging will no longer be applied.
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
+
+[[v0.24.0]]
+== 0.24.0 (TBD)
+
+CAUTION: The default value of `25` for the `perPage` parameter has been removed. By default all elements will be returned and no paging will be applied.
 
 [[v0.23.0]]
 == 0.23.0 (24.07.2018)

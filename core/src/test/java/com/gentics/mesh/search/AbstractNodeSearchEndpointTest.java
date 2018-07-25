@@ -54,7 +54,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 
 		NodeListResponse response = call(
 			() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "concorde"),
-				new PagingParametersImpl().setPage(1).setPerPage(100),
+				new PagingParametersImpl().setPage(1).setPerPage(100L),
 				new NodeParametersImpl().setLanguages(expectedLanguages), new VersioningParametersImpl().draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());
