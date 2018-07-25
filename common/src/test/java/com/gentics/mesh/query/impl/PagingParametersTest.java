@@ -17,7 +17,9 @@ public class PagingParametersTest {
 		assertEquals("The default page is one but the method did not return one.", 1, params.getPage());
 		assertNull(params.getPerPage());
 
-		assertEquals("page=1&perPage=25&sortBy=uuid", params.getQueryParameters());
+		assertEquals("page=1&sortBy=uuid", params.getQueryParameters());
+		params.setPerPage(25L);
+		assertEquals("page=1&sortBy=uuid&perPage=25", params.getQueryParameters());
 
 	}
 }

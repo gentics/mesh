@@ -132,7 +132,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 					currentPerPage)));
 			assertEquals(0, tagList.getData().size());
 			assertEquals(4242, tagList.getMetainfo().getCurrentPage());
-			assertNull(tagList.getMetainfo().getPerPage());
+			assertEquals(currentPerPage, tagList.getMetainfo().getPerPage().longValue());
 			assertEquals(nBasicTags, tagList.getMetainfo().getTotalCount());
 			assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 		}

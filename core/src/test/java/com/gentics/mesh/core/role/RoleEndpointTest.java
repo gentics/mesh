@@ -284,7 +284,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
-				+ "} roles per page. Thus we expect {" + totalPages + "} pages", totalPages, restResponse.getMetainfo().getPageCount());
+			+ "} roles per page. Thus we expect {" + totalPages + "} pages", totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 		for (RoleResponse role : restResponse.getData()) {
 			System.out.println(role.getName());
@@ -301,7 +301,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Verify that extra role is not part of the response
 		List<RoleResponse> filteredUserList = allRoles.parallelStream().filter(restRole -> restRole.getName().equals(noPermRoleName))
-				.collect(Collectors.toList());
+			.collect(Collectors.toList());
 		assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 		call(() -> client().findRoles(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -312,7 +312,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals(4242, response.getMetainfo().getCurrentPage());
 		assertEquals(1, response.getMetainfo().getPageCount());
 		assertEquals(nRoles + initialRolesCount, response.getMetainfo().getTotalCount());
-		assertNull(response.getMetainfo().getPerPage());
+		assertEquals(25, response.getMetainfo().getPerPage().longValue());
 
 	}
 

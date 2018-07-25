@@ -176,7 +176,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamilyListResponse tagList = call(() -> client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(4242, currentPerPage)));
 			assertEquals(0, tagList.getData().size());
 			assertEquals(4242, tagList.getMetainfo().getCurrentPage());
-			assertNull(tagList.getMetainfo().getPerPage().longValue());
+			assertEquals(25, tagList.getMetainfo().getPerPage().longValue());
 			assertEquals(totalTagFamilies, tagList.getMetainfo().getTotalCount());
 			assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 		}

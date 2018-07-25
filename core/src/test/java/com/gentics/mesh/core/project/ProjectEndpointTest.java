@@ -48,9 +48,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -331,7 +331,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectListResponse restResponse = future.result();
 		assertNull(restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(25, restResponse.getData().size());
+		assertEquals(nProjects + 1, restResponse.getData().size());
 
 		long perPage = 11;
 		future = client().findProjects(new PagingParametersImpl(3, perPage)).invoke();
@@ -371,7 +371,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertNotNull(listResponse.toJson());
 
 		assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
-		assertNull(listResponse.getMetainfo().getPerPage());
+		assertEquals(25, listResponse.getMetainfo().getPerPage().longValue());
 		assertEquals(143, listResponse.getMetainfo().getTotalCount());
 		assertEquals(6, listResponse.getMetainfo().getPageCount());
 		assertEquals(0, listResponse.getData().size());
