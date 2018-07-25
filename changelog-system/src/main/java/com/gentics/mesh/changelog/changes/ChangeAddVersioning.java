@@ -273,7 +273,11 @@ public class ChangeAddVersioning extends AbstractChange {
 			}
 
 			// Migrate last edited
-			fieldContainer.setProperty("last_edited_timestamp", node.getProperty("last_edited_timestamp"));
+			Long ts = node.getProperty("last_edited_timestamp");
+			if (ts == null) {
+				ts = System.currentTimeMillis();
+			}
+			fieldContainer.setProperty("last_edited_timestamp", ts);
 			node.removeProperty("last_edited_timestamp");
 
 			// The node is published. Lets Create a published version 1.0 
