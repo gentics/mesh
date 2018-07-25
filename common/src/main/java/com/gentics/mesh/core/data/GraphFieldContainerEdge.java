@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+
+import java.util.Set;
+
 import com.gentics.mesh.core.data.node.Node;
 import com.syncleus.ferma.EdgeFrame;
 
@@ -13,21 +17,17 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 
 	String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
-	String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
+	String WEBROOT_INDEX_POSTFIX_NAME = "webrootPathInfoIndex";
 
-	String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
-
-	String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
+	String WEBROOT_INDEX_NAME = ("e." + HAS_FIELD_CONTAINER + "_" + WEBROOT_INDEX_POSTFIX_NAME).toLowerCase();
 
 	// Url Field index
 
 	String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
 
-	String WEBROOT_URLFIELD_INDEX_NAME = "webrootUrlInfoIndex";
+	String WEBROOT_URLFIELD_INDEX_POSTFIX_NAME = "webrootUrlInfoIndex";
 
-	String PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY = "publishedWebrootUrlInfo";
-
-	String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootInfoIndex";
+	String WEBROOT_URLFIELD_INDEX_NAME = ("e." + HAS_FIELD_CONTAINER + "_" + WEBROOT_URLFIELD_INDEX_POSTFIX_NAME).toLowerCase();
 
 	String LANGUAGE_TAG_KEY = "languageTag";
 
@@ -94,4 +94,13 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 	 * @return
 	 */
 	Node getNode();
+
+	default void setSegmentInfo(String segmentInfo) {
+		setProperty(WEBROOT_PROPERTY_KEY, segmentInfo);
+	}
+
+	default void setUrlFieldInfo(Set<String> urlFieldInfo) {
+		setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, urlFieldInfo);
+	}
+
 }

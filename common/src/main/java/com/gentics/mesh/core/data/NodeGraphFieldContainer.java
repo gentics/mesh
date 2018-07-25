@@ -105,25 +105,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		return id.toString();
 	}
 
-	/**
-	 * Creates the key for the webroot index.
-	 *
-	 * @param segmentValue
-	 *            Value of the segment field
-	 * @param branchUuid
-	 *            Uuid of the branch
-	 * @param parent
-	 *            Parent of the node to which the container belongs
-	 * @return The composed key
-	 */
-	static String composeWebrootIndexKey(String segmentValue, String branchUuid, Node parent) {
-		StringBuilder webRootInfo = new StringBuilder(segmentValue);
-		webRootInfo.append("-").append(branchUuid);
-		if (parent != null) {
-			webRootInfo.append("-").append(parent.getUuid());
-		}
-		return webRootInfo.toString();
-	}
 
 	/**
 	 * Return the document id for the container.

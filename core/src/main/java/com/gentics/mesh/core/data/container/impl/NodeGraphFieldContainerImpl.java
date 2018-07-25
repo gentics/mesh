@@ -4,14 +4,8 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_PROPERTY_KEY;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
@@ -267,18 +261,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @param edge
 	 * @param branchUuid
 	 * @param urlFieldValues
-	 * @param propertyName
-	 * @param indexName
 	 */
-	private void updateWebrootUrlFieldsInfo(GraphFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, String propertyName,
-		String indexName) {
+	private void updateWebrootUrlFieldsInfo(GraphFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues) {
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
 			// Prefix each path with the branchuuid in order to scope the paths by branch
 			Set<String> prefixedUrlFieldValues = urlFieldValues.stream().map(e -> branchUuid + e).collect(Collectors.toSet());
 
 			// Individually check each url
 			for (String urlFieldValue : prefixedUrlFieldValues) {
-				GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().checkIndexUniqueness(indexName, edge, urlFieldValue);
+				GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, urlFieldValue);
 				if (conflictingEdge != null) {
 					NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
 					Node conflictingNode = conflictingEdge.getNode();
@@ -299,9 +290,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						conflictingContainer.getLanguage().getLanguageTag());
 				}
 			}
-			edge.setProperty(propertyName, prefixedUrlFieldValues);
+			edge.setUrlFieldInfo(prefixedUrlFieldValues);
 		} else {
-			edge.setProperty(propertyName, null);
+			edge.setUrlFieldInfo(null);
 		}
 
 	}
@@ -312,16 +303,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		Iterator<? extends GraphFieldContainerEdge> it = getContainerEdge(DRAFT, branchUuid);
 		if (it.hasNext()) {
 			GraphFieldContainerEdge draftEdge = it.next();
-			updateWebrootPathInfo(ac, draftEdge, branchUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
-			updateWebrootUrlFieldsInfo(draftEdge, branchUuid, urlFieldValues, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_URLFIELD_INDEX_NAME);
+			updateWebrootPathInfo(ac, draftEdge, branchUuid, conflictI18n, DRAFT);
+			updateWebrootUrlFieldsInfo(draftEdge, branchUuid, urlFieldValues);
 		}
 		it = getContainerEdge(PUBLISHED, branchUuid);
 		if (it.hasNext()) {
 			GraphFieldContainerEdge publishEdge = it.next();
-			updateWebrootPathInfo(ac, publishEdge, branchUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY,
-				PUBLISHED_WEBROOT_INDEX_NAME);
-			updateWebrootUrlFieldsInfo(publishEdge, branchUuid, urlFieldValues, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY,
-				PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME);
+			updateWebrootPathInfo(ac, publishEdge, branchUuid, conflictI18n, PUBLISHED);
+			updateWebrootUrlFieldsInfo(publishEdge, branchUuid, urlFieldValues);
 		}
 	}
 
@@ -336,14 +325,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 *            i18n for the message in case of conflict
 	 * @param type
 	 *            edge type
-	 * @param propertyName
-	 *            name of the property
-	 * @param indexName
-	 *            name of the index to check for uniqueness
 	 */
 	protected void updateWebrootPathInfo(InternalActionContext ac, GraphFieldContainerEdge edge, String branchUuid, String conflictI18n,
-		ContainerType type, String propertyName,
-		String indexName) {
+		ContainerType type) {
 		final int MAX_NUMBER = 255;
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
@@ -355,7 +339,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			ConflictWarning info = null;
 			for (int i = 0; i < MAX_NUMBER; i++) {
 				try {
-					if (updateWebrootPathInfo(node, edge, languageTag, branchUuid, segmentFieldName, conflictI18n, type, propertyName, indexName)) {
+					if (updateWebrootPathInfo(node, edge, languageTag, branchUuid, segmentFieldName, conflictI18n, type)) {
 						break;
 					}
 				} catch (NameConflictException e) {
@@ -379,38 +363,40 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				nmac.addConflictInfo(info);
 			}
 		} else {
-			updateWebrootPathInfo(node, edge, languageTag, branchUuid, segmentFieldName, conflictI18n, type, propertyName, indexName);
+			updateWebrootPathInfo(node, edge, languageTag, branchUuid, segmentFieldName, conflictI18n, type);
 		}
 
 	}
 
 	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
 		String conflictI18n,
-		ContainerType type, String propertyName, String indexName) {
+		ContainerType type) {
 		// Determine the webroot path of the container parent node
 		String segment = node.getPathSegment(branchUuid, type, getLanguage().getLanguageTag());
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
 		if (segment != null) {
-			String webRootIndexKey = NodeGraphFieldContainer.composeWebrootIndexKey(segment, branchUuid, node.getParentNode(branchUuid));
+			Node parentNode = node.getParentNode(branchUuid);
+			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
+			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
 			// check for uniqueness of webroot path
-			GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().checkIndexUniqueness(indexName, edge, webRootIndexKey);
+			GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
 			if (conflictingEdge != null) {
 				Node conflictingNode = conflictingEdge.getNode();
 				NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
 				if (log.isDebugEnabled()) {
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
-						+ "} using index {" + indexName + "}");
+						+ "}");
 				}
 				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
 					.getLanguageTag(), conflictI18n, segmentFieldName, segment);
 			} else {
-				edge.setProperty(propertyName, webRootIndexKey);
+				edge.setSegmentInfo(segmentInfo);
 				return true;
 			}
 		} else {
-			edge.setProperty(propertyName, null);
+			edge.setSegmentInfo(null);
 			return true;
 		}
 	}

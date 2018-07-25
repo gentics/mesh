@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.syncleus.ferma.AbstractEdgeFrame;
@@ -44,13 +45,48 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "branch_type_lang", fields, false);
 
 		// Webroot index:
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_INDEX_NAME, FieldMap.create(WEBROOT_PROPERTY_KEY, STRING), true);
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, PUBLISHED_WEBROOT_INDEX_NAME, FieldMap.create(PUBLISHED_WEBROOT_PROPERTY_KEY, STRING), true);
+		fields = new FieldMap();
+		fields.put(BRANCH_UUID_KEY, STRING);
+		fields.put(EDGE_TYPE_KEY, STRING);
+		fields.put(WEBROOT_PROPERTY_KEY, STRING);
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_INDEX_POSTFIX_NAME, fields, true);
 
 		// Webroot url field index:
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_URLFIELD_INDEX_NAME, FieldMap.create(WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET), true);
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME,FieldMap.create(PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET), true);
+		fields = new FieldMap();
+		fields.put(BRANCH_UUID_KEY, STRING);
+		fields.put(EDGE_TYPE_KEY, STRING);
+		fields.put(WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET);
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_URLFIELD_INDEX_POSTFIX_NAME, fields, true);
 
+	}
+
+	public void setSegmentInfo(Node parentNode, String segment) {
+		setSegmentInfo(composeSegmentInfo(parentNode, segment));
+	}
+
+	/**
+	 * Creates the key for the webroot index.
+	 *
+	 * @param segmentValue
+	 *            Value of the segment field
+	 * @param branchUuid
+	 *            Uuid of the branch
+	 * @param parent
+	 *            Parent of the node to which the container belongs
+	 * @return The composed key
+	 */
+	public static Object composeWebrootIndexKey(String segmentInfo, String branchUuid, ContainerType type) {
+		Database db = MeshInternal.get().database();
+		return db.createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
+	}
+
+	public static String composeSegmentInfo(Node parentNode, String segment) {
+		return parentNode == null ? "" : parentNode.getUuid() + segment;
+	}
+
+	public static Object composeWebrootUrlFieldIndexKey(String path, String branchUuid, ContainerType type) {
+		Database db = MeshInternal.get().database();
+		return db.createComposedIndexKey(branchUuid, type.getCode(), path);
 	}
 
 	/**

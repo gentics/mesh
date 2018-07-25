@@ -27,22 +27,8 @@ public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 			NodeGraphFieldContainer containerB = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphFieldContainerEdge n1 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerA, GraphFieldContainerEdgeImpl.class);
 			GraphFieldContainerEdge n2 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerB, GraphFieldContainerEdgeImpl.class);
-			n1.setProperty(GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY, "test");
-			n2.setProperty(GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY, "test");
-			tx.success();
-		}
-	}
-
-	@Test(expected = ORecordDuplicatedException.class)
-	public void testConflictingPublishWebRootPath() {
-		try (Tx tx = tx()) {
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
-			NodeGraphFieldContainer containerA = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NodeGraphFieldContainer containerB = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			GraphFieldContainerEdge n1 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerA, GraphFieldContainerEdgeImpl.class);
-			GraphFieldContainerEdge n2 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerB, GraphFieldContainerEdgeImpl.class);
-			n1.setProperty(GraphFieldContainerEdge.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");
-			n2.setProperty(GraphFieldContainerEdge.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");
+			n1.setSegmentInfo("test");
+			n2.setSegmentInfo("test");
 			tx.success();
 		}
 	}

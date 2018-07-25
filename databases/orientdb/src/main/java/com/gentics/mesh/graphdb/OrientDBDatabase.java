@@ -819,7 +819,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public <T extends EdgeFrame> T findEdge(String fieldKey, Object fieldValue, Class<T> clazz) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, new Object[] { fieldValue }).iterator();
+		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, fieldValue ).iterator();
 		if (it.hasNext()) {
 			return graph.frameNewElementExplicit(it.next(), clazz);
 		}

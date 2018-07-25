@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -18,9 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -77,10 +74,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				for (String property : Arrays.asList(WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_PROPERTY_KEY)) {
-					assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-						.as("Property " + property + " for " + language).isNotNull();
-				}
+					assertThat(folder("products").getGraphFieldContainer(language).getProperty(WEBROOT_PROPERTY_KEY, String.class))
+						.as("Property " + WEBROOT_PROPERTY_KEY + " for " + language).isNotNull();
 			}
 		}
 
@@ -93,11 +88,6 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				String property = WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
 					.as("Property " + property + " for " + language).isNotNull();
-
-				property = PUBLISHED_WEBROOT_PROPERTY_KEY;
-				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-					.as("Property " + property + " for " + language).isNull();
-
 			}
 		}
 

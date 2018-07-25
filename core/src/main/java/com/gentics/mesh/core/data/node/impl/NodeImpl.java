@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.ContainerType.forVersion;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
@@ -1869,13 +1870,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		FramedGraph graph = Tx.getActive().getGraph();
-		String indexName = type == ContainerType.PUBLISHED ? GraphFieldContainerEdge.PUBLISHED_WEBROOT_INDEX_NAME
-			: GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
-		String key = NodeGraphFieldContainer.composeWebrootIndexKey(segment, branchUuid, this);
-
-		indexName = "e." + HAS_FIELD_CONTAINER + "_" + indexName;
-		indexName = indexName.toLowerCase();
-		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(indexName, key, GraphFieldContainerEdgeImpl.class).iterator();
+		String segmentInfo  = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
+		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
+		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
 		if (edges.hasNext()) {
 			Node childNode = edges.next().getNode();
 			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);

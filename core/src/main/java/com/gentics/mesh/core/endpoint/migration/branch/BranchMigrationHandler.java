@@ -107,6 +107,11 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		if (node.getGraphFieldContainersIt(newBranch, INITIAL).iterator().hasNext()) {
 			return null;
 		}
+		
+		Node parent = node.getParentNode(oldBranch.getUuid());
+		if (parent != null) {
+			node.setParentNode(newBranch.getUuid(), parent);
+		}
 
 		node.getGraphFieldContainersIt(oldBranch, DRAFT).forEach(container -> {
 			GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
@@ -118,6 +123,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 			draftEdge.setType(DRAFT);
 			draftEdge.setBranchUuid(newBranch.getUuid());
+			draftEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
 		});
 		SearchQueueBatch batch = searchQueue.create();
 		batch.store(node, newBranch.getUuid(), DRAFT, false);
@@ -127,13 +133,11 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			publishEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 			publishEdge.setType(PUBLISHED);
 			publishEdge.setBranchUuid(newBranch.getUuid());
+			publishEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
 		});
 		batch.store(node, newBranch.getUuid(), PUBLISHED, false);
 
-		Node parent = node.getParentNode(oldBranch.getUuid());
-		if (parent != null) {
-			node.setParentNode(newBranch.getUuid(), parent);
-		}
+
 
 		// migrate tags
 		node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));

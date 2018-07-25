@@ -1,10 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_PROPERTY_KEY;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,16 +71,8 @@ public class WebRootServiceImpl implements WebRootService {
 
 	@Override
 	public NodeGraphFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type) {
-
-		String index = WEBROOT_URLFIELD_INDEX_NAME;
-		if (type == ContainerType.PUBLISHED) {
-			index = PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME;
-		}
-
-		// Prefix each path with the branch uuid in order to scope the paths by branch
-		String key = branchUuid + path;
-		String indexKey = "e." + HAS_FIELD_CONTAINER + "." + index;
-		GraphFieldContainerEdge edge = database.findEdge(indexKey.toLowerCase(), key, GraphFieldContainerEdgeImpl.class);
+		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(path, branchUuid, type);  
+		GraphFieldContainerEdge edge = database.findEdge(WEBROOT_URLFIELD_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
 		if (edge != null) {
 			return edge.getNodeContainer();
 		} else {
