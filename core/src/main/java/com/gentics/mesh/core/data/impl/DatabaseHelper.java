@@ -4,15 +4,17 @@ import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.binary.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
+import com.gentics.mesh.core.data.changelog.ChangeMarkerVertexImpl;
+import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
-import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -34,7 +37,6 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
@@ -97,6 +99,7 @@ public final class DatabaseHelper {
 		ProjectMicroschemaContainerRootImpl.init(database);
 		BranchRootImpl.init(database);
 		JobRootImpl.init(database);
+		ChangelogRootImpl.init(database);
 
 		// Binary
 		BinaryImpl.init(database);
@@ -143,6 +146,9 @@ public final class DatabaseHelper {
 		UpdateFieldChangeImpl.init(database);
 		AddFieldChangeImpl.init(database);
 		UpdateMicroschemaChangeImpl.init(database);
+
+		// Changelog
+		ChangeMarkerVertexImpl.init(database);
 
 	}
 

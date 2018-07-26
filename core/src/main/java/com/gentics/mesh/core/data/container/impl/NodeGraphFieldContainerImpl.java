@@ -401,9 +401,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Node getParentNode(String uuid) {
+	public Node getParentNode(String branchUuid) {
 		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
+			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).inV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**

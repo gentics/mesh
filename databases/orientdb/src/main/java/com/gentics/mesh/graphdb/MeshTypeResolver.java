@@ -34,9 +34,11 @@ public class MeshTypeResolver implements TypeResolver {
 		}
 
 		final Class<T> nodeKind = (Class<T>) this.reflectionCache.forName(nodeClazz);
-
+		if (nodeKind == null) {
+			throw new RuntimeException("Did not find class in cache {" + nodeClazz + "}");
+		}
 		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
-				|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
+			|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
 			return nodeKind;
 		} else {
 			return kind;

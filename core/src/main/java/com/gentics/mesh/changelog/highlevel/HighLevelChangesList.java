@@ -6,6 +6,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.changelog.highlevel.change.RestructureWebrootIndex;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 
 /**

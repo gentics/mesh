@@ -24,12 +24,12 @@ import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.changelog.ChangelogRootImpl;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.binary.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
