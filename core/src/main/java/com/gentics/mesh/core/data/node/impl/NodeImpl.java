@@ -1877,8 +1877,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			GraphFieldContainerEdge edge = edges.next();
 			Node childNode = edge.getNode();
 			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
-			path.addSegment(pathSegment);
-			return childNode.resolvePath(branchUuid, type, path, pathStack);
+			if (pathSegment != null) {
+				path.addSegment(pathSegment);
+				return childNode.resolvePath(branchUuid, type, path, pathStack);
+			}
 		} else {
 			throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
 		}

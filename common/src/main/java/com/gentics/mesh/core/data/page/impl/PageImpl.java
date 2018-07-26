@@ -15,7 +15,7 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	protected long totalElements;
 	protected long pageNumber;
 	protected long totalPages;
-	protected int perPage;
+	protected Long perPage;
 
 	/**
 	 * Construct a new page
@@ -31,7 +31,7 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	 * @param perPage
 	 *            Number of element per page
 	 */
-	public PageImpl(List<? extends T> wrappedList, long totalElements, long pageNumber, long totalPages, int perPage) {
+	public PageImpl(List<? extends T> wrappedList, long totalElements, long pageNumber, long totalPages, Long perPage) {
 		this.wrappedList = wrappedList;
 		this.totalElements = totalElements;
 		this.pageNumber = pageNumber;
@@ -65,7 +65,7 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	}
 
 	@Override
-	public int getPerPage() {
+	public Long getPerPage() {
 		return perPage;
 	}
 

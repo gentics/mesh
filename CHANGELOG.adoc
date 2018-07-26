@@ -10,15 +10,26 @@
 
 = Gentics Mesh Changelog
 
-[[v0.23.0]]
-== 0.23.0 (TBD)
+[[expected]]
+== Planned Future Changes
 
+* The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
+
+[[v0.24.0]]
+== 0.24.0 (25.07.2018)
+
+CAUTION: The default value of `25` for the `perPage` parameter has been removed. By default all elements will be returned and no paging will be applied.
+
+icon:check[] Core: A regression within the webroot performance enhancement fix of `0.23.0` has been fixed.
+
+[[v0.23.0]]
+== 0.23.0 (24.07.2018)
 
 CAUTION: The breadcrumb of the REST node response and the breadcrumb of the node type in GraphQL has changed. The first element is now the root node of the project followed by its descendants including the currently queried node. Previously the order was reversed. Additionally the root node and the current were missing. link:https://github.com/gentics/mesh/issues/398[#398]
 
 CAUTION: The concept of releases has been renamed into branches. The database structure will automatically be updated.
 
-* The following query parameters have been changed: `release` -> `branch`,  `updateAssignedReleases` -> `updateAssignedBranches`, * `updateReleaseNames` -> `updateBranchNames`
+* The following query parameters have been changed: `release` -> `branch`,  `updateAssignedReleases` -> `updateAssignedBranches`, `updateReleaseNames` -> `updateBranchNames`
 * The `releases` endpoint was renamed to `branches`.
 * The `mesh.release.created`, `mesh.release.updated`, `mesh.release.deleted` events have been changed to `mesh.branch.created`, `mesh.branch.updated`, `mesh.branch.deleted`.
 * The Java REST Models have been renamed. (e.g.: ReleaseCreateRequest -> BranchCreateRequest)
@@ -27,9 +38,13 @@ CAUTION: The concept of releases has been renamed into branches. The database st
 
 icon:plus[] Elasticsearch: The base64 encoded binary document data will no longer be stored in the search index.
 
-icon:plus[] REST: Added `?etag` query parameter which can be used to omit the etag value generation in order to increase performance when etags are not needed.
-
 icon:plus[] Elasticsearch: The `/search/status` endpoint now has a new field `available`, which shows if Elasticsearch is currently ready to process search queries.
+
+icon plus[] Elasticsearch: An error was fixed which was thrown when Elasticsearch was disabled and a re-sync was scheduled.
+
+icon:plus[] REST: Added `?etag=false` query parameter which can be used to omit the etag value generation in order to increase performance when etags are not needed.
+
+icon:plus[] REST: Added `?fields=uuid,username` query parameter which can be used to filter the response to only include the listed fields within a response. The filters work for most responses and can be used to increase write performance for REST.
 
 icon:plus[] GraphQL: It is now possible to filter schemas by their container flag.
 
@@ -66,9 +81,11 @@ icon:check[] Memory: The memory footprint for deletion, publish and unpublish op
 
 icon:check[] Config: Fixed handling of `MESH_VERTX_WORKER_POOL_SIZE` and `MESH_VERTX_EVENT_POOL_SIZE` environment variables. These variables were previously ignored.
 
+icon:check[] REST: The node update response will now contain the updated node in the correct language. Any provided language parameter will be ignored.
+
 icon:plus[] REST: The amount of fields which will be returned can now be tuned using the `?fields` query parameter. The parameter can be used to improve the write performance by only including the `uuid` parameter in the response. 
 
-icon:check[] REST: The node update response will now contain the updated node in the correct language. Any provided language parameter will be ignored.
+icon:plus[] Core: The core Vert.x library was updated to version 3.5.3
 
 [[v0.21.4]]
 == 0.21.4 (09.07.2018)

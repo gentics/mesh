@@ -11,7 +11,6 @@ public interface PagingParameters extends ParameterProvider {
 	public static final String SORT_ORDER_PARAMETER_KEY = "order";
 
 	public static final int DEFAULT_PAGE = 1;
-	public static final int DEFAULT_PAGE_SIZE = 25;
 
 	/**
 	 * Return the current page.
@@ -27,8 +26,8 @@ public interface PagingParameters extends ParameterProvider {
 	 * 
 	 * @return Per page count
 	 */
-	default int getPerPage() {
-		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), DEFAULT_PAGE_SIZE);
+	default Long getPerPage() {
+		return NumberUtils.toLong(getParameter(PER_PAGE_PARAMETER_KEY), null);
 	}
 
 	/**
@@ -50,8 +49,10 @@ public interface PagingParameters extends ParameterProvider {
 	 *            Per page count
 	 * @return Fluent API
 	 */
-	default PagingParameters setPerPage(int perPage) {
-		setParameter(PER_PAGE_PARAMETER_KEY, String.valueOf(perPage));
+	default PagingParameters setPerPage(Long perPage) {
+		if (perPage != null) {
+			setParameter(PER_PAGE_PARAMETER_KEY, String.valueOf(perPage));
+		}
 		return this;
 	}
 

@@ -257,7 +257,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10));
+			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10L));
 			assertEquals(2, roles.getSize());
 			assertEquals(1, extraRole.getGroups().size());
 
@@ -272,11 +272,11 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Page<? extends Role> page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
+			Page<? extends Role> page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 5L));
 			assertEquals(roleCount, page.getTotalElements());
 			assertEquals(roleCount, page.getSize());
 
-			page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
+			page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 15L));
 			assertEquals(roleCount, page.getTotalElements());
 			assertEquals(roleCount, page.getSize());
 		}

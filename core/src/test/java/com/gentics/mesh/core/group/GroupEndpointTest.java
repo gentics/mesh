@@ -28,6 +28,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -238,11 +239,11 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		totalGroups = nGroups + data().getGroups().size();
 		// Test default paging parameters
 		GroupListResponse listResponse = call(() -> client().findGroups());
-		assertEquals(25, listResponse.getMetainfo().getPerPage());
+		assertNull(listResponse.getMetainfo().getPerPage());
 		assertEquals(1, listResponse.getMetainfo().getCurrentPage());
 		assertEquals(initialGroupCount + nGroups, listResponse.getData().size());
 
-		int perPage = 6;
+		long perPage = 6;
 		listResponse = call(() -> client().findGroups(new PagingParametersImpl(3, perPage)));
 
 		assertEquals(perPage, listResponse.getData().size());
@@ -253,7 +254,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertEquals(3, listResponse.getMetainfo().getCurrentPage());
 		assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
 				totalPages, listResponse.getMetainfo().getPageCount());
-		assertEquals(perPage, listResponse.getMetainfo().getPerPage());
+		assertEquals(perPage, listResponse.getMetainfo().getPerPage().longValue());
 		assertEquals(totalGroups, listResponse.getMetainfo().getTotalCount());
 
 		List<GroupResponse> allGroups = new ArrayList<>();
@@ -271,20 +272,20 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		call(() -> client().findGroups(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-		call(() -> client().findGroups(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+		call(() -> client().findGroups(new PagingParametersImpl(1, -1L)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-		GroupListResponse response = call(() -> client().findGroups(new PagingParametersImpl(4242, 1)));
+		GroupListResponse response = call(() -> client().findGroups(new PagingParametersImpl(4242, 1L)));
 
 		assertEquals(0, response.getData().size());
 		assertEquals(4242, response.getMetainfo().getCurrentPage());
 		assertEquals(nGroups + initialGroupCount, response.getMetainfo().getPageCount());
 		assertEquals(nGroups + initialGroupCount, response.getMetainfo().getTotalCount());
-		assertEquals(1, response.getMetainfo().getPerPage());
+		assertEquals(1, response.getMetainfo().getPerPage().longValue());
 	}
 
 	@Test
 	public void testReadMetaCountOnly() {
-		GroupListResponse list = call(() -> client().findGroups(new PagingParametersImpl(1, 0)));
+		GroupListResponse list = call(() -> client().findGroups(new PagingParametersImpl(1, 0L)));
 		assertEquals(0, list.getData().size());
 	}
 
@@ -416,7 +417,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 				call(() -> client().createGroup(createReq));
 			}
 
-			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000),
+			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000L),
 					new RolePermissionParametersImpl().setRoleUuid(role().getUuid()) };
 
 			int readCount = 100;

@@ -3,7 +3,7 @@
 = Performance Guide
 
 This document contains useful information about performance related topics. 
-It will help you make the right modeling choices when using Gentics Mesh.
+It will help you make the right modelling choices when using Gentics Mesh.
 
 It is possible to store 200.000 and more nodes within a single node container. 
 We have made tests with more then 2.000.000 nodes in Gentics Mesh. 
@@ -15,7 +15,7 @@ When storing that amount of nodes you should keep the following design suggestio
 
 The search index is provided by ElasticSearch. Please refer to the link:https://www.elastic.co/blog/performance-considerations-elasticsearch-indexing[Elasticsearch Performance Guide].
 
-Please refrain from using a remotey mounted filesystem for the search index. This would negativly impact the overall search index and node migration performance.
+Please refrain from using a remotely mounted filesystem for the search index. This would negatively impact the overall search index and node migration performance.
 
 Excerpt from ElasticSearch:
 
@@ -27,8 +27,10 @@ The search index write performance will degrade in low-memory environments (less
 
 == Paging
 
+It is advised to apply paging when possible. Without the `perPage` parameter all elements will be returned and this could lead to potentially large responses.
+
 Regular paging performance will be impacted by the amount of nodes that are stored within a node container.
-It is advised to use GraphQL when accessing nodes in this sitation. GraphQL will allow you to fine tune the paging information.
+It is advised to use GraphQL when accessing nodes in this situation. GraphQL will allow you to fine tune the paging information.
 
 include::examples/graphql/node-light-paging-query[]
 

@@ -72,7 +72,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		// Also verify that the node is loadable in the other branch
 		NodeResponse responseForRelease = call(
-			() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch("newRelease")));
+			() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch("newBranch")));
 		assertThat(responseForRelease.getAvailableLanguages()).as("The node should have two container").hasSize(2);
 
 		// Delete first language container: german
@@ -94,15 +94,15 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		assertThatSubNodesExist(childrenUuids, branchName);
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
 
-		// Delete the second language container (english) and use the recursive flag. The node and all subnodes should have been removed in the current release
+		// Delete the second language container (english) and use the recursive flag. The node and all subnodes should have been removed in the current branch
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en", new DeleteParametersImpl().setRecursive(true)));
-		// Verify that the node is still loadable in the initial release
+		// Verify that the node is still loadable in the initial branch
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranchUuid())));
 
 		// TODO BUG - Issue #119
 		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(branchName)));
 		assertNull("We currently expect the node to be returned but without any contents.", nodeResponse.getLanguage());
-		// call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(releaseName)), NOT_FOUND,
+		// call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(branchName)), NOT_FOUND,
 		// "object_not_found_for_uuid", uuid);
 		assertThatSubNodesWereDeleted(childrenUuids, branchName);
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
@@ -115,7 +115,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		final String parentNodeUuid = tx(() -> folder("news").getUuid());
 		final String SECOND_BRANCH_NAME = "branch2";
 
-		// 1. Create node in release a
+		// 1. Create node in branch a
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName("content");
@@ -140,31 +140,31 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		updateNode(3, uuid, INITIAL_BRANCH_NAME);
 		updateNode(4, uuid, INITIAL_BRANCH_NAME);
 
-		// 5. Create new release
+		// 5. Create new branch
 		waitForJobs(() -> {
-			BranchCreateRequest releaseCreateRequest = new BranchCreateRequest();
-			releaseCreateRequest.setName(SECOND_BRANCH_NAME);
-			call(() -> client().createBranch(PROJECT_NAME, releaseCreateRequest));
+			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
+			branchCreateRequest.setName(SECOND_BRANCH_NAME);
+			call(() -> client().createBranch(PROJECT_NAME, branchCreateRequest));
 		}, MigrationStatus.COMPLETED, 1);
 
-		// Create two drafts in release A
+		// Create two drafts in branch A
 		updateNode(5, uuid, INITIAL_BRANCH_NAME);
 		updateNode(6, uuid, INITIAL_BRANCH_NAME);
 
-		// Create two drafts in release B
+		// Create two drafts in branch B
 		updateNode(5, uuid, SECOND_BRANCH_NAME);
 		updateNode(6, uuid, SECOND_BRANCH_NAME);
 
-		// Delete node in release A
+		// Delete node in branch A
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 
-		// Check that the node is still alive in the other release
+		// Check that the node is still alive in the other branch
 		NodeResponse responseB = call(
 			() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(SECOND_BRANCH_NAME)));
 		assertEquals("en", responseB.getLanguage());
 		assertFalse(responseB.getFields().isEmpty());
 
-		// And deleted in the first release
+		// And deleted in the first branch
 		NodeResponse responseA = call(
 			() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 		assertNull(responseA.getLanguage());
@@ -173,7 +173,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		NodeListResponse childrenA = call(
 			() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 		Optional<NodeResponse> childA = childrenA.getData().stream().filter(n -> n.getUuid().equals(uuid)).findFirst();
-		assertFalse("The node was deleted from the release and should not be present.", childA.isPresent());
+		assertFalse("The node was deleted from the branch and should not be present.", childA.isPresent());
 
 		NodeListResponse childrenB = call(
 			() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setBranch(SECOND_BRANCH_NAME)));
@@ -200,7 +200,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 				() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(branchName)));
 			assertNull("We currently expect the node to be returned but without any contents.", nodeResponse.getLanguage());
 			// TODO BUG - Issue #119
-			// call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(releaseName)), NOT_FOUND,
+			// call(() -> client().findNodeByUuid(PROJECT_NAME, childUuid, new VersioningParametersImpl().setBranch(branchName)), NOT_FOUND,
 			// "object_not_found_for_uuid", childUuid);
 		}
 	}

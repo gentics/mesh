@@ -16,9 +16,9 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 
 	protected long pageNumber;
 
-	protected int perPage;
+	protected Long perPage;
 
-	protected long lowerBound;
+	protected Long lowerBound;
 
 	/**
 	 * The unfiltered raw search count which was returned by the search provider.
@@ -41,22 +41,24 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 		if (pagingInfo.getPage() < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(pagingInfo.getPage()));
 		}
-		if (pagingInfo.getPerPage() < 0) {
+		if (pagingInfo.getPerPage() != null && pagingInfo.getPerPage() < 0) {
 			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pagingInfo.getPerPage()));
 		}
 		this.pageNumber = pagingInfo.getPage();
 		this.perPage = pagingInfo.getPerPage();
 
-		this.lowerBound = (pageNumber - 1) * perPage;
-
-		if (perPage == 0) {
-			this.lowerBound = 0;
+		if (perPage == null) {
+			this.lowerBound = null;
+		} else if (perPage == 0) {
+			this.lowerBound = 0L;
+		} else {
+			this.lowerBound = (pageNumber - 1) * perPage;
 		}
 
 	}
 
 	@Override
-	public int getPerPage() {
+	public Long getPerPage() {
 		return perPage;
 	}
 
@@ -65,7 +67,9 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 		if (totalPages == null) {
 			// The totalPages of the list response must be zero if the perPage parameter is also zero.
 			totalPages = 0L;
-			if (perPage != 0) {
+			if (perPage == null) {
+				totalPages = 1L;
+			} else if (perPage != 0) {
 				totalPages = (long) Math.ceil(getTotalElements() / (double) (perPage));
 			}
 		}

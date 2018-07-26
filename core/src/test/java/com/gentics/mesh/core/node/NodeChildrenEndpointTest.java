@@ -169,7 +169,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(),
-					new PagingParametersImpl().setPerPage(20000), new VersioningParametersImpl().draft()));
+					new PagingParametersImpl().setPerPage(20000L), new VersioningParametersImpl().draft()));
 
 			assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
 			assertEquals(2, nodeList.getData().size());

@@ -64,7 +64,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParametersImpl().setPage(1).setPerPage(2), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
+						new PagingParametersImpl().setPage(1).setPerPage(2L), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
 						new VersioningParametersImpl().draft()));
 
 				if (expectResult) {
@@ -94,7 +94,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				"fields.content", new JsonObject().put("query", "Hersteller"))));
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query.toString(), new PagingParametersImpl().setPage(1).setPerPage(
-				2), new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
+				2L), new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
 		assertEquals(1, response.getData().size());
 
 		String name = response.getData().get(0).getFields().getStringField("teaser").getString();
@@ -112,7 +112,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 2. Assert that the the en, de variant of the node could be found in the search index
 		String uuid = db().tx(() -> content("concorde").getUuid());
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl()
-				.setPage(1).setPerPage(10), new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
+				.setPage(1).setPerPage(10L), new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
 		assertEquals("We expect to find the two language versions.", 2, response.getData().size());
 
 		// 3. Prepare an updated schema
@@ -148,13 +148,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 6. Assert that the two migrated language variations can be found
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(
-				10), new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
+				10L), new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
 		assertEquals("We only expect to find the two language versions while searching for uuid {" + uuid + "}", 2, response.getData().size());
 	}
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
-		int numAdditionalNodes = 99;
+		long numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();

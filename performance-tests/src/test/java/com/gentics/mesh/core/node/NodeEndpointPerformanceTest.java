@@ -51,11 +51,11 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 	public void testReadPage() {
 		addNodes();
 		loggingStopWatch(logger, "node.read-page-100", 200, (step) -> {
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(100)));
+			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(100L)));
 		});
 
 		loggingStopWatch(logger, "node.read-page-25", 200, (step) -> {
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(25)));
+			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(25L)));
 		});
 	}
 

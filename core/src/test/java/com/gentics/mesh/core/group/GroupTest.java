@@ -72,12 +72,12 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 		try (Tx tx = tx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Page<? extends Group> page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
+			Page<? extends Group> page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 19L));
 
 			assertEquals(groupCount, page.getTotalElements());
 			assertEquals(groupCount, page.getSize());
 
-			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
+			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3L));
 			assertEquals(groupCount, page.getTotalElements());
 			assertEquals("We expected one page per group.", groupCount, page.getSize());
 		}

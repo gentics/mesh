@@ -180,7 +180,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
 
-		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
+		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
 		branches.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
 	}
 
@@ -212,7 +212,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated().hasUuid(uuid);
 		}, COMPLETED, 1);
 
-		BranchListResponse branchs = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Integer.MAX_VALUE)));
+		BranchListResponse branchs = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
 		branchs.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
 	}
 

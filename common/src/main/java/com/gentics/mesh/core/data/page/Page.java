@@ -16,7 +16,7 @@ public interface Page<T> extends Iterable<T> {
 	 * 
 	 * @return
 	 */
-	int getPerPage();
+	Long getPerPage();
 
 	/**
 	 * Return the total amount of pages which the resources that provided this page could return.

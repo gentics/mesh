@@ -25,12 +25,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -116,12 +116,12 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext("version=draft");
-			Page<? extends Node> page = boot().nodeRoot().findAll(ac, new PagingParametersImpl(1, 10));
+			Page<? extends Node> page = boot().nodeRoot().findAll(ac, new PagingParametersImpl(1, 10L));
 
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(10, page.getSize());
 
-			page = boot().nodeRoot().findAll(ac, new PagingParametersImpl(1, 15));
+			page = boot().nodeRoot().findAll(ac, new PagingParametersImpl(1, 15L));
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(15, page.getSize());
 		}
@@ -149,7 +149,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			List<String> languageTags = new ArrayList<>();
 			languageTags.add("de");
 			languageTags.add("en");
-			Page<? extends Node> page = boot().nodeRoot().findAll(getRequestUser(), languageTags, new PagingParametersImpl(1, 25));
+			Page<? extends Node> page = boot().nodeRoot().findAll(getRequestUser(), languageTags, new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 		}
 	}
@@ -472,9 +472,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 10. assert for initial branch
 			List<Node> nodes = new ArrayList<>();
-			project.getNodeRoot().findAll(mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000, "name",
+			project.getNodeRoot().findAll(mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L, "name",
 				SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
-			assertThat(nodes).as("Nodes in initial release").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
+			assertThat(nodes).as("Nodes in initial branch").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
 			// 11. assert searchqueuebatch
@@ -508,11 +508,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. assert published and draft node
 			db().tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 				return null;
@@ -529,12 +529,12 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 4. assert published and draft gone
 			db().tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 				return null;
@@ -589,25 +589,25 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 4. assert published and draft gone from initial branch
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft&release=" + initialBranch.getUuid()), new PagingParametersImpl(1,
-					10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=draft&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
+					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published&release=" + initialBranch.getUuid()), new PagingParametersImpl(1,
-					10000, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(mockActionContext("version=published&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
+					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 
 			// 5. assert published and draft still there for new branch
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000, null, UNSORTED)).forEach(
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});

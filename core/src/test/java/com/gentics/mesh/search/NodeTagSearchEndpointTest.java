@@ -53,7 +53,7 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		String query = getESText("tags.es");
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query, new PagingParametersImpl().setPerPage(0)));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query, new PagingParametersImpl().setPerPage(0L)));
 		assertThat(response.getData()).isEmpty();
 		assertEquals(1, response.getMetainfo().getPageCount());
 	}

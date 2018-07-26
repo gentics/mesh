@@ -18,11 +18,14 @@ There are many things you can do with the REST API. To name a few:
 NOTE: All REST API responses are available in JSON, only, except for binary data.
 
 === Query Parameters
+
 The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:raml[Gentics Mesh REST API] reference. Following, we provide an overview of the most common query parameters.
 
 ==== Paging Parameters
 
 include::examples/tables/PagingParametersImpl.adoc[]
+
+NOTE: Paging is not applied by default. It is advised to include the `perPage` query parameter whenever possible to reduce the response size.
 
 ==== Versioning Parameters
 
@@ -123,6 +126,8 @@ If-None-Match:W/"1125-7cc5c6fb"
 ```
 
 Gentics Mesh will compare the provided ETag with the current state of the content and return a 304 response if the ETag is the same and the response did not change. Updating the requested resource will alter its ETag and thus another request would return the response which includes the current ETag.
+
+ETag Handling can be disabled for each request via the `?etag=false` query parameter. This will increase performance when etag headers are not needed.
 
 //=== Error Codes
 
