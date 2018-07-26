@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -10,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 
@@ -17,6 +20,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -74,8 +79,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-					assertThat(folder("products").getGraphFieldContainer(language).getProperty(WEBROOT_PROPERTY_KEY, String.class))
-						.as("Property " + WEBROOT_PROPERTY_KEY + " for " + language).isNotNull();
+				NodeGraphFieldContainer container = folder("products").getGraphFieldContainer(language);
+				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
+				assertThat(draftEdge.getSegmentInfo()).isNotNull();
+				GraphFieldContainerEdge publishEdge = container.getContainerEdge(PUBLISHED, initialBranchUuid()).next();
+				assertThat(publishEdge.getSegmentInfo()).isNotNull();
 			}
 		}
 
@@ -85,9 +93,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have only the draft webrootpath properties set
 		try (Tx tx2 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				String property = WEBROOT_PROPERTY_KEY;
-				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-					.as("Property " + property + " for " + language).isNotNull();
+				NodeGraphFieldContainer container = folder("products").getGraphFieldContainer(language);
+				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
+				assertThat(draftEdge.getSegmentInfo()).isNotNull();
+				assertFalse(container.getContainerEdge(PUBLISHED, initialBranchUuid()).hasNext());
 			}
 		}
 
@@ -254,17 +263,17 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 			// take offline in initial branch
 			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialBranch.getName()),
-					new PublishParametersImpl().setRecursive(true)));
+				new PublishParametersImpl().setRecursive(true)));
 		}
 
 		try (Tx tx = tx()) {
 			// check publish status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParametersImpl().setBranch(initialBranch.getName())))).as("Initial branch publish status").isNotPublished("en")
-							.isNotPublished("de");
+				new VersioningParametersImpl().setBranch(initialBranch.getName())))).as("Initial branch publish status").isNotPublished("en")
+					.isNotPublished("de");
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParametersImpl().setBranch(newBranch.getName())))).as("New branch publish status").isPublished("en")
-							.doesNotContain("de");
+				new VersioningParametersImpl().setBranch(newBranch.getName())))).as("New branch publish status").isPublished("en")
+					.doesNotContain("de");
 
 		}
 

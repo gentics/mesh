@@ -95,12 +95,40 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 	 */
 	Node getNode();
 
+	/**
+	 * Set the webroot segment info for the edge.
+	 * 
+	 * @param segmentInfo
+	 */
 	default void setSegmentInfo(String segmentInfo) {
 		setProperty(WEBROOT_PROPERTY_KEY, segmentInfo);
 	}
 
+	/**
+	 * Return the webroot segment info.
+	 * 
+	 * @return
+	 */
+	default String getSegmentInfo() {
+		return getProperty(WEBROOT_PROPERTY_KEY);
+	}
+
+	/**
+	 * Set the url field info.
+	 * 
+	 * @param urlFieldInfo
+	 */
 	default void setUrlFieldInfo(Set<String> urlFieldInfo) {
 		setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, urlFieldInfo);
+	}
+
+	/**
+	 * Return the url field info.
+	 * 
+	 * @return
+	 */
+	default Set<String> getUrlFieldInfo() {
+		return getProperty(WEBROOT_URLFIELD_PROPERTY_KEY);
 	}
 
 }

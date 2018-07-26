@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -28,7 +29,12 @@ public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 			GraphFieldContainerEdge n1 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerA, GraphFieldContainerEdgeImpl.class);
 			GraphFieldContainerEdge n2 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerB, GraphFieldContainerEdgeImpl.class);
 			n1.setSegmentInfo("test");
+			n1.setBranchUuid("branch");
+			n1.setType(DRAFT);
+
 			n2.setSegmentInfo("test");
+			n2.setBranchUuid("branch");
+			n2.setType(DRAFT);
 			tx.success();
 		}
 	}
