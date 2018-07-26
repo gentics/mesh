@@ -94,8 +94,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	}
 
 	/**
-	 * Migrate the node from the old branch to the new branch. This will effectively create the edges between the new branch and the node. Additionally also
-	 * the tags will be update to correspond with the new branch structure.
+	 * Migrate the node from the old branch to the new branch. This will effectively create the edges between the new branch and the node. Additionally also the
+	 * tags will be update to correspond with the new branch structure.
 	 * 
 	 * @param node
 	 * @param oldBranch
@@ -107,7 +107,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		if (node.getGraphFieldContainersIt(newBranch, INITIAL).iterator().hasNext()) {
 			return null;
 		}
-		
+
 		Node parent = node.getParentNode(oldBranch.getUuid());
 		if (parent != null) {
 			node.setParentNode(newBranch.getUuid(), parent);
@@ -124,6 +124,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			draftEdge.setType(DRAFT);
 			draftEdge.setBranchUuid(newBranch.getUuid());
 			draftEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
+			draftEdge.setUrlFieldInfo(container.getUrlFieldValues());
 		});
 		SearchQueueBatch batch = searchQueue.create();
 		batch.store(node, newBranch.getUuid(), DRAFT, false);
@@ -134,10 +135,9 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			publishEdge.setType(PUBLISHED);
 			publishEdge.setBranchUuid(newBranch.getUuid());
 			publishEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
+			publishEdge.setUrlFieldInfo(container.getUrlFieldValues());
 		});
 		batch.store(node, newBranch.getUuid(), PUBLISHED, false);
-
-
 
 		// migrate tags
 		node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));

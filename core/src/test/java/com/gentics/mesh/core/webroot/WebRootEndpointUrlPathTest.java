@@ -90,7 +90,7 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Assert that no problems occure when saving a node which has multiple url fields which share the same value.
+	 * Assert that no problems occur when saving a node which has multiple url fields which share the same value.
 	 */
 	@Test
 	public void testDuplicateFieldValueInSameNode() {

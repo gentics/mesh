@@ -542,7 +542,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			name = name.toLowerCase();
 			if (fields.size() != 0 && e.getClassIndex(name) == null) {
 				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				e.createIndex(name, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null, new ODocument().fields("ignoreNullValues", true) , fieldArray);
+				e.createIndex(name, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null,
+					new ODocument().fields("ignoreNullValues", true), fieldArray);
 			}
 
 		} finally {
@@ -819,7 +820,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public <T extends EdgeFrame> T findEdge(String fieldKey, Object fieldValue, Class<T> clazz) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, fieldValue ).iterator();
+		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, fieldValue).iterator();
 		if (it.hasNext()) {
 			return graph.frameNewElementExplicit(it.next(), clazz);
 		}
@@ -846,7 +847,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 					if (recordId.equals(element.getElement().getId())) {
 						return null;
 					} else {
-						return (T) graph.getFramedVertexExplicit(element.getClass(), recordId);
+						if (element instanceof EdgeFrame) {
+							Edge edge = graph.getEdge(recordId);
+							if (edge == null) {
+								if (log.isDebugEnabled()) {
+									log.debug("Did not find element with id {" + recordId + "} in graph from index {" + indexName + "}");
+								}
+								return null;
+							} else {
+								return (T) graph.frameElementExplicit(edge, element.getClass());
+							}
+						} else {
+							return (T) graph.getFramedVertexExplicit(element.getClass(), recordId);
+						}
 					}
 				}
 			}
