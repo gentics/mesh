@@ -160,6 +160,6 @@ public class GraphRelationships {
 	public static final String HAS_MICROSCHEMA_VERSION = "HAS_MICROSCHEMA_VERSION";
 
 	// Changelog system
-	private static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
+	public static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
 
 }

@@ -35,6 +35,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -130,6 +132,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public Lazy<CoreVerticleLoader> loader;
 
+	@Inject
+	public HighLevelChangelogSystem highlevelChangelogSystem;
+
 	private static MeshRoot meshRoot;
 
 	private MeshImpl mesh;
@@ -146,6 +151,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		DatabaseHelper.init(db);
 
 		if (searchProvider instanceof TrackingSearchProvider) {
+			return;
+		}
+		if (searchProvider.getClient() == null) {
 			return;
 		}
 		// Ensure indices are setup and sync the documents
@@ -325,7 +333,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
 		// has negative performance implications.
-		//vertxOptions.setFileResolverCachingEnabled(false);
+		// vertxOptions.setFileResolverCachingEnabled(false);
 		vertxOptions.setBlockedThreadCheckInterval(Integer.MAX_VALUE);
 		Vertx vertx = null;
 		if (vertxOptions.isClustered()) {
@@ -525,6 +533,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (!cls.applyChanges(SYNC_INDEX_ACTION)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
+		// Now run the high level changelog entries
+		highlevelChangelogSystem.apply(meshRoot);
+
 		log.info("Changelog completed.");
 		cls.setCurrentVersionAndRev();
 	}
@@ -534,6 +545,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
 		ChangelogSystem cls = new ChangelogSystem(db);
 		cls.markAllAsApplied();
+		highlevelChangelogSystem.markAllAsApplied(meshRoot);
+		log.info("All changes marked");
 	}
 
 	@Override
@@ -605,6 +618,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public ChangelogRoot changelogRoot() {
+		return meshRoot().getChangelogRoot();
+	}
+
+	@Override
 	public UserRoot userRoot() {
 		return meshRoot().getUserRoot();
 	}
@@ -653,6 +671,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getLanguageRoot();
 			meshRoot.getJobRoot();
 			meshRoot.getBinaryRoot();
+			meshRoot.getChangelogRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
 			UserRoot userRoot = meshRoot.getUserRoot();

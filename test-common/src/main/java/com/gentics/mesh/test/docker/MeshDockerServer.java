@@ -201,7 +201,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 * Use the provided JVM arguments.
 	 * 
 	 * @param opts
-	 *            Additional JVM options }
+	 *            Additional JVM options
 	 * @return
 	 */
 	public MeshDockerServer withExtraOpts(String opts) {

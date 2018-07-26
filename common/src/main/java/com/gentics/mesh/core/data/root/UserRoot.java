@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.User;
 /**
  * Aggregation node for users.
  */
-
 public interface UserRoot extends RootVertex<User> {
 	public static final String TYPE = "users";
 

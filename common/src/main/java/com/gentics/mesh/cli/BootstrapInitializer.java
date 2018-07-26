@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -81,6 +82,13 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	BinaryRoot binaryRoot();
+
+	/**
+	 * Return the changelog root element.
+	 * 
+	 * @return
+	 */
+	ChangelogRoot changelogRoot();
 
 	/**
 	 * Return the global tagfamily root element. Note that each project has their own tag family root element.
