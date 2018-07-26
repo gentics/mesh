@@ -1881,9 +1881,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				path.addSegment(pathSegment);
 				return childNode.resolvePath(branchUuid, type, path, pathStack);
 			}
-		} else {
-			throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
 		}
+		throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
 
 	}
 
