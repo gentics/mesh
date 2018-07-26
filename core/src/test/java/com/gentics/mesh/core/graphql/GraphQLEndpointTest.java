@@ -72,23 +72,11 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Vector;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
@@ -178,9 +166,15 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
-			folder("news").setUuid(NEWS_UUID);
+			Node folder = folder("news");
+			folder.setUuid(NEWS_UUID);
+			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
+			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
+
 			Node node2 = content();
 			node2.setUuid(CONTENT_UUID);
+			node2.getGraphFieldContainer("en").updateWebrootPathInfo(initialBranchUuid(), null);
+			node2.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
@@ -372,7 +366,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				micronodeField.getMicronode().createString("address").setString("Somewhere");
 				micronodeField.getMicronode().createString("postcode").setString("1010");
 			}
-			// folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PUBLISHED_PERM));
 			container.updateWebrootPathInfo(initialBranchUuid(), null);
 			tx.success();
 		}

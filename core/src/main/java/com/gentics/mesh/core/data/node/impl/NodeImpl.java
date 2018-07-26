@@ -10,7 +10,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
@@ -1870,27 +1869,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		FramedGraph graph = Tx.getActive().getGraph();
-		String segmentInfo  = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
+		String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
-		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
+		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
+			.iterator();
 		if (edges.hasNext()) {
-			Node childNode = edges.next().getNode();
+			GraphFieldContainerEdge edge = edges.next();
+			Node childNode = edge.getNode();
 			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
 			path.addSegment(pathSegment);
 			return childNode.resolvePath(branchUuid, type, path, pathStack);
 		} else {
 			throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
 		}
-
-		// Iterator<? extends NodeGraphFieldContainerImpl> childNodeIt = graph.getFramedVertices(indexName, key, NodeGraphFieldContainerImpl.class).iterator();
-		// if (childNodeIt.hasNext()) {
-		// Node childNode = childNodeIt.next().getParentNode();
-		// PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
-		// path.addSegment(pathSegment);
-		// return childNode.resolvePath(branchUuid, type, path, pathStack);
-		// } else {
-		// throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
-		// }
 
 	}
 

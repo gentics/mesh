@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -225,17 +226,17 @@ public class TestDataProvider {
 		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", contentSchema);
 
 		Node concorde = addContent(folders.get("products"), "Concorde",
-				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
-				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
-				contentSchema);
+			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
+			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
+			contentSchema);
 		concorde.addTag(tags.get("plane"), project.getLatestBranch());
 		concorde.addTag(tags.get("twinjet"), project.getLatestBranch());
 		concorde.addTag(tags.get("red"), project.getLatestBranch());
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
-				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
-				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
-				contentSchema);
+			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
+			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
+			contentSchema);
 		hondaNR.addTag(tags.get("vehicle"), project.getLatestBranch());
 		hondaNR.addTag(tags.get("motorcycle"), project.getLatestBranch());
 		hondaNR.addTag(tags.get("green"), project.getLatestBranch());
@@ -480,22 +481,22 @@ public class TestDataProvider {
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
 		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
-
+		Branch branch = project.getLatestBranch();
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
-			folderNode.publish(getGerman(), getProject().getLatestBranch(), getUserInfo().getUser());
+			folderNode.publish(getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
-			folderNode.publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+			folderNode.publish(getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
@@ -524,26 +525,27 @@ public class TestDataProvider {
 
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
+		Branch branch = project.getLatestBranch();
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
-			node.publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+			node.publish(getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, branch, userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
-			node.publish(getGerman(), getProject().getLatestBranch(), getUserInfo().getUser());
+			node.publish(getGerman(), branch, getUserInfo().getUser());
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {
