@@ -10,21 +10,29 @@ import javax.inject.Singleton;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Change which will get rid of the old {@link NodeGraphFieldContainer} webroot properties and instead add those props to the HAS_FIELD_CONTAINER edge.
+ */
 @Singleton
 public class RestructureWebrootIndex extends AbstractHighLevelChange {
 
 	private static final Logger log = LoggerFactory.getLogger(RestructureWebrootIndex.class);
 
+	private final Database db;
+
 	@Inject
-	public RestructureWebrootIndex() {
+	public RestructureWebrootIndex(Database db) {
+		this.db = db;
 	}
 
 	@Override
@@ -45,9 +53,9 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 	@Override
 	public void apply() {
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
-		String key = "@class";
-		Object value = HAS_FIELD_CONTAINER;
-		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit(key, value, GraphFieldContainerEdgeImpl.class);
+		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
+			GraphFieldContainerEdgeImpl.class);
+		long count = 0;
 		for (GraphFieldContainerEdgeImpl edge : edges) {
 			ContainerType type = edge.getType();
 			if (DRAFT.equals(type) || PUBLISHED.equals(type)) {
@@ -61,8 +69,31 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				String newInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(node,
 					container.getSegmentFieldValue());
 				edge.setSegmentInfo(newInfo);
+				if (count % 100 == 0) {
+					log.info("Updating edge {" + count + "}");
+				}
+				count++;
 			}
 		}
+		log.info("Done updating all edges. Total: {" + count + "}");
+
+		Iterable<? extends NodeGraphFieldContainerImpl> containers = graph.getFramedVertices("@class",
+			NodeGraphFieldContainerImpl.class.getSimpleName(), NodeGraphFieldContainerImpl.class);
+		for (NodeGraphFieldContainer container : containers) {
+			container.getElement().removeProperty("publishedWebrootUrlInfo");
+			container.getElement().removeProperty("webrootUrlInfo");
+			container.getElement().removeProperty("publishedWebrootPathInfo");
+			container.getElement().removeProperty("webrootPathInfo");
+		}
+
+	}
+
+	@Override
+	public void applyNoTx() {
+		db.removeVertexIndex("webrootPathInfoIndex", NodeGraphFieldContainerImpl.class);
+		db.removeVertexIndex("publishedWebrootPathInfoIndex", NodeGraphFieldContainerImpl.class);
+		db.removeVertexIndex("webrootUrlInfoIndex", NodeGraphFieldContainerImpl.class);
+		db.removeVertexIndex("publishedWebrootInfoIndex", NodeGraphFieldContainerImpl.class);
 	}
 
 }

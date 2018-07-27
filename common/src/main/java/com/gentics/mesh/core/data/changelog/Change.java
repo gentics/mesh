@@ -17,9 +17,14 @@ public interface Change {
 	String getName();
 
 	/**
-	 * Apply the change to the graph.
+	 * Apply the change to the graph which need a transaction.
 	 */
 	void apply();
+
+	/**
+	 * Apply changes which need to be executed outside of a transaction.
+	 */
+	void applyNoTx();
 
 	/**
 	 * Return the description of the change.

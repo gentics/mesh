@@ -75,6 +75,7 @@ import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.ext.orientdb.OrientDBTx;
 import com.syncleus.ferma.tx.Tx;
@@ -775,7 +776,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String fieldKey, FieldType fieldType) {
 		if (log.isDebugEnabled()) {
-			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
+			log.debug("Adding vertex index for class {" + clazzOfVertices.getName() + "}");
 		}
 		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
@@ -802,7 +803,27 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			noTx.shutdown();
 		}
+	}
 
+	@Override
+	public void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz) {
+		if (log.isDebugEnabled()) {
+			log.debug("Removing vertex index for class {" + clazz.getName() + "}");
+		}
+		OrientGraphNoTx noTx = factory.getNoTx();
+		try {
+			String name = clazz.getSimpleName();
+			OrientVertexType v = noTx.getVertexType(name);
+			if (v == null) {
+				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't remove index {" + indexName + "}");
+			}
+			OIndex<?> index = v.getClassIndex(indexName);
+			if (index != null) {
+				noTx.dropIndex(index.getName());
+			}
+		} finally {
+			noTx.shutdown();
+		}
 	}
 
 	@Override

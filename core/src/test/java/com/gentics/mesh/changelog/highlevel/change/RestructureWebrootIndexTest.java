@@ -13,7 +13,7 @@ public class RestructureWebrootIndexTest extends AbstractMeshTest {
 	@Test
 	public void testChange() {
 		tx(() -> {
-			RestructureWebrootIndex index = new RestructureWebrootIndex();
+			RestructureWebrootIndex index = new RestructureWebrootIndex(db());
 			index.apply();
 		});
 	}

@@ -15,6 +15,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.ElementFrame;
+import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
@@ -552,5 +553,13 @@ public interface Database extends TxFactory {
 	 * @param newType
 	 */
 	void changeType(Vertex vertex, String newType);
+
+	/**
+	 * Remove the index.
+	 * 
+	 * @param indexName
+	 * @param clazz
+	 */
+	void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz);
 
 }

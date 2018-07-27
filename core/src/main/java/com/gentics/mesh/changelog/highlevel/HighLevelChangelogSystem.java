@@ -41,13 +41,17 @@ public class HighLevelChangelogSystem {
 			db.tx(tx2 -> {
 				if (!isApplied(meshRoot, change)) {
 					try {
+						long start = System.currentTimeMillis();
 						db.tx(tx -> {
 							if (log.isDebugEnabled()) {
 								log.debug("Executing change {" + change.getName() + "}/{" + change.getUuid() + "}");
 							}
-							long start = System.currentTimeMillis();
 							change.apply();
-							long duration = System.currentTimeMillis() - start;
+							tx.success();
+						});
+						change.applyNoTx();
+						long duration = System.currentTimeMillis() - start;
+						db.tx(tx -> {
 							meshRoot.getChangelogRoot().add(change, duration);
 							tx.success();
 						});
