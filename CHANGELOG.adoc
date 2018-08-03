@@ -15,6 +15,11 @@
 
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
+[[v0.24.1]]
+== 0.24.1 (TBD)
+
+icon:check[] GraphQL: Fixed a bug that caused the default language of a node to be fetched when loading a node list of a micronode.
+
 [[v0.24.0]]
 == 0.24.0 (25.07.2018)
 
