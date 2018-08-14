@@ -72,10 +72,6 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 				sqb = searchQueue.create();
 			}
 			migrateNode(node, sqb, oldRelease, newRelease);
-
-			if (sqb != null) {
-				sqb.processSync();
-			}
 			if (status != null) {
 				status.incCompleted();
 			}
@@ -85,13 +81,13 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 					status.commit();
 				}
 			}
+			count++;
 			if (count % 500 == 0) {
 				// Process the batch and reset it
 				log.info("Syncing batch with size: " + sqb.size());
 				sqb.processSync();
 				sqb = null;
 			}
-			count++;
 		}
 		if (sqb != null) {
 			log.info("Syncing last batch with size: " + sqb.size());
@@ -116,7 +112,6 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 	 * @param batch
 	 * @param oldRelease
 	 * @param newRelease
-	 * @return
 	 */
 	private void migrateNode(Node node, SearchQueueBatch batch, Release oldRelease, Release newRelease) {
 		db.tx((tx) -> {

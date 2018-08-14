@@ -111,13 +111,13 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 					status.commit();
 				}
 			}
+			count++;
 			if (count % 500 == 0) {
 				// Process the batch and reset it
 				log.info("Syncing batch with size: " + sqb.size());
 				sqb.processSync();
 				sqb = null;
 			}
-			count++;
 		}
 		if (sqb != null) {
 			log.info("Syncing last batch with size: " + sqb.size());

@@ -241,4 +241,11 @@ public interface SearchProvider {
 	 */
 	String installationPrefix();
 
+	/**
+	 * Check whether the provider is active and able to process data.
+	 * 
+	 * @return
+	 */
+	boolean isActive();
+
 }

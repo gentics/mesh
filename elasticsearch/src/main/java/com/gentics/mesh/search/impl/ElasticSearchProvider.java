@@ -621,4 +621,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	public String installationPrefix() {
 		return options.getSearchOptions().getPrefix();
 	}
+
+	@Override
+	public boolean isActive() {
+		return client != null;
+	}
 }

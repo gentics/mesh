@@ -38,7 +38,6 @@ import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.context.impl.MoveEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
@@ -261,7 +260,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public Completable processAsync() {
-		if (searchProvider instanceof DevNullSearchProvider) {
+		if (!searchProvider.isActive()) {
 			return Completable.create(s -> {
 				clear();
 				s.onComplete();
@@ -305,7 +304,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public void processSync(long timeout, TimeUnit unit) {
-		if (!(searchProvider instanceof DevNullSearchProvider)) {
+		if (searchProvider.isActive()) {
 			if (!processAsync().blockingAwait(timeout, unit)) {
 				throw error(INTERNAL_SERVER_ERROR,
 					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
@@ -318,11 +317,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public void processSync() {
-		if (!(searchProvider instanceof DevNullSearchProvider)) {
-			processSync(120, TimeUnit.SECONDS);
-		} else {
-			clear();
-		}
+		processSync(120, TimeUnit.SECONDS);
 	}
 
 	@Override
