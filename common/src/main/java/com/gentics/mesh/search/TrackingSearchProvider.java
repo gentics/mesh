@@ -220,4 +220,8 @@ public class TrackingSearchProvider implements SearchProvider {
 		return Single.just(false);
 	}
 
+	@Override
+	public boolean isActive() {
+		return true;
+	}
 }

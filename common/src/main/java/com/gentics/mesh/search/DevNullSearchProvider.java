@@ -139,4 +139,10 @@ public class DevNullSearchProvider implements SearchProvider {
 		return Single.just(false);
 	}
 
+	@Override
+	public boolean isActive() {
+		// This provider is always inactive
+		return false;
+	}
+
 }

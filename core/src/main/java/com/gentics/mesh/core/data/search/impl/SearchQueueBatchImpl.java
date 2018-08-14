@@ -235,8 +235,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	public List<? extends SearchQueueEntry> getEntries() {
 		List<SearchQueueEntry<? extends EntryContext>> entries = Stream.concat(
 			bulkEntries.stream(),
-			seperateEntries.stream()
-		).collect(Collectors.toList());
+			seperateEntries.stream()).collect(Collectors.toList());
 
 		if (log.isDebugEnabled()) {
 			for (SearchQueueEntry entry : entries) {
@@ -261,6 +260,12 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public Completable processAsync() {
+		if (!searchProvider.isActive()) {
+			return Completable.create(s -> {
+				clear();
+				s.onComplete();
+			});
+		}
 		return Completable.defer(() -> {
 			Completable obs = Completable.complete();
 
@@ -299,9 +304,14 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public void processSync(long timeout, TimeUnit unit) {
-		if (!processAsync().blockingAwait(timeout, unit)) {
-			throw error(INTERNAL_SERVER_ERROR, "Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
-				+ "} exceeded.");
+		if (searchProvider.isActive()) {
+			if (!processAsync().blockingAwait(timeout, unit)) {
+				throw error(INTERNAL_SERVER_ERROR,
+					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
+						+ "} exceeded.");
+			}
+		} else {
+			clear();
 		}
 	}
 

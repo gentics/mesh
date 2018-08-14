@@ -633,4 +633,9 @@ public class ElasticSearchProvider implements SearchProvider {
 			return Single.just(false);
 		}
 	}
+
+	@Override
+	public boolean isActive() {
+		return client != null;
+	}
 }
