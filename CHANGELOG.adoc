@@ -10,6 +10,12 @@
 
 = Gentics Mesh Changelog
 
+
+[[v0.22.1]]
+== 0.22.1 (14.08.2018)
+
+icon:plus[] Migration: The micronode and release migration performance has been greatly enhanced.
+
 [[v0.22.0]]
 == 0.22.0 (19.07.2018)
 

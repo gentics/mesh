@@ -65,10 +65,14 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 		long count = 0;
 		// Iterate over all nodes of the project and migrate them to the new release
 		Project project = oldRelease.getProject();
+		SearchQueueBatch sqb = null;
 		for (Node node : project.getNodeRoot().findAllIt()) {
-			SearchQueueBatch sqb = db.tx(() -> {
-				return migrateNode(node, oldRelease, newRelease);
-			});
+			// Create a new SQB to handle the ES update
+			if (sqb == null) {
+				sqb = searchQueue.create();
+			}
+			migrateNode(node, sqb, oldRelease, newRelease);
+
 			if (sqb != null) {
 				sqb.processSync();
 			}
@@ -81,7 +85,18 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 					status.commit();
 				}
 			}
+			if (count % 500 == 0) {
+				// Process the batch and reset it
+				log.info("Syncing batch with size: " + sqb.size());
+				sqb.processSync();
+				sqb = null;
+			}
 			count++;
+		}
+		if (sqb != null) {
+			log.info("Syncing last batch with size: " + sqb.size());
+			sqb.processSync();
+			sqb = null;
 		}
 
 		// TODO track migration errors
@@ -98,46 +113,46 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 	 * the tags will be update to correspond with the new release structure.
 	 * 
 	 * @param node
+	 * @param batch
 	 * @param oldRelease
 	 * @param newRelease
 	 * @return
 	 */
-	private SearchQueueBatch migrateNode(Node node, Release oldRelease, Release newRelease) {
-		// Check whether the node already has an initial container and thus was already migrated
-		if (node.getGraphFieldContainersIt(newRelease, INITIAL).iterator().hasNext()) {
-			return null;
-		}
+	private void migrateNode(Node node, SearchQueueBatch batch, Release oldRelease, Release newRelease) {
+		db.tx((tx) -> {
+			// Check whether the node already has an initial container and thus was already migrated
+			if (node.getGraphFieldContainersIt(newRelease, INITIAL).iterator().hasNext()) {
+				return;
+			}
 
-		node.getGraphFieldContainersIt(oldRelease, DRAFT).forEach(container -> {
-			GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-			initialEdge.setType(INITIAL);
-			initialEdge.setReleaseUuid(newRelease.getUuid());
+			node.getGraphFieldContainersIt(oldRelease, DRAFT).forEach(container -> {
+				GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+				initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+				initialEdge.setType(INITIAL);
+				initialEdge.setReleaseUuid(newRelease.getUuid());
 
-			GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-			draftEdge.setType(DRAFT);
-			draftEdge.setReleaseUuid(newRelease.getUuid());
+				GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+				draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+				draftEdge.setType(DRAFT);
+				draftEdge.setReleaseUuid(newRelease.getUuid());
+			});
+			batch.store(node, newRelease.getUuid(), DRAFT, false);
+
+			node.getGraphFieldContainersIt(oldRelease, PUBLISHED).forEach(container -> {
+				GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+				edge.setLanguageTag(container.getLanguage().getLanguageTag());
+				edge.setType(PUBLISHED);
+				edge.setReleaseUuid(newRelease.getUuid());
+			});
+			batch.store(node, newRelease.getUuid(), PUBLISHED, false);
+
+			Node parent = node.getParentNode(oldRelease.getUuid());
+			if (parent != null) {
+				node.setParentNode(newRelease.getUuid(), parent);
+			}
+
+			// migrate tags
+			node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
 		});
-		SearchQueueBatch batch = searchQueue.create();
-		batch.store(node, newRelease.getUuid(), DRAFT, false);
-
-		node.getGraphFieldContainersIt(oldRelease, PUBLISHED).forEach(container -> {
-			GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(container.getLanguage().getLanguageTag());
-			edge.setType(PUBLISHED);
-			edge.setReleaseUuid(newRelease.getUuid());
-		});
-		batch.store(node, newRelease.getUuid(), PUBLISHED, false);
-
-		Node parent = node.getParentNode(oldRelease.getUuid());
-		if (parent != null) {
-			node.setParentNode(newRelease.getUuid(), parent);
-		}
-
-		// migrate tags
-		node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
-		return batch;
-
 	}
 }

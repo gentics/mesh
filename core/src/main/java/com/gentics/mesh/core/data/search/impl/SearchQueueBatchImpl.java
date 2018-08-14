@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.context.impl.MoveEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
@@ -235,8 +236,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	public List<? extends SearchQueueEntry> getEntries() {
 		List<SearchQueueEntry<? extends EntryContext>> entries = Stream.concat(
 			bulkEntries.stream(),
-			seperateEntries.stream()
-		).collect(Collectors.toList());
+			seperateEntries.stream()).collect(Collectors.toList());
 
 		if (log.isDebugEnabled()) {
 			for (SearchQueueEntry entry : entries) {
@@ -261,6 +261,12 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public Completable processAsync() {
+		if (searchProvider instanceof DevNullSearchProvider) {
+			return Completable.create(s -> {
+				clear();
+				s.onComplete();
+			});
+		}
 		return Completable.defer(() -> {
 			Completable obs = Completable.complete();
 
@@ -299,15 +305,24 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public void processSync(long timeout, TimeUnit unit) {
-		if (!processAsync().blockingAwait(timeout, unit)) {
-			throw error(INTERNAL_SERVER_ERROR, "Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
-				+ "} exceeded.");
+		if (!(searchProvider instanceof DevNullSearchProvider)) {
+			if (!processAsync().blockingAwait(timeout, unit)) {
+				throw error(INTERNAL_SERVER_ERROR,
+					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
+						+ "} exceeded.");
+			}
+		} else {
+			clear();
 		}
 	}
 
 	@Override
 	public void processSync() {
-		processSync(120, TimeUnit.SECONDS);
+		if (!(searchProvider instanceof DevNullSearchProvider)) {
+			processSync(120, TimeUnit.SECONDS);
+		} else {
+			clear();
+		}
 	}
 
 	@Override
