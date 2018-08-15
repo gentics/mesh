@@ -237,7 +237,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		// 1. Create new branch and migrate nodes
 		db().tx(() -> {
 			Branch newBranch = project().getBranchRoot().create(newBranchName, user());
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
 			return null;
 		});
 

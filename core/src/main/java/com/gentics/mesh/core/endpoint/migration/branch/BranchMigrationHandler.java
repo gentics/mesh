@@ -8,11 +8,14 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -22,6 +25,8 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.reactivex.Completable;
+import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -41,8 +46,9 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	 * @param newBranch
 	 *            new branch
 	 * @param status
+	 * @return
 	 */
-	public void migrateBranch(Branch newBranch, MigrationStatusHandler status) {
+	public Completable migrateBranch(Branch newBranch, MigrationStatusHandler status) {
 		if (newBranch.isMigrated()) {
 			throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
 		}
@@ -65,13 +71,14 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		long count = 0;
 		// Iterate over all nodes of the project and migrate them to the new branch
 		Project project = oldBranch.getProject();
+		List<Exception> errorsDetected = new ArrayList<>();
+		SearchQueueBatch sqb = null;
 		for (Node node : project.getNodeRoot().findAllIt()) {
-			SearchQueueBatch sqb = db.tx(() -> {
-				return migrateNode(node, oldBranch, newBranch);
-			});
-			if (sqb != null) {
-				sqb.processSync();
+			// Create a new SQB to handle the ES update
+			if (sqb == null) {
+				sqb = searchQueue.create();
 			}
+			migrateNode(node, sqb, oldBranch, newBranch, errorsDetected);
 			if (status != null) {
 				status.incCompleted();
 			}
@@ -82,14 +89,36 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 				}
 			}
 			count++;
+			if (count % 500 == 0) {
+				// Process the batch and reset it
+				log.info("Syncing batch with size: " + sqb.size());
+				sqb.processSync();
+				sqb = null;
+			}
+		}
+		if (sqb != null) {
+			log.info("Syncing last batch with size: " + sqb.size());
+			sqb.processSync();
+			sqb = null;
 		}
 
-		// TODO track migration errors
-
 		log.info("Migration of " + count + " node done..");
-		db.tx(() -> {
-			newBranch.setMigrated(true);
-		});
+		log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
+
+		Completable result = Completable.complete();
+		if (!errorsDetected.isEmpty()) {
+			if (log.isDebugEnabled()) {
+				for (Exception error : errorsDetected) {
+					log.error("Encountered migration error.", error);
+				}
+			}
+			result = Completable.error(new CompositeException(errorsDetected));
+		} else {
+			db.tx(() -> {
+				newBranch.setMigrated(true);
+			});
+		}
+		return result;
 
 	}
 
@@ -98,50 +127,56 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	 * tags will be update to correspond with the new branch structure.
 	 * 
 	 * @param node
+	 * @param batch
 	 * @param oldBranch
-	 * @param newBranch
-	 * @return
+	 * @param newBranc
+	 * @param errorsDetected
 	 */
-	private SearchQueueBatch migrateNode(Node node, Branch oldBranch, Branch newBranch) {
-		// Check whether the node already has an initial container and thus was already migrated
-		if (node.getGraphFieldContainersIt(newBranch, INITIAL).iterator().hasNext()) {
-			return null;
+	private void migrateNode(Node node, SearchQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
+		try {
+			db.tx((tx) -> {
+
+				// Check whether the node already has an initial container and thus was already migrated
+				if (node.getGraphFieldContainersIt(newBranch, INITIAL).iterator().hasNext()) {
+					return;
+				}
+
+				Node parent = node.getParentNode(oldBranch.getUuid());
+				if (parent != null) {
+					node.setParentNode(newBranch.getUuid(), parent);
+				}
+
+				node.getGraphFieldContainersIt(oldBranch, DRAFT).forEach(container -> {
+					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					initialEdge.setType(INITIAL);
+					initialEdge.setBranchUuid(newBranch.getUuid());
+
+					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					draftEdge.setType(DRAFT);
+					draftEdge.setBranchUuid(newBranch.getUuid());
+					draftEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
+					draftEdge.setUrlFieldInfo(container.getUrlFieldValues());
+				});
+				batch.store(node, newBranch.getUuid(), DRAFT, false);
+
+				node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
+					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+					publishEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					publishEdge.setType(PUBLISHED);
+					publishEdge.setBranchUuid(newBranch.getUuid());
+					publishEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
+					publishEdge.setUrlFieldInfo(container.getUrlFieldValues());
+				});
+				batch.store(node, newBranch.getUuid(), PUBLISHED, false);
+
+				// migrate tags
+				node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));
+			});
+		} catch (Exception e1) {
+			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);
+			errorsDetected.add(e1);
 		}
-
-		Node parent = node.getParentNode(oldBranch.getUuid());
-		if (parent != null) {
-			node.setParentNode(newBranch.getUuid(), parent);
-		}
-
-		node.getGraphFieldContainersIt(oldBranch, DRAFT).forEach(container -> {
-			GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-			initialEdge.setType(INITIAL);
-			initialEdge.setBranchUuid(newBranch.getUuid());
-
-			GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-			draftEdge.setType(DRAFT);
-			draftEdge.setBranchUuid(newBranch.getUuid());
-			draftEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
-			draftEdge.setUrlFieldInfo(container.getUrlFieldValues());
-		});
-		SearchQueueBatch batch = searchQueue.create();
-		batch.store(node, newBranch.getUuid(), DRAFT, false);
-
-		node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
-			GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			publishEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-			publishEdge.setType(PUBLISHED);
-			publishEdge.setBranchUuid(newBranch.getUuid());
-			publishEdge.setSegmentInfo(parent, container.getSegmentFieldValue());
-			publishEdge.setUrlFieldInfo(container.getUrlFieldValues());
-		});
-		batch.store(node, newBranch.getUuid(), PUBLISHED, false);
-
-		// migrate tags
-		node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));
-		return batch;
-
 	}
 }

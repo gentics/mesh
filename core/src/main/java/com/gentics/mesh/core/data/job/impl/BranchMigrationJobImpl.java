@@ -62,7 +62,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 				if (branch == null) {
 					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
 				}
-				MeshInternal.get().branchMigrationHandler().migrateBranch(branch, status);
+				MeshInternal.get().branchMigrationHandler().migrateBranch(branch, status).blockingAwait();
 				status.done();
 			}
 		} catch (Exception e) {

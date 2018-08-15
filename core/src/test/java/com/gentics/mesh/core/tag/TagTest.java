@@ -178,7 +178,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 3. Migrate nodes to new branch
-			branchMigrationHandler.migrateBranch(newBranch, null);
+			branchMigrationHandler.migrateBranch(newBranch, null).blockingAwait();
 
 			// 4. Create and Tag a node
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
@@ -229,7 +229,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 4. Migrate nodes to new branch
-			branchMigrationHandler.migrateBranch(newBranch, null);
+			branchMigrationHandler.migrateBranch(newBranch, null).blockingAwait();
 
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").usingElementComparatorOnFields("uuid", "name")
@@ -267,7 +267,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 4. Migrate nodes to new branch
-			branchMigrationHandler.migrateBranch(newBranch, null);
+			branchMigrationHandler.migrateBranch(newBranch, null).blockingAwait();
 
 			// 5. Untag in initial branch
 			node.removeTag(tag, initialBranch);

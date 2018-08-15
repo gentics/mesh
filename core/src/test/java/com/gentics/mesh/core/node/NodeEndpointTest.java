@@ -1947,7 +1947,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 3. migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranch.getUuid())));
 
@@ -1978,7 +1978,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 4. migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranch.getUuid())));
 

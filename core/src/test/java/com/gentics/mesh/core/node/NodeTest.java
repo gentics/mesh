@@ -437,7 +437,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 3. migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
 
 			// 4. assert nodes in new branch
 			assertThat(folder).as("folder").hasOnlyChildren(newBranch, subFolder);
@@ -575,7 +575,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. create new branch and migrate nodes
 			tx(() -> {
 				Branch newBranch = project.getBranchRoot().create("newbranch", user());
-				meshDagger().branchMigrationHandler().migrateBranch(newBranch, null);
+				meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
 				System.out.println("Branch UUID: " + newBranch.getUuid());
 			});
 
