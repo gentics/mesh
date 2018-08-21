@@ -80,6 +80,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -146,6 +147,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		DatabaseHelper.init(db);
 
 		if (searchProvider instanceof TrackingSearchProvider) {
+			return;
+		}
+		if (searchProvider instanceof DevNullSearchProvider) {
 			return;
 		}
 		// Ensure indices are setup and sync the documents
