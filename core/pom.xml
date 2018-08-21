@@ -223,6 +223,7 @@
 				<version>3.1.0</version>
 				<executions>
 					<execution>
+						<?m2e ignore ?>
 						<id>build-test-projects</id>
 						<goals>
 							<goal>run</goal>

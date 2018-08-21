@@ -104,6 +104,7 @@
 				<version>1.5.0</version>
 				<executions>
 					<execution>
+						<?m2e ignore ?>
 						<id>Generate revision file</id>
 						<goals>
 							<goal>exec</goal>
