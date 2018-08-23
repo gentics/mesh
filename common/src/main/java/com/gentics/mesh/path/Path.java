@@ -2,6 +2,8 @@ package com.gentics.mesh.path;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  * A webroot path consists of multiple segments. This class provides a useful container which can be used when resolving webroot paths.
@@ -11,6 +13,8 @@ public class Path {
 	private List<PathSegment> segments = new ArrayList<>();
 
 	private String targetPath;
+
+	private Stack<String> initialStack;
 
 	/**
 	 * Return the list of segments which describe the path.
@@ -75,4 +79,26 @@ public class Path {
 		this.targetPath = targetPath;
 		return this;
 	}
+
+	public boolean isFullyResolved() {
+		return initialStack.size() == segments.size();
+	}
+
+	/**
+	 * Return the resolved path.
+	 * 
+	 * @return
+	 */
+	public String getResolvedPath() {
+		return "/" + String.join("/", getSegments().stream().map(PathSegment::getSegment).collect(Collectors.toList()));
+	}
+
+	public void setInitialStack(Stack<String> stack) {
+		this.initialStack = stack;
+	}
+
+	public Stack<String> getInitialStack() {
+		return initialStack;
+	}
+
 }

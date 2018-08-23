@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.endpoint.webroot;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -36,10 +40,12 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		secureAll();
 
 		addErrorHandlers();
-		addPathHandler();
+		addPathReadHandler();
+		addPathUpdateHandler();
+		addPathPUTHandler();
 	}
 
-	private void addPathHandler() {
+	private void addPathReadHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.setRAMLPath("/{path}");
@@ -53,6 +59,46 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 			handler.handleGetPath(rc);
 		});
 	}
+
+	private void addPathUpdateHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.pathRegex("\\/(.*)");
+		endpoint.setRAMLPath("/{path}");
+		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+
+		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+
+		endpoint.description("Update a node for the given path.");
+		endpoint.handler(rc -> {
+			handler.handleUpdateCreatePath(wrap(rc), POST);
+		});
+	}
+	
+
+	private void addPathPUTHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.pathRegex("\\/(.*)");
+		endpoint.setRAMLPath("/{path}");
+		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
+		endpoint.method(PUT);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+
+		endpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+
+		endpoint.description("Update or create a node for the given path.");
+		endpoint.handler(rc -> {
+			handler.handleUpdateCreatePath(wrap(rc), PUT);
+		});
+	}
+
 
 	private void addErrorHandlers() {
 		InternalEndpointRoute endpoint = createRoute();

@@ -526,6 +526,38 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String path, NodeUpdateRequest nodeUpdateRequest,
+		ParameterProvider... parameters) {
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String[] pathSegments, NodeUpdateRequest nodeUpdateRequest,
+		ParameterProvider... parameters) {
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> webrootCreate(String projectName, String path, NodeCreateRequest nodeCreateRequest,
+		ParameterProvider... parameters) {
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> webrootCreate(String projectName, String[] pathSegments, NodeCreateRequest nodeCreateRequest,
+		ParameterProvider... parameters) {
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request) {
 		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
 		ac.setPayloadObject(request);

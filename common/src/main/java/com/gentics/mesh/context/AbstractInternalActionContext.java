@@ -8,9 +8,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -20,6 +21,11 @@ import io.vertx.core.Handler;
  * Abstract class for internal action context.
  */
 public abstract class AbstractInternalActionContext extends AbstractActionContext implements InternalActionContext {
+
+	/**
+	 * Field which will store the body model.
+	 */
+	private Object bodyModel = null;
 
 	@Override
 	public void send(RestModel restModel, HttpResponseStatus status) {
@@ -69,6 +75,19 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 			return branch;
 		});
+	}
+
+	@Override
+	public void setBody(Object model) {
+		this.bodyModel = model;
+	}
+
+	@Override
+	public <T> T fromJson(Class<?> classOfT) throws GenericRestException {
+		if (bodyModel != null) {
+			return (T) bodyModel;
+		}
+		return super.fromJson(classOfT);
 	}
 
 }

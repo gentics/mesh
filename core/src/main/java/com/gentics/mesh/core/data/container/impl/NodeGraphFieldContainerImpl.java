@@ -705,7 +705,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {
 		Path nodePath = new Path();
-		nodePath.addSegment(new PathSegment(this, null, getLanguage().getLanguageTag()));
+		nodePath.addSegment(new PathSegment(this, null, getLanguage().getLanguageTag(), null));
 		return nodePath;
 	}
 

@@ -2,9 +2,9 @@ package com.gentics.mesh.context;
 
 import java.util.Set;
 
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ParameterProviderContext;
@@ -146,4 +146,10 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	void setWebrootResponseType(String type);
 
+	/**
+	 * Set the body model. This will effectively override the body model of the actual request and inject the new one.
+	 * 
+	 * @param model
+	 */
+	void setBody(Object model);
 }

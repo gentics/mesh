@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -735,6 +736,60 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		});
 
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String path, NodeUpdateRequest nodeUpdateRequest,
+		ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(path, "path must not be null");
+		if (!path.startsWith("/")) {
+			throw new RuntimeException("The path {" + path + "} must start with a slash");
+		}
+		return webrootUpdate(projectName, path.split("/"), nodeUpdateRequest, parameters);
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String[] pathSegments, NodeUpdateRequest nodeUpdateRequest,
+		ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
+		Objects.requireNonNull(nodeUpdateRequest, "nodeUpdateRequest must not be null");
+
+		String path = Arrays.stream(pathSegments)
+			.filter(segment -> segment != null && !segment.isEmpty())
+			.map(URIUtils::encodeSegment)
+			.collect(Collectors.joining("/", "/", ""));
+
+		String requestUri = "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters);
+		return prepareRequest(POST, requestUri, NodeResponse.class, nodeUpdateRequest);
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> webrootCreate(String projectName, String path, NodeCreateRequest nodeCreateRequest,
+		ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(path, "path must not be null");
+		if (!path.startsWith("/")) {
+			throw new RuntimeException("The path {" + path + "} must start with a slash");
+		}
+		return webrootCreate(projectName, path.split("/"), nodeCreateRequest , parameters);
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> webrootCreate(String projectName, String[] pathSegments, NodeCreateRequest nodeCreateRequest,
+		ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
+		Objects.requireNonNull(nodeCreateRequest, "nodeCreateRequest must not be null");
+
+		String path = Arrays.stream(pathSegments)
+			.filter(segment -> segment != null && !segment.isEmpty())
+			.map(URIUtils::encodeSegment)
+			.collect(Collectors.joining("/", "/", ""));
+
+		String requestUri = "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters);
+		return prepareRequest(PUT, requestUri, NodeResponse.class, nodeCreateRequest);
 	}
 
 	@Override

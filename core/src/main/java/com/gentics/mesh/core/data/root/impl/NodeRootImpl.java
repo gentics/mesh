@@ -119,7 +119,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	private boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
 		FramedGraph graph = getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-				database().createComposedIndexKey(nodeId, branchUuid, code));
+			database().createComposedIndexKey(nodeId, branchUuid, code));
 		return edges.iterator().hasNext();
 	}
 
@@ -136,11 +136,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
-					ac.getVersioningParameters().getVersion());
+				ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid, String.join(",", requestedLanguageTags),
-						branch.getUuid());
+					branch.getUuid());
 			}
 			// Additionally check whether the read published permission could grant read perm for published nodes
 			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
@@ -175,7 +175,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return out(getRootLabel()).filter(vertex -> {
 			return requestUser.hasPermissionForId(vertex.getId(), permission);
 		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
+			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 	}
 
 	@Override
@@ -229,8 +229,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
-		String body = ac.getBodyAsString();
-		NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
+		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
 			throw error(BAD_REQUEST, "node_missing_parentnode_field");
 		}
@@ -257,6 +256,16 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
 		batch.store(node, branch.getUuid(), ContainerType.DRAFT, true);
+
+		// Check for webroot input data consistency (PUT on webroot)
+		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
+		if (webrootSegment != null) {
+			String current = container.getSegmentFieldValue();
+			if (!webrootSegment.equals(current)) {
+				throw error(BAD_REQUEST, "webroot_error_segment_field_mismatch", webrootSegment, current);
+			}
+		}
+
 		return node;
 	}
 
@@ -275,7 +284,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// 1. Extract the schema information from the given JSON
 		SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
 		boolean missingSchemaInfo = schemaInfo.getSchema() == null
-				|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
+			|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 		if (missingSchemaInfo) {
 			throw error(BAD_REQUEST, "error_schema_parameter_missing");
 		}
@@ -309,7 +318,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node node : findAllIt()) {
 				// We don't need to recursively handle the permissions for each node again since this call will already affect all nodes.

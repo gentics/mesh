@@ -43,6 +43,8 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	private Map<String, Object> data;
 
 	public static final String LOCALE_MAP_DATA_KEY = "locale";
+	
+
 
 	/**
 	 * Create a new routing context based vertx action context.

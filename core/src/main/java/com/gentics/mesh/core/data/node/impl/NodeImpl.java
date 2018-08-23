@@ -1557,7 +1557,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
-		NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
+		NodeUpdateRequest requestModel = ac.fromJson(NodeUpdateRequest.class);
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "error_language_not_set");
 		}
@@ -1835,7 +1835,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (field != null) {
 				String fieldValue = field.getString();
 				if (segment.equals(fieldValue)) {
-					return new PathSegment(container, field, container.getLanguage().getLanguageTag());
+					return new PathSegment(container, field, container.getLanguage().getLanguageTag(), segment);
 				}
 			}
 
@@ -1850,7 +1850,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			} else {
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
-					return new PathSegment(container, binaryField, container.getLanguage().getLanguageTag());
+					return new PathSegment(container, binaryField, container.getLanguage().getLanguageTag(), segment);
 				}
 			}
 		}
@@ -1882,7 +1882,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return childNode.resolvePath(branchUuid, type, path, pathStack);
 			}
 		}
-		throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
+		return path;
 
 	}
 

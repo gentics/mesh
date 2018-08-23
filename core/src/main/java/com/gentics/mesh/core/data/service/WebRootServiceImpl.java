@@ -47,13 +47,16 @@ public class WebRootServiceImpl implements WebRootService {
 		Path nodePath = new Path();
 		Node baseNode = project.getBaseNode();
 		nodePath.setTargetPath(path);
+		Stack<String> stack = new Stack<String>();
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(path) || path.isEmpty()) {
 			// TODO Why this container? Any other container would also be fine?
 			Iterator<? extends NodeGraphFieldContainer> it = baseNode.getDraftGraphFieldContainers().iterator();
 			NodeGraphFieldContainer container = it.next();
-			nodePath.addSegment(new PathSegment(container, null, null));
+			nodePath.addSegment(new PathSegment(container, null, null, "/"));
+			stack.push("/");
+			nodePath.setInitialStack(stack);
 			return nodePath;
 		}
 
@@ -61,9 +64,14 @@ public class WebRootServiceImpl implements WebRootService {
 		String sanitizedPath = path.replaceAll("^/+", "");
 		String[] elements = sanitizedPath.split("\\/");
 		List<String> list = Arrays.asList(elements);
-		Stack<String> stack = new Stack<String>();
+
 		Collections.reverse(list);
 		stack.addAll(list);
+
+		Object clone = stack.clone();
+		if (clone instanceof Stack) {
+			nodePath.setInitialStack((Stack<String>) clone);
+		}
 
 		// Traverse the graph and buildup the result path while doing so
 		return baseNode.resolvePath(ac.getBranch().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
@@ -71,7 +79,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 	@Override
 	public NodeGraphFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type) {
-		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(path, branchUuid, type);  
+		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(path, branchUuid, type);
 		GraphFieldContainerEdge edge = database.findEdge(WEBROOT_URLFIELD_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
 		if (edge != null) {
 			return edge.getNodeContainer();
