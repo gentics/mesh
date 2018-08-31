@@ -454,7 +454,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteLanguageRoute.path("/:nodeUuid/languages/:language/published").method(DELETE).produces(APPLICATION_JSON);
 		deleteLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		deleteLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
-		deleteLanguageRoute.exampleResponse(NO_CONTENT, versioningExamples.createPublishStatusModel(), "Node language was taken offline.");
+		deleteLanguageRoute.exampleResponse(NO_CONTENT, "Node language was taken offline.");
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
