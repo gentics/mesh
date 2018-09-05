@@ -3,6 +3,7 @@ package com.gentics.mesh.core.endpoint.node;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -99,6 +100,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Returns a navigation object for the provided node.");
 		endpoint.displayName("Navigation");
 		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
+		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -116,6 +118,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
+		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -133,6 +136,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
 		fieldUpdate.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -152,6 +156,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.description("Transform the image with the given field name and overwrite the stored image with the transformation result.");
 		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
 		imageTransform.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Transformation was executed and updated node was returned.");
+		imageTransform.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		imageTransform.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
@@ -184,6 +189,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Move the node into the target node.");
 		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
+		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The source or target node could not be found.");
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -200,6 +206,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of loaded node children.");
+		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.description("Load all child nodes and return a paged list response.");
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(NodeParametersImpl.class);
@@ -220,6 +227,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
 		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the node.");
+		getTags.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParametersImpl.class);
 		getTags.addQueryParameters(GenericParametersImpl.class);
@@ -237,6 +245,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.description("Update the list of assigned tags");
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
 		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
+		bulkUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		bulkUpdate.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String nodeUuid = ac.getParameter("nodeUuid");
@@ -250,6 +259,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTag.method(POST);
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
+		addTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
 		addTag.description("Assign the given tag to the node.");
 		addTag.addQueryParameters(VersioningParametersImpl.class);
 		addTag.handler(rc -> {
@@ -268,6 +278,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the node.");
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
+		removeTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
 		removeTag.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -302,6 +313,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readOne.description("Load the node with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Loaded node.");
+		readOne.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(NodeParametersImpl.class);
@@ -343,6 +355,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(DeleteParametersImpl.class);
 		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
+		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -366,6 +379,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -383,6 +397,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getEndpoint.method(GET);
 		getEndpoint.produces(APPLICATION_JSON);
 		getEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
+		getEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		getEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
@@ -396,6 +411,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putEndpoint.method(POST);
 		putEndpoint.produces(APPLICATION_JSON);
 		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
+		putEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		putEndpoint.addQueryParameters(PublishParametersImpl.class);
 		putEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -410,6 +426,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
+		deleteEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		deleteEndpoint.addQueryParameters(PublishParametersImpl.class);
 		deleteEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -427,6 +444,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
 		getLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
+		getLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		getLanguageRoute.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
@@ -441,6 +459,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putLanguageRoute.description(
 			"Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.");
 		putLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Updated publish status.");
+		putLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -455,6 +474,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		deleteLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		deleteLanguageRoute.exampleResponse(NO_CONTENT, "Node language was taken offline.");
+		deleteLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
