@@ -59,12 +59,12 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 		if (authentication != null) {
 			authentication.addAuthenticationInformation(request).subscribe(() -> {
-				request.headers().add("Accept", accepts);
+				request.headers().set("Accept", accepts);
 
 				if (bodyData != null && bodyData.length() != 0) {
-					request.headers().add("content-length", String.valueOf(bodyData.length()));
+					request.headers().set("content-length", String.valueOf(bodyData.length()));
 					if (!StringUtils.isEmpty(contentType)) {
-						request.headers().add("content-type", contentType);
+						request.headers().set("content-type", contentType);
 					}
 					// Somehow the buffer gets mix up after some requests. It seems that the buffer object is somehow reused and does not return the correct data. toString seems to alleviate the problem.
 					if (contentType != null && contentType.startsWith("application/json")) {
@@ -76,12 +76,12 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 			});
 		} else {
-			request.headers().add("Accept", "application/json");
+			request.headers().set("Accept", "application/json");
 
 			if (bodyData != null && bodyData.length() != 0) {
-				request.headers().add("content-length", String.valueOf(bodyData.length()));
+				request.headers().set("content-length", String.valueOf(bodyData.length()));
 				if (!StringUtils.isEmpty(contentType)) {
-					request.headers().add("content-type", contentType);
+					request.headers().set("content-type", contentType);
 				}
 				// Somehow the buffer gets mix up after some requests. It seems that the buffer object is somehow reused and does not return the correct data. toString seems to alleviate the problem.
 				if (contentType != null && contentType.startsWith("application/json")) {
