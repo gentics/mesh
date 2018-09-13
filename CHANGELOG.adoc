@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.22.2]]
+== 0.22.2 (13.09.2018)
+
+icon:check[] Java REST Client: fixed a bug that could lead to duplicate request headers
+
 
 [[v0.22.1]]
 == 0.22.1 (14.08.2018)
