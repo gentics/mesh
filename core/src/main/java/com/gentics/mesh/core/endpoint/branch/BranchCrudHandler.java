@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Iterator;
@@ -20,9 +21,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -315,5 +318,93 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			branch.setLatest();
 			return branch.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
+	}
+
+	/**
+	 * Handle the read branch tags request.
+	 * 
+	 * @param ac
+	 *            Action context
+	 * @param uuid
+	 *            UUID of the branch for which the tags should be loaded
+	 */
+	public void readTags(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+
+		db.asyncTx(() -> {
+			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
+			return tagPage.transformToRest(ac, 0);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
+	}
+
+	/**
+	 * Handle the add tag request.
+	 * 
+	 * @param ac
+	 *            Action context which also contains the branch information.
+	 * @param uuid
+	 *            Uuid of the branch to which tags should be added.
+	 * @param tagUuid
+	 *            Uuid of the tag which should be added to the branch.
+	 */
+	public void handleAddTag(InternalActionContext ac, String uuid, String tagUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(tagUuid, "tagUuid");
+
+		utils.asyncTx(ac, (tx) -> {
+			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			branch.addTag(tag);
+
+			return branch.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
+	}
+
+	/**
+	 * Remove the specified tag from the branch.
+	 * 
+	 * @param ac
+	 *            Action context
+	 * @param uuid
+	 *            Uuid of the branch from which the tag should be removed
+	 * @param tagUuid
+	 *            Uuid of the tag which should be removed from the branch
+	 */
+	public void handleRemoveTag(InternalActionContext ac, String uuid, String tagUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(tagUuid, "tagUuid");
+
+		utils.asyncTx(ac, (tx) -> {
+			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+
+			branch.removeTag(tag);
+
+		}, model -> ac.send(NO_CONTENT));
+	}
+
+	/**
+	 * Handle a bulk tag update request.
+	 * 
+	 * @param ac
+	 *            Action context
+	 * @param branchUuid
+	 *            Uuid of the branch which should be updated
+	 */
+	public void handleBulkTagUpdate(InternalActionContext ac, String branchUuid) {
+		validateParameter(branchUuid, "branchUuid");
+
+		db.asyncTx(() -> {
+			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
+
+			Tuple<TransformablePage<? extends Tag>, SearchQueueBatch> tuple = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
+				TransformablePage<? extends Tag> tags = branch.updateTags(ac, batch);
+				return Tuple.tuple(tags, batch);
+			});
+
+			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 }

@@ -4,17 +4,23 @@ import static com.gentics.mesh.Events.EVENT_BRANCH_CREATED;
 import static com.gentics.mesh.Events.EVENT_BRANCH_DELETED;
 import static com.gentics.mesh.Events.EVENT_BRANCH_UPDATED;
 
+import java.util.List;
+
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * The Branch domain model interface.
@@ -329,5 +335,49 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * @return Found version or null if no version could be found.
 	 */
 	MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer);
+
+	/**
+	 * Add the given tag to the list of tags for this branch.
+	 * 
+	 * @param tag
+	 */
+	void addTag(Tag tag);
+
+	/**
+	 * Remove the given tag from the list of tags for this branch.
+	 * 
+	 * @param tag
+	 */
+	void removeTag(Tag tag);
+
+	/**
+	 * Remove all tags.
+	 */
+	void removeAllTags();
+
+	/**
+	 * Return a list of all tags that were assigned to this branch.
+	 *
+	 * @return
+	 */
+	List<? extends Tag> getTags();
+
+	/**
+	 * Return a page of all visible tags that are assigned to the branch.
+	 * 
+	 * @param user
+	 * @param params
+	 * @return Page which contains the result
+	 */
+	TransformablePage<? extends Tag> getTags(User user, PagingParameters params);
+
+	/**
+	 * Handle the update tags request.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @return Page which includes the new set of tags
+	 */
+	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
 
 }

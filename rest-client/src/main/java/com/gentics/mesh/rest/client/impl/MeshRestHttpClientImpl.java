@@ -1303,6 +1303,39 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<BranchResponse> addTagToBranch(String projectName, String branchUuid, String tagUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
+		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/tags/" + tagUuid,
+				BranchResponse.class);
+	}
+
+	@Override
+	public MeshRequest<Void> removeTagFromBranch(String projectName, String branchUuid, String tagUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
+		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/tags/" + tagUuid,
+			Void.class);
+	}
+
+	@Override
+	public MeshRequest<TagListResponse> findTagsForBranch(String projectName, String branchUuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/tags" + getQuery(parameters), TagListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<TagListResponse> updateTagsForBranch(String projectName, String branchUuid, TagListUpdateRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/tags", TagListResponse.class,
+			request);
+	}
+
+	@Override
 	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(request, "request must not be null");

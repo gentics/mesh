@@ -9,6 +9,8 @@ import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
@@ -154,4 +156,56 @@ public interface BranchClientMethods {
 	 * @return
 	 */
 	MeshRequest<BranchResponse> setLatestBranch(String projectName, String branchUuid);
+
+	/**
+	 * Add with the given tagUuid to the branch with the given branchUuid.
+	 * 
+	 * @param projectName
+	 *            Name of the project which contains the branch
+	 * @param nodeUuid
+	 *            Uuid of the branch
+	 * @param tagUuid
+	 *            Uuid of the tag
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<BranchResponse> addTagToBranch(String projectName, String branchUuid, String tagUuid);
+
+	/**
+	 * Remove a tag with the given tagUuid from the branch with the given branchUuid.
+	 * 
+	 * @param projectName
+	 *            Name of the project which contains the branch
+	 * @param branchUuid
+	 *            Uuid of the branch
+	 * @param tagUuid
+	 *            Uuid of the tag
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<Void> removeTagFromBranch(String projectName, String branchUuid, String tagUuid);
+
+	/**
+	 * Load multiple tags that were assigned to a given branch.
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param branchUuid
+	 *            Uuid of the branch
+	 * @param parameters
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<TagListResponse> findTagsForBranch(String projectName, String branchUuid, ParameterProvider... parameters);
+
+	/**
+	 * Update the assigned tags of the given branch using the list of tag references within the request.
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param branchUuid
+	 *            Uuid of the branch
+	 * @param request
+	 *            Update request
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<TagListResponse> updateTagsForBranch(String projectName, String branchUuid, TagListUpdateRequest request);
+
 }

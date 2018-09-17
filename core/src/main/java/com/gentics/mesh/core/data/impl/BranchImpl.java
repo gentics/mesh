@@ -1,26 +1,38 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.List;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
@@ -32,7 +44,10 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.BranchRoot;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
@@ -48,13 +63,18 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -115,6 +135,20 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		return modified;
 	}
 
+	/**
+	 * Set the tag information to the rest model.
+	 * 
+	 * @param ac
+	 * @param restNode
+	 *            Rest model which will be updated
+	 */
+	private void setTagsToRest(InternalActionContext ac, BranchResponse restNode) {
+		for (Tag tag : getTags()) {
+			TagReference reference = tag.transformToReference();
+			restNode.getTags().add(reference);
+		}
+	}
+
 	@Override
 	public BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
@@ -122,19 +156,24 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 		BranchResponse restBranch = new BranchResponse();
 		if (fields.has("name")) {
-		restBranch.setName(getName());
+			restBranch.setName(getName());
 		}
 		if (fields.has("hostname")) {
-		restBranch.setHostname(getHostname());
+			restBranch.setHostname(getHostname());
 		}
 		if (fields.has("ssl")) {
-		restBranch.setSsl(getSsl());
+			restBranch.setSsl(getSsl());
 		}
 		// restRelease.setActive(isActive());
 		if (fields.has("migrated")) {
-		restBranch.setMigrated(isMigrated());
+			restBranch.setMigrated(isMigrated());
 		}
-		restBranch.setLatest(isLatest());
+		if (fields.has("tags")) {
+			setTagsToRest(ac, restBranch);
+		}
+		if (fields.has("latest")) {
+			restBranch.setLatest(isLatest());
+		}
 
 		// Add common fields
 		fillCommonRestFields(ac, fields, restBranch);
@@ -469,4 +508,85 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		// TODO make this configurable via query parameter. It should be possible to postpone the migration.
 		Mesh.vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
 	}
+
+	@Override
+	public void addTag(Tag tag) {
+		removeTag(tag);
+		addFramedEdge(HAS_BRANCH_TAG, tag);
+	}
+
+	@Override
+	public void removeTag(Tag tag) {
+		outE(HAS_BRANCH_TAG).mark().inV().retain(tag).back().removeAll();
+	}
+
+	@Override
+	public void removeAllTags() {
+		outE(HAS_BRANCH_TAG).removeAll();
+	}
+
+	@Override
+	public List<? extends Tag> getTags() {
+		return outE(HAS_BRANCH_TAG).inV().toListExplicit(TagImpl.class);
+	}
+
+	@Override
+	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params) {
+		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
+		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
+	}
+
+	@Override
+	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
+		Project project = getProject();
+		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
+		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
+		User user = ac.getUser();
+		removeAllTags();
+		for (TagReference tagReference : request.getTags()) {
+			if (!tagReference.isSet()) {
+				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
+			}
+			if (isEmpty(tagReference.getTagFamily())) {
+				throw error(BAD_REQUEST, "tag_error_tagfamily_not_set");
+			}
+			// 1. Locate the tag family
+			TagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
+			// Tag Family could not be found so lets create a new one
+			if (tagFamily == null) {
+				throw error(NOT_FOUND, "object_not_found_for_name", tagReference.getTagFamily());
+			}
+			// 2. The uuid was specified so lets try to load the tag this way
+			if (!isEmpty(tagReference.getUuid())) {
+				Tag tag = tagFamily.findByUuid(tagReference.getUuid());
+				if (tag == null) {
+					throw error(NOT_FOUND, "object_not_found_for_uuid", tagReference.getUuid());
+				}
+				if (!user.hasPermission(tag, READ_PERM)) {
+					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid());
+				}
+				addTag(tag);
+			} else {
+				Tag tag = tagFamily.findByName(tagReference.getName());
+				// Tag with name could not be found so create it
+				if (tag == null) {
+					if (user.hasPermission(tagFamily, CREATE_PERM)) {
+						tag = tagFamily.create(tagReference.getName(), project, user);
+						user.addCRUDPermissionOnRole(tagFamily, CREATE_PERM, tag);
+						batch.store(tag, false);
+						batch.store(tagFamily, false);
+					} else {
+						throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(), tagReference
+							.getName());
+					}
+				} else if (!user.hasPermission(tag, READ_PERM)) {
+					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid());
+				}
+
+				addTag(tag);
+			}
+		}
+		return getTags(user, ac.getPagingParameters());
+	}
+
 }

@@ -1,10 +1,14 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.assertj.core.api.AbstractAssert;
 
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 
 public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, BranchResponse> {
 	public BranchResponseAssert(BranchResponse actual) {
@@ -126,5 +130,28 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 	public BranchResponseAssert isNotLatest() {
 		assertThat(actual.isLatest()).as(descriptionText() + " latest").isFalse();
 		return this;
+	}
+
+	/**
+	 * Checks whether the given tag is listed within the branch rest response.
+	 * 
+	 * @param tag
+	 * @return
+	 */
+	public boolean contains(Tag tag) {
+		assertNotNull(tag);
+		assertNotNull(tag.getUuid());
+		assertNotNull(actual);
+		assertNotEquals("There were not tags listed in the branch.", 0, actual.getTags().size());
+		if (actual.getTags() == null) {
+			return false;
+		}
+
+		for (TagReference tagRef : actual.getTags()) {
+			if (tag.getUuid().equals(tagRef.getUuid())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

@@ -1318,6 +1318,36 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<BranchResponse> addTagToBranch(String projectName, String branchUuid, String tagUuid) {
+		LocalActionContextImpl<BranchResponse> ac = createContext(BranchResponse.class);
+		ac.setProject(projectName);
+		branchCrudHandler.handleAddTag(ac, branchUuid, tagUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<Void> removeTagFromBranch(String projectName, String branchUuid, String tagUuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
+		ac.setProject(projectName);
+		branchCrudHandler.handleRemoveTag(ac, branchUuid, tagUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<TagListResponse> findTagsForBranch(String projectName, String branchUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
+		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<TagListResponse> updateTagsForBranch(String projectName, String branchUuid, TagListUpdateRequest request) {
+		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class);
+		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;

@@ -2,7 +2,9 @@ package com.gentics.mesh.core.endpoint.branch;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -52,6 +54,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addUpdateHandler();
 		addNodeMigrationHandler();
 		addMicronodeMigrationHandler();
+		addTagsHandler();
 	}
 
 	private void addMicroschemaInfoHandler() {
@@ -225,5 +228,66 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().params().get("branchUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
+	}
+
+	private void addTagsHandler() {
+		InternalEndpointRoute getTags = createRoute();
+		getTags.path("/:branchUuid/tags");
+		getTags.addUriParameter("branchUuid", "Uuid of the branch.", UUIDUtil.randomUUID());
+		getTags.method(GET);
+		getTags.produces(APPLICATION_JSON);
+		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the branch.");
+		getTags.description("Return a list of all tags which tag the branch.");
+		getTags.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String branchUuid = ac.getParameter("branchUuid");
+			crudHandler.readTags(ac, branchUuid);
+		});
+
+		InternalEndpointRoute bulkUpdate = createRoute();
+		bulkUpdate.path("/:branchUuid/tags");
+		bulkUpdate.addUriParameter("branchUuid", "Uuid of the branch.", UUIDUtil.randomUUID());
+		bulkUpdate.method(POST);
+		bulkUpdate.produces(APPLICATION_JSON);
+		bulkUpdate.description("Update the list of assigned tags");
+		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
+		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
+		bulkUpdate.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String branchUuid = ac.getParameter("branchUuid");
+			crudHandler.handleBulkTagUpdate(ac, branchUuid);
+		});
+
+		InternalEndpointRoute addTag = createRoute();
+		addTag.path("/:branchUuid/tags/:tagUuid");
+		addTag.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		addTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
+		addTag.method(POST);
+		addTag.produces(APPLICATION_JSON);
+		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch"), "Updated branch.");
+		addTag.description("Assign the given tag to the branch.");
+		addTag.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String branchUuid = ac.getParameter("branchUuid");
+			String tagUuid = ac.getParameter("tagUuid");
+			crudHandler.handleAddTag(ac, branchUuid, tagUuid);
+		});
+
+		// TODO fix error handling. This does not fail when tagUuid could not be found
+		InternalEndpointRoute removeTag = createRoute();
+		removeTag.path("/:branchUuid/tags/:tagUuid");
+		removeTag.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		removeTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
+		removeTag.method(DELETE);
+		removeTag.produces(APPLICATION_JSON);
+		removeTag.description("Remove the given tag from the branch.");
+		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
+		removeTag.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String branchUuid = ac.getParameter("branchUuid");
+			String tagUuid = ac.getParameter("tagUuid");
+			crudHandler.handleRemoveTag(ac, branchUuid, tagUuid);
+		});
+
 	}
 }

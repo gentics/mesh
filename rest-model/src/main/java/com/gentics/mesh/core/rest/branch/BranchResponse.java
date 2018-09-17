@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.rest.branch;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 
 /**
  * POJO for a branch response.
@@ -30,6 +34,10 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch.")
 	private boolean latest;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("List of tags that were used to tag the branch.")
+	private List<TagReference> tags = new ArrayList<>();
 
 	public BranchResponse() {
 	}
@@ -94,5 +102,14 @@ public class BranchResponse extends AbstractGenericRestResponse {
 
 	public void setLatest(boolean latest) {
 		this.latest = latest;
+	}
+
+	/**
+	 * Return the tags which were used to tag the branch. The tags are nested within their tag families.
+	 * 
+	 * @return
+	 */
+	public List<TagReference> getTags() {
+		return tags;
 	}
 }
