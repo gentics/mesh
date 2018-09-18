@@ -27,9 +27,6 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public TagTypeProvider tagTypeProvider;
-
-	@Inject
 	public BranchTypeProvider() {
 	}
 
