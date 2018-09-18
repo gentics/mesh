@@ -59,6 +59,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
@@ -324,7 +325,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testCreateAsLatest() {
 		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
-		assertThat(projectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
 
 		String branchName = "Latest";
 		BranchCreateRequest request = new BranchCreateRequest();
@@ -335,7 +336,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).as("Created branch").hasName(branchName).isLatest();
 
 			BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
-			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("New latest branches")
+			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
 					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(response);
 		}, COMPLETED, 1);
 	}
@@ -343,8 +344,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testCreateNotAsLatest() {
 		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
-		assertThat(projectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
-		BranchResponse latestBranch = projectBranches.getData().stream().filter(BranchResponse::isLatest).findFirst().get();
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+		BranchResponse latestBranch = projectBranches.getData().stream().filter(BranchResponse::getLatest).findFirst().get();
 
 		String branchName = "Not Latest";
 		BranchCreateRequest request = new BranchCreateRequest();
@@ -356,7 +357,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
 
 			BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
-			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("New latest branches")
+			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
 					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(latestBranch);
 		}, COMPLETED, 1);
 	}
@@ -589,10 +590,33 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				assertThat(response).as("Latest branch").hasUuid(branchUuid).hasName(branchName).isLatest();
 
 				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
-				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::isLatest).collect(Collectors.toList())).as("New latest branches")
+				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
 						.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(response);
 			}
 		}
+	}
+
+	@Test
+	public void testSetLatestNoPerm() {
+		try (Tx tx = tx()) {
+			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
+			tx.success();
+		}
+		call(() -> client().setLatestBranch(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid());
+	}
+
+	@Test
+	public void testReadNoLatest() {
+		BranchResponse response = call(
+				() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid(), new GenericParametersImpl().setFields("uuid", "name")));
+		assertThat(response.getLatest()).as("Latest flag").isNull();
+	}
+
+	@Test
+	public void testReadLatest() {
+		BranchResponse response = call(
+				() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid(), new GenericParametersImpl().setFields("uuid", "name", "latest")));
+		assertThat(response.getLatest()).as("Latest flag").isNotNull().isTrue();
 	}
 
 	@Override

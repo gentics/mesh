@@ -8,6 +8,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
@@ -238,6 +240,22 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadTagsFromBogusBranch() throws Exception {
 		call(() -> client().findTagsForBranch(PROJECT_NAME, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+	}
+
+	@Test
+	public void testReadNoTags() throws Exception {
+		Branch branch = tx(() -> project().getLatestBranch());
+		String branchUuid = tx(() -> branch.getUuid());
+		BranchResponse response = call(() -> client().findBranchByUuid(PROJECT_NAME, branchUuid, new GenericParametersImpl().setFields("uuid", "name")));
+		assertThat(response.getTags()).as("Tags").isNull();
+	}
+
+	@Test
+	public void testReadWithTags() throws Exception {
+		Branch branch = tx(() -> project().getLatestBranch());
+		String branchUuid = tx(() -> branch.getUuid());
+		BranchResponse response = call(() -> client().findBranchByUuid(PROJECT_NAME, branchUuid, new GenericParametersImpl().setFields("uuid", "name", "tags")));
+		assertThat(response.getTags()).as("Tags").isNotNull();
 	}
 
 	@Test

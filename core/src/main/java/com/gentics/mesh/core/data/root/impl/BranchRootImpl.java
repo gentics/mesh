@@ -75,7 +75,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 		// make the new branch the latest
 		if (setLatest || latestBranch == null) {
-			setSingleLinkOutTo(branch, HAS_LATEST_BRANCH);
+			setLatestBranch(branch);
 		}
 
 		// set initial permissions on the branch

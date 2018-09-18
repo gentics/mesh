@@ -202,8 +202,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute setLatest = createRoute();
 		setLatest.path("/:branchUuid/latest");
 		setLatest.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
-		setLatest
-				.description("Set the branch with the given uuid as 'latest' branch of the project.");
+		setLatest.description("Set the branch with the given uuid as 'latest' branch of the project.");
 		setLatest.method(POST);
 		setLatest.produces(APPLICATION_JSON);
 		setLatest.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch"), "Latest branch");

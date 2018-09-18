@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.branch;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,11 +32,11 @@ public class BranchResponse extends AbstractGenericRestResponse {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch.")
-	private boolean latest;
+	private Boolean latest;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of tags that were used to tag the branch.")
-	private List<TagReference> tags = new ArrayList<>();
+	private List<TagReference> tags;
 
 	public BranchResponse() {
 	}
@@ -96,11 +95,11 @@ public class BranchResponse extends AbstractGenericRestResponse {
 		this.ssl = ssl;
 	}
 
-	public boolean isLatest() {
+	public Boolean getLatest() {
 		return latest;
 	}
 
-	public void setLatest(boolean latest) {
+	public void setLatest(Boolean latest) {
 		this.latest = latest;
 	}
 
@@ -111,5 +110,9 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	 */
 	public List<TagReference> getTags() {
 		return tags;
+	}
+
+	public void setTags(List<TagReference> tags) {
+		this.tags = tags;
 	}
 }

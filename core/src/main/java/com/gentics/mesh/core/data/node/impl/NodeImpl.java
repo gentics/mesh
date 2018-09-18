@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.ContainerType.forVersion;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
@@ -23,7 +22,6 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -61,7 +59,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -78,7 +76,6 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -98,7 +95,6 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.DB;
@@ -142,7 +138,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see Node
  */
-public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
+public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node, Taggable {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
@@ -1663,50 +1659,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
-		Project project = getProject();
-		Branch branch = ac.getBranch();
-		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
-		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-		User user = ac.getUser();
 		batch.store(this);
+		List<Tag> tags = getTagsToSet(ac, batch);
+		Branch branch = ac.getBranch();
+		User user = ac.getUser();
 		removeAllTags(branch);
-		for (TagReference tagReference : request.getTags()) {
-			if (!tagReference.isSet()) {
-				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
-			}
-			if (isEmpty(tagReference.getTagFamily())) {
-				throw error(BAD_REQUEST, "tag_error_tagfamily_not_set");
-			}
-			// 1. Locate the tag family
-			TagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
-			// Tag Family could not be found so lets create a new one
-			if (tagFamily == null) {
-				throw error(NOT_FOUND, "object_not_found_for_name", tagReference.getTagFamily());
-			}
-			// 2. The uuid was specified so lets try to load the tag this way
-			if (!isEmpty(tagReference.getUuid())) {
-				Tag tag = tagFamily.findByUuid(tagReference.getUuid());
-				if (tag == null) {
-					throw error(NOT_FOUND, "object_not_found_for_uuid", tagReference.getUuid());
-				}
-				addTag(tag, branch);
-			} else {
-				Tag tag = tagFamily.findByName(tagReference.getName());
-				// Tag with name could not be found so create it
-				if (tag == null) {
-					if (user.hasPermission(tagFamily, CREATE_PERM)) {
-						tag = tagFamily.create(tagReference.getName(), project, user);
-						user.addCRUDPermissionOnRole(tagFamily, CREATE_PERM, tag);
-						batch.store(tag, false);
-						batch.store(tagFamily, false);
-					} else {
-						throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(), tagReference
-							.getName());
-					}
-				}
-				addTag(tag, branch);
-			}
-		}
+		tags.forEach(tag -> addTag(tag, branch));
 		return getTags(user, ac.getPagingParameters(), branch);
 	}
 

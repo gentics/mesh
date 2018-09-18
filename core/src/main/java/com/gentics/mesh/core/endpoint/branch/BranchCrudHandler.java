@@ -314,7 +314,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
 		utils.asyncTx(ac, (tx) -> {
-			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
+			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
 			branch.setLatest();
 			return branch.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));

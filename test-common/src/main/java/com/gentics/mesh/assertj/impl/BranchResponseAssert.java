@@ -1,7 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.junit.Assert.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import org.assertj.core.api.AbstractAssert;
@@ -118,7 +117,7 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 	 * @return fluent API
 	 */
 	public BranchResponseAssert isLatest() {
-		assertThat(actual.isLatest()).as(descriptionText() + " latest").isTrue();
+		assertThat(actual.getLatest()).as(descriptionText() + " latest").isNotNull().isTrue();
 		return this;
 	}
 
@@ -128,7 +127,7 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 	 * @return fluent API
 	 */
 	public BranchResponseAssert isNotLatest() {
-		assertThat(actual.isLatest()).as(descriptionText() + " latest").isFalse();
+		assertThat(actual.getLatest()).as(descriptionText() + " latest").isNotNull().isFalse();
 		return this;
 	}
 
@@ -142,10 +141,7 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 		assertNotNull(tag);
 		assertNotNull(tag.getUuid());
 		assertNotNull(actual);
-		assertNotEquals("There were not tags listed in the branch.", 0, actual.getTags().size());
-		if (actual.getTags() == null) {
-			return false;
-		}
+		assertThat(actual.getTags()).as(descriptionText() + " tags").isNotNull().isNotEmpty();
 
 		for (TagReference tagRef : actual.getTags()) {
 			if (tag.getUuid().equals(tagRef.getUuid())) {
