@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 
 public class SchemaCreateRequest implements Schema {
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the display field.")
 	private String displayField;
 
@@ -24,7 +24,7 @@ public class SchemaCreateRequest implements Schema {
 	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
 	private List<String> urlFields;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
 	private boolean container = false;
 
@@ -40,7 +40,7 @@ public class SchemaCreateRequest implements Schema {
 	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
 	private JsonObject elasticsearch;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
