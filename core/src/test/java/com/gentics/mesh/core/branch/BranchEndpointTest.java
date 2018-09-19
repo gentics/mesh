@@ -363,6 +363,28 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testCreateMultipleNotAsLatest() {
+		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+		BranchResponse latestBranch = projectBranches.getData().stream().filter(BranchResponse::getLatest).findFirst().get();
+
+		for (String branchName : Arrays.asList("Branch 1", "Branch 2", "Branch 3")) {
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName(branchName);
+			request.setLatest(false);
+
+			waitForJobs(() -> {
+				BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+				assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
+
+				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
+					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(latestBranch);
+			}, COMPLETED, 1);
+		}
+	}
+
+	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
 
