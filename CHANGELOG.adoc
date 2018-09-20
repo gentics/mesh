@@ -11,7 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.22.3]]
-== 0.22.3 (TBD)
+== 0.22.3 (20.09.2018)
 
 icon:plus[] It is now possible to add custom languages by configuration.
 
