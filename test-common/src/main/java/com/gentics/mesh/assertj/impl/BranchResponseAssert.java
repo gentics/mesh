@@ -3,6 +3,9 @@ package com.gentics.mesh.assertj.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.Tag;
@@ -149,5 +152,38 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Assert that the branch is tagged with the given tags (possibly among others)
+	 * @param tags tag names
+	 * @return fluent API
+	 */
+	public BranchResponseAssert isTagged(String... tags) {
+		Set<String> tagNames = actual.getTags().stream().map(TagReference::getName).collect(Collectors.toSet());
+		assertThat(tagNames).as(descriptionText() + " tags").contains(tags);
+		return this;
+	}
+
+	/**
+	 * Assert that the branch is not tagged with any of the given tags
+	 * @param tags tag names
+	 * @return fluent API
+	 */
+	public BranchResponseAssert isNotTagged(String... tags) {
+		Set<String> tagNames = actual.getTags().stream().map(TagReference::getName).collect(Collectors.toSet());
+		assertThat(tagNames).as(descriptionText() + " tags").doesNotContain(tags);
+		return this;
+	}
+
+	/**
+	 * Assert that the branch is only tagged with the given tags
+	 * @param tags tag names
+	 * @return fluent API
+	 */
+	public BranchResponseAssert isOnlyTagged(String... tags) {
+		Set<String> tagNames = actual.getTags().stream().map(TagReference::getName).collect(Collectors.toSet());
+		assertThat(tagNames).as(descriptionText() + " tags").containsOnly(tags);
+		return this;
 	}
 }

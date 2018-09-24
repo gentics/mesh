@@ -19,8 +19,12 @@ public class BranchCreateRequest implements RestModel {
 	private Boolean ssl;
 
 	@JsonProperty(required = false, defaultValue = "true")
-	@JsonPropertyDescription("Whether the new branch will be set as 'latest' branch. Defaults to 'true'")
+	@JsonPropertyDescription("Whether the new branch will be set as 'latest' branch. Defaults to 'true'.")
 	private boolean latest = true;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional reference to the base branch. If not set, the new branch will be based on the current 'latest' branch.")
+	private BranchReference baseBranch;
 
 	public BranchCreateRequest() {
 	}
@@ -99,6 +103,26 @@ public class BranchCreateRequest implements RestModel {
 	 */
 	public BranchCreateRequest setLatest(boolean latest) {
 		this.latest = latest;
+		return this;
+	}
+
+	/**
+	 * Get the base branch
+	 * 
+	 * @return base branch
+	 */
+	public BranchReference getBaseBranch() {
+		return baseBranch;
+	}
+
+	/**
+	 * Set the base branch
+	 * 
+	 * @param baseBranch base branch
+	 * @return Fluent API
+	 */
+	public BranchCreateRequest setBaseBranch(BranchReference baseBranch) {
+		this.baseBranch = baseBranch;
 		return this;
 	}
 }

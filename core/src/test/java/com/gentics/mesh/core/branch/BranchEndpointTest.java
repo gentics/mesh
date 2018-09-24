@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
@@ -382,6 +383,80 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(latestBranch);
 			}, COMPLETED, 1);
 		}
+	}
+
+	@Test
+	public void testCreateWithoutBaseBranch() {
+		Branch latest = create("Latest", true);
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		Branch created = create(request);
+
+		tx(() -> {
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(latest);
+		});
+	}
+
+	@Test
+	public void testCreateWithBaseBranchByUuid() {
+		create("Latest", true);
+		Branch base = create("Base", false);
+		String baseUuid = tx(() -> base.getUuid());
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setUuid(baseUuid));
+		Branch created = create(request);
+
+		tx(() -> {
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
+		});
+	}
+
+	@Test
+	public void testCreateWithBaseBranchByName() {
+		create("Latest", true);
+		Branch base = create("Base", false);
+		String baseName = tx(() -> base.getName());
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setName(baseName));
+		Branch created = create(request);
+
+		tx(() -> {
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
+		});
+	}
+
+	@Test
+	public void testCreateWithNoPermBaseBranch() {
+		Branch latest = create("Latest", true);
+		String latestUuid = tx(() -> latest.getUuid());
+		tx(() -> role().revokePermissions(latest, READ_PERM));
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setUuid(latestUuid));
+		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", latestUuid);
+	}
+
+	@Test
+	public void testCreateWithBogusBaseBranch() {
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setUuid("bogus"));
+		call(() -> client().createBranch(PROJECT_NAME, request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+	}
+
+	@Test
+	public void testCreateWithEmptyBaseBranchReference() {
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference());
+
+		create(request);
 	}
 
 	@Test
@@ -1083,5 +1158,49 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
 					.setVersion("5.0")));
 		}
+	}
+
+	/**
+	 * Create a new branch
+	 * 
+	 * @param name
+	 *            branch name
+	 * @param latest
+	 *            true to make branch the latest
+	 * @return new branch
+	 */
+	protected Branch create(String name, boolean latest) {
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(name);
+
+		if (latest) {
+			request.setLatest(latest);
+		}
+
+		return create(request);
+	}
+
+	/**
+	 * Create a branch with the given request
+	 * 
+	 * @param request
+	 *            request
+	 * @return new branch
+	 */
+	protected Branch create(BranchCreateRequest request) {
+		StringBuilder uuid = new StringBuilder();
+		waitForJobs(() -> {
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(response).as("Created branch").hasName(request.getName());
+			if (request.isLatest()) {
+				assertThat(response).as("Created branch").isLatest();
+			} else {
+				assertThat(response).as("Created branch").isNotLatest();
+			}
+			uuid.append(response.getUuid());
+		}, COMPLETED, 1);
+
+		// return new branch
+		return tx(() -> project().getBranchRoot().findByUuid(uuid.toString()));
 	}
 }
