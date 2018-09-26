@@ -273,6 +273,49 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testDuplicateCrossBranchesSameNode() {
+		String conflictingName = "filename.html";
+		String newBranchName = "newbranch";
+		SchemaContainer contentSchema = db().tx(() -> {
+			return schemaContainer("content");
+		});
+		// 1. Create new branch and migrate nodes
+		db().tx(() -> {
+			Branch newBranch = project().getBranchRoot().create(newBranchName, user());
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
+			return null;
+		});
+
+		// 2. Create content in new branch
+		NodeResponse response = db().tx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			return call(() -> client().createNode(PROJECT_NAME, create));
+		});
+
+		// 3. Create "conflicting" content in initial branch
+		db().tx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			call(() -> client().createNode(response.getUuid(), PROJECT_NAME, create, new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
+
+			return null;
+		});
+	}
+
+	@Test
 	public void testDuplicateWithOldVersion() {
 		String conflictingName = "filename.html";
 		String newName = "changed.html";

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.ContainerType.forVersion;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
@@ -86,6 +87,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -1568,21 +1570,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (latestDraftVersion == null) {
 			// Create a new field container
 			latestDraftVersion = createGraphFieldContainer(language, branch, ac.getUser());
-			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
-			// Check whether the node has a parent node in this branch, if not, we set the parent node from the previous branch (if any)
+			// Check whether the node has a parent node in this branch, if not, the request is supposed to be a create request
+			// and we get the parent node from this create request
 			if (getParentNode(branch.getUuid()) == null) {
-				Node previousParent = null;
-				Branch previousBranch = branch.getPreviousBranch();
-				while (previousParent == null && previousBranch != null) {
-					previousParent = getParentNode(previousBranch.getUuid());
-					previousBranch = previousBranch.getPreviousBranch();
+				NodeCreateRequest createRequest = JsonUtil.readValue(ac.getBodyAsString(), NodeCreateRequest.class);
+				if (createRequest.getParentNode() == null || isEmpty(createRequest.getParentNode().getUuid())) {
+					throw error(BAD_REQUEST, "node_missing_parentnode_field");
 				}
-
-				if (previousParent != null) {
-					setParentNode(branch.getUuid(), previousParent);
-				}
+				Node parentNode = getProject().getNodeRoot().loadObjectByUuid(ac, createRequest.getParentNode().getUuid(), CREATE_PERM);
+				setParentNode(branch.getUuid(), parentNode);
 			}
+
+			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 			batch.store(latestDraftVersion, branch.getUuid(), DRAFT, false);
 			return true;
 		} else {
