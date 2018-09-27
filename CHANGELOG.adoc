@@ -45,7 +45,7 @@ icon:plus[] Elasticsearch: The base64 encoded binary document data will no longe
 
 icon:plus[] Elasticsearch: The `/search/status` endpoint now has a new field `available`, which shows if Elasticsearch is currently ready to process search queries.
 
-icon plus[] Elasticsearch: An error was fixed which was thrown when Elasticsearch was disabled and a re-sync was scheduled.
+icon:plus[] Elasticsearch: An error was fixed which was thrown when Elasticsearch was disabled and a re-sync was scheduled.
 
 icon:plus[] REST: Added `?etag=false` query parameter which can be used to omit the etag value generation in order to increase performance when etags are not needed.
 
