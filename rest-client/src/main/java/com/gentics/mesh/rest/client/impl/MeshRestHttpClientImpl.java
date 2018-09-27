@@ -5,7 +5,6 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -789,7 +788,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			.collect(Collectors.joining("/", "/", ""));
 
 		String requestUri = "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters);
-		return prepareRequest(PUT, requestUri, NodeResponse.class, nodeCreateRequest);
+		return prepareRequest(POST, requestUri, NodeResponse.class, nodeCreateRequest);
 	}
 
 	@Override

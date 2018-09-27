@@ -30,7 +30,7 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		NodeResponse response = call(() -> client().webrootCreate(PROJECT_NAME, "/new-page.html", nodeCreateRequest));
-
+		assertEquals("0.1", response.getVersion());
 	}
 
 	@Test
@@ -44,10 +44,7 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 
 		String path = "/News/2015/newContent.html";
 		NodeResponse response = call(() -> client().webrootCreate(PROJECT_NAME, path, nodeCreateRequest));
-		System.out.println(response.toJson());
-
-		// Test idempotency
-		NodeResponse response2 = call(() -> client().webrootCreate(PROJECT_NAME, path, nodeCreateRequest));
+		assertEquals("0.1", response.getVersion());
 	}
 
 	/**
@@ -77,7 +74,7 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 		nodeUpdateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		String path = "/News/missing/News_2015.en.html";
-		call(() -> client().webrootUpdate(PROJECT_NAME, path, nodeUpdateRequest), NOT_FOUND, "node_not_found_for_path", path);
+		call(() -> client().webrootUpdate(PROJECT_NAME, path, nodeUpdateRequest), NOT_FOUND, "webroot_error_parent_not_found", "/News");
 	}
 
 	@Test

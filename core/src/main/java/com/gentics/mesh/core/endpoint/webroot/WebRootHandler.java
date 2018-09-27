@@ -3,7 +3,6 @@ package com.gentics.mesh.core.endpoint.webroot;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.POST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,12 +146,16 @@ public class WebRootHandler {
 
 			// Load all nodes for the given path
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
-
-			PathSegment lastSegment = nodePath.getLast();
-			if (lastSegment == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
+			
+			// Check whether path could be resolved at all
+			if (nodePath.getResolvedPath() == null) {
+				throw error(NOT_FOUND, "node_not_found_for_path", nodePath.getTargetPath());
 			}
 
+			PathSegment lastSegment = nodePath.getLast();
+			List<PathSegment> segments = nodePath.getSegments();
+
+			// Update Node
 			if (nodePath.isFullyResolved()) {
 				NodeGraphFieldContainer container = lastSegment.getContainer();
 				NodeUpdateRequest request = ac.fromJson(NodeUpdateRequest.class);
@@ -164,33 +167,33 @@ public class WebRootHandler {
 				}
 				ac.setBody(request);
 				return container.getParentNode().getUuid();
-
 			} else {
-				// For post requests we do not create nodes with a given resource id. Thus we fail here.
-				if (method == POST) {
-					throw error(NOT_FOUND, "node_not_found_for_path", nodePath.getTargetPath());
-				}
 				int diff = nodePath.getInitialStack().size() - nodePath.getSegments().size();
 				if (diff > 1) {
 					String resolvedPath = nodePath.getResolvedPath();
 					throw error(NOT_FOUND, "webroot_error_parent_not_found", resolvedPath);
-				} else {
-					NodeCreateRequest request = ac.fromJson(NodeCreateRequest.class);
-
-					// Deduce parent node
-					if (request.getParentNode() == null || request.getParentNode().getUuid() == null) {
-						Node node = nodePath.getLast().getContainer().getParentNode();
-						String parentUuid = node.getUuid();
-						log.debug("Using deduced parent node uuid: " + parentUuid);
-						request.setParentNodeUuid(parentUuid);
-					}
-					ac.put(WEBROOT_LAST_SEGMENT, nodePath.getInitialStack().firstElement());
-					ac.setBody(request);
-					return null;
 				}
 
-			}
+				// Deduce parent node
+				NodeCreateRequest request = ac.fromJson(NodeCreateRequest.class);
 
+				// Deduce parent node
+				if (request.getParentNode() == null || request.getParentNode().getUuid() == null) {
+					Node parentNode = null;
+					if (segments.size() == 0) {
+						parentNode = ac.getProject().getBaseNode();
+					} else {
+						PathSegment parentSegment = segments.get(segments.size() - 1);
+						parentNode = parentSegment.getContainer().getParentNode();
+					}
+					String parentUuid = parentNode.getUuid();
+					log.debug("Using deduced parent node uuid: " + parentUuid);
+					request.setParentNodeUuid(parentUuid);
+				}
+				ac.put(WEBROOT_LAST_SEGMENT, nodePath.getInitialStack().firstElement());
+				ac.setBody(request);
+				return null;
+			}
 		});
 
 		if (uuid != null) {
