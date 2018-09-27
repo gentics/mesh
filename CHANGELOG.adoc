@@ -10,12 +10,22 @@
 
 = Gentics Mesh Changelog
 
-[[v0.22.2]]
-== 0.22.2 (TBD)
+[[v0.22.4]]
+== 0.22.4 (TBD)
 
 icon:check[] REST: The response error code handling for uploads has been updated. Previously no error 413 was returned when the upload limit was reached.
 
 icon:check[] Elasticsearch: The initial sync check will be omitted if no elasticsearch has been configured.
+
+[[v0.22.3]]
+== 0.22.3 (20.09.2018)
+
+icon:plus[] It is now possible to add custom languages by configuration.
+
+[[v0.22.2]]
+== 0.22.2 (13.09.2018)
+
+icon:check[] Java REST Client: fixed a bug that could lead to duplicate request headers
 
 [[v0.22.1]]
 == 0.22.1 (14.08.2018)

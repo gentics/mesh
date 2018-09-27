@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
@@ -25,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -182,18 +184,20 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Initialize the local data or create the initial dataset if no local data could be found.
 	 * 
+	 * @param configuration Mesh configuration
 	 * @param isJoiningCluster
 	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
 	 * @return True if an empty installation was detected, false if existing data was found
 	 * @throws Exception
 	 */
-	private boolean initLocalData(boolean isJoiningCluster) throws Exception {
+	private boolean initLocalData(MeshOptions configuration, boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
 			// Update graph indices and vertex types (This may take some time)
 			DatabaseHelper.init(db);
 			// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 			initMandatoryData();
+			initOptionalLanguages(configuration);
 			initOptionalData(isEmptyInstallation);
 			initPermissions();
 			handleMeshVersion();
@@ -204,6 +208,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		} else {
 			handleMeshVersion();
 			if (!isJoiningCluster) {
+				initOptionalLanguages(configuration);
 				// Only execute the changelog if there are any elements in the graph
 				invokeChangelog();
 				// Update graph indices and vertex types (This may take some time)
@@ -242,7 +247,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
-				boolean setupData = initLocalData(false);
+				boolean setupData = initLocalData(options, false);
 				db.startServer();
 				initVertx(options, isClustered);
 				db.registerEventHandlers();
@@ -262,7 +267,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
-				initLocalData(true);
+				initLocalData(options, true);
 			}
 
 			boolean active = false;
@@ -280,7 +285,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			searchProvider.start();
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
-			initLocalData(false);
+			initLocalData(options, false);
 			if (startOrientServer) {
 				db.startServer();
 			}
@@ -857,20 +862,57 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			throw new NullPointerException("Languages could not be loaded from classpath file {" + filename + "}");
 		}
 		LanguageSet languageSet = new ObjectMapper().readValue(ins, LanguageSet.class);
+		initLanguages(root, languageSet);
+
+	}
+
+	@Override
+	public void initOptionalLanguages(MeshOptions configuration) {
+		String languagesFilePath = configuration.getLanguagesFilePath();
+		if (StringUtils.isNotEmpty(languagesFilePath)) {
+			File languagesFile = new File(languagesFilePath);
+			try (Tx tx = db.tx()) {
+				LanguageSet languageSet = new ObjectMapper().readValue(languagesFile, LanguageSet.class);
+				initLanguages(meshRoot().getLanguageRoot(), languageSet);
+				tx.success();
+			} catch (IOException e) {
+				log.error("Error while initializing optional languages from {" + languagesFilePath + "}", e);
+			}
+		}
+	}
+
+	/**
+	 * Create languages in the set, which do not exist yet
+	 * @param root language root
+	 * @param languageSet language set
+	 */
+	protected void initLanguages(LanguageRoot root, LanguageSet languageSet) {
 		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = meshRoot().getLanguageRoot().findByName(languageName);
+			Language language = meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
 				language = root.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
 				if (log.isDebugEnabled()) {
 					log.debug("Added language {" + languageTag + " / " + languageName + "}");
 				}
+			} else {
+				if (!StringUtils.equals(language.getName(), languageName)) {
+					language.setName(languageName);
+					if (log.isDebugEnabled()) {
+						log.debug("Changed name of language {" + languageTag + " } to {" + languageName + "}");
+					}
+				}
+				if (!StringUtils.equals(language.getNativeName(), languageNativeName)) {
+					language.setNativeName(languageNativeName);
+					if (log.isDebugEnabled()) {
+						log.debug("Changed nativeName of language {" + languageTag + " } to {" + languageNativeName + "}");
+					}
+				}
 			}
 		}
-
 	}
 
 	@Override

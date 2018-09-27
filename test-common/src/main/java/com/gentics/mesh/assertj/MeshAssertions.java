@@ -14,6 +14,7 @@ import com.gentics.mesh.assertj.impl.GroupResponseAssert;
 import com.gentics.mesh.assertj.impl.JobListResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
+import com.gentics.mesh.assertj.impl.LanguageAssert;
 import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
@@ -37,6 +38,7 @@ import com.gentics.mesh.assertj.impl.TagListResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -203,5 +205,9 @@ public class MeshAssertions extends Assertions {
 
 	public static GenericMessageResponseAssert assertThat(GenericMessageResponse actual) {
 		return new GenericMessageResponseAssert(actual);
+	}
+
+	public static LanguageAssert assertThat(Language actual) {
+		return new LanguageAssert(actual);
 	}
 }
