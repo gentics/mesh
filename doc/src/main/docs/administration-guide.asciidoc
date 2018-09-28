@@ -1,5 +1,11 @@
+---
+title: Administration Guide
+---
 
-= Administration Guide
+:icons: font
+:source-highlighter: prettify
+:toc:
+
 
 == Software Stack
 
@@ -37,7 +43,7 @@ Various command line arguments can be used to override or supplement previously 
 
 [source,text]
 ----
-include::examples/models/mesh-cli-help.txt[]
+include::content/docs/examples/models/mesh-cli-help.txt[]
 ----
 
 == Run with Docker
@@ -137,7 +143,7 @@ Both files are located directly in the <<installdir, installation directory>>.
 
 [source,json]
 ----
-include::examples/models/mesh-config.yml[]
+include::content/docs/examples/models/mesh-config.yml[]
 ----
 
 === General Settings
@@ -180,7 +186,7 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 
 === Cluster Options
 
-include::includes/cluster-options.inc[]
+include::content/docs/includes/cluster-options.inc[]
 
 === Storage Options
 
@@ -233,7 +239,7 @@ By default all specified directories are relative to the installation directory.
 
 Settings within the `mesh.yml` file can be override via these environment variables.
 
-include::examples/tables/mesh-env.adoc[]
+include::content/docs/examples/tables/mesh-env.adoc-include[]
 
 === Cache Options
 
@@ -278,8 +284,7 @@ This list contains an overview over Gentics Mesh releases and the their database
 The database revision is different if the used Graph Database version was updated or if the database 
 structure was altered due to an automatic change.
 
-include::examples/tables/mesh-db-revs.adoc[]
-
+include::content/docs/examples/tables/mesh-db-revs.adoc-include[]
 
 == Database Consistency
 
@@ -289,7 +294,7 @@ The response contains information about the found inconsistencies and whether th
 
 [source,json]
 ----
-include::examples/api/response/api/v1/admin/consistency/check/200/example.json[]
+include::content/docs/examples/api/response/api/v1/admin/consistency/check/200/example.json[]
 ----
 
 The `POST /api/v1/admin/consistency/repair` endpoint can be used to invoke a check and repair of repairable inconsistencies.
@@ -298,7 +303,7 @@ The `repaired` property will be set to true if the inconsistency could be fixed.
 
 [source,json]
 ----
-include::examples/api/response/api/v1/admin/consistency/repair/200/example.json[]
+include::content/docs/examples/api/response/api/v1/admin/consistency/repair/200/example.json[]
 ----
 
 

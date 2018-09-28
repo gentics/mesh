@@ -1,6 +1,11 @@
-:icons: font
+---
+title: Security
+---
 
-= Security
+:icons: font
+:source-highlighter: prettify
+:toc:
+
 
 This section will cover information about Gentics Mesh security related topics.
 

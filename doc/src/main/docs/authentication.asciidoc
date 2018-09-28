@@ -1,4 +1,11 @@
-= Authentication
+---
+title: Authentication
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
 
 == Overview
 

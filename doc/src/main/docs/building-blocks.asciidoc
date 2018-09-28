@@ -1,5 +1,10 @@
+---
+title: Building Blocks
+---
 
-= Building Blocks
+:icons: font
+:source-highlighter: prettify
+:toc:
 
 This part of the documentation will be about the core concepts of Gentics Mesh.
 
@@ -48,7 +53,7 @@ TIP: Gentics Mesh creates a root or base node for each project. As you will lear
 
 [source,json]
 ----
-include::examples/api/response/api/v1/projects/\{projectUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/projects/\{projectUuid\}/200/example.json[]
 ----
 
 == Node
@@ -135,7 +140,7 @@ NOTE: It is important to understand that a node is just a container for language
 
 [source,json]
 ----
-include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
 ----
 
 == Schema
@@ -179,7 +184,7 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 
 [source,json]
 ----
-include::examples/api/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
 ----
 
 === Schema Field
@@ -407,7 +412,7 @@ Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
 
 [source,json]
 ----
-include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
 ----
 
 == Tag Family
@@ -474,7 +479,7 @@ A tag family is defined as part of a project. Tag families can’t be nested.
 
 [source,json]
 ----
-include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
 ----
 
 == User
@@ -527,7 +532,7 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 
 [source,json]
 ----
-include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 ----
 
 == Group
@@ -580,7 +585,7 @@ include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 
 [source,json]
 ----
-include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 ----
 
 == Role
@@ -623,5 +628,5 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 
 [source,json]
 ----
-include::examples/api/response/api/v1/roles/\{roleUuid\}/200/example.json[]
+include::content/docs/examples/api/response/api/v1/roles/\{roleUuid\}/200/example.json[]
 ----

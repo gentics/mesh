@@ -1,4 +1,10 @@
-= Clustering
+---
+title: Clustering
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
 
 == Basics
 
@@ -13,7 +19,7 @@ Clustering is also a way to increase redundancy and fault tolerance since each i
 
 == Configuration
 
-include::includes/cluster-options.inc[]
+include::content/docs/includes/cluster-options.inc[]
 
 .mesh.yml
 [source,yaml]

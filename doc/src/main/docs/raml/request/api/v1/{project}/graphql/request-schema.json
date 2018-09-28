@@ -1,0 +1,31 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:GraphQLRequest",
+  "properties" : {
+    "query" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "The actual GraphQL query."
+    },
+    "operationName" : {
+      "type" : "string",
+      "description" : "GraphQL operation name."
+    },
+    "variables" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:vertx:core:json:JsonObject",
+      "description" : "JSON object which contains the variables.",
+      "properties" : {
+        "map" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "any"
+          }
+        },
+        "empty" : {
+          "type" : "boolean"
+        }
+      }
+    }
+  }
+}

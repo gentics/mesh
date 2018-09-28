@@ -1,6 +1,10 @@
-:icons: font
+---
+title: Features
+---
 
-= Features
+:icons: font
+:source-highlighter: prettify
+:toc:
 
 This section will be about the features of Gentics Mesh. Each will be described in detail including examples and references to relevant parts of the API or related tutorials.
 
@@ -23,7 +27,7 @@ There are two properties when defining a link:building-blocks.html#_schemas[sche
 [[example]]
 Let us consider the following example on the basis of our demo app to demonstrate how these properties work together to support navigation menus, breadcrumbs and pretty URLs:
 
-image::GenticsMesh-ContentTree-Example.png[Gentics Mesh Example of organizing content in a node tree,role="img-responsive"] 
+image::../images/GenticsMesh-ContentTree-Example.png[Gentics Mesh Example of organizing content in a node tree,role="img-responsive"] 
 
 Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Ford GT_ in category _Automobiles_.
 
@@ -39,7 +43,7 @@ Likewise, you can query your content using WebRoot paths instead of using UUIDs 
 
 The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/automobiles/ford-gt``` for the node _Ford GT_ is built using the _slug_ field of the _vehicle_ node, i.e. _Ford GT_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
 
-image::GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
+image::../images/GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
 
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
 For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
@@ -198,7 +202,7 @@ Each endpoint will return a navigation response which contains the nested naviga
 By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
 The `maxDepth` parameter may be used to limit the navigation depth. In order to include the `path` property in the navigation response, the `resolveLinks` query parameter can be used.
 
-image::GenticsMesh-Navigation-Example.png[Gentics Mesh Example for Building Navigation Menus,role="img-responsive"]
+image::../images/GenticsMesh-Navigation-Example.png[Gentics Mesh Example for Building Navigation Menus,role="img-responsive"]
 
 The demo app includes a navigation object showing just the top-level elements _Automobiles_, _Aircraft_, and _Yachts_ as well as the _Home_ link. All the elements can be easily queried using the available navigation endpoints. In particular, the example uses the ```/api/v1/:projectName/navroot/:path``` API endpoint, with the URL parameter ```:path``` querying the project root node, i.e., ```/``` together with query parameter ```?maxDepth``` limiting the resulting nested JSON object to the top-level nodes.
 
@@ -663,7 +667,7 @@ The property provides an array of node references representing the path from the
 
 In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_.
 
-image::GenticsMesh-Breadcrumb-Example.png[Gentics Mesh Example for Building Breadcumbs,role="img-responsive"]
+image::../images/GenticsMesh-Breadcrumb-Example.png[Gentics Mesh Example for Building Breadcumbs,role="img-responsive"]
 
 The ```breadcrumb``` property will be returned in all API responses containing nodes. Using the ```resolveLink``` query parameter will also the paths of the nodes listed in the array.
 
@@ -815,7 +819,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
 
 The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths.
 
-image::GenticsMesh-WebRootAPI-Example.png[Gentics Mesh Example for Fetching Content by Path using the WebRoot API,role="img-responsive"]
+image::../images/GenticsMesh-WebRootAPI-Example.png[Gentics Mesh Example for Fetching Content by Path using the WebRoot API,role="img-responsive"]
 
 This functionality builds on top of the schema ```segmentField``` and ```urlFields``` property to define the path of a specific node.
 
@@ -923,7 +927,7 @@ Find out more about this topic in our blogpost about https://getmesh.io/Blog/Gen
 
 Link resolving represents the counterpart of the <<webroot, WebRoot API>> - a node UUID can be resolved into a WebRoot path.
 
-image::GenticsMesh-LinkResolver-Utility-Example.png[Gentics Mesh Example for automatically Resolving Links,role="img-responsive"]
+image::../images/GenticsMesh-LinkResolver-Utility-Example.png[Gentics Mesh Example for automatically Resolving Links,role="img-responsive"]
 
 Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path.
 
@@ -1081,7 +1085,7 @@ POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
 [imagemanipulationparams]
 === Image Manipulation Query Parameters
 
-include::examples/tables/ImageManipulationParametersImpl.adoc[]
+include::content/docs/examples/tables/ImageManipulationParametersImpl.adoc-include[]
 
 Find out more about this topic in our blogpost about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
 
@@ -1154,7 +1158,7 @@ Video:
 * `video/x-matroska`
 
 
-The GPS information of images will be processed and provided in a `location` object. A geopoint will automatically be stored for the document in the search index. This way it is possible to run link:https://getmesh.io/docs/beta/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries] to locate images within a specific area.
+The GPS information of images will be processed and provided in a `location` object. A geopoint will automatically be stored for the document in the search index. This way it is possible to run link:https://getmesh.io/docs/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries] to locate images within a specific area.
 
 Example response:
 [source,json]
@@ -1341,7 +1345,7 @@ By assigning a role to a group, the role's permissions are efficiently granted t
 NOTE: For reasons of readability, we will describe granting permissions to users though technically, permissions are granted to a specific role and applied to users via groups. 
 
 // TODO image (anonymous, and other roles having different permissions)
-//image::GenticsMesh-User-Groups-Roles-Demo.png[How User, Groups, Roles & Permissions are organized in Gentics Mesh Demo Example,role="img-responsive"] 
+//image::../GenticsMesh-User-Groups-Roles-Demo.png[How User, Groups, Roles & Permissions are organized in Gentics Mesh Demo Example,role="img-responsive"] 
 
 [caption=]
 .Permissions in Gentics Mesh
@@ -1914,7 +1918,7 @@ NOTE: Publishing node language variants requires the user to be assigned to a gr
 
 [source,json]
 ----
-include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
+include::content/docs/examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
 ----
 
 NOTE: It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
@@ -1981,14 +1985,14 @@ Assigning schema versions to the branch via a ```PUT``` request to ```/api/v1/:p
 
 [source,json]
 ----
-include::examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/schemas/request-body.json[]
+include::content/docs/examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/schemas/request-body.json[]
 ----
 
 It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/microschemas``` to the branch.
 
 [source,json]
 ----
-include::examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/microschemas/request-body.json[]
+include::content/docs/examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/microschemas/request-body.json[]
 ----
 
 All nodes which reference the branch via the updated schema version will automatically be migrated to use the newer schema version.
@@ -2078,7 +2082,7 @@ Gentics Mesh supports the following change operations:
 
 [source,json]
 ----
-include::examples/models/addfield.json[]
+include::content/docs/examples/models/addfield.json[]
 ----
 
 
@@ -2092,7 +2096,7 @@ include::examples/models/addfield.json[]
 
 [source,json]
 ----
-include::examples/models/removefield.json[]
+include::content/docs/examples/models/removefield.json[]
 ----
 
 
@@ -2108,7 +2112,7 @@ include::examples/models/removefield.json[]
 
 [source,json]
 ----
-include::examples/models/changefieldtype.json[]
+include::content/docs/examples/models/changefieldtype.json[]
 ----
 
 === Operation: updatefield
@@ -2122,7 +2126,7 @@ include::examples/models/changefieldtype.json[]
 
 [source,json]
 ----
-include::examples/models/updatefield.json[]
+include::content/docs/examples/models/updatefield.json[]
 ----
 
 === Operation: updateschema
@@ -2139,7 +2143,7 @@ include::examples/models/updatefield.json[]
 
 [source,json]
 ----
-include::examples/models/updateschema.json[]
+include::content/docs/examples/models/updateschema.json[]
 ----
 
 === Operation: updatemicroschema
@@ -2152,7 +2156,7 @@ include::examples/models/updateschema.json[]
 
 [source,json]
 ----
-include::examples/models/updatemicroschema.json[]
+include::content/docs/examples/models/updatemicroschema.json[]
 ----
 
 Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
@@ -2230,7 +2234,7 @@ Finally the changes can be applied by sending the request to ```/api/v1/schemas/
 
 [source,json]
 ----
-include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
+include::content/docs/examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
 == Executing migrations

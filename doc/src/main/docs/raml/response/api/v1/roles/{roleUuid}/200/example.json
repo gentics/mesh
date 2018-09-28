@@ -1,0 +1,25 @@
+{
+  "uuid" : "b512ad6307aa456f92ad6307aac56fbb",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "c8c9afbfffae4f2089afbfffaeaf20de"
+  },
+  "created" : "2018-07-25T12:05:00.900Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "d0b379e537b0415ab379e537b0a15a16"
+  },
+  "edited" : "2018-07-25T12:05:00.900Z",
+  "name" : "New role name",
+  "groups" : [ ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleUpdateRequest",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "New name of the role"
+    }
+  }
+}

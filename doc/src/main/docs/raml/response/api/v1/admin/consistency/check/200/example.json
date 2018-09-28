@@ -1,0 +1,10 @@
+{
+  "result" : "INCONSISTENT",
+  "inconsistencies" : [ {
+    "description" : "A dangling field container has been found.",
+    "severity" : "LOW",
+    "elementUuid" : "bf7081c8f0254b7eb081c8f0250b7e4b",
+    "repaired" : false,
+    "repairAction" : "DELETE"
+  } ]
+}

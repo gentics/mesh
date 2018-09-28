@@ -1,6 +1,10 @@
-:icons: font
+---
+title: Performance Guide
+---
 
-= Performance Guide
+:icons: font
+:source-highlighter: prettify
+:toc:
 
 This document contains useful information about performance related topics. 
 It will help you make the right modelling choices when using Gentics Mesh.
@@ -32,7 +36,7 @@ It is advised to apply paging when possible. Without the `perPage` parameter all
 Regular paging performance will be impacted by the amount of nodes that are stored within a node container.
 It is advised to use GraphQL when accessing nodes in this situation. GraphQL will allow you to fine tune the paging information.
 
-include::examples/graphql/node-light-paging-query[]
+include::content/docs/examples/graphql/node-light-paging-query[]
 
 The paging performance can be greatly increased by omitting the *pageCount* and *totalCount* field.
 Including these fields will require Gentics Mesh to check all elements for permissions in order to count them.

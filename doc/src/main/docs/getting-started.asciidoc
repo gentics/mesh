@@ -1,4 +1,9 @@
-= Getting Started Guide
+---
+title: Getting Started Guide
+---
+
+:icons: font
+:source-highlighter: prettify
 
 Here you will find everything to get you started with Gentics Mesh. 
 
@@ -39,7 +44,7 @@ docker run -p 8080:8080 gentics/mesh-demo
 [[tldr]]
 == TL;DR
 
-image:overview.png[Gentics Mesh Overview of Core Concepts, role="img-responsive"]
+image:../images/overview.png[Gentics Mesh Overview of Core Concepts, role="img-responsive"]
 
 __Features:__
 

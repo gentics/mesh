@@ -1,6 +1,10 @@
-:toc-title: APIs
+---
+title: References
+---
 
-= APIs
+:icons: font
+:source-highlighter: prettify
+:toc:
 
 == REST API
 
@@ -23,21 +27,21 @@ The REST API end points can be used in combination with a set of query parameter
 
 ==== Paging Parameters
 
-include::examples/tables/PagingParametersImpl.adoc[]
+include::content/docs/examples/tables/PagingParametersImpl.adoc-include[]
 
 NOTE: Paging is not applied by default. It is advised to include the `perPage` query parameter whenever possible to reduce the response size.
 
 ==== Versioning Parameters
 
-include::examples/tables/VersioningParametersImpl.adoc[]
+include::content/docs/examples/tables/VersioningParametersImpl.adoc-include[]
 
 ===== Node Parameters
 
-include::examples/tables/NodeParametersImpl.adoc[]
+include::content/docs/examples/tables/NodeParametersImpl.adoc-include[]
 
 ===== Role Permission Parameters
 
-include::examples/tables/RolePermissionParametersImpl.adoc[]
+include::content/docs/examples/tables/RolePermissionParametersImpl.adoc-include[]
 
 === Examples
 

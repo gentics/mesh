@@ -54,15 +54,15 @@ public class TableGenerator extends AbstractRenderingGenerator {
 
 			// Render mesh options table
 			if (clazz.equals(MeshOptions.class)) {
-				writeFile(clazz.getSimpleName() + ".adoc", renderFlatTable(clazz));
+				writeFile(clazz.getSimpleName() + ".adoc-include", renderFlatTable(clazz));
 				continue;
 			}
 
 			// Handle query param tables
 			if (AbstractParameters.class.isAssignableFrom(clazz)) {
-				writeFile(clazz.getSimpleName() + ".adoc", renderParameterTable(clazz));
+				writeFile(clazz.getSimpleName() + ".adoc-include", renderParameterTable(clazz));
 			} else {
-				writeFile(clazz.getSimpleName() + ".adoc", renderModelTableViaSchema(clazz, modelTableTemplateSource));
+				writeFile(clazz.getSimpleName() + ".adoc-include", renderModelTableViaSchema(clazz, modelTableTemplateSource));
 			}
 		}
 

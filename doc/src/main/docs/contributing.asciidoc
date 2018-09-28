@@ -1,6 +1,10 @@
-:icons: font
+---
+title: Contribution Guide
+---
 
-= Contribution Guide
+:icons: font
+:source-highlighter: prettify
+:toc:
 
 This document is for developers which are interested in contributing to the Gentics Mesh project.
 It aims to provide you with a big picture and starting points to get your bearings within the Gentics Mesh codebase.

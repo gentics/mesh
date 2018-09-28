@@ -1,0 +1,28 @@
+{
+  "uuid" : "6125fc980e714284a5fc980e71a284f0",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "6411b53a6bf8404891b53a6bf8f048dc"
+  },
+  "created" : "2018-07-25T12:05:00.915Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "314834046f224b388834046f226b385a"
+  },
+  "edited" : "2018-07-25T12:05:00.915Z",
+  "name" : "Group name",
+  "roles" : [ {
+    "name" : "admin",
+    "uuid" : "2db202aed53345d5b202aed53325d518"
+  } ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

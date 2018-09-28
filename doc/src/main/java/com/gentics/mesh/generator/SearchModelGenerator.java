@@ -1,17 +1,17 @@
 package com.gentics.mesh.generator;
 
-import static com.gentics.mesh.mock.Mocks.mockGroup;
-import static com.gentics.mesh.mock.Mocks.mockLanguage;
-import static com.gentics.mesh.mock.Mocks.mockMicroschemaContainer;
-import static com.gentics.mesh.mock.Mocks.mockNode;
-import static com.gentics.mesh.mock.Mocks.mockNodeBasic;
-import static com.gentics.mesh.mock.Mocks.mockProject;
-import static com.gentics.mesh.mock.Mocks.mockRole;
-import static com.gentics.mesh.mock.Mocks.mockSchemaContainer;
-import static com.gentics.mesh.mock.Mocks.mockTag;
-import static com.gentics.mesh.mock.Mocks.mockTagFamily;
-import static com.gentics.mesh.mock.Mocks.mockUpdateDocumentEntry;
-import static com.gentics.mesh.mock.Mocks.mockUser;
+import static com.gentics.mesh.mock.TestMocks.mockGroup;
+import static com.gentics.mesh.mock.TestMocks.mockLanguage;
+import static com.gentics.mesh.mock.TestMocks.mockMicroschemaContainer;
+import static com.gentics.mesh.mock.TestMocks.mockNode;
+import static com.gentics.mesh.mock.TestMocks.mockNodeBasic;
+import static com.gentics.mesh.mock.TestMocks.mockProject;
+import static com.gentics.mesh.mock.TestMocks.mockRole;
+import static com.gentics.mesh.mock.TestMocks.mockSchemaContainer;
+import static com.gentics.mesh.mock.TestMocks.mockTag;
+import static com.gentics.mesh.mock.TestMocks.mockTagFamily;
+import static com.gentics.mesh.mock.TestMocks.mockUpdateDocumentEntry;
+import static com.gentics.mesh.mock.TestMocks.mockUser;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +62,8 @@ import io.vertx.core.json.JsonObject;
  */
 public class SearchModelGenerator extends AbstractGenerator {
 
+	public static File OUTPUT_ROOT_FOLDER = new File("src/main/docs/examples");
+
 	private ObjectMapper mapper = new ObjectMapper();
 
 	private TrackingSearchProvider provider;
@@ -70,6 +72,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	public SearchModelGenerator(File outputDir) throws IOException {
 		super(new File(outputDir, "search"));
+	}
+
+	public static void main(String[] args) throws Exception {
+		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
+		searchModelGen.run();
 	}
 
 	public static void initPaths() {

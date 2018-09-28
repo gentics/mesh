@@ -1,6 +1,11 @@
-:icons: font
+---
+title: Elasticsearch
+---
 
-= Elasticsearch
+:icons: font
+:source-highlighter: prettify
+:toc:
+
 
 Elasticsearch is used in order to provide the main search functionality within Gentics Mesh.
 
@@ -408,63 +413,63 @@ Gentics Mesh transforms elements into these documents which then can be stored w
 
 [source,json]
 ----
-include::examples/search/user.search.json[]
+include::content/docs/examples/search/user.search.json[]
 ----
 
 === Groups
 
 [source,json]
 ----
-include::examples/search/group.search.json[]
+include::content/docs/examples/search/group.search.json[]
 ----
 
 === Roles
 
 [source,json]
 ----
-include::examples/search/role.search.json[]
+include::content/docs/examples/search/role.search.json[]
 ----
 
 === Nodes
 
 [source,json]
 ----
-include::examples/search/node.search.json[]
+include::content/docs/examples/search/node.search.json[]
 ----
 
 === Projects
 
 [source,json]
 ----
-include::examples/search/project.search.json[]
+include::content/docs/examples/search/project.search.json[]
 ----
 
 === Tags
 
 [source,json]
 ----
-include::examples/search/tag.search.json[]
+include::content/docs/examples/search/tag.search.json[]
 ----
 
 === Tag Families
 
 [source,json]
 ----
-include::examples/search/tagFamily.search.json[]
+include::content/docs/examples/search/tagFamily.search.json[]
 ----
 
 === Microschemas
 
 [source,json]
 ----
-include::examples/search/microschema.search.json[]
+include::content/docs/examples/search/microschema.search.json[]
 ----
 
 === Schemas
 
 [source,json]
 ----
-include::examples/search/schema.search.json[]
+include::content/docs/examples/search/schema.search.json[]
 ----
 
 == Custom mappings / index settings

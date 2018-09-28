@@ -1,0 +1,71 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:GraphQLResponse",
+  "properties" : {
+    "data" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:vertx:core:json:JsonObject",
+      "required" : true,
+      "description" : "Nested JSON object which contains the query result data.",
+      "properties" : {
+        "map" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "any"
+          }
+        },
+        "empty" : {
+          "type" : "boolean"
+        }
+      }
+    },
+    "errors" : {
+      "type" : "array",
+      "description" : "Array of errors which were encoutered when handling the query.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:GraphQLError",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "The error message."
+          },
+          "type" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Type of the error."
+          },
+          "elementId" : {
+            "type" : "string",
+            "description" : "Mesh element id which is related to the error."
+          },
+          "elementType" : {
+            "type" : "string",
+            "description" : "Mesh element type which is related to the error."
+          },
+          "locations" : {
+            "type" : "array",
+            "description" : "List of locations which are related to the error.",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:ErrorLocation",
+              "properties" : {
+                "line" : {
+                  "type" : "integer",
+                  "required" : true,
+                  "description" : "Error line number."
+                },
+                "column" : {
+                  "type" : "integer",
+                  "required" : true,
+                  "description" : "Error column number."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
