@@ -1,0 +1,11 @@
+[options="header",cols="10%,70%"]
+|======
+
+| Version
+| Database revision 
+
+
+| *0.22.3*
+| ffa4f86b
+
+|======

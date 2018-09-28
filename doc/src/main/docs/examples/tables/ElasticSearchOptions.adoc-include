@@ -1,0 +1,45 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| bulkLimit
+| false
+| integer
+| Upper limit for the size of bulk requests.
+
+| embeddedArguments
+| false
+| string
+| String of arguments which will be used for starting the Elasticsearch server instance
+
+| prefix
+| false
+| string
+| Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: mesh-
+
+| startEmbedded
+| false
+| boolean
+| Flag which indicates whether to deploy and start the included Elasticsearch server.
+
+| startupTimeout
+| false
+| integer
+| Timeout for Elasticsearch startup. Default: 45sec
+
+| timeout
+| false
+| integer
+| Timeout for Elasticsearch operations. Default: 8000ms
+
+| url
+| false
+| string
+| Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.
+
+|======

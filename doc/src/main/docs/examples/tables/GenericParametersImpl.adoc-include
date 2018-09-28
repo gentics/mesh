@@ -1,0 +1,15 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| fields
+| boolean  (default: true) 
+| false
+| Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+
+|======

@@ -1,0 +1,15 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| recursive
+| boolean  (default: false) 
+| false
+| Specifiy whether the invoked action should be applied recursively.
+
+|======

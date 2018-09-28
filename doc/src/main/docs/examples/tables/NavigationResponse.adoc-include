@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| children
+| false
+| array
+| List of further child elements of the node.
+
+| node
+| false
+| object
+| Detailed node information.
+
+| uuid
+| false
+| string
+| Uuid of the node within this navigation element.
+
+|======

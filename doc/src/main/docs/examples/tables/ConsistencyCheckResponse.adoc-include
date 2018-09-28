@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| inconsistencies
+| true
+| array
+| List of found inconsistencies.
+
+| result
+| true
+| string
+| Result of the consistency check.
+
+|======

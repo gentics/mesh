@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| migrationScript
+| false
+| string
+| Optional migation script
+
+| operation
+| false
+| string
+| Type of operation for this change
+
+| uuid
+| false
+| string
+| Uuid of the change entry
+
+|======

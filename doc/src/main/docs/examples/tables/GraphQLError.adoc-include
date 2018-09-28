@@ -1,0 +1,35 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| elementId
+| false
+| string
+| Mesh element id which is related to the error.
+
+| elementType
+| false
+| string
+| Mesh element type which is related to the error.
+
+| locations
+| false
+| array
+| List of locations which are related to the error.
+
+| message
+| true
+| string
+| The error message.
+
+| type
+| true
+| string
+| Type of the error.
+
+|======

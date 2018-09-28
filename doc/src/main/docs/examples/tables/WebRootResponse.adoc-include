@@ -1,0 +1,145 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| nodeResponse.availableLanguages
+| true
+| object
+| Map of languages for which content is available and their publish status.
+
+| nodeResponse.breadcrumb
+| true
+| array
+| List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.
+
+| nodeResponse.childrenInfo
+| false
+| object
+| Object which contains information about child elements.
+
+| nodeResponse.container
+| true
+| boolean
+| Flag which indicates whether the node is a container and can contain nested elements.
+
+| nodeResponse.created
+| true
+| string
+| ISO8601 formatted created date string.
+
+| nodeResponse.creator
+| true
+| object
+| User reference of the creator of the element.
+
+| nodeResponse.displayField
+| false
+| string
+| Display field name of the node. May not be retured if the node schema has no display field.
+
+| nodeResponse.displayName
+| false
+| string
+| Display field value of the node. May not be retured if the node schema has no display field.
+
+| nodeResponse.edited
+| true
+| string
+| ISO8601 formatted edited date string.
+
+| nodeResponse.editor
+| false
+| object
+| User reference of the editor of the element.
+
+| nodeResponse.fields
+| true
+| object
+| Dynamic map with fields of the node language specific content.
+
+| nodeResponse.language
+| false
+| string
+| ISO 639-1 language tag of the node content.
+
+| nodeResponse.languagePaths
+| false
+| object
+| Map of webroot paths per language. This property will only be populated if the resolveLinks query parameter has been set accordingly.
+
+| nodeResponse.parentNode
+| false
+| object
+| Reference to the parent node. Note that the root node of the project has no parent node.
+
+| nodeResponse.path
+| false
+| string
+| Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly.
+
+| nodeResponse.permissions.create
+| true
+| boolean
+| Flag which indicates whether the create permission is granted.
+
+| nodeResponse.permissions.delete
+| true
+| boolean
+| Flag which indicates whether the delete permission is granted.
+
+| nodeResponse.permissions.publish
+| true
+| boolean
+| Flag which indicates whether the publish permission is granted.
+
+| nodeResponse.permissions.read
+| true
+| boolean
+| Flag which indicates whether the read permission is granted.
+
+| nodeResponse.permissions.readPublished
+| true
+| boolean
+| Flag which indicates whether the read published permission is granted.
+
+| nodeResponse.permissions.update
+| true
+| boolean
+| Flag which indicates whether the update permission is granted.
+
+| nodeResponse.project
+| true
+| object
+| Reference to the project of the node.
+
+| nodeResponse.rolePerms
+| false
+| object
+| Permission information for provided role. This property will only be populated if a role query parameter has been specified.
+
+| nodeResponse.schema
+| true
+| object
+| Reference to the schema of the node.
+
+| nodeResponse.tags
+| true
+| array
+| List of tags that were used to tag the node.
+
+| nodeResponse.uuid
+| true
+| string
+| Uuid of the element
+
+| nodeResponse.version
+| true
+| string
+| Version of the node content.
+
+|======

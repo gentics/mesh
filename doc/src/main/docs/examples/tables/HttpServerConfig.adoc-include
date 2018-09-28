@@ -1,0 +1,50 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| certPath
+| false
+| string
+| Flag which indicates whether SSL support be enabled.
+
+| corsAllowCredentials
+| false
+| boolean
+| Flag which indicates whether credentials are allowed to be passed along using CORS requests.
+
+| corsAllowedOriginPattern
+| false
+| string
+| Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.
+
+| enableCors
+| false
+| boolean
+| Flag which indicates whether CORS handling should be enabled.
+
+| host
+| false
+| string
+| Configure the Gentics Mesh HTTP server host to bind to. Default is: 0.0.0.0
+
+| keyPath
+| false
+| string
+| Path to the SSL private key. Default: config/key.pem
+
+| port
+| false
+| integer
+| Configure the Gentics Mesh HTTP server port. Default is: 8080
+
+| ssl
+| false
+| boolean
+| Flag which indicates whether SSL support be enabled.
+
+|======

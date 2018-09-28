@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| column
+| true
+| integer
+| Error column number.
+
+| line
+| true
+| integer
+| Error line number.
+
+|======

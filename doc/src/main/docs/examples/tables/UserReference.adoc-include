@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| firstName
+| false
+| string
+| Firstname of the user
+
+| lastName
+| false
+| string
+| Lastname of the user
+
+| uuid
+| true
+| string
+| Uuid of the user
+
+|======

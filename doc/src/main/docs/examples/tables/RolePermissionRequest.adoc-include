@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| permissions
+| true
+| object
+| Set of permissions which should be applied.
+
+| recursive
+| false
+| boolean
+| Flag which indicates whether the permission update should be applied recursivly.
+
+|======

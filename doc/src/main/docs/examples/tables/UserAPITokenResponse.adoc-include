@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| previousIssueDate
+| true
+| string
+| Date of the last time the API token was issued.
+
+| token
+| true
+| string
+| Issued client API token.
+
+|======

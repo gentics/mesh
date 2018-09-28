@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| elasticsearch
+| false
+| object
+| The generated elasticsearch index configuration which includes the used analyzers and mappings.
+
+| message
+| true
+| object
+| Detailed validation message.
+
+| status
+| true
+| string
+| Status of the validation.
+
+|======
