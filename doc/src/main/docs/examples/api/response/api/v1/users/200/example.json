@@ -1,0 +1,85 @@
+{
+  "data" : [ {
+    "uuid" : "ad51a762c4124cb391a762c4124cb34c",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "c3dd354bbfe9493f9d354bbfe9b93fa5"
+    },
+    "created" : "2018-09-28T11:21:12.338Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "8a27125d2753430fa7125d2753530fa5"
+    },
+    "edited" : "2018-09-28T11:21:12.338Z",
+    "lastname" : "Doe",
+    "firstname" : "Joe",
+    "username" : "jdoe",
+    "emailAddress" : "j.doe@nowhere.com",
+    "nodeReference" : {
+      "projectName" : "dummy",
+      "uuid" : "29b233f51d034ccfb233f51d036ccfa8"
+    },
+    "enabled" : true,
+    "groups" : [ {
+      "name" : "editors",
+      "uuid" : "390c0133c95d4ffd8c0133c95d8ffd2e"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "7767e44aa42a4ca0a7e44aa42a1ca0ae",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "48dde4afa62848269de4afa6289826df"
+    },
+    "created" : "2018-09-28T11:21:12.338Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "9df790a7d02f42a8b790a7d02f22a8d0"
+    },
+    "edited" : "2018-09-28T11:21:12.338Z",
+    "lastname" : "Roe",
+    "firstname" : "Jane",
+    "username" : "jroe",
+    "emailAddress" : "j.roe@nowhere.com",
+    "nodeReference" : {
+      "projectName" : "dummy",
+      "uuid" : "79276096a8404043a76096a840a043cd"
+    },
+    "enabled" : true,
+    "groups" : [ {
+      "name" : "editors",
+      "uuid" : "fc1ada178e7940d29ada178e79f0d2ce"
+    }, {
+      "name" : "super-editors",
+      "uuid" : "9c6c66e167f94400ac66e167f904002c"
+    }, {
+      "name" : "editors",
+      "uuid" : "a9b5550fdfa84f3cb5550fdfa8df3cd4"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

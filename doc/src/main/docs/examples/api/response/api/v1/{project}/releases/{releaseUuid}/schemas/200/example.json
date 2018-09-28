@@ -1,0 +1,15 @@
+{
+  "schemas" : [ {
+    "name" : "content",
+    "uuid" : "67336363ad7f4b73b36363ad7f0b73d7",
+    "version" : "1.0"
+  }, {
+    "name" : "folder",
+    "uuid" : "02afbe05fd9d41eaafbe05fd9d11ead0",
+    "version" : "1.0"
+  }, {
+    "name" : "binary-data",
+    "uuid" : "5144d60debe8460684d60debe8b6063c",
+    "version" : "1.0"
+  } ]
+}

@@ -5,10 +5,4 @@ node_modules
 /config
 /target/
 bower_components
-src/main/changelog/test.html
-src/main/docs/examples/api
-src/main/docs/examples/models
-src/main/docs/examples/search
-api.raml
-/src/main/docs/examples/*.json
 

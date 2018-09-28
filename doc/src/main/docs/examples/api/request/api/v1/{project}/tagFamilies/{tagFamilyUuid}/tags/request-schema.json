@@ -1,0 +1,11 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagCreateRequest",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the tag which will be created."
+    }
+  }
+}

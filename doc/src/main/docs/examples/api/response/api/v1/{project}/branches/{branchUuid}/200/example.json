@@ -1,0 +1,35 @@
+{
+  "uuid" : "b23933062d3246ccb933062d32e6cc48",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "59c028eb4dce48b38028eb4dce88b3cb"
+  },
+  "created" : "2018-09-28T11:21:12.606Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "ee69048b9e0c429fa9048b9e0c029ffb"
+  },
+  "edited" : "2018-09-28T11:21:12.606Z",
+  "name" : "Winter Collection Branch",
+  "hostname" : "getmesh.io",
+  "ssl" : true,
+  "migrated" : true,
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  },
+  "rolePerms" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

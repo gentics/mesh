@@ -1,0 +1,27 @@
+{
+  "uuid" : "85fccb2da65a44babccb2da65a14ba26",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "86705ee5231c4fa2b05ee5231cffa219"
+  },
+  "created" : "2018-09-28T11:21:12.388Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "4337aff107cc4956b7aff107cc39561a"
+  },
+  "edited" : "2018-09-28T11:21:12.388Z",
+  "name" : "New Project",
+  "rootNode" : {
+    "uuid" : "50e43aa9a21d43d6a43aa9a21db3d66c"
+  },
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : false,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

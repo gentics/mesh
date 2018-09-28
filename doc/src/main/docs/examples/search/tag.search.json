@@ -1,0 +1,22 @@
+{
+  "name" : "red",
+  "uuid" : "04c832d64bc845c48832d64bc845c463",
+  "creator" : {
+    "uuid" : "23805d896e1d4ad0805d896e1d5ad0c9"
+  },
+  "created" : null,
+  "editor" : {
+    "uuid" : "23805d896e1d4ad0805d896e1d5ad0c9"
+  },
+  "edited" : null,
+  "_roleUuids" : [ ],
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "4d105d32f107406e905d32f107506eb1"
+  },
+  "project" : {
+    "name" : "dummyProject",
+    "uuid" : "7dd07c4147aa4b16907c4147aa6b1632"
+  },
+  "version" : "00e98f8c"
+}

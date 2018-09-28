@@ -1,0 +1,35 @@
+{
+  "uuid" : "9788b818116446e388b8181164a6e30a",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "fc019828cb9b464a819828cb9b464ab0"
+  },
+  "created" : "2018-09-28T11:21:12.604Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "28116dc5ca0e4b1a916dc5ca0e5b1a77"
+  },
+  "edited" : "2018-09-28T11:21:12.604Z",
+  "name" : "Winter 2016",
+  "hostname" : "getmesh.io",
+  "ssl" : true,
+  "migrated" : true,
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  },
+  "rolePerms" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

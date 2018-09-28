@@ -1,0 +1,10 @@
+{
+  "operation" : "UPDATESCHEMA",
+  "properties" : {
+    "container" : "true",
+    "segmentFieldname" : "newSegmentField",
+    "displayFieldname" : "newSegmentField",
+    "description" : "new description",
+    "label" : "new label"
+  }
+}

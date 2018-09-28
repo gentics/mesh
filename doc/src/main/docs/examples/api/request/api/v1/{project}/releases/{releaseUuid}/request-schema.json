@@ -1,0 +1,19 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:release:ReleaseUpdateRequest",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the release"
+    },
+    "hostname" : {
+      "type" : "string",
+      "description" : "The hostname of the release which will be used to generate links across multiple projects."
+    },
+    "ssl" : {
+      "type" : "boolean",
+      "description" : "SSL flag of the release which will be used to generate links across multiple projects."
+    }
+  }
+}

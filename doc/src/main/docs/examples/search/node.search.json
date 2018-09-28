@@ -1,0 +1,70 @@
+{
+  "uuid" : "3eed4c71c5d247a0ad4c71c5d217a047",
+  "editor" : {
+    "uuid" : "1153c14eb1874d8593c14eb187fd856e"
+  },
+  "edited" : "1970-01-01T00:00:00Z",
+  "creator" : {
+    "uuid" : "1153c14eb1874d8593c14eb187fd856e"
+  },
+  "created" : "1970-01-01T00:00:00Z",
+  "project" : {
+    "name" : "dummyProject",
+    "uuid" : "c41543489db74e4c9543489db78e4c4f"
+  },
+  "tags" : {
+    "name" : [ "green", "red" ],
+    "uuid" : [ "0fc14d2cb1874ce0814d2cb1879ce059", "e6465013b5eb47bf865013b5eb37bf18" ]
+  },
+  "tagFamilies" : {
+    "colors" : {
+      "uuid" : "0ddad3b0d9f841929ad3b0d9f851925c",
+      "tags" : [ {
+        "name" : "green",
+        "uuid" : "0fc14d2cb1874ce0814d2cb1879ce059"
+      }, {
+        "name" : "red",
+        "uuid" : "e6465013b5eb47bf865013b5eb37bf18"
+      } ]
+    }
+  },
+  "_roleUuids" : [ ],
+  "parentNode" : {
+    "uuid" : "5dbdbc08fde2456cbdbc08fde2056c0f"
+  },
+  "language" : "de",
+  "schema" : {
+    "name" : "content",
+    "uuid" : "e044c907ff0848ce84c907ff08b8ce3b",
+    "version" : null
+  },
+  "fields" : {
+    "date" : 1538133672,
+    "string" : "The name value",
+    "htmlList" : [ "somehtml", "somehtml", "somehtml" ],
+    "nodeList" : [ "e36d1db6ebb14409ad1db6ebb1c409f1", "e36d1db6ebb14409ad1db6ebb1c409f1", "e36d1db6ebb14409ad1db6ebb1c409f1" ],
+    "number" : 0.146,
+    "node" : "e36d1db6ebb14409ad1db6ebb1c409f1",
+    "boolean" : true,
+    "stringList" : [ "The name value", "The name value", "The name value" ],
+    "micronode" : {
+      "microschema" : {
+        "name" : null,
+        "uuid" : null
+      },
+      "fields-null" : {
+        "latitude" : 16.373063840833,
+        "longitude" : 16.373063840833
+      }
+    },
+    "html" : "somehtml",
+    "numberList" : [ 0.146, 0.146, 0.146 ],
+    "booleanList" : [ "true", "true", "true" ],
+    "dateList" : [ 1538133672, 1538133672, 1538133672 ]
+  },
+  "displayField" : {
+    "key" : "string",
+    "value" : null
+  },
+  "version" : "afb01051"
+}

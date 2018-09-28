@@ -1,0 +1,14 @@
+{
+  "name" : "adminGroup",
+  "uuid" : "e2417236256f47b8817236256fb7b8ad",
+  "creator" : {
+    "uuid" : "9e985b5a25524b7f985b5a25528b7fe8"
+  },
+  "created" : null,
+  "editor" : {
+    "uuid" : "9e985b5a25524b7f985b5a25528b7fe8"
+  },
+  "edited" : null,
+  "_roleUuids" : [ ],
+  "version" : "69f5a6a2"
+}

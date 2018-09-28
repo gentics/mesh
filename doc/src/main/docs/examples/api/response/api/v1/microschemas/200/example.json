@@ -1,0 +1,57 @@
+{
+  "data" : [ {
+    "uuid" : "ba422be475024541822be47502454156",
+    "version" : "1.0",
+    "description" : "Microschema for Geolocations",
+    "name" : "geolocation",
+    "fields" : [ {
+      "name" : "longitude",
+      "label" : "Longitude",
+      "required" : true,
+      "type" : "number"
+    }, {
+      "name" : "latitude",
+      "label" : "Latitude",
+      "required" : true,
+      "type" : "number"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "f08dd6e6a0274c768dd6e6a027ec766b",
+    "version" : "1.0",
+    "description" : "Microschema for Geolocations",
+    "name" : "geolocation",
+    "fields" : [ {
+      "name" : "longitude",
+      "label" : "Longitude",
+      "required" : true,
+      "type" : "number"
+    }, {
+      "name" : "latitude",
+      "label" : "Latitude",
+      "required" : true,
+      "type" : "number"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

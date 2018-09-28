@@ -1,0 +1,14 @@
+{
+  "uuid" : "512c5666225e4cd3ac5666225efcd35a",
+  "creator" : {
+    "uuid" : "2706366d65594a8c86366d65593a8cb5"
+  },
+  "created" : null,
+  "editor" : {
+    "uuid" : "2706366d65594a8c86366d65593a8cb5"
+  },
+  "edited" : null,
+  "name" : "geolocation",
+  "_roleUuids" : [ ],
+  "version" : "50e234aa"
+}

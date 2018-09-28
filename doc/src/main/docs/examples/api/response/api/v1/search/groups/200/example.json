@@ -1,0 +1,48 @@
+{
+  "data" : [ {
+    "uuid" : "3d4d2d3b658c449c8d2d3b658ce49c2f",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "e4a39d759a4d43bfa39d759a4da3bf4b"
+    },
+    "created" : "2018-09-28T11:21:12.458Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "0dc7986f6254452187986f6254d52149"
+    },
+    "edited" : "2018-09-28T11:21:12.458Z",
+    "name" : "Admin Group",
+    "roles" : [ {
+      "name" : "admin",
+      "uuid" : "d66d679bf8f846fdad679bf8f816fdf5"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "f1b279a291d946e7b279a291d9e6e754",
+    "name" : "Editor Group",
+    "roles" : [ ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

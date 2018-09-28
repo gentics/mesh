@@ -1,0 +1,7 @@
+{
+  "operation" : "UPDATEMICROSCHEMA",
+  "properties" : {
+    "description" : "new description",
+    "label" : "new label"
+  }
+}

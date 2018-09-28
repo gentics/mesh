@@ -1,0 +1,23 @@
+{
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "95864c3cf8e049bd864c3cf8e0f9bd0a"
+  },
+  "created" : "2018-09-28T11:21:12.574Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "7046100776f0462086100776f0762085"
+  },
+  "edited" : "2018-09-28T11:21:12.574Z",
+  "name" : "Colors",
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : false,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}
