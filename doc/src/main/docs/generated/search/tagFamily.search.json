@@ -1,22 +1,22 @@
 {
   "name" : "colors",
-  "uuid" : "63814e85830a455e814e85830a655ea2",
+  "uuid" : "6c66da23be6d4eeea6da23be6d5eeee4",
   "creator" : {
-    "uuid" : "1b2c08a14d2542a3ac08a14d25f2a331"
+    "uuid" : "e43eec68cbd34b12beec68cbd3fb128c"
   },
   "created" : null,
   "editor" : {
-    "uuid" : "1b2c08a14d2542a3ac08a14d25f2a331"
+    "uuid" : "e43eec68cbd34b12beec68cbd3fb128c"
   },
   "edited" : null,
   "tags" : {
     "name" : [ "red", "green" ],
-    "uuid" : [ "06d1dea0da08406391dea0da08e06365", "cfcabf75fd7346ee8abf75fd7336eec6" ]
+    "uuid" : [ "526709c4fcea4737a709c4fceaa7375e", "3f43e6414e6c4efd83e6414e6cdefd7d" ]
   },
   "project" : {
     "name" : "dummyProject",
-    "uuid" : "83bb0869aa4b41e0bb0869aa4b71e082"
+    "uuid" : "e562287a9f344e99a2287a9f340e99bb"
   },
   "_roleUuids" : [ ],
-  "version" : "b9e723ce"
+  "version" : "6c84195c"
 }

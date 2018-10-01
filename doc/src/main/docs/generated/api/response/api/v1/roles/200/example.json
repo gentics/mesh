@@ -1,18 +1,18 @@
 {
   "data" : [ {
-    "uuid" : "6d66d26365de476ca6d26365deb76cc7",
+    "uuid" : "1d899f8f423d43db899f8f423dc3db33",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "a307407226474d3b8740722647fd3b52"
+      "uuid" : "3258de25e9d7456198de25e9d7b561b1"
     },
-    "created" : "2018-10-01T12:39:07.381Z",
+    "created" : "2018-10-01T14:21:19.529Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "ff60674c9e264ed4a0674c9e26ded47e"
+      "uuid" : "a9cf35df3d7c4aa08f35df3d7c5aa0cb"
     },
-    "edited" : "2018-10-01T12:39:07.381Z",
+    "edited" : "2018-10-01T14:21:19.529Z",
     "name" : "Reader role",
     "groups" : [ ],
     "permissions" : {
@@ -24,26 +24,26 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "2f3eef48d86f461ebeef48d86f261e0e",
+    "uuid" : "0c1ba1d55ec84dd09ba1d55ec8edd0bd",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "45fb41b7ff41461abb41b7ff41361ab7"
+      "uuid" : "6d4d7ebf9f054e808d7ebf9f05de8079"
     },
-    "created" : "2018-10-01T12:39:07.381Z",
+    "created" : "2018-10-01T14:21:19.529Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "ee36996d7bb34ef1b6996d7bb30ef10e"
+      "uuid" : "313a597f2f1f4695ba597f2f1f369592"
     },
-    "edited" : "2018-10-01T12:39:07.381Z",
+    "edited" : "2018-10-01T14:21:19.529Z",
     "name" : "Admin role",
     "groups" : [ {
       "name" : "editors",
-      "uuid" : "a2fd1919ff094ffebd1919ff094ffeed"
+      "uuid" : "c28b983533a84a158b983533a87a15d2"
     }, {
       "name" : "guests",
-      "uuid" : "42a9779e22c44de8a9779e22c4fde832"
+      "uuid" : "8b49a816e5d9460c89a816e5d9160cc0"
     } ],
     "permissions" : {
       "create" : true,

@@ -1,14 +1,14 @@
 {
   "name" : "adminRole",
-  "uuid" : "d2ed655ab06245cdad655ab062b5cd8b",
+  "uuid" : "3f1b8d4c93954b1b9b8d4c9395ab1b80",
   "creator" : {
-    "uuid" : "8c5de9fa692342629de9fa6923326281"
+    "uuid" : "b615a576eaa9465495a576eaa9565437"
   },
   "created" : null,
   "editor" : {
-    "uuid" : "8c5de9fa692342629de9fa6923326281"
+    "uuid" : "b615a576eaa9465495a576eaa9565437"
   },
   "edited" : null,
   "_roleUuids" : [ ],
-  "version" : "732e3436"
+  "version" : "269dff88"
 }
