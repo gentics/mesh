@@ -94,7 +94,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		realmConfig.setConfidentialPort(0);
 		realmConfig.addCredential("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4");
 		conf.getAuthenticationOptions().getOauth2().setConfig(realmConfig);
-		writeYml(conf, "mesh-config.yml.example");
+		writeYml(conf, "mesh-config.example.yml");
 	}
 
 	private void writeYml(Object object, String filename) throws JsonProcessingException, IOException {
