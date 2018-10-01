@@ -8,7 +8,7 @@ title: References
 
 == REST API
 
-The link:raml[Gentics Mesh REST API] provides endpoints enabling you to invoke CRUD operations on just ANY Gentics Mesh element. 
+The link:/docs/api[Gentics Mesh REST API] provides endpoints enabling you to invoke CRUD operations on just ANY Gentics Mesh element. 
 There are many things you can do with the REST API. To name a few:
 
 * Obviously you can create, update & fetch multilingual content items as well as tag them.
@@ -23,7 +23,7 @@ NOTE: All REST API responses are available in JSON, only, except for binary data
 
 === Query Parameters
 
-The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:raml[Gentics Mesh REST API] reference. Following, we provide an overview of the most common query parameters.
+The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:/docs/api[Gentics Mesh REST API] reference. Following, we provide an overview of the most common query parameters.
 
 ==== Paging Parameters
 

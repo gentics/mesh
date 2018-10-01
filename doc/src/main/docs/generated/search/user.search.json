@@ -1,0 +1,21 @@
+{
+  "uuid" : "7124b7d073294342a4b7d07329634201",
+  "creator" : {
+    "uuid" : "66f6939843c0433ab6939843c0433aba"
+  },
+  "created" : null,
+  "editor" : {
+    "uuid" : "66f6939843c0433ab6939843c0433aba"
+  },
+  "edited" : null,
+  "username" : "joe1",
+  "emailaddress" : "joe1@nowhere.tld",
+  "firstname" : "Joe",
+  "lastname" : "Doe",
+  "groups" : {
+    "name" : [ "editors", "superEditors" ],
+    "uuid" : [ "fbd5d7e8258e4e6995d7e8258e7e6940", "46227f19cced491ea27f19cced491e8f" ]
+  },
+  "_roleUuids" : [ ],
+  "version" : "dd419a51"
+}

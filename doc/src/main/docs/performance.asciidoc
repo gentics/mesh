@@ -43,7 +43,7 @@ Including these fields will require Gentics Mesh to check all elements for permi
 
 == Contents
 
-If you plan to use a caching layer or rely on the browser caching of node requests you can use the link:references.html#_etag_handling[ETag] value to cache these contents.
-In other cases it may be better to use the link:graphql.html[GraphQL] endpoint which allows you to only load specific data. 
+If you plan to use a caching layer or rely on the browser caching of node requests you can use the link:{{< relref "references.asciidoc" >}}#_etag_handling[ETag] value to cache these contents.
+In other cases it may be better to use the link:{{< relref "graphql.asciidoc" >}}[GraphQL] endpoint which allows you to only load specific data. 
 GraphQL can possibly also be used to reduce the amount of requests which need to be invoked and thus increase your implementation performance.
 

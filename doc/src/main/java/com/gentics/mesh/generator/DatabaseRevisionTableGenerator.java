@@ -67,7 +67,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 		Map<String, Object> context = new HashMap<>();
 		context.put("entries", entries);
 		String table = renderTable(context, getTemplate(DB_REV_TABLE_TEMPLATE_NAME));
-		writeFile("mesh-db-revs.adoc", table);
+		writeFile("mesh-db-revs.adoc-include", table);
 	}
 
 }

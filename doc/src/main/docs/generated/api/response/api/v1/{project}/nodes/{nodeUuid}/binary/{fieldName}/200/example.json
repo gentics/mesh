@@ -1,0 +1,155 @@
+{
+  "uuid" : "3e8ad900107345f58ad900107345f501",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "24968273cefc4dc8968273cefc0dc831"
+  },
+  "created" : "2018-10-01T12:39:07.572Z",
+  "edited" : "2018-10-01T12:39:07.572Z",
+  "availableLanguages" : {
+    "de" : {
+      "published" : true,
+      "version" : "1.0",
+      "publisher" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "98f33ea454b749bdb33ea454b7a9bd1f"
+      },
+      "publishDate" : "2018-10-01T12:39:07.572Z"
+    },
+    "en" : {
+      "published" : false,
+      "version" : "1.1",
+      "publisher" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "772c4249b7714a89ac4249b7711a8909"
+      },
+      "publishDate" : "2018-10-01T12:39:07.572Z"
+    }
+  },
+  "languagePaths" : {
+    "de" : "/api/v1/yourProject/webroot/Bilder",
+    "en" : "/api/v1/yourProject/webroot/Images"
+  },
+  "parentNode" : {
+    "uuid" : "6cb59b50fc4345ccb59b50fc4395cc4c",
+    "displayName" : "parentNodeDisplayName"
+  },
+  "tags" : [ {
+    "name" : "red",
+    "uuid" : "635ede0d38da41e89ede0d38da31e8b5",
+    "tagFamily" : "colors"
+  }, {
+    "name" : "red",
+    "uuid" : "bf1e4f352efd49a59e4f352efd09a5e7",
+    "tagFamily" : "colors"
+  }, {
+    "name" : "green",
+    "uuid" : "93a488cf0b6842a3a488cf0b68e2a36e",
+    "tagFamily" : "colors"
+  }, {
+    "name" : "car",
+    "uuid" : "b2162c9ad1d74d67962c9ad1d72d67ad"
+  }, {
+    "name" : "ship",
+    "uuid" : "341ce03b373b4b8f9ce03b373b3b8f87"
+  } ],
+  "childrenInfo" : {
+    "folder" : {
+      "schemaUuid" : "982428b56f9d4594a428b56f9d359426",
+      "count" : 5
+    },
+    "blogpost" : {
+      "schemaUuid" : "4be3d5749f314ac7a3d5749f31dac715",
+      "count" : 1
+    }
+  },
+  "schema" : {
+    "name" : "content",
+    "uuid" : "ae99e2e94acb439599e2e94acbe3951f",
+    "version" : "1.0"
+  },
+  "container" : false,
+  "fields" : {
+    "name" : "Name for language tag de-DE",
+    "filename" : "dummy-content.de.html",
+    "teaser" : "Dummy teaser for de-DE",
+    "content" : "Content for language tag de-DE",
+    "relatedProduct" : {
+      "uuid" : "9af6600776684905b660077668e905e0"
+    },
+    "price" : 100.1,
+    "enabled" : true,
+    "branch" : "2018-10-01T12:39:07.572Z",
+    "categories" : [ {
+      "uuid" : "116d6cb22ecc4854ad6cb22ecc685492"
+    }, {
+      "uuid" : "f63029ced3724ecbb029ced3729ecbcd"
+    }, {
+      "uuid" : "2724e46dc17f42dba4e46dc17f42db14"
+    } ],
+    "names" : [ "Jack", "Joe", "Mary", "Tom" ],
+    "categoryIds" : [ 1, 42, 133, 7 ],
+    "binary" : {
+      "fileName" : "flower.jpg",
+      "width" : 800,
+      "height" : 600,
+      "sha512sum" : "ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1",
+      "fileSize" : 95365,
+      "mimeType" : "image/jpeg",
+      "dominantColor" : "#22a7f0"
+    },
+    "location" : {
+      "uuid" : "059ff9c93b4045fe9ff9c93b4075fea5",
+      "microschema" : {
+        "name" : "geolocation",
+        "uuid" : "18034179facd4956834179facd0956b5"
+      },
+      "fields" : {
+        "latitude" : 48.208330230278,
+        "longitude" : 16.373063840833
+      }
+    },
+    "locations" : [ {
+      "uuid" : "d5463307731a4139863307731af13950",
+      "microschema" : {
+        "name" : "geolocation",
+        "uuid" : "af2b6f2acd024bc7ab6f2acd023bc7c5"
+      },
+      "fields" : {
+        "latitude" : 48.208330230278,
+        "longitude" : 16.373063840833
+      }
+    }, {
+      "uuid" : "da64f9b5ef544618a4f9b5ef5476181e",
+      "microschema" : {
+        "name" : "geolocation",
+        "uuid" : "589d2709e1754a829d2709e175aa8233"
+      },
+      "fields" : {
+        "latitude" : 48.137222,
+        "longitude" : 11.575556
+      }
+    } ]
+  },
+  "path" : "/api/v1/yourProject/webroot/Images",
+  "breadcrumb" : [ {
+    "uuid" : "35286c258002463ba86c258002763be6",
+    "displayName" : "news",
+    "path" : "/news"
+  }, {
+    "uuid" : "64bcc4c3c8e7488fbcc4c3c8e7988fa4",
+    "displayName" : "2015",
+    "path" : "/news/2015"
+  } ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

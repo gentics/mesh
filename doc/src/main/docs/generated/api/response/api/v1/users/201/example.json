@@ -1,0 +1,36 @@
+{
+  "uuid" : "7919404f438441d199404f438471d129",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "9122d3f48b044fcba2d3f48b040fcbe5"
+  },
+  "created" : "2018-10-01T12:39:07.360Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "a92dbdad2ee34efeadbdad2ee35efecf"
+  },
+  "edited" : "2018-10-01T12:39:07.360Z",
+  "lastname" : "Doe",
+  "firstname" : "Joe",
+  "username" : "newuser",
+  "emailAddress" : "j.doe@nowhere.com",
+  "nodeReference" : {
+    "projectName" : "dummy",
+    "uuid" : "ead1b9f1f4cd4e3691b9f1f4cdae3619"
+  },
+  "enabled" : true,
+  "groups" : [ {
+    "name" : "editors",
+    "uuid" : "b8d52b4a15814cf6952b4a1581ecf6b7"
+  } ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

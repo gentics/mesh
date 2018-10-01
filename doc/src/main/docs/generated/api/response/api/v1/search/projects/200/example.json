@@ -1,0 +1,61 @@
+{
+  "data" : [ {
+    "uuid" : "7cacc612982243a2acc612982213a2b9",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "14e6a6636e2846ffa6a6636e28e6ffeb"
+    },
+    "created" : "2018-10-01T12:39:07.507Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "b389163311c2446a89163311c2846a56"
+    },
+    "edited" : "2018-10-01T12:39:07.507Z",
+    "name" : "Dummy project",
+    "rootNode" : {
+      "uuid" : "ec22390afee34a0ea2390afee3ea0ed7"
+    },
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : false,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "2e73c7698d0246f5b3c7698d0236f552",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "41987a3b989f40e4987a3b989fc0e479"
+    },
+    "created" : "2018-10-01T12:39:07.507Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "f3b7e960f1c64b77b7e960f1c65b7704"
+    },
+    "edited" : "2018-10-01T12:39:07.507Z",
+    "name" : "Dummy Project (Mobile)",
+    "rootNode" : {
+      "uuid" : "961676d10d1f4f569676d10d1fdf5648"
+    },
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : false,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

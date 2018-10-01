@@ -1,0 +1,66 @@
+{
+  "uuid" : "c8a0ac26bc6b42b5a0ac26bc6b62b585",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "e523b9c0921b41f6a3b9c0921b41f683"
+  },
+  "created" : "2018-10-01T12:39:07.566Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "83f4d148e4674e87b4d148e4674e8784"
+  },
+  "edited" : "2018-10-01T12:39:07.566Z",
+  "parentNode" : {
+    "uuid" : "cbd2aa4f4813419892aa4f481301987f",
+    "displayName" : "parentNodeDisplayName"
+  },
+  "tags" : [ {
+    "name" : "red",
+    "uuid" : "b9554dbe2c604f36954dbe2c60ff36e4",
+    "tagFamily" : "colors"
+  }, {
+    "name" : "green",
+    "uuid" : "5fbd0e6cb9db4052bd0e6cb9db905224",
+    "tagFamily" : "colors"
+  }, {
+    "name" : "car",
+    "uuid" : "6f0686b5544a44ed8686b5544af4ed6d",
+    "tagFamily" : "vehicles"
+  }, {
+    "name" : "ship",
+    "uuid" : "b60d4d69c6db4ad08d4d69c6db5ad031",
+    "tagFamily" : "vehicles"
+  } ],
+  "childrenInfo" : { },
+  "schema" : {
+    "name" : "content",
+    "uuid" : "4d259c1ba5dc46f8a59c1ba5dcb6f886",
+    "version" : "1.0"
+  },
+  "container" : false,
+  "fields" : {
+    "name" : "Name for language tag en",
+    "filename" : "dummy-content.en.html",
+    "teaser" : "Dummy teaser for en",
+    "content" : "Content for language tag en"
+  },
+  "breadcrumb" : [ {
+    "uuid" : "e3445142f5234d96845142f5234d969b",
+    "displayName" : "news",
+    "path" : "/news"
+  }, {
+    "uuid" : "7cdfed12261b48209fed12261be820c2",
+    "displayName" : "2015",
+    "path" : "/news/2015"
+  } ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : false,
+    "delete" : false,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

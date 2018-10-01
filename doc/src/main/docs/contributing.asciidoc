@@ -42,7 +42,7 @@ The main components which are used to build Gentics Mesh are:
 
 == Big Picture
 
-Since you are most likely already familiar with the Gentics Mesh link:raml[REST API] I assume it is best to start there.
+Since you are most likely already familiar with the Gentics Mesh link:/docs/api[REST API] I assume it is best to start there.
 
 We'll start on how the REST API is setup and continue how requests are handled. 
 After that I will explain how data is being handled by the graph database and how the graph is structured.

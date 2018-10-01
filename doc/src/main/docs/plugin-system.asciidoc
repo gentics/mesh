@@ -60,14 +60,14 @@ Plugin jar files which have been copied to the configured `plugins` folder can b
 
 [source,json]
 ----
-include::content/docs/examples/api/request/api/v1/admin/plugins/request-body.json[]
+include::content/docs/api/request/api/v1/admin/plugins/request-body.json[]
 ----
 
 Any deployed plugin will get a deployment UUID and can be loaded via the `GET /api/v1/admin/plugins/:uuid`.
 
 [source,json]
 ----
-include::content/docs/examples/api/response/api/v1/admin/plugins/\{uuid\}/200/example.json[]
+include::content/docs/api/response/api/v1/admin/plugins/\{uuid\}/200/example.json[]
 ----
 
 You can undeploy a plugin via the `DELETE /api/v1/admin/plugins/:uuid` endpoint.

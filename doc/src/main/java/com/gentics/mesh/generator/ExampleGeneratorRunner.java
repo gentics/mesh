@@ -11,7 +11,8 @@ import java.io.IOException;
  */
 public class ExampleGeneratorRunner {
 
-	public static File OUTPUT_ROOT_FOLDER = new File("src/main/docs/examples");
+	public static File DOCS_FOLDER = new File("src/main/docs");
+	public static File OUTPUT_ROOT_FOLDER = new File(DOCS_FOLDER, "generated");
 
 	public static void main(String[] args) throws Exception {
 		if (!OUTPUT_ROOT_FOLDER.exists()) {

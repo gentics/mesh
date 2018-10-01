@@ -57,7 +57,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		// resolveLinks
 		QueryParameter resolveLinksParameter = new QueryParameter();
 		resolveLinksParameter.setDescription(
-				"The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:features.html#_link_resolving[WebRoot path]. No resolving occurs if no link has been specified.");
+				"The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:{{< relref \"features.asciidoc\" >}}#_link_resolving[WebRoot path]. No resolving occurs if no link has been specified.");
 		resolveLinksParameter.setExample("medium");
 		resolveLinksParameter.setRequired(false);
 		resolveLinksParameter.setType(ParamType.STRING);

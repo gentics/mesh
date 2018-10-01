@@ -19,7 +19,7 @@ While it is perfectly legitimate to organize your contents in a simple, flat str
 
 TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
 
-There are two properties when defining a link:building-blocks.html#_schemas[schema] for your nodes that are of importance in this respect.
+There are two properties when defining a link:{{< relref "building-blocks.asciidoc" >}}#_schemas[schema] for your nodes that are of importance in this respect.
 
 . ```container```: if true, nodes can contain child nodes and build a node tree.
 . ```segmentField```: allows to specify which schema field should be considered the path segment for the current node, i.e., it’s the basis for building URLs.
@@ -46,7 +46,7 @@ The ```segmentField``` is used to build the path of a specific node. According t
 image::../images/GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
 
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
-For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
+For more details see the documentation on link:{{< relref "building-blocks.asciidoc" >}}#_node[node] and <<webroot,WebRoot API>>, respectively.
 
 You can also specify dedicated paths for nodes using the ```urlFields``` schema property. You can add string or string list fields to your schema and list them via the ```urlFields``` property. Gentics Mesh will utilize these fields in nodes in order to retrieve the node.
 
@@ -663,7 +663,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/688f7beae8d240bf8f7beae8d2a0bf2e/navig
 == Breadcrumbs
 
 Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property.
-The property provides an array of node references representing the path from the project root down to the current node. For more details see the documentation on link:building-blocks.html#_node[node].
+The property provides an array of node references representing the path from the project root down to the current node. For more details see the documentation on link:{{< relref "building-blocks.asciidoc" >}}#_node[node].
 
 In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_.
 
@@ -859,7 +859,7 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 | API endpoint
 
 | Load the node or the node's binary data, which is located using the provided path.
-| link:++raml#project__webroot__path__get[```GET /api/v1/:projectName/webroot/:path```]
+| link:++/docs/api#project__webroot__path__get[```GET /api/v1/:projectName/webroot/:path```]
 
 
 |======
@@ -1124,7 +1124,7 @@ Gentics Mesh stores all binary files on the filesystem. The default directory ``
 
 The upload limit can be configured in bytes using the ```uploadOptions.byteLimit``` setting.
 
-For more information on available settings have a look at the link:administration-guide.html#_settings[administration guide].
+For more information on available settings have a look at the link:{{< relref "administration-guide.asciidoc" >}}#_settings[administration guide].
 
 === Metadata handling
 
@@ -1158,7 +1158,7 @@ Video:
 * `video/x-matroska`
 
 
-The GPS information of images will be processed and provided in a `location` object. A geopoint will automatically be stored for the document in the search index. This way it is possible to run link:https://getmesh.io/docs/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries] to locate images within a specific area.
+The GPS information of images will be processed and provided in a `location` object. A geopoint will automatically be stored for the document in the search index. This way it is possible to run link:{{< relref "elasticsearch.asciidoc" >}}#_search_nodes_by_geolocation_of_images[geo search queries] to locate images within a specific area.
 
 Example response:
 [source,json]
@@ -1334,7 +1334,7 @@ NOTE: In order to work properly, the fallback mechanism requires all nodes to ha
 Permissions allow to equip different groups of users with access to the content of your project. 
 
 In Gentics Mesh, we distinguish the concepts of 
-link:building-blocks.html#_user[user], link:building-blocks.html#_group[group], and link:building-blocks.html#_role[role] for managing different needs of access.
+link:{{< relref "building-blocks.asciidoc" >}}#_user[user], link:{{< relref "building-blocks.asciidoc" >}}#_group[group], and link:{{< relref "building-blocks.asciidoc" >}}#_role[role] for managing different needs of access.
 
 * A user represents a physical person or a client app that needs to interact with your content.
 * Groups are used to gather users of same content needs and access levels, e.g. administrators, editors, and users of your app. 
@@ -1414,13 +1414,13 @@ Following, we will discuss how to query, assign and revoke permissions in Gentic
 | API endpoint
 
 | Read the user permissions on element(s) that can be located by the specified path.
-| link:raml/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```]
+| link:/docs/api/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```]
 
 | Load the permissions between given role and the targeted element(s).
-| link:raml/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```]
+| link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```]
 
 | Set the permissions between role and the targeted element(s).
-| link:raml#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```]
+| link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```]
 
 |======
 
@@ -1430,12 +1430,12 @@ The examples provided subsequently, rely on our demo project.
 
 There are dedicated API endpoints for querying permissions on elements.
 
-NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 ==== Querying Role Permissions
-The link:raml/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```] endpoint can be used to query a role's permission on a specific element or set of elements.
+The link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```] endpoint can be used to query a role's permission on a specific element or set of elements.
 
-For example, the link:references.html#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```Public User``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
+For example, the link:{{< relref "references.asciidoc" >}}#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```Public User``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
 
 .Try the example with user ```admin```
 [TIP]
@@ -1458,7 +1458,7 @@ RESPONSE
 } 
 -----
 
-Alternatively, you can use query the element using the respective API endpoint (e.g. link:++raml#project__nodes__get++[```GET /api/v1/projectName/nodes```]) and use the ```role``` query parameter to find out another role's (i.e. ```anonymous```) permissions on the element:
+Alternatively, you can use query the element using the respective API endpoint (e.g. link:++/docs/api#project__nodes__get++[```GET /api/v1/projectName/nodes```]) and use the ```role``` query parameter to find out another role's (i.e. ```anonymous```) permissions on the element:
 
 .Try the example with user ```admin```
 [TIP]
@@ -1490,7 +1490,7 @@ RESPONSE
 -----
 
 ==== Querying User Permissions
-The endpoint link:raml/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```] provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
+The endpoint link:/docs/api/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```] provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
 
 .Try the example
 [TIP]
@@ -1498,7 +1498,7 @@ https://demo.getmesh.io/api/v1/users/5fb9654c0b734e87b9654c0b736e8701/permission
 
 === Assigning & Revoking Permissions 
 
-The link:raml#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```] API endpoint can be used to assign or revoke permissions to/from a role. 
+The link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```] API endpoint can be used to assign or revoke permissions to/from a role. 
 
 * It is important to note that permissions can be granted on individual elements and onto a set of elements, which is identified by the element path name (e.g.: ```/users/:uuid``` and ```/users```).
 
@@ -1530,7 +1530,7 @@ TIP: If you need to grant permission on users of a specific group, please use th
 The following example shows how to grant the ```Editor Role``` role the permission to read all users. Since this is an operation to be performed on a set of users, the element path ```/users``` needs to be used together with property ```recursive=true```.
 
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 [source,bash]
 -----
@@ -1587,7 +1587,7 @@ Permissions on a single or multiple groups are applied via ```/groups/:uuid``` p
 The following example shows how to grant the ```Editor Role``` role the permission to read a specific group (i.e. ```Client Group```) and its users (i.e. ```webclient```). This operation needs to be applied recursively (i.e., ```recursive=true```), otherwise ```read``` permissions would be granted to the group, only.
 
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 [source,bash]
 -----
@@ -1651,7 +1651,7 @@ By granting permissions on roles, you effectively grant users the right to chang
 ===== Example
 The following example shows how to grant the ```Editor Role``` role permissions to create new roles and subsequently manage them (i.e., ```read```, ```update```, ```delete```) but no access to existing roles. 
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 [source,bash]
 -----
@@ -1918,7 +1918,7 @@ NOTE: Publishing node language variants requires the user to be assigned to a gr
 
 [source,json]
 ----
-include::content/docs/examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
+include::content/docs/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
 ----
 
 NOTE: It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
@@ -1985,14 +1985,14 @@ Assigning schema versions to the branch via a ```PUT``` request to ```/api/v1/:p
 
 [source,json]
 ----
-include::content/docs/examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/schemas/request-body.json[]
+include::content/docs/api/request/api/v1/\{project\}/branches/\{branchUuid\}/schemas/request-body.json[]
 ----
 
 It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/microschemas``` to the branch.
 
 [source,json]
 ----
-include::content/docs/examples/api/request/api/v1/\{project\}/branches/\{branchUuid\}/microschemas/request-body.json[]
+include::content/docs/api/request/api/v1/\{project\}/branches/\{branchUuid\}/microschemas/request-body.json[]
 ----
 
 All nodes which reference the branch via the updated schema version will automatically be migrated to use the newer schema version.
@@ -2234,7 +2234,7 @@ Finally the changes can be applied by sending the request to ```/api/v1/schemas/
 
 [source,json]
 ----
-include::content/docs/examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
+include::content/docs/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
 == Executing migrations
@@ -2319,4 +2319,4 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 
 == Clustering
 
-Clustering is described in detail in our dedicated link:clustering.html[clustering documentation].
+Clustering is described in detail in our dedicated link:{{< relref "clustering.asciidoc" >}}[clustering documentation].

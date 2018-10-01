@@ -45,7 +45,7 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 		Map<String, Object> context = new HashMap<>();
 		context.put("entries", list);
 		String table = renderTable(context, getTemplate(ENV_TABLE_TEMPLATE_NAME));
-		writeFile("mesh-env.adoc", table);
+		writeFile("mesh-env.adoc-include", table);
 	}
 
 }

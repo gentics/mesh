@@ -1,0 +1,63 @@
+{
+  "data" : [ {
+    "uuid" : "62a19ea4b019452ea19ea4b019952e4c",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "4c87586adc314f2d87586adc31ff2d57"
+    },
+    "created" : "2018-10-01T12:39:07.571Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "c940e483fba3450a80e483fba3e50a91"
+    },
+    "edited" : "2018-10-01T12:39:07.571Z",
+    "tagFamily" : {
+      "name" : "colors",
+      "uuid" : "8dde3c1ea1bc49169e3c1ea1bc59166e"
+    },
+    "name" : "green",
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "41436707d87b4592836707d87bf592a3",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "822ec004b7b445f0aec004b7b485f0fa"
+    },
+    "created" : "2018-10-01T12:39:07.571Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "d50a9cdf6003429b8a9cdf6003029b60"
+    },
+    "edited" : "2018-10-01T12:39:07.571Z",
+    "tagFamily" : {
+      "name" : "colors",
+      "uuid" : "1b74db4baa0f4dadb4db4baa0f0dadb1"
+    },
+    "name" : "Name for language tag en",
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : false,
+      "delete" : false,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

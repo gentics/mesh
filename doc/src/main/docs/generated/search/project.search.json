@@ -1,0 +1,14 @@
+{
+  "name" : "dummyProject",
+  "uuid" : "8f8abc9a29a348608abc9a29a36860b8",
+  "creator" : {
+    "uuid" : "bd1c87dcec5a475e9c87dcec5ae75e72"
+  },
+  "created" : null,
+  "editor" : {
+    "uuid" : "bd1c87dcec5a475e9c87dcec5ae75e72"
+  },
+  "edited" : null,
+  "_roleUuids" : [ ],
+  "version" : "8f84e8b4"
+}

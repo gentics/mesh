@@ -1,0 +1,121 @@
+{
+  "data" : [ {
+    "uuid" : "66cfd96e008e4f038fd96e008e7f0302",
+    "displayField" : "name",
+    "segmentField" : "name",
+    "container" : false,
+    "description" : "Example schema description",
+    "name" : "ExampleSchema",
+    "fields" : [ {
+      "name" : "name",
+      "label" : "Name",
+      "required" : false,
+      "type" : "string"
+    }, {
+      "name" : "number",
+      "label" : "Number",
+      "required" : false,
+      "type" : "number"
+    }, {
+      "name" : "html",
+      "label" : "Teaser",
+      "required" : false,
+      "type" : "html"
+    }, {
+      "name" : "list",
+      "label" : "List of nodes",
+      "required" : false,
+      "listType" : "node",
+      "type" : "list",
+      "allow" : [ "content", "video" ]
+    }, {
+      "name" : "node",
+      "required" : false,
+      "type" : "node",
+      "allow" : [ "content", "video", "image" ]
+    }, {
+      "name" : "location",
+      "label" : "Location",
+      "required" : false,
+      "type" : "micronode",
+      "allow" : [ "geolocation" ]
+    }, {
+      "name" : "locationlist",
+      "label" : "List of Locations",
+      "required" : false,
+      "listType" : "micronode",
+      "type" : "list",
+      "allow" : [ "geolocation" ]
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "4f4ae64c390443158ae64c390423159c",
+    "displayField" : "name",
+    "segmentField" : "name",
+    "container" : false,
+    "description" : "Example schema description",
+    "name" : "ExampleSchema",
+    "fields" : [ {
+      "name" : "name",
+      "label" : "Name",
+      "required" : false,
+      "type" : "string"
+    }, {
+      "name" : "number",
+      "label" : "Number",
+      "required" : false,
+      "type" : "number"
+    }, {
+      "name" : "html",
+      "label" : "Teaser",
+      "required" : false,
+      "type" : "html"
+    }, {
+      "name" : "list",
+      "label" : "List of nodes",
+      "required" : false,
+      "listType" : "node",
+      "type" : "list",
+      "allow" : [ "content", "video" ]
+    }, {
+      "name" : "node",
+      "required" : false,
+      "type" : "node",
+      "allow" : [ "content", "video", "image" ]
+    }, {
+      "name" : "location",
+      "label" : "Location",
+      "required" : false,
+      "type" : "micronode",
+      "allow" : [ "geolocation" ]
+    }, {
+      "name" : "locationlist",
+      "label" : "List of Locations",
+      "required" : false,
+      "listType" : "micronode",
+      "type" : "list",
+      "allow" : [ "geolocation" ]
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

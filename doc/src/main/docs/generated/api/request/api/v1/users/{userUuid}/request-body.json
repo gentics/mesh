@@ -1,0 +1,11 @@
+{
+  "password" : "iesiech0eewinioghaRa",
+  "lastname" : "Doe",
+  "firstname" : "Joe",
+  "username" : "jdoe42",
+  "emailAddress" : "j.doe@nowhere.com",
+  "nodeReference" : {
+    "projectName" : "dummy",
+    "uuid" : "52811a8affd64928811a8affd6a92848"
+  }
+}

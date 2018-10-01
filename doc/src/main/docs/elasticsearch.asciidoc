@@ -402,7 +402,7 @@ NOTE: All documents need to be re-index if you choose to enable the Elasticsearc
 
 It is possible to nest Elasticsearch queries within the GraphQL query in order to filter elements.
 
-See link:graphql.html#search[GraphQL examples].
+See link:{{< relref "graphql.asciidoc" >}}#search[GraphQL examples].
 
 == Document format
 
@@ -576,7 +576,6 @@ Custom mappings can currently only be specified for the following types:
 NOTE: Index settings for other elements (e.g: Users, Roles etc) can currently not be configured.
 
 == Binary Fields
-
 
 You can add custom mappings to the `mimeType` and `file.content` field. The elasticsearch property needs to contain a custom mapping for each type.
 

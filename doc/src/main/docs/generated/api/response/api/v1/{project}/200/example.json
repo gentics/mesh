@@ -1,0 +1,27 @@
+{
+  "uuid" : "cae860c450bb465ca860c450bbb65c68",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "ba254dfe67cf4051a54dfe67cf60512b"
+  },
+  "created" : "2018-10-01T12:39:07.553Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "41ee553deb6241b7ae553deb6231b757"
+  },
+  "edited" : "2018-10-01T12:39:07.553Z",
+  "name" : "demo",
+  "rootNode" : {
+    "uuid" : "3519ada8cc8543e199ada8cc8553e1aa"
+  },
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : false,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

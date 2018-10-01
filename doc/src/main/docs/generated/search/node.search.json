@@ -1,0 +1,70 @@
+{
+  "uuid" : "e597b1e92aa04aa397b1e92aa0faa37e",
+  "editor" : {
+    "uuid" : "dd72f15241524be5b2f1524152abe552"
+  },
+  "edited" : "1970-01-01T00:00:00Z",
+  "creator" : {
+    "uuid" : "dd72f15241524be5b2f1524152abe552"
+  },
+  "created" : "1970-01-01T00:00:00Z",
+  "project" : {
+    "name" : "dummyProject",
+    "uuid" : "03a7959de0a04229a7959de0a032296a"
+  },
+  "tags" : {
+    "name" : [ "green", "red" ],
+    "uuid" : [ "93150286fc80460d950286fc80960da9", "3ad49a72febe4d91949a72febe1d91e1" ]
+  },
+  "tagFamilies" : {
+    "colors" : {
+      "uuid" : "22f2cd3e6b134c88b2cd3e6b134c8846",
+      "tags" : [ {
+        "name" : "green",
+        "uuid" : "93150286fc80460d950286fc80960da9"
+      }, {
+        "name" : "red",
+        "uuid" : "3ad49a72febe4d91949a72febe1d91e1"
+      } ]
+    }
+  },
+  "_roleUuids" : [ ],
+  "parentNode" : {
+    "uuid" : "690666579c8f41c08666579c8fc1c05c"
+  },
+  "language" : "de",
+  "schema" : {
+    "name" : "content",
+    "uuid" : "73ce9e5e50d5473a8e9e5e50d5073adb",
+    "version" : null
+  },
+  "fields" : {
+    "date" : 1538397547,
+    "string" : "The name value",
+    "htmlList" : [ "somehtml", "somehtml", "somehtml" ],
+    "nodeList" : [ "1111d10283654cc891d1028365ccc8c1", "1111d10283654cc891d1028365ccc8c1", "1111d10283654cc891d1028365ccc8c1" ],
+    "number" : 0.146,
+    "node" : "1111d10283654cc891d1028365ccc8c1",
+    "boolean" : true,
+    "stringList" : [ "The name value", "The name value", "The name value" ],
+    "micronode" : {
+      "microschema" : {
+        "name" : null,
+        "uuid" : null
+      },
+      "fields-null" : {
+        "latitude" : 16.373063840833,
+        "longitude" : 16.373063840833
+      }
+    },
+    "html" : "somehtml",
+    "numberList" : [ 0.146, 0.146, 0.146 ],
+    "booleanList" : [ "true", "true", "true" ],
+    "dateList" : [ 1538397547, 1538397547, 1538397547 ]
+  },
+  "displayField" : {
+    "key" : "string",
+    "value" : null
+  },
+  "version" : "842544c2"
+}

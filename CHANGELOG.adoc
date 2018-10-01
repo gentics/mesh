@@ -72,8 +72,8 @@ icon:bullhorn[] Metadata extraction
 [quote]
 ____
 This version of Gentics Mesh introduces the __Metadata extraction__ of file uploads (PDF, Images).
-GPS information of images will now be added to the search index. That information can be used to run link:https://getmesh.io/docs/beta/elasticsearch.html#_search_nodes_by_geolocation_of_images[geo search queries].
-A detailed description of this feature can be found in our https://getmesh.io/docs/beta/features.html#_metadata_handling[File Uploads Documentation].
+GPS information of images will now be added to the search index. That information can be used to run link:{{< relref "elasticsearch.asciidoc" >}}#_search_nodes_by_geolocation_of_images[geo search queries].
+A detailed description of this feature can be found in our {{< relref "features.asciidoc" >}}#_metadata_handling[File Uploads Documentation].
 
 Existing binary fields will not be automatically be processed to provide the metadata. You need to manually re-upload the data in order to generate the metadata properties.
 ____
@@ -132,7 +132,7 @@ icon:check[] Elasticsearch: A compatibility issue with Elasticsearch instances w
 [[v0.21.1]]
 == 0.21.1 (28.05.2018)
 
-icon:plus[] Elasticsearch: It is now possible to configure https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html[custom mappings] for binary fields. Currently only the `mimeType` and `file.content` fields can be mapped. An example for this mapping can be found in the https://getmesh.io/docs/beta/elasticsearch.html#_binary_fields[Gentics Mesh search documentation].
+icon:plus[] Elasticsearch: It is now possible to configure https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html[custom mappings] for binary fields. Currently only the `mimeType` and `file.content` fields can be mapped. An example for this mapping can be found in the link:{{< relref "elasticsearch.asciidoc" >}}#_binary_fields[Gentics Mesh search documentation].
 
 [[v0.21.0]]
 == 0.21.0 (27.05.2018)
@@ -144,7 +144,7 @@ ____
 This version of Gentics Mesh introduces the __Binary Search support__.
 
 The https://www.elastic.co/guide/en/elasticsearch/plugins/6.2/ingest-attachment.html[Elasticsearch Ingest Attachment Plugin] will be utilized if possible to process text file uploads (PDF, DOC, DOCX).
-A detailed description of this feature can be found in our https://getmesh.io/docs/beta/elasticsearch.html#_binarysearch[Elasticsearch Documentation].
+A detailed description of this feature can be found in our link:{{< relref "elasticsearch.asciidoc" >}}#_binarysearch[Elasticsearch Documentation].
 ____
 
 icon:plus[] Elasticsearch: It is now possible to configure a prefix string within the search options. Multiple Gentics Mesh installations with different prefixes can now utilize the same Elasticsearch server. Created indices and pipelines will automatically be prefixed. Other elements which do not start with the prefix will be ignored.
@@ -156,7 +156,7 @@ icon:bullhorn[] OAuth2 Support
 
 [quote]
 ____
-This version of Gentics Mesh introduces the __OAuth2 authentication support__. A detailed description of this feature can be found in our https://getmesh.io/docs/beta/authentication.html#_oauth2[Authentication Documentation].
+This version of Gentics Mesh introduces the __OAuth2 authentication support__. A detailed description of this feature can be found in our link:{{< relref "authentication.asciidoc" >}}#_oauth2[Authentication Documentation].
 ____
 
 icon:plus[] Plugins: All plugin endpoints will now automatically be secured via the configured authentication mechanism.
@@ -179,7 +179,7 @@ icon:check[] UI: In some cases the UI did not load fast. We updated the caching 
 
 icon:plus[] REST: The `/api/v1/admin/consistency/repair` endpoint has been added. The endpoint can be used to verify and directly repair found inconsistencies. 
                   The `/api/v1/admin/consistency/check` endpoint response has been updated to also include information about the action which will be performed by `/repair` in order to repair the inconsistency.
-                  You can read more about these endpoints in the https://getmesh.io/docs/beta/administration-guide.html#_database_consistency[database consistency] section in our administration documentation.
+                  You can read more about these endpoints in the link:{{< relref "administration-guide.asciidoc" >}}#_database_consistency[database consistency] section in our administration documentation.
 
 [[v0.19.0]]
 == 0.19.0 (28.04.2018)
@@ -188,7 +188,7 @@ icon:bullhorn[] Plugin System
 
 [quote]
 ____
-This version of Gentics Mesh introduces the _Plugin System_. A detailed description of this feature can be found in our https://getmesh.io/docs/beta/plugin-system.html[Plugin System Documentation].
+This version of Gentics Mesh introduces the _Plugin System_. A detailed description of this feature can be found in our link:{{< relref "plugin-system.asciidoc" >}}[Plugin System Documentation].
 ____
 
 icon:plus[] The base image of the Gentics Mesh docker container has been changed to `openjdk:10-slim`.
@@ -205,7 +205,7 @@ icon:check[] REST: Fixed the root cause of an inconsistency which caused the del
 [[v0.18.2]]
 == 0.18.2 (23.04.2018)
 
-CAUTION: Database revision was updated due to OrientDB update. Thus only an link:https://getmesh.io/docs/beta/clustering.html#_offline_upgrade[offline upgrade] can be performed when using clustered mode.
+CAUTION: Database revision was updated due to OrientDB update. Thus only an link:{{< relref "clustering.asciidoc" >}}#_offline_upgrade[offline upgrade] can be performed when using clustered mode.
 
 CAUTION: The generation of the search index document version has been reworked in order to increase index sync performance.
          A triggered index sync will thus re-sync all documents. Triggering the sync action is not required and can be executed at any time.
@@ -250,14 +250,14 @@ icon:bullhorn[] GraphQL filtering
 
 [quote]
 ____
-This version of Gentics Mesh introduces _GraphQL filtering_. A detailed description of this feature can be found in our link:https://getmesh.io/docs/beta/graphql.html#_filtering[Documentation].
+This version of Gentics Mesh introduces _GraphQL filtering_. A detailed description of this feature can be found in our link:{{< relref "graphql.asciidoc" >}}#_filtering[Documentation].
 ____
 
 ---
 
 CAUTION: Search: The  `/api/v1/search/reindex` endpoint was replaced by `/api/v1/search/sync`.
 
-icon:plus[] Docs: The link:contributing.html[Contribution Guide] has been added.
+icon:plus[] Docs: The link:{{< relref "contributing.asciidoc" >}}[Contribution Guide] has been added.
 
 icon:plus[] The `/api/v1/search/sync` endpoint can now be used to trigger the differential synchronization of search indices. 
             The indices will no longer be dropped and re-populated. Instead only needed actions will be executed to sync the index with the Gentics Mesh data.
@@ -330,14 +330,14 @@ CAUTION: Search: The raw search endpoints now wraps a multisearch request. The e
 
 icon:plus[] Demo: The link:https://demo.getmesh.io/demo[demo application] was updated to use Angular 5.
 
-icon:plus[] Core: Gentics Mesh can now be downgraded if the link:https://getmesh.io/docs/beta/administration-guide.html#database-revisions[database revision] matches the needed revision of Gentics Mesh.
+icon:plus[] Core: Gentics Mesh can now be downgraded if the link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[database revision] matches the needed revision of Gentics Mesh.
 
 icon:plus[] Clustering: Gentics Mesh is now able to form cluster between different server versions. 
 			A database revision hash will now be used to determine which versions of Gentics Mesh can form a cluster.
 			Only instances with the same database revision hash are allowed to form a cluster.
 			The current revision hash info is included in the `/api/v1` endpoint response.
 
-icon:plus[] Various settings can now be overridden via link:https://getmesh.io/docs/beta/administration-guide.html#_environment_variables[environment variables]. This is useful when dealing with docker based deployments.
+icon:plus[] Various settings can now be overridden via link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment variables]. This is useful when dealing with docker based deployments.
 
 icon:check[] Elasticsearch: Search requests failed on systems with many schemas. link:https://github.com/gentics/mesh/issues/303[#303]
 
@@ -438,7 +438,7 @@ icon:plus[] REST: The UUID of the referenced binary data will now also be listed
 
 icon:plus[] GraphQL: It is now possible to read the focal point information and binary uuid of binary fields.
 
-icon:plus[] Docs: The link:elasticsearch.html[Elasticsearch integration documentation] has been enhanced.
+icon:plus[] Docs: The link:{{< relref "elasticsearch.asciidoc" >}}[Elasticsearch integration documentation] has been enhanced.
 
 icon:plus[] Search: The overall search performance has been increased.
 
@@ -535,7 +535,7 @@ icon:plus[] REST: The `hostname` and `ssl` properties have been added to the pro
 
 icon:plus[] REST: The link resolver mechanism was enhanced to also consider the `hostname` and `ssl` flag of the release of the node which is linked. 
                   The link resolver will make use of these properties as soon as mesh links point to nodes of foreign projects.
-                  You can read more on this topic in the link:https://getmesh.io/docs/beta/features.html#crossdomainlinks[cross domain link section] of our documentation.
+                  You can read more on this topic in the link:{{< relref "features.asciidoc" >}}#crossdomainlinks[cross domain link section] of our documentation.
 
 == 0.11.6 (15.12.2017)
 
@@ -560,7 +560,7 @@ icon:plus[] UI: Add multi binary upload dialogue. Users can now upload multiple 
 icon:plus[] UI: Binary fields can now be used as display fields. The filename is used as the display name for the node. link:https://github.com/gentics/mesh-ui/issues/11[#11]
 
 icon:plus[] UI: It is now possible to specify the URL to the front end of a system. This allows users to quickly go to the page that represents the node in the system.
-  See the default `mesh-ui-config.js` or the link:https://getmesh.io/docs/beta/user-interface.html#_configuration[online documentation] for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
+  See the default `mesh-ui-config.js` or the link:{{< relref "user-interface.asciidoc" >}}#_configuration[online documentation] for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
 
 icon:plus[] Upload: The upload handling code has been refactored in order to process the uploaded data in-parallel.
 
@@ -604,7 +604,7 @@ icon:check[] Core: Fixed various errors which could occur when loading a node fo
 icon:plus[] Core: Various performance enhancements have been made to increase the concurrency handling and to lower the request times.
 
 icon:plus[] Websocket: It is now possible to register to a larger set of internal events. 
-            A full list of all events is documented within the link:https://getmesh.io/docs/beta/features.html#_eventbus_bridge_websocket[eventbus bridge / websocket documentation].
+            A full list of all events is documented within the link:{{< relref "features.asciidoc" >}}#_eventbus_bridge_websocket[eventbus bridge / websocket documentation].
 
 icon:plus[] Config: The eventloop and worker pool size can now be configured within the `mesh.yml` file.
 
@@ -779,7 +779,7 @@ icon:check[] Performance: The REST API performance has been improved by optimizi
 
 == 0.10.2 (14.09.2017)
 
-icon:book[] Documentation: The new link:https://getmesh.io/docs/beta/security.html[security] and link:https://getmesh.io/docs/beta/performance.html[performance] sections have been added to our documentation.
+icon:book[] Documentation: The new link:{{< relref "security.asciidoc" >}}[security] and link:{{< relref "performance.asciidoc" >}}[performance] sections have been added to our documentation.
 
 icon:plus[] The *Webroot-Response-Type* header can now be used to differentiate between a webroot binary and node responses. The values of this header can either be *binary* or *node*.
 
@@ -797,11 +797,11 @@ icon:check[] Fixed handling "required" and "allow" properties of schema fields w
 
 == 0.10.1 (08.09.2017)
 
-icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IP adresses instead of multicast discovery.
+icon:plus[] Clustering: Added link:{{< relref "clustering.asciidoc" >}}#_node_discovery[documentation] and support for cluster configurations which use a list of static IP adresses instead of multicast discovery.
 
 icon:plus[] Node Migration: The node migration performance has been increased.
 
-icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:https://getmesh.io/docs/beta/features.html#_executing_migrations[feature documentation].
+icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:{{< relref "features.asciidoc" >}}#_executing_migrations[feature documentation].
 
 icon:check[] Search: The `raw` field will no longer be added by default to the search index. Instead it can be added using the new `searchIndex.addRaw` flag within the schema field.
              Please note that the raw field value in the search index will be automatically truncated to a size of 32KB. Otherwise the value can't be added to search index.
@@ -859,7 +859,7 @@ mv data/graphdb/* data/graphdb/storage/
 ----
 =====================================================================
 
-icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
+icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:{{< relref "clustering.asciidoc" >}}[clustering documentation].
 
 icon:plus[] Core: The OrientDB graph database was updated to version 2.2.26
 
@@ -1313,14 +1313,14 @@ icon:bullhorn[] Content releases support
 
 [quote]
 ____
-This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our https://getmesh.io/docs/beta/index.html[Documentation].
+This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our https://getmesh.io/docs[Documentation].
 ____
 
 icon:bullhorn[] Versioning support
 
 [quote]
 ____
-This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our https://getmesh.io/docs/beta/index.html[Documentation].
+This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our https://getmesh.io/docs[Documentation].
 
 Important changes summary:
 

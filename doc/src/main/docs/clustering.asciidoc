@@ -19,7 +19,7 @@ Clustering is also a way to increase redundancy and fault tolerance since each i
 
 == Configuration
 
-include::content/docs/includes/cluster-options.inc[]
+include::content/docs/examples/cluster-options.inc[]
 
 .mesh.yml
 [source,yaml]
@@ -137,7 +137,7 @@ There are two types of upgrades. An upgrade can either be handled online of offl
 
 Online upgrades can happen without any downtime. First you stop a single instance within your cluster. Next you start the instance up again using the new Gentics Mesh version.
 The instance will directly join the cluster and receive the changes from other instances. This is possible since the newly started Gentics Mesh version uses the same
-link:administration-guide.html#database-revisions[database revision] as the older version.
+link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[database revision] as the older version.
 
 *Rollback*:
 You can rollback by stopping the Gentics Mesh version and starting the older version.
@@ -146,7 +146,7 @@ You can rollback by stopping the Gentics Mesh version and starting the older ver
 
 Offline upgrades are required when database changes need to be applied. These changes could negatively impact other (older) instances in the cluster and thus an offline upgrade will 
 only occur locally and not directly propagate throughout the cluster. Gentics Mesh will not join the cluster in such situations.
-The cluster will only form in-between versions which use the same database revision. You can check the list of link:administration-guide.html#database-revisions[Database revisions] in 
+The cluster will only form in-between versions which use the same database revision. You can check the list of link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[Database revisions] in 
 order to determine whether an online or offline upgrade can be done.
 
 Data which has been written to other instances in the cluster __can't__ be merged back to the now upgraded instance. Instead the upgraded instance will act as a new source of truth. 

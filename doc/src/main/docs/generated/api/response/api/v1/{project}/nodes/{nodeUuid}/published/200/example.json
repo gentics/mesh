@@ -1,0 +1,22 @@
+{
+  "availableLanguages" : {
+    "de" : {
+      "published" : false,
+      "version" : "0.4"
+    },
+    "en" : {
+      "published" : true,
+      "version" : "3.0",
+      "publisher" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "35a0187dfad84073a0187dfad8a073f0"
+      },
+      "publishDate" : "2018-10-01T12:39:07.580Z"
+    },
+    "fr" : {
+      "published" : false,
+      "version" : "5.2"
+    }
+  }
+}

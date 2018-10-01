@@ -1,0 +1,28 @@
+{
+  "uuid" : "b7cf71f3055c42ea8f71f3055c02ea8b",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "eda2bb1e2e5e489fa2bb1e2e5e489fa7"
+  },
+  "created" : "2018-10-01T12:39:07.401Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "6b27aeeae8f1412fa7aeeae8f1612f31"
+  },
+  "edited" : "2018-10-01T12:39:07.401Z",
+  "name" : "New group",
+  "roles" : [ {
+    "name" : "admin",
+    "uuid" : "4e2059d8d248401ca059d8d248101c2e"
+  } ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

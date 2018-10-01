@@ -1,0 +1,45 @@
+{
+  "data" : [ {
+    "uuid" : "587fe45c86c24786bfe45c86c2378693",
+    "name" : "Hello World",
+    "manifest" : {
+      "name" : "Hello World",
+      "apiName" : "hello-world",
+      "description" : "A dummy plugin",
+      "version" : "1.0",
+      "author" : "Joe Doe",
+      "inception" : "2018-10-01T12:39:07Z",
+      "license" : "Apache License 2.0"
+    }
+  }, {
+    "uuid" : "f5e9d94eb6d04de1a9d94eb6d09de100",
+    "name" : "Hello World",
+    "manifest" : {
+      "name" : "Hello World",
+      "apiName" : "hello-world",
+      "description" : "A dummy plugin",
+      "version" : "1.0",
+      "author" : "Joe Doe",
+      "inception" : "2018-10-01T12:39:07Z",
+      "license" : "Apache License 2.0"
+    }
+  }, {
+    "uuid" : "35474e30739848e6874e30739808e6fc",
+    "name" : "Hello World",
+    "manifest" : {
+      "name" : "Hello World",
+      "apiName" : "hello-world",
+      "description" : "A dummy plugin",
+      "version" : "1.0",
+      "author" : "Joe Doe",
+      "inception" : "2018-10-01T12:39:07Z",
+      "license" : "Apache License 2.0"
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 25,
+    "pageCount" : 1,
+    "totalCount" : 3
+  }
+}

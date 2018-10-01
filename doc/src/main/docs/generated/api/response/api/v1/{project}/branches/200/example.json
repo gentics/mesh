@@ -1,0 +1,77 @@
+{
+  "data" : [ {
+    "uuid" : "9396acf2c50f49a996acf2c50f39a9ac",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "72ae3da6180143c3ae3da6180123c34d"
+    },
+    "created" : "2018-10-01T12:39:07.669Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "aa0c225dc30448798c225dc304e87994"
+    },
+    "edited" : "2018-10-01T12:39:07.669Z",
+    "name" : "summer2016",
+    "hostname" : "getmesh.io",
+    "ssl" : true,
+    "migrated" : true,
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    },
+    "rolePerms" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "5a0f1b04c9814b8d8f1b04c9815b8d24",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "e3f8679ef4324187b8679ef432e1873c"
+    },
+    "created" : "2018-10-01T12:39:07.669Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "7c56383d9846409496383d9846e09461"
+    },
+    "edited" : "2018-10-01T12:39:07.669Z",
+    "name" : "autumn2016",
+    "hostname" : "getmesh.io",
+    "ssl" : true,
+    "migrated" : true,
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    },
+    "rolePerms" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

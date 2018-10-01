@@ -1,0 +1,18 @@
+{
+  "uuid" : "e82a7cc6d5d14193aa7cc6d5d121938f",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "bbaff7ff76024b61aff7ff76020b61e9"
+  },
+  "created" : "2018-10-01T12:39:07.481Z",
+  "type" : "branch",
+  "properties" : {
+    "fromVersion" : "1.0",
+    "branchUuid" : "5ea1c97c4fd9425ca1c97c4fd9f25c28",
+    "schemaUuid" : "cc9acdf0f3824d0e9acdf0f382cd0e35",
+    "toVersion" : "2.0"
+  },
+  "completionCount" : 0,
+  "warnings" : [ ]
+}

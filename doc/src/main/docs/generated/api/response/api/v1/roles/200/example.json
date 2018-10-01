@@ -1,0 +1,63 @@
+{
+  "data" : [ {
+    "uuid" : "6d66d26365de476ca6d26365deb76cc7",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "a307407226474d3b8740722647fd3b52"
+    },
+    "created" : "2018-10-01T12:39:07.381Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "ff60674c9e264ed4a0674c9e26ded47e"
+    },
+    "edited" : "2018-10-01T12:39:07.381Z",
+    "name" : "Reader role",
+    "groups" : [ ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "2f3eef48d86f461ebeef48d86f261e0e",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "45fb41b7ff41461abb41b7ff41361ab7"
+    },
+    "created" : "2018-10-01T12:39:07.381Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "ee36996d7bb34ef1b6996d7bb30ef10e"
+    },
+    "edited" : "2018-10-01T12:39:07.381Z",
+    "name" : "Admin role",
+    "groups" : [ {
+      "name" : "editors",
+      "uuid" : "a2fd1919ff094ffebd1919ff094ffeed"
+    }, {
+      "name" : "guests",
+      "uuid" : "42a9779e22c44de8a9779e22c4fde832"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

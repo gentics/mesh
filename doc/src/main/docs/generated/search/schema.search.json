@@ -1,0 +1,15 @@
+{
+  "name" : "content",
+  "description" : "Content schema",
+  "uuid" : "9fc2c857428f452782c857428f252736",
+  "creator" : {
+    "uuid" : "e5b2cc50199747d8b2cc50199797d81d"
+  },
+  "created" : null,
+  "editor" : {
+    "uuid" : "e5b2cc50199747d8b2cc50199797d81d"
+  },
+  "edited" : null,
+  "_roleUuids" : [ ],
+  "version" : "4bc088df"
+}

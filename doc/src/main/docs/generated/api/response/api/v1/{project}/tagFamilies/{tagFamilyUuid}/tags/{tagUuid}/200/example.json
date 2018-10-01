@@ -1,0 +1,28 @@
+{
+  "uuid" : "dd490d6ea09e4615890d6ea09e261521",
+  "creator" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "a8a6e55ddce1419ca6e55ddce1a19cf9"
+  },
+  "created" : "2018-10-01T12:39:07.640Z",
+  "editor" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "8ff64028746a4254b64028746ad25422"
+  },
+  "edited" : "2018-10-01T12:39:07.640Z",
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "0e3eabcb65514be6beabcb6551cbe61a"
+  },
+  "name" : "Red",
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}
