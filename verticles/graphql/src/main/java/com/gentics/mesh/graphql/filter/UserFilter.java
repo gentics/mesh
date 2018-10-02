@@ -11,6 +11,9 @@ import graphql.schema.GraphQLTypeReference;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Filters users in GraphQl. This filter should be used whenever a list of users is returned.
+ */
 public class UserFilter extends StartMainFilter<User> {
 
 	private static final String NAME = "UserFilter";

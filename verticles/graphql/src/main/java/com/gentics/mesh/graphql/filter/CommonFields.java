@@ -18,21 +18,31 @@ import java.util.Map;
 public final class CommonFields {
 	private CommonFields() {}
 
+	/**
+	 * Filters by uuid
+	 */
 	public static <T extends MeshElement> FilterField<T, Map<String, ?>> uuidFilter() {
 		return new MappedFilter<>("uuid", "Filters by uuid", StringFilter.filter(), MeshElement::getUuid);
 	}
 
-	public static <T extends NamedElement> List<FilterField<T, Map<String, ?>>> nameFilter() {
-		return Arrays.asList(
-			uuidFilter(),
-			new MappedFilter<>("name", "Filters by name", StringFilter.filter(), NamedElement::getName)
-		);
+	/**
+	 * Filters by name
+	 */
+	public static <T extends NamedElement> FilterField<T, Map<String, ?>> nameFilter() {
+		return new MappedFilter<>("name", "Filters by name", StringFilter.filter(), NamedElement::getName);
 	}
 
+	/**
+	 * Filters by created time, creator, edited time and editor.
+	 */
 	public static <T extends UserTrackingVertex> List<FilterField<T, Map<String, ?>>> userTrackingFilter() {
 		return userTrackingFilter(UserFilter.filter());
 	}
 
+	/**
+	 * Filters by created time, creator, edited time and editor.
+	 * @param userFilter The user filter to use for creator and editor
+	 */
 	public static <T extends UserTrackingVertex> List<FilterField<T, Map<String, ?>>> userTrackingFilter(UserFilter userFilter) {
 		return Arrays.asList(
 			new MappedFilter<>("created", "Filters by creation timestamp", DateFilter.filter(), UserTrackingVertex::getCreationTimestamp),

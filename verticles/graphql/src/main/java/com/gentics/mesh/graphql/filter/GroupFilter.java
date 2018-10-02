@@ -7,6 +7,9 @@ import com.gentics.mesh.core.data.Group;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Filters groups in GraphQl. This filter should be used whenever a list of groups is returned.
+ */
 public class GroupFilter extends StartMainFilter<Group> {
 
 	private static final String NAME = "GroupFilter";
@@ -26,7 +29,8 @@ public class GroupFilter extends StartMainFilter<Group> {
 	@Override
 	protected List<FilterField<Group, ?>> getFilters() {
 		List<FilterField<Group, ?>> filters = new ArrayList<>();
-		filters.addAll(CommonFields.nameFilter());
+		filters.add(CommonFields.nameFilter());
+		filters.add(CommonFields.uuidFilter());
 		filters.addAll(CommonFields.userTrackingFilter());
 		return filters;
 	}

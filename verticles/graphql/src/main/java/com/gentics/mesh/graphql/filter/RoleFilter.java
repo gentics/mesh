@@ -7,6 +7,9 @@ import com.gentics.mesh.core.data.Role;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Filters roles in GraphQl. This filter should be used whenever a list of roles is returned.
+ */
 public class RoleFilter extends StartMainFilter<Role> {
 
 	private static final String NAME = "RoleFilter";
@@ -26,7 +29,8 @@ public class RoleFilter extends StartMainFilter<Role> {
 	@Override
 	protected List<FilterField<Role, ?>> getFilters() {
 		List<FilterField<Role, ?>> filters = new ArrayList<>();
-		filters.addAll(CommonFields.nameFilter());
+		filters.add(CommonFields.nameFilter());
+		filters.add(CommonFields.uuidFilter());
 		filters.addAll(CommonFields.userTrackingFilter());
 		return filters;
 	}

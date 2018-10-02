@@ -1472,10 +1472,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (languageTags == null) {
 			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, null, true);
 		} else {
-			return new DynamicTransformablePageImpl<NodeImpl>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
 				// Filter out nodes which do not provide one of the specified language tags and type
-				for (NodeGraphFieldContainer container : item.getGraphFieldContainersIt(branchUuid, type)) {
-					if (languageTags.contains(container.getLanguage().getLanguageTag())) {
+				for (String languageTag : languageTags) {
+					if (item.getGraphFieldContainerEdge(languageTag, branchUuid, type) != null) {
 						return true;
 					}
 				}
