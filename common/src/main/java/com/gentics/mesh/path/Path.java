@@ -81,7 +81,9 @@ public class Path {
 	}
 
 	public boolean isFullyResolved() {
-		return initialStack.size() == segments.size();
+		// We assume the path is fully resolved if no initial stack was set.
+		// In some places a path is created without the need of a resolve stack (e.g. url field handling)
+		return initialStack == null || initialStack.size() == segments.size();
 	}
 
 	/**
