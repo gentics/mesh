@@ -35,6 +35,9 @@
 | *MESH_ELASTICSEARCH_START_EMBEDDED*
 | Override the start embedded elasticsearch server flag.
 
+| *MESH_LOCK_PATH*
+| Path to the mesh lock file.
+
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
 

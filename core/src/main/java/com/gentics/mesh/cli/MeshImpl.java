@@ -46,11 +46,6 @@ public class MeshImpl implements Mesh {
 
 	private static final Logger log;
 
-	/**
-	 * Name of the mesh lock file: {@value #TYPE} The file is used to determine whether mesh shutdown cleanly.
-	 */
-	private final String LOCK_FILENAME = "mesh.lock";
-
 	private MeshCustomLoader<Vertx> verticleLoader;
 
 	private MeshOptions options;
@@ -379,7 +374,12 @@ public class MeshImpl implements Mesh {
 	 * @throws IOException
 	 */
 	private void createLockFile() throws IOException {
-		new File(LOCK_FILENAME).createNewFile();
+		File lockFile = new File(options.getLockPath());
+		File lockFolder = lockFile.getParentFile();
+		if (!lockFolder.exists() && !lockFolder.mkdirs()) {
+			log.error("Could not create parent folder for lockfile {" + lockFile.getAbsolutePath() + "}");
+		}
+		lockFile.createNewFile();
 	}
 
 	/**
@@ -388,14 +388,14 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private boolean hasLockFile() {
-		return new File(LOCK_FILENAME).exists();
+		return new File(options.getLockPath()).exists();
 	}
 
 	/**
 	 * Delete the mesh lock file.
 	 */
 	private void deleteLock() {
-		new File(LOCK_FILENAME).delete();
+		new File(options.getLockPath()).delete();
 	}
 
 	@Override

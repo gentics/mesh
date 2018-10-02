@@ -26,6 +26,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
+	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -91,6 +92,10 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	@EnvironmentVariable(name = MESH_CLUSTER_INIT_ENV, description = "Enable or disable the initial cluster database setup. This is useful for testing.")
 	private boolean isInitCluster = false;
+
+	@JsonIgnore
+	@EnvironmentVariable(name = MESH_LOCK_PATH_ENV, description = "Path to the mesh lock file.")
+	private String lockPath = "mesh.lock";
 
 	@JsonIgnore
 	private String adminPassword;
@@ -341,6 +346,17 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	public MeshOptions setInitCluster(boolean isInitCluster) {
 		this.isInitCluster = isInitCluster;
+		return this;
+	}
+
+	@JsonIgnore
+	public String getLockPath() {
+		return lockPath;
+	}
+
+	@JsonIgnore
+	public MeshOptions setLockPath(String lockPath) {
+		this.lockPath = lockPath;
 		return this;
 	}
 

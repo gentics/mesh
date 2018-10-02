@@ -48,6 +48,7 @@ public class OptionsLoaderTest {
 		envMap.put(HttpServerConfig.MESH_HTTP_CORS_ENABLE_ENV, "true");
 		envMap.put(VertxOptions.MESH_VERTX_EVENT_POOL_SIZE_ENV, "41");
 		envMap.put(VertxOptions.MESH_VERTX_WORKER_POOL_SIZE_ENV, "42");
+		envMap.put(MeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
 		set(envMap);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
@@ -59,6 +60,7 @@ public class OptionsLoaderTest {
 		assertEquals(41, options.getVertxOptions().getEventPoolSize());
 		assertEquals(42, options.getVertxOptions().getWorkerPoolSize());
 		assertEquals("*", options.getHttpServerOptions().getCorsAllowedOriginPattern());
+		assertEquals("dummy/1234", options.getLockPath());
 	}
 
 	@Test
