@@ -156,7 +156,15 @@ include::content/docs/examples/models/mesh-config.example.yml[]
 | ```defaultLanguage```    | String | en       | Default language which serves as a fallback when no language has been specified within a request.
 | ```verticles```          | List   | -        | List of Vert.x java verticle classes which will be loaded during startup.
 | ```tempDirectory```      | Path   | data/tmp | Path to the main temporary filesystem directory.
+| ```languagesFilePath```  | Path   | -        | Optional path to a JSON file containing additional languages.
 |======
+
+Example for custom languages file:
+
+[source,json]
+----
+include::includes/example-languages.json[]
+----
 
 === HTTPS/SSL
 

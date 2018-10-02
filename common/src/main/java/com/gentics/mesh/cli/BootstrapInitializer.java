@@ -195,6 +195,13 @@ public interface BootstrapInitializer {
 	void initLanguages(LanguageRoot root) throws JsonParseException, JsonMappingException, IOException;
 
 	/**
+	 * Initialize optional languages, if an additional language file was configured
+	 * 
+	 * @param configuration configuration
+	 */
+	void initOptionalLanguages(MeshOptions configuration);
+
+	/**
 	 * Grant CRUD to all objects within the graph to the Admin Role.
 	 */
 	void initPermissions();

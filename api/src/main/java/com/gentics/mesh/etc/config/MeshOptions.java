@@ -21,6 +21,7 @@ public class MeshOptions implements Option {
 	public static final int DEFAULT_MAX_DEPTH = 10;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
+	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
@@ -35,6 +36,11 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.")
 	@EnvironmentVariable(name = MESH_DEFAULT_LANG_ENV, description = "Override the configured default language.")
 	private String defaultLanguage = DEFAULT_LANGUAGE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional path to a JSON file containing additional languages")
+	@EnvironmentVariable(name = MESH_LANGUAGES_FILE_PATH_ENV, description = "Override the path to the optional languages file")
+	private String languagesFilePath;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Turn on or off the update checker.")
@@ -110,6 +116,22 @@ public class MeshOptions implements Option {
 	 */
 	public String getDefaultLanguage() {
 		return defaultLanguage;
+	}
+
+	/**
+	 * Return the (optional) languages file path
+	 * @return path to the optional languages file
+	 */
+	public String getLanguagesFilePath() {
+		return languagesFilePath;
+	}
+
+	/**
+	 * Set the languages file path
+	 * @param languagesFilePath path to the optional languages file
+	 */
+	public void setLanguagesFilePath(String languagesFilePath) {
+		this.languagesFilePath = languagesFilePath;
 	}
 
 	/**

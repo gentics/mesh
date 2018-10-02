@@ -786,6 +786,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		String requestUri = "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters);
 		return prepareRequest(POST, requestUri, NodeResponse.class, nodeCreateRequest);
+		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "*/*");
 	}
 
 	@Override
