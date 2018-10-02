@@ -742,7 +742,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @return existing edge or null
 	 */
-	EdgeFrame getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type);
+	EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Fully delete the node. Not that this delete operation will delete all versions of the node and also the node itself (from all branches).

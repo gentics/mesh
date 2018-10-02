@@ -353,7 +353,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// check whether there is a current draft version
 
 		if (handleDraftEdge) {
-			draftEdge = getGraphFieldContainerEdge(languageTag, branchUuid, DRAFT);
+			draftEdge = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
 			if (draftEdge != null) {
 				previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 			}
@@ -420,7 +420,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public EdgeFrame getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
+	public EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		if (edgeTraversal.hasNext()) {
@@ -1254,7 +1254,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String languageTag = container.getLanguage().getLanguageTag();
 
 		// Remove an existing published edge
-		EdgeFrame currentPublished = getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED);
+		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
 		if (currentPublished != null) {
 			// We need to remove the edge first since updateWebrootPathInfo will
 			// check the published edge again
