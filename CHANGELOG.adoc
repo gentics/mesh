@@ -20,6 +20,8 @@
 
 icon:plus[] GraphQL: Added filters for users, groups and roles.
 
+icon:check[] GraphQL: GraphQL Java has been updated to version 10.0
+
 [[v0.24.0]]
 == 0.24.0 (25.07.2018)
 
