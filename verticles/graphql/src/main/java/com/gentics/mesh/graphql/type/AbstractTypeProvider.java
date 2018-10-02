@@ -1,12 +1,34 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLLong;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.GraphQLEnumType.newEnum;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import com.gentics.graphqlfilter.filter.StartFilter;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.error.MeshConfigurationException;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.search.SearchHandler;
+import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLFieldDefinition.Builder;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLTypeReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,34 +40,12 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
-import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.graphql.filter.NodeFilter;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.search.SearchHandler;
-
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLEnumType;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLFieldDefinition.Builder;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLTypeReference;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static graphql.Scalars.GraphQLLong;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLEnumType.newEnum;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 public abstract class AbstractTypeProvider {
 
@@ -293,8 +293,8 @@ public abstract class AbstractTypeProvider {
 	 * @param filterArgument
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-		String pageTypeName, SearchHandler searchHandler, Filterable filterProvider) {
+	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<T>> rootProvider,
+		String pageTypeName, SearchHandler searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
 			.description(description)
@@ -314,9 +314,9 @@ public abstract class AbstractTypeProvider {
 						throw new RuntimeException(e);
 					}
 				} else {
-					RootVertex<?> root = rootProvider.apply(gc);
-					if (filterProvider != null) {
-						return root.findAll(gc, getPagingInfo(env), filterProvider.constructFilter(filter, root));
+					RootVertex<T> root = rootProvider.apply(gc);
+					if (filterProvider != null && filter != null) {
+						return root.findAll(gc, getPagingInfo(env), filterProvider.createPredicate(filter));
 					} else {
 						return root.findAll(gc, getPagingInfo(env));
 					}

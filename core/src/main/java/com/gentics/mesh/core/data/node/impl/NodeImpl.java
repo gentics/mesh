@@ -1,48 +1,5 @@
 package com.gentics.mesh.core.data.node.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.ContainerType.forVersion;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -128,12 +85,53 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.NotImplementedException;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.INITIAL;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.ContainerType.forVersion;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.tinkerpop.blueprints.Direction.IN;
+import static com.tinkerpop.blueprints.Direction.OUT;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see Node
@@ -1471,26 +1469,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Object indexKey = DB.get().createComposedIndexKey(getId(), branchUuid);
 
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		return new DynamicTransformablePageImpl<NodeImpl>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
-
-			// Filter out nodes which do not provide one of the specified language tags and type
-			if (languageTags != null) {
-				Iterator<Edge> edgeIt = item.getEdges(OUT, HAS_FIELD_CONTAINER).iterator();
-				while (edgeIt.hasNext()) {
-					Edge edge = edgeIt.next();
-					String currentType = edge.getProperty(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY);
-					if (!type.getCode().equals(currentType)) {
-						continue;
-					}
-					String languageTag = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
-					if (languageTags.contains(languageTag)) {
+		if (languageTags == null) {
+			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, null, true);
+		} else {
+			return new DynamicTransformablePageImpl<NodeImpl>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+				// Filter out nodes which do not provide one of the specified language tags and type
+				for (NodeGraphFieldContainer container : item.getGraphFieldContainersIt(branchUuid, type)) {
+					if (languageTags.contains(container.getLanguage().getLanguageTag())) {
 						return true;
 					}
 				}
 				return false;
-			}
-			return true;
-		}, true);
+			}, true);
+		}
 	}
 
 	@Override
