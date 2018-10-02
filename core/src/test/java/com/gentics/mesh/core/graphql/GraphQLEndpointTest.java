@@ -1,19 +1,5 @@
 package com.gentics.mesh.core.graphql;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Vector;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
@@ -150,6 +136,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "filtering/nodes", true, "draft" });
 		testData.add(new Object[] { "filtering/nodes-en", true, "draft" });
 		testData.add(new Object[] { "filtering/nodes-jp", true, "draft" });
+		testData.add(new Object[] { "filtering/nodes-creator-editor", true, "draft" });
+		testData.add(new Object[] { "filtering/users", true, "draft" });
+		testData.add(new Object[] { "filtering/groups", true, "draft" });
+		testData.add(new Object[] { "filtering/roles", true, "draft" });
 		testData.add(new Object[] { "node/breadcrumb-root", true, "draft" });
 		return testData;
 	}

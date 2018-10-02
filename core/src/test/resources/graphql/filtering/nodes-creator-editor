@@ -1,0 +1,47 @@
+{
+  editorNodes: nodes(filter: {
+    editor: {
+      username: { equals: "joe1" }
+    }
+  }) {
+    # [$.data.editorNodes.totalCount=19]
+    totalCount
+    elements {
+      uuid
+      editor {
+        username
+      }
+    }
+  }
+
+  creatorNodes: nodes(filter: {
+    creator: {
+      username: { equals: "joe1" }
+    }
+  }) {
+  # [$.data.creatorNodes.totalCount=19]
+    totalCount
+    elements {
+      uuid
+      creator {
+        username
+      }
+    }
+  }
+
+  emptyNodes: nodes(filter: {
+    creator: {
+      username: { equals: "admin" }
+    }
+  }) {
+  # [$.data.emptyNodes.totalCount=0]
+    totalCount
+    elements {
+      uuid
+      creator {
+        username
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]
