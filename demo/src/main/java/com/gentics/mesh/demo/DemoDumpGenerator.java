@@ -120,7 +120,6 @@ public class DemoDumpGenerator {
 		boot.initMandatoryData();
 		boot.initOptionalData(true);
 		boot.initPermissions();
-		boot.markChangelogApplied();
 
 		// Setup demo data
 		provider.setup(false);
