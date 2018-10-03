@@ -1,11 +1,11 @@
 {
-  "uuid" : "f35a762d739d480c9a762d739db80ca4",
+  "uuid" : "37332d7858354a28b32d7858358a282b",
   "creator" : {
-    "uuid" : "0b69f0685e4b42d5a9f0685e4bb2d5fc"
+    "uuid" : "3323d979753d4c55a3d979753d2c55af"
   },
   "created" : null,
   "editor" : {
-    "uuid" : "0b69f0685e4b42d5a9f0685e4bb2d5fc"
+    "uuid" : "3323d979753d4c55a3d979753d2c55af"
   },
   "edited" : null,
   "username" : "joe1",
@@ -14,8 +14,8 @@
   "lastname" : "Doe",
   "groups" : {
     "name" : [ "editors", "superEditors" ],
-    "uuid" : [ "0681aa320bba4dee81aa320bbaadee95", "d10ab5b0ba0340598ab5b0ba030059b9" ]
+    "uuid" : [ "848924a6beba449b8924a6beba949bbc", "d2c4fa2adf5649be84fa2adf5609be08" ]
   },
   "_roleUuids" : [ ],
-  "version" : "34462373"
+  "version" : "e4b369ad"
 }

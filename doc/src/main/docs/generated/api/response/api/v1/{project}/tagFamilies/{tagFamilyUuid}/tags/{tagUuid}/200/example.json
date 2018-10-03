@@ -1,20 +1,20 @@
 {
-  "uuid" : "5dbd36c7e0b5403ebd36c7e0b5d03e8c",
+  "uuid" : "d2a01039d7224bc8a01039d7227bc80b",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "abbcbd27a30e4b2bbcbd27a30e5b2b5f"
+    "uuid" : "b6eb6688d4524811ab6688d452f8115d"
   },
-  "created" : "2018-10-01T14:21:19.708Z",
+  "created" : "2018-10-03T09:23:07.375Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "a2ae5996671d43f2ae5996671d93f2d4"
+    "uuid" : "1d2071dc07654ebea071dc07657ebeaf"
   },
-  "edited" : "2018-10-01T14:21:19.708Z",
+  "edited" : "2018-10-03T09:23:07.375Z",
   "tagFamily" : {
     "name" : "colors",
-    "uuid" : "6015c734b8294baa95c734b8299baafa"
+    "uuid" : "22070a9f242444c4870a9f242424c4d2"
   },
   "name" : "Red",
   "permissions" : {

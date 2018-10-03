@@ -98,6 +98,9 @@
 | *MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH*
 | Override the configured OAuth2 mapper script path.
 
+| *MESH_LANGUAGES_FILE_PATH*
+| Override the path to the optional languages file
+
 | *MESH_ELASTICSEARCH_PREFIX*
 | Override the configured elasticsearch prefix.
 

@@ -1,11 +1,11 @@
 {
   "microschemas" : [ {
     "name" : "vcard",
-    "uuid" : "bfa442c683954f00a442c683953f00f5",
+    "uuid" : "cd50ccfd375c482190ccfd375c1821f3",
     "version" : "2.0"
   }, {
     "name" : "geolocation",
-    "uuid" : "f32fe0322def49ecafe0322defd9ecde",
+    "uuid" : "af6f0d1324d34a0daf0d1324d3fa0d72",
     "version" : "1.0"
   } ]
 }

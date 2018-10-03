@@ -12,6 +12,11 @@
 | string
 | Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.
 
+| languagesFilePath
+| false
+| string
+| Optional path to a JSON file containing additional languages
+
 | updateCheck
 | false
 | boolean
