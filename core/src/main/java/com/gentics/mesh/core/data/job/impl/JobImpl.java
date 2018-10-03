@@ -86,25 +86,37 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		response.setStartDate(getStartDate());
 		response.setCompletionCount(getCompletionCount());
 		response.setNodeName(getNodeName());
-		response.setWarnings(getWarnings().getData());
+
+		JobWarningList warnings = getWarnings();
+		if (warnings != null) {
+			response.setWarnings(warnings.getData());
+		}
 
 		Map<String, String> props = response.getProperties();
-		props.put("branchName", getBranch().getName());
-		props.put("branchUuid", getBranch().getUuid());
+		Branch branch = getBranch();
+		if (branch != null) {
+			props.put("branchName", branch.getName());
+			props.put("branchUuid", branch.getUuid());
+		} else {
+			log.debug("No referenced branch found.");
+		}
 
-		if (getToSchemaVersion() != null) {
-			SchemaContainer container = getToSchemaVersion().getSchemaContainer();
+		SchemaContainerVersion toSchema = getToSchemaVersion();
+		if (toSchema != null) {
+			SchemaContainer container = toSchema.getSchemaContainer();
 			props.put("schemaName", container.getName());
 			props.put("schemaUuid", container.getUuid());
 			props.put("fromVersion", getFromSchemaVersion().getVersion());
-			props.put("toVersion", getToSchemaVersion().getVersion());
+			props.put("toVersion", toSchema.getVersion());
 		}
-		if (getToMicroschemaVersion() != null) {
-			MicroschemaContainer container = getToMicroschemaVersion().getSchemaContainer();
+
+		MicroschemaContainerVersion toMicroschema = getToMicroschemaVersion();
+		if (toMicroschema != null) {
+			MicroschemaContainer container = toMicroschema.getSchemaContainer();
 			props.put("microschemaName", container.getName());
 			props.put("microschemaUuid", container.getUuid());
 			props.put("fromVersion", getFromMicroschemaVersion().getVersion());
-			props.put("toVersion", getToMicroschemaVersion().getVersion());
+			props.put("toVersion", toMicroschema.getVersion());
 		}
 		return response;
 	}

@@ -15,6 +15,11 @@
 
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
+[[v0.24.2]]
+== 0.24.2 (TBD)
+
+icon:check[] Core: Loading of older jobs could cause an error. The causes of those errors have been fixed.
+
 [[v0.24.1]]
 == 0.24.1 (02.10.2018)
 
