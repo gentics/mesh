@@ -376,7 +376,7 @@ public class MeshImpl implements Mesh {
 	private void createLockFile() throws IOException {
 		File lockFile = new File(options.getLockPath());
 		File lockFolder = lockFile.getParentFile();
-		if (!lockFolder.exists() && !lockFolder.mkdirs()) {
+		if (lockFolder != null && !lockFolder.exists() && !lockFolder.mkdirs()) {
 			log.error("Could not create parent folder for lockfile {" + lockFile.getAbsolutePath() + "}");
 		}
 		lockFile.createNewFile();
