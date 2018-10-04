@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,11 +25,17 @@ public class PluginConfigTest {
 		options.setPluginDirectory(PLUGIN_DIR);
 		Mesh.mesh(options);
 	}
+	
+	@Before
+	public void cleanConfigFiles() {		
+		DummyPlugin plugin = new DummyPlugin();
+		plugin.getConfigFile().delete();
+		plugin.getLocalConfigFile().delete();
+	}
 
 	@Test
 	public void testMissingConfig() throws FileNotFoundException, IOException {
 		DummyPlugin plugin = new DummyPlugin();
-		plugin.getConfigFile().delete();
 		assertNull(plugin.readConfig(DummyPluginConfig.class));
 	}
 
@@ -35,7 +43,6 @@ public class PluginConfigTest {
 	public void testWriteConfig() throws IOException {
 
 		DummyPlugin plugin = new DummyPlugin();
-		plugin.getConfigFile().delete();
 
 		DummyPluginConfig config = new DummyPluginConfig();
 		config.setName("test");
@@ -45,5 +52,29 @@ public class PluginConfigTest {
 		assertEquals("test", plugin.readConfig(DummyPluginConfig.class).getName());
 		assertEquals(PLUGIN_DIR + "/dummy/config.yml", plugin.getConfigFile().getPath());
 		assertEquals(PLUGIN_DIR + "/dummy/storage", plugin.getStorageDir().getPath());
+	}
+	
+
+	@Test
+	public void testReadConfigOverride() throws FileNotFoundException, IOException {
+		DummyPlugin plugin = new DummyPlugin();
+		
+		DummyPluginConfig config = new DummyPluginConfig();
+		config.setName("local");
+		
+		plugin.writeConfig(config);
+		assertTrue(plugin.getConfigFile().exists());
+		
+		FileUtils.copyFile(plugin.getConfigFile(), plugin.getLocalConfigFile());
+		assertTrue(plugin.getLocalConfigFile().exists());
+		
+		
+		config.setName("original");
+		plugin.writeConfig(config);
+		assertTrue(plugin.getConfigFile().exists());
+		
+		config = plugin.readConfig(DummyPluginConfig.class);
+		assertEquals("local", config.getName());
+
 	}
 }
