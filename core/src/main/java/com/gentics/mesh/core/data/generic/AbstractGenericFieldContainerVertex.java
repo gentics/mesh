@@ -28,6 +28,18 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		return getGraphFieldContainer(language.getLanguageTag(), branch != null ? branch.getUuid() : null, type, classOfU);
 	}
 
+	protected Edge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
+		Database db = MeshInternal.get().database();
+		FramedGraph graph = Tx.getActive().getGraph();
+		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.createComposedIndexKey(getId(),
+			branchUuid, type.getCode(), languageTag)).iterator();
+		if (iterator.hasNext()) {
+			return iterator.next();
+		} else {
+			return null;
+		}
+	}
+
 	/**
 	 * Locate the field container using the provided information.
 	 * 
@@ -42,14 +54,10 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 */
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type,
 			Class<U> classOfU) {
-
-		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.createComposedIndexKey(getId(),
-				branchUuid, type.getCode(), languageTag));
-		Iterator<Edge> it = edges.iterator();
-		if (it.hasNext()) {
-			Vertex in = it.next().getVertex(IN);
+		Edge edge = getGraphFieldContainerEdge(languageTag, branchUuid, type);
+		if (edge != null) {
+			FramedGraph graph = Tx.getActive().getGraph();
+			Vertex in = edge.getVertex(IN);
 			return graph.frameElementExplicit(in, classOfU);
 		} else {
 			return null;

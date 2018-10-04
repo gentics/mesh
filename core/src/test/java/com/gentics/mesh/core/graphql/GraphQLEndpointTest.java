@@ -138,6 +138,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "filtering/nodes", true, "draft" });
 		testData.add(new Object[] { "filtering/nodes-en", true, "draft" });
 		testData.add(new Object[] { "filtering/nodes-jp", true, "draft" });
+		testData.add(new Object[] { "filtering/nodes-creator-editor", true, "draft" });
+		testData.add(new Object[] { "filtering/users", true, "draft" });
+		testData.add(new Object[] { "filtering/groups", true, "draft" });
+		testData.add(new Object[] { "filtering/roles", true, "draft" });
 		testData.add(new Object[] { "node/breadcrumb-root", true, "draft" });
 		return testData;
 	}

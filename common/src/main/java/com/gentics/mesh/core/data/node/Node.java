@@ -17,7 +17,6 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -42,6 +41,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.syncleus.ferma.EdgeFrame;
 
 import io.reactivex.Single;
 
@@ -743,7 +743,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @return existing edge or null
 	 */
-	GraphFieldContainerEdge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type);
+	EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Fully delete the node. Not that this delete operation will delete all versions of the node and also the node itself (from all branches).

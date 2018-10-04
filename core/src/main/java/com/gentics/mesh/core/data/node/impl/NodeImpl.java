@@ -363,7 +363,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// check whether there is a current draft version
 
 		if (handleDraftEdge) {
-			draftEdge = getGraphFieldContainerEdge(languageTag, branchUuid, DRAFT);
+			draftEdge = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
 			if (draftEdge != null) {
 				previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 			}
@@ -428,11 +428,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public GraphFieldContainerEdge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
+	public EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		if (edgeTraversal.hasNext()) {
-			return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class).iterator().next();
+			return edgeTraversal.next();
 		} else {
 			return null;
 		}
@@ -1251,7 +1251,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String languageTag = container.getLanguage().getLanguageTag();
 
 		// Remove an existing published edge
-		EdgeFrame currentPublished = getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED);
+		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
 		if (currentPublished != null) {
 			// We need to remove the edge first since updateWebrootPathInfo will
 			// check the published edge again
@@ -1466,26 +1466,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Object indexKey = DB.get().createComposedIndexKey(getId(), branchUuid);
 
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		return new DynamicTransformablePageImpl<NodeImpl>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
-
-			// Filter out nodes which do not provide one of the specified language tags and type
-			if (languageTags != null) {
-				Iterator<Edge> edgeIt = item.getEdges(OUT, HAS_FIELD_CONTAINER).iterator();
-				while (edgeIt.hasNext()) {
-					Edge edge = edgeIt.next();
-					String currentType = edge.getProperty(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY);
-					if (!type.getCode().equals(currentType)) {
-						continue;
-					}
-					String languageTag = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
-					if (languageTags.contains(languageTag)) {
+		if (languageTags == null) {
+			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, null, true);
+		} else {
+			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+				// Filter out nodes which do not provide one of the specified language tags and type
+				for (String languageTag : languageTags) {
+					if (item.getGraphFieldContainerEdge(languageTag, branchUuid, type) != null) {
 						return true;
 					}
 				}
 				return false;
-			}
-			return true;
-		}, true);
+			}, true);
+		}
 	}
 
 	@Override

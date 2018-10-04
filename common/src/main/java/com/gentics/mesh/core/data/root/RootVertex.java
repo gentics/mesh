@@ -125,7 +125,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Additional filter to be applied
 	 * @return
 	 */
-	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Vertex> extraFilter) {
+	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
 	}
 
