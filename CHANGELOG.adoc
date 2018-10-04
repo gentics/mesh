@@ -17,6 +17,8 @@ icon:check[] REST: The response error code handling for uploads has been updated
 
 icon:check[] Elasticsearch: The initial sync check will be omitted if no elasticsearch has been configured.
 
+icon:plus[] Plugins: It is now possible to override plugin config in a `config.local.yml` file
+
 [[v0.22.3]]
 == 0.22.3 (20.09.2018)
 
