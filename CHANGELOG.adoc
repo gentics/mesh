@@ -18,6 +18,10 @@
 [[v0.25.0]]
 == 0.25.0 (TBD)
 
+icon:plus[] Core: The core Vert.x library was updated to version 3.5.4
+
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.37
+
 icon:plus[] GraphQL: Added filters for users, groups and roles.
 
 icon:check[] GraphQL: GraphQL Java has been updated to version 10.0

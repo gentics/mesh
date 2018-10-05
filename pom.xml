@@ -20,7 +20,7 @@
 		<ferma.version>2.4.0</ferma.version>
 		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
 		<elasticsearch.client.version>0.5.0</elasticsearch.client.version>
-		<orientdb.version>2.2.34</orientdb.version>
+		<orientdb.version>2.2.37</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
 		<jackson.version>2.9.0</jackson.version>
@@ -44,7 +44,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.5.6</version>
+		<version>3.5.7</version>
 	</parent>
 
 	<developers>
@@ -83,6 +83,7 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
+		<module>diktyo</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>
