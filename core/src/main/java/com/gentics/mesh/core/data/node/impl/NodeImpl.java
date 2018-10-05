@@ -266,11 +266,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void assertPublishConsistency(InternalActionContext ac, Branch branch) {
 
-		NodeParameters parameters = ac.getNodeParameters();
 
 		String branchUuid = branch.getUuid();
 		// Check whether the node got a published version and thus is published
-		boolean isPublished = findVersion(parameters.getLanguageList(), branchUuid, "published") != null;
+
+		boolean isPublished = hasPublishedContent(branch.getUuid());
 
 		// A published node must have also a published parent node.
 		if (isPublished) {
@@ -282,8 +282,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Check whether the parent node has a published field container
 				// for the given branch and language
-				NodeGraphFieldContainer fieldContainer = parentNode.findVersion(parameters.getLanguageList(), branchUuid, "published");
-				if (fieldContainer == null) {
+				if (!parentNode.hasPublishedContent(branch.getUuid())) {
 					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in branch {" + branchUuid + "}");
 					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
 				}
@@ -295,8 +294,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// TODO handle branch
 			for (Node node : getChildren()) {
-				NodeGraphFieldContainer fieldContainer = node.findVersion(parameters.getLanguageList(), branchUuid, "published");
-				if (fieldContainer != null) {
+				if (node.hasPublishedContent(branch.getUuid())) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
 						+ getUuid() + "}");
 					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
