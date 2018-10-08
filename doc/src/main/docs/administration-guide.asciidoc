@@ -163,7 +163,7 @@ Example for custom languages file:
 
 [source,json]
 ----
-include::includes/example-languages.json[]
+include::content/docs/examples/example-languages.json[]
 ----
 
 === HTTPS/SSL
