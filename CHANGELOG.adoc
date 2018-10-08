@@ -18,6 +18,8 @@
 [[v0.25.0]]
 == 0.25.0 (TBD)
 
+icon:plus[] Plugins: It is now possible to override plugin config in a `config.local.yml` file
+
 icon:plus[] Core: The core Vert.x library was updated to version 3.5.4
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.37
