@@ -11,13 +11,13 @@
 = Gentics Mesh Changelog
 
 [[v0.22.4]]
-== 0.22.4 (TBD)
+== 0.22.4 (08.10.2018)
 
 icon:check[] REST: The response error code handling for uploads has been updated. Previously no error 413 was returned when the upload limit was reached.
 
 icon:check[] Elasticsearch: The initial sync check will be omitted if no elasticsearch has been configured.
 
-icon:plus[] Plugins: It is now possible to override plugin config in a `config.local.yml` file
+icon:plus[] Plugins: It is now possible to override plugin config in a `config.local.yml` file.
 
 [[v0.22.3]]
 == 0.22.3 (20.09.2018)

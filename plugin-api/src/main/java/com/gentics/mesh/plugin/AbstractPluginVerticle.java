@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -42,6 +43,15 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	public AbstractPluginVerticle() {
 	}
 
+	/**
+	 * Use {@link PluginConfigUtil#getYAMLMapper()} instead.
+	 * @deprecated
+	 * @return
+	 */
+	@Deprecated
+	public static ObjectMapper getYAMLMapper() {
+		return PluginConfigUtil.getYAMLMapper();
+	}
 
 	@Override
 	public PluginManifest getManifest() {
