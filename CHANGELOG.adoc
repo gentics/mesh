@@ -1,4 +1,10 @@
+---
+title: Changelog
+---
+
 :icons: font
+:source-highlighter: prettify
+:toc:
 
 ////
 * Write changelog entries in present tense
