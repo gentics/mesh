@@ -23,14 +23,19 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -61,12 +66,12 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, tx(() -> project().getBaseNode().getUuid()),
-				new PublishParametersImpl().setRecursive(true)));
+			new PublishParametersImpl().setRecursive(true)));
 
 		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		try (Tx tx = tx()) {
 			nodes = project.getNodeRoot().findAll().stream().filter(node -> node.getParentNode(project.getLatestBranch().getUuid()) != null)
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 			assertThat(nodes).as("Nodes list").isNotEmpty();
 		}
 
@@ -83,7 +88,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		nodes.forEach(node -> {
 			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 				assertThat(tx(() -> node.getGraphFieldContainers(newBranch, type))).as(type + " Field Containers before Migration").isNotNull()
-						.isEmpty();
+					.isEmpty();
 			});
 		});
 
@@ -95,15 +100,15 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 			nodes.forEach(node -> {
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
 					assertThat(node.getGraphFieldContainers(newBranch, type)).as(type + " Field Containers after Migration").isNotNull()
-							.isNotEmpty();
+						.isNotEmpty();
 				});
 
 				if (published.contains(node)) {
 					assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
-							.isNotNull().isNotEmpty();
+						.isNotNull().isNotEmpty();
 				} else {
 					assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
-							.isNotNull().isEmpty();
+						.isNotNull().isEmpty();
 				}
 
 				Node initialParent = node.getParentNode(initialBranchUuid());
@@ -111,7 +116,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNull();
 				} else {
 					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNotNull()
-							.isEqualToComparingOnlyGivenFields(initialParent, "uuid");
+						.isEqualToComparingOnlyGivenFields(initialParent, "uuid");
 				}
 
 				// TODO assert tags
@@ -171,21 +176,50 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testMigrateNodesWithoutSegment() {
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("dummyData");
+		request.addField(FieldUtil.createStringFieldSchema("test"));
+		SchemaResponse response = call(() -> client().createSchema(request));
+		String schemaUuid = response.getUuid();
+
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaUuid));
+
+		for (int i = 0; i < 2; i++) {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setSchemaName("dummyData");
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setParentNodeUuid(baseNodeUuid);
+
+			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+			call(() -> client().publishNode(PROJECT_NAME, node.getUuid()));
+		}
+
+		grantAdminRole();
+		waitForJobs(() -> {
+			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName("branch1")));
+		}, COMPLETED, 1);
+
+	}
+
+	@Test
 	public void testBigData() throws Throwable {
 
 		MetricRegistry metrics = new MetricRegistry();
 		Meter createdNode = metrics.meter("Create Node");
 		Timer migrationTimer = metrics.timer("Migration");
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		createNode(baseNodeUuid);
+
 		Branch newBranch;
 		try (Tx tx = tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
-			Project project = project();
-			String projectName = project.getName();
-			String baseNodeUuid = project.getBaseNode().getUuid();
 
 			ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS).convertDurationsTo(TimeUnit.MILLISECONDS)
-					.build();
+				.build();
 			reporter.start(1, TimeUnit.SECONDS);
 
 			ExecutorService service = Executors.newFixedThreadPool(numThreads);
@@ -194,11 +228,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 			for (int i = 0; i < numFolders; i++) {
 				futures.add(service.submit(() -> {
-					NodeCreateRequest create = new NodeCreateRequest();
-					create.setLanguage("en");
-					create.setSchema(new SchemaReferenceImpl().setName("folder"));
-					create.setParentNodeUuid(baseNodeUuid);
-					call(() -> client().createNode(projectName, create));
+					createNode(baseNodeUuid);
 					createdNode.mark();
 					return true;
 				}));
@@ -208,12 +238,20 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			newBranch = project.getBranchRoot().create("newbranch", user());
+			newBranch = project().getBranchRoot().create("newbranch", user());
 			tx.success();
 		}
 
 		String jobUuid = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuid);
+	}
+
+	private void createNode(String baseNodeUuid) {
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setLanguage("en");
+		create.setSchema(new SchemaReferenceImpl().setName("folder"));
+		create.setParentNodeUuid(baseNodeUuid);
+		call(() -> client().createNode(PROJECT_NAME, create));
 	}
 
 	/**

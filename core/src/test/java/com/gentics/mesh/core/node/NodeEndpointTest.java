@@ -63,7 +63,9 @@ import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
@@ -196,6 +198,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				long duration = System.currentTimeMillis() - start;
 				System.out.println("Duration:" + i + " " + (duration / i));
 			}
+		}
+	}
+
+	@Test
+	public void testCreateWithoutSegment() {
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("dummyData");
+		request.addField(FieldUtil.createStringFieldSchema("test"));
+		SchemaResponse response = call(() -> client().createSchema(request));
+		String schemaUuid = response.getUuid();
+
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaUuid));
+
+		for (int i = 0; i < 10; i++) {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setSchemaName("dummyData");
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setParentNodeUuid(baseNodeUuid);
+
+			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+			call(() -> client().publishNode(PROJECT_NAME, node.getUuid()));
 		}
 	}
 
@@ -1436,7 +1461,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de"),
 			new VersioningParametersImpl().setVersion("draft")));
 
-
 		List<NodeReference> breadcrumb = response.getBreadcrumb();
 		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
 		assertEquals("/api/v1/dummy/webroot/", breadcrumb.get(0).getPath());
@@ -1473,8 +1497,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("2014", response.getBreadcrumb().get(2).getDisplayName());
 			assertEquals(response.getBreadcrumb().get(3).getUuid(), response.getUuid());
 			assertEquals("News_2014 english title", response.getBreadcrumb().get(3).getDisplayName());
-			response.getBreadcrumb().forEach(element ->
-				assertNull("No path should be rendered since by default the linkType is OFF", element.getPath()));
+			response.getBreadcrumb()
+				.forEach(element -> assertNull("No path should be rendered since by default the linkType is OFF", element.getPath()));
 			assertEquals("Only 4 items should be listed in the breadcrumb", 4, response.getBreadcrumb().size());
 		}
 	}

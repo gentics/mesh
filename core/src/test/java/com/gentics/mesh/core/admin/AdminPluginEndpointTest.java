@@ -39,7 +39,7 @@ import io.vertx.core.ServiceHelper;
 import io.vertx.reactivex.core.Vertx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true)
-public class AdminPluginEndpoinTest extends AbstractMeshTest {
+public class AdminPluginEndpointTest extends AbstractMeshTest {
 
 	private static final String API_NAME = "basic";
 

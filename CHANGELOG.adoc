@@ -28,6 +28,10 @@ icon:check[] GraphQL: GraphQL Java has been updated to version 10.0
 
 icon:check[] Core: Loading of older jobs could cause an error. The causes of those errors have been fixed.
 
+icon:check[] Migration: Fix migration regression which was introduced with 0.24.1
+
+icon:check[] Demo: Fix demo webroot path handling. This fix only affects new demo setups.
+
 [[v0.24.1]]
 == 0.24.1 (02.10.2018)
 
