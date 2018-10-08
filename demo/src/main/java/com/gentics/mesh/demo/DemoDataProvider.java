@@ -222,9 +222,8 @@ public class DemoDataProvider {
 			request.setFirstname(firstname);
 			request.setLastname(lastname);
 			request.setPassword(password);
-			UserResponse response = call(() -> client.createUser(request));
+			UserResponse response = call(() -> client.createUser(uuid, request));
 			users.put(username, response);
-			uuidMapping.put(response.getUuid(), uuid);
 
 			JsonArray groupArray = userJson.getJsonArray("groups");
 			for (int e = 0; e < groupArray.size(); e++) {
@@ -253,11 +252,8 @@ public class DemoDataProvider {
 			log.info("Creating group {" + name + "}");
 			GroupCreateRequest groupCreateRequest = new GroupCreateRequest();
 			groupCreateRequest.setName(name);
-			MeshResponse<GroupResponse> groupResponseFuture = client.createGroup(groupCreateRequest).invoke();
-			latchFor(groupResponseFuture);
-			GroupResponse group = groupResponseFuture.result();
+			GroupResponse group = call(() -> client.createGroup(uuid, groupCreateRequest));
 			groups.put(name, group);
-			uuidMapping.put(group.getUuid(), uuid);
 
 			JsonArray rolesNode = groupJson.getJsonArray("roles");
 			for (int e = 0; e < rolesNode.size(); e++) {
@@ -302,9 +298,8 @@ public class DemoDataProvider {
 			log.info("Creating role {" + name + "}");
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName(name);
-			RoleResponse role = call(() -> client.createRole(request));
+			RoleResponse role = call(() -> client.createRole(uuid, request));
 			roles.put(name, role);
-			uuidMapping.put(role.getUuid(), uuid);
 		}
 	}
 
@@ -406,8 +401,8 @@ public class DemoDataProvider {
 					}
 				}
 			}
-			NodeResponse createdNode = call(() -> client.createNode(project.getName(), nodeCreateRequest));
-			uuidMapping.put(createdNode.getUuid(), uuid);
+			NodeResponse createdNode = call(() -> client.createNode(uuid, project.getName(), nodeCreateRequest));
+			System.out.println("UUID: " + uuid + " - " + createdNode.getUuid());
 
 			// Upload binary data
 			JsonObject binNode = nodeJson.getJsonObject("bin");
@@ -493,10 +488,8 @@ public class DemoDataProvider {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName(name);
-			ProjectResponse project = call(() -> client.createProject(request));
+			ProjectResponse project = call(() -> client.createProject(uuid, request));
 			projects.put(name, project);
-			uuidMapping.put(project.getUuid(), uuid);
-			uuidMapping.put(project.getRootNode().getUuid(), mappingData.getString("node/root"));
 		}
 	}
 

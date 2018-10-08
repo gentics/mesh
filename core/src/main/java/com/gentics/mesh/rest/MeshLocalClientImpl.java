@@ -216,8 +216,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
 		ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setProject(projectName);
+		ac.setPayloadObject(nodeCreateRequest);
+		ac.getVersioningParameters().setVersion("draft");
+		nodeCrudHandler.handleUpdate(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
@@ -399,8 +403,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class);
+		ac.setPayloadObject(request);
+		projectCrudHandler.handleUpdate(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
@@ -632,17 +638,19 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest) {
+	public MeshRequest<GroupResponse> createGroup(GroupCreateRequest createRequest) {
 		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
-		ac.setPayloadObject(groupCreateRequest);
+		ac.setPayloadObject(createRequest);
 		groupCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
 	public MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest createRequest) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
+		ac.setPayloadObject(createRequest);
+		groupCrudHandler.handleUpdate(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
@@ -712,8 +720,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
+		ac.setPayloadObject(request);
+		userCrudHandler.handleUpdate(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
@@ -769,9 +779,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		LocalActionContextImpl<RoleResponse> ac = createContext(RoleResponse.class);
+		ac.setPayloadObject(request);
+		roleCrudHandler.handleUpdate(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());	}
 
 	@Override
 	public MeshRequest<Void> deleteRole(String uuid) {
