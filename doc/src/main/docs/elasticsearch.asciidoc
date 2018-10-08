@@ -77,11 +77,19 @@ search:
 | ```search.prefix```            | String     | mesh-                   | Elasticsearch installation prefix. Multiple Gentics Mesh installations with different prefixes can utilize the same Elasticsearch server.
 |======
 
-=== Embedded mode
+=== Dedicated Elasticsearch
 
-Gentics Mesh will setup and start the Elasticsearch server if the `search.startEmbeddedES` property is set to true.
+It is recommended to use a dedicated Elasticsearch server. You can disable the embedded Elasticsearch server via by setting `search.startEmbedded` to false. Your `search.url` parameter must point to the Elasticsearch installation that you want to use.
+
+TIP: You can also use link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment variables] to configure Gentics Mesh and change these settings.
+
+=== Embedded Elasticsearch
+
+Gentics Mesh will setup and start the Elasticsearch server if the `search.startEmbedded` property is set to true.
 The server installation will be placed in the current working directory and started.
 A watchdog will continuously check the process and restart it when a crash has been detected.
+
+WARNING: Support for embedded Elasticsearch will be dropped in the future.
 
 === Disabling search
 
