@@ -3,10 +3,10 @@
   "emailAddress" : "j.doe@nowhere.com",
   "lastname" : "Doe",
   "firstname" : "Joe",
-  "groupUuid" : "9c893117fe044ac8893117fe042ac85e",
+  "groupUuid" : "7e870060828946cf8700608289c6cf89",
   "password" : "iesiech0eewinioghaRa",
   "nodeReference" : {
     "projectName" : "dummy",
-    "uuid" : "4a5b1dace96047739b1dace960e77302"
+    "uuid" : "3291b479037445d091b4790374a5d0b3"
   }
 }

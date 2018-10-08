@@ -1,6 +1,6 @@
 {
   "data" : [ {
-    "uuid" : "345cc83cb5d04dd79cc83cb5d03dd726",
+    "uuid" : "4ed6cd0fc4ff4d4296cd0fc4ff0d4264",
     "displayField" : "name",
     "segmentField" : "name",
     "container" : false,
@@ -56,7 +56,7 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "23bfac4199f742f8bfac4199f7f2f803",
+    "uuid" : "886fc6b62d234388afc6b62d231388be",
     "displayField" : "name",
     "segmentField" : "name",
     "container" : false,

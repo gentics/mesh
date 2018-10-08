@@ -1,17 +1,17 @@
 {
-  "uuid" : "54c2e7af865f49f082e7af865f99f020",
+  "uuid" : "09e2ca5f95d64acca2ca5f95d65acc64",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "5eafd7fc04c94aa6afd7fc04c90aa606"
+    "uuid" : "3d032a358de44705832a358de4f70582"
   },
-  "created" : "2018-10-03T09:23:07.395Z",
+  "created" : "2018-10-08T15:43:26.448Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "88f68b9b2a4d49fab68b9b2a4d49fa18"
+    "uuid" : "f4ef57632eed44afaf57632eed24af94"
   },
-  "edited" : "2018-10-03T09:23:07.395Z",
+  "edited" : "2018-10-08T15:43:26.448Z",
   "name" : "Winter Collection Branch",
   "hostname" : "getmesh.io",
   "ssl" : true,
