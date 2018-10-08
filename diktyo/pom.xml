@@ -10,6 +10,11 @@
 	</parent>
 
 	<inceptionYear>2018</inceptionYear>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<projectRoot>${project.basedir}/..</projectRoot>
+	</properties>
 
 	<dependencies>
 		<dependency>
