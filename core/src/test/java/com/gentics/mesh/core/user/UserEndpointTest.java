@@ -508,6 +508,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		Mesh.mesh().getOptions().setDefaultPageSize(42);
 		ListResponse<UserResponse> restResponse = call(() -> client().findUsers());
 		assertEquals(42, restResponse.getMetainfo().getPerPage());
+		Mesh.mesh().getOptions().setDefaultPageSize(25);
 	}
 
 	@Test
