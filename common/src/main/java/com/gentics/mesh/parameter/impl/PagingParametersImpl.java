@@ -9,6 +9,7 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
@@ -55,8 +56,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 *            Page number
 	 */
 	public PagingParametersImpl(int page) {
-		// TODO use reference for default page size
-		this(page, 25);
+		this(page, Mesh.mesh().getOptions().getDefaultPageSize());
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 
 		// perPage
 		QueryParameter perPageParameter = new QueryParameter();
-		perPageParameter.setDefaultValue(String.valueOf(DEFAULT_PAGE_SIZE));
+		perPageParameter.setDefaultValue(String.valueOf(Mesh.mesh().getOptions().getDefaultPageSize()));
 		perPageParameter.setDescription("Number of elements per page.");
 		perPageParameter.setExample("42");
 		perPageParameter.setRequired(false);

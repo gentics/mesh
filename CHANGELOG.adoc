@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.22.5]]
+== 0.22.5 (11.10.2018)
+
+icon:plus[] A default paging value can now be configured via the `defaultPageSize` field in the `mesh.yml` file, or the `MESH_DEFAULT_PAGE_SIZE` environment variable.
+
 [[v0.22.4]]
 == 0.22.4 (08.10.2018)
 

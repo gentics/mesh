@@ -1,5 +1,6 @@
 package com.gentics.mesh.parameter;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.util.NumberUtils;
 
@@ -11,7 +12,6 @@ public interface PagingParameters extends ParameterProvider {
 	public static final String SORT_ORDER_PARAMETER_KEY = "order";
 
 	public static final int DEFAULT_PAGE = 1;
-	public static final int DEFAULT_PAGE_SIZE = 25;
 
 	/**
 	 * Return the current page.
@@ -28,7 +28,8 @@ public interface PagingParameters extends ParameterProvider {
 	 * @return Per page count
 	 */
 	default int getPerPage() {
-		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), DEFAULT_PAGE_SIZE);
+		int defaultPageSize = Mesh.mesh().getOptions().getDefaultPageSize();
+		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), defaultPageSize);
 	}
 
 	/**

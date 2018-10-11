@@ -19,8 +19,10 @@ public class MeshOptions implements Option {
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
+	public static final int DEFAULT_PAGE_SIZE = 25;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
+	public static final String MESH_DEFAULT_PAGE_SIZE = "MESH_DEFAULT_PAGE_SIZE";
 	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
@@ -35,6 +37,11 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.")
 	@EnvironmentVariable(name = MESH_DEFAULT_LANG_ENV, description = "Override the configured default language.")
 	private String defaultLanguage = DEFAULT_LANGUAGE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the default page size used when no paging parameters are specified.")
+	@EnvironmentVariable(name = MESH_DEFAULT_PAGE_SIZE, description = "Override the configured default page size.")
+	private int defaultPageSize = DEFAULT_PAGE_SIZE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Optional path to a JSON file containing additional languages")
@@ -111,6 +118,24 @@ public class MeshOptions implements Option {
 	 */
 	public String getDefaultLanguage() {
 		return defaultLanguage;
+	}
+
+	/**
+	 * Return the default page size.
+	 *
+	 * @return The default page size
+	 */
+	public int getDefaultPageSize() {
+		return defaultPageSize;
+	}
+
+	/**
+	 * Set the default page size.
+	 *
+	 * @param defaultPageSize The default page size
+	 */
+	public void setDefaultPageSize(int defaultPageSize) {
+		this.defaultPageSize = defaultPageSize;
 	}
 
 	/**

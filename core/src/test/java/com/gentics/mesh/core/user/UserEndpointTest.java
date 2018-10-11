@@ -49,6 +49,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -500,6 +501,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			.getTotalCount());
 		assertEquals(25, listResponse.getMetainfo().getPerPage());
 
+	}
+
+	@Test
+	public void testPagingOption() {
+		Mesh.mesh().getOptions().setDefaultPageSize(42);
+		ListResponse<UserResponse> restResponse = call(() -> client().findUsers());
+		assertEquals(42, restResponse.getMetainfo().getPerPage());
 	}
 
 	@Test
