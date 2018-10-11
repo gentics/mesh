@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
 import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -179,7 +180,13 @@ public final class ClientHelper {
 		if (future.cause() instanceof MeshRestClientMessageException) {
 			MeshRestClientMessageException exception = ((MeshRestClientMessageException) future.cause());
 			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
-			assertEquals(message, exception.getMessage());
+
+			GenericMessageResponse msg = exception.getResponseMessage();
+			if (msg != null) {
+				assertEquals(message, msg.getMessage());
+			} else {
+				assertEquals(message, exception.getMessage());
+			}
 		} else {
 			future.cause().printStackTrace();
 			fail("Unhandled exception");
