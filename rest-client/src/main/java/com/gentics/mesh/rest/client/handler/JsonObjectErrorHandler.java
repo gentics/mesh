@@ -19,8 +19,10 @@ public interface JsonObjectErrorHandler<T> extends ResponseHandler<T> {
 				log.debug(body);
 			}
 
-			log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + body
+			if (log.isDebugEnabled())  {
+			log.debug("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + body
 					+ "} for method {" + getMethod() + "} and uri {" + getUri() + "}");
+			}
 
 			// Try to parse the body data and fail using the extracted exception.
 			try {
@@ -33,7 +35,7 @@ public interface JsonObjectErrorHandler<T> extends ResponseHandler<T> {
 				}
 			}
 
-			getFuture().fail(new MeshRestClientMessageException(response.statusCode(), response.statusMessage()));
+			getFuture().fail(new MeshRestClientMessageException(response, body, getMethod(), getUri()));
 			return;
 		});
 
