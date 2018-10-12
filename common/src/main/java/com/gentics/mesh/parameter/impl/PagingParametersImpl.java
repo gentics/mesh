@@ -9,12 +9,10 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.NumberUtils;
 
 /**
  * A {@link PagingParametersImpl} can be used to add additional paging parameters to the rest requests.
@@ -58,11 +56,6 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 */
 	public PagingParametersImpl(int page) {
 		this(page, null);
-	}
-
-	@Override
-	public int getPerPage() {
-		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), Mesh.mesh().getOptions().getDefaultPageSize());
 	}
 
 	/**
