@@ -16,6 +16,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -36,6 +37,11 @@ import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
 
 	@Test
 	public void testTakeNodeOzfflineManyChildren() {
@@ -241,22 +247,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineForBranch() {
 		Node news = folder("news");
-		Branch newBranch;
 		Branch initialBranch = db().tx(() -> latestBranch());
 
-		try (Tx tx = tx()) {
-			Project project = project();
-			newBranch = project.getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
-			// save the folder in new branch
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.getFields().put("name", FieldUtil.createStringField("News"));
-			call(() -> client().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParametersImpl().setBranch(newBranch.getName())));
-
 			// publish in initial and new branch
 			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialBranch.getName())));
 			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(newBranch.getName())));
@@ -272,8 +267,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				new VersioningParametersImpl().setBranch(initialBranch.getName())))).as("Initial branch publish status").isNotPublished("en")
 					.isNotPublished("de");
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-				new VersioningParametersImpl().setBranch(newBranch.getName())))).as("New branch publish status").isPublished("en")
-					.doesNotContain("de");
+				new VersioningParametersImpl().setBranch(newBranch.getName())))).as("New branch publish status").isPublished("en").isPublished("de");
 
 		}
 

@@ -457,11 +457,12 @@ public interface TestHelperMethods {
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
 		// update node for target branch
-		NodeUpdateRequest update = new NodeUpdateRequest();
-		update.setLanguage(nodeResponse.getLanguage());
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setLanguage(nodeResponse.getLanguage());
+		create.setParentNode(nodeResponse.getParentNode());
 
-		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setBranch(targetBranchName)));
+		nodeResponse.getFields().keySet().forEach(key -> create.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
+		return call(() -> client().createNode(nodeResponse.getUuid(), projectName, create,  new VersioningParametersImpl().setBranch(targetBranchName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {

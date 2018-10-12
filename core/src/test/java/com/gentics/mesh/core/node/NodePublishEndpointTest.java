@@ -16,14 +16,14 @@ import static org.junit.Assert.fail;
 
 import java.util.Map.Entry;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -40,6 +40,11 @@ import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodePublishEndpointTest extends AbstractMeshTest {
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
 
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
@@ -186,13 +191,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testGetPublishStatusForBranch() {
 		Node node = folder("2015");
-		Project project = project();
-		Branch newBranch;
-
-		try (Tx tx = tx()) {
-			newBranch = project.getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
@@ -208,10 +207,10 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setBranch(newBranch
 					.getName())));
-			assertThat(publishStatus).as("New branch publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
+			assertThat(publishStatus).as("New branch publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").isPublished("en").hasVersion("en", "1.0");
 
 			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeParametersImpl()));
-			assertThat(publishStatus).as("New branch publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
+			assertThat(publishStatus).as("New branch publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").isPublished("en").hasVersion("en", "1.0");
 		}
 	}
 
@@ -270,19 +269,15 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeForBranch() {
-		Project project = project();
 		Node node = folder("2015");
 
-		try (Tx tx = tx()) {
-			project.getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
-			update.getFields().put("slug", FieldUtil.createStringField("2015"));
+			update.getFields().put("slug", FieldUtil.createStringField("2015 (de)"));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
 			// publish for the initial branch
@@ -392,19 +387,18 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageForBranch() {
-		Project project = project();
 		Node node = folder("2015");
-		Branch newBranch;
 
 		try (Tx tx = tx()) {
-			newBranch = project.getBranchRoot().create("newbranch", user());
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new VersioningParametersImpl().setBranch(
+					initialBranchUuid()), new PublishParametersImpl().setRecursive(true)));
 			tx.success();
 		}
 
+		Branch newBranch = createBranch("newbranch", true);
+
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new VersioningParametersImpl().setBranch(
-					initialBranchUuid()), new PublishParametersImpl().setRecursive(true)));
 
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
@@ -412,6 +406,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(initialBranch().getName())));
 
 			update.getFields().put("name", FieldUtil.createStringField("2015 new de"));
+			update.setVersion("1.0");
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(newBranch.getName())));
 			update.setLanguage("en");
 			update.getFields().put("name", FieldUtil.createStringField("2015 new en"));

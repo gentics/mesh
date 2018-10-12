@@ -212,6 +212,16 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setLanguage("en");
+			create.getFields().put("name", FieldUtil.createStringField("News"));
+			create.setParentNodeUuid(node.getParentNode(initialBranch().getUuid()).getUuid());
+			call(() -> client().createNode(node.getUuid(), PROJECT_NAME, create));
+
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().setBranch(initialBranch().getName()).draft()));
 			assertEquals("Total children in initial branch", childrenSize, nodeList.getMetainfo().getTotalCount());
@@ -222,10 +232,11 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			assertEquals("Total children in initial branch", 0, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial branch", 0, nodeList.getData().size());
 
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.getFields().put("name", FieldUtil.createStringField("new"));
-			call(() -> client().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setLanguage("en");
+			create.getFields().put("name", FieldUtil.createStringField("new"));
+			create.setParentNodeUuid(node.getUuid());
+			call(() -> client().createNode(firstChild.getUuid(), PROJECT_NAME, create));
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().setBranch(newBranch.getName()).draft()));
