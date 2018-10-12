@@ -32,7 +32,7 @@ public interface GenericMessageErrorHandler<T> extends ResponseHandler<T> {
 			// Try to parse the body data and fail using the extracted exception.
 			try {
 				GenericMessageResponse responseMessage = JsonUtil.readValue(body, GenericMessageResponse.class);
-				getFuture().fail(new MeshRestClientMessageException(response.statusCode(), response.statusMessage(), responseMessage));
+				getFuture().fail(new MeshRestClientMessageException(response, responseMessage, getMethod(), getUri()));
 				return;
 			} catch (Exception e) {
 				if (log.isDebugEnabled()) {
@@ -40,7 +40,7 @@ public interface GenericMessageErrorHandler<T> extends ResponseHandler<T> {
 				}
 			}
 
-			getFuture().fail(new MeshRestClientMessageException(response.statusCode(), response.statusMessage()));
+			getFuture().fail(new MeshRestClientMessageException(response, body, getMethod(), getUri()));
 			return;
 		});
 	}
