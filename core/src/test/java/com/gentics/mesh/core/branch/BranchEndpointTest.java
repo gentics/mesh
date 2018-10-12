@@ -387,11 +387,11 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithoutBaseBranch() {
-		Branch latest = create("Latest", true);
+		Branch latest = createBranch("Latest", true);
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
-		Branch created = create(request);
+		Branch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(created).as("New Branch").isNotNull().hasPrevious(latest);
@@ -400,14 +400,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithBaseBranchByUuid() {
-		create("Latest", true);
-		Branch base = create("Base", false);
+		createBranch("Latest", true);
+		Branch base = createBranch("Base", false);
 		String baseUuid = tx(() -> base.getUuid());
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setUuid(baseUuid));
-		Branch created = create(request);
+		Branch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
@@ -416,14 +416,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithBaseBranchByName() {
-		create("Latest", true);
-		Branch base = create("Base", false);
+		createBranch("Latest", true);
+		Branch base = createBranch("Base", false);
 		String baseName = tx(() -> base.getName());
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setName(baseName));
-		Branch created = create(request);
+		Branch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
@@ -432,7 +432,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithNoPermBaseBranch() {
-		Branch latest = create("Latest", true);
+		Branch latest = createBranch("Latest", true);
 		String latestUuid = tx(() -> latest.getUuid());
 		tx(() -> role().revokePermissions(latest, READ_PERM));
 
@@ -456,7 +456,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference());
 
-		create(request);
+		createBranch(request);
 	}
 
 	@Test
@@ -1158,49 +1158,5 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
 					.setVersion("5.0")));
 		}
-	}
-
-	/**
-	 * Create a new branch
-	 * 
-	 * @param name
-	 *            branch name
-	 * @param latest
-	 *            true to make branch the latest
-	 * @return new branch
-	 */
-	protected Branch create(String name, boolean latest) {
-		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(name);
-
-		if (latest) {
-			request.setLatest(latest);
-		}
-
-		return create(request);
-	}
-
-	/**
-	 * Create a branch with the given request
-	 * 
-	 * @param request
-	 *            request
-	 * @return new branch
-	 */
-	protected Branch create(BranchCreateRequest request) {
-		StringBuilder uuid = new StringBuilder();
-		waitForJobs(() -> {
-			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(response).as("Created branch").hasName(request.getName());
-			if (request.isLatest()) {
-				assertThat(response).as("Created branch").isLatest();
-			} else {
-				assertThat(response).as("Created branch").isNotLatest();
-			}
-			uuid.append(response.getUuid());
-		}, COMPLETED, 1);
-
-		// return new branch
-		return tx(() -> project().getBranchRoot().findByUuid(uuid.toString()));
 	}
 }

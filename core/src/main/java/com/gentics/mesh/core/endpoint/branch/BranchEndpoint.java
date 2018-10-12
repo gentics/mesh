@@ -272,7 +272,6 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleAddTag(ac, branchUuid, tagUuid);
 		});
 
-		// TODO fix error handling. This does not fail when tagUuid could not be found
 		InternalEndpointRoute removeTag = createRoute();
 		removeTag.path("/:branchUuid/tags/:tagUuid");
 		removeTag.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());

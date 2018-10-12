@@ -27,7 +27,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
@@ -73,7 +72,7 @@ import io.reactivex.Single;
 /**
  * @see Branch
  */
-public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> implements Branch, Taggable {
+public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> implements Branch {
 
 	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
 

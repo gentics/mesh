@@ -42,7 +42,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * migrations and identify which branch specific search indices should be used when using the search indices.
  * 
  */
-public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex {
+public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable {
 
 	/**
 	 * Type Value: {@value #TYPE}

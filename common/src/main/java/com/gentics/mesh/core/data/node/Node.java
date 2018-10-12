@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -52,7 +53,7 @@ import io.reactivex.Single;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, IndexableElement {
+public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, IndexableElement, Taggable {
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -753,4 +754,20 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	void deleteFully(BulkActionContext bac, boolean recursive);
 
+	/**
+	 * Check whether the node is the base node of its project
+	 * 
+	 * @return true for base node
+	 */
+	boolean isBaseNode();
+
+	/**
+	 * Check whether the node is visible in the given branch (that means has at
+	 * least one DRAFT graphfieldcontainer in the branch)
+	 * 
+	 * @param branchUuid
+	 *            branch uuid
+	 * @return true if the node is visible in the branch
+	 */
+	boolean isVisibleInBranch(String branchUuid);
 }

@@ -109,14 +109,20 @@ public class NodeCheck implements ConsistencyCheck {
 	 */
 	private void checkParentNodes(Node node, ConsistencyCheckResponse response) {
 		Set<String> branchUuids = new HashSet<>();
-		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL)
+		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode())
 				.frameExplicit(GraphFieldContainerEdgeImpl.class)) {
 			branchUuids.add(edge.getBranchUuid());
 		}
 
 		for (String branchUuid : branchUuids) {
-			if (node.getParentNode(branchUuid) == null) {
+			Node branchParent = node.getParentNode(branchUuid);
+			// parent node has to exist and has to have at least one DRAFT graphfieldcontainer in the branch
+			if (branchParent == null) {
 				response.addInconsistency(String.format("The node does not have a parent node in branch %s", branchUuid), node.getUuid(), HIGH);
+			} else if (!branchParent.isBaseNode() && !branchParent.isVisibleInBranch(branchUuid)) {
+				response.addInconsistency(String.format(
+						"The node references parent node %s in branch %s, but the parent node does not have any DRAFT graphfieldcontainer in the branch",
+						branchParent.getUuid(), branchUuid), node.getUuid(), HIGH);
 			}
 		}
 	}

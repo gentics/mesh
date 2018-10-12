@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
@@ -60,7 +61,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
-import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -140,7 +140,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see Node
  */
-public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node, Taggable {
+public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
@@ -560,6 +560,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid) {
+		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
+		}
+
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the
 		// (project)--(nodeRoot) node.
 		Node node = MeshInternal.get().boot().nodeRoot().create(creator, schemaVersion, project, uuid);
@@ -1579,6 +1583,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					throw error(BAD_REQUEST, "node_missing_parentnode_field");
 				}
 				Node parentNode = getProject().getNodeRoot().loadObjectByUuid(ac, createRequest.getParentNode().getUuid(), CREATE_PERM);
+				// check whether the parent node is visible in the branch
+				if (!parentNode.isBaseNode() && !parentNode.isVisibleInBranch(branch.getUuid())) {
+					throw error(NOT_FOUND, "object_not_found_for_uuid", createRequest.getParentNode().getUuid());
+				}
 				setParentNode(branch.getUuid(), parentNode);
 			}
 
@@ -2063,4 +2071,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
+	@Override
+	public boolean isBaseNode() {
+		return inE(HAS_ROOT_NODE).hasNext();
+	}
+
+	@Override
+	public boolean isVisibleInBranch(String branchUuid) {
+		return getGraphFieldContainersIt(branchUuid, ContainerType.DRAFT).iterator().hasNext();
+	}
 }

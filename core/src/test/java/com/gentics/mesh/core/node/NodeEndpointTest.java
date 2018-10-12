@@ -41,6 +41,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -91,6 +92,11 @@ import io.vertx.core.logging.LoggerFactory;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
@@ -401,12 +407,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForLatestBranch() {
-		Branch newBranch;
-		try (Tx tx = tx()) {
-			Project project = project();
-			newBranch = project.getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			Node parentNode = folder("news");
@@ -755,11 +756,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(restResponse.getData()).as("Node List for initial branch").hasSize(getNodeCount());
 
 			// update a single node in the new branch
-			Node node = folder("2015");
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.getFields().put("name", FieldUtil.createStringField("2015 new branch"));
-			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
+			Node node = folder("news");
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(node.getParentNode(project().getInitialBranch().getUuid()).getUuid());
+			create.setLanguage("en");
+			create.getFields().put("name", FieldUtil.createStringField("News new branch"));
+			call(() -> client().createNode(node.getUuid(), PROJECT_NAME, create));
 
 			// check whether there is one node in the new branch now
 			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L), new VersioningParametersImpl().draft()));
@@ -1323,50 +1325,40 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadNodeForBranch() {
 		Node node = folder("2015");
-		Branch newBranch;
-
-		try (Tx tx = tx()) {
-			newBranch = project().getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String uuid = node.getUuid();
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new branch"));
+			updateRequest.setVersion("0.1");
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranch().getName())
 				.draft()))).as("Initial Branch Version").hasVersion("1.0").hasStringField("name", "2015");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getName())
-				.draft()))).as("New Branch Version").hasVersion("0.1").hasStringField("name", "2015 in new branch");
+				.draft()))).as("New Branch Version").hasVersion("1.1").hasStringField("name", "2015 in new branch");
 		}
 
 	}
 
 	@Test
 	public void testReadNodeVersionForBranch() {
-		String uuid;
 		Node node = folder("2015");
-		Branch newBranch;
-
-		try (Tx tx = tx()) {
-			uuid = node.getUuid();
-			Project project = project();
-			newBranch = project.getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		String uuid = tx(() -> node.getUuid());
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
+			updateRequest.setVersion("1.0");
 
 			// create version 0.1 in new branch
-			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.1 new branch"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.1 new branch"));
 			NodeResponse response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setBranch(
 				newBranch.getName())));
-			assertEquals("0.1", response.getVersion());
+			assertEquals("1.1", response.getVersion());
 
 			// create version 1.1 in initial branch (1.0 is the current published en node)
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.1 initial branch"));
@@ -1376,20 +1368,20 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("1.1", response.getVersion());
 
 			// create version 0.2 in new branch
-			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 new branch"));
-			updateRequest.setVersion("0.1");
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.2 new branch"));
+			updateRequest.setVersion("1.1");
 			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setBranch(newBranch
 				.getName())));
-			assertEquals("0.2", response.getVersion());
+			assertEquals("1.2", response.getVersion());
 
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranch().getName())
 				.setVersion("0.1")))).as("Initial Branch Version").hasVersion("0.1").hasStringField("name", "2015");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getName())
-				.setVersion("0.1")))).as("New Branch Version").hasVersion("0.1").hasStringField("name", "2015 v0.1 new branch");
+				.setVersion("1.1")))).as("New Branch Version").hasVersion("1.1").hasStringField("name", "2015 v1.1 new branch");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranch().getName())
 				.setVersion("1.1")))).as("Initial Branch Version").hasVersion("1.1").hasStringField("name", "2015 v1.1 initial branch");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getName())
-				.setVersion("0.2")))).as("New Branch Version").hasVersion("0.2").hasStringField("name", "2015 v0.2 new branch");
+				.setVersion("1.2")))).as("New Branch Version").hasVersion("1.2").hasStringField("name", "2015 v1.2 new branch");
 		}
 	}
 
@@ -2016,6 +2008,85 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				.isNotEmpty();
 			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
 			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
+		}
+	}
+
+	@Test
+	public void testCreateInBranchWithoutParent() throws Exception {
+		Branch newBranch = createBranch("newbranch", true);
+
+		try (Tx tx = tx()) {
+			// create a new branch
+			Project project = project();
+			Branch initialBranch = project.getInitialBranch();
+
+			// create node in one branch
+			Node node = content("concorde");
+			NodeCreateRequest parentRequest = new NodeCreateRequest();
+			parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+			parentRequest.setLanguage("en");
+			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+			parentRequest.setParentNodeUuid(node.getUuid());
+			NodeResponse parentNode = call(() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+
+			// create child in same branch
+			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
+			sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+			sameBranchChildRequest.setLanguage("en");
+			sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+			sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
+			call(() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+
+			// try to create node with same uuid in other branch with first node as parent
+			NodeCreateRequest childRequest = new NodeCreateRequest();
+			childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+			childRequest.setLanguage("en");
+			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+			childRequest.setParentNodeUuid(parentNode.getUuid());
+			call(() -> client().createNode(PROJECT_NAME, childRequest, new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND,
+					"object_not_found_for_uuid", parentNode.getUuid());
+
+			tx.success();
+		}
+	}
+
+	@Test
+	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
+		try (Tx tx = tx()) {
+			// create a new branch
+			Project project = project();
+			Branch initialBranch = project.getInitialBranch();
+			Branch newBranch = project.getBranchRoot().create("newbranch", user());
+			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
+
+			// create node in one branch
+			Node node = content("concorde");
+			NodeCreateRequest parentRequest = new NodeCreateRequest();
+			parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+			parentRequest.setLanguage("en");
+			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+			parentRequest.setParentNodeUuid(node.getUuid());
+			NodeResponse parentNode = call(() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+
+			// create child in same branch
+			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
+			sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+			sameBranchChildRequest.setLanguage("en");
+			sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+			sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
+			NodeResponse sameBranchChildResponse = call(
+					() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+
+			// try to create node with same uuid in other branch with first node as parent
+			NodeCreateRequest childRequest = new NodeCreateRequest();
+			childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+			childRequest.setLanguage("en");
+			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+			childRequest.setParentNodeUuid(parentNode.getUuid());
+			call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
+					new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
+
+			tx.success();
 		}
 	}
 
