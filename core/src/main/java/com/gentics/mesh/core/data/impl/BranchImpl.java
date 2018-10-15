@@ -1,13 +1,16 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
@@ -15,11 +18,15 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
@@ -31,6 +38,8 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -51,9 +60,11 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -114,6 +125,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		return modified;
 	}
 
+	/**
+	 * Set the tag information to the rest model.
+	 * 
+	 * @param ac
+	 * @param restNode
+	 *            Rest model which will be updated
+	 */
+	private void setTagsToRest(InternalActionContext ac, BranchResponse restNode) {
+		restNode.setTags(getTags().stream().map(Tag::transformToReference).collect(Collectors.toList()));
+	}
+
 	@Override
 	public BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
@@ -132,6 +154,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		// restRelease.setActive(isActive());
 		if (fields.has("migrated")) {
 			restBranch.setMigrated(isMigrated());
+		}
+		if (fields.has("tags")) {
+			setTagsToRest(ac, restBranch);
+		}
+		if (fields.has("latest")) {
+			restBranch.setLatest(isLatest());
 		}
 
 		// Add common fields
@@ -172,6 +200,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public Branch setSsl(boolean ssl) {
 		setProperty(SSL, ssl);
+		return this;
+	}
+
+	@Override
+	public boolean isLatest() {
+		return inE(HAS_LATEST_BRANCH).hasNext();
+	}
+
+	@Override
+	public Branch setLatest() {
+		getRoot().setLatestBranch(this);
 		return this;
 	}
 
@@ -228,14 +267,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
 		SchemaContainer foundSchemaContainer = out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
-			.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
 		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_SCHEMA_VERSION).retain(schemaContainerVersion).nextOrDefaultExplicit(
-			SchemaContainerVersionImpl.class, null);
+				SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
@@ -354,14 +393,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
 		MicroschemaContainer foundMicroschemaContainer = out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid())
-			.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
 		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid())
-			.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
@@ -377,7 +416,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	 *            Container to handle
 	 */
 	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(
-		GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
+			GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaContainerVersion) {
@@ -456,4 +495,40 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		// TODO make this configurable via query parameter. It should be possible to postpone the migration.
 		Mesh.vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
 	}
+
+	@Override
+	public void addTag(Tag tag) {
+		removeTag(tag);
+		addFramedEdge(HAS_BRANCH_TAG, tag);
+	}
+
+	@Override
+	public void removeTag(Tag tag) {
+		outE(HAS_BRANCH_TAG).mark().inV().retain(tag).back().removeAll();
+	}
+
+	@Override
+	public void removeAllTags() {
+		outE(HAS_BRANCH_TAG).removeAll();
+	}
+
+	@Override
+	public List<? extends Tag> getTags() {
+		return outE(HAS_BRANCH_TAG).inV().toListExplicit(TagImpl.class);
+	}
+
+	@Override
+	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params) {
+		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
+		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
+	}
+
+	@Override
+	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
+		List<Tag> tags = getTagsToSet(ac, batch);
+		removeAllTags();
+		tags.forEach(tag -> addTag(tag));
+		return getTags(ac.getUser(), ac.getPagingParameters());
+	}
+
 }

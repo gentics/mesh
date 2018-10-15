@@ -4,6 +4,12 @@
 		uuid
 		# [$.data.branch.name=dummy]
 		name
+		# [$.data.branch.latest=true]
+		latest
+		tags {
+			# [$.data.branch.tags.totalCount=0]
+			totalCount
+		}
 		schema(name:"content") {
             # [$.data.branch.schema.uuid=<is-uuid>]
             uuid

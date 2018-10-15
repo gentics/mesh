@@ -1,6 +1,7 @@
 package com.gentics.mesh.test.context;
 
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -29,6 +30,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -37,6 +39,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -432,5 +436,49 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	public ElasticSearchProvider getProvider() {
 		return ((ElasticSearchProvider) searchProvider());
+	}
+
+	/**
+	 * Create a new branch
+	 * 
+	 * @param name
+	 *            branch name
+	 * @param latest
+	 *            true to make branch the latest
+	 * @return new branch
+	 */
+	protected Branch createBranch(String name, boolean latest) {
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(name);
+
+		if (latest) {
+			request.setLatest(latest);
+		}
+
+		return createBranch(request);
+	}
+
+	/**
+	 * Create a branch with the given request
+	 * 
+	 * @param request
+	 *            request
+	 * @return new branch
+	 */
+	protected Branch createBranch(BranchCreateRequest request) {
+		StringBuilder uuid = new StringBuilder();
+		waitForJobs(() -> {
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(response).as("Created branch").hasName(request.getName());
+			if (request.isLatest()) {
+				assertThat(response).as("Created branch").isLatest();
+			} else {
+				assertThat(response).as("Created branch").isNotLatest();
+			}
+			uuid.append(response.getUuid());
+		}, COMPLETED, 1);
+
+		// return new branch
+		return tx(() -> project().getBranchRoot().findByUuid(uuid.toString()));
 	}
 }

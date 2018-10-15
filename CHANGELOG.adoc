@@ -26,6 +26,12 @@ title: Changelog
 [[v0.26.0]
 == 0.26.0 (TBD)
 
+icon:plus[] Branches: It is now possible to set the "latest" branch of a project.
+
+icon:plus[] Branches: It is now possible to create branches based on specific other branches.
+
+icon:plus[] Branches: Branches can now be tagged just like nodes.
+
 icon:check[] Java REST Client: Add more detailed error information to `MeshRestClientMessageException` class.
 
 [[v0.25.0]]

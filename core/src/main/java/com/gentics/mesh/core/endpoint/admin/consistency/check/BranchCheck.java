@@ -49,6 +49,11 @@ public class BranchCheck implements ConsistencyCheck {
 
 		checkIn(branch, HAS_BRANCH, BranchRootImpl.class, response, HIGH);
 
+		// if the branch is not the initial branch, it must have a previous branch
+		if (branch.in(HAS_INITIAL_BRANCH).nextOrDefaultExplicit(BranchRootImpl.class, null) == null && branch.getPreviousBranch() == null) {
+			response.addInconsistency("Branch must either be the initial branch or have a previous branch", uuid, HIGH);
+		}
+
 		// checkOut(branch, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 		// checkOut(branch, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 

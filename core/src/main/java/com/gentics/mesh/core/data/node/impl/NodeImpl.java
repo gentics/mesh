@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
@@ -23,7 +24,6 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -61,7 +61,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -78,7 +77,6 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -89,6 +87,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -98,7 +97,6 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.DB;
@@ -562,6 +560,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid) {
+		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
+			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
+					branch.getName(), getUuid()));
+			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
+		}
+
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the
 		// (project)--(nodeRoot) node.
 		Node node = MeshInternal.get().boot().nodeRoot().create(creator, schemaVersion, project, uuid);
@@ -1572,21 +1576,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (latestDraftVersion == null) {
 			// Create a new field container
 			latestDraftVersion = createGraphFieldContainer(language, branch, ac.getUser());
-			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
-			// Check whether the node has a parent node in this branch, if not, we set the parent node from the previous branch (if any)
+			// Check whether the node has a parent node in this branch, if not, the request is supposed to be a create request
+			// and we get the parent node from this create request
 			if (getParentNode(branch.getUuid()) == null) {
-				Node previousParent = null;
-				Branch previousBranch = branch.getPreviousBranch();
-				while (previousParent == null && previousBranch != null) {
-					previousParent = getParentNode(previousBranch.getUuid());
-					previousBranch = previousBranch.getPreviousBranch();
+				NodeCreateRequest createRequest = JsonUtil.readValue(ac.getBodyAsString(), NodeCreateRequest.class);
+				if (createRequest.getParentNode() == null || isEmpty(createRequest.getParentNode().getUuid())) {
+					throw error(BAD_REQUEST, "node_missing_parentnode_field");
 				}
-
-				if (previousParent != null) {
-					setParentNode(branch.getUuid(), previousParent);
+				Node parentNode = getProject().getNodeRoot().loadObjectByUuid(ac, createRequest.getParentNode().getUuid(), CREATE_PERM);
+				// check whether the parent node is visible in the branch
+				if (!parentNode.isBaseNode() && !parentNode.isVisibleInBranch(branch.getUuid())) {
+					log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
+							branch.getName(), parentNode.getUuid()));
+					throw error(NOT_FOUND, "object_not_found_for_uuid", createRequest.getParentNode().getUuid());
 				}
+				setParentNode(branch.getUuid(), parentNode);
 			}
+
+			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 			batch.store(latestDraftVersion, branch.getUuid(), DRAFT, false);
 			return true;
 		} else {
@@ -1663,50 +1671,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
-		Project project = getProject();
-		Branch branch = ac.getBranch();
-		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
-		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-		User user = ac.getUser();
 		batch.store(this);
+		List<Tag> tags = getTagsToSet(ac, batch);
+		Branch branch = ac.getBranch();
+		User user = ac.getUser();
 		removeAllTags(branch);
-		for (TagReference tagReference : request.getTags()) {
-			if (!tagReference.isSet()) {
-				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
-			}
-			if (isEmpty(tagReference.getTagFamily())) {
-				throw error(BAD_REQUEST, "tag_error_tagfamily_not_set");
-			}
-			// 1. Locate the tag family
-			TagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
-			// Tag Family could not be found so lets create a new one
-			if (tagFamily == null) {
-				throw error(NOT_FOUND, "object_not_found_for_name", tagReference.getTagFamily());
-			}
-			// 2. The uuid was specified so lets try to load the tag this way
-			if (!isEmpty(tagReference.getUuid())) {
-				Tag tag = tagFamily.findByUuid(tagReference.getUuid());
-				if (tag == null) {
-					throw error(NOT_FOUND, "object_not_found_for_uuid", tagReference.getUuid());
-				}
-				addTag(tag, branch);
-			} else {
-				Tag tag = tagFamily.findByName(tagReference.getName());
-				// Tag with name could not be found so create it
-				if (tag == null) {
-					if (user.hasPermission(tagFamily, CREATE_PERM)) {
-						tag = tagFamily.create(tagReference.getName(), project, user);
-						user.addCRUDPermissionOnRole(tagFamily, CREATE_PERM, tag);
-						batch.store(tag, false);
-						batch.store(tagFamily, false);
-					} else {
-						throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(), tagReference
-							.getName());
-					}
-				}
-				addTag(tag, branch);
-			}
-		}
+		tags.forEach(tag -> addTag(tag, branch));
 		return getTags(user, ac.getPagingParameters(), branch);
 	}
 
@@ -2105,4 +2075,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
+	@Override
+	public boolean isBaseNode() {
+		return inE(HAS_ROOT_NODE).hasNext();
+	}
+
+	@Override
+	public boolean isVisibleInBranch(String branchUuid) {
+		return getGraphFieldContainersIt(branchUuid, ContainerType.DRAFT).iterator().hasNext();
+	}
 }

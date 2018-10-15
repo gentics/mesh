@@ -672,11 +672,10 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		String schemaUuid = tx(() -> schemaContainer.getUuid());
 		Node content = content();
 		SchemaUpdateRequest request;
-		Branch newBranch;
+
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
-			newBranch = project().getBranchRoot().create("newbranch", user());
-			content.createGraphFieldContainer(english(), newBranch, user());
 			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getSchema().toJson(), SchemaUpdateRequest.class);
 			request.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
 			MeshInternal.get().serverSchemaStorage().clear();

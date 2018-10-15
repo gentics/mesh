@@ -24,10 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
@@ -39,6 +43,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
@@ -55,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
@@ -318,6 +324,142 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testCreateAsLatest() {
+		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+
+		String branchName = "Latest";
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(branchName);
+
+		waitForJobs(() -> {
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(response).as("Created branch").hasName(branchName).isLatest();
+
+			BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
+					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(response);
+		}, COMPLETED, 1);
+	}
+
+	@Test
+	public void testCreateNotAsLatest() {
+		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+		BranchResponse latestBranch = projectBranches.getData().stream().filter(BranchResponse::getLatest).findFirst().get();
+
+		String branchName = "Not Latest";
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(branchName);
+		request.setLatest(false);
+
+		waitForJobs(() -> {
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
+
+			BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+			assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
+					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(latestBranch);
+		}, COMPLETED, 1);
+	}
+
+	@Test
+	public void testCreateMultipleNotAsLatest() {
+		BranchListResponse projectBranches = call(() -> client().findBranches(PROJECT_NAME));
+		assertThat(projectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("Latest branches").hasSize(1);
+		BranchResponse latestBranch = projectBranches.getData().stream().filter(BranchResponse::getLatest).findFirst().get();
+
+		for (String branchName : Arrays.asList("Branch 1", "Branch 2", "Branch 3")) {
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName(branchName);
+			request.setLatest(false);
+
+			waitForJobs(() -> {
+				BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+				assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
+
+				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
+					.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(latestBranch);
+			}, COMPLETED, 1);
+		}
+	}
+
+	@Test
+	public void testCreateWithoutBaseBranch() {
+		Branch latest = createBranch("Latest", true);
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		Branch created = createBranch(request);
+
+		tx(() -> {
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(latest);
+		});
+	}
+
+	@Test
+	public void testCreateWithBaseBranchByUuid() {
+		createBranch("Latest", true);
+		Branch base = createBranch("Base", false);
+		String baseUuid = tx(() -> base.getUuid());
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setUuid(baseUuid));
+		Branch created = createBranch(request);
+
+		tx(() -> {
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
+		});
+	}
+
+	@Test
+	public void testCreateWithBaseBranchByName() {
+		createBranch("Latest", true);
+		Branch base = createBranch("Base", false);
+		String baseName = tx(() -> base.getName());
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setName(baseName));
+		Branch created = createBranch(request);
+
+		tx(() -> {
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
+		});
+	}
+
+	@Test
+	public void testCreateWithNoPermBaseBranch() {
+		Branch latest = createBranch("Latest", true);
+		String latestUuid = tx(() -> latest.getUuid());
+		tx(() -> role().revokePermissions(latest, READ_PERM));
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setUuid(latestUuid));
+		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", latestUuid);
+	}
+
+	@Test
+	public void testCreateWithBogusBaseBranch() {
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference().setUuid("bogus"));
+		call(() -> client().createBranch(PROJECT_NAME, request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+	}
+
+	@Test
+	public void testCreateWithEmptyBaseBranchReference() {
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName("New Branch");
+		request.setBaseBranch(new BranchReference());
+
+		createBranch(request);
+	}
+
+	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
 
@@ -487,7 +629,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().createBranch(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+		call(() -> client().updateBranch(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test
@@ -519,6 +661,59 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setSsl(ssl);
 		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
 		assertThat(response).as("Updated branch").hasSsl(ssl);
+	}
+
+	@Test
+	public void testSetLatest() {
+		Map<String, String> branchMap = new HashMap<>();
+		for (String branchName : Arrays.asList("Branch 1", "Branch 2", "Branch 3")) {
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName(branchName);
+			request.setLatest(false);
+
+			waitForJobs(() -> {
+				BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+				assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
+				branchMap.put(branchName, response.getUuid());
+			}, COMPLETED, 1);
+		}
+
+		for (int i = 0; i < 2; i++) {
+			for (Map.Entry<String, String> entry : branchMap.entrySet()) {
+				String branchName = entry.getKey();
+				String branchUuid = entry.getValue();
+
+				BranchResponse response = call(() -> client().setLatestBranch(PROJECT_NAME, branchUuid));
+				assertThat(response).as("Latest branch").hasUuid(branchUuid).hasName(branchName).isLatest();
+
+				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
+				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList())).as("New latest branches")
+						.usingElementComparatorIgnoringFields("creator", "editor", "permissions", "rolePerms").containsOnly(response);
+			}
+		}
+	}
+
+	@Test
+	public void testSetLatestNoPerm() {
+		try (Tx tx = tx()) {
+			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
+			tx.success();
+		}
+		call(() -> client().setLatestBranch(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid());
+	}
+
+	@Test
+	public void testReadNoLatest() {
+		BranchResponse response = call(
+				() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid(), new GenericParametersImpl().setFields("uuid", "name")));
+		assertThat(response.getLatest()).as("Latest flag").isNull();
+	}
+
+	@Test
+	public void testReadLatest() {
+		BranchResponse response = call(
+				() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid(), new GenericParametersImpl().setFields("uuid", "name", "latest")));
+		assertThat(response.getLatest()).as("Latest flag").isNotNull().isTrue();
 	}
 
 	@Override

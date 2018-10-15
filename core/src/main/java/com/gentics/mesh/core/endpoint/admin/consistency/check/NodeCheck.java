@@ -73,6 +73,11 @@ public class NodeCheck implements ConsistencyCheck {
 		for (ContainerType type : ContainerType.values()) {
 			checkGraphFieldContainerUniqueness(node, type, response);
 		}
+
+		// if the node is not the project root, it must have a parent node for every branch in which it has an initial graph field container
+		if (!isBaseNode) {
+			checkParentNodes(node, response);
+		}
 	}
 
 	/**
@@ -93,6 +98,31 @@ public class NodeCheck implements ConsistencyCheck {
 						edge.getLanguageTag(), edge.getBranchUuid()), uuid, HIGH);
 			} else {
 				languageAndBranchSet.add(languageAndBranch);
+			}
+		}
+	}
+
+	/**
+	 * Check existence of parent nodes in all relevant branches
+	 * @param node node
+	 * @param response check response
+	 */
+	private void checkParentNodes(Node node, ConsistencyCheckResponse response) {
+		Set<String> branchUuids = new HashSet<>();
+		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode())
+				.frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+			branchUuids.add(edge.getBranchUuid());
+		}
+
+		for (String branchUuid : branchUuids) {
+			Node branchParent = node.getParentNode(branchUuid);
+			// parent node has to exist and has to have at least one DRAFT graphfieldcontainer in the branch
+			if (branchParent == null) {
+				response.addInconsistency(String.format("The node does not have a parent node in branch %s", branchUuid), node.getUuid(), HIGH);
+			} else if (!branchParent.isBaseNode() && !branchParent.isVisibleInBranch(branchUuid)) {
+				response.addInconsistency(String.format(
+						"The node references parent node %s in branch %s, but the parent node does not have any DRAFT graphfieldcontainer in the branch",
+						branchParent.getUuid(), branchUuid), node.getUuid(), HIGH);
 			}
 		}
 	}
