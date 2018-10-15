@@ -121,7 +121,7 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Java Runtime 8 or newer.
+Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Java Runtime 8.
 
 ==== System Configuration
 
