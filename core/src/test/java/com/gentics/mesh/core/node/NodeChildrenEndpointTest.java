@@ -211,6 +211,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		// "migrate" the News node to the new branch, so that we can get children of it in both branches
 		try (Tx tx = tx()) {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setLanguage("en");
@@ -229,8 +230,8 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().setBranch(newBranch.getName()).draft()));
-			assertEquals("Total children in initial branch", 0, nodeList.getMetainfo().getTotalCount());
-			assertEquals("Returned children in initial branch", 0, nodeList.getData().size());
+			assertEquals("Total children in new branch", 0, nodeList.getMetainfo().getTotalCount());
+			assertEquals("Returned children in new branch", 0, nodeList.getData().size());
 
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setLanguage("en");
