@@ -32,6 +32,11 @@
 | string
 | The hostname of the branch which will be used to generate links across multiple projects.
 
+| latest
+| true
+| boolean
+| Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch.
+
 | migrated
 | true
 | boolean
@@ -81,6 +86,11 @@
 | false
 | boolean
 | SSL flag of the branch which will be used to generate links across multiple projects.
+
+| tags
+| true
+| array
+| List of tags that were used to tag the branch.
 
 | uuid
 | true

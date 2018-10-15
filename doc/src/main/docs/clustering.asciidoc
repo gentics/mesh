@@ -88,7 +88,7 @@ Alternatively it is also possible to hardcode the IP addresses of the cluster in
 ----
 ...
   <join>
-    <multicast enabled="false"></multicast>
+      <multicast enabled="false"/>
       <tcp-ip enabled="true">
    	  <member>192.168.10.100</member> <!-- instance A -->
    	  <member>192.168.10.101</member> <!-- instance B -->
@@ -96,6 +96,40 @@ Alternatively it is also possible to hardcode the IP addresses of the cluster in
   </join>
 ...
 ----
+
+=== Kubernetes
+
+The link:https://github.com/hazelcast/hazelcast-kubernetes[hazelcast-kubernetes] plugin can be used to enable autodiscovery of nodes in a kubernetes environment. The plugin itself is already part of Gentics Mesh and just needs to be configured in the `hazelcast.xml` file.
+
+Example configuration:
+
+.hazelcast.xml
+[source,xml]
+----
+...
+<network>
+        <port auto-increment="true">5701</port>
+        <join>
+            <!-- deactivate normal discovery -->
+            <multicast enabled="false"/>
+            <tcp-ip enabled="false" />
+
+            <!-- activate the Kubernetes plugin -->
+            <discovery-strategies>
+                <discovery-strategy enabled="true"
+                        class="com.hazelcast.kubernetes.HazelcastKubernetesDiscoveryStrategy">
+                    <properties>
+                        <property name="service-dns">MY-SERVICE-DNS-NAME</property>
+                        <property name="service-dns-timeout">10</property>
+                    </properties>
+                </discovery-strategy>
+            </discovery-strategies>
+        </join>
+  </network>
+...
+----
+
+NOTE: For more details on the setup of the plugin please take a look at the link:https://github.com/hazelcast/hazelcast-kubernetes[documentation].
 
 == Session distribution
 
@@ -156,7 +190,7 @@ The old database will be moved in a backup location and can later be deleted. Yo
 *Rollback*:
 You can rollback as long as you still have instances which have not yet been migrated by just starting older Gentics Mesh instances. These instances will automatically join the corresponding cluster with the same database revision.
 
-== AWS / GCE / Kubernetes support
+== AWS / GCE
 
 There is currently no build-in support for these platforms.
 

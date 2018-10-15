@@ -128,7 +128,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Create a new branch and automatically invoke a node migration.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(versioningExamples.createBranchCreateRequest("Winter 2016"));
-		endpoint.exampleResponse(CREATED, versioningExamples.createBranchResponse("Winter 2016"), "Created branch.");
+		endpoint.exampleResponse(CREATED, versioningExamples.createBranchResponse("Winter 2016", false), "Created branch.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
@@ -142,7 +142,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readOne.description("Load the branch with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch"), "Loaded branch.");
+		readOne.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", true), "Loaded branch.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
@@ -205,7 +205,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		setLatest.description("Set the branch with the given uuid as 'latest' branch of the project.");
 		setLatest.method(POST);
 		setLatest.produces(APPLICATION_JSON);
-		setLatest.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch"), "Latest branch");
+		setLatest.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", true), "Latest branch");
 		setLatest.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
@@ -221,7 +221,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		updateBranch.consumes(APPLICATION_JSON);
 		updateBranch.produces(APPLICATION_JSON);
 		updateBranch.exampleRequest(versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
-		updateBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch"), "Updated branch");
+		updateBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated branch");
 		updateBranch.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
@@ -263,7 +263,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
 		addTag.method(POST);
 		addTag.produces(APPLICATION_JSON);
-		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch"), "Updated branch.");
+		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", false), "Updated branch.");
 		addTag.description("Assign the given tag to the branch.");
 		addTag.handler(rc -> {
 			InternalActionContext ac = wrap(rc);

@@ -1,13 +1,13 @@
 {
   "data" : [ {
-    "uuid" : "a516b822932a4e8496b822932ace8486",
+    "uuid" : "7d28c874d29e45b8a8c874d29ed5b81f",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "d009d8c0219945fe89d8c0219925fe0e"
+      "uuid" : "0d590ff2ea24423c990ff2ea24e23c2f"
     },
-    "created" : "2018-10-08T15:43:26.387Z",
-    "edited" : "2018-10-08T15:43:26.387Z",
+    "created" : "2018-10-15T13:01:05.914Z",
+    "edited" : "2018-10-15T13:01:05.914Z",
     "availableLanguages" : {
       "de" : {
         "published" : true,
@@ -15,9 +15,9 @@
         "publisher" : {
           "firstName" : "Joe",
           "lastName" : "Doe",
-          "uuid" : "a8cf9a8b74a948d08f9a8b74a9e8d0b1"
+          "uuid" : "1d9eee09b55c415e9eee09b55c915ed1"
         },
-        "publishDate" : "2018-10-08T15:43:26.387Z"
+        "publishDate" : "2018-10-15T13:01:05.914Z"
       },
       "en" : {
         "published" : false,
@@ -25,9 +25,9 @@
         "publisher" : {
           "firstName" : "Joe",
           "lastName" : "Doe",
-          "uuid" : "b46c9842fc984fb6ac9842fc98efb654"
+          "uuid" : "d29dbb15059c466b9dbb15059c066bc0"
         },
-        "publishDate" : "2018-10-08T15:43:26.387Z"
+        "publishDate" : "2018-10-15T13:01:05.914Z"
       }
     },
     "languagePaths" : {
@@ -35,41 +35,41 @@
       "en" : "/api/v1/yourProject/webroot/Images"
     },
     "parentNode" : {
-      "uuid" : "8415847568d24d7095847568d29d709c",
+      "uuid" : "a236d349f0a545e2b6d349f0a535e204",
       "displayName" : "parentNodeDisplayName"
     },
     "tags" : [ {
       "name" : "red",
-      "uuid" : "cc4b19262e6148da8b19262e6118da73",
+      "uuid" : "de37629f6ae64584b7629f6ae685845c",
       "tagFamily" : "colors"
     }, {
       "name" : "red",
-      "uuid" : "24a1edb51cc448aca1edb51cc4b8accc",
+      "uuid" : "4c7e40e9fd294e5fbe40e9fd29de5ffa",
       "tagFamily" : "colors"
     }, {
       "name" : "green",
-      "uuid" : "d8760620a4b542c3b60620a4b5c2c38a",
+      "uuid" : "4f14407e1e4a42b194407e1e4a22b15a",
       "tagFamily" : "colors"
     }, {
       "name" : "car",
-      "uuid" : "97670c6c08734818a70c6c08736818ee"
+      "uuid" : "d6862a83e9b64485862a83e9b634859c"
     }, {
       "name" : "ship",
-      "uuid" : "a506c4372ec74cab86c4372ec70cab96"
+      "uuid" : "fd07f221892e4f1987f221892e0f19d6"
     } ],
     "childrenInfo" : {
       "folder" : {
-        "schemaUuid" : "8bdc51cb4f5d488d9c51cb4f5d088da5",
+        "schemaUuid" : "f1651ffb8e45443ca51ffb8e45d43c39",
         "count" : 5
       },
       "blogpost" : {
-        "schemaUuid" : "8dadf8f048684622adf8f04868e6223b",
+        "schemaUuid" : "18a03902863341e1a039028633a1e1e3",
         "count" : 1
       }
     },
     "schema" : {
       "name" : "content",
-      "uuid" : "4f28f888ef0b4c57a8f888ef0b8c5795",
+      "uuid" : "31f78c31393e4b7cb78c31393e3b7c9d",
       "version" : "1.0"
     },
     "container" : false,
@@ -79,17 +79,17 @@
       "teaser" : "Dummy teaser for de-DE",
       "content" : "Content for language tag de-DE",
       "relatedProduct" : {
-        "uuid" : "4782bcf6f412441682bcf6f41224167b"
+        "uuid" : "c5409ccdec264940809ccdec26e94030"
       },
       "price" : 100.1,
       "enabled" : true,
-      "branch" : "2018-10-08T15:43:26.387Z",
+      "branch" : "2018-10-15T13:01:05.914Z",
       "categories" : [ {
-        "uuid" : "e954816459c34e6894816459c30e6896"
+        "uuid" : "585b3ec89b87481b9b3ec89b87781b1e"
       }, {
-        "uuid" : "28fc944f77e448c5bc944f77e428c53f"
+        "uuid" : "a2a04b3f96b64953a04b3f96b6b953a1"
       }, {
-        "uuid" : "65834be50de34c7a834be50de36c7ac9"
+        "uuid" : "1964f9b68fe74e0ca4f9b68fe7ce0cb2"
       } ],
       "names" : [ "Jack", "Joe", "Mary", "Tom" ],
       "categoryIds" : [ 1, 42, 133, 7 ],
@@ -103,10 +103,10 @@
         "dominantColor" : "#22a7f0"
       },
       "location" : {
-        "uuid" : "8bf44dc74f044c5eb44dc74f045c5eb9",
+        "uuid" : "49e507fb1af34de5a507fb1af3bde518",
         "microschema" : {
           "name" : "geolocation",
-          "uuid" : "9366ed3f14a64044a6ed3f14a62044c9"
+          "uuid" : "a459d83f8fbe44b499d83f8fbe24b4a6"
         },
         "fields" : {
           "latitude" : 48.208330230278,
@@ -114,20 +114,20 @@
         }
       },
       "locations" : [ {
-        "uuid" : "7a414390b1eb4665814390b1eb066504",
+        "uuid" : "d10ee79a609c47778ee79a609c57770a",
         "microschema" : {
           "name" : "geolocation",
-          "uuid" : "493b2ade7f0742debb2ade7f07f2def6"
+          "uuid" : "75e4833e3c9543d9a4833e3c95a3d995"
         },
         "fields" : {
           "latitude" : 48.208330230278,
           "longitude" : 16.373063840833
         }
       }, {
-        "uuid" : "23d40822c21f433e940822c21fb33e85",
+        "uuid" : "366a2b66d6484c57aa2b66d648bc57f1",
         "microschema" : {
           "name" : "geolocation",
-          "uuid" : "b0ff34ecfe414d84bf34ecfe41fd84ea"
+          "uuid" : "837201a720714dbcb201a72071cdbcc8"
         },
         "fields" : {
           "latitude" : 48.137222,
@@ -137,11 +137,11 @@
     },
     "path" : "/api/v1/yourProject/webroot/Images",
     "breadcrumb" : [ {
-      "uuid" : "baac9c256f86415eac9c256f86815e5d",
+      "uuid" : "8d7e6277b48c49e7be6277b48cf9e7fc",
       "displayName" : "news",
       "path" : "/news"
     }, {
-      "uuid" : "1d1b6b3a3bc440ee9b6b3a3bc4b0ee7e",
+      "uuid" : "781ec441a9ed4d659ec441a9ed0d653e",
       "displayName" : "2015",
       "path" : "/news/2015"
     } ],
@@ -154,44 +154,44 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "e2a999cbf6124092a999cbf612a09219",
+    "uuid" : "17db12151c5d42d59b12151c5d92d59a",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "08ed85b1454c48cfad85b1454ca8cfd2"
+      "uuid" : "bbb9159f5dca49a8b9159f5dca49a80f"
     },
-    "created" : "2018-10-08T15:43:26.387Z",
+    "created" : "2018-10-15T13:01:05.914Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "4ea44d508ea6450da44d508ea6250de0"
+      "uuid" : "0bd94e41e8a94ad2994e41e8a95ad279"
     },
-    "edited" : "2018-10-08T15:43:26.387Z",
+    "edited" : "2018-10-15T13:01:05.914Z",
     "parentNode" : {
-      "uuid" : "f92fb8ae34a04044afb8ae34a0c044b4",
+      "uuid" : "f097b9cc707e416497b9cc707e516465",
       "displayName" : "parentNodeDisplayName"
     },
     "tags" : [ {
       "name" : "red",
-      "uuid" : "9e7dc02605534744bdc0260553874440",
+      "uuid" : "12609a2f886d499da09a2f886d599d25",
       "tagFamily" : "colors"
     }, {
       "name" : "green",
-      "uuid" : "adfa5c84aa31471eba5c84aa31571ecf",
+      "uuid" : "e22bf9c5b0604b44abf9c5b0607b44fe",
       "tagFamily" : "colors"
     }, {
       "name" : "car",
-      "uuid" : "c2529fadf0fd44fb929fadf0fde4fb8b",
+      "uuid" : "a15da0c607aa4ec29da0c607aacec2ec",
       "tagFamily" : "vehicles"
     }, {
       "name" : "ship",
-      "uuid" : "f783969211c447ef83969211c4f7efbe",
+      "uuid" : "65397806aa214f4fb97806aa21ef4feb",
       "tagFamily" : "vehicles"
     } ],
     "childrenInfo" : { },
     "schema" : {
       "name" : "content",
-      "uuid" : "0a720f2658d648f0b20f2658d638f039",
+      "uuid" : "e06c146441cf42d7ac146441cf52d795",
       "version" : "1.0"
     },
     "container" : false,
@@ -202,11 +202,11 @@
       "content" : "Content for language tag en"
     },
     "breadcrumb" : [ {
-      "uuid" : "6b763b4ca0874e26b63b4ca0873e26a3",
+      "uuid" : "e273d4bb80484ce3b3d4bb80485ce3f7",
       "displayName" : "news",
       "path" : "/news"
     }, {
-      "uuid" : "4b4e38bb37af41158e38bb37aff115c5",
+      "uuid" : "e93713cc9d6c446ab713cc9d6cb46a2f",
       "displayName" : "2015",
       "path" : "/news/2015"
     } ],

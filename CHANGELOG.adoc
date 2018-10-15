@@ -23,14 +23,16 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
-[[v0.26.0]
-== 0.26.0 (TBD)
+[[v0.26.0]]
+== 0.26.0 (15.10.2018)
 
 icon:plus[] Branches: It is now possible to set the "latest" branch of a project.
 
 icon:plus[] Branches: It is now possible to create branches based on specific other branches.
 
 icon:plus[] Branches: Branches can now be tagged just like nodes.
+
+icon:plus[] Clustering: The Hazelcast kubernetes autodiscovery plugin was added to Gentics Mesh. It is now possible to use this plugin to discover nodes in an k8s environment. Take a look at our link:{{< relref "clustering.asciidoc" >}}#_kubernetes[Documentation] for more details.
 
 icon:check[] Java REST Client: Add more detailed error information to `MeshRestClientMessageException` class.
 

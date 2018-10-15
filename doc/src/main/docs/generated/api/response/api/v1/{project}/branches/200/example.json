@@ -1,22 +1,32 @@
 {
   "data" : [ {
-    "uuid" : "54728b3a6a004a86b28b3a6a00da863a",
+    "uuid" : "b75531c7cb51431a9531c7cb51031a58",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "e336bc0518024e03b6bc051802ae0377"
+      "uuid" : "8ef4dcbcbf374d04b4dcbcbf377d0400"
     },
-    "created" : "2018-10-08T15:43:26.448Z",
+    "created" : "2018-10-15T13:01:06Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "061b2e130e344efd9b2e130e340efd0b"
+      "uuid" : "f2a4f3ddb3da4328a4f3ddb3da3328d7"
     },
-    "edited" : "2018-10-08T15:43:26.448Z",
+    "edited" : "2018-10-15T13:01:06Z",
     "name" : "summer2016",
     "hostname" : "getmesh.io",
     "ssl" : true,
     "migrated" : true,
+    "latest" : false,
+    "tags" : [ {
+      "name" : "dev",
+      "uuid" : "9aa40c5e565d4dc2a40c5e565dfdc28c",
+      "tagFamily" : "branchTags"
+    }, {
+      "name" : "prod",
+      "uuid" : "8a25fa692c324990a5fa692c32f99042",
+      "tagFamily" : "branchTags"
+    } ],
     "permissions" : {
       "create" : true,
       "read" : true,
@@ -34,23 +44,33 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "d2d3cebc540e4a3693cebc540e8a36a9",
+    "uuid" : "1114c1476fd84dbc94c1476fd87dbca0",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "6a53fb10ccb8404a93fb10ccb8f04adc"
+      "uuid" : "946b61e0ee4f4526ab61e0ee4fb526e1"
     },
-    "created" : "2018-10-08T15:43:26.448Z",
+    "created" : "2018-10-15T13:01:06Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "531f2df2eada45c49f2df2eada75c44f"
+      "uuid" : "a97be13e60c246c9bbe13e60c286c937"
     },
-    "edited" : "2018-10-08T15:43:26.448Z",
+    "edited" : "2018-10-15T13:01:06Z",
     "name" : "autumn2016",
     "hostname" : "getmesh.io",
     "ssl" : true,
     "migrated" : true,
+    "latest" : true,
+    "tags" : [ {
+      "name" : "dev",
+      "uuid" : "107c1df519e14dabbc1df519e1ddab52",
+      "tagFamily" : "branchTags"
+    }, {
+      "name" : "prod",
+      "uuid" : "66cc7cf7cee04ca08c7cf7cee0bca088",
+      "tagFamily" : "branchTags"
+    } ],
     "permissions" : {
       "create" : true,
       "read" : true,
