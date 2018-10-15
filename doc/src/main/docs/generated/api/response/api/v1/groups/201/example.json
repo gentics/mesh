@@ -1,21 +1,21 @@
 {
-  "uuid" : "01688aa36e8c4fc0a88aa36e8c0fc03d",
+  "uuid" : "64d59f17f88e4a33959f17f88eda3330",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "f853446832e4467b93446832e4d67b2d"
+    "uuid" : "4217eb2b43c241e297eb2b43c2c1e2f6"
   },
-  "created" : "2018-10-15T13:01:05.791Z",
+  "created" : "2018-10-15T13:59:39.438Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "8223ca70f8f74f40a3ca70f8f79f406e"
+    "uuid" : "53f881e9301040feb881e9301040fe6b"
   },
-  "edited" : "2018-10-15T13:01:05.791Z",
+  "edited" : "2018-10-15T13:59:39.438Z",
   "name" : "New group",
   "roles" : [ {
     "name" : "admin",
-    "uuid" : "dcd61a635f324b04961a635f328b044d"
+    "uuid" : "43586620b361463a986620b361e63aab"
   } ],
   "permissions" : {
     "create" : true,

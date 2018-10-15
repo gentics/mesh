@@ -3,15 +3,15 @@
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "065651f47ad34ae39651f47ad32ae353"
+      "uuid" : "0bc0cf16877d435180cf16877de351c6"
     },
-    "created" : "2018-10-15T13:01:06.028Z",
+    "created" : "2018-10-15T13:59:39.621Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "6ebddf45fd8f4799bddf45fd8fa7993d"
+      "uuid" : "ebaa4b4332484e80aa4b433248de80ee"
     },
-    "edited" : "2018-10-15T13:01:06.028Z",
+    "edited" : "2018-10-15T13:59:39.621Z",
     "name" : "Colors",
     "permissions" : {
       "create" : true,

@@ -3,7 +3,7 @@
   "inconsistencies" : [ {
     "description" : "A dangling field container has been found.",
     "severity" : "LOW",
-    "elementUuid" : "b48bf8a1a0994d398bf8a1a0992d39ab",
+    "elementUuid" : "b07b7a3c170446f6bb7a3c1704f6f67c",
     "repaired" : true,
     "repairAction" : "DELETE"
   } ]
