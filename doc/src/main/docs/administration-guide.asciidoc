@@ -22,30 +22,6 @@ title: Administration Guide
 
 TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
 
-== Run with JAR File
-
-Good news: there is no dedicated installation procedure for Gentics Mesh!
-
-All you need is to https://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing
-
-[source,bash]
-----
-java -jar mesh-demo-X.X.X.jar
-----
-
-Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
-On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
-
-[[cli]]
-=== Command Line Arguments
-
-Various command line arguments can be used to override or supplement previously configured settings.
-
-[source,text]
-----
-include::content/docs/examples/models/mesh-cli-help.txt[]
-----
-
 == Run with Docker
 
 Alternatively you can start Gentics Mesh using Docker via:
@@ -67,6 +43,45 @@ docker run -p 8080:8080 gentics/mesh
 or
 docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 ----
+
+=== Docker Compose
+
+We also provide a ready to go link:https://docs.docker.com/compose/[docker-compose] example stack for Gentics Mesh:
+
+Single node setup with included Elasticsearch container:
+
+* https://github.com/gentics/mesh-compose/
+
+Multi node clustering setup:
+
+* https://github.com/gentics/mesh-compose/tree/clustering
+
+
+== Run with JAR File
+
+Good news: there is no dedicated installation procedure for Gentics Mesh!
+
+All you need is to https://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing
+
+[source,bash]
+----
+java -jar mesh-demo-X.X.X.jar
+----
+
+Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Java Runtime 8.
+On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
+
+[[cli]]
+=== Command Line Arguments
+
+Various command line arguments can be used to override or supplement previously configured settings.
+
+[source,text]
+----
+include::content/docs/examples/models/mesh-cli-help.txt[]
+----
+
+
 
 [[installdir]]
 == Installation Directory 
@@ -106,7 +121,7 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Java Runtime 8 or newer.
 
 ==== System Configuration
 
@@ -269,7 +284,11 @@ There are currently three components which can be included in a backup:
 The ```/api/v1/admin/graphdb/restore``` endpoint can be used to restore created backups. 
 The endpoint will utilize the latest backup found in the backup directory.
 
-Please note that invoking these endpoints will block all execution and request processing.
+NOTE: Invoking the `backup`/`restore` endpoints will block all execution and request processing.
+
+If you already run Gentics Mesh in a cluster you can start a dedicated backup instance which can run the backup process without interference of the other nodes.
+
+Take a look at our link:https://github.com/gentics/mesh-compose/tree/clustering#online-backup[docker-compose example] for a documented setup.
 
 == link:{{< relref "changelog.asciidoc" >}}[Changelog]
 
