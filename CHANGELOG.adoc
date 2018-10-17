@@ -23,6 +23,11 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
+[[v.0.27.0]]
+== 0.27.0 (To be released)
+
+icon:check[] Security: A security issue has been fixed.
+
 [[v0.26.0]]
 == 0.26.0 (15.10.2018)
 
