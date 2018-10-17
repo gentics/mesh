@@ -129,6 +129,14 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	String getBaseUri();
 
 	/**
+	 * Set the base path to the Mesh API used for all request paths.
+	 * 
+	 * @param uri
+	 * @return Fluent API
+	 */
+	MeshRestClient setBaseUri(String uri);
+
+	/**
 	 * Returns the used vertx instance.
 	 * 
 	 * @return

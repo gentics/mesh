@@ -782,7 +782,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<RoleResponse> ac = createContext(RoleResponse.class);
 		ac.setPayloadObject(request);
 		roleCrudHandler.handleUpdate(ac, uuid);
-		return new MeshLocalRequestImpl<>(ac.getFuture());	}
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
 
 	@Override
 	public MeshRequest<Void> deleteRole(String uuid) {
@@ -1466,6 +1467,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public String getBaseUri() {
 		return DEFAULT_BASEURI;
+	}
+
+	@Override
+	public MeshRestClient setBaseUri(String uri) {
+		return this;
 	}
 
 	@Override

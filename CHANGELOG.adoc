@@ -26,7 +26,10 @@ title: Changelog
 [[v.0.27.0]]
 == 0.27.0 (To be released)
 
+icon:plus[] Java REST Client: It is now possible to set the base path of the API via `MeshRestClient#setBaseUri(String uri)`.
+
 icon:check[] Security: A security issue has been fixed.
+
 
 [[v0.26.0]]
 == 0.26.0 (15.10.2018)

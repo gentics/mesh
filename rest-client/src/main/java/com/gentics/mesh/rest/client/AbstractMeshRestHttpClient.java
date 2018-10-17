@@ -196,14 +196,10 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		}
 	}
 
-	/**
-	 * Set the base URI path to the Mesh-API.
-	 *
-	 * @param baseUri
-	 *            the base URI
-	 */
-	public void setBaseUri(String baseUri) {
+	@Override
+	public MeshRestClient setBaseUri(String baseUri) {
 		this.baseUri = baseUri;
+		return this;
 	}
 
 	@Override
