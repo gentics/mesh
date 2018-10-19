@@ -9,7 +9,7 @@ ENV MESH_BINARY_DIR=/uploads
 
 EXPOSE 8080
 
-RUN adduser --disabled-password --disabled-login --uid 1000 --home /mesh mesh
+RUN adduser -D -u 1000 -h /mesh mesh
 USER mesh
 WORKDIR /mesh
 ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
