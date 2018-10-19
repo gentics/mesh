@@ -21,28 +21,45 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 
 ![alt tag](https://getmesh.io/assets/mesh-heroimg.png)
 
-### Getting Started
+### Setup / Installation
 
-You need to have at least JRE 8 of Java installed. See the [Getting Started page](https://getmesh.io/docs/beta/getting-started.html) for more information.
+#### [Docker](https://getmesh.io/docs/administration-guide/#_run_with_docker)
 
-You can either download the all-in-one jar or fire up one of the Docker images.
+```bash
+docker run -p 8080:8080 gentics/mesh-demo:0.27.0
+```
 
-* [Download from getmesh.io](https://getmesh.io/Download)
-* [Docker Hub](https://hub.docker.com/r/gentics/mesh/)
-* [Maven](https://maven.gentics.com/maven2/com/gentics/mesh)
+#### [CLI](https://getmesh.io/docs/cli)
 
-### [Changelog](https://getmesh.io/docs/beta/changelog.html)
+```bash
+npm install mesh-cli -g
+mesh docker start -t 0.27.0 -p 8080
+```
 
-### Documentation
+#### [Java](https://getmesh.io/docs/administration-guide/#_run_with_jar_file)
 
-* https://getmesh.io/docs/beta/
-* https://getmesh.io/docs/beta/raml/
+```bash
+java -jar mesh-demo-0.27.0.jar
+```
+
+### Demo
+
+* https://demo.getmesh.io/api/v1  - Gentics Mesh API
+* https://demo.getmesh.io/mesh-ui - Gentics Mesh UI
+* https://demo.getmesh.io/demo    - Frontend demo
+
+
+### [Changelog](https://getmesh.io/docs/changelog)
+
+### [Documentation](https://getmesh.io/docs)
+
+### [API](https://getmesh.io/docs/api)
 
 ### UI
 
 Gentics Mesh automatically ships with a UI which allows you to browse your contents.
 
-The UI can be accessed via http://localhost:8080/mesh-ui
+The UI can be accessed via http://localhost:8080/mesh-ui 
 
 ### Typical usage
 
