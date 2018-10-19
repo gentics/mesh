@@ -1,14 +1,14 @@
 {
   "name" : "dummyProject",
-  "uuid" : "a8b481f3319c47e2b481f3319c77e2ad",
+  "uuid" : "a07f01a0990b4351bf01a0990b6351fa",
   "creator" : {
-    "uuid" : "18aafc229e9c491daafc229e9ca91db7"
+    "uuid" : "fc2f1f8b186a456eaf1f8b186af56e92"
   },
   "created" : null,
   "editor" : {
-    "uuid" : "18aafc229e9c491daafc229e9ca91db7"
+    "uuid" : "fc2f1f8b186a456eaf1f8b186af56e92"
   },
   "edited" : null,
   "_roleUuids" : [ ],
-  "version" : "147fe90a"
+  "version" : "279adac3"
 }

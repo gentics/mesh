@@ -1,30 +1,30 @@
 {
   "data" : [ {
-    "uuid" : "e18cae79b1e048988cae79b1e0689856",
+    "uuid" : "7a032e76979b4ac2832e76979b8ac291",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "0281b886e7a846ca81b886e7a8e6ca60"
+      "uuid" : "7c2033fdf7bd43aea033fdf7bde3aec6"
     },
-    "created" : "2018-10-15T13:59:39.436Z",
+    "created" : "2018-10-19T22:39:57.901Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "dd0775b446dd46bc8775b446dd66bc5b"
+      "uuid" : "364f52a9f6e945c68f52a9f6e935c686"
     },
-    "edited" : "2018-10-15T13:59:39.436Z",
+    "edited" : "2018-10-19T22:39:57.901Z",
     "lastname" : "Doe",
     "firstname" : "Joe",
     "username" : "jdoe",
     "emailAddress" : "j.doe@nowhere.com",
     "nodeReference" : {
       "projectName" : "dummy",
-      "uuid" : "22be96cd6f094b65be96cd6f09eb65d1"
+      "uuid" : "75949b732dec4998949b732dec899873"
     },
     "enabled" : true,
     "groups" : [ {
       "name" : "editors",
-      "uuid" : "fa2e9b23c9184e20ae9b23c9189e20e3"
+      "uuid" : "516346acb7c843a0a346acb7c893a022"
     } ],
     "permissions" : {
       "create" : true,
@@ -35,37 +35,37 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "d2d872c404404c0d9872c40440fc0d6a",
+    "uuid" : "02cccefb37914a418ccefb37919a4171",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "b148e2b0b20b46f088e2b0b20b46f0c7"
+      "uuid" : "9fdd6e17acdf4d449d6e17acdf4d4401"
     },
-    "created" : "2018-10-15T13:59:39.436Z",
+    "created" : "2018-10-19T22:39:57.901Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "ce4d67eedff742cb8d67eedff752cb47"
+      "uuid" : "949f37a0a7844c469f37a0a784dc4623"
     },
-    "edited" : "2018-10-15T13:59:39.436Z",
+    "edited" : "2018-10-19T22:39:57.901Z",
     "lastname" : "Roe",
     "firstname" : "Jane",
     "username" : "jroe",
     "emailAddress" : "j.roe@nowhere.com",
     "nodeReference" : {
       "projectName" : "dummy",
-      "uuid" : "a696be7f9dc8404096be7f9dc8604082"
+      "uuid" : "d6aa50b97b2f4481aa50b97b2fd48133"
     },
     "enabled" : true,
     "groups" : [ {
       "name" : "editors",
-      "uuid" : "01a74867d9184292a74867d918b292a7"
+      "uuid" : "ad3e034586d442bfbe034586d422bf2f"
     }, {
       "name" : "super-editors",
-      "uuid" : "54834258156f4a2c834258156fca2c55"
+      "uuid" : "932421f7461c4580a421f7461c258014"
     }, {
       "name" : "editors",
-      "uuid" : "c9fc3737dc654d6abc3737dc65ed6af1"
+      "uuid" : "15176fe8de9c4825976fe8de9ce82568"
     } ],
     "permissions" : {
       "create" : true,

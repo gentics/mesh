@@ -131,7 +131,7 @@
 | *MESH_AUTH_OAUTH2_ENABLED*
 | Override the configured OAuth2 enabled flag.
 
-| *MESH_BINARY_DIR*
+| *MESH_BINARY_UPLOAD_LIMIT*
 | Override the configured binary byte upload limit.
 
 | *MESH_AUTH_KEYSTORE_PATH*

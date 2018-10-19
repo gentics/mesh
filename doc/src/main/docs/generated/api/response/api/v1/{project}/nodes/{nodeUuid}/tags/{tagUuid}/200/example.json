@@ -1,42 +1,42 @@
 {
-  "uuid" : "607b95fe489b42fcbb95fe489bc2fca2",
+  "uuid" : "8c2d555f82c54218ad555f82c5021856",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "30f7c81ff10f4ee1b7c81ff10f3ee116"
+    "uuid" : "04c5f673b78a429f85f673b78ae29f22"
   },
-  "created" : "2018-10-15T13:59:39.541Z",
+  "created" : "2018-10-19T22:39:58.038Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "7d3b3abce3f140a9bb3abce3f1c0a958"
+    "uuid" : "2adcad1a1c9c417c9cad1a1c9c617cd3"
   },
-  "edited" : "2018-10-15T13:59:39.541Z",
+  "edited" : "2018-10-19T22:39:58.038Z",
   "parentNode" : {
-    "uuid" : "33f23eb212b84dcfb23eb212b8adcf73",
+    "uuid" : "05f44182db0a479ab44182db0ac79af6",
     "displayName" : "parentNodeDisplayName"
   },
   "tags" : [ {
     "name" : "red",
-    "uuid" : "65c010e2d08f43788010e2d08f337809",
+    "uuid" : "162906d2da5e487aa906d2da5e987a6c",
     "tagFamily" : "colors"
   }, {
     "name" : "green",
-    "uuid" : "65df1d54af0d4a5a9f1d54af0d4a5ab7",
+    "uuid" : "d2f6506460644c3fb6506460640c3f19",
     "tagFamily" : "colors"
   }, {
     "name" : "car",
-    "uuid" : "2fd32e687bcd45b8932e687bcd45b877",
+    "uuid" : "d267b52b0fcb49eca7b52b0fcb39ecd1",
     "tagFamily" : "vehicles"
   }, {
     "name" : "ship",
-    "uuid" : "def64ece28314e8db64ece28319e8db8",
+    "uuid" : "9f972152e0d74dcf972152e0d74dcfa9",
     "tagFamily" : "vehicles"
   } ],
   "childrenInfo" : { },
   "schema" : {
     "name" : "content",
-    "uuid" : "a01052c64b394ec49052c64b39bec45d",
+    "uuid" : "8bb221a10cac40e4b221a10cac30e494",
     "version" : "1.0"
   },
   "container" : false,
@@ -47,11 +47,11 @@
     "content" : "Content for language tag en"
   },
   "breadcrumb" : [ {
-    "uuid" : "9d03cbc3b766417f83cbc3b766d17f03",
+    "uuid" : "1ce7968bac0c4a02a7968bac0cfa0240",
     "displayName" : "news",
     "path" : "/news"
   }, {
-    "uuid" : "f43669f2b9484921b669f2b948f9216e",
+    "uuid" : "fb7620ecacc6497fb620ecacc6897f39",
     "displayName" : "2015",
     "path" : "/news/2015"
   } ],
