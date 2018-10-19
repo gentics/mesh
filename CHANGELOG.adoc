@@ -28,13 +28,16 @@ title: Changelog
 
 CAUTION: The volumes inside the docker images `gentics/mesh` and `gentics/mesh-demo` have been refactored. By default the volumes `/graphdb`, `/uploads`, `/backups`, `/plugins`, `/keystore` and `/config` will be used for the corresponding data. The `/data` volume and location was removed. Details can be found in the link:{{< relref "administration-guide.asciidoc" >}}#_volumes_locations[documentation].
 
+
 icon:plus[] Demo/Server: The embedded Elasticsearch has been updated to version 6.4.1.
 
 icon:plus[] Configuration: It is now possible to configure the upload limit using the `MESH_BINARY_UPLOAD_LIMIT` environment variable.
 
 icon:plus[] Java REST Client: It is now possible to set the base path of the API via `MeshRestClient#setBaseUri(String uri)`.
 
-icon:check[] Security: A security issue has been fixed.
+icon:check[] Security: A minor security issue has been fixed.
+
+icon:check[] REST: An issue with the etag generation of user responses has been fixed. link:https://github.com/gentics/mesh/issues/489[#489]
 
 [[v0.26.0]]
 == 0.26.0 (15.10.2018)

@@ -596,6 +596,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
+		keyBuilder.append(getGroups().stream().map(g -> g.getUuid()).reduce(new String(), String::concat));
 
 		return ETag.hash(keyBuilder);
 	}
