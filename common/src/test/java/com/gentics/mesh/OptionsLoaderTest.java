@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
@@ -49,6 +50,7 @@ public class OptionsLoaderTest {
 		envMap.put(VertxOptions.MESH_VERTX_EVENT_POOL_SIZE_ENV, "41");
 		envMap.put(VertxOptions.MESH_VERTX_WORKER_POOL_SIZE_ENV, "42");
 		envMap.put(MeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
+		envMap.put(MeshUploadOptions.MESH_BINARY_DIR_ENV, "/uploads");
 		set(envMap);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
@@ -61,6 +63,7 @@ public class OptionsLoaderTest {
 		assertEquals(42, options.getVertxOptions().getWorkerPoolSize());
 		assertEquals("*", options.getHttpServerOptions().getCorsAllowedOriginPattern());
 		assertEquals("dummy/1234", options.getLockPath());
+		assertEquals("/uploads", options.getUploadOptions().getDirectory());
 	}
 
 	@Test

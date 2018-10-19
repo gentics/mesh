@@ -432,6 +432,7 @@ public class MeshOptions implements Option {
 		getClusterOptions().overrideWithEnv();
 		getSearchOptions().overrideWithEnv();
 		getStorageOptions().overrideWithEnv();
+		getUploadOptions().overrideWithEnv();
 		getHttpServerOptions().overrideWithEnv();
 		getAuthenticationOptions().overrideWithEnv();
 		getImageOptions().overrideWithEnv();

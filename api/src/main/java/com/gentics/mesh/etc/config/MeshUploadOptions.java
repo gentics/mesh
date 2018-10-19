@@ -18,10 +18,11 @@ public class MeshUploadOptions implements Option {
 
 	public static final String MESH_BINARY_DIR_ENV = "MESH_BINARY_DIR";
 	public static final String MESH_BINARY_UPLOAD_TEMP_DIR_ENV = "MESH_BINARY_UPLOAD_TEMP_DIR";
+	public static final String MESH_BINARY_UPLOAD_LIMIT_ENV = "MESH_BINARY_UPLOAD_LIMIT";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_MB_LIMIT)
-	@EnvironmentVariable(name = MESH_BINARY_DIR_ENV, description = "Override the configured binary byte upload limit.")
+	@EnvironmentVariable(name = MESH_BINARY_UPLOAD_LIMIT_ENV, description = "Override the configured binary byte upload limit.")
 	private long byteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
 
 	@JsonProperty(required = false)
