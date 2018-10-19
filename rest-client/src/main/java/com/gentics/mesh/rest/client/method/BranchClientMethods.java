@@ -162,7 +162,7 @@ public interface BranchClientMethods {
 	 * 
 	 * @param projectName
 	 *            Name of the project which contains the branch
-	 * @param nodeUuid
+	 * @param branchUuid
 	 *            Uuid of the branch
 	 * @param tagUuid
 	 *            Uuid of the tag

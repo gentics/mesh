@@ -31,8 +31,6 @@ The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains Gentic
 [source,bash]
 ----
 docker run -p 8080:8080 gentics/mesh-demo
-or
-docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh-demo
 ----
 
 The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
@@ -41,8 +39,26 @@ The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics
 ----
 docker run -p 8080:8080 gentics/mesh
 or
-docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
+docker run \
+ -v mesh-graphdb:/graphdb \
+ -v mesh-uploads:/uploads \
+ -p 8080:8080 \
+ gentics/mesh
 ----
+
+=== Volumes / Locations
+
+[options="header"]
+|======
+| Name             | Description                          | Default Environment Setting
+| `/uploads`       | Location for fileuploads             | `MESH_BINARY_DIR=/uploads`
+| `/graphdb`       | Location for the graph database data | `MESH_GRAPH_DB_DIRECTORY=/graphdb`
+| `/config`        | Location for configuration files     | -
+| `/keystore`      | Location for the main keystore file which contains the cryptographic keys which are used to sign the JWT. | `MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks`
+| `/backups`       | Backup data location | `MESH_GRAPH_BACKUP_DIRECTORY=/backups`
+| `/plugins`       | Plugin data and configuration location | `MESH_PLUGIN_DIR=/plugins`
+| `/mesh/data`     | Remaining data files (e.g. temp dirs, caches) | - 
+|======
 
 === Docker Compose
 

@@ -1,6 +1,11 @@
-FROM    openjdk:10-slim
+FROM java:openjdk-8-jre-alpine
 
 ENV ESVERSION 6.1.2
+ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
+ENV MESH_GRAPH_BACKUP_DIRECTORY=/backups
+ENV MESH_GRAPH_DB_DIRECTORY=/graphdb
+ENV MESH_PLUGIN_DIR=/plugins
+ENV MESH_BINARY_DIR=/uploads
 
 EXPOSE 8080
 
@@ -10,16 +15,19 @@ WORKDIR /mesh
 ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
 
 USER root
-RUN mkdir /data   && chown mesh: /data -R   && ln -s /data /mesh/data
-RUN mkdir /config && chown mesh: /config -R && ln -s /config /mesh/config
-RUN mkdir /plugins && chown mesh: /plugins -R && ln -s /plugins /mesh/plugins
+RUN mkdir /graphdb   && chown mesh: /graphdb    -R && \
+    mkdir /uploads   && chown mesh: /uploads    -R && \
+    mkdir /backups   && chown mesh: /backups    -R && \
+    mkdir /plugins   && chown mesh: /plugins    -R && \
+    mkdir /keystore  && chown mesh: /keystore   -R && \
+    mkdir /config    && chown mesh: /config     -R && ln -s /config /mesh/config && \
+    mkdir /mesh/data && chown mesh: /mesh/data  -R
 
 ADD https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ESVERSION.zip /es.zip
 
 WORKDIR /
-RUN apt-get update && apt-get install -y unzip \
-    && unzip /es.zip && apt-get remove -y unzip \
-    && apt-get clean \
+RUN apk --update --no-cache add unzip \
+    && unzip /es.zip && apk del unzip \
     && mv elasticsearch* elasticsearch \
     && rm /es.zip \
     && ln -s /elasticsearch /mesh/elasticsearch \
@@ -28,9 +36,14 @@ RUN apt-get update && apt-get install -y unzip \
 
 USER mesh
 WORKDIR /mesh
-VOLUME /data
-VOLUME /config
+
+VOLUME /graphdb
+VOLUME /uploads
+VOLUME /backups
 VOLUME /plugins
+VOLUME /keystore
+VOLUME /config
+
 VOLUME /elasticsearch/data
 VOLUME /elasticsearch/config
 

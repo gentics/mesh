@@ -23,13 +23,18 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
-[[v.0.27.0]]
-== 0.27.0 (To be released)
+[[v0.27.0]]
+== 0.27.0 (19.10.2018)
+
+CAUTION: The volumes inside the docker images `gentics/mesh` and `gentics/mesh-demo` have been refactored. By default the volumes `/graphdb`, `/uploads`, `/backups`, `/plugins`, `/keystore` and `/config` will be used for the corresponding data. The `/data` volume and location was removed. Details can be found in the link:{{< relref "administration-guide.asciidoc" >}}#_volumes_locations[documentation].
+
+icon:plus[] Demo/Server: The embedded Elasticsearch has been updated to version 6.4.1.
+
+icon:plus[] Configuration: It is now possible to configure the upload limit using the `MESH_BINARY_UPLOAD_LIMIT` environment variable.
 
 icon:plus[] Java REST Client: It is now possible to set the base path of the API via `MeshRestClient#setBaseUri(String uri)`.
 
 icon:check[] Security: A security issue has been fixed.
-
 
 [[v0.26.0]]
 == 0.26.0 (15.10.2018)
@@ -40,7 +45,7 @@ icon:plus[] Branches: It is now possible to create branches based on specific ot
 
 icon:plus[] Branches: Branches can now be tagged just like nodes.
 
-icon:plus[] Clustering: The Hazelcast kubernetes autodiscovery plugin was added to Gentics Mesh. It is now possible to use this plugin to discover nodes in an k8s environment. Take a look at our link:{{< relref "clustering.asciidoc" >}}#_kubernetes[Documentation] for more details.
+icon:plus[] Clustering: The Hazelcast kubernetes autodiscovery plugin was added to Gentics Mesh. It is now possible to use this plugin to discover nodes in an k8s environment. Take a look at our link:{{< relref "clustering.asciidoc" >}}#_kubernetes[documentation] for more details.
 
 icon:check[] Java REST Client: Add more detailed error information to `MeshRestClientMessageException` class.
 

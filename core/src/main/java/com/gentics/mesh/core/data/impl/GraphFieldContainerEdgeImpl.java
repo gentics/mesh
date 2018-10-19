@@ -67,12 +67,12 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	/**
 	 * Creates the key for the webroot index.
 	 *
-	 * @param segmentValue
+	 * @param segmentInfo
 	 *            Value of the segment field
 	 * @param branchUuid
 	 *            Uuid of the branch
-	 * @param parent
-	 *            Parent of the node to which the container belongs
+	 * @param type
+	 *            Type of the container
 	 * @return The composed key
 	 */
 	public static Object composeWebrootIndexKey(String segmentInfo, String branchUuid, ContainerType type) {
