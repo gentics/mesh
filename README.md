@@ -29,12 +29,50 @@ java -jar mesh-demo-0.27.0.jar
 
 ## Demo
 
-### API
+### GraphQL API
 
-* https://demo.getmesh.io/api/v1
 * [GraphQL Example](https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=query%20webroot(%24path%3A%20String)%20%7B%0A%20%20node(path%3A%20%24path)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%20%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20%20%20%20%20path%0A%20%20%20%20%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20...%20on%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20image%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20height%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20width%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20dominantColor%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A)
 
+```
+query webroot($path: String) {
+  node(path: $path) {
+    fields {
+      ... on vehicle {
+        name
+        description
+        vehicleImage {
+          uuid
+          path
+          fields {
+            ... on vehicleImage {
+              image {
+                height
+                width
+                dominantColor
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+---
+{
+  "path": "/yachts/indian-empress"
+}
+```
+
+### [REST API](https://getmesh.io/docs/api/)
+
+* List users [/users](https://demo.getmesh.io/api/v1/users)
+* List nodes [/demo/nodes?perPage=5](https://demo.getmesh.io/api/v1/demo/nodes?perPage=5)
+* Load by path [/demo/webroot/yachts/indian-empress](https://demo.getmesh.io/api/v1/demo/webroot/yachts/indian-empress)
+* Load Image [/demo/webroot/images/yacht-pelorus.jpg?w=700](https://demo.getmesh.io/api/v1/demo/webroot/images/yacht-pelorus.jpg?w=700)
+
 ### UI
+
+Gentics Mesh automatically ships with a UI which allows you to browse your contents.
 
 https://demo.getmesh.io/mesh-ui
 
@@ -42,33 +80,25 @@ https://demo.getmesh.io/mesh-ui
 
 https://demo.getmesh.io/demo
 
-
 ## Features
 
 * Document level permissions
 * Versioned content
 * Webroot API for easy integration with modern routing frameworks
-* Search API powered by elasticsearch
+* Search API powered by Elasticsearch
 * GraphQL API
 * Image API
 * Tagging API
 * Cluster support
 * Graph database at its core
 * Docker support
+* Kubernetes support
 
 ![alt tag](https://getmesh.io/assets/mesh-heroimg.png)
 
 ## [Changelog](https://getmesh.io/docs/changelog)
 
 ## [Documentation](https://getmesh.io/docs)
-
-## [API](https://getmesh.io/docs/api)
-
-## UI
-
-Gentics Mesh automatically ships with a UI which allows you to browse your contents.
-
-The UI can be accessed via http://localhost:8080/mesh-ui 
 
 ## Typical usage
 
@@ -80,108 +110,6 @@ First things first: you need to authenticate, otherwise you will not be able to 
 
 You can post your credentials via JSON, use basic auth or send a JWT header - the choice is yours. If you open that URL in a browser, you will most likely authenticate using basic auth.
 
-### REST API
-
-Now that you are authenticated, you can load content via the REST API.
-
-Load a list of projects:
-
-* http://localhost:8080/api/v1/projects
-
-Or a list of contents:
-
-* http://localhost:8080/api/v1/demo/nodes
-
-### GraphQL
-
-If you want to retrieve deeply nested data you may use the GraphiQL browser:
-
-* http://localhost:8080/api/v1/demo/graphql/browser/
-
-Or try our [live demo](https://demo.getmesh.io/api/v1/demo/graphql/browser/).
-
-### Example JSON
-
-Typical Request/Response:
-
-```
-GET /api/v1/demo/nodes/1f91269a4e6042c391269a4e6052c3e4?lang=en,de HTTP/1.1
-Host: localhost:8080
-Connection: keep-alive
-Accept: application/json, text/plain, */*
-
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Cache-Control: no-cache
-Content-Encoding: gzip
-Transfer-Encoding: chunked
-
-{
-  "uuid" : "c7f284b8db9740fab284b8db97b0fa72",
-  "creator" : {
-    "uuid" : "344278e8bec74f6a8278e8bec76f6a87"
-  },
-  "created" : "2017-03-27T11:22:27Z",
-  "editor" : {
-    "uuid" : "344278e8bec74f6a8278e8bec76f6a87"
-  },
-  "edited" : "2017-03-27T11:22:35Z",
-  "language" : "en",
-  "availableLanguages" : [ "en" ],
-  "parentNode" : {
-    "projectName" : "demo",
-    "uuid" : "3d77fe558cf743d3b7fe558cf783d343",
-    "displayName" : "Vehicle Images",
-    "schema" : {
-      "name" : "folder",
-      "uuid" : "35de83ec7df048d59e83ec7df028d50f"
-    }
-  },
-  "tags" : [ ],
-  "childrenInfo" : { },
-  "schema" : {
-    "name" : "vehicleImage",
-    "uuid" : "4bae3a3ec02043abae3a3ec020d3ab42",
-    "version" : 1
-  },
-  "displayField" : "name",
-  "fields" : {
-    "name" : "Tesla Roadster Image",
-    "image" : {
-      "fileName" : "tesla-roadster.jpg",
-      "width" : 1024,
-      "height" : 670,
-      "sha512sum" : "2a56c85df60ab753f77fe75a63910b7e3f9ae89cd90e1906ad6210ee408ce07d5d95f269a21217ee045af8ac7d6c934324e49908d463971e31498b994b757d03",
-      "fileSize" : 607113,
-      "mimeType" : "image/jpeg",
-      "dominantColor" : "#90786b"
-    }
-  },
-  "breadcrumb" : [ {
-    "projectName" : "demo",
-    "uuid" : "3d77fe558cf743d3b7fe558cf783d343",
-    "displayName" : "Vehicle Images",
-    "schema" : {
-      "name" : "folder",
-      "uuid" : "35de83ec7df048d59e83ec7df028d50f"
-    }
-  } ],
-  "version" : {
-    "uuid" : "54d70c2d951d4188970c2d951d218875",
-    "number" : "1.0"
-  },
-  "container" : false,
-  "permissions" : {
-    "create" : true,
-    "read" : true,
-    "update" : true,
-    "delete" : true,
-    "publish" : true,
-    "readPublished" : true
-  }
-}
-```
 
 ## IDE Setup - Eclipse
 
