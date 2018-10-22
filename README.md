@@ -76,6 +76,8 @@ Gentics Mesh automatically ships with a UI which allows you to browse your conte
 
 https://demo.getmesh.io/mesh-ui
 
+Login: admin/admin
+
 ### Example Frontend
 
 https://demo.getmesh.io/demo
