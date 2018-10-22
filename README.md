@@ -6,6 +6,43 @@
 
 Gentics Mesh is an Open Source API-first CMS for developers. All contents can be stored/updated and retrieved using the [REST API](https://getmesh.io/docs/beta/raml/).
 
+## Setup / Installation
+
+### [Docker](https://getmesh.io/docs/administration-guide/#_run_with_docker)
+
+```bash
+docker run -p 8080:8080 gentics/mesh-demo:0.27.0
+```
+
+### [CLI](https://getmesh.io/docs/cli)
+
+```bash
+npm install mesh-cli -g
+mesh docker start -t 0.27.0 -p 8080
+```
+
+### [Java](https://getmesh.io/docs/administration-guide/#_run_with_jar_file)
+
+```bash
+java -jar mesh-demo-0.27.0.jar
+```
+
+## Demo
+
+### API
+
+* https://demo.getmesh.io/api/v1
+* [GraphQL Example](https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=query%20webroot(%24path%3A%20String)%20%7B%0A%20%20node(path%3A%20%24path)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%20%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20%20%20%20%20path%0A%20%20%20%20%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20...%20on%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20image%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20height%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20width%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20dominantColor%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A)
+
+### UI
+
+https://demo.getmesh.io/mesh-ui
+
+### Example Frontend
+
+https://demo.getmesh.io/demo
+
+
 ## Features
 
 * Document level permissions
@@ -21,47 +58,19 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 
 ![alt tag](https://getmesh.io/assets/mesh-heroimg.png)
 
-### Setup / Installation
+## [Changelog](https://getmesh.io/docs/changelog)
 
-#### [Docker](https://getmesh.io/docs/administration-guide/#_run_with_docker)
+## [Documentation](https://getmesh.io/docs)
 
-```bash
-docker run -p 8080:8080 gentics/mesh-demo:0.27.0
-```
+## [API](https://getmesh.io/docs/api)
 
-#### [CLI](https://getmesh.io/docs/cli)
-
-```bash
-npm install mesh-cli -g
-mesh docker start -t 0.27.0 -p 8080
-```
-
-#### [Java](https://getmesh.io/docs/administration-guide/#_run_with_jar_file)
-
-```bash
-java -jar mesh-demo-0.27.0.jar
-```
-
-### Demo
-
-* https://demo.getmesh.io/api/v1  - Gentics Mesh API
-* https://demo.getmesh.io/mesh-ui - Gentics Mesh UI
-* https://demo.getmesh.io/demo    - Frontend demo
-
-
-### [Changelog](https://getmesh.io/docs/changelog)
-
-### [Documentation](https://getmesh.io/docs)
-
-### [API](https://getmesh.io/docs/api)
-
-### UI
+## UI
 
 Gentics Mesh automatically ships with a UI which allows you to browse your contents.
 
 The UI can be accessed via http://localhost:8080/mesh-ui 
 
-### Typical usage
+## Typical usage
 
 You can retrieve stored contents via the REST or GraphQL API.
 
@@ -71,7 +80,7 @@ First things first: you need to authenticate, otherwise you will not be able to 
 
 You can post your credentials via JSON, use basic auth or send a JWT header - the choice is yours. If you open that URL in a browser, you will most likely authenticate using basic auth.
 
-#### REST API
+### REST API
 
 Now that you are authenticated, you can load content via the REST API.
 
@@ -83,7 +92,7 @@ Or a list of contents:
 
 * http://localhost:8080/api/v1/demo/nodes
 
-#### GraphQL
+### GraphQL
 
 If you want to retrieve deeply nested data you may use the GraphiQL browser:
 
