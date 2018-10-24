@@ -1,0 +1,60 @@
+---
+title: Deployment
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+Gentics Mesh can be deployed in various ways. This page contains various information and suggestions on different deployment platforms.
+
+== AWS
+
+It is possible to deploy Gentics Mesh in AWS using the Elastic Container Service (ECS). It is recommended to use Elastic Filesystem (EFS) to persist the file uploads. We also recommend to use link:https://aws.amazon.com/de/elasticsearch-service/[Amazon Elasticsearch Service] to provide search functionality.
+
+== Kubernetes
+
+We are currently working on providing a Helm Chart for K8S deployment.
+
+== Linux (via systemd)
+
+Gentics Mesh can quickly be installed on a Linux by registering a systemd service.
+
+First you need to install Java 8 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
+
+Store the service file in the same folder.
+
+.mesh-server.service
+[source,bash]
+----
+[Unit]
+Description=Gentics Mesh Server
+Wants=basic.target
+After=basic.target network.target syslog.target
+
+[Service]
+User=node
+Restart=on-failure
+ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -jar mesh-server.jar
+WorkingDirectory=/opt/mesh-server
+LimitMEMLOCK=infinity
+LimitNOFILE=65536
+LimitAS=infinity
+LimitRSS=infinity
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target
+----
+
+Finally you can register the systemd service file:
+
+```bash
+systemctl enable /opt/mesh-server/mesh-server.service
+```
+
+== Docker
+
+We provide example docker-compose stacks for Gentics Mesh which show how Gentics Mesh and Elasticsearch can work together using Docker.
+
+* https://github.com/gentics/mesh-compose
