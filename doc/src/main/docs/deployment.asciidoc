@@ -12,6 +12,20 @@ Gentics Mesh can be deployed in various ways. This page contains various informa
 
 It is possible to deploy Gentics Mesh in AWS using the Elastic Container Service (ECS). It is recommended to use Elastic Filesystem (EFS) to persist the file uploads. We also recommend to use link:https://aws.amazon.com/de/elasticsearch-service/[Amazon Elasticsearch Service] to provide search functionality.
 
+////
+== Heroku
+
+```bash
+heroku container:login
+docker login --username=_ --password=$(heroku auth:token) registry.heroku.com
+
+docker pull gentics/mesh-demo:0.27.0
+docker tag gentics/mesh-demo:0.27.0 registry.heroku.com/mesh-test/worker
+docker push registry.heroku.com/mesh-test/worker
+```
+////
+
+
 == Kubernetes
 
 We are currently working on providing a Helm Chart for K8S deployment.
@@ -35,7 +49,7 @@ After=basic.target network.target syslog.target
 [Service]
 User=node
 Restart=on-failure
-ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -jar mesh-server.jar
+ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize1024m -jar mesh-server.jar
 WorkingDirectory=/opt/mesh-server
 LimitMEMLOCK=infinity
 LimitNOFILE=65536
@@ -47,10 +61,18 @@ LimitCORE=infinity
 WantedBy=multi-user.target
 ----
 
+NOTE: The given limits are mandatory. Especially the `LimitNOFILE` setting must be set to prevent database issues.
+
 Finally you can register the systemd service file:
 
 ```bash
 systemctl enable /opt/mesh-server/mesh-server.service
+```
+
+Start the server:
+
+```bash
+service mesh-server start
 ```
 
 == Docker

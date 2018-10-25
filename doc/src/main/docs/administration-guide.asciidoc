@@ -73,6 +73,12 @@ Multi node clustering setup:
 * https://github.com/gentics/mesh-compose/tree/clustering
 
 
+=== Environment Variables
+
+Settings within the `mesh.yml` file can be override via these environment variables.
+
+include::content/docs/examples/tables/mesh-env.adoc-include[]
+
 == Run with JAR File
 
 Good news: there is no dedicated installation procedure for Gentics Mesh!
@@ -141,7 +147,7 @@ Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. 
 
 ==== System Configuration
 
-The max open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
+The maxium open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
 
 Edit _/etc/security/limits.conf_ and add these two lines:
 
@@ -256,32 +262,53 @@ By default all specified directories are relative to the installation directory.
 [options="header"]
 |======
 | Configuration               | Type   | Default               | Description
-| ```upload.byteLimit```      | Number | 262144000 (250 MB)    | Upload limit in bytes.
-| ```upload.directory```      | Path   | data/binaryFiles      | Filesystem directory for uploaded binary data.
-| ```upload.tempDirectory```  | Path   | data/tmp/file-uploads | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
+| ```upload.byteLimit```      | Number | `262144000` (250 MB)  | Upload limit in bytes.
+| ```upload.directory```      | Path   | `data/binaryFiles`    | Filesystem directory for uploaded binary data.
+| ```upload.tempDirectory```  | Path   | `data/tmp/file-uploads` | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
 |======
 
 === Security Options
 
 [options="header"]
 |======
-| Configuration                        | Type    | Default               | Description
-| ```security.tokenExpirationTime```   | Number  | 3600 (1h)             | The JWT expiration timeout in seconds.
-| ```security.keystorePath```          | Path    | config/keystore.jceks | Path to Java keystore file.
-| ```security.keystorePassword```      | String  | -                     | Password for the Java keystore file.
-| ```security.algorithm```             | String  | HS256                 | Hashing algorithm used to sign, verify and generate tokens.
-| ```security.enableAnonymousAccess``` | Boolean | true                  | Flag to be used to enable the anonymous access feature.
+| Configuration                        | Type    | Default                 | Description
+| ```security.tokenExpirationTime```   | Number  | `3600` (1h)             | The JWT expiration timeout in seconds.
+| ```security.keystorePath```          | Path    | `config/keystore.jceks` | Path to Java keystore file.
+| ```security.keystorePassword```      | String  | -                       | Password for the Java keystore file.
+| ```security.algorithm```             | String  | `HS256`                 | Hashing algorithm used to sign, verify and generate tokens.
+| ```security.enableAnonymousAccess``` | Boolean | `true`                  | Flag to be used to enable the anonymous access feature.
 |======
 
-=== Environment Variables
-
-Settings within the `mesh.yml` file can be override via these environment variables.
-
-include::content/docs/examples/tables/mesh-env.adoc-include[]
 
 === Cache Options
 
 Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying OrientDB cache settings.
+
+=== Memory Settings
+
+Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variable.
+
+[options="header"]
+|======
+| Setting                   | Description
+| `-Xmx`                    | Maximum heap size of the Gentics Mesh Java process
+| `-Xms`                    | Initial heap size of the Gentics Mesh Java process
+| `-XX:MaxDirectMemorySize` | Maximum direct memory limit. Direct memory is mostly used to buffer transactions of the Graph Database.
+|======
+
+==== Recommendations
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects.
+
+[options="header"]
+|======
+| Node Count           | Memory Setting
+| 0 to 100             | `-Xms128m  -Xmx128m  -XX:MaxDirectMemorySize=128m`
+| 100 to 1_000         | `-Xms512m  -Xmx512m  -XX:MaxDirectMemorySize=256m`
+| 1_000 to 10_000      | `-Xms786m  -Xmx786m  -XX:MaxDirectMemorySize=384m`
+| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=512m`
+| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=1024m`
+|======
 
 == Backup & Recovery
 
