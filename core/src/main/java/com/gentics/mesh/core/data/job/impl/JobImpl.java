@@ -89,8 +89,11 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		response.setWarnings(getWarnings().getData());
 
 		Map<String, String> props = response.getProperties();
-		props.put("releaseName", getRelease().getName());
-		props.put("releaseUuid", getRelease().getUuid());
+		Release release = getRelease();
+		if (release != null) {
+			props.put("releaseName", release.getName());
+			props.put("releaseUuid", release.getUuid());
+		}
 
 		if (getToSchemaVersion() != null) {
 			SchemaContainer container = getToSchemaVersion().getSchemaContainer();

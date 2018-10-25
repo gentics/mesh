@@ -10,6 +10,13 @@
 
 = Gentics Mesh Changelog
 
+[[v0.22.6]]
+== 0.22.6 (TBD)
+
+icon:check[] Java REST Client: Fixed wrong log output information.
+
+icon:check[] REST: Fixed error while fetching jobs for deleted projects.
+
 [[v0.22.5]]
 == 0.22.5 (12.10.2018)
 
