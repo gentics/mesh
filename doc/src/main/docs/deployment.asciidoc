@@ -79,4 +79,78 @@ service mesh-server start
 
 We provide example docker-compose stacks for Gentics Mesh which show how Gentics Mesh and Elasticsearch can work together using Docker.
 
-* https://github.com/gentics/mesh-compose
+link:{{< relref "administration-guide.asciidoc" >}}#_run_with_docker[Docker settings]
+
+=== Single Node
+
+The single node stack contains the following components:
+
+* Gentics Mesh 
+* Elasticsearch
+
+link:https://github.com/gentics/mesh-compose/tree/master[Full example on GitHub]
+
+.docker-compose.yml
+[source,xml]
+----
+version: "3"
+services:
+
+  mesh:
+    image: gentics/mesh:0.27.0
+    container_name: mesh-server
+    environment:
+      - MESH_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - MESH_ELASTICSEARCH_START_EMBEDDED=false
+      - MESH_AUTH_KEYSTORE_PASS=changeme
+    ports:
+      - '8081:8080'
+    volumes:
+      - mesh-data:/graphdb
+      - mesh-uploads:/uploads
+      - mesh-keystore:/keystore
+    ulimits:
+      nofile:
+        soft: 20000
+        hard: 40000
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+    container_name: mesh-elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - '127.0.0.1:9200:9200'
+    volumes:
+    - esdata:/usr/share/elasticsearch/data
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+
+volumes:
+  esdata:
+    driver: local
+  mesh-keystore:
+    driver: local
+  mesh-data:
+    driver: local
+  mesh-uploads:
+    driver: local
+----
+
+==== Cluster
+
+The cluster stack contains the following components:
+
+* Gentics Mesh (Three instances)
+* Elasticsearch
+* Nginx (Loadbalancer over three Gentics Mesh instances)
+* Gentics Mesh Backup Instance (Optional)
+
+link:https://github.com/gentics/mesh-compose/tree/clustering[Full example on GitHub]
