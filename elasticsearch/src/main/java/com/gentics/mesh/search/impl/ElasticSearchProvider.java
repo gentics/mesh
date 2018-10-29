@@ -314,6 +314,18 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Single<Set<String>> listIndices() {
+		return client.readIndex(installationPrefix() + "*").async().map(json -> {
+			return json.fieldNames().stream()
+				// Filter again to ensure we only deal with correct names
+				.filter(i -> i.startsWith(installationPrefix()))
+				// Remove the prefix
+				.map(i -> i.substring(installationPrefix().length()))
+				.collect(Collectors.toSet());
+		});
+	}
+
+	@Override
 	public Completable createIndex(IndexInfo info) {
 		String indexName = installationPrefix() + info.getIndexName();
 

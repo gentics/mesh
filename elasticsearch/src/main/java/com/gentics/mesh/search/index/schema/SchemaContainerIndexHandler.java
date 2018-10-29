@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index.schema;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -74,6 +75,14 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 		return Completable.defer(() -> {
 			return diffAndSync(SchemaContainer.composeIndexName(), null, new SyncMetric(getType()));
 		});
+	}
+
+	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return indices.stream()
+			.filter(i -> i.startsWith(getType()))
+			.filter(i -> !i.equals(SchemaContainer.composeIndexName()))
+			.collect(Collectors.toSet());
 	}
 
 	@Override

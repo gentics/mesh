@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -165,6 +166,38 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 			return indexInfo;
 		});
+	}
+
+	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		Set<String> activeIndices = new HashSet<>();
+		db.tx(() -> {
+			for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
+				for (Release release : currentProject.getReleaseRoot().findAllIt()) {
+					for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
+						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
+							activeIndices
+								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
+										type));
+						});
+					}
+				}
+			}
+		});
+
+		if (log.isDebugEnabled()) {
+			for (String name : activeIndices) {
+				log.debug("Active index: {" + name + "}");
+			}
+		}
+		Set<String> remaining = indices.stream()
+			// Only handle indices of the handler's type
+			.filter(i -> i.startsWith(getType()))
+			// Filter out indices which are active
+			.filter(i -> !activeIndices.contains(i))
+			.collect(Collectors.toSet());
+
+		return remaining;
 	}
 
 	@Override

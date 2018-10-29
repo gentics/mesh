@@ -75,6 +75,14 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Completable syncIndices();
 
 	/**
+	 * Filter the given list and return only indices which match the type of the handler but are no longer in use or unknown.
+	 * 
+	 * @param indices
+	 * @return
+	 */
+	Set<String> filterUnknownIndices(Set<String> indices);
+
+	/**
 	 * Load a map which contains the applicable indices. The key of the map is the index name.
 	 * 
 	 * @return Map with index information

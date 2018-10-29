@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -13,6 +14,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -119,6 +121,22 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 				return Completable.merge(actions);
 			});
+		});
+	}
+
+	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return db.tx(() -> {
+			Set<String> activeIndices = new HashSet<>();
+			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
+				activeIndices.add(Tag.composeIndexName(project.getUuid()));
+			}
+			return indices.stream()
+				.filter(i -> i.startsWith(getType()))
+				// We need to filter out tag family indices here. Otherwise the handler will also remove tag family indices
+				.filter(i -> !i.startsWith(TagFamily.TYPE.toLowerCase()))
+				.filter(i -> !activeIndices.contains(i))
+				.collect(Collectors.toSet());
 		});
 	}
 

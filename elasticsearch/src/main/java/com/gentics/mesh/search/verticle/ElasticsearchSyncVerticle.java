@@ -2,10 +2,14 @@ package com.gentics.mesh.search.verticle;
 
 import static com.gentics.mesh.Events.INDEX_SYNC_WORKER_ADDRESS;
 
+import java.util.List;
+import java.util.Set;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetric;
@@ -14,6 +18,7 @@ import com.gentics.mesh.verticle.AbstractJobVerticle;
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -61,15 +66,37 @@ public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
 		return Completable.fromAction(() -> {
 			log.info("Processing index sync job.");
 			SyncMetric.reset();
-		}).andThen(Observable.fromIterable(registry.get().getHandlers())
-			.flatMapCompletable(handler -> handler.init().andThen(handler.syncIndices()))
+		})
+			.andThen(purgeOldIndices())
+			.andThen(syncIndices())
 			.andThen(provider.refreshIndex()).doOnComplete(() -> {
-				vertx.eventBus().publish(Events.INDEX_SYNC_EVENT, new JsonObject().put("status", "completed"));
 				log.info("Sync completed");
+				vertx.eventBus().publish(Events.INDEX_SYNC_EVENT, new JsonObject().put("status", "completed"));
 			}).doOnError(error -> {
 				log.error("Sync failed", error);
 				vertx.eventBus().publish(Events.INDEX_SYNC_EVENT, new JsonObject().put("status", "failed"));
-			}));
+			});
+	}
+
+	private Completable syncIndices() {
+		return Observable.fromIterable(registry.get().getHandlers())
+			.flatMapCompletable(handler -> handler.init().andThen(handler.syncIndices()));
+	}
+
+	private Completable purgeOldIndices() {
+		List<IndexHandler<?>> handlers = registry.get().getHandlers();
+		Single<Set<String>> allIndices = provider.listIndices();
+		Observable<IndexHandler<?>> obs = Observable.fromIterable(handlers);
+
+		return allIndices.flatMapCompletable(indices -> {
+			return obs.flatMapCompletable(handler -> {
+				Set<String> unknownIndices = handler.filterUnknownIndices(indices);
+				return Observable.fromIterable(unknownIndices).flatMapCompletable(index -> {
+					log.info("Deleting unknown index {" + index + "}");
+					return provider.deleteIndex(index);
+				});
+			});
+		});
 	}
 
 }
