@@ -173,11 +173,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		Set<String> activeIndices = new HashSet<>();
 		db.tx(() -> {
 			for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
-				for (Release release : currentProject.getReleaseRoot().findAllIt()) {
-					for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
+				for (Branch branch : currentProject.getBranchRoot().findAllIt()) {
+					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
-								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
+								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
 										type));
 						});
 					}
