@@ -60,7 +60,7 @@ public final class MeshRestRequestUtil {
 			handler.getFuture().fail(e);
 		});
 		if (log.isDebugEnabled()) {
-			log.debug("Invoking get request to {" + uri + "}");
+			log.debug("Invoking {" + method.name() + "} request to {" + uri + "}");
 		}
 
 		return new MeshHttpRequestImpl<T>(request, handler, bodyData, contentType, authentication, accepts);
