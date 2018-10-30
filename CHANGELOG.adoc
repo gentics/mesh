@@ -17,6 +17,8 @@ icon:check[] Java REST Client: Fixed wrong log output information.
 
 icon:check[] REST: Fixed error while fetching jobs for deleted projects.
 
+icon:plus[] Elasticsearch: The index sync will now automatically remove no longer used indices.
+
 [[v0.22.5]]
 == 0.22.5 (12.10.2018)
 
