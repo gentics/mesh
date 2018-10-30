@@ -68,6 +68,11 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Single<Set<String>> listIndices() {
+		return Single.just(Collections.emptySet());
+	}
+
+	@Override
 	public Single<JsonObject> getDocument(String index, String uuid) {
 		return Single.just(new JsonObject());
 	}

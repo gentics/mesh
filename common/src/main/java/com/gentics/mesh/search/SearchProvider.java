@@ -38,6 +38,13 @@ public interface SearchProvider {
 	Single<Set<String>> loadPluginInfo();
 
 	/**
+	 * Load a list of all existing indices.
+	 * 
+	 * @return
+	 */
+	Single<Set<String>> listIndices();
+
+	/**
 	 * Create a search index with index information.
 	 * 
 	 * @param info

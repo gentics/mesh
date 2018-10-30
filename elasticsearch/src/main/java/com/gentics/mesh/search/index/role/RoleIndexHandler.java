@@ -84,6 +84,11 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return filterIndicesByType(indices, Role.composeIndexName());
+	}
+
+	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return Collections.singleton(Role.composeIndexName());
 	}

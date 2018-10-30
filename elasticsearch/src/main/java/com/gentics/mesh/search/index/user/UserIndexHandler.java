@@ -76,6 +76,11 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return filterIndicesByType(indices, User.composeIndexName());
+	}
+
+	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return indices;
 	}
