@@ -57,7 +57,7 @@ public class PathPrefixBranchLinkRenderTest extends AbstractMeshTest {
 		nodeCreateRequest.setParentNodeUuid(projectResponse.getRootNode().getUuid());
 		nodeResponse = call(() -> client().createNode(OTHER_PROJECT_NAME, nodeCreateRequest));
 	}
-	
+
 
 	@Test
 	public void testProjectPrefixLinkRendering() {

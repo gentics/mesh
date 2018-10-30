@@ -314,12 +314,12 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		try (Tx tx = tx()) {
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, user(), schemaContainer("folder")
+				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, null, user(), schemaContainer("folder")
 					.getLatestVersion());
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
-			meshRoot().getProjectRoot().create(noPermProjectName, null, null, user(), schemaContainer("folder").getLatestVersion());
+			meshRoot().getProjectRoot().create(noPermProjectName, null, null, null, user(), schemaContainer("folder").getLatestVersion());
 
 			// Don't grant permissions to no perm project
 			tx.success();
@@ -466,7 +466,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 
 		try (Tx tx = tx()) {
-			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", null, null, user(), schemaContainer("folder").getLatestVersion());
+			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", null, null, null, user(), schemaContainer("folder").getLatestVersion());
 			tx.success();
 		}
 		ProjectUpdateRequest request = new ProjectUpdateRequest();

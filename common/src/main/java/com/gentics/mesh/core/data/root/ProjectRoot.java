@@ -34,14 +34,16 @@ public interface ProjectRoot extends RootVertex<Project> {
 	 *            Hostname of the project which will be assigend to the initial branch.
 	 * @param ssl
 	 *            SSL flag of the project which will be assigned to the initial branch.
+	 * @param pathPrefix
+	 *            Path prefix which will be assigned to the initial branch.
 	 * @param creator
 	 *            User that is being used to set the initial creator and editor references.
 	 * @param schemaContainerVersion
 	 *            Schema container version which will be used to create the basenode
 	 * @return
 	 */
-	default Project create(String projectName, String hostname, Boolean ssl, User creator, SchemaContainerVersion schemaContainerVersion) {
-		return create(projectName, hostname, ssl, creator, schemaContainerVersion, null);
+	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion) {
+		return create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, null);
 	}
 
 	/**
@@ -54,6 +56,8 @@ public interface ProjectRoot extends RootVertex<Project> {
 	 *            Hostname of the project which will be assigned to the initial branch.
 	 * @param ssl
 	 *            SSL flag of the project which will be assigned to the initial branch.
+	 * @param pathPrefix
+	 *            Path prefix which will be assigned to the initial branch.
 	 * @param creator
 	 *            User that is being used to set the initial creator and editor references.
 	 * @param schemaContainerVersion
@@ -62,7 +66,7 @@ public interface ProjectRoot extends RootVertex<Project> {
 	 *            Optional uuid
 	 * @return
 	 */
-	Project create(String projectName, String hostname, Boolean ssl, User creator, SchemaContainerVersion schemaContainerVersion, String uuid);
+	Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion, String uuid);
 
 	/**
 	 * Remove the project from the aggregation vertex.
