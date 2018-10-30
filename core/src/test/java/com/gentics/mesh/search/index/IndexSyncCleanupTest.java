@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index;
 import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,8 +63,14 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		// The different index has no prefixed type and should be ignored
 		createIndex("different");
 
+		// Create thirdparty index
+		createThirdPartyIndex("thirdparty");
+
 		// Assert that indices have been created
-		assertThat(indices()).containsAll(extraIndices.stream().map(e -> "mesh-" + e).collect(Collectors.toSet()));
+		assertThat(indices())
+			.contains("thirdparty")
+			.containsAll(extraIndices.stream().map(e -> "mesh-" + e)
+				.collect(Collectors.toSet()));
 
 		// Invoke the sync
 		waitForEvent(INDEX_SYNC_EVENT, () -> {
@@ -82,9 +89,15 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		remainingIndices.add("mesh-" + Tag.composeIndexName(projectUuid()));
 		assertThat(indices())
 			.doesNotContainAnyElementsOf(extraIndices)
-			.contains("mesh-different")
+			.contains("mesh-different", "thirdparty")
 			.containsAll(remainingIndices);
 
+	}
+
+	private void createThirdPartyIndex(String name) throws HttpErrorException {
+		SearchClient searchClient = searchProvider().getClient();
+		JsonObject response = searchClient.createIndex(name, new JsonObject()).sync();
+		assertTrue(response.getBoolean("acknowledged"));
 	}
 
 	private void createIndex(String name) {
@@ -93,7 +106,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 	public Set<String> indices() throws HttpErrorException {
 		SearchClient searchClient = searchProvider().getClient();
-		JsonObject indicesAfter = searchClient.readIndex(searchProvider().installationPrefix() + "*").sync();
+		JsonObject indicesAfter = searchClient.readIndex("*").sync();
 		return indicesAfter.fieldNames();
 	}
 }

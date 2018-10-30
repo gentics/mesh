@@ -10,11 +10,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -370,6 +372,21 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Map<String, Object> getMetrics() {
 		return SyncMetric.fetch(getType());
+	}
+
+	/**
+	 * Filter the given indices. Include all indices which start with the given type and exclude the provided indexName.
+	 * 
+	 * @param indices
+	 * @param type
+	 * @param indexName
+	 * @return
+	 */
+	protected Set<String> filterIndicesByType(Set<String> indices, String type, String indexName) {
+		return indices.stream()
+			.filter(i -> i.startsWith(type))
+			.filter(i -> !i.equals(indexName))
+			.collect(Collectors.toSet());
 	}
 
 }

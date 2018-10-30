@@ -3,7 +3,6 @@ package com.gentics.mesh.search.index.user;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -76,13 +75,9 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 		});
 	}
 
-
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return indices.stream()
-			.filter(i -> i.startsWith(getType()))
-			.filter(i -> !i.equals(User.composeIndexName()))
-			.collect(Collectors.toSet());
+		return filterIndicesByType(indices, getType(), User.composeIndexName());
 	}
 
 	@Override

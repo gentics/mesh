@@ -3,7 +3,6 @@ package com.gentics.mesh.search.index.role;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -86,10 +85,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return indices.stream()
-			.filter(i -> i.startsWith(getType()))
-			.filter(i -> !i.equals(Role.composeIndexName()))
-			.collect(Collectors.toSet());
+		return filterIndicesByType(indices, getType(), Role.composeIndexName());
 	}
 
 	@Override

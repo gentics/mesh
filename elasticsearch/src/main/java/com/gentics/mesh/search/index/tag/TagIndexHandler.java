@@ -14,7 +14,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -132,9 +131,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 				activeIndices.add(Tag.composeIndexName(project.getUuid()));
 			}
 			return indices.stream()
-				.filter(i -> i.startsWith(getType()))
-				// We need to filter out tag family indices here. Otherwise the handler will also remove tag family indices
-				.filter(i -> !i.startsWith(TagFamily.TYPE.toLowerCase()))
+				.filter(i -> i.startsWith(getType() + "-"))
 				.filter(i -> !activeIndices.contains(i))
 				.collect(Collectors.toSet());
 		});

@@ -190,14 +190,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.debug("Active index: {" + name + "}");
 			}
 		}
-		Set<String> remaining = indices.stream()
+		return indices.stream()
 			// Only handle indices of the handler's type
 			.filter(i -> i.startsWith(getType()))
 			// Filter out indices which are active
 			.filter(i -> !activeIndices.contains(i))
 			.collect(Collectors.toSet());
-
-		return remaining;
 	}
 
 	@Override
