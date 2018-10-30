@@ -34,12 +34,17 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * @see BinaryGraphField
  */
 public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphField {
 
 	public static final Set<String> allowedTypes = new HashSet<>();
+
+	private static final Logger log = LoggerFactory.getLogger(BinaryGraphFieldImpl.class);
 
 	static {
 		allowedTypes.add("application/pdf");
@@ -91,7 +96,11 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		String hash = binaryField.getSha512sum();
 		if (graphBinaryField == null && hash != null) {
 			Binary binary = MeshInternal.get().boot().binaryRoot().findByHash(hash);
-			graphBinaryField = container.createBinary(fieldKey, binary);
+			if (binary != null) {
+				graphBinaryField = container.createBinary(fieldKey, binary);
+			} else {
+				log.debug("Could not find binary for hash {" + hash + "}");
+			}
 		}
 
 		// Otherwise we can't update the binaryfield

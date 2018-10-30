@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -48,6 +49,11 @@ import io.vertx.core.buffer.Buffer;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
+
+	@Before
+	public void setupPerm() {
+		grantAdminRole();
+	}
 
 	@Test
 	public void testDownloadBinaryFieldWithReadPublishPerm() throws IOException {
@@ -111,7 +117,9 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		SchemaUpdateRequest schemaRequest = JsonUtil.readValue(tx(() -> schemaContainer("content").getLatestVersion().getJson()),
 			SchemaUpdateRequest.class);
 		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
-		call(() -> client().updateSchema(schemaUuid, schemaRequest));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaRequest));
+		}, COMPLETED, 1);
 
 		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName("content");
@@ -129,6 +137,33 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		// Assert that the request fails when field has been specified.
 		request.getFields().put("slug", FieldUtil.createStringField("new-page2.html"));
 		request.getFields().put("binary", new BinaryFieldImpl().setDominantColor("#2E2EFE"));
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", "binary");
+
+	}
+
+	@Test
+	public void testCreateNodeWithBinarySha512sum() {
+
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		SchemaUpdateRequest schemaRequest = JsonUtil.readValue(tx(() -> schemaContainer("content").getLatestVersion().getJson()),
+			SchemaUpdateRequest.class);
+		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
+
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaRequest));
+		}, COMPLETED, 1);
+
+		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
+		schemaReference.setName("content");
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.getFields().put("binary", new BinaryFieldImpl().setSha512sum("someValue"));
+		request.setSchema(schemaReference);
+		request.setParentNodeUuid(tx(() -> folder("news").getUuid()));
 		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", "binary");
 
 	}
