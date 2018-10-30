@@ -375,16 +375,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Filter the given indices. Include all indices which start with the given type and exclude the provided indexName.
+	 * Filter the given indices. Include all indices which start with index handler type and exclude the provided indexName.
 	 * 
 	 * @param indices
-	 * @param type
 	 * @param indexName
 	 * @return
 	 */
-	protected Set<String> filterIndicesByType(Set<String> indices, String type, String indexName) {
+	protected Set<String> filterIndicesByType(Set<String> indices, String indexName) {
 		return indices.stream()
-			.filter(i -> i.startsWith(type))
+			.filter(i -> i.startsWith(getType()))
 			.filter(i -> !i.equals(indexName))
 			.collect(Collectors.toSet());
 	}

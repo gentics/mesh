@@ -85,7 +85,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, getType(), Role.composeIndexName());
+		return filterIndicesByType(indices, Role.composeIndexName());
 	}
 
 	@Override

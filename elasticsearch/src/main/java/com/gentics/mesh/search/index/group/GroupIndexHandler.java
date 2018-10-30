@@ -94,7 +94,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, getType(), Group.composeIndexName());
+		return filterIndicesByType(indices, Group.composeIndexName());
 	}
 
 }

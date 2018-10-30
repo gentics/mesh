@@ -77,7 +77,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, getType(), MicroschemaContainer.composeIndexName());
+		return filterIndicesByType(indices, MicroschemaContainer.composeIndexName());
 	}
 
 	@Override
