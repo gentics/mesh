@@ -113,6 +113,11 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			modified = true;
 		}
 
+		if (shouldUpdate(requestModel.getPathPrefix(), getPathPrefix())) {
+			setPathPrefix(requestModel.getPathPrefix());
+			modified = true;
+		}
+
 		if (requestModel.getSsl() != null && requestModel.getSsl() != getSsl()) {
 			setSsl(requestModel.getSsl());
 			modified = true;
@@ -161,6 +166,9 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		if (fields.has("latest")) {
 			restBranch.setLatest(isLatest());
 		}
+		if (fields.has("pathPrefix")) {
+			restBranch.setPathPrefix(getPathPrefix());
+		}
 
 		// Add common fields
 		fillCommonRestFields(ac, fields, restBranch);
@@ -184,6 +192,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public String getHostname() {
 		return getProperty(HOSTNAME);
+	}
+
+	@Override
+	public String getPathPrefix() {
+		return getProperty(PATH_PREFIX);
+	}
+
+	@Override
+	public Branch setPathPrefix(String pathPrefix) {
+		setProperty(PATH_PREFIX, pathPrefix);
+		return this;
 	}
 
 	@Override
@@ -267,14 +286,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
 		SchemaContainer foundSchemaContainer = out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
-				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+			.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
 		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_SCHEMA_VERSION).retain(schemaContainerVersion).nextOrDefaultExplicit(
-				SchemaContainerVersionImpl.class, null);
+			SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
@@ -393,14 +412,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
 		MicroschemaContainer foundMicroschemaContainer = out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid())
-				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+			.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
 		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid())
-				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+			.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
@@ -416,7 +435,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	 *            Container to handle
 	 */
 	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(
-			GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
+		GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaContainerVersion) {
@@ -481,7 +500,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
 		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaContainerVersion).back().nextOrDefaultExplicit(
-				BranchMicroschemaEdgeImpl.class, null);
+			BranchMicroschemaEdgeImpl.class, null);
 	}
 
 	@Override
