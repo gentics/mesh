@@ -27,6 +27,11 @@
 | string
 | Name of the branch.
 
+| pathPrefix
+| false
+| string
+| Optional path prefix for webroot path and rendered links.
+
 | ssl
 | false
 | boolean

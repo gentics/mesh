@@ -34,6 +34,10 @@
     "ssl" : {
       "type" : "boolean",
       "description" : "SSL flag of the project which will be used to generate links across multiple projects. The flag will be stored along the intial branch of the project."
+    },
+    "pathPrefix" : {
+      "type" : "string",
+      "description" : "Optional path prefix for webroot path and rendered links."
     }
   }
 }

@@ -111,7 +111,22 @@ The Cross-Origin Resource Sharing mechanism enables Gentics Mesh to configure cr
 
 You can read up on this topic on the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS[MDN article].
 
-The CORS header handling can be configured using the ```httpServerOptions.corsAllowedOriginPattern``` and ```httpServerOptions.enableCors``` configuration settings.
+The CORS header handling can be configured using the ```httpServerOptions.corsAllowedOriginPattern```, 
+```httpServerOptions.corsAllowCredentials``` and
+```httpServerOptions.enableCors``` configuration settings.
+
+==== Multi Site Example
+
+The `corsAllowedOriginPattern` setting accepts a regular expression pattern. It is thus possible to allow multiple origins.
+
+Example:
+
+```
+httpServer:
+  corsAllowedOriginPattern: "http://mydomain:5000|http://mydomain2:5000"
+  corsAllowCredentials: true
+  enableCors: true
+```
 
 === ETag Handling
 

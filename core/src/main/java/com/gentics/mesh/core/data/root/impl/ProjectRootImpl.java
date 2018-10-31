@@ -73,7 +73,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Project create(String name, String hostname, Boolean ssl, User creator, SchemaContainerVersion schemaContainerVersion, String uuid) {
+	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion, String uuid) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		if (uuid != null) {
 			project.setUuid(uuid);
@@ -90,6 +90,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		}
 		if (ssl != null) {
 			branch.setSsl(ssl);
+		}
+		if (pathPrefix != null) {
+			branch.setPathPrefix(pathPrefix);
+		} else {
+			branch.setPathPrefix("");
 		}
 		branch.assignSchemaVersion(creator, schemaContainerVersion);
 
@@ -191,7 +196,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
-		Project project = create(projectName, hostname, ssl, creator, schemaContainerVersion, uuid);
+		String pathPrefix = requestModel.getPathPrefix();
+		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid);
 		Branch initialBranch = project.getInitialBranch();
 
 		// Add project permissions

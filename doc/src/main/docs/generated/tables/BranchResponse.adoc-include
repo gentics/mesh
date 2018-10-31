@@ -47,6 +47,11 @@
 | string
 | Name of the branch.
 
+| pathPrefix
+| true
+| string
+| Optional path prefix for webroot path and rendered links.
+
 | permissions.create
 | true
 | boolean

@@ -165,7 +165,7 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("slugValue2"));
 		nodeUpdateRequest.getFields().put("shortUrl", FieldUtil.createStringField("/some/other/url2"));
 		nodeUpdateRequest.getFields().put("shortUrlList", FieldUtil.createStringListField("/some/other/url2", "/middle2", "/some/other/url2"));
-		NodeResponse updateResponse = call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
 
 		// Now create the second node
 		NodeCreateRequest nodeCreateRequest2 = new NodeCreateRequest();
@@ -223,7 +223,7 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 		assertThat(call(() -> client().webroot(PROJECT_NAME, "/some/other/url"))).hasUuid(uuid);
 		assertThat(call(() -> client().webroot(PROJECT_NAME, "/some/other/url", new VersioningParametersImpl().published()))).hasUuid(uuid);
-		call(() -> client().takeNodeLanguage(PROJECT_NAME, uuid, "en"));
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, uuid, "en"));
 		assertThat(call(() -> client().webroot(PROJECT_NAME, "/some/other/url"))).hasUuid(uuid);
 		call(() -> client().webroot(PROJECT_NAME, "/some/other/url", new VersioningParametersImpl().published()), NOT_FOUND,
 				"node_not_found_for_path", "/some/other/url");

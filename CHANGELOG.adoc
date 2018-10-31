@@ -23,6 +23,19 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
+[[v0.27.1]]
+== 0.27.1 (31.10.2018)
+
+icon:plus[] REST: It is now possible to specify a path prefix for branches. When specified, all resolved paths will include the prefix. The webroot endpoint will also utilize the prefix to resolve nodes. The prefix can be set for new projects or for update requests on existing branches.
+
+icon:check[] Java REST Client: Fixed wrong log output information.
+
+icon:check[] REST: Fixed error while fetching jobs for deleted projects.
+
+icon:plus[] Elasticsearch: The index sync will now automatically remove no longer used indices.
+
+icon:check[] REST: Fixed an error that can happen when creating new nodes which contain binary fields that reference a not yet stored binary sha512sum. link:https://github.com/gentics/mesh/issues/524[#524]
+
 [[v0.27.0]]
 == 0.27.0 (19.10.2018)
 
@@ -123,6 +136,15 @@ icon:check[] GraphQL: Fixed a bug that caused an error when multiple queries whe
 icon:check[] Core: Increased performance for webroot endpoint.
 
 icon:plus[] REST: Re-enabled SSL options. It is now possible to configure SSL via `MESH_HTTP_SSL_KEY_PATH`, `MESH_HTTP_SSL_CERT_PATH`, `MESH_HTTP_SSL_ENABLE` environment options.
+
+[[v0.22.6]]
+== 0.22.6 (30.10.2018)
+
+icon:check[] Java REST Client: Fixed wrong log output information.
+
+icon:check[] REST: Fixed error while fetching jobs for deleted projects.
+
+icon:plus[] Elasticsearch: The index sync will now automatically remove no longer used indices.
 
 [[v0.22.5]]
 == 0.22.5 (12.10.2018)

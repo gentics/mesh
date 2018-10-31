@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -119,6 +120,20 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 				return Completable.merge(actions);
 			});
+		});
+	}
+
+	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return db.tx(() -> {
+			Set<String> activeIndices = new HashSet<>();
+			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
+				activeIndices.add(Tag.composeIndexName(project.getUuid()));
+			}
+			return indices.stream()
+				.filter(i -> i.startsWith(getType() + "-"))
+				.filter(i -> !activeIndices.contains(i))
+				.collect(Collectors.toSet());
 		});
 	}
 

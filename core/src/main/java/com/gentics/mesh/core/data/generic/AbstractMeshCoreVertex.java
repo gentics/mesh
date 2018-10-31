@@ -116,10 +116,10 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 *            Rest model string value
 	 * @param graphValue
 	 *            Graph string value
-	 * @return true if restValue is not empty or null and the restValue is not equal to the graph value. Otherwise false.
+	 * @return true if restValue is not null and the restValue is not equal to the graph value. Otherwise false.
 	 */
 	protected boolean shouldUpdate(String restValue, String graphValue) {
-		return !isEmpty(restValue) && !restValue.equals(graphValue);
+		return restValue != null && !restValue.equals(graphValue);
 	}
 
 	@Override

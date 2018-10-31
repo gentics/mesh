@@ -331,7 +331,7 @@ public class TestDataProvider {
 		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
-		project = root.getProjectRoot().create(PROJECT_NAME, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
+		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
 		project.addLanguage(getEnglish());
 		project.addLanguage(getGerman());
 		User jobUser = userInfo.getUser();

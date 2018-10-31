@@ -17,12 +17,13 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.router.APIRouter;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -63,7 +64,7 @@ public class WebRootLinkReplacer {
 	 * @return content with links (probably) replaced
 	 */
 	public String replace(InternalActionContext ac, String branchUuid, ContainerType edgeType, String content, LinkType type, String projectName,
-			List<String> languageTags) {
+		List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
 		}
@@ -109,7 +110,7 @@ public class WebRootLinkReplacer {
 				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
 				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName,
-						languageTags.toArray(new String[languageTags.size()])));
+					languageTags.toArray(new String[languageTags.size()])));
 			} else {
 				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName));
 			}
@@ -143,7 +144,7 @@ public class WebRootLinkReplacer {
 	 * @return observable of the rendered link
 	 */
 	public String resolve(InternalActionContext ac, String branchUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
-			String... languageTags) {
+		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = boot.meshRoot().getNodeRoot().findByUuid(uuid);
@@ -217,6 +218,7 @@ public class WebRootLinkReplacer {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + Arrays.toString(languageTags) + " with type " + type.name());
 		}
+
 		String path = node.getPath(ac, branchUuid, edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";

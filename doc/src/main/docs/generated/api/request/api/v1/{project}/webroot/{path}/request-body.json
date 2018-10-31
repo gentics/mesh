@@ -3,25 +3,25 @@
   "fields" : {
     "filename" : "index-renamed.en.html",
     "relatedProduct-" : {
-      "uuid" : "7a352410e4574741b52410e4574741f5"
+      "uuid" : "d2a4015c3f5143eca4015c3f51f3ecfe"
     },
     "price" : 100.1,
     "enabled" : true,
-    "branch" : "2018-10-19T22:39:58.108Z",
+    "branch" : "2018-10-31T16:22:05.886Z",
     "categories" : [ {
-      "uuid" : "1cc6400bbf82446786400bbf82e4678d"
+      "uuid" : "da05eea16f5745c385eea16f5715c31a"
     }, {
-      "uuid" : "290137f320494e688137f320493e6888"
+      "uuid" : "cbc844c3ec0b4ac38844c3ec0b3ac3f7"
     }, {
-      "uuid" : "6a4074f9277f4f158074f9277f0f15a9"
+      "uuid" : "524c49a2433941be8c49a2433951bead"
     } ],
     "names" : [ "Jack", "Joe", "Mary", "Tom" ],
     "categoryIds" : [ 1, 42, 133, 7 ],
     "location" : {
-      "uuid" : "92c10eadebe24d35810eadebe2ed35d0",
+      "uuid" : "ad15ed9d03d6403795ed9d03d65037db",
       "microschema" : {
         "name" : "geolocation",
-        "uuid" : "54c1d455d049406681d455d049506672"
+        "uuid" : "2064e2c0d473447ea4e2c0d473c47ecd"
       },
       "fields" : {
         "latitude" : 48.208330230278,
@@ -29,20 +29,20 @@
       }
     },
     "locations" : [ {
-      "uuid" : "a99275fcd6dd4ec59275fcd6dd2ec5c3",
+      "uuid" : "85d2e637f86143b492e637f86103b446",
       "microschema" : {
         "name" : "geolocation",
-        "uuid" : "6188165249d24b0688165249d2db060c"
+        "uuid" : "6d94778056f448e894778056f418e814"
       },
       "fields" : {
         "latitude" : 48.208330230278,
         "longitude" : 16.373063840833
       }
     }, {
-      "uuid" : "50d91f8682084827991f868208a82762",
+      "uuid" : "be9b99d626cc40d39b99d626cc20d3d4",
       "microschema" : {
         "name" : "geolocation",
-        "uuid" : "10ba43ffb00049b7ba43ffb00079b71e"
+        "uuid" : "5b6f1549e7624ce9af1549e762cce91a"
       },
       "fields" : {
         "latitude" : 48.137222,

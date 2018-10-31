@@ -77,6 +77,11 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return filterIndicesByType(indices, SchemaContainer.composeIndexName());
+	}
+
+	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return Collections.singleton(SchemaContainer.composeIndexName());
 	}

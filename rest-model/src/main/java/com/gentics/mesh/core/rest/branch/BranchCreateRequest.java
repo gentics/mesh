@@ -26,6 +26,10 @@ public class BranchCreateRequest implements RestModel {
 	@JsonPropertyDescription("Optional reference to the base branch. If not set, the new branch will be based on the current 'latest' branch.")
 	private BranchReference baseBranch;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional path prefix for webroot path and rendered links.")
+	private String pathPrefix;
+
 	public BranchCreateRequest() {
 	}
 
@@ -71,6 +75,7 @@ public class BranchCreateRequest implements RestModel {
 
 	/**
 	 * Return the ssl flag of the branch.
+	 * 
 	 * @return
 	 */
 	public Boolean getSsl() {
@@ -90,6 +95,7 @@ public class BranchCreateRequest implements RestModel {
 
 	/**
 	 * Return whether the branch shall be made the latest branch.
+	 * 
 	 * @return
 	 */
 	public boolean isLatest() {
@@ -98,6 +104,7 @@ public class BranchCreateRequest implements RestModel {
 
 	/**
 	 * Set whether to make the branch the latest branch
+	 * 
 	 * @param latest
 	 * @return Fluent API
 	 */
@@ -118,11 +125,32 @@ public class BranchCreateRequest implements RestModel {
 	/**
 	 * Set the base branch
 	 * 
-	 * @param baseBranch base branch
+	 * @param baseBranch
+	 *            base branch
 	 * @return Fluent API
 	 */
 	public BranchCreateRequest setBaseBranch(BranchReference baseBranch) {
 		this.baseBranch = baseBranch;
+		return this;
+	}
+
+	/**
+	 * Return the path prefix.
+	 * 
+	 * @return
+	 */
+	public String getPathPrefix() {
+		return pathPrefix;
+	}
+
+	/**
+	 * Set the path prefix.
+	 * 
+	 * @param pathPrefix
+	 * @return Fluent API
+	 */
+	public BranchCreateRequest setPathPrefix(String pathPrefix) {
+		this.pathPrefix = pathPrefix;
 		return this;
 	}
 }

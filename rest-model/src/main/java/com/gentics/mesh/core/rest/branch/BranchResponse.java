@@ -24,6 +24,10 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("SSL flag of the branch which will be used to generate links across multiple projects.")
 	private Boolean ssl;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Optional path prefix for webroot path and rendered links.")
+	private String pathPrefix;
+
 	// private boolean active;
 
 	@JsonProperty(required = true)
@@ -114,5 +118,25 @@ public class BranchResponse extends AbstractGenericRestResponse {
 
 	public void setTags(List<TagReference> tags) {
 		this.tags = tags;
+	}
+
+	/**
+	 * Return the path prefix.
+	 * 
+	 * @return
+	 */
+	public String getPathPrefix() {
+		return pathPrefix;
+	}
+
+	/**
+	 * Set the path prefix.
+	 * 
+	 * @param pathPrefix
+	 * @return Fluent API
+	 */
+	public BranchResponse setPathPrefix(String pathPrefix) {
+		this.pathPrefix = pathPrefix;
+		return this;
 	}
 }
