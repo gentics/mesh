@@ -43,7 +43,7 @@ upload:
   tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
 security:
   tokenExpirationTime: 3600
-  keystorePassword: "uQbxnHbevavh"
+  keystorePassword: "QdKq3pTpn57r"
   keystorePath: "config/keystore.jceks"
   algorithm: "HS256"
   enableAnonymousAccess: true

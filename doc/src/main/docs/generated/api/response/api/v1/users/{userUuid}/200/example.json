@@ -1,29 +1,29 @@
 {
-  "uuid" : "7c16afcf979e41cc96afcf979ec1cc83",
+  "uuid" : "42ebb8934279417fabb8934279c17fb2",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "d3d0329ca1af412a90329ca1aff12a37"
+    "uuid" : "dfd8a88dc8f84bb598a88dc8f82bb579"
   },
-  "created" : "2018-10-31T15:39:16.454Z",
+  "created" : "2018-10-31T16:22:05.725Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "6b9dba0643494bca9dba0643494bcacf"
+    "uuid" : "dbe3b6aefc534a64a3b6aefc535a6421"
   },
-  "edited" : "2018-10-31T15:39:16.454Z",
+  "edited" : "2018-10-31T16:22:05.725Z",
   "lastname" : "Doe",
   "firstname" : "Joe",
   "username" : "jdoe",
   "emailAddress" : "j.doe@nowhere.com",
   "nodeReference" : {
     "projectName" : "dummy",
-    "uuid" : "637f256844434d3dbf25684443fd3d70"
+    "uuid" : "75c16426d3ce417c816426d3ced17c88"
   },
   "enabled" : true,
   "groups" : [ {
     "name" : "editors",
-    "uuid" : "472077bf65724a69a077bf65726a696d"
+    "uuid" : "8b5744f9fc9d4ac59744f9fc9d8ac54c"
   } ],
   "permissions" : {
     "create" : true,

@@ -1,17 +1,17 @@
 {
-  "uuid" : "12e33513e02a4db5a33513e02aedb567",
+  "uuid" : "618ebb74c8554fe68ebb74c855bfe680",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "dba87257aedb43d0a87257aedb23d0f5"
+    "uuid" : "3d84aca58706407284aca58706e072c9"
   },
-  "created" : "2018-10-31T15:39:16.474Z",
+  "created" : "2018-10-31T16:22:05.737Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "578226909f1d4f128226909f1def1224"
+    "uuid" : "a7734d7b21bc4624b34d7b21bc3624ef"
   },
-  "edited" : "2018-10-31T15:39:16.474Z",
+  "edited" : "2018-10-31T16:22:05.737Z",
   "name" : "New role name",
   "groups" : [ ],
   "permissions" : {
