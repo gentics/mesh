@@ -111,9 +111,7 @@ The Cross-Origin Resource Sharing mechanism enables Gentics Mesh to configure cr
 
 You can read up on this topic on the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS[MDN article].
 
-The CORS header handling can be configured using the ```httpServerOptions.corsAllowedOriginPattern```, 
-```httpServerOptions.corsAllowCredentials``` and
-```httpServerOptions.enableCors``` configuration settings.
+The CORS header handling can be configured using the `httpServerOptions.corsAllowedOriginPattern`, `httpServerOptions.corsAllowCredentials` and `httpServerOptions.enableCors` configuration settings.
 
 ==== Multi Site Example
 
@@ -138,7 +136,7 @@ ETag:W/"1125-7cc5c6fb"
 
 These headers values can be used to implement or utilize existing web caching solutions.
 
-An ETag validation ocures once the ETag is passed along a http request.  
+An ETag validation occurs once the ETag is passed along a http request.
 
 ```
 If-None-Match:W/"1125-7cc5c6fb"
@@ -146,7 +144,7 @@ If-None-Match:W/"1125-7cc5c6fb"
 
 Gentics Mesh will compare the provided ETag with the current state of the content and return a 304 response if the ETag is the same and the response did not change. Updating the requested resource will alter its ETag and thus another request would return the response which includes the current ETag.
 
-ETag Handling can be disabled for each request via the `?etag=false` query parameter. This will increase performance when etag headers are not needed.
+ETag Handling can be disabled for each request via the `?etag=false` query parameter. This will increase performance when ETag headers are not needed.
 
 //=== Error Codes
 
