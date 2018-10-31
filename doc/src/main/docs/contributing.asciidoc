@@ -25,6 +25,34 @@ In order for any contributions to be accepted you MUST sign the https://www.clah
 
 The purpose of this agreement is to protect users of this codebase by ensuring that all code is free to use under the stipulations of the Apache2 license.
 
+== IDE Setup
+
+=== Eclipse 
+
+Make sure that you use at least Eclipse Neon.
+
+Install the following Maven m2e workshop plugins:
+
+* m2e-apt-plugin
+
+NOTE: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". If you don't find this option, you most likely need to install the M2E APT Plugin for eclipse.
+
+Import all Maven modules in your IDE.
+
+Please note that this project is using Google Dagger for dependency injection. 
+Adding new dependencies or beans may require a fresh build (via Project->Clean) of the `mesh-core` and `mesh-api` modules.
+
+=== Building
+
+You can build Gentics Mesh locally using link:https://maven.apache.org/[Apache Maven].
+
+NOTE: Running all test locally is *not* recommended since the execution time is *very high*. Some tests also require a docker environment to run integration components.+
+
+```
+JAVA_HOME=<PATH-TO-YOUR-JAVA8> mvn clean package -Dskip.unit.tests -Denv.JAVA_1_8_HOME=$JAVA_HOME -DskipTests
+```
+
+
 == Components
 
 The main components which are used to build Gentics Mesh are:
@@ -257,23 +285,6 @@ The `mesh-changelog-system` module contains the https://github.com/gentics/mesh/
 NOTE: These kind of changes will alter the database structure and thus not be able to be executed online.
       A cluster of Gentics Mesh instances is required to split and later to reform. 
       An entry should be added to the `CHANGELOG.adoc` file which informs the users about this change.
-
-== IDE Setup
-
-=== Eclipse 
-
-Make sure that you use at least Eclipse Neon.
-
-Install the following Maven m2e workshop plugins:
-
-* m2e-apt-plugin
-
-NOTE: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". If you don't find this option, you most likely need to install the M2E APT Plugin for eclipse.
-
-Import all Maven modules in your IDE.
-
-Please note that this project is using Google Dagger for dependency injection. 
-Adding new dependencies or beans may require a fresh build (via Project->Clean) of the mesh-core and mesh-api modules.
 
 == TL;DR
 

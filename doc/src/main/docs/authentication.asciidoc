@@ -194,7 +194,7 @@ WARNING: Recreating a previously deleted ```anonymous``` user would automaticall
 
 == OAuth2
 
-Since Gentics Mesh 0.20.0 it is also possible to use OAuth2 authentication. 
+Since Gentics Mesh `0.20.0` it is also possible to use OAuth2 authentication. 
 
 The OAuth2 authentication can be enabled via the `security.oauth2.enabled` flag.
 
@@ -202,6 +202,8 @@ NOTE: Gentics Mesh will just utilize provided access tokens. The needed OAuth2 s
 
 The provided OAuth2 user information will automatically be kept in sync with the user that is present in Gentics Mesh.
 The synchronization process will also take care of creating new users and even roles and groups.
+
+WARNING: The Gentics Mesh UI is currently not Keycloak aware. The UI will thus not redirect you to the Keycloak login page. This functionality will be part of a future release of the Gentics Mesh UI.
 
 === Configuration
 
