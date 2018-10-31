@@ -193,7 +193,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 
 		String projectRootUuid = db().tx(() -> meshRoot().getProjectRoot().getUuid());
-		call(() -> client().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid);
+		call(() -> client().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -469,7 +469,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			role().revokePermissions(project(), READ_PERM);
 			tx.success();
 		}
-		call(() -> client().findProjectByUuid(projectUuid()), FORBIDDEN, "error_missing_perm", projectUuid());
+		call(() -> client().findProjectByUuid(projectUuid()), FORBIDDEN, "error_missing_perm", projectUuid(), READ_PERM.getRestPerm().getName());
 	}
 
 	// Update Tests
@@ -586,7 +586,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
 
-		call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
@@ -664,7 +664,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName(), DELETE_PERM.getRestPerm().getName());
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 		try (Tx tx = tx()) {

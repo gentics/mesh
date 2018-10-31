@@ -103,7 +103,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			tx.success();
 		}
 
-		call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -217,7 +217,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 			tx.success();
 		}
-		call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid);
+		call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -267,7 +267,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		try (Tx tx = tx()) {
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName("SuperDoll");
-			call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
+			call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -307,7 +307,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 		try (Tx tx = tx()) {
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
-			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
+			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid(), DELETE_PERM.getRestPerm().getName());
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 		}
 
@@ -421,7 +421,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		try (Tx tx = tx()) {
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName("new Name");
-			call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request), FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 			assertEquals(name, tagFamily.getName());
 		}
 

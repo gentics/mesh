@@ -150,12 +150,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			} else if (!isPublished && requestUser.hasPermission(element, READ_PERM)) {
 				return element;
 			} else {
-				throw error(FORBIDDEN, "error_missing_perm", uuid);
+				throw error(FORBIDDEN, "error_missing_perm", uuid, READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
 		} else if (requestUser.hasPermission(element, perm)) {
 			return element;
 		}
-		throw error(FORBIDDEN, "error_missing_perm", uuid);
+		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
 	}
 
 	/**
@@ -302,11 +302,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
-				if (requestUser.hasPermission(schemaByName, GraphPermission.READ_PERM)) {
+				if (requestUser.hasPermission(schemaByName, READ_PERM)) {
 					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
-					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
+					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName, READ_PERM.getRestPerm().getName());
 				}
 
 			} else {

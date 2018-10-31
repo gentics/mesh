@@ -149,7 +149,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("blub1").setTagFamily("colors"));
 		// 2. Invoke the tag request
-		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), FORBIDDEN, "error_missing_perm", nodeUuid);
+		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), FORBIDDEN, "error_missing_perm", nodeUuid, UPDATE_PERM.getRestPerm().getName());
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 	}

@@ -97,7 +97,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			tx.success();
 		}
 
-		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", groupRootUuid);
+		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", groupRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -213,7 +213,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			tx.success();
 		}
 		String rootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
-		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid);
+		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid, CREATE_PERM.getRestPerm().getName());
 
 	}
 
@@ -315,7 +315,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 			tx.success();
 		}
-		call(() -> client().findGroupByUuid(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+		call(() -> client().findGroupByUuid(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -354,7 +354,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName("new Name");
-		call(() -> client().updateGroup(groupUuid(), request), FORBIDDEN, "error_missing_perm", groupUuid());
+		call(() -> client().updateGroup(groupUuid(), request), FORBIDDEN, "error_missing_perm", groupUuid(), UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -480,7 +480,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), DELETE_PERM.getRestPerm().getName());
 			assertElement(boot().groupRoot(), groupUuid(), true);
 		}
 	}

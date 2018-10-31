@@ -81,7 +81,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		MeshRoot root = MeshInternal.get().boot().meshRoot();
 

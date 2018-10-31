@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
@@ -132,7 +133,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		String projectUuid = project.getUuid();
 
 		if (!requestUser.hasPermission(project, GraphPermission.UPDATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
+			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName, UPDATE_PERM.getRestPerm().getName());
 		}
 
 		// Check for uniqueness of branch name (per project)
@@ -143,8 +144,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		Branch baseBranch = fromReference(request.getBaseBranch());
-		if (baseBranch != null && !requestUser.hasPermission(baseBranch, GraphPermission.READ_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", baseBranch.getUuid());
+		if (baseBranch != null && !requestUser.hasPermission(baseBranch, READ_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", baseBranch.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 
 		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch);

@@ -112,7 +112,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
-		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid);
+		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -311,7 +311,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
+			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -487,7 +487,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
+			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(), DELETE_PERM.getRestPerm().getName());
 			assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
 	}
@@ -591,7 +591,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setName("new-name");
-		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid);
+		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
 }

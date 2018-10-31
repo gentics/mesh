@@ -329,7 +329,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (container.isPublished(branchUuid) && hasPermission(node, READ_PUBLISHED_PERM)) {
 			return;
 		}
-		throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
+		throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 	}
 
 	@Override

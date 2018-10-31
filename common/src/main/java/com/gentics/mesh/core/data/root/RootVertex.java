@@ -174,7 +174,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		if (requestUser.hasPermission(element, perm)) {
 			return element;
 		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
 		}
 	}
 
@@ -245,7 +245,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		if (requestUser.hasPermission(element, perm)) {
 			return element;
 		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
 		}
 	}
 

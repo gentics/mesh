@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -80,13 +81,13 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(initialBranchUuid()).getUuid());
-			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+			role().revokePermissions(sourceNode, UPDATE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
-					sourceNode.getUuid());
+					sourceNode.getUuid(), UPDATE_PERM.getRestPerm().getName());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
 					folder("deals").getParentNode(initialBranchUuid()).getUuid());
 		}

@@ -149,7 +149,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -165,7 +165,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 

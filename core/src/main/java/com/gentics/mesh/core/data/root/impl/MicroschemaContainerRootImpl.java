@@ -99,7 +99,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		MicroschemaContainer container = create(microschema, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);

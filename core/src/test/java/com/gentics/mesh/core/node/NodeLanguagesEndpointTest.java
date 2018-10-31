@@ -74,6 +74,6 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 			role().revokePermissions(content(), DELETE_PERM);
 			tx.success();
 		}
-		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"), FORBIDDEN, "error_missing_perm", contentUuid());
+		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"), FORBIDDEN, "error_missing_perm", contentUuid(), DELETE_PERM.getRestPerm().getName());
 	}
 }

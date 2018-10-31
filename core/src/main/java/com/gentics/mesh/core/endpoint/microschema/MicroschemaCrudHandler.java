@@ -180,7 +180,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			Project project = ac.getProject();
 			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
@@ -204,7 +204,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			// TODO check whether microschema is assigned to project
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);

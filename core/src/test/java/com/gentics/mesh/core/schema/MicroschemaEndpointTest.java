@@ -168,7 +168,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
-		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid);
+		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid, CREATE_PERM.getRestPerm().getName());
 
 	}
 
@@ -271,7 +271,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			role().revokePermissions(vcardContainer, READ_PERM);
 			tx.success();
 		}
-		call(() -> client().findMicroschemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().findMicroschemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -301,7 +301,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 		request.setName("new-name");
-		call(() -> client().updateMicroschema(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().updateMicroschema(uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -389,7 +389,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid());
+			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid(), DELETE_PERM.getRestPerm().getName());
 
 			assertElement(boot().microschemaContainerRoot(), microschema.getUuid(), true);
 		}

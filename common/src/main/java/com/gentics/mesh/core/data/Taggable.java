@@ -62,7 +62,7 @@ public interface Taggable {
 					throw error(NOT_FOUND, "object_not_found_for_uuid", tagReference.getUuid());
 				}
 				if (!user.hasPermission(tag, READ_PERM)) {
-					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid());
+					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
 				}
 				tags.add(tag);
 			} else {
@@ -79,7 +79,7 @@ public interface Taggable {
 							.getName());
 					}
 				} else if (!user.hasPermission(tag, READ_PERM)) {
-					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid());
+					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
 				}
 
 				tags.add(tag);

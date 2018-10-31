@@ -305,7 +305,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		call(() -> client().findUserByUuid(userUuid()));
-		call(() -> client().issueAPIToken(userUuid()), FORBIDDEN, "error_missing_perm", userUuid());
+		call(() -> client().issueAPIToken(userUuid()), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -321,7 +321,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		});
 
-		call(() -> client().invalidateAPIToken(uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().invalidateAPIToken(uuid), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -418,7 +418,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().revokePermissions(user, READ_PERM);
 			tx.success();
 		}
-		call(() -> client().findUserByUuid(userUuid()), FORBIDDEN, "error_missing_perm", userUuid());
+		call(() -> client().findUserByUuid(userUuid()), FORBIDDEN, "error_missing_perm", userUuid(), READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -932,7 +932,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setPassword("new_password");
-		call(() -> client().updateUser(userUuid(), request), FORBIDDEN, "error_missing_perm", userUuid());
+		call(() -> client().updateUser(userUuid(), request), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			User reloadedUser = boot().userRoot().findByUuid(userUuid());
@@ -957,7 +957,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updatedUser.setFirstname("Joe");
 		updatedUser.setLastname("Doe");
 		updatedUser.setUsername("new_user");
-		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid());
+		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			User reloadedUser = boot().userRoot().findByUuid(userUuid());
@@ -1132,7 +1132,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		String userRootUuid = tx(() -> meshRoot().getUserRoot().getUuid());
-		call(() -> client().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid);
+		call(() -> client().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -1299,7 +1299,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
-			call(() -> client().deleteUser(uuid), FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().deleteUser(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 			userRoot = meshRoot().getUserRoot();
 			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid));
 		}
