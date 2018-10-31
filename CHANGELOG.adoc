@@ -32,6 +32,8 @@ icon:plus[] API: Make OAuth2 Server options overrideable via environment variabl
 
 icon:check[] REST: A concurrency issue has been fixed which could lead to problems when creating multiple schemas in-parallel.
 
+icon:check[] REST: Fix error message when no Node for a GraphFieldContainer can be found. link:https://github.com/gentics/mesh/issues/364[#364]
+
 [[v0.27.2]]
 == 0.27.2 (07.11.2018)
 
