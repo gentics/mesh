@@ -45,7 +45,9 @@ public class WebRootServiceImpl implements WebRootService {
 		// Check whether the path contains the branch path prefix. Return an empty node path in those cases. (e.g. Node was not found)
 		if (!PathPrefixUtil.startsWithPrefix(branch, path)) {
 			Path nodePath = new Path();
+			nodePath.setTargetPath(path);
 			nodePath.setInitialStack(new Stack<>());
+			nodePath.setPrefixMismatch(true);
 			return nodePath;
 		}
 

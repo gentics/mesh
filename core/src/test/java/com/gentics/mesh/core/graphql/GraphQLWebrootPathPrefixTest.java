@@ -31,7 +31,6 @@ public class GraphQLWebrootPathPrefixTest extends AbstractMeshTest {
 		// Now execute the query and assert it
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		System.out.println(response.toJson());
 		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
 	}
 }

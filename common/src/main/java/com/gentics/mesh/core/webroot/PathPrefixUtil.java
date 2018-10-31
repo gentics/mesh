@@ -61,8 +61,7 @@ public final class PathPrefixUtil {
 	public static boolean startsWithPrefix(Branch branch, String path) {
 		String prefix = branch.getPathPrefix();
 		prefix = sanitize(prefix);
-		int idx = path.indexOf(prefix);
-		return idx == 0;
+		return path.startsWith(prefix);
 	}
 
 }

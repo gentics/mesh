@@ -24,7 +24,7 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("SSL flag of the branch which will be used to generate links across multiple projects.")
 	private Boolean ssl;
 
-	@JsonProperty(required = false)
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Optional path prefix for webroot path and rendered links.")
 	private String pathPrefix;
 

@@ -1,4 +1,5 @@
 {
+	# [$.data.node2=<is-null>]
 	node2: node(path:"/Neuigkeiten/2015") {
 		uuid
 	}
