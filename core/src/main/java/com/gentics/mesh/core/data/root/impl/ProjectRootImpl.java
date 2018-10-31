@@ -93,6 +93,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		}
 		if (pathPrefix != null) {
 			branch.setPathPrefix(pathPrefix);
+		} else {
+			branch.setPathPrefix("");
 		}
 		branch.assignSchemaVersion(creator, schemaContainerVersion);
 

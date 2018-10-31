@@ -12,12 +12,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -38,7 +40,17 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// First try to locate the content via the url path index (niceurl)
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		NodeGraphFieldContainer containerByWebUrlPath = findByUrlFieldPath(ac.getBranch().getUuid(), path, type);
+		Branch branch = ac.getBranch();
+
+		// Check whether the path contains the branch path prefix. Return an empty node path in those cases. (e.g. Node was not found)
+		if (!PathPrefixUtil.startsWithPrefix(branch, path)) {
+			Path nodePath = new Path();
+			nodePath.setInitialStack(new Stack<>());
+			return nodePath;
+		}
+
+		path = PathPrefixUtil.strip(branch, path);
+		NodeGraphFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), path, type);
 		if (containerByWebUrlPath != null) {
 			return containerByWebUrlPath.getPath(ac);
 		}
@@ -47,7 +59,7 @@ public class WebRootServiceImpl implements WebRootService {
 		Path nodePath = new Path();
 		Node baseNode = project.getBaseNode();
 		nodePath.setTargetPath(path);
-		Stack<String> stack = new Stack<String>();
+		Stack<String> stack = new Stack<>();
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(path) || path.isEmpty()) {

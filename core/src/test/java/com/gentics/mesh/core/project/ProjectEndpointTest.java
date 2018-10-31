@@ -241,16 +241,29 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 		call(() -> client().createProject(request));
 
-		BranchResponse branch = call(() -> client().findBranches(name)).getData().get(0);
-		assertEquals("dummy.host", branch.getHostname());
-		assertTrue(branch.getSsl());
+		BranchResponse response1 = call(() -> client().findBranches(name)).getData().get(0);
+		assertThat(response1).hasHostname("dummy.host").hasSSL(true);
 
 		BranchUpdateRequest updateRequest = new BranchUpdateRequest();
 		updateRequest.setHostname("different.host");
 		updateRequest.setSsl(null);
-		BranchResponse response = call(() -> client().updateBranch(name, branch.getUuid(), updateRequest));
-		assertEquals("different.host", response.getHostname());
-		assertTrue(response.getSsl());
+		BranchResponse response2 = call(() -> client().updateBranch(name, response1.getUuid(), updateRequest));
+		assertThat(response2).hasHostname("different.host").hasSSL(true);
+	}
+
+	@Test
+	public void testCreateWithPathPrefix() throws Exception {
+		final String name = "test12345";
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(name);
+		request.setHostname("dummy.host");
+		request.setPathPrefix("my/prefix");
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
+		call(() -> client().createProject(request));
+
+		BranchResponse branch = call(() -> client().findBranches(name)).getData().get(0);
+		assertThat(branch).hasPathPrefix("my/prefix");
+
 	}
 
 	@Test

@@ -22,7 +22,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class PathPrefixBranchLinkRenderTest extends AbstractMeshTest {
+public class LinkRenderPathPrefixTest extends AbstractMeshTest {
 
 	private static final String OTHER_PROJECT_NAME = "projectB";
 

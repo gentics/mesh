@@ -17,12 +17,13 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.router.APIRouter;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -199,7 +200,6 @@ public class WebRootLinkReplacer {
 			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
 		}
 
-		Branch branch = null;
 		// We need to reset the given branchUuid if the node is not part of the currently active project.
 		// In that case the latest branch of the foreign node project will be used.
 		Project ourProject = ac.getProject();
@@ -209,8 +209,7 @@ public class WebRootLinkReplacer {
 		}
 		// if no branch given, take the latest branch of the project
 		if (branchUuid == null) {
-			branch = theirProject.getLatestBranch();
-			branchUuid = branch.getUuid();
+			branchUuid = theirProject.getLatestBranch().getUuid();
 		}
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
@@ -223,15 +222,6 @@ public class WebRootLinkReplacer {
 		String path = node.getPath(ac, branchUuid, edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
-		} else {
-			String prefix = branch.getPathPrefix();
-			if (prefix != null) {
-				// Ensure that the prefix starts with a slash
-				if (!prefix.startsWith("/")) {
-					prefix = "/" + prefix;
-				}
-				path = prefix + path;
-			}
 		}
 		switch (type) {
 		case SHORT:

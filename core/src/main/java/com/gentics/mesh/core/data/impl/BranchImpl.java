@@ -196,7 +196,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public String getPathPrefix() {
-		return getProperty(PATH_PREFIX);
+		String prefix = getProperty(PATH_PREFIX);
+		return prefix == null ? "" : prefix;
 	}
 
 	@Override

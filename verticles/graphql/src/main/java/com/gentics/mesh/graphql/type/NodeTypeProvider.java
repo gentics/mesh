@@ -315,7 +315,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 			ContainerType containerType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
-			String branchUuid = gc.getBranch().getUuid();
+			Branch branch = gc.getBranch();
+			String branchUuid = branch.getUuid();
 			String languageTag = container.getLanguage().getLanguageTag();
 			return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);
 		}));

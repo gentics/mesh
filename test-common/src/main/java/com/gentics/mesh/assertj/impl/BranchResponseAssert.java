@@ -51,6 +51,17 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 	}
 
 	/**
+	 * Assert that the branch response has the given path prefix.
+	 * 
+	 * @param prefix
+	 * @return fluent API
+	 */
+	public BranchResponseAssert hasPathPrefix(String prefix) {
+		assertThat(actual.getPathPrefix()).as(descriptionText() + " prefix").isEqualTo(prefix);
+		return this;
+	}
+
+	/**
 	 * Assert that the branch response has the given ssl flag.
 	 * 
 	 * @param flag
