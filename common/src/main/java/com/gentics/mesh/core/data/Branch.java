@@ -42,7 +42,8 @@ import com.gentics.mesh.parameter.PagingParameters;
  * migrations and identify which branch specific search indices should be used when using the search indices.
  * 
  */
-public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable {
+public interface Branch
+	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable {
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -61,6 +62,8 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	static final String HOSTNAME = "hostname";
 
 	static final String SSL = "ssl";
+
+	static final String PATH_PREFIX = "pathPrefix";
 
 	/**
 	 * Get whether the branch is active.
@@ -105,7 +108,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * Set the hostname of the branch.
 	 * 
 	 * @param hostname
-	 * @return
+	 * @return Fluent API
 	 */
 	Branch setHostname(String hostname);
 
@@ -120,9 +123,24 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * Set the ssl flag of the branch.
 	 * 
 	 * @param ssl
-	 * @return
+	 * @return Fluent API
 	 */
 	Branch setSsl(boolean ssl);
+
+	/**
+	 * Return the webroot path prefix.
+	 * 
+	 * @return
+	 */
+	String getPathPrefix();
+
+	/**
+	 * Set the path prefix.
+	 * 
+	 * @param pathPrefix
+	 * @return Fluent API
+	 */
+	Branch setPathPrefix(String pathPrefix);
 
 	/**
 	 * Get whether the branch is the latest branch

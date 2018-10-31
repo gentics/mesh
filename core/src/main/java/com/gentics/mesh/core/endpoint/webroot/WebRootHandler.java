@@ -146,7 +146,10 @@ public class WebRootHandler {
 
 			// Load all nodes for the given path
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
-			
+			if (nodePath.isPrefixMismatch()) {
+				throw error(NOT_FOUND, "webroot_error_prefix_invalid", decodedPath, ac.getBranch().getPathPrefix());
+			}
+
 			// Check whether path could be resolved at all
 			if (nodePath.getResolvedPath() == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", nodePath.getTargetPath());

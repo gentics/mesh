@@ -93,6 +93,7 @@ public class VersioningExamples extends AbstractExamples {
 		response.setEditor(createUserReference());
 		response.setHostname("getmesh.io");
 		response.setSsl(true);
+		response.setPathPrefix("my/prefix");
 		response.setLatest(latest);
 
 		List<TagReference> tags = new ArrayList<>();

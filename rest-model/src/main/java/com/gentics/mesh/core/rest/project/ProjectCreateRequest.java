@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.project;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -25,6 +26,10 @@ public class ProjectCreateRequest implements RestModel {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("SSL flag of the project which will be used to generate links across multiple projects. The flag will be stored along the intial branch of the project.")
 	private Boolean ssl;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional path prefix for webroot path and rendered links.")
+	private String pathPrefix;
 
 	/**
 	 * Return the project name.
@@ -113,6 +118,26 @@ public class ProjectCreateRequest implements RestModel {
 	 */
 	public ProjectCreateRequest setSchemaRef(String schemaName) {
 		setSchema(new SchemaReferenceImpl().setName(schemaName));
+		return this;
+	}
+
+	/**
+	 * Return the path prefix.
+	 * 
+	 * @return
+	 */
+	public String getPathPrefix() {
+		return pathPrefix;
+	}
+
+	/**
+	 * Set the path prefix.
+	 * 
+	 * @param pathPrefix
+	 * @return Fluent API
+	 */
+	public ProjectCreateRequest setPathPrefix(String pathPrefix) {
+		this.pathPrefix = pathPrefix;
 		return this;
 	}
 

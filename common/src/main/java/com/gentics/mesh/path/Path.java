@@ -16,6 +16,8 @@ public class Path {
 
 	private Stack<String> initialStack;
 
+	private boolean prefixMismatch = false;
+
 	/**
 	 * Return the list of segments which describe the path.
 	 * 
@@ -101,6 +103,19 @@ public class Path {
 
 	public Stack<String> getInitialStack() {
 		return initialStack;
+	}
+
+	/**
+	 * Set the prefix mismatch flag in the path to indicate that the prefix was wrong.
+	 * 
+	 * @param flag
+	 */
+	public void setPrefixMismatch(boolean flag) {
+		this.prefixMismatch = flag;
+	}
+
+	public boolean isPrefixMismatch() {
+		return prefixMismatch;
 	}
 
 }

@@ -17,6 +17,10 @@ public class BranchUpdateRequest implements RestModel {
 	@JsonPropertyDescription("SSL flag of the branch which will be used to generate links across multiple projects.")
 	private Boolean ssl;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional path prefix for webroot path and rendered links.")
+	private String pathPrefix;
+
 	public BranchUpdateRequest() {
 	}
 
@@ -62,6 +66,7 @@ public class BranchUpdateRequest implements RestModel {
 
 	/**
 	 * Return the ssl flag of the branch.
+	 * 
 	 * @return
 	 */
 	public Boolean getSsl() {
@@ -76,6 +81,26 @@ public class BranchUpdateRequest implements RestModel {
 	 */
 	public BranchUpdateRequest setSsl(Boolean ssl) {
 		this.ssl = ssl;
+		return this;
+	}
+
+	/**
+	 * Return the path prefix.
+	 * 
+	 * @return
+	 */
+	public String getPathPrefix() {
+		return pathPrefix;
+	}
+
+	/**
+	 * Set the path prefix.
+	 * 
+	 * @param pathPrefix
+	 * @return Fluent API
+	 */
+	public BranchUpdateRequest setPathPrefix(String pathPrefix) {
+		this.pathPrefix = pathPrefix;
 		return this;
 	}
 }

@@ -26,6 +26,8 @@ title: Changelog
 [[v0.27.1]]
 == 0.27.1 (TBD)
 
+icon:plus[] REST: It is now possible to specify a path prefix for branches. When specified, all resolved paths will include the prefix. The webroot endpoint will also utilize the prefix to resolve nodes. The prefix can be set for new projects or for update requests on existing branches.
+
 icon:check[] Java REST Client: Fixed wrong log output information.
 
 icon:check[] REST: Fixed error while fetching jobs for deleted projects.

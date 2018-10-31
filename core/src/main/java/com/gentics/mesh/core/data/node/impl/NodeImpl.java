@@ -99,6 +99,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -236,10 +237,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Finally construct the path from all segments
 			StringBuilder builder = new StringBuilder();
+
+			// Append the prefix first
+			Branch branch = getProject().getBranchRoot().findByUuid(branchUuid);
+			if (branch != null) {
+				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
+				if (!prefix.isEmpty()) {
+					String[] prefixSegments = prefix.split("/");
+					for (String prefixSegment : prefixSegments) {
+						if (prefixSegment.isEmpty()) {
+							continue;
+						}
+						builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
+					}
+				}
+			}
+
 			Iterator<String> it = segments.iterator();
 			while (it.hasNext()) {
-				String fragment = it.next();
-				builder.append("/").append(URIUtils.encodeSegment(fragment));
+				String currentSegment = it.next();
+				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
 			}
 			return builder.toString();
 		});
@@ -562,7 +579,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid) {
 		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
-					branch.getName(), getUuid()));
+				branch.getName(), getUuid()));
 			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		}
 
@@ -1587,7 +1604,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				Node parentNode = getProject().getNodeRoot().loadObjectByUuid(ac, createRequest.getParentNode().getUuid(), CREATE_PERM);
 				// check whether the parent node is visible in the branch
 				if (!parentNode.isBaseNode() && !parentNode.isVisibleInBranch(branch.getUuid())) {
-					log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
+					log.error(
+						String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 							branch.getName(), parentNode.getUuid()));
 					throw error(NOT_FOUND, "object_not_found_for_uuid", createRequest.getParentNode().getUuid());
 				}

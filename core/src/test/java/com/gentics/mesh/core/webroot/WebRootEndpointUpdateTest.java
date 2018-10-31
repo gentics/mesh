@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -31,6 +32,47 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 
 		NodeResponse response = call(() -> client().webrootCreate(PROJECT_NAME, "/new-page.html", nodeCreateRequest));
 		assertEquals("0.1", response.getVersion());
+	}
+
+	@Test
+	public void testCreateNodeViaPathAndPrefix() {
+
+		String prefix = "some/prefix";
+
+		BranchUpdateRequest request = new BranchUpdateRequest();
+		request.setPathPrefix(prefix);
+		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("content");
+		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+
+		NodeResponse response = call(() -> client().webrootCreate(PROJECT_NAME, "/" + prefix + "/new-page.html", nodeCreateRequest));
+		assertEquals("0.1", response.getVersion());
+	}
+
+	@Test
+	public void testCreateNodeWithMissingPrefix() {
+
+		String prefix = "some/prefix";
+
+		BranchUpdateRequest request = new BranchUpdateRequest();
+		request.setPathPrefix(prefix);
+		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("content");
+		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+
+		String path = "/News/2015/new-page.html";
+		call(() -> client().webrootCreate(PROJECT_NAME, path, nodeCreateRequest), NOT_FOUND, "webroot_error_prefix_invalid", path, prefix);
+
 	}
 
 	@Test
@@ -102,6 +144,27 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 		String path = "/News/2015/News_2015.en.html";
 		NodeResponse response = call(() -> client().webrootUpdate(PROJECT_NAME, path, nodeUpdateRequest));
 		System.out.println(response.toJson());
+	}
+
+	@Test
+	public void testUpdateNodeViaPathAndPrefix() {
+		String prefix = "some/prefix";
+
+		BranchUpdateRequest request = new BranchUpdateRequest();
+		request.setPathPrefix(prefix);
+		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request));
+
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("1.0");
+		nodeUpdateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeUpdateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+
+		call(() -> client().webrootUpdate(PROJECT_NAME, "/" + prefix + "/News/2015/News_2015.en.html", nodeUpdateRequest));
+
+		String withoutPrefix = "/News/2015/News_2015.en.html";
+		call(() -> client().webrootUpdate(PROJECT_NAME, withoutPrefix, nodeUpdateRequest), NOT_FOUND, "webroot_error_prefix_invalid",
+			withoutPrefix, prefix);
 	}
 
 	@Test
