@@ -683,16 +683,22 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		assertThat(response1).as("Read updated branch").hasPathPrefix(prefix);
 
 		// Ensure that the paths in the response are also prefixed
+		checkPathRendering("/api/v1/dummy/webroot", prefix, LinkType.FULL);
+		checkPathRendering("", prefix, LinkType.SHORT);
+
+	}
+
+	private void checkPathRendering(String basePath, String prefix, LinkType type) {
 		NodeResponse nodeResponse = call(
-			() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
+			() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new NodeParametersImpl().setResolveLinks(type)));
 
 		String segment = prefix;
 		if (!prefix.isEmpty() && !prefix.startsWith("/")) {
 			segment = "/" + prefix;
 		}
-		assertEquals("/api/v1/dummy/webroot" + segment + "/News/News%20Overview.en.html", nodeResponse.getPath());
-		assertEquals("/api/v1/dummy/webroot" + segment + "/Neuigkeiten/News%20Overview.de.html", nodeResponse.getLanguagePaths().get("de"));
-		assertEquals("/api/v1/dummy/webroot" + segment + "/News/News%20Overview.en.html", nodeResponse.getLanguagePaths().get("en"));
+		assertEquals(basePath + segment + "/News/News%20Overview.en.html", nodeResponse.getPath());
+		assertEquals(basePath + segment + "/Neuigkeiten/News%20Overview.de.html", nodeResponse.getLanguagePaths().get("de"));
+		assertEquals(basePath + segment + "/News/News%20Overview.en.html", nodeResponse.getLanguagePaths().get("en"));
 	}
 
 	@Test
