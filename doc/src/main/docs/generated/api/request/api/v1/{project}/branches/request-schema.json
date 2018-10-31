@@ -34,6 +34,10 @@
           "description" : "Uuid of the referenced element"
         }
       }
+    },
+    "pathPrefix" : {
+      "type" : "string",
+      "description" : "Optional path prefix for webroot path and rendered links."
     }
   }
 }

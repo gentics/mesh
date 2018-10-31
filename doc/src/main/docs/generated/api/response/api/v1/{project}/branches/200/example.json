@@ -1,30 +1,31 @@
 {
   "data" : [ {
-    "uuid" : "6cabaa54a4494819abaa54a4492819a0",
+    "uuid" : "e2b1d4e8f17e45c3b1d4e8f17ec5c3fe",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "34b09c6ba5b74a53b09c6ba5b7ba537d"
+      "uuid" : "8965007bbbfe48d9a5007bbbfef8d9a2"
     },
-    "created" : "2018-10-19T22:39:58.115Z",
+    "created" : "2018-10-31T15:39:16.708Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "c87ce7fff8d54606bce7fff8d59606e7"
+      "uuid" : "10cd13b5f38b41258d13b5f38bd1250c"
     },
-    "edited" : "2018-10-19T22:39:58.115Z",
+    "edited" : "2018-10-31T15:39:16.708Z",
     "name" : "summer2016",
     "hostname" : "getmesh.io",
     "ssl" : true,
+    "pathPrefix" : "my/prefix",
     "migrated" : true,
     "latest" : false,
     "tags" : [ {
       "name" : "dev",
-      "uuid" : "a7e5fb4334464bfba5fb433446abfb75",
+      "uuid" : "749ec76364b548cc9ec76364b508ccff",
       "tagFamily" : "branchTags"
     }, {
       "name" : "prod",
-      "uuid" : "6331b36749a7447ab1b36749a7147a5a",
+      "uuid" : "c4c52f513e2047ce852f513e2017ce01",
       "tagFamily" : "branchTags"
     } ],
     "permissions" : {
@@ -44,31 +45,32 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "d6a546b436944551a546b4369495516c",
+    "uuid" : "1f74cbdfe22246b1b4cbdfe22246b11e",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "9ed0c86157e4486290c86157e43862e9"
+      "uuid" : "3a80caada5ed453d80caada5ed853d34"
     },
-    "created" : "2018-10-19T22:39:58.115Z",
+    "created" : "2018-10-31T15:39:16.708Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "ffba6668cb2e4cebba6668cb2efceb0b"
+      "uuid" : "ca2f96a210464707af96a210465707d2"
     },
-    "edited" : "2018-10-19T22:39:58.115Z",
+    "edited" : "2018-10-31T15:39:16.708Z",
     "name" : "autumn2016",
     "hostname" : "getmesh.io",
     "ssl" : true,
+    "pathPrefix" : "my/prefix",
     "migrated" : true,
     "latest" : true,
     "tags" : [ {
       "name" : "dev",
-      "uuid" : "f66a516bbaba4a16aa516bbaba2a16e0",
+      "uuid" : "58d5f7e090054db395f7e09005adb3f8",
       "tagFamily" : "branchTags"
     }, {
       "name" : "prod",
-      "uuid" : "dd3c116320bc4d54bc116320bc1d5407",
+      "uuid" : "83fbe70661104e09bbe7066110de09c2",
       "tagFamily" : "branchTags"
     } ],
     "permissions" : {

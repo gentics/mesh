@@ -1,29 +1,30 @@
 {
-  "uuid" : "6e4cd504b066435d8cd504b066b35db1",
+  "uuid" : "5d887a4a4ff7474f887a4a4ff7e74f82",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "435e4ab3f44547269e4ab3f4450726b7"
+    "uuid" : "08e440f01df44902a440f01df40902f8"
   },
-  "created" : "2018-10-19T22:39:58.115Z",
+  "created" : "2018-10-31T15:39:16.709Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "fd3d8f578a4f4149bd8f578a4f214907"
+    "uuid" : "7ff3d6e1e6d841dfb3d6e1e6d8a1df7d"
   },
-  "edited" : "2018-10-19T22:39:58.115Z",
+  "edited" : "2018-10-31T15:39:16.709Z",
   "name" : "Winter Collection Branch",
   "hostname" : "getmesh.io",
   "ssl" : true,
+  "pathPrefix" : "my/prefix",
   "migrated" : true,
   "latest" : false,
   "tags" : [ {
     "name" : "dev",
-    "uuid" : "28b69a5ed614427fb69a5ed614827ff1",
+    "uuid" : "82856e901d6b4a21856e901d6b5a2107",
     "tagFamily" : "branchTags"
   }, {
     "name" : "prod",
-    "uuid" : "4cb34ecf7b804c4db34ecf7b801c4d90",
+    "uuid" : "050f3cf5e1bb43fb8f3cf5e1bbe3fbc2",
     "tagFamily" : "branchTags"
   } ],
   "permissions" : {

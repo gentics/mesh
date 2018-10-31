@@ -1,50 +1,50 @@
 {
-  "uuid" : "d13b249a19d643ddbb249a19d6f3ddd1",
+  "uuid" : "9c5ba35511c948c79ba35511c9e8c7cb",
   "editor" : {
-    "uuid" : "8559b41becd34dd899b41becd3bdd8a8"
+    "uuid" : "6f6b846a797e4a24ab846a797e6a2433"
   },
   "edited" : "1970-01-01T00:00:00Z",
   "creator" : {
-    "uuid" : "8559b41becd34dd899b41becd3bdd8a8"
+    "uuid" : "6f6b846a797e4a24ab846a797e6a2433"
   },
   "created" : "1970-01-01T00:00:00Z",
   "project" : {
     "name" : "dummyProject",
-    "uuid" : "f55f81fe500d48259f81fe500d38259e"
+    "uuid" : "703b14a431bb4fc3bb14a431bb7fc3ed"
   },
   "tags" : {
     "name" : [ "green", "red" ],
-    "uuid" : [ "07d972b66d264e259972b66d265e25f9", "2fce7600f62c4eaf8e7600f62c7eaf84" ]
+    "uuid" : [ "9f0ea222c6e74c8f8ea222c6e79c8fe3", "0d75e8564f104d85b5e8564f100d8548" ]
   },
   "tagFamilies" : {
     "colors" : {
-      "uuid" : "dff1c102bba7498fb1c102bba7c98f2d",
+      "uuid" : "e0c3e1b3f8b9476783e1b3f8b9a76706",
       "tags" : [ {
         "name" : "green",
-        "uuid" : "07d972b66d264e259972b66d265e25f9"
+        "uuid" : "9f0ea222c6e74c8f8ea222c6e79c8fe3"
       }, {
         "name" : "red",
-        "uuid" : "2fce7600f62c4eaf8e7600f62c7eaf84"
+        "uuid" : "0d75e8564f104d85b5e8564f100d8548"
       } ]
     }
   },
   "_roleUuids" : [ ],
   "parentNode" : {
-    "uuid" : "865384f898e241369384f898e2b136cb"
+    "uuid" : "b02110218cab4c7ba110218cabbc7ba3"
   },
   "language" : "de",
   "schema" : {
     "name" : "content",
-    "uuid" : "ae7e5aebefdf49bcbe5aebefdfa9bc46",
+    "uuid" : "d439b765cd804edeb9b765cd80eedef1",
     "version" : null
   },
   "fields" : {
-    "date" : 1539988798,
+    "date" : 1541000356,
     "string" : "The name value",
     "htmlList" : [ "somehtml", "somehtml", "somehtml" ],
-    "nodeList" : [ "6693943c4826497193943c4826a97116", "6693943c4826497193943c4826a97116", "6693943c4826497193943c4826a97116" ],
+    "nodeList" : [ "4f40f3f2f89245d680f3f2f89245d621", "4f40f3f2f89245d680f3f2f89245d621", "4f40f3f2f89245d680f3f2f89245d621" ],
     "number" : 0.146,
-    "node" : "6693943c4826497193943c4826a97116",
+    "node" : "4f40f3f2f89245d680f3f2f89245d621",
     "boolean" : true,
     "stringList" : [ "The name value", "The name value", "The name value" ],
     "micronode" : {
@@ -60,11 +60,11 @@
     "html" : "somehtml",
     "numberList" : [ 0.146, 0.146, 0.146 ],
     "booleanList" : [ "true", "true", "true" ],
-    "dateList" : [ 1539988798, 1539988798, 1539988798 ]
+    "dateList" : [ 1541000356, 1541000356, 1541000356 ]
   },
   "displayField" : {
     "key" : "string",
     "value" : null
   },
-  "version" : "7d292e33"
+  "version" : "d7c9a4de"
 }

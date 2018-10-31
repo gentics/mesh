@@ -17,6 +17,11 @@
 | string
 | Name of the project
 
+| pathPrefix
+| false
+| string
+| Optional path prefix for webroot path and rendered links.
+
 | schema
 | true
 | object

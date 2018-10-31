@@ -24,7 +24,7 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
 [[v0.27.1]]
-== 0.27.1 (TBD)
+== 0.27.1 (31.10.2018)
 
 icon:plus[] REST: It is now possible to specify a path prefix for branches. When specified, all resolved paths will include the prefix. The webroot endpoint will also utilize the prefix to resolve nodes. The prefix can be set for new projects or for update requests on existing branches.
 

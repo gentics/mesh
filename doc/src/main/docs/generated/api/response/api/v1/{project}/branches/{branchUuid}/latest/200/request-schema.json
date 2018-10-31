@@ -56,6 +56,11 @@
       "type" : "boolean",
       "description" : "SSL flag of the branch which will be used to generate links across multiple projects."
     },
+    "pathPrefix" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Optional path prefix for webroot path and rendered links."
+    },
     "migrated" : {
       "type" : "boolean",
       "required" : true,

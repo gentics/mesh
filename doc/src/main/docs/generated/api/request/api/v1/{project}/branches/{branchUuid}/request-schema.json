@@ -14,6 +14,10 @@
     "ssl" : {
       "type" : "boolean",
       "description" : "SSL flag of the branch which will be used to generate links across multiple projects."
+    },
+    "pathPrefix" : {
+      "type" : "string",
+      "description" : "Optional path prefix for webroot path and rendered links."
     }
   }
 }

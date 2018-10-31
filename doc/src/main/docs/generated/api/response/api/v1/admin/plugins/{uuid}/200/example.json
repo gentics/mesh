@@ -1,5 +1,5 @@
 {
-  "uuid" : "6482e904423e4d1882e904423e3d18a9",
+  "uuid" : "dd3211d941c94018b211d941c98018da",
   "name" : "Hello World",
   "manifest" : {
     "name" : "Hello World",
@@ -7,7 +7,7 @@
     "description" : "A dummy plugin",
     "version" : "1.0",
     "author" : "Joe Doe",
-    "inception" : "2018-10-19T22:39:57Z",
+    "inception" : "2018-10-31T15:39:16Z",
     "license" : "Apache License 2.0"
   }
 }
