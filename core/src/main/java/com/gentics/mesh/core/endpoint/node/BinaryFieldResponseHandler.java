@@ -107,7 +107,13 @@ public class BinaryFieldResponseHandler {
 				// TODO encode filename?
 				// TODO images and pdf files should be shown in inline format
 				response.putHeader("content-disposition", "attachment; filename=" + fileName);
-				binary.getStream().subscribe(response::write, rc::fail, response::end);
+
+				String localPath = storage.getLocalPath(binary.getUuid());
+				if (localPath != null) {
+					response.sendFile(localPath);
+				} else {
+					binary.getStream().subscribe(response::write, rc::fail, response::end);
+				}
 			}
 		}
 	}

@@ -38,6 +38,16 @@ public interface BinaryStorage {
 	Flowable<Buffer> read(String uuid);
 
 	/**
+	 * Return the local path to the binary if possible. Some storage implementations may only allow stream handling.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	default String getLocalPath(String uuid) {
+		return null;
+	}
+
+	/**
 	 * Delete the binary with the given uuid.
 	 * 
 	 * @param uuid
