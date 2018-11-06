@@ -92,6 +92,9 @@ public class BinaryFieldResponseHandler {
 						response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 						response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 						response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+						// Set to IDENTITY to avoid gzip compression
+						response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+
 						// TODO encode filename?
 						response.putHeader("content-disposition", "inline; filename=" + fileName);
 						return fileWithProps.getFile();
@@ -107,7 +110,16 @@ public class BinaryFieldResponseHandler {
 				// TODO encode filename?
 				// TODO images and pdf files should be shown in inline format
 				response.putHeader("content-disposition", "attachment; filename=" + fileName);
-				binary.getStream().subscribe(response::write, rc::fail, response::end);
+
+				// Set to IDENTITY to avoid gzip compression
+				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+
+				String localPath = storage.getLocalPath(binary.getUuid());
+				if (localPath != null) {
+					response.sendFile(localPath);
+				} else {
+					binary.getStream().subscribe(response::write, rc::fail, response::end);
+				}
 			}
 		}
 	}

@@ -91,6 +91,11 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 		return obs;
 	}
 
+	@Override
+	public String getLocalPath(String binaryUuid) {
+		return getFilePath(binaryUuid);
+	}
+
 	/**
 	 * Generate the segmented path for the given binary uuid.
 	 * 

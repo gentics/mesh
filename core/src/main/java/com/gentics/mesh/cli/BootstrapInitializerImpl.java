@@ -340,6 +340,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
+		vertxOptions.setPreferNativeTransport(true);
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
 		// has negative performance implications.
 		// vertxOptions.setFileResolverCachingEnabled(false);
@@ -351,6 +352,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
 			vertx = Vertx.vertx(vertxOptions);
+		}
+		if (vertx.isNativeTransportEnabled()) {
+			log.info("Running with native transports enabled");
+		} else {
+			log.warn("Current environment does not support native transports");
 		}
 
 		mesh.setVertx(vertx);
