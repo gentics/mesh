@@ -1,13 +1,13 @@
 {
   "name" : "content",
   "description" : "Content schema",
-  "uuid" : "511689bb4ec548fa9689bb4ec568fafa",
+  "uuid" : "edeb6334b9c946e6ab6334b9c956e6b4",
   "creator" : {
-    "uuid" : "5c789e8a7b8d48afb89e8a7b8d58afcb"
+    "uuid" : "845a9992367f4ab49a9992367fdab49b"
   },
   "created" : null,
   "editor" : {
-    "uuid" : "5c789e8a7b8d48afb89e8a7b8d58afcb"
+    "uuid" : "845a9992367f4ab49a9992367fdab49b"
   },
   "edited" : null,
   "_roleUuids" : [ ],

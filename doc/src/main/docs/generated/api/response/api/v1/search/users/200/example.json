@@ -1,30 +1,30 @@
 {
   "data" : [ {
-    "uuid" : "e5c4b442c5034cfd84b442c5030cfd1a",
+    "uuid" : "628395787cf44f5f8395787cf4af5f46",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "98f73be960bb4252b73be960bbe252ea"
+      "uuid" : "3ae0bf8f0c3541e9a0bf8f0c3521e9ce"
     },
-    "created" : "2018-11-07T11:45:49.883507Z",
+    "created" : "2018-11-07T12:35:02.265Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "5faeaf82cec749a9aeaf82cec7c9a9d2"
+      "uuid" : "951c718ea4db48969c718ea4db38962d"
     },
-    "edited" : "2018-11-07T11:45:49.883555Z",
+    "edited" : "2018-11-07T12:35:02.265Z",
     "lastname" : "Doe",
     "firstname" : "Joe",
     "username" : "jdoe",
     "emailAddress" : "j.doe@nowhere.com",
     "nodeReference" : {
       "projectName" : "dummy",
-      "uuid" : "8957e2d64b3e468997e2d64b3e868964"
+      "uuid" : "39d794d62dd3478b9794d62dd3b78b95"
     },
     "enabled" : true,
     "groups" : [ {
       "name" : "editors",
-      "uuid" : "37b0696168274a1ab0696168275a1a2c"
+      "uuid" : "bb10eb9b3034476e90eb9b3034476ee1"
     } ],
     "permissions" : {
       "create" : true,
@@ -35,37 +35,37 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "c9b88b5e45124c4bb88b5e45120c4b8b",
+    "uuid" : "c5c9416b8641497389416b8641b97355",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "23f060d7c5d34497b060d7c5d3e49798"
+      "uuid" : "e521dfd1bf69463ea1dfd1bf69c63e8e"
     },
-    "created" : "2018-11-07T11:45:49.883635Z",
+    "created" : "2018-11-07T12:35:02.265Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "a0806e02c307461d806e02c307261d7a"
+      "uuid" : "95378d394ec84a4ab78d394ec87a4a73"
     },
-    "edited" : "2018-11-07T11:45:49.883625Z",
+    "edited" : "2018-11-07T12:35:02.265Z",
     "lastname" : "Roe",
     "firstname" : "Jane",
     "username" : "jroe",
     "emailAddress" : "j.roe@nowhere.com",
     "nodeReference" : {
       "projectName" : "dummy",
-      "uuid" : "6a3aa72e24e245b8baa72e24e2f5b8ce"
+      "uuid" : "42e367ed2d574b43a367ed2d57bb430c"
     },
     "enabled" : true,
     "groups" : [ {
       "name" : "editors",
-      "uuid" : "9190920a66be426690920a66be9266d8"
+      "uuid" : "fe324dbdf2c04ecab24dbdf2c0aecab8"
     }, {
       "name" : "super-editors",
-      "uuid" : "146c5c209b7c4290ac5c209b7ca290a7"
+      "uuid" : "9e03e62208144f5a83e6220814af5ab6"
     }, {
       "name" : "editors",
-      "uuid" : "e8af453eceb5472aaf453eceb5e72a09"
+      "uuid" : "00e3d76ff30c43e7a3d76ff30cd3e761"
     } ],
     "permissions" : {
       "create" : true,
