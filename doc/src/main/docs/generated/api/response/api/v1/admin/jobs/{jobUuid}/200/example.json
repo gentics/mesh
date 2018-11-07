@@ -1,16 +1,16 @@
 {
-  "uuid" : "4aaf6c79093f4c4daf6c79093f7c4d0f",
+  "uuid" : "3f0d1c5da67e4d488d1c5da67e1d487e",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "732d8f39ab214ba4ad8f39ab21dba4a2"
+    "uuid" : "4fcfcd038d9540048fcd038d9520046a"
   },
-  "created" : "2018-10-31T16:22:05.790Z",
+  "created" : "2018-11-07T11:45:49.850003Z",
   "type" : "branch",
   "properties" : {
     "fromVersion" : "1.0",
-    "branchUuid" : "5776c35b60f8408cb6c35b60f8208c19",
-    "schemaUuid" : "19d707a8717f41b99707a8717f91b974",
+    "branchUuid" : "7ce41046d7a34e6fa41046d7a30e6f7c",
+    "schemaUuid" : "5feb78b010d345eeab78b010d3f5ee88",
     "toVersion" : "2.0"
   },
   "completionCount" : 0,
