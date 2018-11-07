@@ -5,6 +5,10 @@ import com.gentics.*
 // Make the helpers aware of this jobs environment
 JobContext.set(this)
 
+final def dockerRegistry       = "gentics-docker-jenkinsbuilds.docker.apa-it.at"
+final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-slave"
+
+
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
@@ -21,14 +25,17 @@ final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 node("docker") {
 	stage("Setup Build Environment") {
 		checkout scm
-		sh "docker pull registry.gentics.com/jenkins-slave-mesh"
-		sh "cd .jenkins && docker build -t registry.gentics.com/jenkins-slave-mesh ."
-		sh "cd .jenkins && docker push registry.gentics.com/jenkins-slave-mesh"
+
+		withDockerRegistry([ credentialsId: "repo.gentics.com", url: "https://" + dockerRegistry + "/v2" ]) {
+			//sh "docker pull " + dockerImageName
+			sh "cd .jenkins && docker build -t " + dockerImageName + " ."
+			sh "cd .jenkins && docker push " + dockerImageName
+		}
 
 		podTemplate(containers: [
 			containerTemplate(alwaysPullImage: true, args: '${computer.jnlpmac} ${computer.name}',
 				command: '',
-				image: 'registry.gentics.com/jenkins-slave-mesh',
+				image: dockerImageName,
 				name: 'jnlp',
 				privileged: false,
 				ttyEnabled: true,
@@ -54,6 +61,7 @@ node("docker") {
 			namespace: 'default',
 			nodeSelector: 'jenkins_mesh_worker=true',
 			serviceAccount: 'jenkins',
+			imagePullSecrets: ['docker-jenkinsbuilds-apa-it'],
 			volumes: [
 				emptyDirVolume(memory: false, mountPath: '/var/run'),
 				hostPathVolume(hostPath: '/opt/jenkins-slave/maven-repo', mountPath: '/home/jenkins/.m2/repository'),
