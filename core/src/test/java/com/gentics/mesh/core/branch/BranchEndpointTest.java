@@ -189,7 +189,25 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
 
-		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
+		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME));
+		branches.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
+	}
+
+	@Test
+	public void testCreateWithPrefix() throws Exception {
+		String branchName = "Branch V1";
+
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(branchName);
+		request.setPathPrefix("/blub");
+
+		waitForJobs(() -> {
+			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
+			assertEquals("/blub", response.getPathPrefix());
+			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
+		}, COMPLETED, 1);
+
+		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME));
 		branches.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
 	}
 

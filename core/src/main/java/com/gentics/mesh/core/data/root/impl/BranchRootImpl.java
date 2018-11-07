@@ -151,6 +151,9 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		if (!isEmpty(request.getHostname())) {
 			branch.setHostname(request.getHostname());
 		}
+		if (!isEmpty(request.getPathPrefix())) {
+			branch.setPathPrefix(request.getPathPrefix());
+		}
 		if (request.getSsl() != null) {
 			branch.setSsl(request.getSsl());
 		}

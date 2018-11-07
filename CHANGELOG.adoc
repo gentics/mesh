@@ -28,6 +28,10 @@ title: Changelog
 
 icon:check[] REST: The CPU utilization for download requests has been reduced. link:https://github.com/gentics/mesh/issues/530[#530]
 
+icon:plus[] Core: The Gentics Mesh server will now use native bindings to increase HTTP performance on Linux x86_64 platforms.
+
+icon:check[] REST: Branch create requests will now correctly set the path prefix property. The value of the property was previously not used.
+
 [[v0.27.1]]
 == 0.27.1 (31.10.2018)
 
