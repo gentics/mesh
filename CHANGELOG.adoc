@@ -24,7 +24,7 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
 [[v0.27.2]]
-== 0.27.2 (TBD)
+== 0.27.2 (07.11.2018)
 
 icon:check[] REST: The CPU utilization for download requests has been reduced. link:https://github.com/gentics/mesh/issues/530[#530]
 
