@@ -17,6 +17,7 @@ public class PathPrefixUtilTest {
 		assertEquals("", PathPrefixUtil.sanitize(""));
 		assertEquals("/bla", PathPrefixUtil.sanitize("bla"));
 		assertEquals("/bla", PathPrefixUtil.sanitize("bla/"));
+		assertEquals("", PathPrefixUtil.sanitize("/"));
 	}
 
 	@Test
