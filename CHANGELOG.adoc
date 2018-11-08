@@ -13,6 +13,8 @@
 [[v0.22.6]]
 == 0.22.6 (TBD)
 
+icon:check[] Elasticsearch: fix failing check for ingest-attachment plugin on aws es service
+
 icon:check[] Java REST Client: Fixed wrong log output information.
 
 icon:check[] REST: Fixed error while fetching jobs for deleted projects.
