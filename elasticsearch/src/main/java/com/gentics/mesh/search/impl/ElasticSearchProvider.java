@@ -65,8 +65,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	private Set<String> registeredPlugins = new HashSet<>();
-
 	private Boolean hasAttachmentIngestProcessor = false;
 
 	private Lazy<Vertx> vertx;
@@ -123,7 +121,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-				registeredPlugins = loadPluginInfo().blockingGet();
 				hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
 			}
 		} catch (MalformedURLException e) {
@@ -289,25 +286,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				}).toCompletable()
 				.compose(withTimeoutAndLog("Refreshing indices {" + fullIndex + "}", true));
 		});
-	}
-
-	public boolean hasPlugin(String name) {
-		Objects.requireNonNull(name, "A valid plugin name must be specified.");
-		return registeredPlugins.contains(name);
-	}
-
-	@Override
-	public Single<Set<String>> loadPluginInfo() {
-		return client.plugins().async()
-				.filter(response -> response.containsKey("arrayData"))
-				.map(wrappedAray -> wrappedAray.getJsonArray("arrayData"))
-				.map(plugins -> IntStream.range(0, plugins.size())
-						.mapToObj(plugins::getJsonObject)
-						.filter(plugin -> plugin.containsKey("component"))
-						.map(plugin -> plugin.getString("component"))
-						.collect(Collectors.toSet())
-				)
-				.toSingle();
 	}
 
 	@Override

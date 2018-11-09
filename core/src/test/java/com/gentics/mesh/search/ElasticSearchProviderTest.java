@@ -76,14 +76,6 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 				getProvider().hasIngestPipelinePlugin());
 	}
 
-	@Test
-	public void testGetPlugins() {
-		assertTrue("The ingest-attachment plugin should be in the plugin list.",
-				getProvider().hasPlugin("ingest-attachment"));
-		assertFalse("An non existing plugin should not appear in the list.",
-				getProvider().hasPlugin("some-fictional-test-plugin"));
-	}
-
 	/**
 	 * Assert that the ingest pipeline mechanism works as expected.
 	 */

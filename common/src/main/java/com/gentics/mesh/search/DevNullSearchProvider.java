@@ -34,11 +34,6 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Single<Set<String>> loadPluginInfo() {
-		return Single.just(Collections.emptySet());
-	}
-
-	@Override
 	public Completable createIndex(IndexInfo info) {
 		return Completable.complete();
 	}
