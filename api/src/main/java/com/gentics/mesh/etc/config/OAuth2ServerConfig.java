@@ -135,7 +135,7 @@ public class OAuth2ServerConfig implements Option {
 	public void setCredentialsViaEnv(JsonObject credentialsObject) {
 		for(String key : credentialsObject.fieldNames()) {
 			Object val = credentialsObject.getValue(key);
-			if (val instanceof String) {
+			if (val == null || val instanceof String) {
 				this.addCredential(key, (String) val);
 			}
 		}
