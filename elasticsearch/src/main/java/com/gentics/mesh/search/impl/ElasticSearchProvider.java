@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -54,7 +55,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
-	private static final String INGEST_PIPELINE_PLUGIN_NAME = "ingest-attachment";
+	private static final String INGEST_ATTACHMENT_PROCESSOR_NAME = "attachment";
 
 	private SearchClient client;
 
@@ -64,7 +65,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	private Set<String> registerdPlugins = new HashSet<>();
+	private Boolean hasAttachmentIngestProcessor = false;
 
 	private Lazy<Vertx> vertx;
 
@@ -120,7 +121,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-				registerdPlugins = loadPluginInfo().blockingGet();
+				hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
 			}
 		} catch (MalformedURLException e) {
 			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
@@ -284,32 +285,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
 				}).toCompletable()
 				.compose(withTimeoutAndLog("Refreshing indices {" + fullIndex + "}", true));
-		});
-	}
-
-	public boolean hasPlugin(String name) {
-		Objects.requireNonNull(name, "A valid plugin name must be specified.");
-		return registerdPlugins.contains(name);
-	}
-
-	@Override
-	public Single<Set<String>> loadPluginInfo() {
-		return client.nodesInfo().async().map(info -> {
-			Set<String> pluginSet = new HashSet<>();
-			JsonObject nodes = info.getJsonObject("nodes");
-			for (String nodeId : nodes.fieldNames()) {
-				JsonObject node = nodes.getJsonObject(nodeId);
-				JsonArray plugins = node.getJsonArray("plugins");
-				if (plugins == null) {
-					continue;
-				}
-				for (int i = 0; i < plugins.size(); i++) {
-					JsonObject plugin = plugins.getJsonObject(i);
-					String name = plugin.getString("name");
-					pluginSet.add(name);
-				}
-			}
-			return pluginSet;
 		});
 	}
 
@@ -611,7 +586,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public boolean hasIngestPipelinePlugin() {
-		return registerdPlugins.contains(INGEST_PIPELINE_PLUGIN_NAME);
+		return hasAttachmentIngestProcessor;
 	}
 
 	/**

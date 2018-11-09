@@ -31,13 +31,6 @@ public interface SearchProvider {
 	Completable refreshIndex(String... indices);
 
 	/**
-	 * Load the plugin information.
-	 * 
-	 * @return
-	 */
-	Single<Set<String>> loadPluginInfo();
-
-	/**
 	 * Load a list of all existing indices.
 	 * 
 	 * @return
