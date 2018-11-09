@@ -1,6 +1,7 @@
 package com.gentics.mesh.etc.config.env;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -9,62 +10,34 @@ import io.vertx.core.logging.LoggerFactory;
 
 public interface Option {
 
-	static final Logger log = LoggerFactory.getLogger(Option.class);
+	Logger log = LoggerFactory.getLogger(Option.class);
 
+	/**
+	 * Override the annotated methods and fields of this option class
+	 * and referenced sub options with environment variables.
+	 */
 	default void overrideWithEnv() {
+		for (Method method : getClass().getDeclaredMethods()) {
+			if (method.getParameterCount() == 1 && method.isAnnotationPresent(EnvironmentVariable.class)) {
+				OptionUtils.overrideWithEnvViaMethod(method, this);
+			}
+		}
 		for (Field field : getClass().getDeclaredFields()) {
 			if (field.isAnnotationPresent(EnvironmentVariable.class)) {
-				EnvironmentVariable envInfo = field.getAnnotation(EnvironmentVariable.class);
-				String name = envInfo.name();
-				String value = System.getenv(name);
+				OptionUtils.overrideWitEnvViaFieldSet(field, this);
+			}
+			// check if the current fields is an option if so we call the override with env recursively
+			if (Option.class.isAssignableFrom(field.getType())) {
+				field.setAccessible(true);
+				Option subOption;
 				try {
-					if (value != null) {
-						field.setAccessible(true);
-						Class<?> typeClazz = field.getType();
-						log.info("Setting env {" + name + "=" + value + "}");
-						if ("null".equals(value)) {
-							value = null;
-						}
-						if (typeClazz.equals(String.class)) {
-							field.set(this, value);
-							continue;
-						}
-						if (typeClazz.equals(boolean.class)) {
-							field.setBoolean(this, Boolean.valueOf(value));
-							continue;
-						}
-						if (typeClazz.equals(Boolean.class)) {
-							field.set(this, Boolean.valueOf(value));
-							continue;
-						}
-						if (typeClazz.equals(long.class)) {
-							field.setLong(this, Long.valueOf(value));
-							continue;
-						}
-						if (typeClazz.equals(Long.class)) {
-							field.set(this, Long.valueOf(value));
-							continue;
-						}
-						if (typeClazz.equals(int.class)) {
-							field.setInt(this, Integer.valueOf(value));
-							continue;
-						}
-						if (typeClazz.equals(Integer.class)) {
-							field.set(this, Integer.valueOf(value));
-							continue;
-						}
-						if (typeClazz.equals(float.class)) {
-							field.setFloat(this, Float.valueOf(value));
-							continue;
-						}
-						if (typeClazz.equals(Float.class)) {
-							field.set(this, Float.valueOf(value));
-							continue;
-						}
-
-					}
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					throw new RuntimeException("Could not set environment variable {" + name + "} with value {" + value + "}", e);
+					subOption = (Option) field.get(this);
+				} catch (IllegalAccessException e) {
+					throw new RuntimeException("Could not access sub option: " + field.getName(), e);
+				}
+				if (subOption != null) {
+					log.trace("Override sub option: " + field.getName());
+					subOption.overrideWithEnv();
 				}
 			}
 		}

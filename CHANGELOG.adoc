@@ -21,6 +21,8 @@ icon:check[] REST: Fixed error while fetching jobs for deleted projects.
 
 icon:plus[] Elasticsearch: The index sync will now automatically remove no longer used indices.
 
+icon:plus[] API: Make OAuth2 Server options overrideable via environment variables.
+
 [[v0.22.5]]
 == 0.22.5 (12.10.2018)
 
