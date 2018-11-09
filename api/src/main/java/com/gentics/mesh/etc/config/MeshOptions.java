@@ -437,7 +437,6 @@ public class MeshOptions implements Option {
 	@Override
 	public void overrideWithEnv() {
 		Option.super.overrideWithEnv();
-
 		getClusterOptions().overrideWithEnv();
 		getSearchOptions().overrideWithEnv();
 		getStorageOptions().overrideWithEnv();

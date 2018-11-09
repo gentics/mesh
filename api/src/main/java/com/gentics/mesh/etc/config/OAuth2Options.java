@@ -68,4 +68,11 @@ public class OAuth2Options implements Option {
 		return this;
 	}
 
+	@Override
+	public void overrideWithEnv() {
+		Option.super.overrideWithEnv();
+		if (this.getConfig() != null) {
+			this.getConfig().overrideWithEnv();
+		}
+	}
 }
