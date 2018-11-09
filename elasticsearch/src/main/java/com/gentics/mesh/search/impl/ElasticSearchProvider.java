@@ -146,7 +146,9 @@ public class ElasticSearchProvider implements SearchProvider {
 					return;
 				}
 			} catch (HttpErrorException e1) {
-				// ignored
+				if (log.isDebugEnabled()) {
+					log.debug("Error on Conneting to elasticsearch.", e1);
+				}
 			}
 			try {
 				log.info("Waiting for elasticsearch status...");
