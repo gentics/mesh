@@ -67,12 +67,4 @@ public class OAuth2Options implements Option {
 		this.mapperScriptDevMode = mapperScriptDevMode;
 		return this;
 	}
-
-	@Override
-	public void overrideWithEnv() {
-		Option.super.overrideWithEnv();
-		if (this.getConfig() != null) {
-			this.getConfig().overrideWithEnv();
-		}
-	}
 }

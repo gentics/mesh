@@ -164,12 +164,4 @@ public class AuthenticationOptions implements Option {
 			throw new IllegalArgumentException("The keystore path cannot be empty");
 		}
 	}
-
-	@Override
-	public void overrideWithEnv() {
-		Option.super.overrideWithEnv();
-		if (this.getOauth2() != null) {
-			this.getOauth2().overrideWithEnv();
-		}
-	}
 }

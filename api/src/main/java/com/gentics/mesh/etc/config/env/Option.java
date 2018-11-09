@@ -10,11 +10,11 @@ import io.vertx.core.logging.LoggerFactory;
 
 public interface Option {
 
-	static final Logger log = LoggerFactory.getLogger(Option.class);
+	Logger log = LoggerFactory.getLogger(Option.class);
 
 	/**
-	 * Override the annotated methods and fields with
-	 * environment variables.
+	 * Override the annotated methods and fields of this option class
+	 * and referenced sub options with environment variables.
 	 */
 	default void overrideWithEnv() {
 		for (Method method : getClass().getDeclaredMethods()) {
@@ -25,6 +25,20 @@ public interface Option {
 		for (Field field : getClass().getDeclaredFields()) {
 			if (field.isAnnotationPresent(EnvironmentVariable.class)) {
 				OptionUtils.overrideWitEnvViaFieldSet(field, this);
+			}
+			// check if this
+			if (field.getType().isAssignableFrom(getClass())) {
+				field.setAccessible(true);
+				Option subOption;
+				try {
+					subOption = (Option) field.get(this);
+				} catch (IllegalAccessException e) {
+					throw new RuntimeException("Could not access sub option: " + field.getName(), e);
+				}
+				if (subOption != null) {
+					log.trace("Override sub option: " + field.getName());
+					subOption.overrideWithEnv();
+				}
 			}
 		}
 	}
