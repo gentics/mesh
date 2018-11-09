@@ -24,22 +24,22 @@ public class OAuth2ServerConfig implements Option {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Realm name to be used.")
-	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_REALM_ENV, description = "Override the configured OAuth2 enabled flag.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_REALM_ENV, description = "Override the configured OAuth2 server realm.")
 	private String realm = "master";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("URL to the authentication server.")
-	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SERVER_URL_ENV, description = "Override the configured OAuth2 enabled flag.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SERVER_URL_ENV, description = "Override the configured OAuth2 server URL.")
 	private String authServerUrl = "http://localhost:3000/auth";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("SSL Required flag of the realm.")
-	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED_ENV, description = "Override the configured OAuth2 enabled flag.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED_ENV, description = "Override the configured OAuth2 server SSL-required flag.")
 	private String sslRequired = "external";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the resource to be used.")
-	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE_ENV, description = "Override the configured OAuth2 enabled flag.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE_ENV, description = "Override the configured OAuth2 server resource name.")
 	private String resource;
 
 	@JsonProperty(required = false)
@@ -47,7 +47,7 @@ public class OAuth2ServerConfig implements Option {
 	private Map<String, String> credentials = new HashMap<>();
 
 	@JsonProperty(required = false)
-	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_CONFIDENTIAL_PORT_ENV, description = "Override the configured OAuth2 enabled flag.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_CONFIDENTIAL_PORT_ENV, description = "Override the configured OAuth2 confidential port.")
 	private int confidentialPort = 0;
 
 	/**
@@ -131,7 +131,7 @@ public class OAuth2ServerConfig implements Option {
 		return this;
 	}
 
-	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_CREDENTIALS, description = "Override the configured OAuth2 credentials (JSON String).")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_CREDENTIALS, description = "Override the configured OAuth2 server credentials (as JSON Object String).")
 	public void setCredentialsViaEnv(JsonObject credentialsObject) {
 		for(String key : credentialsObject.fieldNames()) {
 			Object val = credentialsObject.getValue(key);
