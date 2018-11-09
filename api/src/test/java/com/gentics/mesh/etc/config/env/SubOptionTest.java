@@ -18,7 +18,7 @@ public class SubOptionTest {
 	public void overrideSubOptions() {
 		environmentVariables.set(ENV_KEY, ENV_VALUE);
 		SubOption root = new SubOption();
-		root.subOption = new SubOption();
+		root.subOption = new SubOption2();
 		root.subOption.subOption = new SubOption();
 		assertNull(root.value);
 		assertNull(root.subOption.value);
@@ -31,6 +31,14 @@ public class SubOptionTest {
 
 
 	private class SubOption implements Option {
+		@EnvironmentVariable(name = ENV_KEY, description = "")
+		private String value;
+
+		private SubOption2 subOption;
+
+	}
+
+	private class SubOption2 implements Option {
 		@EnvironmentVariable(name = ENV_KEY, description = "")
 		private String value;
 

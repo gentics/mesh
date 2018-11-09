@@ -26,8 +26,8 @@ public interface Option {
 			if (field.isAnnotationPresent(EnvironmentVariable.class)) {
 				OptionUtils.overrideWitEnvViaFieldSet(field, this);
 			}
-			// check if this
-			if (field.getType().isAssignableFrom(getClass())) {
+			// check if the current fields is an option if so we call the override with env recursively
+			if (Option.class.isAssignableFrom(field.getType())) {
 				field.setAccessible(true);
 				Option subOption;
 				try {
