@@ -23,6 +23,11 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
+[[v0.27.3]]
+== 0.27.3 (TBD)
+
+icon:check[] REST: A concurrency issue has been fixed which could lead to problems when creating multiple schemas in-parallel.
+
 [[v0.27.2]]
 == 0.27.2 (07.11.2018)
 

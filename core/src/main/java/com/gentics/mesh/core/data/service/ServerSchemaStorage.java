@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,9 +37,9 @@ public class ServerSchemaStorage implements SchemaStorage {
 	/**
 	 * Map holding the schemas per name and version
 	 */
-	private Map<String, Map<String, SchemaModel>> schemas = new HashMap<>();
+	private Map<String, Map<String, SchemaModel>> schemas = Collections.synchronizedMap(new HashMap<>());
 
-	private Map<String, Map<String, MicroschemaModel>> microschemas = new HashMap<>();
+	private Map<String, Map<String, MicroschemaModel>> microschemas = Collections.synchronizedMap(new HashMap<>());
 
 	@Inject
 	public ServerSchemaStorage(Lazy<BootstrapInitializer> boot) {
