@@ -420,23 +420,4 @@ public class MeshOptions implements Option {
 	public void validate(MeshOptions options) {
 		validate();
 	}
-
-	/**
-	 * Apply the environment variables.
-	 */
-	@JsonIgnore
-	@Override
-	public void overrideWithEnv() {
-		Option.super.overrideWithEnv();
-
-		getClusterOptions().overrideWithEnv();
-		getSearchOptions().overrideWithEnv();
-		getStorageOptions().overrideWithEnv();
-		getUploadOptions().overrideWithEnv();
-		getHttpServerOptions().overrideWithEnv();
-		getAuthenticationOptions().overrideWithEnv();
-		getImageOptions().overrideWithEnv();
-		getVertxOptions().overrideWithEnv();
-	}
-
 }

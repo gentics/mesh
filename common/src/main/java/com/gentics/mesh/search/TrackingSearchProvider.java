@@ -47,11 +47,6 @@ public class TrackingSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Single<Set<String>> loadPluginInfo() {
-		return Single.just(Collections.emptySet());
-	}
-
-	@Override
 	public Single<Set<String>> listIndices() {
 		return Single.just(Collections.emptySet());
 	}

@@ -1,6 +1,8 @@
 package com.gentics.mesh.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,6 +58,22 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	public void testVersion() {
 		ElasticSearchProvider provider = getProvider();
 		assertEquals("6.3.1", provider.getVersion());
+	}
+
+	@Test
+	public void testHasIngestProcessor() {
+		SearchClient client = getProvider().getClient();
+		assertFalse("A non existing processor name should return false",
+				client.hasIngestProcessor("some-fictional-test-processor").blockingGet());
+
+		assertFalse("A non existing processor in a list of processor names should return false",
+				client.hasIngestProcessor("some-fictional-test-processor", "attachment").blockingGet());
+
+		assertTrue("Multiple valid processor names should return true",
+				client.hasIngestProcessor("append", "attachment").blockingGet());
+
+		assertTrue("The ingest attachment processors should be configured",
+				getProvider().hasIngestPipelinePlugin());
 	}
 
 	/**
