@@ -10,10 +10,16 @@
 
 = Gentics Mesh Changelog
 
-[[v0.22.6]]
-== 0.22.6 (12.11.2018)
+
+[[v0.22.7]]
+== 0.22.7 (12.11.2018)
 
 icon:check[] Elasticsearch: The check for the `ingest-attachment` plugin was fixed for installations which were using the `AWS` Elasticsearch service.
+
+icon:plus[] API: Make OAuth2 Server options overrideable via environment variables.
+
+[[v0.22.6]]
+== 0.22.6 (30.10.2018)
 
 icon:check[] Java REST Client: Fixed wrong log output information.
 
@@ -21,7 +27,6 @@ icon:check[] REST: Fixed error while fetching jobs for deleted projects.
 
 icon:plus[] Elasticsearch: The index sync will now automatically remove no longer used indices.
 
-icon:plus[] API: Make OAuth2 Server options overrideable via environment variables.
 
 [[v0.22.5]]
 == 0.22.5 (12.10.2018)
