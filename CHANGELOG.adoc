@@ -11,9 +11,9 @@
 = Gentics Mesh Changelog
 
 [[v0.22.6]]
-== 0.22.6 (TBD)
+== 0.22.6 (12.11.2018)
 
-icon:check[] Elasticsearch: fix failing check for ingest-attachment plugin on aws es service
+icon:check[] Elasticsearch: The check for the `ingest-attachment` plugin was fixed for installations which were using the `AWS` Elasticsearch service.
 
 icon:check[] Java REST Client: Fixed wrong log output information.
 
