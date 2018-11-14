@@ -34,6 +34,9 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.parameter.ParameterProvider;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -1119,7 +1122,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), new MicroschemaReferenceImpl().setName(schema
 				.getName()).setVersion(schema.getVersion())), BAD_REQUEST, "error_microschema_reference_not_found", schema.getName(), "-", schema
-					.getVersion());
+				.getVersion());
 		}
 	}
 
@@ -1226,5 +1229,47 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
 					.setVersion("5.0")));
 		}
+	}
+
+	@Test
+	public void testUnassignedMigration() {
+		updateFolderSchema(false);
+		// No migration should happen
+		this.migrateSchema();
+	}
+
+	private void updateFolderSchema(boolean immediate) {
+		SchemaResponse schema = getSchemaByName("folder");
+
+		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		request.setName(schema.getName());
+		request.getFields().addAll(schema.getFields());
+		request.getFields().add(new StringFieldSchemaImpl().setName("testField"));
+		request.setContainer(true);
+
+		ParameterProvider[] parameters = immediate
+			? new ParameterProvider[]{}
+			: new ParameterProvider[]{new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)};
+
+		client().updateSchema(schema.getUuid(), request, parameters).toSingle().blockingGet();
+	}
+
+	private SchemaResponse getSchemaByName(String name) {
+		return client().findSchemas().toSingle()
+			.to(TestUtils::listObservable)
+			.filter(schema -> schema.getName().equals(name))
+			.blockingFirst();
+	}
+
+
+	private void migrateSchema() {
+		client().migrateBranchSchemas(PROJECT_NAME, getCurrentBranch().getUuid()).toSingle().blockingGet();
+	}
+
+	private BranchResponse getCurrentBranch() {
+		return client().findBranches(PROJECT_NAME)
+			.toSingle()
+			.to(TestUtils::listObservable)
+			.blockingFirst();
 	}
 }

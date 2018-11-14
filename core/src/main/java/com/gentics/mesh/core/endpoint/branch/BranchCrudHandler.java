@@ -279,25 +279,35 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
 			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
-			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAllIt()) {
-				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
-				SchemaContainerVersion currentVersion = latestVersion;
+
+			for (SchemaContainerVersion assignedVersion : branch.findActiveSchemaVersions()) {
+				SchemaContainerVersion currentVersion = assignedVersion;
 				while (true) {
+					SchemaContainer schemaContainer = assignedVersion.getSchemaContainer();
 					currentVersion = currentVersion.getPreviousVersion();
 					if (currentVersion == null) {
 						break;
 					}
-					Job job = jobRoot.enqueueSchemaMigration(user, branch, currentVersion, latestVersion);
-					try {
-						job.process();
-						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(branch.getUuid()).iterator();
-						log.info("After migration " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - " + currentVersion.getUuid()
-							+ " has unmigrated containers: " + it.hasNext());
-					} catch (Exception e) {
-						log.error("Migration failed of " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
-							+ currentVersion.getUuid() + " failed with error", e);
+					if (currentVersion.getFieldContainers(branch.getUuid()).iterator().hasNext()) {
+						Job job = jobRoot.enqueueSchemaMigration(user, branch, currentVersion, assignedVersion);
+						try {
+							job.process();
+							if (log.isInfoEnabled()) {
+								Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(branch.getUuid()).iterator();
+								log.info("After migration " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - " + currentVersion.getUuid()
+									+ " has unmigrated containers: " + it.hasNext());
+							}
+						} catch (Exception e) {
+							log.error("Migration failed of " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
+								+ currentVersion.getUuid() + " failed with error", e);
+						}
+					} else {
+						if (log.isInfoEnabled()) {
+							log.info(String.format("Skipped migration of Schema %s from version %s to %s because no containers could be found",
+								schemaContainer.getName(), currentVersion.getVersion(), assignedVersion.getVersion())
+							);
+						}
 					}
-
 				}
 
 			}

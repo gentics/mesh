@@ -10,11 +10,19 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.core.rest.common.ListResponse;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -159,7 +167,6 @@ public final class TestUtils {
 	/**
 	 * Return a free port random port by opening an socket and check whether it is currently used. Not the most elegant or efficient solution, but works.
 	 * 
-	 * @param port
 	 * @return
 	 */
 	public static int getRandomPort() {
@@ -216,5 +223,23 @@ public final class TestUtils {
 
 	public static long size(Iterator<?> it) {
 		return toList(it).size();
+	}
+
+	public static <T> Observable<T> listObservable(Single<? extends ListResponse<T>> upstream) {
+		return upstream.flatMapObservable(response -> Observable.fromIterable(response.getData()));
+	}
+
+	public static <T, R> List<T> difference(Iterable<T> minuend, Iterable<T> subtrahend, Function<T, R> compareBy) {
+		Set<R> subSet = streamFromIterable(subtrahend)
+			.map(compareBy)
+			.collect(Collectors.toSet());
+
+		return streamFromIterable(minuend)
+			.filter(item -> !subSet.contains(compareBy.apply(item)))
+			.collect(Collectors.toList());
+	}
+
+	public static <T> Stream<T> streamFromIterable(Iterable<T> iterable) {
+		return StreamSupport.stream(iterable.spliterator(), false);
 	}
 }

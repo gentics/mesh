@@ -32,6 +32,7 @@ import io.vertx.core.logging.LoggerFactory;
 public class NodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationJobImpl.class);
+	private static final int MIGRATION_ATTEMPT_COUNT = 3;
 
 	public static void init(Database database) {
 		database.addVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
@@ -93,14 +94,13 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 				status.commit();
 				NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
-				for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < MIGRATION_ATTEMPT_COUNT; i++) {
 					MeshInternal.get().nodeMigrationHandler().migrateNodes(ac, project, branch, fromContainerVersion, toContainerVersion, status)
 						.blockingAwait();
 					// Check migration result
 					boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
-					if (i == 3 && hasRemainingContainers) {
+					if (i == MIGRATION_ATTEMPT_COUNT - 1 && hasRemainingContainers) {
 						log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
-						break;
 					} else if (hasRemainingContainers) {
 						log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
 							+ fromContainerVersion.getVersion() + "} invoking migration again.");
@@ -112,7 +112,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 				JobWarningList warnings = new JobWarningList();
 				if (!ac.getConflicts().isEmpty()) {
 					for (ConflictWarning conflict : ac.getConflicts()) {
-						log.info("Encountered conflict {" + conflict + "} which was automatically resolved.");
+						log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved.");
 						warnings.add(conflict);
 					}
 				}

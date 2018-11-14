@@ -344,7 +344,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					}
 				} catch (NameConflictException e) {
 					// Only throw the exception if we tried multiple renames
-					if (i >= MAX_NUMBER) {
+					if (i >= MAX_NUMBER - 1) {
 						throw e;
 					} else {
 						// Generate some information about the found conflict
