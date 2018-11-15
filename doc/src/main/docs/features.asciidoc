@@ -2317,17 +2317,17 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 | mesh.branch.deleted  | Triggered on branch deletion
 |======
 
-[[customevents]]
-=== Custom Events
-
-It is also possible to register and send custom events. The address of those events must start with `custom.`.
-
 Possible usecases for event handling:
 
 * Exchange data in-between client applications (e.g. Chat)
 * Real time reload if data via `mesh.node.updated` changes.
 * Client-Side cache purging if data is updated, created, deleted.
 * Hooking external hardware sensors into your frontend.
+
+[[customevents]]
+=== Custom Events
+
+It is also possible to register and send custom events. The address of those events must start with `custom.`.
 
 === IoT Example
 
