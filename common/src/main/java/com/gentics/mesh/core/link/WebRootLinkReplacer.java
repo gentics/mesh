@@ -227,7 +227,7 @@ public class WebRootLinkReplacer {
 		case SHORT:
 			// We also try to append the scheme and authority part of the uri for foreign nodes.
 			// Otherwise that part will be empty and thus the link relative.
-			return generateSchemeAuthorityForNode(node) + path;
+			return generateSchemeAuthorityForNode(node, theirProject.getBranchRoot().findByUuid(branchUuid)) + path;
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
@@ -241,10 +241,10 @@ public class WebRootLinkReplacer {
 	 * Return the URL prefix for the given node. The latest branch of the node's project will be used to fetch the needed information.
 	 * 
 	 * @param node
+	 * @param branch branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
-	private String generateSchemeAuthorityForNode(Node node) {
-		Branch branch = node.getProject().getLatestBranch();
+	private String generateSchemeAuthorityForNode(Node node, Branch branch) {
 		String hostname = branch.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme

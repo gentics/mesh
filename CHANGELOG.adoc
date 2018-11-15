@@ -23,6 +23,11 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service]. 
 
+[[v0.27.3]]
+== 0.27.3 (TBD)
+
+icon:check[] Branches: Resolved links will now contain the hostname of the target branch, not the latest branch.
+
 [[v0.27.2]]
 == 0.27.2 (07.11.2018)
 
