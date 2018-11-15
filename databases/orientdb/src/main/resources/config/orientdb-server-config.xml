@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <orient-server>
 	<handlers>
-		<handler class="com.orientechnologies.orient.graph.handler.OGraphServerHandler">
-			<parameters>
-				<parameter name="enabled" value="true" />
-				<parameter name="graph.pool.max" value="50" />
-			</parameters>
-		</handler>
-
+		<!-- DISABLED-->
+		<!--<handler class="com.orientechnologies.orient.graph.handler.OGraphServerHandler">-->
+		<!--<parameters>-->
+		<!--<parameter name="enabled" value="true"/>-->
+		<!--<parameter name="graph.pool.max" value="50"/>-->
+		<!--</parameters>-->
+		<!--</handler>-->
 		<handler class="com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin">
 			<parameters>
 				<parameter name="nodeName" value="%NODENAME%" />
@@ -33,8 +33,10 @@
 	</handlers>
 	<network>
 		<protocols>
-			<protocol name="binary" implementation="com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary" />
-			<protocol name="http" implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb" />
+			<protocol name="binary"
+						implementation="com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary" />
+			<protocol name="http"
+						implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb" />
 		</protocols>
 		<listeners>
 			<listener protocol="binary" ip-address="%NETWORK_HOST%" port-range="2424-2430" socket="default" />
@@ -54,7 +56,7 @@
 							<entry name="http.cache:default" value="Cache-Control: max-age=120" />
 						</parameters>
 					</command>
-					<command pattern="GET|gephi/*" implementation="com.orientechnologies.orient.graph.server.command.OServerCommandGetGephi" />
+					<command pattern="GET|gephi/*" implementation="com.orientechnologies.orient.server.network.protocol.http.command.get.OServerCommandGetGephi" />
 				</commands>
 			</listener>
 		</listeners>
