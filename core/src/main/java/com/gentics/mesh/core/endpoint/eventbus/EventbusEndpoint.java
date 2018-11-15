@@ -52,6 +52,10 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(addr));
 				bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(addr));
 			}
+
+			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddressRegex("custom.*"));
+			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddressRegex("custom.*"));
+
 			handler.bridge(bridgeOptions, event -> {
 				if (log.isDebugEnabled()) {
 					if (event.type() == BridgeEventType.SOCKET_CREATED) {
