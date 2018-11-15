@@ -15,6 +15,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -55,8 +56,6 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch) {
-		Branch latestBranch = getLatestBranch();
-
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -68,35 +67,20 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		branch.setMigrated(false);
 		branch.setProject(getProject());
 
-		if (latestBranch == null) {
+		if (baseBranch == null) {
 			// if this is the first branch, make it the initial branch
 			setSingleLinkOutTo(branch, HAS_INITIAL_BRANCH);
 		} else {
-			// otherwise link the branches
-			if (baseBranch != null) {
-				baseBranch.setNextBranch(branch);
-			} else {
-				latestBranch.setNextBranch(branch);
-			}
+			baseBranch.setNextBranch(branch);
 		}
 
 		// make the new branch the latest
-		if (setLatest || latestBranch == null) {
+		if (setLatest || baseBranch == null) {
 			setLatestBranch(branch);
 		}
 
 		// set initial permissions on the branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
-
-		// assign the newest schema versions of all project schemas to the branch
-		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAll()) {
-			branch.assignSchemaVersion(creator, schemaContainer.getLatestVersion());
-		}
-
-		// ... same for microschemas
-		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAll()) {
-			branch.assignMicroschemaVersion(creator, microschemaContainer.getLatestVersion());
-		}
 
 		return branch;
 	}
@@ -148,6 +132,10 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			throw error(FORBIDDEN, "error_missing_perm", baseBranch.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 
+		if (baseBranch == null) {
+			baseBranch = getLatestBranch();
+		}
+
 		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch);
 		if (!isEmpty(request.getHostname())) {
 			branch.setHostname(request.getHostname());
@@ -163,8 +151,44 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			batch.addNodeIndex(project, branch, version, DRAFT);
 			batch.addNodeIndex(project, branch, version, PUBLISHED);
 		}
-		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(branch.getCreator(), branch);
+		User creator = branch.getCreator();
+		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(creator, branch);
+		assignSchemas(creator, baseBranch, branch);
+
 		return branch;
+	}
+
+	/**
+	 * Assigns schemas and microschemas to the new branch, which will cause a node migration if there is a newer
+	 * schema version.
+	 *
+	 * @param creator The creator of the branch
+	 * @param baseBranch The branch which the new branch is based on
+	 * @param newBranch The newly created branch
+	 */
+	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch) {
+		// Assign the same schema versions as the base branch, so that a migration can be started
+		if (baseBranch != null) {
+			for (SchemaContainerVersion schemaContainerVersion : baseBranch.findActiveSchemaVersions()) {
+				newBranch.assignSchemaVersion(creator, schemaContainerVersion);
+			}
+		}
+
+		// assign the newest schema versions of all project schemas to the branch
+		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
+			newBranch.assignSchemaVersion(newBranch.getCreator(), schemaContainer.getLatestVersion());
+		}
+
+		// ... same for microschemas
+		if (baseBranch != null) {
+			for (MicroschemaContainerVersion microschemaContainerVersion : baseBranch.findActiveMicroschemaVersions()) {
+				newBranch.assignMicroschemaVersion(creator, microschemaContainerVersion);
+			}
+		}
+
+		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAllIt()) {
+			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschemaContainer.getLatestVersion());
+		}
 	}
 
 	@Override
