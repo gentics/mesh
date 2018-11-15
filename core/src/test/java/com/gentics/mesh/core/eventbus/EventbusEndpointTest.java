@@ -155,6 +155,28 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testCustomEventHandling(TestContext context) {
+		Async asyncRec = context.async();
+
+		// Register
+		JsonObject msg = new JsonObject().put("type", "register").put("address", "custom.myEvent");
+		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+
+		// Handle msgs
+		ws.handler(buff -> {
+			String str = buff.toString();
+			JsonObject received = new JsonObject(str);
+			String body = received.getString("body");
+			assertEquals("someText", body);
+			asyncRec.complete();
+		});
+
+		// Send msg
+		msg = new JsonObject().put("type", "publish").put("address", "custom.myEvent").put("body", "someText");
+		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+	}
+
+	@Test
 	public void testEventbusHeartbeatHandling(TestContext context) throws InterruptedException {
 		Async asyncRec = context.async();
 
