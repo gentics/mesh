@@ -11,7 +11,7 @@ public class MavenVersionNumber implements Comparable<MavenVersionNumber> {
 	/**
 	 * Pattern for version numbers (without branch specifier)
 	 */
-	public static Pattern snapshotVersion = Pattern.compile("([0-9]+)\\.([0-9]+)\\.([0-9]+)(\\-SNAPSHOT)?");
+	public static Pattern snapshotVersion = Pattern.compile("([0-9]+)\\.([0-9]+)\\.([0-9]+)-?(.*)?");
 
 	/**
 	 * Major number
@@ -32,6 +32,11 @@ public class MavenVersionNumber implements Comparable<MavenVersionNumber> {
 	 * True for snapshots
 	 */
 	protected boolean isSnapshot;
+
+	/**
+	 * Postfix in the version
+	 */
+	protected String postfix;
 
 	/**
 	 * Full version number
@@ -67,6 +72,11 @@ public class MavenVersionNumber implements Comparable<MavenVersionNumber> {
 		versionNumber.major = Integer.parseInt(m.group(1));
 		versionNumber.minor = Integer.parseInt(m.group(2));
 		versionNumber.patch = Integer.parseInt(m.group(3));
+		String postfix = m.group(4);
+		if (postfix != null) {
+			postfix = postfix.replaceAll("-SNAPSHOT", "");
+			versionNumber.postfix = postfix;
+		}
 		versionNumber.isSnapshot = versionNumberString.endsWith("-SNAPSHOT");
 		return versionNumber;
 	}
@@ -124,6 +134,10 @@ public class MavenVersionNumber implements Comparable<MavenVersionNumber> {
 			diff = getSnapshotValue() - other.getSnapshotValue();
 		}
 		return diff;
+	}
+
+	public String getPostfix() {
+		return postfix;
 	}
 
 	/**
