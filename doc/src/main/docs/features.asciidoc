@@ -2332,7 +2332,7 @@ Possible usecases for event handling:
 === IoT Example
 
 The eventbus provides a great way to utilize data of your IoT devices in your frontend application.
-The following example shows how the link:https://www.arduino.cc/[Arduino] compatibile link:https://de.wikipedia.org/wiki/ESP8266[ESP8266] WIFI enabled microcontroller can utilize the entics Mesh eventbus.
+The following example shows how the link:https://www.arduino.cc/[Arduino] compatibile link:https://de.wikipedia.org/wiki/ESP8266[ESP8266] WIFI enabled microcontroller can utilize the Gentics Mesh eventbus.
 
 The shown sketch utilizes the link:https://github.com/Links2004/arduinoWebSockets[arduinoWebSockets] library.
 
