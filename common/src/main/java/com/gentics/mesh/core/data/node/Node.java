@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
@@ -702,9 +703,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @param batch
 	 * @return Page which includes the new set of tags
+	 * 
 	 */
+	// TODO Remove this method
 	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
 
+	/**
+	 * Update the tags of the node using the provides list of tag references.
+	 * @param ac
+	 * @param batch
+	 * @param list
+	 * @return
+	 */
+	void updateTags(InternalActionContext ac, SearchQueueBatch batch, List<TagReference> list);
+
+	
 	/**
 	 * Return a map with language tags and resolved link types
 	 * 

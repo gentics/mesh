@@ -37,12 +37,23 @@ public interface Taggable {
 	 * @return list of tags
 	 */
 	default List<Tag> getTagsToSet(InternalActionContext ac, SearchQueueBatch batch) {
+		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
+		return getTagsToSet(request.getTags(), ac, batch);
+	}
+
+	/**
+	 * Try to load the tags which should be set.
+	 * @param list List of references which should be loaded
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
+	default List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, SearchQueueBatch batch) {
 		List<Tag> tags = new ArrayList<>();
 		Project project = getProject();
-		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		User user = ac.getUser();
-		for (TagReference tagReference : request.getTags()) {
+		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
 				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
 			}

@@ -1699,6 +1699,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public void updateTags(InternalActionContext ac, SearchQueueBatch batch, List<TagReference> list) {
+		batch.store(this);
+		List<Tag> tags = getTagsToSet(list, ac, batch);
+		Branch branch = ac.getBranch();
+		User user = ac.getUser();
+		removeAllTags(branch);
+		tags.forEach(tag -> addTag(tag, branch));
+	}
+
+	@Override
 	public void moveTo(InternalActionContext ac, Node targetNode, SearchQueueBatch batch) {
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
