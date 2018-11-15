@@ -48,6 +48,8 @@ icon:check[] REST: Fix error message when no node for a content can be found. li
 
 icon:check[] Core: Fixed a bug that caused link:https://getmesh.io/docs/api/#project__branches__branchUuid__migrateSchemas_post[/migrateSchemas] to fail when a newer schema version was not assigned to the branch. link:https://github.com/gentics/mesh/issues/532[#532]
 
+icon:check[] Core: Nodes are now migrated to the newest schema version when a new branch is created. link:https://github.com/gentics/mesh/issues/521[#521]
+
 [[v0.27.2]]
 == 0.27.2 (07.11.2018)
 
