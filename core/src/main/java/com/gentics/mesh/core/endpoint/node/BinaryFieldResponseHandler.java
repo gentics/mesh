@@ -56,12 +56,12 @@ public class BinaryFieldResponseHandler {
 			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
 			return;
 		} else {
+			if (checkETag(rc, binaryField)) {
+				return;
+			}
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			ImageManipulationParameters imageParams = ac.getImageParameters();
 			if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
-				if (checkETag(rc, binaryField)) {
-					return;
-				}
 				resizeAndRespond(rc, binaryField, imageParams);
 			} else {
 				respond(rc, binaryField);
