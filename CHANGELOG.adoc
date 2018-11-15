@@ -48,6 +48,8 @@ icon:plus[] Core: The Gentics Mesh server will now use native bindings to increa
 
 icon:check[] REST: Branch create requests will now correctly set the path prefix property. The value of the property was previously not used.
 
+icon:check[] REST: Added more detailed error information when accessing a resource without permission. link:https://github.com/gentics/mesh/issues/314[#314]
+
 [[v0.27.1]]
 == 0.27.1 (31.10.2018)
 

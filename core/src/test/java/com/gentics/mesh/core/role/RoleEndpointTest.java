@@ -98,7 +98,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String roleRootUuid = db().tx(() -> meshRoot().getRoleRoot().getUuid());
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", roleRootUuid);
+		call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", roleRootUuid, CREATE_PERM.getRestPerm().getName());
 
 	}
 
@@ -158,7 +158,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
+			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -227,7 +227,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		}
 
-		call(() -> client().findRoleByUuid(extraRoleUuid), FORBIDDEN, "error_missing_perm", extraRoleUuid);
+		call(() -> client().findRoleByUuid(extraRoleUuid), FORBIDDEN, "error_missing_perm", extraRoleUuid, READ_PERM.getRestPerm().getName());
 
 	}
 
@@ -238,7 +238,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		}
 
-		call(() -> client().findRoleByUuid(roleUuid()), FORBIDDEN, "error_missing_perm", roleUuid());
+		call(() -> client().findRoleByUuid(roleUuid()), FORBIDDEN, "error_missing_perm", roleUuid(), READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -364,7 +364,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("New Name");
-		call(() -> client().updateRole(roleUuid(), request), FORBIDDEN, "error_missing_perm", roleUuid());
+		call(() -> client().updateRole(roleUuid(), request), FORBIDDEN, "error_missing_perm", roleUuid(), UPDATE_PERM.getRestPerm().getName());
 
 	}
 
@@ -398,7 +398,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 		RoleUpdateRequest restRole = new RoleUpdateRequest();
 		restRole.setName("renamed role");
-		call(() -> client().updateRole(roleUuid(), restRole), FORBIDDEN, "error_missing_perm", roleUuid());
+		call(() -> client().updateRole(roleUuid(), restRole), FORBIDDEN, "error_missing_perm", roleUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		// Add the missing permission and try again
 		try (Tx tx = tx()) {
@@ -451,7 +451,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			String uuid = role().getUuid();
-			call(() -> client().deleteRole(uuid), FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().deleteRole(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 			assertElement(meshRoot().getRoleRoot(), uuid, true);
 		}
 	}

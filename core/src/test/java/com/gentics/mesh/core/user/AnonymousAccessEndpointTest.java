@@ -35,7 +35,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		assertThat(rawResponse.getRawResponse().cookies()).as("Anonymous access should not set any cookie").isEmpty();
 
 		String uuid = db().tx(() -> content().getUuid());
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			anonymousRole().grantPermissions(content(), READ_PERM);

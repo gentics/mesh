@@ -90,7 +90,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 		// TODO use non-blocking code here
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 
 		Role role = create(requestModel.getName(), requestUser, uuid);

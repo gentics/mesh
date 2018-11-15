@@ -123,7 +123,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		}
 
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		TagFamily tagFamily = create(name, requestUser, uuid);
 		addTagFamily(tagFamily);

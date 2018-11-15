@@ -155,7 +155,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			throw error(BAD_REQUEST, "user_missing_username");
 		}
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		String groupUuid = requestModel.getGroupUuid();
 		String userName = requestModel.getUsername();

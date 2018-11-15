@@ -192,7 +192,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
-		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -309,7 +309,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			// Create an tag update request
 			TagUpdateRequest request = new TagUpdateRequest();
 			request.setName("new Name");
-			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid);
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid, UPDATE_PERM.getRestPerm().getName());
 
 			// read the tag again and verify that it was not changed
 			MeshResponse<TagResponse> tagReloadFut = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
@@ -366,7 +366,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			TagFamily parentTagFamily = tagFamily("basic");
-			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {
@@ -427,7 +427,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
-		call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm", tagRootUuid);
+		call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm", tagRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -604,7 +604,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
-		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 
 	}
 

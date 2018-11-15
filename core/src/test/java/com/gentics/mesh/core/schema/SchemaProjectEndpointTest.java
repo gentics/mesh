@@ -105,7 +105,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
+		call(() -> client().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			// Reload the schema and check for expected changes
@@ -146,7 +146,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schema.getUuid()), FORBIDDEN, "error_missing_perm", projectUuid());
+			call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schema.getUuid()), FORBIDDEN, "error_missing_perm", projectUuid(), UPDATE_PERM.getRestPerm().getName());
 			// Reload the schema and check for expected changes
 			assertTrue("The schema should still be listed for the project.", project().getSchemaContainerRoot().contains(schema));
 		}

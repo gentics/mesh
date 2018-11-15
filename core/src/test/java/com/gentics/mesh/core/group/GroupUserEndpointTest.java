@@ -114,7 +114,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), UPDATE_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 
@@ -131,7 +131,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid());
+			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(), UPDATE_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 	}
@@ -144,7 +144,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), UPDATE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
 			assertTrue("User should still be a member of the group.", group().hasUser(user()));
 		}

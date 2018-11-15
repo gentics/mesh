@@ -1,5 +1,6 @@
 package com.gentics.mesh.distributed;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.TestUtils.getJson;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
@@ -307,7 +308,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 		permRequest.getPermissions().setRead(false);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
 		Thread.sleep(2000);
-		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(), READ_PERM.getRestPerm().getName());
 		permRequest.getPermissions().setRead(true);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
 		Thread.sleep(2000);
@@ -318,8 +319,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 		clientA.logout().blockingGet();
 		clientA.setLogin(username, password);
 		clientA.login().blockingGet();
-		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
-		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
+		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(), READ_PERM.getRestPerm().getName());
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(), READ_PERM.getRestPerm().getName());
 	}
 
 	/**

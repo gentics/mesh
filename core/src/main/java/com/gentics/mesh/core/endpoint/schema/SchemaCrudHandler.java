@@ -215,7 +215,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
 			SchemaContainerRoot root = project.getSchemaContainerRoot();
@@ -255,7 +255,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 
 			// TODO check whether schema is assigned to project

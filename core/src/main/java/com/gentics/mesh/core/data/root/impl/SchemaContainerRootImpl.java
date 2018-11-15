@@ -142,7 +142,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		SchemaContainer container = create(requestModel, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);

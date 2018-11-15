@@ -97,7 +97,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", node.getUuid());
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {
@@ -117,7 +117,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", tag.getUuid());
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {
@@ -168,7 +168,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN,
-					"error_missing_perm", node.getUuid());
+					"error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
 			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestBranch()).contains(tag));
 		}
 	}
@@ -349,7 +349,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN,
-					"error_missing_perm", tag.getUuid());
+					"error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {

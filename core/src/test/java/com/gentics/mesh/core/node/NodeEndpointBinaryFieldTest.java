@@ -100,7 +100,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 			// 2. Download the data using the REST API
 			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", new VersioningParametersImpl().setVersion("draft")),
-				FORBIDDEN, "error_missing_perm", node.getUuid());
+				FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 
 		}
 	}

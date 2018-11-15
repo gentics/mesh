@@ -107,7 +107,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
+		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			// Reload the microschema and check for expected changes
@@ -150,7 +150,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
-					project.getUuid());
+					project.getUuid(), UPDATE_PERM.getRestPerm().getName());
 
 			// Reload the microschema and check for expected changes
 			assertTrue("The microschema should still be listed for the project.", project.getMicroschemaContainerRoot().contains(microschema));

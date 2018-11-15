@@ -180,7 +180,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
 		if (!creator.hasPermission(boot.projectRoot(), CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		// TODO instead of this check, a constraint in the db should be added
 		Project conflictingProject = boot.projectRoot().findByName(requestModel.getName());

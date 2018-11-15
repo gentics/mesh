@@ -189,7 +189,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new NodeParametersImpl()), FORBIDDEN,
-					"error_missing_perm", node.getUuid());
+					"error_missing_perm", node.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 
 	}

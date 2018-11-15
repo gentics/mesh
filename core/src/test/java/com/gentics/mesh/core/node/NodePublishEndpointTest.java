@@ -224,7 +224,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
-			call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid, READ_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -298,7 +298,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
-			call(() -> client().publishNode(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().publishNode(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -433,7 +433,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
-			call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 
