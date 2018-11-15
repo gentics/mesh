@@ -18,6 +18,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -426,7 +427,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			if (initial != null) {
 				return initial.getParentNode();
 			}
-			throw error(BAD_REQUEST, "error_field_container_without_node");
+			throw error(INTERNAL_SERVER_ERROR, "error_field_container_without_node");
 		}
 		return parentNode;
 	}
