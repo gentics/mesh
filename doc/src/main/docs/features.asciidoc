@@ -889,6 +889,8 @@ The WebRoot API, furthermore, directly supports delivering binary content (e.g.,
 
 TIP: The ```Webroot-Response-Type``` header can be used to differentiate between binary and node responses. The values of this header can  be either ```binary``` or ```node```. This allows to differentiate between binary content with ```Content-Type: application/json``` and typical node responses also delivered with ```Content-Type: application/json```.
 
+NOTE: Downloads of resized images currently do not support byte range requests.
+
 ==== Fetch an image with UUID
 
 .Try the example
@@ -1117,6 +1119,8 @@ fileData
 
 ----------Geg2Oob--
 ```
+
+The mimeType of binaries which don't have a `mimeType` property will be automatically be determined via the file extension as a fallback mechanism.
 
 === Configuration
 
