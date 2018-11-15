@@ -81,7 +81,6 @@ import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-//@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = false, startStorageServer = true)
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
