@@ -187,6 +187,7 @@ public class PermissionInfo implements RestModel {
 		switch (perm) {
 		case CREATE:
 			create = flag;
+			break;
 		case READ:
 			read = flag;
 			break;
