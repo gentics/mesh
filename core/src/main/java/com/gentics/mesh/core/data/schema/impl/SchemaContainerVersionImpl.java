@@ -84,7 +84,7 @@ public class SchemaContainerVersionImpl extends
 			return node.outE(HAS_FIELD_CONTAINER).filter(e -> {
 				GraphFieldContainerEdge edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
 				return branchUuid.equals(edge.getBranchUuid()) && type == edge.getType();
-			}).hasNext() && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
+			}).hasNext() && user.hasPermissionForId(node.id(), READ_PUBLISHED_PERM);
 		});
 	}
 

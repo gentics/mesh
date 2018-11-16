@@ -285,7 +285,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			FramedGraph graph = getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
-			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.getId());
+			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.id());
 			for (Edge roleEdge : roleEdges) {
 				Vertex role = roleEdge.getVertex(Direction.IN);
 				// Find all permission edges between the found role and target
@@ -317,7 +317,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
 		}
-		return hasPermissionForId(vertex.getId(), permission);
+		return hasPermissionForId(vertex.id(), permission);
 	}
 
 	@Override
