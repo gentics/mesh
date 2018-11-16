@@ -4,20 +4,20 @@ import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_DELETED;
 import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.madlmigration.TraversalResult;
 
 /**
  * The Project Domain Model interface.
@@ -109,11 +109,11 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	MicroschemaContainerRoot getMicroschemaContainerRoot();
 
 	/**
-	 * Return a list of languages that were assigned to the project.
+	 * Return a traversal result of languages that were assigned to the project.
 	 * 
 	 * @return
 	 */
-	List<? extends Language> getLanguages();
+	TraversalResult<? extends Language> getLanguages();
 
 	/**
 	 * Unassign the language from the project.

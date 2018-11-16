@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ClassInitializer;
@@ -310,8 +311,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public List<? extends Group> getGroups() {
-				return Collections.emptyList();
+			public TraversalResult<? extends Group> getGroups() {
+				return new TraversalResult<>(() -> Collections.emptyIterator());
 			}
 
 			@Override

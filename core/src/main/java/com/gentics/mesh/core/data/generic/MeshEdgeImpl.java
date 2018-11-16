@@ -34,15 +34,15 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	public String getFermaType() {
-		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+		return property(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
 	}
 
 	public String getUuid() {
-		return getProperty("uuid");
+		return property("uuid");
 	}
 
 	public void setUuid(String uuid) {
-		setProperty("uuid", uuid);
+		property("uuid", uuid);
 	}
 
 	@Override

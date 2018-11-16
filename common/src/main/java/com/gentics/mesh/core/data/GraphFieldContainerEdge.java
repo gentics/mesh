@@ -11,7 +11,7 @@ import com.syncleus.ferma.EdgeFrame;
  * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to branches and are either of type "Initial, Draft or
  * Published"
  */
-public interface GraphFieldContainerEdge extends EdgeFrame {
+public interface GraphFieldContainerEdge extends MeshEdge {
 
 	// Webroot index
 
@@ -80,8 +80,8 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 	void setBranchUuid(String uuid);
 
 	default void defaultClearDraftPaths() {
-		setProperty(WEBROOT_PROPERTY_KEY, null);
-		setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
+		property(WEBROOT_PROPERTY_KEY, null);
+		property(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 	}
 
 	BasicFieldContainer getContainer();
@@ -101,7 +101,7 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 	 * @param segmentInfo
 	 */
 	default void setSegmentInfo(String segmentInfo) {
-		setProperty(WEBROOT_PROPERTY_KEY, segmentInfo);
+		property(WEBROOT_PROPERTY_KEY, segmentInfo);
 	}
 
 	/**
@@ -110,7 +110,7 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 	 * @return
 	 */
 	default String getSegmentInfo() {
-		return getProperty(WEBROOT_PROPERTY_KEY);
+		return property(WEBROOT_PROPERTY_KEY);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 	 * @param urlFieldInfo
 	 */
 	default void setUrlFieldInfo(Set<String> urlFieldInfo) {
-		setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, urlFieldInfo);
+		property(WEBROOT_URLFIELD_PROPERTY_KEY, urlFieldInfo);
 	}
 
 	/**
@@ -128,7 +128,7 @@ public interface GraphFieldContainerEdge extends EdgeFrame {
 	 * @return
 	 */
 	default Set<String> getUrlFieldInfo() {
-		return getProperty(WEBROOT_URLFIELD_PROPERTY_KEY);
+		return property(WEBROOT_URLFIELD_PROPERTY_KEY);
 	}
 
 }

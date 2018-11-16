@@ -46,4 +46,33 @@ public interface MeshElement extends ElementFrame {
 		return getId();
 	}
 
+	/**
+	 * Provide TP 3.x compliant method.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	default <T> T property(String name) {
+		return getProperty(name);
+	}
+
+	/**
+	 * Set the property.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	default <R> void property(String key, R value) {
+		setProperty(key, value);
+	}
+
+	/**
+	 * Remove the property with the given key.
+	 * 
+	 * @param key
+	 */
+	default void removeProperty(String key) {
+		setProperty(key, null);
+	}
+
 }

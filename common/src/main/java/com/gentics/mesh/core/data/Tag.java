@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -66,14 +67,14 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	void removeNode(Node node);
 
 	/**
-	 * Return a list of nodes that were tagged by this tag in the given branch
+	 * Return a traversal result of nodes that were tagged by this tag in the given branch
 	 * 
 	 * @param branch
 	 *            branch
 	 * 
-	 * @return List of nodes
+	 * @return Result
 	 */
-	List<? extends Node> getNodes(Branch branch);
+	TraversalResult<? extends Node> getNodes(Branch branch);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.

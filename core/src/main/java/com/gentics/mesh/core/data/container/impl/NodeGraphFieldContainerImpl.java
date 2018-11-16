@@ -121,7 +121,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// 3. Loading the value from that field
 		// This is very costly and thus we store the precomputed display field
 		// within a local property.
-		return getProperty(DISPLAY_FIELD_PROPERTY_KEY);
+		return property(DISPLAY_FIELD_PROPERTY_KEY);
 	}
 
 	@Override
@@ -135,12 +135,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			GraphField field = getField(fieldSchema);
 			if (field != null && field instanceof DisplayField) {
 				DisplayField displayField = (DisplayField) field;
-				setProperty(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
+				property(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
 				return;
 			}
 		}
 		// Otherwise reset the value to null
-		setProperty(DISPLAY_FIELD_PROPERTY_KEY, null);
+		property(DISPLAY_FIELD_PROPERTY_KEY, null);
 	}
 
 	@Override
@@ -434,12 +434,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void setVersion(VersionNumber version) {
-		setProperty(VERSION_PROPERTY_KEY, version.toString());
+		property(VERSION_PROPERTY_KEY, version.toString());
 	}
 
 	@Override
 	public VersionNumber getVersion() {
-		String version = getProperty(VERSION_PROPERTY_KEY);
+		String version = property(VERSION_PROPERTY_KEY);
 		return version == null ? null : new VersionNumber(version);
 	}
 

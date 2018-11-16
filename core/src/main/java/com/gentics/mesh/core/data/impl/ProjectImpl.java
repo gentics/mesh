@@ -61,6 +61,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.router.RouterStorage;
@@ -90,7 +91,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return property("name");
 	}
 
 	@Override
@@ -99,8 +100,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public List<? extends Language> getLanguages() {
-		return out(HAS_LANGUAGE).toListExplicit(LanguageImpl.class);
+	public TraversalResult<? extends Language> getLanguages() {
+		List<? extends LanguageImpl> it = out(HAS_LANGUAGE).toListExplicit(LanguageImpl.class);
+		return new TraversalResult<>(it);
 	}
 
 	@Override
@@ -110,7 +112,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	@Override

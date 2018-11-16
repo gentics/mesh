@@ -67,7 +67,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			Role extraRole = root.create("extraRole", user());
 			roleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, READ_PERM);
-			assertEquals(1, group().getRoles().size());
+			assertEquals(1, group().getRoles().count());
 			tx.success();
 		}
 
@@ -82,7 +82,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertEquals(1, restGroup.getRoles().stream().filter(ref -> ref.getName().equals("extraRole")).count());
-			assertEquals(2, group().getRoles().size());
+			assertEquals(2, group().getRoles().count());
 		}
 
 	}
@@ -90,7 +90,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddBogusRoleToGroup() throws Exception {
 		try (Tx tx = tx()) {
-			assertEquals(1, group().getRoles().size());
+			assertEquals(1, group().getRoles().count());
 		}
 		call(() -> client().addRoleToGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -102,14 +102,14 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			roleUuid = extraRole.getUuid();
-			assertEquals(1, group().getRoles().size());
+			assertEquals(1, group().getRoles().count());
 			tx.success();
 		}
 
 		call(() -> client().addRoleToGroup(groupUuid(), roleUuid), FORBIDDEN, "error_missing_perm", roleUuid, UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertEquals(1, group().getRoles().size());
+			assertEquals(1, group().getRoles().count());
 		}
 	}
 
@@ -123,7 +123,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			group().addRole(extraRole);
 			role().grantPermissions(extraRole, READ_PERM);
 			tx.success();
-			assertEquals(2, group().getRoles().size());
+			assertEquals(2, group().getRoles().count());
 			searchProvider().clear().blockingAwait();
 		}
 
@@ -139,7 +139,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		);
 
 		try (Tx tx = tx()) {
-			assertEquals(1, group().getRoles().size());
+			assertEquals(1, group().getRoles().count());
 		}
 
 	}

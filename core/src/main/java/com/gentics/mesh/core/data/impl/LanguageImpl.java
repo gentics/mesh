@@ -33,32 +33,32 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public String getName() {
-		return getProperty(LANGUAGE_NAME_PROPERTY_KEY);
+		return property(LANGUAGE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty(LANGUAGE_NAME_PROPERTY_KEY, name);
+		property(LANGUAGE_NAME_PROPERTY_KEY, name);
 	}
 
 	@Override
 	public String getNativeName() {
-		return getProperty(LANGUAGE_NATIVE_NAME_PROPERTY_KEY);
+		return property(LANGUAGE_NATIVE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setNativeName(String name) {
-		setProperty(LANGUAGE_NATIVE_NAME_PROPERTY_KEY, name);
+		property(LANGUAGE_NATIVE_NAME_PROPERTY_KEY, name);
 	}
 
 	@Override
 	public String getLanguageTag() {
-		return getProperty(LANGUAGE_TAG_PROPERTY_KEY);
+		return property(LANGUAGE_TAG_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setLanguageTag(String languageTag) {
-		setProperty(LANGUAGE_TAG_PROPERTY_KEY, languageTag);
+		property(LANGUAGE_TAG_PROPERTY_KEY, languageTag);
 	}
 
 	@Override

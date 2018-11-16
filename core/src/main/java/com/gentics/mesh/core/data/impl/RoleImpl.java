@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
@@ -36,6 +35,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -64,17 +64,18 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return property("name");
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	@Override
-	public List<? extends Group> getGroups() {
-		return out(HAS_ROLE).toListExplicit(GroupImpl.class);
+	public TraversalResult<? extends Group> getGroups() {
+		Iterable<? extends GroupImpl> it = out(HAS_ROLE).frameExplicit(GroupImpl.class);
+		return new TraversalResult<>(it);
 	}
 
 	@Override
@@ -132,7 +133,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	private void setGroups(InternalActionContext ac, RoleResponse restRole) {
-		for (Group group : getGroups()) {
+		for (Group group : getGroups().iterable()) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
@@ -202,7 +203,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (Group group : getGroups()) {
+		for (Group group : getGroups().iterable()) {
 			action.call(group, null);
 		}
 	}

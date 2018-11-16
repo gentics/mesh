@@ -367,13 +367,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadUserWithMultipleGroups() {
 		try (Tx tx = tx()) {
 			User user = user();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
 				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
 				extraGroup.addUser(user());
 			}
-			assertEquals(11, user().getGroups().size());
+			assertEquals(11, user().getGroups().count());
 			tx.success();
 		}
 
@@ -1330,7 +1330,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().grantPermissions(extraUser, DELETE_PERM);
 			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 			User user = userRoot.findByUuid(uuid);
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 			assertTrue("The user should be enabled", user.isEnabled());
 			tx.success();
 		}

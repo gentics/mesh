@@ -57,6 +57,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -102,7 +103,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User disable() {
-		setProperty(ENABLED_FLAG_PROPERTY_KEY, false);
+		property(ENABLED_FLAG_PROPERTY_KEY, false);
 		return this;
 	}
 
@@ -116,56 +117,56 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Long getResetTokenIssueTimestamp() {
-		return getProperty(RESET_TOKEN_ISSUE_TIMESTAMP_KEY);
+		return property(RESET_TOKEN_ISSUE_TIMESTAMP_KEY);
 	}
 
 	@Override
 	public User setResetTokenIssueTimestamp(Long timestamp) {
-		setProperty(RESET_TOKEN_ISSUE_TIMESTAMP_KEY, timestamp);
+		property(RESET_TOKEN_ISSUE_TIMESTAMP_KEY, timestamp);
 		return this;
 	}
 
 	@Override
 	public User setResetToken(String token) {
-		setProperty(RESET_TOKEN_KEY, token);
+		property(RESET_TOKEN_KEY, token);
 		return this;
 	}
 
 	@Override
 	public String getResetToken() {
-		return getProperty(RESET_TOKEN_KEY);
+		return property(RESET_TOKEN_KEY);
 	}
 
 	@Override
 	public User enable() {
-		setProperty(ENABLED_FLAG_PROPERTY_KEY, true);
+		property(ENABLED_FLAG_PROPERTY_KEY, true);
 		return this;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
+		return BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
 	@Override
 	public String getFirstname() {
-		return getProperty(FIRSTNAME_PROPERTY_KEY);
+		return property(FIRSTNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setFirstname(String name) {
-		setProperty(FIRSTNAME_PROPERTY_KEY, name);
+		property(FIRSTNAME_PROPERTY_KEY, name);
 		return this;
 	}
 
 	@Override
 	public String getLastname() {
-		return getProperty(LASTNAME_PROPERTY_KEY);
+		return property(LASTNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setLastname(String name) {
-		setProperty(LASTNAME_PROPERTY_KEY, name);
+		property(LASTNAME_PROPERTY_KEY, name);
 		return this;
 	}
 
@@ -181,23 +182,23 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getUsername() {
-		return getProperty(USERNAME_PROPERTY_KEY);
+		return property(USERNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setUsername(String name) {
-		setProperty(USERNAME_PROPERTY_KEY, name);
+		property(USERNAME_PROPERTY_KEY, name);
 		return this;
 	}
 
 	@Override
 	public String getEmailAddress() {
-		return getProperty(EMAIL_PROPERTY_KEY);
+		return property(EMAIL_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setEmailAddress(String emailAddress) {
-		setProperty(EMAIL_PROPERTY_KEY, emailAddress);
+		property(EMAIL_PROPERTY_KEY, emailAddress);
 		return this;
 	}
 
@@ -208,8 +209,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public List<? extends Group> getGroups() {
-		return out(HAS_USER).toListExplicit(GroupImpl.class);
+	public TraversalResult<? extends Group> getGroups() {
+		return new TraversalResult<>(out(HAS_USER).frameExplicit(GroupImpl.class));
 	}
 
 	@Override
@@ -225,8 +226,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public void updateShortcutEdges() {
 		outE(ASSIGNED_TO_ROLE).removeAll();
-		for (Group group : getGroups()) {
-			for (Role role : group.getRoles()) {
+		for (Group group : getGroups().iterable()) {
+			for (Role role : group.getRoles().iterable()) {
 				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 			}
 		}
@@ -378,7 +379,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	private void setGroups(InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (Group group : getGroups()) {
+		for (Group group : getGroups().iterable()) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
@@ -421,12 +422,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getPasswordHash() {
-		return getProperty(PASSWORD_HASH_PROPERTY_KEY);
+		return property(PASSWORD_HASH_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setPasswordHash(String hash) {
-		setProperty(PASSWORD_HASH_PROPERTY_KEY, hash);
+		property(PASSWORD_HASH_PROPERTY_KEY, hash);
 		return this;
 	}
 
@@ -596,7 +597,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		keyBuilder.append(getGroups().stream().map(g -> g.getUuid()).reduce(new String(), String::concat));
+		for (Group group : getGroups().iterable()) {
+			keyBuilder.append(group.getUuid());
+		}
 
 		return ETag.hash(keyBuilder);
 	}

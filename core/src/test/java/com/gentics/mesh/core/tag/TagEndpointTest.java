@@ -225,7 +225,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			// 3. Send the request to the server
 			trackingSearchProvider().clear().blockingAwait();
-			nodes = tag.getNodes(project().getLatestBranch());
+			nodes = tag.getNodes(project().getLatestBranch()).list();
 			tx.success();
 		}
 
@@ -331,7 +331,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
-			List<? extends Node> nodes = tag.getNodes(project().getLatestBranch());
+			List<? extends Node> nodes = tag.getNodes(project().getLatestBranch()).list();
 
 			String uuid = tag.getUuid();
 			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));

@@ -97,7 +97,7 @@ public class MicroschemaContainerVersionImpl extends
 		MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
 		String json = microschema.toJson();
 		setJson(json);
-		setProperty(VERSION_PROPERTY_KEY, microschema.getVersion());
+		property(VERSION_PROPERTY_KEY, microschema.getVersion());
 	}
 
 	@Override

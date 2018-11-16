@@ -194,20 +194,20 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			if ("uuid".equals(key)) {
 				continue;
 			}
-			Object value = getProperty(key);
-			target.setProperty(key, value);
+			Object value = property(key);
+			target.property(key, value);
 		}
 		return this;
 	}
 
 	@Override
 	public void setFieldKey(String key) {
-		setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		property(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 	}
 
 	@Override
 	public String getFieldKey() {
-		return getProperty(GraphField.FIELD_KEY_PROPERTY_KEY);
+		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
 	@Override
@@ -244,8 +244,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			if (key.equals("uuid") || key.equals("ferma_type")) {
 				continue;
 			}
-			Object value = getProperty(key);
-			field.setProperty(key, value);
+			Object value = property(key);
+			field.property(key, value);
 		}
 		return field;
 	}
@@ -345,7 +345,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		Map<String, String> metadata = new HashMap<>();
 		for (String key : keys) {
 			String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
-			String value = getProperty(key);
+			String value = property(key);
 			metadata.put(name, value);
 		}
 		return metadata;

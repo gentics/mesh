@@ -217,7 +217,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertEquals("dummy", project.getName());
 			assertNotNull(project.getBaseNode());
 			assertNotNull(project.getLanguages());
-			assertEquals(2, project.getLanguages().size());
+			assertEquals(2, project.getLanguages().count());
 			assertEquals(3, project.getSchemaContainerRoot().computeCount());
 		}
 	}

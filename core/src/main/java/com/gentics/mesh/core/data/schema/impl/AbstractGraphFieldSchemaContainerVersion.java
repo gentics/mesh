@@ -42,12 +42,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return property("name");
 	}
 
 	/**
@@ -66,12 +66,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public String getVersion() {
-		return getProperty(VERSION_PROPERTY_KEY);
+		return property(VERSION_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setVersion(String version) {
-		setProperty(VERSION_PROPERTY_KEY, version);
+		property(VERSION_PROPERTY_KEY, version);
 	}
 
 	@Override
@@ -153,12 +153,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public String getJson() {
-		return getProperty("json");
+		return property("json");
 	}
 
 	@Override
 	public void setJson(String json) {
-		setProperty("json", json);
+		property("json", json);
 	}
 
 	@Override
