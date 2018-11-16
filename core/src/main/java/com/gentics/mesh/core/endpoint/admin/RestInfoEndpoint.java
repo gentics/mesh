@@ -87,7 +87,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 			info.setSearchVendor(searchProvider.getVendorName());
 			info.setSearchVersion(searchProvider.getVersion());
 			info.setMeshVersion(Mesh.getPlainVersion());
-			info.setMeshNodeId(Mesh.mesh().getOptions().getNodeName());
+			info.setMeshNodeName(Mesh.mesh().getOptions().getNodeName());
 			info.setVertxVersion(VersionCommand.getVersion());
 			info.setDatabaseRevision(db.getDatabaseRevision());
 			ac.send(info, OK);

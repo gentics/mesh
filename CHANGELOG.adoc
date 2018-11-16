@@ -10,6 +10,11 @@
 
 = Gentics Mesh Changelog
 
+[[v0.19.3]]
+== 0.19.3 (TBD)
+
+icon:check[] REST: The property `meshNodeId` of the `/api/v1/` response was renamed to `meshNodeName` to be more consistent.
+
 [[v0.19.2]]
 == 0.19.2 (02.05.2018)
 

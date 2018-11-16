@@ -4,9 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,14 +22,14 @@ public class PluginConfigTest {
 	}
 
 	@Test
-	public void testMissingConfig() throws FileNotFoundException, IOException {
+	public void testMissingConfig() throws Exception {
 		DummyPlugin plugin = new DummyPlugin();
 		plugin.getConfigFile().delete();
 		assertNull(plugin.readConfig(DummyPluginConfig.class));
 	}
 
 	@Test
-	public void testWriteConfig() throws IOException {
+	public void testWriteConfig() throws Exception {
 
 		DummyPlugin plugin = new DummyPlugin();
 		plugin.getConfigFile().delete();
