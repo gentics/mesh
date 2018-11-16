@@ -1576,6 +1576,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(BAD_REQUEST, "error_language_not_set");
 		}
 
+		// Check whether the tags need to be updated
+		List<TagReference> tags = requestModel.getTags();
+		if (tags != null) {
+			updateTags(ac, batch, requestModel.getTags());
+		}
+
 		// Set the language tag parameter here in order to return the updated language in the response
 		String languageTag = requestModel.getLanguage();
 		NodeParameters nodeParameters = ac.getNodeParameters();
@@ -1589,7 +1595,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, branch, DRAFT);
 
 		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
-		// This means that no conflict check can be performed. Conflict checks only occur for updates.
+		// This means that no conflict check can be performed. Conflict checks only occur for updates on existing contents.
 		if (latestDraftVersion == null) {
 			// Create a new field container
 			latestDraftVersion = createGraphFieldContainer(language, branch, ac.getUser());
@@ -1703,7 +1709,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		batch.store(this);
 		List<Tag> tags = getTagsToSet(list, ac, batch);
 		Branch branch = ac.getBranch();
-		User user = ac.getUser();
 		removeAllTags(branch);
 		tags.forEach(tag -> addTag(tag, branch));
 	}

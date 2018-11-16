@@ -64,13 +64,13 @@ public interface Taggable {
 			TagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
 			// Tag Family could not be found so lets create a new one
 			if (tagFamily == null) {
-				throw error(NOT_FOUND, "object_not_found_for_name", tagReference.getTagFamily());
+				throw error(NOT_FOUND, "tagfamily_not_found", tagReference.getTagFamily());
 			}
 			// 2. The uuid was specified so lets try to load the tag this way
 			if (!isEmpty(tagReference.getUuid())) {
 				Tag tag = tagFamily.findByUuid(tagReference.getUuid());
 				if (tag == null) {
-					throw error(NOT_FOUND, "object_not_found_for_uuid", tagReference.getUuid());
+					throw error(NOT_FOUND, "tag_not_found", tagReference.getUuid());
 				}
 				if (!user.hasPermission(tag, READ_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid());
