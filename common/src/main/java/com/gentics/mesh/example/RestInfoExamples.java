@@ -14,7 +14,7 @@ public class RestInfoExamples extends AbstractExamples {
 		info.setSearchVendor("elasticsearch");
 		info.setSearchVersion("2.4.3");
 		info.setMeshVersion(Mesh.getPlainVersion());
-		info.setMeshNodeId("Reminiscent Tirtouga");
+		info.setMeshNodeName("Reminiscent Tirtouga");
 		info.setVertxVersion(VersionCommand.getVersion());
 		return info;
 	}

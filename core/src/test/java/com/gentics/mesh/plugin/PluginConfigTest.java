@@ -34,13 +34,13 @@ public class PluginConfigTest {
 	}
 
 	@Test
-	public void testMissingConfig() throws FileNotFoundException, IOException {
+	public void testMissingConfig() throws Exception {
 		DummyPlugin plugin = new DummyPlugin();
 		assertNull(plugin.readConfig(DummyPluginConfig.class));
 	}
 
 	@Test
-	public void testWriteConfig() throws IOException {
+	public void testWriteConfig() throws Exception {
 
 		DummyPlugin plugin = new DummyPlugin();
 

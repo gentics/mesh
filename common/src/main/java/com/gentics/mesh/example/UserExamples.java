@@ -60,6 +60,9 @@ public class UserExamples extends AbstractExamples {
 		NodeReference reference = new NodeReference();
 		reference.setProjectName("dummy");
 		reference.setUuid(randomUUID());
+		reference.setDisplayName("DeLorean DMC-12");
+		reference.setSchema(getSchemaReference("vehicle"));
+		
 		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
 		user.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));

@@ -26,6 +26,8 @@ title: Changelog
 [[v0.28.0]]
 == 0.28.0 (TBD)
 
+CAUTION: The property `meshNodeId` of the `/api/v1/` response was renamed to `meshNodeName` to be more consistent.
+
 icon:plus[] Eventbus: It is now possible to register custom eventbus addresses.
 
 icon:plus[] REST: Download of binaries will now support byte range requests. Web media players require this feature in order to support seeking in video streams.
