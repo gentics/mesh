@@ -3,13 +3,22 @@ package com.gentics.mesh.core.schema;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -29,16 +38,19 @@ import java.util.Collections;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
+/**
+ * Tests for https://github.com/gentics/mesh/issues/532
+ * Tests if a schema or microschema can be updated after a failed migration.
+ */
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = false)
-public class NodeMigrationFailureRecoveryTest extends AbstractMeshTest {
+public class MigrationFailureRecoveryTest extends AbstractMeshTest {
 	private static final String SCHEMA_NAME = "testSchema";
+	private static final String MICROSCHEMA_NAME = "testMicroschema";
 
 	private Single<ProjectResponse> project$ = Single.defer(() -> client().findProjectByName(PROJECT_NAME).toSingle()).cache();
 	private Single<BranchResponse> branch$ = Single.defer(() -> client().findBranches(PROJECT_NAME).toSingle()).map(it -> it.getData().get(0)).cache();
 
-	/**
-	 * Test for https://github.com/gentics/mesh/issues/532
-	 */
+
 	@Test
 	public void testUpdateSchemaAfterFailingMigration() {
 		fixPermissions();
@@ -48,6 +60,22 @@ public class NodeMigrationFailureRecoveryTest extends AbstractMeshTest {
 		waitForLatestJob(() -> invokeFailingMigration(schema), MigrationStatus.FAILED);
 		waitForLatestJob(() -> updateSchema(schema), MigrationStatus.COMPLETED);
 		waitForLatestJob(this::migrateSchemas, MigrationStatus.FAILED);
+	}
+
+	@Test
+	public void testUpdateMicroSchemaAfterFailingMigration() {
+		fixPermissions();
+		MicroschemaResponse microschema = createMicroschema();
+		createSchema(microschema);
+		createNodes(true, "nodeOne", "nodeOne", "nodeTwo");
+
+		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
+		waitForLatestJob(() -> invokeFailingMigration(microschema), MigrationStatus.FAILED);
+		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
+		waitForLatestJob(() -> updateSchema(microschema), MigrationStatus.COMPLETED);
+		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
+		waitForLatestJob(this::migrateMicroschemas, MigrationStatus.FAILED);
+		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
 	}
 
 	private void fixPermissions() {
@@ -67,6 +95,10 @@ public class NodeMigrationFailureRecoveryTest extends AbstractMeshTest {
 	}
 
 	private void createNodes(String... names) {
+		createNodes(false, names);
+	}
+
+	private void createNodes(boolean withMicronodes, String... names) {
 		project$.flatMapObservable(project ->
 			Observable.fromArray(names)
 				.flatMapSingle(name -> {
@@ -75,6 +107,11 @@ public class NodeMigrationFailureRecoveryTest extends AbstractMeshTest {
 					request.setLanguage("en");
 					request.setSchemaName(SCHEMA_NAME);
 					request.getFields().put("name", new StringFieldImpl().setString(name));
+					if (withMicronodes) {
+						MicronodeResponse micronodeResponse = new MicronodeResponse();
+						micronodeResponse.setMicroschema(new MicroschemaReferenceImpl().setName(MICROSCHEMA_NAME));
+						request.getFields().put("micronode", micronodeResponse);
+					}
 					return client().createNode(PROJECT_NAME, request).toSingle();
 				})
 		).blockingSubscribe();
@@ -91,20 +128,49 @@ public class NodeMigrationFailureRecoveryTest extends AbstractMeshTest {
 		return schema;
 	}
 
+	private SchemaResponse createSchema(MicroschemaResponse microschema) {
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName(SCHEMA_NAME);
+		request.setFields(Arrays.asList(
+			new StringFieldSchemaImpl().setName("name"),
+			new MicronodeFieldSchemaImpl().setAllowedMicroSchemas(microschema.getName()).setName("micronode")
+		));
+		SchemaResponse schema = client().createSchema(request).toSingle().blockingGet();
+		client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()).toCompletable().blockingAwait();
+		return schema;
+	}
+
+	private MicroschemaResponse createMicroschema() {
+		MicroschemaResponse microschema = createMicroschema(MICROSCHEMA_NAME);
+
+		client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()).toCompletable().blockingAwait();
+		return microschema;
+	}
+
 	private void invokeFailingMigration(SchemaResponse schema) {
+		client().applyChangesToSchema(schema.getUuid(), failingChange()).toCompletable().blockingAwait();
+		schema = getSchemaByName(SCHEMA_NAME);
+		BranchResponse branch = branch$.blockingGet();
+		client().assignBranchSchemaVersions(PROJECT_NAME, branch.getUuid(), schema.toReference()).toCompletable().blockingAwait();
+	}
+
+	private void invokeFailingMigration(MicroschemaResponse microschema) {
+		client().applyChangesToMicroschema(microschema.getUuid(), failingChange()).toCompletable().blockingAwait();
+		microschema = getMicroSchemaByName(microschema.getName());
+		BranchResponse branch = branch$.blockingGet();
+		client().assignBranchMicroschemaVersions(PROJECT_NAME, branch.getUuid(), microschema.toReference()).toCompletable().blockingAwait();
+	}
+
+	private SchemaChangesListModel failingChange() {
 		SchemaChangesListModel request = new SchemaChangesListModel();
 		SchemaChangeModel operation = new SchemaChangeModel();
 		request.getChanges().add(operation);
 		operation.setMigrationScript("invalidJavascript");
-		operation.setOperation(SchemaChangeOperation.UPDATEFIELD);
-		operation.setProperty("field", "name");
+		operation.setOperation(SchemaChangeOperation.ADDFIELD);
+		operation.setProperty("field", "someField");
 		operation.setProperty("type", "number");
 
-
-		client().applyChangesToSchema(schema.getUuid(), request).toCompletable().blockingAwait();
-		schema = getSchemaByName(SCHEMA_NAME);
-		BranchResponse branch = branch$.blockingGet();
-		client().assignBranchSchemaVersions(PROJECT_NAME, branch.getUuid(), schema.toReference()).toCompletable().blockingAwait();
+		return request;
 	}
 
 	private void updateSchema(SchemaResponse schema) {
@@ -118,13 +184,36 @@ public class NodeMigrationFailureRecoveryTest extends AbstractMeshTest {
 			.toCompletable().blockingAwait();
 	}
 
+	private void updateSchema(MicroschemaResponse schema) {
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName(SCHEMA_NAME);
+		request.setFields(Arrays.asList(
+			new NumberFieldSchemaImpl().setName("name"),
+			new StringFieldSchemaImpl().setName("field1")
+		));
+		client().updateMicroschema(schema.getUuid(), request)
+			.toCompletable().blockingAwait();
+	}
+
 	private void migrateSchemas() {
 		BranchResponse branch = branch$.blockingGet();
 		client().migrateBranchSchemas(PROJECT_NAME, branch.getUuid()).toCompletable().blockingAwait();
 	}
 
+	private void migrateMicroschemas() {
+		BranchResponse branch = branch$.blockingGet();
+		client().migrateBranchMicroschemas(PROJECT_NAME, branch.getUuid()).toCompletable().blockingAwait();
+	}
+
 	private SchemaResponse getSchemaByName(String name) {
 		return client().findSchemas().toSingle()
+			.to(TestUtils::listObservable)
+			.filter(schema -> schema.getName().equals(name))
+			.blockingFirst();
+	}
+
+	private MicroschemaResponse getMicroSchemaByName(String name) {
+		return client().findMicroschemas().toSingle()
 			.to(TestUtils::listObservable)
 			.filter(schema -> schema.getName().equals(name))
 			.blockingFirst();

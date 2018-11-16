@@ -327,6 +327,11 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
+	public Iterable<? extends MicroschemaContainerVersion> findActiveMicroschemaVersions() {
+		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(MicroschemaContainerVersionImpl.class);
+	}
+
+	@Override
 	public Iterable<? extends BranchSchemaEdge> findAllSchemaVersionEdges() {
 		return outE(HAS_SCHEMA_VERSION).frameExplicit(BranchSchemaEdgeImpl.class);
 	}
