@@ -54,6 +54,10 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	@Override
 	public void handle(RoutingContext rc) {
+		if (rc.response().closed() && rc.failed()) {
+			log.error("Error in request for path {" + rc.request().method().name() + " " + rc.request().path() + "}", rc.failure());
+			return;
+		}
 
 		// Handle "callback route is not configured" error from OAuthHandler
 		if (rc.failed()) {

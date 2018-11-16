@@ -28,8 +28,7 @@ title: Changelog
 
 icon:plus[] Eventbus: It is now possible to register custom eventbus addresses.
 
-[[v0.27.3]]
-== 0.27.3 (TBD)
+icon:plus[] REST: Download of binaries will now support byte range requests. Web media players require this feature in order to support seeking in video streams.
 
 icon:check[] Elasticsearch: The check for the `ingest-attachment` plugin was fixed for installations which were using the `AWS` Elasticsearch service.
 
