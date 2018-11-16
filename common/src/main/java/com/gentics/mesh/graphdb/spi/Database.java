@@ -562,4 +562,6 @@ public interface Database extends TxFactory {
 	 */
 	void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz);
 
+	void shutdown();
+
 }

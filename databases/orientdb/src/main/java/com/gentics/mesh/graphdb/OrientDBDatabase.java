@@ -50,6 +50,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
+import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.exception.OSchemaException;
@@ -227,6 +228,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void closeConnectionPool() {
 		txProvider.close();
+	}
+
+	@Override
+	public void shutdown() {
+		Orient.instance().shutdown();
 	}
 
 	/**
@@ -481,7 +487,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 		if (!currentPluginFound) {
 			log.info("Extracting OrientDB Studio");
-			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.26.zip")));
+			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, ORIENTDB_STUDIO_ZIP)));
 		}
 
 	}
