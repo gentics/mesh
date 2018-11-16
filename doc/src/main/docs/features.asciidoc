@@ -1434,7 +1434,7 @@ The examples provided subsequently, rely on our demo project.
 
 There are dedicated API endpoints for querying permissions on elements.
 
-NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:{{< relref "authentication.asciidoc" >}}[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 ==== Querying Role Permissions
 The link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```] endpoint can be used to query a role's permission on a specific element or set of elements.
