@@ -32,11 +32,11 @@ public class ServerRunner {
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
-		// options.getStorageOptions().setStartServer(true);
+		options.getStorageOptions().setStartServer(true);
 		// options.getClusterOptions().setClusterName("test");
 		// options.getClusterOptions().setEnabled(true);
-		// options.getSearchOptions().setUrl(null);
-		// options.getSearchOptions().setStartEmbedded(false);
+		options.getSearchOptions().setUrl(null);
+		options.getSearchOptions().setStartEmbedded(false);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
