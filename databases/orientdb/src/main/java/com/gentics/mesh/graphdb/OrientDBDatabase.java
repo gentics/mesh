@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.mozilla.javascript.Context;
 
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.changes.ChangesList;
@@ -52,6 +53,9 @@ import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
+import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
+import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
@@ -91,6 +95,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientElementType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory.OrientGraphImplFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
@@ -133,6 +138,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
 	private int maxRetry = 100;
+
+	private OrientDB serverContext;
 
 	@Override
 	public void stop() {
@@ -239,13 +246,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * Setup the OrientDB Graph connection
 	 */
 	private void initGraphDB() {
-		GraphStorageOptions storageOptions = options.getStorageOptions();
-		if (storageOptions == null || storageOptions.getDirectory() == null) {
-			log.info("No graph database settings found. Fallback to in memory mode.");
-			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(16, 100);
-		} else {
-			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(16, 100);
+
+		ODatabaseSession db = serverContext.open("storage", "admin", "admin");
+		if (db instanceof ODatabaseDocumentInternal) {
+			fix me
+			OrientGraphImplFactory internalNoTxFactory =  OrientGraphFactory.getNoTxGraphImplFactory();
+			OrientGraphImplFactory internalTxFactory = OrientGraphFactory.getTxGraphImplFactory();
+			OrientBaseGraph tx2 = internalTxFactory.getGraph((ODatabaseDocumentInternal) db);
+
 		}
+//		GraphStorageOptions storageOptions = options.getStorageOptions();
+//		if (storageOptions == null || storageOptions.getDirectory() == null) {
+//			log.info("No graph database settings found. Fallback to in memory mode.");
+//			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(16, 100);
+//		} else {
+//			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(16, 100);
+//		}
 	}
 
 	@Override
@@ -453,6 +469,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
 			postStartupDBEventHandling();
 		}
+		
+		serverContext = server.getContext();
 	}
 
 	@Override

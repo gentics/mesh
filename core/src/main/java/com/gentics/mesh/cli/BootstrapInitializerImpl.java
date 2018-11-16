@@ -254,11 +254,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				log.info("Init cluster flag was found. Creating initial graph database now.");
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
-				db.setupConnectionPool();
 				boolean setupData = initLocalData(options, false);
 				db.startServer();
 				initVertx(options, isClustered);
 				db.registerEventHandlers();
+				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
 				if (setupData) {
