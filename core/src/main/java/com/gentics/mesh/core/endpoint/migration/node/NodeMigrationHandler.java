@@ -179,7 +179,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				if (oldPublished != null && !oldPublished.equals(container)) {
 					// We only need to migrate the container if the container's schema version is also "old"
 					boolean hasSameOldSchemaVersion = container != null
-						&& container.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
+						&& container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
 					if (hasSameOldSchemaVersion) {
 						nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
 							migrationScripts,

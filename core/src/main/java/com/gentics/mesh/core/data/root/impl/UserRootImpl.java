@@ -127,7 +127,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			throw new RuntimeException("Found multiple nodes with the same UUID");
 		}
 
-		if (root.getId().equals(getId())) {
+		if (root.getId().equals(id())) {
 			return user;
 		} else {
 			throw new RuntimeException("User does not belong to the UserRoot");

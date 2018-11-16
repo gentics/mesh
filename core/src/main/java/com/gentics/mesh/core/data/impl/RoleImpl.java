@@ -98,7 +98,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout", MeshInternal.get().database().createComposedIndexKey(vertex
-			.getId(), getId()));
+			.id(), id()));
 		return edges.iterator().hasNext();
 	}
 
@@ -140,7 +140,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
 		FramedGraph graph = Tx.getActive().getGraph();
-		Object indexKey = MeshInternal.get().database().createComposedIndexKey(vertex.getId(), getId());
+		Object indexKey = MeshInternal.get().database().createComposedIndexKey(vertex.id(), getId());
 
 		long edgesRemoved = Arrays.stream(permissions).map(perm -> "e." + perm.label() + "_inout").flatMap(key -> StreamSupport.stream(graph.getEdges(
 			key, indexKey).spliterator(), false)).peek(Edge::remove).count();

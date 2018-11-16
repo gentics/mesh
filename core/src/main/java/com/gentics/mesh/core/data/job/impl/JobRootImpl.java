@@ -80,7 +80,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-					database().createComposedIndexKey(potentialElement.getId(), getId()));
+					database().createComposedIndexKey(potentialElement.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());

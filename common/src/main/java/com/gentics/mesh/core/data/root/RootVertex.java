@@ -83,7 +83,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 
-		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId()).spliterator();
+		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
 			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))
@@ -193,7 +193,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-				.getId(), getId()));
+				.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
@@ -329,8 +329,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	default void addItem(T item) {
 		FramedGraph graph = getGraph();
 		// Check whether the item was already added by checking the index
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.getId(),
-			getId()));
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.id(),
+			id()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());
 		}

@@ -30,8 +30,8 @@ public interface BinaryRoot extends MeshVertex {
 	 */
 	default public void addItem(Binary item) {
 		FramedGraph graph = getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.getId(),
-				getId()));
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.id(),
+				id()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());
 		}
