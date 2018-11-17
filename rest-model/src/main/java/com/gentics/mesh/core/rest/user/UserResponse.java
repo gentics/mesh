@@ -43,6 +43,10 @@ public class UserResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("List of group references to which the user belongs.")
 	private List<GroupReference> groups = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Admin user flag.")
+	private Boolean admin;
+
 	public UserResponse() {
 	}
 
@@ -208,6 +212,26 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 */
 	public UserResponse setEnabled(boolean enabled) {
 		this.enabled = enabled;
+		return this;
+	}
+
+	/**
+	 * Return the admin flag.
+	 * 
+	 * @return
+	 */
+	public Boolean isAdmin() {
+		return admin;
+	}
+
+	/**
+	 * Set the admin flag.
+	 * 
+	 * @param admin
+	 * @return Fluent API
+	 */
+	public UserResponse setAdmin(boolean admin) {
+		this.admin = admin;
 		return this;
 	}
 

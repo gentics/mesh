@@ -181,6 +181,21 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User setReferencedNode(Node node);
 
 	/**
+	 * 
+	 * Check whether the user is marked with the admin flag.
+	 * @return
+	 */
+	boolean isAdmin();
+
+	/**
+	 * Set the admin flag for the user.
+	 * 
+	 * @param flag
+	 * @return Fluent API
+	 */
+	User setAdmin(boolean flag);
+
+	/**
 	 * Return the permission info object for the given vertex.
 	 * 
 	 * @param vertex

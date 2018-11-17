@@ -211,6 +211,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public boolean isAdmin() {
+				return false;
+			}
+
+			@Override
+			public User setAdmin(boolean flag) {
+				return this;
+			}
+
+			@Override
 			public User setPasswordHash(String hash) {
 				return this;
 			}

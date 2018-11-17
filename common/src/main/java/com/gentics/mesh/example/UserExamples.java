@@ -36,6 +36,7 @@ public class UserExamples extends AbstractExamples {
 		user2.getGroups().add(new GroupReference().setName("super-editors").setUuid(randomUUID()));
 		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user2.setEnabled(true);
+		user2.setAdmin(true);
 		return user2;
 	}
 
@@ -56,13 +57,14 @@ public class UserExamples extends AbstractExamples {
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
 		user.setEnabled(true);
+		user.setAdmin(false);
 
 		NodeReference reference = new NodeReference();
 		reference.setProjectName("dummy");
 		reference.setUuid(randomUUID());
 		reference.setDisplayName("DeLorean DMC-12");
 		reference.setSchema(getSchemaReference("vehicle"));
-		
+
 		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
 		user.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
@@ -87,6 +89,7 @@ public class UserExamples extends AbstractExamples {
 		userUpdate.setEmailAddress("j.doe@nowhere.com");
 		ExpandableNode node = getUserResponse1("jdoe").getNodeReference();
 		userUpdate.setNodeReference(node);
+		userUpdate.setAdmin(true);
 		return userUpdate;
 	}
 
@@ -99,6 +102,7 @@ public class UserExamples extends AbstractExamples {
 		userCreate.setEmailAddress("j.doe@nowhere.com");
 		userCreate.setGroupUuid(randomUUID());
 		userCreate.setNodeReference(getUserResponse2().getNodeReference());
+		userCreate.setAdmin(true);
 		return userCreate;
 	}
 

@@ -37,6 +37,10 @@ public class UserCreateRequest implements RestModel {
 	@JsonPropertyDescription("New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user")
 	private ExpandableNode nodeReference;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional admin user flag. Only admin users can create new users with the admin flag set.")
+	private boolean admin = false;
+
 	public UserCreateRequest() {
 	}
 
@@ -180,6 +184,26 @@ public class UserCreateRequest implements RestModel {
 	 */
 	public UserCreateRequest setNodeReference(ExpandableNode nodeReference) {
 		this.nodeReference = nodeReference;
+		return this;
+	}
+
+	/**
+	 * Return the admin flag.
+	 * 
+	 * @return
+	 */
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	/**
+	 * Set the admin flag.
+	 * 
+	 * @param admin
+	 * @return Fluent API
+	 */
+	public UserCreateRequest setAdmin(boolean admin) {
+		this.admin = admin;
 		return this;
 	}
 

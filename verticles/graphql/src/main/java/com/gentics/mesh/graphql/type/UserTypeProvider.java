@@ -3,8 +3,11 @@ package com.gentics.mesh.graphql.type;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+
+import graphql.Scalars;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeReference;
 
 import javax.inject.Inject;
@@ -16,6 +19,7 @@ import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NA
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.MISDIRECTED_REQUEST;
 
 @Singleton
 public class UserTypeProvider extends AbstractTypeProvider {
@@ -84,6 +88,12 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				}
 				return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			}));
+
+		// .admin
+		root.field(newFieldDefinition().name("admin").description("Admin flag of the user").type(Scalars.GraphQLBoolean).dataFetcher((env -> {
+			User user = env.getSource();
+			return user.isAdmin();
+		})));
 
 		return root.build();
 	}

@@ -171,6 +171,14 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setEmailAddress(requestModel.getEmailAddress());
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 
+		if (requestModel.isAdmin()) {
+			if(ac.getUser().isAdmin()) {
+				user.setAdmin(true);
+			} else {
+				throw error(BAD_REQUEST, "user_only_admin_can_create_new_admins");
+			}
+		}
+
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		ExpandableNode reference = requestModel.getNodeReference();
 		batch.store(user, true);

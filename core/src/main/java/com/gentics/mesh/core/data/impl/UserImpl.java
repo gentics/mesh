@@ -95,6 +95,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String RESET_TOKEN_ISSUE_TIMESTAMP_KEY = "resetTokenTimestamp";
 
+	public static final String ADMIN_PROPERTY_KEY = "isAdmin";
+
 	public static void init(Database database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
@@ -139,6 +141,21 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public User enable() {
 		setProperty(ENABLED_FLAG_PROPERTY_KEY, true);
+		return this;
+	}
+
+	@Override
+	public boolean isAdmin() {
+		Boolean flag = getProperty(ADMIN_PROPERTY_KEY);
+		if (flag == null) {
+			return false;
+		}
+		return flag;
+	}
+
+	@Override
+	public User setAdmin(boolean flag) {
+		setProperty(ADMIN_PROPERTY_KEY, flag);
 		return this;
 	}
 
@@ -279,6 +296,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
+		// TODO cache access to property?
+		if (isAdmin()) {
+			return true;
+		}
 		if (PermissionStore.hasPermission(getId(), permission, elementId)) {
 			return true;
 		} else {
@@ -316,6 +337,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
+		}
+		// TODO cache property?
+		if (isAdmin()) {
+			return true;
 		}
 		return hasPermissionForId(vertex.id(), permission);
 	}
@@ -363,6 +388,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 		if (fields.has("groups")) {
 			setGroups(ac, restUser);
+		}
+		if (fields.has("admin")) {
+			restUser.setAdmin(isAdmin());
 		}
 		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
@@ -528,6 +556,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			BCryptPasswordEncoder encoder = MeshInternal.get().passwordEncoder();
 			setPasswordHash(encoder.encode(requestModel.getPassword()));
 			modified = true;
+		}
+
+		if (requestModel.isAdmin() != isAdmin()) {
+			if(ac.getUser().isAdmin()) {
+				setAdmin(requestModel.isAdmin());
+			} else {
+				throw error(BAD_REQUEST, "user_only_admin_can_update_admin_flag");
+			}
 		}
 
 		if (requestModel.getNodeReference() != null) {

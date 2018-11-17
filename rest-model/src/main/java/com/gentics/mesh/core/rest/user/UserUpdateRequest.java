@@ -35,6 +35,10 @@ public class UserUpdateRequest implements RestModel {
 	@JsonPropertyDescription("New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user")
 	private ExpandableNode nodeReference;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional admin user flag. Only admin users can update the flag for users.")
+	private boolean admin = false;
+
 	public UserUpdateRequest() {
 	}
 
@@ -178,6 +182,26 @@ public class UserUpdateRequest implements RestModel {
 	 */
 	public UserUpdateRequest setNodeReference(ExpandableNode nodeReference) {
 		this.nodeReference = nodeReference;
+		return this;
+	}
+
+	/**
+	 * Return the admin flag.
+	 * 
+	 * @return
+	 */
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	/**
+	 * Set the admin flag.
+	 * 
+	 * @param admin
+	 * @return Fluent API
+	 */
+	public UserUpdateRequest setAdmin(boolean admin) {
+		this.admin = admin;
 		return this;
 	}
 

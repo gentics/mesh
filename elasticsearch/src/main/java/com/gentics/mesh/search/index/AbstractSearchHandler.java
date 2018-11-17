@@ -92,16 +92,20 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	protected JsonObject prepareSearchQuery(InternalActionContext ac, String searchQuery, boolean filterLanguage) {
 		try {
 			JsonObject userJson = new JsonObject(searchQuery);
+			JsonObject newQuery = new JsonObject();
 
-			JsonArray roleUuids = new JsonArray();
-			try (Tx tx = db.tx()) {
-				for (Role role : ac.getUser().getRoles()) {
-					roleUuids.add(role.getUuid());
+			// We only need to check for role perms if the user is not an admin user.
+			if (!ac.getUser().isAdmin()) {
+				JsonArray roleUuids = new JsonArray();
+				try (Tx tx = db.tx()) {
+					for (Role role : ac.getUser().getRoles()) {
+						roleUuids.add(role.getUuid());
+					}
 				}
+				newQuery.put("bool",
+					new JsonObject().put("filter", new JsonArray().add(new JsonObject().put("terms", new JsonObject().put(
+						"_roleUuids", roleUuids)))));	
 			}
-			JsonObject newQuery = new JsonObject().put("bool",
-				new JsonObject().put("filter", new JsonArray().add(new JsonObject().put("terms", new JsonObject().put(
-					"_roleUuids", roleUuids)))));
 
 			// Wrap the original query in a nested bool query in order check the role perms
 			JsonObject originalQuery = userJson.getJsonObject("query");
