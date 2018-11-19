@@ -36,6 +36,8 @@ icon:plus[] REST: Download of binaries will now support byte range requests. Web
 
 icon:plus[] API: Make OAuth2 Server options overrideable via environment variables.
 
+icon:check[] Permissions: A bug in the permission handling has been fixed. Previously the read permission was also granted when create was granted to elements. link:https://github.com/gentics/mesh/issues/562[#562]
+
 icon:check[] Branches: Resolved links will now contain the hostname of the target branch, not the latest branch.
 
 icon:check[] Elasticsearch: The check for the `ingest-attachment` plugin was fixed for installations which were using the `AWS` Elasticsearch service.
