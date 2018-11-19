@@ -257,7 +257,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid) {
+			public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 
 			}
 
