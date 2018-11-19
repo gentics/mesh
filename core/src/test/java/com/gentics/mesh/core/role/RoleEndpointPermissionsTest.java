@@ -132,18 +132,39 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testAddPermissionsOnGroup() {
-		try (Tx tx = tx()) {
-			String pathToElement = "groups";
+	public void testSetOnlyCreatePerm() {
+		String pathToElement = "groups";
 
-			RolePermissionRequest request = new RolePermissionRequest();
-			request.setRecursive(true);
-			request.getPermissions().add(READ);
-			request.getPermissions().add(UPDATE);
-			request.getPermissions().add(CREATE);
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add(CREATE);
+
+		tx(() -> {
+			assertTrue("The role should have read permission on the group.", role().hasPermission(GraphPermission.READ_PERM, group()));
+		});
+
+		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
+		assertThat(message).matches("role_updated_permission", tx(() -> role().getName()));
+
+		tx(() -> {
+			assertFalse("The role should no longer have read permission on the group.", role().hasPermission(GraphPermission.READ_PERM, group()));
+		});
+	}
+
+	@Test
+	public void testAddPermissionsOnGroup() {
+		String pathToElement = "groups";
+
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add(READ);
+		request.getPermissions().add(UPDATE);
+		request.getPermissions().add(CREATE);
+
+		try (Tx tx = tx()) {
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
-			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), pathToElement, request));
+			GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 			assertThat(message).matches("role_updated_permission", role().getName());
 			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 		}
