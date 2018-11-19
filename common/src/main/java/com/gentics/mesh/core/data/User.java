@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.Events.EVENT_USER_CREATED;
 import static com.gentics.mesh.Events.EVENT_USER_DELETED;
 import static com.gentics.mesh.Events.EVENT_USER_UPDATED;
-import java.util.List;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
 
@@ -250,11 +251,11 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	Page<? extends Group> getGroups(User user, PagingParameters params);
 
 	/**
-	 * Return a list of groups to which the user was assigned.
+	 * Return a traversal result of groups to which the user was assigned.
 	 * 
 	 * @return
 	 */
-	List<? extends Group> getGroups();
+	TraversalResult<? extends Group> getGroups();
 
 	/**
 	 * Add the user to the given group.
@@ -423,7 +424,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return API token id or null if no token has yet been generated.
 	 */
 	default String getAPIKeyTokenCode() {
-		return getProperty(API_TOKEN_ID);
+		return property(API_TOKEN_ID);
 	}
 
 	/**
@@ -433,7 +434,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return Fluent API
 	 */
 	default User setAPITokenId(String code) {
-		setProperty(API_TOKEN_ID, code);
+		property(API_TOKEN_ID, code);
 		return this;
 	}
 
@@ -443,7 +444,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	default Long getAPITokenIssueTimestamp() {
-		return getProperty(API_TOKEN_ISSUE_TIMESTAMP);
+		return property(API_TOKEN_ISSUE_TIMESTAMP);
 	}
 
 	/**
@@ -463,7 +464,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return Fluent API
 	 */
 	default User setAPITokenIssueTimestamp(Long timestamp) {
-		setProperty(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
+		property(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
 		return this;
 	}
 

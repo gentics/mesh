@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.VertexFrame;
@@ -15,7 +17,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
  * @see TagEdge
  */
 @GraphElement
-public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
+public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	public static final String BRANCH_UUID_KEY = "branchUuid";
 
 	public static void init(Database db) {
@@ -47,12 +49,12 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 
 	@Override
 	public String getBranchUuid() {
-		return getProperty(BRANCH_UUID_KEY);
+		return property(BRANCH_UUID_KEY);
 	}
 
 	@Override
 	public void setBranchUuid(String uuid) {
-		setProperty(BRANCH_UUID_KEY, uuid);
+		property(BRANCH_UUID_KEY, uuid);
 	}
 
 }

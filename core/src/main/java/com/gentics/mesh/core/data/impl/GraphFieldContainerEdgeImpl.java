@@ -13,13 +13,13 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
-import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -31,7 +31,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
  * @see GraphFieldContainerEdge
  */
 @GraphElement
-public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements GraphFieldContainerEdge {
+public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFieldContainerEdge {
 
 	public static void init(Database db) {
 		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
@@ -111,12 +111,12 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 
 	@Override
 	public String getLanguageTag() {
-		return getProperty(LANGUAGE_TAG_KEY);
+		return property(LANGUAGE_TAG_KEY);
 	}
 
 	@Override
 	public void setLanguageTag(String languageTag) {
-		setProperty(LANGUAGE_TAG_KEY, languageTag);
+		property(LANGUAGE_TAG_KEY, languageTag);
 	}
 
 	public MeshVertexImpl getStartNode() {
@@ -140,26 +140,26 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 
 	@Override
 	public ContainerType getType() {
-		return ContainerType.get(getProperty(EDGE_TYPE_KEY));
+		return ContainerType.get(property(EDGE_TYPE_KEY));
 	}
 
 	@Override
 	public void setType(ContainerType type) {
 		if (type == null) {
-			setProperty(EDGE_TYPE_KEY, null);
+			property(EDGE_TYPE_KEY, null);
 		} else {
-			setProperty(EDGE_TYPE_KEY, type.getCode());
+			property(EDGE_TYPE_KEY, type.getCode());
 		}
 	}
 
 	@Override
 	public String getBranchUuid() {
-		return getProperty(BRANCH_UUID_KEY);
+		return property(BRANCH_UUID_KEY);
 	}
 
 	@Override
 	public void setBranchUuid(String uuid) {
-		setProperty(BRANCH_UUID_KEY, uuid);
+		property(BRANCH_UUID_KEY, uuid);
 	}
 
 	/**

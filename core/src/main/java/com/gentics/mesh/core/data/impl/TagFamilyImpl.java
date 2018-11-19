@@ -89,22 +89,22 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return property("name");
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	@Override
 	public String getDescription() {
-		return getProperty("description");
+		return property("description");
 	}
 
 	@Override
 	public void setDescription(String description) {
-		setProperty("description", description);
+		property("description", description);
 	}
 
 	@Override
@@ -244,7 +244,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			HashSet<String> handledNodes = new HashSet<>();
 
 			for (Branch branch : tag.getProject().getBranchRoot().findAllIt()) {
-				for (Node node : tag.getNodes(branch)) {
+				for (Node node : tag.getNodes(branch).iterable()) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());
 						GenericEntryContextImpl nodeContext = new GenericEntryContextImpl();

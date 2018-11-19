@@ -180,46 +180,46 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public String getName() {
-		return getProperty(NAME);
+		return property(NAME);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty(NAME, name);
-		setProperty(UNIQUENAME_PROPERTY_KEY, getRoot().getUniqueNameKey(name));
+		property(NAME, name);
+		property(UNIQUENAME_PROPERTY_KEY, getRoot().getUniqueNameKey(name));
 	}
 
 	@Override
 	public String getHostname() {
-		return getProperty(HOSTNAME);
+		return property(HOSTNAME);
 	}
 
 	@Override
 	public String getPathPrefix() {
-		String prefix = getProperty(PATH_PREFIX);
+		String prefix = property(PATH_PREFIX);
 		return prefix == null ? "" : prefix;
 	}
 
 	@Override
 	public Branch setPathPrefix(String pathPrefix) {
-		setProperty(PATH_PREFIX, pathPrefix);
+		property(PATH_PREFIX, pathPrefix);
 		return this;
 	}
 
 	@Override
 	public Branch setHostname(String hostname) {
-		setProperty(HOSTNAME, hostname);
+		property(HOSTNAME, hostname);
 		return this;
 	}
 
 	@Override
 	public Boolean getSsl() {
-		return getProperty(SSL);
+		return property(SSL);
 	}
 
 	@Override
 	public Branch setSsl(boolean ssl) {
-		setProperty(SSL, ssl);
+		property(SSL, ssl);
 		return this;
 	}
 
@@ -236,24 +236,24 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean isActive() {
-		return getProperty(ACTIVE_PROPERTY_KEY);
+		return property(ACTIVE_PROPERTY_KEY);
 	}
 
 	@Override
 	public Branch setActive(boolean active) {
-		setProperty(ACTIVE_PROPERTY_KEY, active);
+		property(ACTIVE_PROPERTY_KEY, active);
 		return this;
 	}
 
 	@Override
 	public boolean isMigrated() {
-		Boolean flag = getProperty(MIGRATED_PROPERTY_KEY);
+		Boolean flag = property(MIGRATED_PROPERTY_KEY);
 		return flag == null ? false : flag;
 	}
 
 	@Override
 	public Branch setMigrated(boolean migrated) {
-		setProperty(MIGRATED_PROPERTY_KEY, migrated);
+		property(MIGRATED_PROPERTY_KEY, migrated);
 		return this;
 	}
 

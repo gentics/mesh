@@ -11,7 +11,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,6 +36,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -62,17 +62,17 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return property("name");
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	@Override
-	public List<? extends User> getUsers() {
-		return in(HAS_USER).toListExplicit(UserImpl.class);
+	public TraversalResult<? extends User> getUsers() {
+		return new TraversalResult<>(in(HAS_USER).frameExplicit(UserImpl.class));
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		setUniqueLinkInTo(user, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
-		for (Role role : getRoles()) {
+		for (Role role : getRoles().iterable()) {
 			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 	}
@@ -95,8 +95,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public List<? extends Role> getRoles() {
-		return in(HAS_ROLE).toListExplicit(RoleImpl.class);
+	public TraversalResult<? extends Role> getRoles() {
+		return new TraversalResult<>(in(HAS_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		setUniqueLinkInTo(role, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
-		for (User user : getUsers()) {
+		for (User user : getUsers().iterable()) {
 			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 
@@ -115,7 +115,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		unlinkIn(role, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
-		for (User user : getUsers()) {
+		for (User user : getUsers().iterable()) {
 			user.updateShortcutEdges();
 		}
 		PermissionStore.invalidate();
@@ -168,7 +168,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	 * @param restGroup
 	 */
 	private void setRoles(InternalActionContext ac, GroupResponse restGroup) {
-		for (Role role : getRoles()) {
+		for (Role role : getRoles().iterable()) {
 			String name = role.getName();
 			if (name != null) {
 				restGroup.getRoles().add(role.transformToReference());
@@ -218,7 +218,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (User user : getUsers()) {
+			for (User user : getUsers().iterable()) {
 				user.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -227,7 +227,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (User user : getUsers()) {
+		for (User user : getUsers().iterable()) {
 			// We need to store users as well since users list their groups -
 			// See {@link UserTransformer#toDocument(User)}
 			action.call(user, null);

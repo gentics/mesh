@@ -61,7 +61,7 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 
 		JsonArray groupsArray = new JsonArray();
 		user.put("groups", groupsArray);
-		for (Group group : getGroups()) {
+		for (Group group : getGroups().iterable()) {
 			JsonObject groupJson = new JsonObject();
 			groupJson.put("uuid", group.getUuid());
 			groupJson.put("name", group.getName());

@@ -88,7 +88,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<T> setCustomMigrationScript(String migrationScript) {
-		setProperty(MIGRATION_SCRIPT_PROPERTY_KEY, migrationScript);
+		property(MIGRATION_SCRIPT_PROPERTY_KEY, migrationScript);
 		return this;
 	}
 
@@ -110,12 +110,12 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 		if (value instanceof JsonObject) {
 			value = ((JsonObject) value).encode();
 		}
-		setProperty(REST_PROPERTY_PREFIX_KEY + key, value);
+		property(REST_PROPERTY_PREFIX_KEY + key, value);
 	}
 
 	@Override
 	public <R> R getRestProperty(String key) {
-		return getProperty(REST_PROPERTY_PREFIX_KEY + key);
+		return property(REST_PROPERTY_PREFIX_KEY + key);
 	}
 
 	@Override

@@ -123,7 +123,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public JobWarningList getWarnings() {
-		String json = getProperty(WARNING_PROPERTY_KEY);
+		String json = property(WARNING_PROPERTY_KEY);
 		if (json == null) {
 			return new JobWarningList();
 		} else {
@@ -134,7 +134,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	@Override
 	public void setWarnings(JobWarningList warnings) {
 		String json = JsonUtil.toJson(warnings);
-		setProperty(WARNING_PROPERTY_KEY, json);
+		property(WARNING_PROPERTY_KEY, json);
 	}
 
 	@Override
@@ -144,12 +144,12 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setType(MigrationType type) {
-		setProperty(TYPE_PROPERTY_KEY, type.name());
+		property(TYPE_PROPERTY_KEY, type.name());
 	}
 
 	@Override
 	public MigrationType getType() {
-		String type = getProperty(TYPE_PROPERTY_KEY);
+		String type = property(TYPE_PROPERTY_KEY);
 		if (type == null) {
 			return null;
 		} else {
@@ -159,33 +159,33 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public Long getStartTimestamp() {
-		return getProperty(START_TIMESTAMP_PROPERTY_KEY);
+		return property(START_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setStartTimestamp(Long date) {
-		setProperty(START_TIMESTAMP_PROPERTY_KEY, date);
+		property(START_TIMESTAMP_PROPERTY_KEY, date);
 	}
 
 	@Override
 	public Long getStopTimestamp() {
-		return getProperty(STOP_TIMESTAMP_PROPERTY_KEY);
+		return property(STOP_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setStopTimestamp(Long date) {
-		setProperty(STOP_TIMESTAMP_PROPERTY_KEY, date);
+		property(STOP_TIMESTAMP_PROPERTY_KEY, date);
 	}
 
 	@Override
 	public long getCompletionCount() {
-		Long value = getProperty(COMPLETION_COUNT_PROPERTY_KEY);
+		Long value = property(COMPLETION_COUNT_PROPERTY_KEY);
 		return value == null ? 0 : value;
 	}
 
 	@Override
 	public void setCompletionCount(long count) {
-		setProperty(COMPLETION_COUNT_PROPERTY_KEY, count);
+		property(COMPLETION_COUNT_PROPERTY_KEY, count);
 	}
 
 	@Override
@@ -245,7 +245,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public MigrationStatus getStatus() {
-		String status = getProperty(STATUS_PROPERTY_KEY);
+		String status = property(STATUS_PROPERTY_KEY);
 		if (status == null) {
 			return UNKNOWN;
 		}
@@ -254,12 +254,12 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setStatus(MigrationStatus status) {
-		setProperty(STATUS_PROPERTY_KEY, status.name());
+		property(STATUS_PROPERTY_KEY, status.name());
 	}
 
 	@Override
 	public String getErrorDetail() {
-		return getProperty(ERROR_DETAIL_PROPERTY_KEY);
+		return property(ERROR_DETAIL_PROPERTY_KEY);
 	}
 
 	@Override
@@ -268,17 +268,17 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		if (info != null && info.length() > ERROR_DETAIL_MAX_LENGTH) {
 			info = info.substring(0, ERROR_DETAIL_MAX_LENGTH - ERROR_DETAIL_MAX_LENGTH_MSG.length()) + ERROR_DETAIL_MAX_LENGTH_MSG;
 		}
-		setProperty(ERROR_DETAIL_PROPERTY_KEY, info);
+		property(ERROR_DETAIL_PROPERTY_KEY, info);
 	}
 
 	@Override
 	public String getErrorMessage() {
-		return getProperty(ERROR_MSG_PROPERTY_KEY);
+		return property(ERROR_MSG_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setErrorMessage(String message) {
-		setProperty(ERROR_MSG_PROPERTY_KEY, message);
+		property(ERROR_MSG_PROPERTY_KEY, message);
 	}
 
 	@Override
@@ -330,12 +330,12 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public String getNodeName() {
-		return getProperty(NODE_NAME_PROPERTY_KEY);
+		return property(NODE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setNodeName(String nodeName) {
-		setProperty(NODE_NAME_PROPERTY_KEY, nodeName);
+		property(NODE_NAME_PROPERTY_KEY, nodeName);
 	}
 
 }

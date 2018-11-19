@@ -4,7 +4,6 @@ import static com.gentics.mesh.Events.EVENT_ROLE_CREATED;
 import static com.gentics.mesh.Events.EVENT_ROLE_DELETED;
 import static com.gentics.mesh.Events.EVENT_ROLE_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -13,6 +12,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -77,11 +77,11 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	Set<GraphPermission> getPermissions(MeshVertex element);
 
 	/**
-	 * Return a list of groups to which this role was assigned.
+	 * Return a traversal result of groups to which this role was assigned.
 	 * 
-	 * @return List of groups
+	 * @return Result
 	 */
-	List<? extends Group> getGroups();
+	TraversalResult<? extends Group> getGroups();
 
 	/**
 	 * Return a page of groups to which this role was assigned.

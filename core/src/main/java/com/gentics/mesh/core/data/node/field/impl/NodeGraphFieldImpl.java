@@ -105,12 +105,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public String getFieldKey() {
-		return getProperty(GraphField.FIELD_KEY_PROPERTY_KEY);
+		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setFieldKey(String key) {
-		setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		property(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 	}
 
 	@Override

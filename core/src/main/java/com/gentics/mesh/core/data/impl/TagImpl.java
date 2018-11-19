@@ -18,11 +18,11 @@ import java.util.List;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -40,6 +40,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -65,18 +66,19 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public List<? extends Node> getNodes(Branch branch) {
-		return TagEdgeImpl.getNodeTraversal(this, branch).toListExplicit(NodeImpl.class);
+	public TraversalResult<? extends Node> getNodes(Branch branch) {
+		Iterable<? extends NodeImpl> it = TagEdgeImpl.getNodeTraversal(this, branch).frameExplicit(NodeImpl.class);
+		return new TraversalResult<>(it);
 	}
 
 	@Override
 	public String getName() {
-		return getProperty(TAG_VALUE_KEY);
+		return property(TAG_VALUE_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty(TAG_VALUE_KEY, name);
+		property(TAG_VALUE_KEY, name);
 	}
 
 	@Override
@@ -150,7 +152,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		// Nodes which used this tag must be updated in the search index for all branches
 		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
 			String branchUuid = branch.getUuid();
-			for (Node node : getNodes(branch)) {
+			for (Node node : getNodes(branch).iterable()) {
 				bac.batch().store(node, branchUuid);
 			}
 		}
@@ -226,7 +228,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	public void handleRelatedEntries(HandleElementAction action) {
 		// Locate all nodes that use the tag across all branches and update these nodes
 		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
-			for (Node node : getNodes(branch)) {
+			for (Node node : getNodes(branch).iterable()) {
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					GenericEntryContextImpl context = new GenericEntryContextImpl();
 					context.setContainerType(type);

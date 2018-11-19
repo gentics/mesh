@@ -4,13 +4,13 @@ import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
 import static com.gentics.mesh.Events.EVENT_GROUP_DELETED;
 import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -79,18 +79,18 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	void removeRole(Role role);
 
 	/**
-	 * Return a list of users that are assigned to the group.
+	 * Return a traversal of users that are assigned to the group.
 	 * 
-	 * @return List of users
+	 * @return Traversal of users
 	 */
-	List<? extends User> getUsers();
+	TraversalResult<? extends User> getUsers();
 
 	/**
-	 * Return the a list of roles that are assigned to the group.
+	 * Return a traversal of roles that are assigned to the group.
 	 * 
-	 * @return List of roles
+	 * @return Traversal of roles
 	 */
-	List<? extends Role> getRoles();
+	TraversalResult<? extends Role> getRoles();
 
 	/**
 	 * Check whether the user has been assigned to the group.

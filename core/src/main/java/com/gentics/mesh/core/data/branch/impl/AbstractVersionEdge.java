@@ -34,22 +34,22 @@ public abstract class AbstractVersionEdge extends MeshEdgeImpl implements Branch
 
 	@Override
 	public String getJobUuid() {
-		return getProperty(JOB_UUID_PROPERTY_KEY);
+		return property(JOB_UUID_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setJobUuid(String uuid) {
-		setProperty(JOB_UUID_PROPERTY_KEY, uuid);
+		property(JOB_UUID_PROPERTY_KEY, uuid);
 	}
 
 	@Override
 	public boolean isActive() {
-		return getProperty(ACTIVE_PROPERTY_KEY);
+		return property(ACTIVE_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setActive(boolean active) {
-		setProperty(ACTIVE_PROPERTY_KEY, active);
+		property(ACTIVE_PROPERTY_KEY, active);
 	}
 
 }

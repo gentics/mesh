@@ -61,9 +61,9 @@ public class DemoDumpGeneratorTest {
 			assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().computeCount() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
-			assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());
-			Group group = user.getGroups().get(0);
-			Role role = group.getRoles().get(0);
+			assertFalse("The webclient user should also have at least one group assigned to it.", !user.getGroups().iterator().hasNext());
+			Group group = user.getGroups().iterator().next();
+			Role role = group.getRoles().iterator().next();
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 
 			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));

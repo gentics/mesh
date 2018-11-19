@@ -47,7 +47,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	@Override
 	protected void init() {
 		super.init();
-		setProperty("uuid", UUIDUtil.randomUUID());
+		property("uuid", UUIDUtil.randomUUID());
 	}
 
 	@Override
@@ -138,7 +138,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public String getUuid() {
 		// Return the locally stored uuid if possible. Otherwise load it from the graph.
 		if (uuid == null) {
-			this.uuid = getProperty("uuid");
+			this.uuid = property("uuid");
 		}
 		return uuid;
 	}
@@ -153,7 +153,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	public String getFermaType() {
-		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+		return property(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
 	}
 
 	@Override

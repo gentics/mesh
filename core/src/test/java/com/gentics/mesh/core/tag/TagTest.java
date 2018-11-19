@@ -146,7 +146,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. Reload the tag and inspect the tagged nodes
 			Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid());
-			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(branch).size());
+			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(branch).count());
 			Node contentFromTag = reloadedTag.getNodes(branch).iterator().next();
 			NodeGraphFieldContainer fieldContainer = contentFromTag.getLatestDraftFieldContainer(german);
 
@@ -158,7 +158,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// Remove the file/content and check whether the content was really removed
 			reloadedTag.removeNode(contentFromTag);
 			// TODO verify for removed node
-			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes(branch).size());
+			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes(branch).count());
 		}
 
 	}
@@ -187,11 +187,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
 				"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").isEmpty();
 
 			// 6. Tag in new branch
 			node.addTag(tag, newBranch);
@@ -199,12 +199,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 7. Assert again
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
 				"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
 		}
 	}
@@ -234,12 +234,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
 					"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 					.containsOnly(node);
 		}
 	}
@@ -274,11 +274,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 6. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch))).as("Tags in initial Branch").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch))).as("Nodes with tag in initial Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Branch").isEmpty();
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch))).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch))).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 					.containsOnly(node);
 		}
 	}

@@ -157,7 +157,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertNotNull(json.getJsonArray("roles"));
 				assertEquals(TestUtils.size(user().getRoles()), json.getJsonArray("roles").size());
 				assertNotNull(json.getJsonArray("groups"));
-				assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
+				assertEquals(user().getGroups().count(), json.getJsonArray("groups").size());
 			}
 		}
 	}
@@ -383,7 +383,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(user.getCreator());
 			assertNotNull(user.getEditor());
 			assertNotNull(user.getCreationTimestamp());
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 			assertNotNull(user);
 		}
 	}
@@ -392,7 +392,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testUserGroup() {
 		try (Tx tx = tx()) {
 			User user = user();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
 				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
@@ -403,7 +403,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				extraGroup.addUser(user);
 			}
 
-			assertEquals(11, user().getGroups().size());
+			assertEquals(11, user().getGroups().count());
 		}
 	}
 
@@ -440,7 +440,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			User user = user();
 			String uuid = user.getUuid();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 			assertTrue(user.isEnabled());
 			BulkActionContext context = createBulkContext();
 			user.delete(context);

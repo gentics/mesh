@@ -373,7 +373,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			int storeCount = 0;
 			for (Tag tag : tagfamily.findAllIt()) {
 				storeCount++;
-				for (Node node : tag.getNodes(branch)) {
+				for (Node node : tag.getNodes(branch).iterable()) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : new ContainerType[] { ContainerType.DRAFT, ContainerType.PUBLISHED }) {

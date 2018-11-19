@@ -80,22 +80,22 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	@Override
 	public String getMeshVersion() {
-		return getProperty(MESH_VERSION);
+		return property(MESH_VERSION);
 	}
 
 	@Override
 	public void setMeshVersion(String version) {
-		setProperty(MESH_VERSION, version);
+		property(MESH_VERSION, version);
 	}
 
 	@Override
 	public String getDatabaseRevision() {
-		return getProperty(MESH_DB_REV);
+		return property(MESH_DB_REV);
 	}
 
 	@Override
 	public void setDatabaseRevision(String rev) {
-		setProperty(MESH_DB_REV, rev);
+		property(MESH_DB_REV, rev);
 	}
 
 	@Override

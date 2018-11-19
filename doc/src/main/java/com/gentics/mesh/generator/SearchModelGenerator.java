@@ -179,7 +179,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Group groupA = mockGroup("editors", user);
 		Group groupB = mockGroup("superEditors", user);
-		Mockito.<List<? extends Group>>when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
+		Mockito.<List<? extends Group>>when(user.getGroups().list()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
 		userIndexHandler.store(user, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("user.search");
