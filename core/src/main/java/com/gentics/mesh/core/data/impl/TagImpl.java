@@ -152,7 +152,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		// Nodes which used this tag must be updated in the search index for all branches
 		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
 			String branchUuid = branch.getUuid();
-			for (Node node : getNodes(branch).iterable()) {
+			for (Node node : getNodes(branch)) {
 				bac.batch().store(node, branchUuid);
 			}
 		}
@@ -228,7 +228,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	public void handleRelatedEntries(HandleElementAction action) {
 		// Locate all nodes that use the tag across all branches and update these nodes
 		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
-			for (Node node : getNodes(branch).iterable()) {
+			for (Node node : getNodes(branch)) {
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					GenericEntryContextImpl context = new GenericEntryContextImpl();
 					context.setContainerType(type);

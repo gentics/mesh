@@ -133,7 +133,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	private void setGroups(InternalActionContext ac, RoleResponse restRole) {
-		for (Group group : getGroups().iterable()) {
+		for (Group group : getGroups()) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
@@ -203,7 +203,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (Group group : getGroups().iterable()) {
+		for (Group group : getGroups()) {
 			action.call(group, null);
 		}
 	}

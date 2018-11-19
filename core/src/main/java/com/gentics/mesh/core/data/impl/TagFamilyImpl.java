@@ -244,7 +244,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			HashSet<String> handledNodes = new HashSet<>();
 
 			for (Branch branch : tag.getProject().getBranchRoot().findAllIt()) {
-				for (Node node : tag.getNodes(branch).iterable()) {
+				for (Node node : tag.getNodes(branch)) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());
 						GenericEntryContextImpl nodeContext = new GenericEntryContextImpl();

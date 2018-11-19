@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.google.common.collect.Iterators;
 import com.syncleus.ferma.FramedGraph;
@@ -69,8 +70,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default Iterable<? extends T> findAllIt() {
-		return out(getRootLabel()).frameExplicit(getPersistanceClass());
+	default TraversalResult<? extends T> findAllIt() {
+		return new TraversalResult<>(out(getRootLabel()).frameExplicit(getPersistanceClass()));
 	}
 
 	/**
@@ -91,13 +92,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	}
 
 	/**
-	 * Return an iterator of all elements and use the stored type information to load the items. The {@link #findAllIt()} will use explicit typing and thus will
+	 * Return an traversal result of all elements and use the stored type information to load the items. The {@link #findAllIt()} will use explicit typing and thus will
 	 * be faster. Only use that method if you know that your relation only yields a specific kind of item.
 	 * 
 	 * @return
 	 */
-	default Iterable<? extends T> findAllDynamic() {
-		return out(getRootLabel()).frame(getPersistanceClass());
+	default TraversalResult<? extends T> findAllDynamic() {
+		return new TraversalResult<>(out(getRootLabel()).frame(getPersistanceClass()));
 	}
 
 	/**

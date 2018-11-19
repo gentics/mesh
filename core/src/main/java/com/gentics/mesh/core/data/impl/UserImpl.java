@@ -226,8 +226,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public void updateShortcutEdges() {
 		outE(ASSIGNED_TO_ROLE).removeAll();
-		for (Group group : getGroups().iterable()) {
-			for (Role role : group.getRoles().iterable()) {
+		for (Group group : getGroups()) {
+			for (Role role : group.getRoles()) {
 				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 			}
 		}
@@ -384,7 +384,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	private void setGroups(InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (Group group : getGroups().iterable()) {
+		for (Group group : getGroups()) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
@@ -602,7 +602,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		for (Group group : getGroups().iterable()) {
+		for (Group group : getGroups()) {
 			keyBuilder.append(group.getUuid());
 		}
 

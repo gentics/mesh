@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 import io.vertx.core.json.JsonObject;
@@ -40,8 +41,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
 	@Override
-	public Iterable<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return in(perm.label()).frameExplicit(RoleImpl.class);
+	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+		return new TraversalResult<>(in(perm.label()).frameExplicit(RoleImpl.class));
 	}
 
 	@Override

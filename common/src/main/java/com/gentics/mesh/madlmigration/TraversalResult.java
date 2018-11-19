@@ -10,14 +10,14 @@ import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Iterators;
 
-public class TraversalResult<T> {
+public class TraversalResult<T> implements Iterable<T> {
 
-	private Iterable<? extends T> it;
+	private Iterable<T> it;
 
 	public TraversalResult() {
 	}
 
-	public TraversalResult(Iterable<? extends T> it) {
+	public TraversalResult(Iterable<T> it) {
 		this.it = it;
 	}
 
@@ -25,11 +25,7 @@ public class TraversalResult<T> {
 		return Iterators.size(it.iterator());
 	}
 
-	public Iterable<? extends T> iterable() {
-		return it;
-	}
-
-	public Iterator<? extends T> iterator() {
+	public Iterator<T> iterator() {
 		return it.iterator();
 	}
 

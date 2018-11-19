@@ -80,7 +80,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		setUniqueLinkInTo(user, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
-		for (Role role : getRoles().iterable()) {
+		for (Role role : getRoles()) {
 			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 	}
@@ -104,7 +104,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		setUniqueLinkInTo(role, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
-		for (User user : getUsers().iterable()) {
+		for (User user : getUsers()) {
 			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 
@@ -115,7 +115,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		unlinkIn(role, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
-		for (User user : getUsers().iterable()) {
+		for (User user : getUsers()) {
 			user.updateShortcutEdges();
 		}
 		PermissionStore.invalidate();
@@ -168,7 +168,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	 * @param restGroup
 	 */
 	private void setRoles(InternalActionContext ac, GroupResponse restGroup) {
-		for (Role role : getRoles().iterable()) {
+		for (Role role : getRoles()) {
 			String name = role.getName();
 			if (name != null) {
 				restGroup.getRoles().add(role.transformToReference());
@@ -218,7 +218,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (User user : getUsers().iterable()) {
+			for (User user : getUsers()) {
 				user.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -227,7 +227,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (User user : getUsers().iterable()) {
+		for (User user : getUsers()) {
 			// We need to store users as well since users list their groups -
 			// See {@link UserTransformer#toDocument(User)}
 			action.call(user, null);

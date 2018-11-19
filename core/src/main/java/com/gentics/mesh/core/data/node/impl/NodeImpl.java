@@ -106,6 +106,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;
@@ -306,8 +307,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends Tag> getTags(Branch branch) {
-		return TagEdgeImpl.getTagTraversal(this, branch).toListExplicit(TagImpl.class);
+	public TraversalResult<? extends Tag> getTags(Branch branch) {
+		return new TraversalResult<>(TagEdgeImpl.getTagTraversal(this, branch).frameExplicit(TagImpl.class));
 	}
 
 	@Override
@@ -494,15 +495,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Iterable<Node> getChildren() {
-		Iterator<VertexFrame> it = in(HAS_PARENT_NODE).iterator();
-		Iterable<VertexFrame> iterable = () -> it;
-		Stream<Node> stream = StreamSupport.stream(iterable.spliterator(), false).map(frame -> frame.reframe(NodeImpl.class));
-		return () -> stream.iterator();
+	public TraversalResult<? extends Node> getChildren() {
+		return new TraversalResult<>(in(HAS_PARENT_NODE).frameExplicit(NodeImpl.class));
 	}
 
 	@Override
-	public Iterable<Node> getChildren(String branchUuid) {
+	public TraversalResult<Node> getChildren(String branchUuid) {
 		Database db = MeshInternal.get().database();
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch", db.createComposedIndexKey(id(), branchUuid));
@@ -514,7 +512,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Vertex vertex = edge.getVertex(OUT);
 			return graph.frameElementExplicit(vertex, NodeImpl.class);
 		});
-		return () -> nstream.iterator();
+		return new TraversalResult<>(() -> nstream.iterator());
 	}
 
 	@Override
@@ -907,8 +905,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<Node> getBreadcrumbNodes(InternalActionContext ac) {
-		return getBreadcrumbNodeStream(ac).collect(Collectors.toList());
+	public TraversalResult<Node> getBreadcrumbNodes(InternalActionContext ac) {
+		return new TraversalResult<>(() -> getBreadcrumbNodeStream(ac).iterator());
 	}
 
 	private Stream<Node> getBreadcrumbNodeStream(InternalActionContext ac) {
@@ -969,11 +967,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type);
+		TraversalResult<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type);
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
-		if (level == maxDepth || nodes.isEmpty()) {
+		if (level == maxDepth || !nodes.iterator().hasNext()) {
 			return builder.toString();
 		}
 		for (Node child : nodes) {
@@ -1009,7 +1007,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
 		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type);
+		TraversalResult<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type);
 		List<Single<NavigationResponse>> obsResponses = new ArrayList<>();
 
 		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
@@ -1021,7 +1019,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
-		if (level == maxDepth || nodes.isEmpty()) {
+		if (level == maxDepth || !nodes.iterator().hasNext()) {
 			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 			return Observable.merge(obsList).lastOrError();
 		}
@@ -1476,8 +1474,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
-		return getChildrenTraversal(requestUser, branchUuid, languageTags, type).toListExplicit(NodeImpl.class);
+	public TraversalResult<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
+		return new TraversalResult<>(getChildrenTraversal(requestUser, branchUuid, languageTags, type).frameExplicit(NodeImpl.class));
 	}
 
 	@Override

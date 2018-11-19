@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
@@ -90,7 +91,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Iterable<? extends Job> findAllIt() {
+	public TraversalResult<? extends Job> findAllIt() {
 		// We need to enforce the usage of dynamic loading since the root->item yields different types of vertices.
 		return super.findAllDynamic();
 	}

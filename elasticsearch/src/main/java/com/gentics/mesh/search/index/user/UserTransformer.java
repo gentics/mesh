@@ -42,7 +42,7 @@ public class UserTransformer extends AbstractTransformer<User> {
 		StringBuilder builder = new StringBuilder();
 		builder.append(user.getElementVersion());
 		builder.append("|");
-		for (Group group : user.getGroups().iterable()) {
+		for (Group group : user.getGroups()) {
 			builder.append(group.getElementVersion());
 			builder.append("|");
 		}
@@ -91,7 +91,7 @@ public class UserTransformer extends AbstractTransformer<User> {
 	private void addGroups(JsonObject document, TraversalResult<? extends Group> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();
-		for (Group group : groups.iterable()) {
+		for (Group group : groups) {
 			groupUuids.add(group.getUuid());
 			groupNames.add(group.getName());
 		}

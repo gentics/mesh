@@ -800,7 +800,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public Iterable<? extends Role> getRolesWithPerm(GraphPermission perm) {
+			public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
 				// TODO Auto-generated method stub
 				return null;
 			}

@@ -105,7 +105,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			newsNode.addTag(carTag, project().getLatestBranch());
 
-			assertEquals(1, newsNode.getTags(project().getLatestBranch()).size());
+			assertEquals(1, newsNode.getTags(project().getLatestBranch()).count());
 			Tag firstTag = newsNode.getTags(project().getLatestBranch()).iterator().next();
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
 		}
