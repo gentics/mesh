@@ -42,6 +42,20 @@ Import all Maven modules in your IDE.
 Please note that this project is using Google Dagger for dependency injection. 
 Adding new dependencies or beans may require a fresh build (via Project->Clean) of the `mesh-core` and `mesh-api` modules.
 
+=== IntelliJ
+
+Import the project and select the `pom.xml` under the `mesh` folder.
+
+To run the server from IntelliJ:
+
+ * Create an Application in run configuration.
+ * In the `Main Class` field, put `com.gentics.mesh.server.ServerRunner`.
+ * In the `Use classpath of module` field, select the `mesh-server` module.
+ * In the `Working directory` field, choose an empty folder.
+ * Build the project by executing the maven command below before starting up mesh.
+
+NOTE: You need to manually set the `Working directory` in your `Run/Debug Configuration` to an empty folder if you run the `ServerRunner` or `DemoRunner` application. Otherwise Gentics Mesh will not be able to start the embedded Elasticsearch service.
+
 === Building
 
 You can build Gentics Mesh locally using link:https://maven.apache.org/[Apache Maven].
@@ -49,9 +63,8 @@ You can build Gentics Mesh locally using link:https://maven.apache.org/[Apache M
 NOTE: Running all test locally is *not* recommended since the execution time is *very high*. Some tests also require a docker environment to run integration components.+
 
 ```
-JAVA_HOME=<PATH-TO-YOUR-JAVA8> mvn clean package -Dskip.unit.tests -Denv.JAVA_1_8_HOME=$JAVA_HOME -DskipTests
+JAVA_HOME=<PATH-TO-YOUR-JAVA8> mvn clean package -Denv.JAVA_1_8_HOME=$JAVA_HOME -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
 ```
-
 
 == Components
 
