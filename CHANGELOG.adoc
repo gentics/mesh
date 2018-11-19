@@ -28,6 +28,8 @@ title: Changelog
 
 CAUTION: The property `meshNodeId` of the `/api/v1/` response was renamed to `meshNodeName` to be more consistent.
 
+icon:plus[] REST: It is now possible to set existing or new tags during node creation and node update. Tags that are listed in both of those requests will be created if not found and assigned to the updated or created node.
+
 icon:plus[] Eventbus: It is now possible to register custom eventbus addresses.
 
 icon:plus[] REST: Download of binaries will now support byte range requests. Web media players require this feature in order to support seeking in video streams.

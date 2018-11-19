@@ -37,7 +37,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("green").setTagFamily("blub123"));
-		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), NOT_FOUND, "object_not_found_for_name", "blub123");
+		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), NOT_FOUND, "tagfamily_not_found", "blub123");
 		assertThat(trackingSearchProvider()).hasNoStoreEvents();
 	}
 

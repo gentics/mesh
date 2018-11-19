@@ -37,12 +37,23 @@ public interface Taggable {
 	 * @return list of tags
 	 */
 	default List<Tag> getTagsToSet(InternalActionContext ac, SearchQueueBatch batch) {
+		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
+		return getTagsToSet(request.getTags(), ac, batch);
+	}
+
+	/**
+	 * Try to load the tags which should be set.
+	 * @param list List of references which should be loaded
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
+	default List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, SearchQueueBatch batch) {
 		List<Tag> tags = new ArrayList<>();
 		Project project = getProject();
-		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		User user = ac.getUser();
-		for (TagReference tagReference : request.getTags()) {
+		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
 				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
 			}
@@ -53,13 +64,13 @@ public interface Taggable {
 			TagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
 			// Tag Family could not be found so lets create a new one
 			if (tagFamily == null) {
-				throw error(NOT_FOUND, "object_not_found_for_name", tagReference.getTagFamily());
+				throw error(NOT_FOUND, "tagfamily_not_found", tagReference.getTagFamily());
 			}
 			// 2. The uuid was specified so lets try to load the tag this way
 			if (!isEmpty(tagReference.getUuid())) {
 				Tag tag = tagFamily.findByUuid(tagReference.getUuid());
 				if (tag == null) {
-					throw error(NOT_FOUND, "object_not_found_for_uuid", tagReference.getUuid());
+					throw error(NOT_FOUND, "tag_not_found", tagReference.getUuid());
 				}
 				if (!user.hasPermission(tag, READ_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());

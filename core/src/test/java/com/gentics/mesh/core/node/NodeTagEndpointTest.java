@@ -11,23 +11,30 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -65,15 +72,18 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
-		assertThat(trackingSearchProvider())
-				.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
-				.recordedStoreEvents(2);
+		assertThat(trackingSearchProvider()).as(
+			"Recorded store events after node update occured. Published and draft of the node should have been updated.")
+			.recordedStoreEvents(2);
 		trackingSearchProvider().printStoreEvents(false);
-		// Document Index: [node-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
-		String draftIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), schemaVersionUuid, DRAFT);
-		String publishedIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), schemaVersionUuid, PUBLISHED);
-		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(draftIndexName + "-"+ nodeUuid + "-en"));
-		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(publishedIndexName + "-"+ nodeUuid + "-en"));
+		// Document Index:
+		// [node-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
+		String draftIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			schemaVersionUuid, DRAFT);
+		String publishedIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			schemaVersionUuid, PUBLISHED);
+		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(draftIndexName + "-" + nodeUuid + "-en"));
+		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(publishedIndexName + "-" + nodeUuid + "-en"));
 
 		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
 
@@ -151,7 +161,8 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
-			call(() -> client().removeTagFromNode(PROJECT_NAME, uuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().removeTagFromNode(PROJECT_NAME, uuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid",
+				"bogus");
 		}
 	}
 
@@ -299,16 +310,17 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
-			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
+			NodeListResponse taggedNodes = call(
+				() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 					new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
-					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
-			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
-					new VersioningParametersImpl().setBranch(branchTwo)));
+			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(),
+				tag2.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
-					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 		}
 
@@ -316,21 +328,21 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
-			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
+			TagListResponse tagsForNode = call(() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(),
+				new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find no tags for the node in branch one.", 0, tagsForNode.getData().size());
 
 			// via /nodes/:nodeUuid
-			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find no tags for the node in branch one.", 0, response.getTags().size());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
-			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
-					new VersioningParametersImpl().setBranch(branchOne)));
+			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME,
+				tag.getTagFamily().getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node not be tagged by tag red.", 0,
-					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 		}
 
@@ -353,8 +365,112 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestBranch()).contains(tag));
+			assertTrue("The tag should not have been removed from the node",
+				node.getTags(project().getLatestBranch()).contains(tag));
 		}
+	}
+
+	@Test
+	public void testCreateNodeWithTags() {
+		NodeCreateRequest request = prepareCreateRequest();
+
+		List<TagReference> tags = new ArrayList<>();
+		tags.add(new TagReference().setName("red").setTagFamily("colors"));
+		request.setTags(tags);
+
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+		List<TagReference> loadedTags = response.getTags();
+		assertThat(loadedTags).isNotEmpty().hasSize(1);
+		TagReference tag = loadedTags.get(0);
+		assertEquals("red", tag.getName());
+		assertEquals("colors", tag.getTagFamily());
+	}
+
+	/**
+	 * Test create a node which lists at least one tag which has not yet been created.
+	 */
+	@Test
+	public void testCreateNodeWithNewTags() {
+		NodeCreateRequest request = prepareCreateRequest();
+
+		List<TagReference> tags = new ArrayList<>();
+		tags.add(new TagReference().setName("red").setTagFamily("colors"));
+		tags.add(new TagReference().setName("red123").setTagFamily("colors"));
+		request.setTags(tags);
+
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+		List<TagReference> loadedTags = response.getTags();
+		assertThat(loadedTags).isNotEmpty().hasSize(2);
+
+		TagReference tag = loadedTags.get(0);
+		assertEquals("red", tag.getName());
+		assertEquals("colors", tag.getTagFamily());
+
+		TagReference tag2 = loadedTags.get(1);
+		assertEquals("red123", tag2.getName());
+		assertEquals("colors", tag2.getTagFamily());
+	}
+
+	private NodeCreateRequest prepareCreateRequest() {
+		String folderUuid = tx(() -> folder("2015").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setParentNodeUuid(folderUuid);
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setSchemaName("content");
+		return request;
+	}
+
+	@Test
+	public void testUpdateNodeWithTags() {
+		NodeUpdateRequest request = prepareUpdateRequest();
+		String nodeUuid = contentUuid();
+
+		List<TagReference> tags = new ArrayList<>();
+		tags.add(new TagReference().setName("red").setTagFamily("colors"));
+		request.setTags(tags);
+
+		NodeResponse response = call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request));
+		List<TagReference> loadedTags = response.getTags();
+		assertThat(loadedTags).isNotEmpty().hasSize(1);
+		TagReference tag = loadedTags.get(0);
+		assertEquals("red", tag.getName());
+		assertEquals("colors", tag.getTagFamily());
+	}
+
+	@Test
+	public void testUpdateNodeWithNewTags() {
+		NodeUpdateRequest request = prepareUpdateRequest();
+		String nodeUuid = contentUuid();
+
+		List<TagReference> tags = new ArrayList<>();
+		tags.add(new TagReference().setName("red").setTagFamily("colors"));
+		tags.add(new TagReference().setName("red1234").setTagFamily("colors"));
+		request.setTags(tags);
+
+		NodeResponse response = call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request));
+		List<TagReference> loadedTags = response.getTags();
+		assertThat(loadedTags).isNotEmpty().hasSize(2);
+
+		TagReference tag = loadedTags.get(0);
+		assertEquals("red", tag.getName());
+		assertEquals("colors", tag.getTagFamily());
+
+		TagReference tag2 = loadedTags.get(1);
+		assertEquals("red1234", tag2.getName());
+		assertEquals("colors", tag2.getTagFamily());
+	}
+
+	private NodeUpdateRequest prepareUpdateRequest() {
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.setLanguage("en");
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setVersion("0.1");
+		return request;
 	}
 
 }

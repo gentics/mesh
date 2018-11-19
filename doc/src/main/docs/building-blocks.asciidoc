@@ -385,7 +385,15 @@ Fields of type ```list``` in micronodes can be of type: ```String```, ```Number`
 
 == Tag
 
-Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
+Gentics Mesh allows tagging of nodes and content branches. Tags of a specific kind are always part of a tag family.
+
+A typical example would be:
+
+> The tags [red]#red#, [green]#green#, [blue]#blue# belong to the tag family _colors_.
+
+Tags can't be hierarchically structured, are not translatable and can only applied to nodes and branches.
+
+TIP: If you don't want to work with uuids you can also specify the tags within the node update or node create request. The given tag list will automatically be applied to the node. Any missing tags in the list will be removed from the node.
 
 === API endpoints
 
