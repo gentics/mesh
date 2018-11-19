@@ -2,10 +2,8 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;

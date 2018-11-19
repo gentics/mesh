@@ -126,7 +126,6 @@ import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
@@ -312,28 +311,30 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers() {
-		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, INITIAL.getCode()).inV().toListExplicit(
-			NodeGraphFieldContainerImpl.class);
+	public TraversalResult<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers() {
+		return new TraversalResult<>(
+			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, INITIAL.getCode()).inV().frameExplicit(
+				NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
-		List<? extends NodeGraphFieldContainerImpl> list = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().toListExplicit(NodeGraphFieldContainerImpl.class);
-		return list;
+	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
+		return new TraversalResult<>(outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type) {
-		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
-			.frameExplicit(NodeGraphFieldContainerImpl.class);
+	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type) {
+		return new TraversalResult<>(
+			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
+				.frameExplicit(NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type) {
-		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class);
+	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type) {
+		return new TraversalResult<>(
+			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -719,7 +720,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// If a published version was requested, we check whether any
 			// published language variant exists for the node, if not, response
 			// with NOT_FOUND
-			if (forVersion(versioiningParameters.getVersion()) == PUBLISHED && getGraphFieldContainers(branch, PUBLISHED).isEmpty()) {
+			if (forVersion(versioiningParameters.getVersion()) == PUBLISHED && !getGraphFieldContainers(branch, PUBLISHED).iterator().hasNext()) {
 				log.error("Could not find field container for languages {" + requestedLanguageTags + "} and branch {" + branch.getUuid()
 					+ "} and version params version {" + versioiningParameters.getVersion() + "}, branch {" + branch.getUuid() + "}");
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_version", getUuid(), branch.getUuid());
@@ -1174,7 +1175,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String branchUuid = branch.getUuid();
 
 		// Remove the published edge for each found container
-		List<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
+		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
 		getGraphFieldContainerEdges(branchUuid, PUBLISHED).stream().forEach(EdgeFrame::remove);
 
 		assertPublishConsistency(ac, branch);
@@ -1802,9 +1803,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// 3. Check whether this was be the last container of the node for this branch
 		DeleteParameters parameters = ac.getDeleteParameters();
 		if (failForLastContainer) {
-			List<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(branch.getUuid(), DRAFT);
-			List<? extends NodeGraphFieldContainer> publishContainers = getGraphFieldContainers(branch.getUuid(), PUBLISHED);
-			boolean wasLastContainer = draftContainers.isEmpty() && publishContainers.isEmpty();
+			TraversalResult<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(branch.getUuid(), DRAFT);
+			TraversalResult<? extends NodeGraphFieldContainer> publishContainers = getGraphFieldContainers(branch.getUuid(), PUBLISHED);
+			boolean wasLastContainer = !draftContainers.iterator().hasNext() && !publishContainers.iterator().hasNext();
 
 			if (!parameters.isRecursive() && wasLastContainer) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_last_container_for_branch");

@@ -91,7 +91,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			Branch branchTwo = branchRoot.create("Two", user());
 			Branch branchThree = branchRoot.create("Three", user());
 
-			assertThat(new ArrayList<Branch>(branchRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
+			assertThat(new ArrayList<Branch>(branchRoot.findAll().list())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
 					branchOne, branchTwo, branchThree);
 		}
 	}
@@ -157,7 +157,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(project.getLatestBranch()).as("Latest Branch").isNamed("Third new Branch").matches(thirdNewBranch).hasNext(null)
 					.hasPrevious(secondNewBranch);
 
-			assertThat(new ArrayList<Branch>(branchRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
+			assertThat(new ArrayList<Branch>(branchRoot.findAll().list())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
 					firstNewBranch, secondNewBranch, thirdNewBranch);
 
 			for (SchemaContainer schema : project.getSchemaContainerRoot().findAllIt()) {
@@ -314,7 +314,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUnassignSchema() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll();
+			List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll().list();
 			SchemaContainer schemaContainer = schemas.get(0);
 
 			Branch initialBranch = project.getInitialBranch();
@@ -425,7 +425,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUnassignMicroschema() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll();
+			List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll().list();
 			MicroschemaContainer microschemaContainer = microschemas.get(0);
 
 			Branch initialBranch = project.getInitialBranch();

@@ -157,8 +157,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	 * @param perm
 	 * @return
 	 */
-	public Iterable<? extends MeshVertex> getElementsWithPermission(GraphPermission perm) {
-		return out(perm.label()).frame(MeshVertexImpl.class);
+	public TraversalResult<? extends MeshVertex> getElementsWithPermission(GraphPermission perm) {
+		return new TraversalResult<>(out(perm.label()).frame(MeshVertexImpl.class));
 	}
 
 	@Override

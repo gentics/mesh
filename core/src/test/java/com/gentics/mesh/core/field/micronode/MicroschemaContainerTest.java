@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Ignore;
@@ -41,7 +41,6 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
@@ -163,8 +162,8 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 		try (Tx tx = tx()) {
 			assertNotNull(microschemaContainer("vcard"));
 			assertEquals("The microschema container and schema rest model version must always be in sync",
-					microschemaContainer("vcard").getLatestVersion().getVersion(),
-					microschemaContainer("vcard").getLatestVersion().getSchema().getVersion());
+				microschemaContainer("vcard").getLatestVersion().getVersion(),
+				microschemaContainer("vcard").getLatestVersion().getSchema().getVersion());
 		}
 
 	}
@@ -268,7 +267,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, container));
 			getRequestUser().addCRUDPermissionOnRole(meshRoot().getMicroschemaContainerRoot(), GraphPermission.CREATE_PERM, container);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
-					role().hasPermission(GraphPermission.CREATE_PERM, container));
+				role().hasPermission(GraphPermission.CREATE_PERM, container));
 		}
 	}
 
@@ -309,9 +308,8 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			NodeGraphFieldContainer containerWithOtherVersion = folder("deals").getGraphFieldContainer("en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
-			Iterator<? extends NodeGraphFieldContainer> it = vcard.getDraftFieldContainers(project().getLatestBranch().getUuid());
-			List<NodeGraphFieldContainer> containers = TestUtils.toList(it);
-			assertThat(containers).containsOnly(containerWithBoth, containerWithField, containerWithList).hasSize(3);
+			List<? extends NodeGraphFieldContainer> containers = vcard.getDraftFieldContainers(project().getLatestBranch().getUuid()).list();
+			assertThat(new ArrayList<NodeGraphFieldContainer>(containers)).containsOnly(containerWithBoth, containerWithField, containerWithList).hasSize(3);
 		}
 	}
 }

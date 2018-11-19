@@ -189,43 +189,37 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @return
 	 */
-	default Iterable<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
+	default TraversalResult<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		// FIX ME: We should not rely on specific branchs.
 		return getGraphFieldContainersIt(getProject().getLatestBranch(), DRAFT);
 	}
 
 	/**
-	 * Return a list of all initial graph field containers for the node (in any branch).
+	 * Return a traversal of all initial graph field containers for the node (in any branch).
 	 *
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
+	TraversalResult<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given branch.
+	 * Return a traversal of graph field containers of given type for the node in the given branch.
 	 *
 	 * @param branch
 	 * @param type
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	@Deprecated
-	default List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
+	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
 		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given branch.
+	 * Return traversal of graph field containers of given type for the node in the given branch.
 	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive. Use {@link #getGraphFieldContainersIt(String, ContainerType)}
 	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
+	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -233,7 +227,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type);
+	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type);
 
 	/**
 	 * Return containers of the given type and branch.
@@ -242,7 +236,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type);
+	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type and branch.
@@ -251,7 +245,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	default Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Branch branch, ContainerType type) {
+	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Branch branch, ContainerType type) {
 		return getGraphFieldContainersIt(branch.getUuid(), type);
 	}
 

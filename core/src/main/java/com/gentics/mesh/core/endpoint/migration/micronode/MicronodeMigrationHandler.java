@@ -65,7 +65,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		MigrationStatusHandler status) {
 
 		// Get the containers, that need to be transformed
-		Iterator<? extends NodeGraphFieldContainer> fieldContainersIt = db.tx(() -> fromVersion.getDraftFieldContainers(branch.getUuid()));
+		Iterator<? extends NodeGraphFieldContainer> fieldContainersIt = db.tx(() -> fromVersion.getDraftFieldContainers(branch.getUuid())).iterator();
 
 		// No field containers, migration is done
 		if (!fieldContainersIt.hasNext()) {

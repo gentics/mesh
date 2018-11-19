@@ -255,7 +255,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 					job.process();
 
 					try (Tx tx = db.tx()) {
-						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(branch.getUuid());
+						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(branch.getUuid()).iterator();
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
 							+ currentVersion.getUuid() + "=" + it.hasNext());
 					}

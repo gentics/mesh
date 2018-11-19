@@ -78,7 +78,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			List<? extends TagFamily> families = root.findAll();
+			List<? extends TagFamily> families = root.findAll().list();
 			assertNotNull(families);
 			assertEquals(2, families.size());
 

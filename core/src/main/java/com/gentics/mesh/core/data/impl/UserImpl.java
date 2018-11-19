@@ -214,13 +214,13 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Iterable<? extends Role> getRoles() {
-		return out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class);
+	public TraversalResult<? extends Role> getRoles() {
+		return new TraversalResult<>(out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends Role> getRolesViaShortcut() {
-		return out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class);
+	public TraversalResult<? extends Role> getRolesViaShortcut() {
+		return new TraversalResult<>(out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
@@ -334,8 +334,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
 			"published".equals(requestedVersion)
 				? READ_PUBLISHED_PERM.getRestPerm().getName()
-				: READ_PERM.getRestPerm().getName()
-		);
+				: READ_PERM.getRestPerm().getName());
 	}
 
 	@Override

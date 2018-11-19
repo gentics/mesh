@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 public class OAuth2ServerConfig implements Option {

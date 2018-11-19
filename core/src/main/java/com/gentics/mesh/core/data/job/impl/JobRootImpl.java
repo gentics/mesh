@@ -61,7 +61,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public List<? extends Job> findAll() {
+	public TraversalResult<? extends Job> findAll() {
 		// Use #findAllIt instead!
 		throw error(INTERNAL_SERVER_ERROR, "The server tried to access the wrong method.");
 	}
