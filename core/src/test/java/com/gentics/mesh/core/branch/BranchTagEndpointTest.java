@@ -358,7 +358,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		call(() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref("bogus", "colors")))),
-				NOT_FOUND, "object_not_found_for_uuid", "bogus");
+				NOT_FOUND, "tag_not_found", "bogus");
 
 	}
 
