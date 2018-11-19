@@ -94,7 +94,7 @@ public class WebRootHandler {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
 
-			requestUser.failOnNoReadPermission(container, branchUuid);
+			requestUser.failOnNoReadPermission(container, branchUuid, ac.getVersioningParameters().getVersion());
 
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {

@@ -333,7 +333,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param container
 	 * @param branchUuid
 	 */
-	void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid);
+	void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * Check whether the admin role was assigned to the user.

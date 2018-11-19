@@ -131,7 +131,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(), UPDATE_PERM.getRestPerm().getName());
+			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(), READ_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 	}

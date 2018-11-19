@@ -81,7 +81,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid, UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid, READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertFalse(branch.getTags().contains(tag));
@@ -157,7 +157,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid, UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid, READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertTrue(branch.getTags().contains(tag));
@@ -306,7 +306,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(blue), ref(car)))), FORBIDDEN,
-				"error_missing_perm", blueUuid, UPDATE_PERM.getRestPerm().getName());
+				"error_missing_perm", blueUuid, READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertThat(branch).isOnlyTagged("red", "Car");

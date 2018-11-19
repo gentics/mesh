@@ -467,7 +467,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setUuid(latestUuid));
-		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", latestUuid, CREATE_PERM.getRestPerm().getName());
+		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", latestUuid, READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
