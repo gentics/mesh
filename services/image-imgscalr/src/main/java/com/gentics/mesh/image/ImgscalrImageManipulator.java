@@ -36,6 +36,7 @@ import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -153,7 +154,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// TODO handle execution timeout
 		// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
 		// pool
-		return workerPool.rxExecuteBlocking(bh -> {
+		Maybe<PropReadFileStream> execResult = workerPool.rxExecuteBlocking(bh -> {
 
 			// Read the image and apply the changes -
 			readImage(stream).flatMap(bi -> {
@@ -213,6 +214,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
 			}).subscribe(result -> bh.complete(result), bh::fail);
 		});
+		
+		return execResult.toSingle();
 
 	}
 
@@ -223,7 +226,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @return
 	 */
 	private Single<BufferedImage> readImage(Flowable<Buffer> stream) {
-		return workerPool.rxExecuteBlocking(bc -> {
+		Maybe<BufferedImage> result = workerPool.rxExecuteBlocking(bc -> {
 			try (InputStream ins = RxUtil.toInputStream(stream, vertx)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Reading image from stream.." + stream.hashCode());
@@ -237,6 +240,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				bc.fail(e);
 			}
 		}, false);
+		return result.toSingle();
+
 	}
 
 	@Override
