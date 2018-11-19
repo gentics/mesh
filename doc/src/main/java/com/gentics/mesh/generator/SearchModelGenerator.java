@@ -42,6 +42,7 @@ import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -179,7 +180,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Group groupA = mockGroup("editors", user);
 		Group groupB = mockGroup("superEditors", user);
-		Mockito.<List<? extends Group>>when(user.getGroups().list()).thenReturn(Arrays.asList(groupA, groupB));
+		TraversalResult<? extends Group> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
+		Mockito.<TraversalResult<? extends Group>>when(user.getGroups()).thenReturn(result);
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
 		userIndexHandler.store(user, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("user.search");
