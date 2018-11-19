@@ -29,7 +29,7 @@ public interface BranchRoot extends RootVertex<Branch> {
 	 * @return new Branch
 	 */
 	default Branch create(String name, User creator) {
-		return create(name, creator, null, true, null);
+		return create(name, creator, null, true, getLatestBranch());
 	}
 
 	/**
@@ -43,7 +43,7 @@ public interface BranchRoot extends RootVertex<Branch> {
 	 *            Optional uuid
 	 * @param setLatest
 	 *            True to make it the latest branch
-	 * @param baseBranch optional base branch. If not set, the new branch will be based on the latest branch
+	 * @param baseBranch optional base branch. This can only be null if this is the first branch in the project.
 	 * @return new Branch
 	 */
 	Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch);
