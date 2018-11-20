@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.28.0-SNAPSHOT</version>
+		<version>0.28.0</version>
 	</parent>
 
 	<inceptionYear>2018</inceptionYear>
