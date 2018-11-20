@@ -6,11 +6,11 @@
   "emailAddress" : "j.doe@nowhere.com",
   "nodeReference" : {
     "projectName" : "dummy",
-    "uuid" : "85c923419dd04d9b8923419dd0ed9bb0",
+    "uuid" : "4bb18aaf7553442ab18aaf7553242a34",
     "displayName" : "DeLorean DMC-12",
     "schema" : {
       "name" : "vehicle",
-      "uuid" : "775bc166b2344ea79bc166b234aea72e",
+      "uuid" : "19c7e04c0a314d6187e04c0a31bd6149",
       "version" : "1.0"
     }
   }

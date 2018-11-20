@@ -1,20 +1,20 @@
 {
-  "uuid" : "eed9e5be2188489999e5be21880899f7",
+  "uuid" : "783a103fccdb4a7dba103fccdbaa7dcd",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "b702a00e9448430882a00e94484308e4"
+    "uuid" : "8a5553b197504faa9553b197508faa62"
   },
-  "created" : "2018-11-20T12:06:11.375Z",
+  "created" : "2018-11-20T12:12:04.476Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "4ed38d866c914e95938d866c918e95cc"
+    "uuid" : "a60bb450452542108bb450452552109e"
   },
-  "edited" : "2018-11-20T12:06:11.375Z",
+  "edited" : "2018-11-20T12:12:04.476Z",
   "name" : "demo",
   "rootNode" : {
-    "uuid" : "48123983b4104fe1923983b4107fe1f3"
+    "uuid" : "122b6b2921f44340ab6b2921f4f34055"
   },
   "permissions" : {
     "create" : true,

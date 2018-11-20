@@ -2,15 +2,15 @@
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "dd94987f4f3b4d9294987f4f3b1d924a"
+    "uuid" : "6aca83b421be40158a83b421be80150e"
   },
-  "created" : "2018-11-20T12:06:11.432Z",
+  "created" : "2018-11-20T12:12:04.531Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "f96dd6fbbc854d1cadd6fbbc854d1cb3"
+    "uuid" : "ddff7b31b5dd40a7bf7b31b5ddb0a7ae"
   },
-  "edited" : "2018-11-20T12:06:11.432Z",
+  "edited" : "2018-11-20T12:12:04.531Z",
   "name" : "Nicer colors",
   "permissions" : {
     "create" : true,

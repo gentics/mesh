@@ -1,36 +1,36 @@
 {
   "data" : [ {
-    "uuid" : "4710bdbb401b427990bdbb401bc27991",
+    "uuid" : "9e6c73d54bb54501ac73d54bb5950129",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "7d01e44afb6f473381e44afb6f07330b"
+      "uuid" : "c0ef879563eb4f93af879563eb5f931a"
     },
-    "created" : "2018-11-20T12:06:11.333Z",
+    "created" : "2018-11-20T12:12:04.443Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "69b756ca1be241e1b756ca1be2b1e15c"
+      "uuid" : "b800e127f459409280e127f459709256"
     },
-    "edited" : "2018-11-20T12:06:11.333Z",
+    "edited" : "2018-11-20T12:12:04.443Z",
     "lastname" : "Doe",
     "firstname" : "Joe",
     "username" : "jdoe",
     "emailAddress" : "j.doe@nowhere.com",
     "nodeReference" : {
       "projectName" : "dummy",
-      "uuid" : "f4a95247461e44efa95247461e14ef28",
+      "uuid" : "10194b63803e45f8994b63803ed5f853",
       "displayName" : "DeLorean DMC-12",
       "schema" : {
         "name" : "vehicle",
-        "uuid" : "20fff42b5fb44863bff42b5fb4886326",
+        "uuid" : "aef696a0a737465cb696a0a737865cb3",
         "version" : "1.0"
       }
     },
     "enabled" : true,
     "groups" : [ {
       "name" : "editors",
-      "uuid" : "3235b336ec5e41a8b5b336ec5e01a822"
+      "uuid" : "6d2e0f12a58d4ab4ae0f12a58daab4a2"
     } ],
     "permissions" : {
       "create" : true,
@@ -41,43 +41,43 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "e26f3837c13b431baf3837c13bc31b44",
+    "uuid" : "78fa072820fb4232ba072820fb0232b6",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "cabeb78aa6c74b42beb78aa6c77b42cc"
+      "uuid" : "b4f24b983c1d4908b24b983c1dd908cf"
     },
-    "created" : "2018-11-20T12:06:11.334Z",
+    "created" : "2018-11-20T12:12:04.443Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "df1b028af06f4b8d9b028af06f9b8d80"
+      "uuid" : "12664e73cb634c55a64e73cb63fc550d"
     },
-    "edited" : "2018-11-20T12:06:11.334Z",
+    "edited" : "2018-11-20T12:12:04.443Z",
     "lastname" : "Roe",
     "firstname" : "Jane",
     "username" : "jroe",
     "emailAddress" : "j.roe@nowhere.com",
     "nodeReference" : {
       "projectName" : "dummy",
-      "uuid" : "61a02f15dcc44703a02f15dcc4d7032f",
+      "uuid" : "b5bf52952daa4b9bbf52952daa9b9b0b",
       "displayName" : "DeLorean DMC-12",
       "schema" : {
         "name" : "vehicle",
-        "uuid" : "d5c1d3ad2ed64b3981d3ad2ed69b3911",
+        "uuid" : "9072ac5accef428ab2ac5accef828a23",
         "version" : "1.0"
       }
     },
     "enabled" : true,
     "groups" : [ {
       "name" : "editors",
-      "uuid" : "0f7d63b33b7f4c48bd63b33b7fec4814"
+      "uuid" : "34ef41bfb55247cbaf41bfb55207cb35"
     }, {
       "name" : "super-editors",
-      "uuid" : "2886a1b446294c7286a1b446295c727d"
+      "uuid" : "0474039abd274a8cb4039abd275a8c9f"
     }, {
       "name" : "editors",
-      "uuid" : "72dea829575244da9ea8295752c4da2d"
+      "uuid" : "93894f1153554d47894f1153552d47d4"
     } ],
     "permissions" : {
       "create" : true,

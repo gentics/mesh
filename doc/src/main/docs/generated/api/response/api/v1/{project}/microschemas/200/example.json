@@ -1,6 +1,6 @@
 {
   "data" : [ {
-    "uuid" : "43f4ef36128142d2b4ef36128142d272",
+    "uuid" : "ab15e8592ed4406995e8592ed4306931",
     "version" : "1.0",
     "description" : "Microschema for Geolocations",
     "name" : "geolocation",
@@ -24,7 +24,7 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "e9158920631848119589206318781119",
+    "uuid" : "59e61f158cd842dfa61f158cd8c2dfe8",
     "version" : "1.0",
     "description" : "Microschema for Geolocations",
     "name" : "geolocation",
