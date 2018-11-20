@@ -87,7 +87,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
 
 		if (assignSchemas) {
-			assignSchemas(creator, baseBranch, branch);
+			assignSchemas(creator, baseBranch, branch, false);
 		}
 
 		return branch;
@@ -154,14 +154,14 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		if (request.getSsl() != null) {
 			branch.setSsl(request.getSsl());
 		}
+		User creator = branch.getCreator();
+		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(creator, branch);
+		assignSchemas(creator, baseBranch, branch, true);
 		// A new branch was created - We also need to create new indices for the nodes within the branch
 		for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 			batch.addNodeIndex(project, branch, version, DRAFT);
 			batch.addNodeIndex(project, branch, version, PUBLISHED);
 		}
-		User creator = branch.getCreator();
-		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(creator, branch);
-		assignSchemas(creator, baseBranch, branch);
 
 		return branch;
 	}
@@ -174,9 +174,9 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 * @param baseBranch The branch which the new branch is based on
 	 * @param newBranch The newly created branch
 	 */
-	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch) {
+	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
-		if (baseBranch != null) {
+		if (baseBranch != null && migrate) {
 			for (SchemaContainerVersion schemaContainerVersion : baseBranch.findActiveSchemaVersions()) {
 				newBranch.assignSchemaVersion(creator, schemaContainerVersion);
 			}
@@ -188,7 +188,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// ... same for microschemas
-		if (baseBranch != null) {
+		if (baseBranch != null && migrate) {
 			for (MicroschemaContainerVersion microschemaContainerVersion : baseBranch.findActiveMicroschemaVersions()) {
 				newBranch.assignMicroschemaVersion(creator, microschemaContainerVersion);
 			}
