@@ -139,10 +139,6 @@ public final class TestUtils {
 		return hash;
 	}
 
-	public static boolean isHost(String hostname) throws UnknownHostException {
-		return getHostname().equalsIgnoreCase(hostname);
-	}
-
 	public static String getHostname() throws UnknownHostException {
 		java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();
 		return localMachine.getHostName();

@@ -7,13 +7,13 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -194,7 +194,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadBranchChildren() {
+	public void testReadBranchChildren() throws UnknownHostException {
 		Node node = folder("news");
 		long childrenSize;
 		long expectedItemsInPage;

@@ -56,6 +56,10 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch) {
+		return create(name, creator, uuid, setLatest, baseBranch, true);
+	}
+
+	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -81,6 +85,10 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 		// set initial permissions on the branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
+
+		if (assignSchemas) {
+			assignSchemas(creator, baseBranch, branch);
+		}
 
 		return branch;
 	}
@@ -136,7 +144,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			baseBranch = getLatestBranch();
 		}
 
-		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch);
+		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false);
 		if (!isEmpty(request.getHostname())) {
 			branch.setHostname(request.getHostname());
 		}

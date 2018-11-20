@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -44,7 +45,11 @@ public final class MeshAssert {
 
 	public static int getTimeout() throws UnknownHostException {
 		int timeout = CI_TIMEOUT_SECONDS;
-		if (TestUtils.isHost("plexus") || TestUtils.isHost("corvus.lan.apa.at")) {
+		String hostname = TestUtils.getHostname();
+		boolean isDevHost = Stream.of("plexus", "corvus.lan.apa.at", "dsvigen001f")
+			.anyMatch(host -> host.equals(hostname));
+
+		if (isDevHost) {
 			timeout = DEV_TIMEOUT_SECONDS;
 		}
 		if (log.isDebugEnabled()) {
