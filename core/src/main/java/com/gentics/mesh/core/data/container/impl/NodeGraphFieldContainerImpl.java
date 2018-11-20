@@ -16,7 +16,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -161,6 +160,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frame(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(this);
+		}
+
+		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
+			micronodeField.removeField(this);
 		}
 
 		// Lists
