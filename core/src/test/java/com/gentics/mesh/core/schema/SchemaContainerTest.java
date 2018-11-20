@@ -115,7 +115,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			int size = Iterables.size(meshRoot().getSchemaContainerRoot().findAllIt());
+			int size = Iterables.size(meshRoot().getSchemaContainerRoot().findAll());
 			assertEquals(schemaContainers().size(), size);
 		}
 	}

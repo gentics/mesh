@@ -195,10 +195,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
-		when(tagFamily.findAllIt()).then(answer -> {
+		when(tagFamily.findAll()).then(answer -> {
 			return tagList;
 		});
-		when(tagFamily.findAllIt()).then(answer -> {
+		when(tagFamily.findAll()).then(answer -> {
 			return tagList;
 		});
 

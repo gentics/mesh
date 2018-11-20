@@ -8,17 +8,15 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
@@ -60,12 +58,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		return HAS_JOB;
 	}
 
-	@Override
-	public TraversalResult<? extends Job> findAll() {
-		// Use #findAllIt instead!
-		throw error(INTERNAL_SERVER_ERROR, "The server tried to access the wrong method.");
-	}
-
 	/**
 	 * Find the element with the given uuid.
 	 * 
@@ -91,7 +83,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Job> findAllIt() {
+	public TraversalResult<? extends Job> findAll() {
 		// We need to enforce the usage of dynamic loading since the root->item yields different types of vertices.
 		return super.findAllDynamic();
 	}
@@ -204,7 +196,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void process() {
-		Iterable<? extends Job> it = findAllIt();
+		Iterable<? extends Job> it = findAll();
 		for (Job job : it) {
 			try {
 				// Don't execute failed or completed jobs again

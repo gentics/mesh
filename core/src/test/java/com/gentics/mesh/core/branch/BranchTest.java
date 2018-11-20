@@ -160,7 +160,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(new ArrayList<Branch>(branchRoot.findAll().list())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
 					firstNewBranch, secondNewBranch, thirdNewBranch);
 
-			for (SchemaContainer schema : project.getSchemaContainerRoot().findAllIt()) {
+			for (SchemaContainer schema : project.getSchemaContainerRoot().findAll()) {
 				for (Branch branch : Arrays.asList(initialBranch, firstNewBranch, secondNewBranch, thirdNewBranch)) {
 					assertThat(branch).as(branch.getName()).hasSchema(schema).hasSchemaVersion(schema.getLatestVersion());
 				}

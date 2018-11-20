@@ -132,9 +132,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
+			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
 				// Add the draft and published index names per branch to the map
-				for (Branch branch : project.getBranchRoot().findAllIt()) {
+				for (Branch branch : project.getBranchRoot().findAll()) {
 					// Each branch specific index has also document type specific mappings
 					for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
 						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
@@ -172,8 +172,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		Set<String> activeIndices = new HashSet<>();
 		db.tx(() -> {
-			for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
-				for (Branch branch : currentProject.getBranchRoot().findAllIt()) {
+			for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
+				for (Branch branch : currentProject.getBranchRoot().findAll()) {
 					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
@@ -204,8 +204,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			return db.tx(() -> {
 				SyncMetric metric = new SyncMetric(getType());
 				Set<Completable> actions = new HashSet<>();
-				for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Branch branch : project.getBranchRoot().findAllIt()) {
+				for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+					for (Branch branch : project.getBranchRoot().findAll()) {
 						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 							for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 								actions.add(diffAndSync(project, branch, version, type, metric));
@@ -349,8 +349,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			} else {
 				// The project was not specified. Maybe a global search wants to know which indices must be searched.
 				// In that case we just iterate over all projects and collect index names per branch.
-				for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Branch branch : currentProject.getBranchRoot().findAllIt()) {
+				for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
+					for (Branch branch : currentProject.getBranchRoot().findAll()) {
 						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
 								ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
@@ -397,7 +397,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
-			for (Branch branch : node.getProject().getBranchRoot().findAllIt()) {
+			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
 				store(obs, node, branch.getUuid(), context);
 			}
 		} else {
@@ -467,7 +467,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (Branch branch : node.getProject().getBranchRoot().findAllIt()) {
+			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
 				obs.add(storeForBulk(node, branch.getUuid(), context));
 			}
 			return Observable.merge(obs);
@@ -653,7 +653,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			List<UpdateBulkEntry> entries = new ArrayList<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (Branch branch : project.getBranchRoot().findAllIt()) {
+			for (Branch branch : project.getBranchRoot().findAll()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branch, type)) {

@@ -48,7 +48,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	public void init() {
 		// Iterate over all schemas and load them into the storage
-		for (SchemaContainer container : boot.get().schemaContainerRoot().findAllIt()) {
+		for (SchemaContainer container : boot.get().schemaContainerRoot().findAll()) {
 			for (SchemaContainerVersion version : container.findAll()) {
 				SchemaModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
@@ -56,7 +56,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 		}
 
 		// load all microschemas and add to storage
-		for (MicroschemaContainer container : boot.get().microschemaContainerRoot().findAllIt()) {
+		for (MicroschemaContainer container : boot.get().microschemaContainerRoot().findAll()) {
 			for (MicroschemaContainerVersion version : container.findAll()) {
 				MicroschemaModel restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);

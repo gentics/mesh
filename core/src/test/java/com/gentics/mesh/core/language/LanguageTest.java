@@ -75,7 +75,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(meshRoot().getLanguageRoot().findAllIt().iterator());
+			long size = Iterators.size(meshRoot().getLanguageRoot().findAll().iterator());
 			assertEquals(4, size);
 		}
 	}

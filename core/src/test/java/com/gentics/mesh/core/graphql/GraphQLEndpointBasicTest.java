@@ -31,7 +31,7 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	@Test
 	public void testIntrospection() throws IOException {
 		try (Tx tx = tx()) {
-			for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAllIt()) {
+			for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 				microschema.remove();
 			}
 			tx.success();

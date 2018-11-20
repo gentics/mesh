@@ -73,7 +73,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		Project project = oldBranch.getProject();
 		List<Exception> errorsDetected = new ArrayList<>();
 		SearchQueueBatch sqb = null;
-		for (Node node : project.getNodeRoot().findAllIt()) {
+		for (Node node : project.getNodeRoot().findAll()) {
 			// Create a new SQB to handle the ES update
 			if (sqb == null) {
 				sqb = searchQueue.create();

@@ -403,7 +403,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. assert for initial branch
 			List<String> nodeUuids = new ArrayList<>();
-			project.getNodeRoot().findAllIt().forEach(node -> nodeUuids.add(node.getUuid()));
+			project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 
 			// 5. assert searchqueuebatch

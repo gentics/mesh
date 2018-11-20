@@ -89,12 +89,12 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
 
 		// assign the newest schema versions of all project schemas to the branch
-		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
+		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAll()) {
 			branch.assignSchemaVersion(creator, schemaContainer.getLatestVersion());
 		}
 
 		// ... same for microschemas
-		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAllIt()) {
+		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAll()) {
 			branch.assignMicroschemaVersion(creator, microschemaContainer.getLatestVersion());
 		}
 
@@ -189,7 +189,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// Delete all branches
-		for (Branch branch : findAllIt()) {
+		for (Branch branch : findAll()) {
 			branch.delete(bac);
 			bac.process();
 		}

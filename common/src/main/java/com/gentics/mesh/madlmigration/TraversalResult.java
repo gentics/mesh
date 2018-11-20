@@ -10,6 +10,11 @@ import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Iterators;
 
+/**
+ * MADL migration class for traversal results. 
+ *
+ * @param <T>
+ */
 public class TraversalResult<T> implements Iterable<T> {
 
 	private Iterable<T> it;
@@ -38,5 +43,18 @@ public class TraversalResult<T> implements Iterable<T> {
 
 	public List<? extends T> list() {
 		return stream().collect(Collectors.toList());
+	}
+
+	/**
+	 * Check whether the traversal result is empty.
+	 * 
+	 * @return
+	 */
+	public boolean isEmpty() {
+		return !hasNext();
+	}
+
+	public boolean hasNext() {
+		return iterator().hasNext();
 	}
 }

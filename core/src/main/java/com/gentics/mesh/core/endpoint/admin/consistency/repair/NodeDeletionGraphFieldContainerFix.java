@@ -35,7 +35,7 @@ public class NodeDeletionGraphFieldContainerFix {
 
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		// Pick the first project we find to fetch the initial branchUuid
-		Project project = boot.meshRoot().getProjectRoot().findAllIt().iterator().next();
+		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();
 		String branchUuid = project.getInitialBranch().getUuid();
 
 		SchemaContainer schemaContainer = container.getSchemaContainerVersion().getSchemaContainer();

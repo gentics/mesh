@@ -73,7 +73,7 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	private Map<String, GraphQLObjectType> generateSchemaFieldType(GraphQLContext context) {
 		Project project = context.getProject();
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
-		for (SchemaContainer container : project.getSchemaContainerRoot().findAllIt()) {
+		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
 			SchemaContainerVersion version = container.getLatestVersion();
 			Schema schema = version.getSchema();
 			Builder root = newObject();

@@ -355,7 +355,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(boot().roleRoot().findAllIt().iterator());
+			long size = Iterators.size(boot().roleRoot().findAll().iterator());
 			assertEquals(roles().size(), size);
 		}
 	}

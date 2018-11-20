@@ -202,7 +202,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
 		// Delete all containers of all nodes
-		for (Node node : findAllIt()) {
+		for (Node node : findAll()) {
 			// We don't need to handle recursion because we delete the root sequentially
 			node.deleteFully(bac, false);
 			bac.inc();
@@ -329,7 +329,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive,
 			Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Node node : findAllIt()) {
+			for (Node node : findAll()) {
 				// We don't need to recursively handle the permissions for each node again since
 				// this call will already affect all nodes.
 				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);

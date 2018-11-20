@@ -77,7 +77,7 @@ public class DemoDumpGeneratorTest {
 			assertNotNull(boot.meshRoot().getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
-			for (Node node : boot.meshRoot().getNodeRoot().findAllIt()) {
+			for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
 				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();

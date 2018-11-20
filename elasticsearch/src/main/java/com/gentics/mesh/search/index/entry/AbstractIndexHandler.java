@@ -247,7 +247,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	private Map<String, String> loadVersionsFromGraph() {
 		Map<String, String> versions = new HashMap<>();
-		for (T element : getRootVertex().findAllIt()) {
+		for (T element : getRootVertex().findAll()) {
 			String v = generateVersion(element);
 			versions.put(element.getUuid(), v);
 		}

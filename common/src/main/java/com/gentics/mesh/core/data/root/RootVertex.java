@@ -54,24 +54,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	}
 
 	/**
-	 * Iterate over all items and return the count.
-	 * 
-	 * @return
-	 */
-	default long computeCount() {
-		return findAll().count();
-	}
-
-	/**
-	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
-	 * 
-	 * @return
-	 */
-	default TraversalResult<? extends T> findAllIt() {
-		return new TraversalResult<>(out(getRootLabel()).frameExplicit(getPersistanceClass()));
-	}
-
-	/**
 	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
 	 * permissions.
 	 *
@@ -90,7 +72,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	}
 
 	/**
-	 * Return an traversal result of all elements and use the stored type information to load the items. The {@link #findAllIt()} will use explicit typing and
+	 * Return an traversal result of all elements and use the stored type information to load the items. The {@link #findAll()} will use explicit typing and
 	 * thus will be faster. Only use that method if you know that your relation only yields a specific kind of item.
 	 * 
 	 * @return
@@ -357,5 +339,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	Class<? extends T> getPersistanceClass();
+
+	default long computeCount() {
+		return findAll().count();
+	}
 
 }

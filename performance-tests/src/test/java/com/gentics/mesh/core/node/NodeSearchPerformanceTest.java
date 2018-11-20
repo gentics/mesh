@@ -57,7 +57,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 		// Revoke all but one permission
 		try (Tx tx = db().tx()) {
-			for (Node node : boot().nodeRoot().findAllIt()) {
+			for (Node node : boot().nodeRoot().findAll()) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					role().revokePermissions(node, READ_PERM);
 				}

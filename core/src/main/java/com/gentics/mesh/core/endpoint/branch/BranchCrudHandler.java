@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
@@ -242,7 +243,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
 			Branch branch = project.getBranchRoot().findByUuid(branchUuid);
-			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAllIt()) {
+			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAll()) {
 				MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 				MicroschemaContainerVersion currentVersion = latestVersion;
 				while (true) {
@@ -255,9 +256,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 					job.process();
 
 					try (Tx tx = db.tx()) {
-						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(branch.getUuid()).iterator();
+						TraversalResult<? extends NodeGraphFieldContainer> result = currentVersion.getDraftFieldContainers(branch.getUuid());
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
-							+ currentVersion.getUuid() + "=" + it.hasNext());
+							+ currentVersion.getUuid() + "=" + result.isEmpty());
 					}
 				}
 
@@ -279,7 +280,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
 			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
-			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAllIt()) {
+			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAll()) {
 				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 				SchemaContainerVersion currentVersion = latestVersion;
 				while (true) {

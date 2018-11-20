@@ -55,7 +55,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 
 	private MainFilter<NodeContent> createAllFieldFilters() {
 		List<FilterField<NodeContent, ?>> schemaFields = StreamSupport
-			.stream(context.getProject().getSchemaContainerRoot().findAllIt().spliterator(), false)
+			.stream(context.getProject().getSchemaContainerRoot().findAll().spliterator(), false)
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
 		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false);
