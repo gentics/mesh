@@ -17,6 +17,11 @@
 | string
 | ISO 639-1 language tag of the node content.
 
+| tags
+| false
+| array
+| List of tags that should be used to tag the node.
+
 | version
 | true
 | string

@@ -27,4 +27,9 @@
 | object
 | Reference to the schema of the node.
 
+| tags
+| false
+| array
+| List of tags that should be used to tag the node.
+
 |======

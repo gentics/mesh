@@ -1,17 +1,17 @@
 {
-  "uuid" : "679ae07175e44c2e9ae07175e44c2e26",
+  "uuid" : "1ca919d0b65b4232a919d0b65bf232e7",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "b72e306476ad4ff6ae306476ad5ff673"
+    "uuid" : "5d70aa8b6e2c4f80b0aa8b6e2caf80c4"
   },
-  "created" : "2018-11-07T12:35:02.390Z",
+  "created" : "2018-11-20T12:06:11.453Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "5e26691854504e48a6691854508e4896"
+    "uuid" : "c6224a7d26da4f88a24a7d26da6f88e8"
   },
-  "edited" : "2018-11-07T12:35:02.390Z",
+  "edited" : "2018-11-20T12:06:11.453Z",
   "name" : "Winter 2016",
   "hostname" : "getmesh.io",
   "ssl" : true,
@@ -20,11 +20,11 @@
   "latest" : false,
   "tags" : [ {
     "name" : "dev",
-    "uuid" : "fe0e6254f72148618e6254f7211861bb",
+    "uuid" : "51905d6698134d43905d6698134d4395",
     "tagFamily" : "branchTags"
   }, {
     "name" : "prod",
-    "uuid" : "cdc39e9424bb4953839e9424bb5953fd",
+    "uuid" : "5d84fd3783ea4dfa84fd3783ea7dfa3d",
     "tagFamily" : "branchTags"
   } ],
   "permissions" : {

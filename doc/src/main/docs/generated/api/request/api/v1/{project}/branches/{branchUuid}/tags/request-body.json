@@ -1,11 +1,11 @@
 {
   "tags" : [ {
     "name" : "green",
-    "uuid" : "066465310e9f43fba465310e9fa3fbfb",
+    "uuid" : "b4d56053cfc34da0956053cfc30da021",
     "tagFamily" : "colors"
   }, {
     "name" : "yellow",
-    "uuid" : "5250f5a047d54f7590f5a047d50f7589",
+    "uuid" : "82188b497e0446e6988b497e0466e6cc",
     "tagFamily" : "colors"
   } ]
 }

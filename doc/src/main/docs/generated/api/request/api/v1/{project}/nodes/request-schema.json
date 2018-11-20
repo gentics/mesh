@@ -69,6 +69,28 @@
           "type" : "boolean"
         }
       }
+    },
+    "tags" : {
+      "type" : "array",
+      "description" : "List of tags that should be used to tag the node.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagReference",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "Name of the referenced element"
+          },
+          "uuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the referenced element"
+          },
+          "tagFamily" : {
+            "type" : "string"
+          }
+        }
+      }
     }
   }
 }

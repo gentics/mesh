@@ -1,17 +1,17 @@
 {
-  "uuid" : "b1b48fc7d1204d2cb48fc7d1205d2c17",
+  "uuid" : "93c1800e54d34db881800e54d32db8b5",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "b72382714fe64bbda382714fe67bbdde"
+    "uuid" : "af60064d9ddf437da0064d9ddfc37de5"
   },
-  "created" : "2018-11-07T12:35:02.393Z",
+  "created" : "2018-11-20T12:06:11.456Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "c093b71e5649425c93b71e5649525c4a"
+    "uuid" : "8e86f80981b34f7e86f80981b30f7e1a"
   },
-  "edited" : "2018-11-07T12:35:02.393Z",
+  "edited" : "2018-11-20T12:06:11.456Z",
   "name" : "Summer Collection Branch",
   "hostname" : "getmesh.io",
   "ssl" : true,
@@ -20,11 +20,11 @@
   "latest" : false,
   "tags" : [ {
     "name" : "dev",
-    "uuid" : "7c698dbf3e944505a98dbf3e948505c4",
+    "uuid" : "794fbd42726b43448fbd42726ba344e5",
     "tagFamily" : "branchTags"
   }, {
     "name" : "prod",
-    "uuid" : "97bfeae2a04548d6bfeae2a04598d6e9",
+    "uuid" : "0c3ee7f73b234ec6bee7f73b234ec656",
     "tagFamily" : "branchTags"
   } ],
   "permissions" : {

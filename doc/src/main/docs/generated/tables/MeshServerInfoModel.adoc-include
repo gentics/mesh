@@ -22,10 +22,10 @@
 | string
 | Used database implementation version.
 
-| meshNodeId
+| meshNodeName
 | false
 | string
-| NodeId of the Gentics Mesh instance.
+| Node name of the Gentics Mesh instance.
 
 | meshVersion
 | false

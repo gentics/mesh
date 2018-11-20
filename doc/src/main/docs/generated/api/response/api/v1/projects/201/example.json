@@ -1,20 +1,20 @@
 {
-  "uuid" : "700e5ecea91f4d998e5ecea91fad994d",
+  "uuid" : "77195135039d4792995135039db7925e",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "bc4e8b29341447308e8b2934144730f0"
+    "uuid" : "325de4bf631b4c539de4bf631b7c5352"
   },
-  "created" : "2018-11-07T12:35:02.195Z",
+  "created" : "2018-11-20T12:06:11.276Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "c082c873f2b741cd82c873f2b791cd32"
+    "uuid" : "dae34b1755414ecba34b1755411ecbcf"
   },
-  "edited" : "2018-11-07T12:35:02.195Z",
+  "edited" : "2018-11-20T12:06:11.276Z",
   "name" : "New Project",
   "rootNode" : {
-    "uuid" : "e09bf0f7811f4e999bf0f7811fee99b5"
+    "uuid" : "800dbe46a8bf48918dbe46a8bf3891c2"
   },
   "permissions" : {
     "create" : true,

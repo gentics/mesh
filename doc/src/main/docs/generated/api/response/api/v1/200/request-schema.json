@@ -6,9 +6,9 @@
       "type" : "string",
       "description" : "Gentics Mesh Version string."
     },
-    "meshNodeId" : {
+    "meshNodeName" : {
       "type" : "string",
-      "description" : "NodeId of the Gentics Mesh instance."
+      "description" : "Node name of the Gentics Mesh instance."
     },
     "databaseVendor" : {
       "type" : "string",
