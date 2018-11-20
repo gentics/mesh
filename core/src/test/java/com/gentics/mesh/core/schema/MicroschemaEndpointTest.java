@@ -336,45 +336,50 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 	@Test
 	public void testDeleteByUUIDWhileInUse() throws Exception {
+		String microschemaContainerUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
+		String baseUuid = tx(() -> project().getBaseNode().getUuid());
+
+		// 1. Create a new schema which uses the vcard microschema
+		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		schema.addField(FieldUtil.createMicronodeFieldSchema("vcardtest").setAllowedMicroSchemas("vcard"));
+		SchemaResponse response = call(() -> client().createSchema(schema));
+
+		// 2. Assign the new schema to the project
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
+
+		// 3. Create a new node which uses the schema
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+
+		MicronodeResponse micronodeField = new MicronodeResponse();
+		micronodeField.getFields().put("firstName", FieldUtil.createStringField("firstnameValue"));
+		micronodeField.getFields().put("lastName", FieldUtil.createStringField("lastnameValue"));
+		micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		nodeCreateRequest.getFields().put("vcardtest", micronodeField);
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("test"));
+		nodeCreateRequest.setParentNodeUuid(baseUuid);
+		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		// 4. Try to delete the microschema
+		call(() -> client().deleteMicroschema(microschemaContainerUuid), BAD_REQUEST, "microschema_delete_still_in_use",
+			microschemaContainerUuid);
+
 		try (Tx tx = tx()) {
-			MicroschemaContainer microschemaContainer = microschemaContainers().get("vcard");
-
-			// 1. Create a new schema which uses the vcard microschema
-			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
-			schema.addField(FieldUtil.createMicronodeFieldSchema("vcardtest").setAllowedMicroSchemas("vcard"));
-			SchemaResponse response = call(() -> client().createSchema(schema));
-
-			// 2. Assign the new schema to the project
-			call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
-
-			// 3. Create a new node which uses the schema
-			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-			nodeCreateRequest.setLanguage("en");
-
-			MicronodeResponse micronodeField = new MicronodeResponse();
-			micronodeField.getFields().put("firstName", FieldUtil.createStringField("firstnameValue"));
-			micronodeField.getFields().put("lastName", FieldUtil.createStringField("lastnameValue"));
-			micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-			nodeCreateRequest.getFields().put("vcardtest", micronodeField);
-			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("test"));
-			nodeCreateRequest.setParentNodeUuid(project().getBaseNode().getUuid());
-			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-
-			// 4. Try to delete the microschema
-			call(() -> client().deleteMicroschema(microschemaContainer.getUuid()), BAD_REQUEST, "microschema_delete_still_in_use",
-				microschemaContainer.getUuid());
-
-			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
+			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(microschemaContainerUuid);
 			assertNotNull("The microschema should not have been deleted.", reloaded);
+		}
 
-			// 5. Delete the newly created node
-			call(() -> client().deleteNode(PROJECT_NAME, nodeResponse.getUuid()));
+		// 5. Delete the newly created node
+		call(() -> client().deleteNode(PROJECT_NAME, nodeResponse.getUuid()));
 
-			// 6. Attempt to delete the microschema now
-			call(() -> client().deleteMicroschema(microschemaContainer.getUuid()));
-			MicroschemaContainer searched = boot().microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
+		// 6. Attempt to delete the microschema now
+		call(() -> client().deleteMicroschema(microschemaContainerUuid));
+
+		try (Tx tx = tx()) {
+			MicroschemaContainer searched = boot().microschemaContainerRoot().findByUuid(microschemaContainerUuid);
 			assertNull("The microschema should have been deleted.", searched);
 		}
+
 	}
 
 	@Test
@@ -389,7 +394,8 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid(), DELETE_PERM.getRestPerm().getName());
+			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid(),
+				DELETE_PERM.getRestPerm().getName());
 
 			assertElement(boot().microschemaContainerRoot(), microschema.getUuid(), true);
 		}
