@@ -2,6 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>mesh-diktyo</artifactId>
+	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
@@ -10,23 +11,21 @@
 	</parent>
 
 	<inceptionYear>2018</inceptionYear>
-	
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}/..</projectRoot>
+		<dagger.version>2.15</dagger.version>
+		<tinkerpop.version>3.3.0</tinkerpop.version>
 	</properties>
 
+	<modules>
+		<module>core</module>
+		<module>api</module>
+		<module>orientdb3</module>
+	</modules>
+
 	<dependencies>
-		<dependency>
-			<groupId>com.syncleus.ferma</groupId>
-			<artifactId>ferma</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 	</dependencies>
 
 	<build>
