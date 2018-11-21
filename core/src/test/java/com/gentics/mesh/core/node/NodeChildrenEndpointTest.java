@@ -13,7 +13,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -194,7 +193,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadBranchChildren() throws UnknownHostException {
+	public void testReadBranchChildren() {
 		Node node = folder("news");
 		long childrenSize;
 		long expectedItemsInPage;
