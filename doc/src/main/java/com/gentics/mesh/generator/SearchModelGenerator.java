@@ -1,5 +1,6 @@
 package com.gentics.mesh.generator;
 
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.mock.TestMocks.mockGroup;
 import static com.gentics.mesh.mock.TestMocks.mockLanguage;
 import static com.gentics.mesh.mock.TestMocks.mockMicroschemaContainer;
@@ -12,7 +13,6 @@ import static com.gentics.mesh.mock.TestMocks.mockTag;
 import static com.gentics.mesh.mock.TestMocks.mockTagFamily;
 import static com.gentics.mesh.mock.TestMocks.mockUpdateDocumentEntry;
 import static com.gentics.mesh.mock.TestMocks.mockUser;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -145,7 +145,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), randomUUID(), ContainerType.PUBLISHED).toCompletable()
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
 				.blockingAwait();
 		writeStoreEvent("node.search");
 	}

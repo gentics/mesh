@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.role;
 
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
+import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -16,7 +19,6 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 public class RoleEndpoint extends AbstractInternalEndpoint {
 
@@ -53,9 +55,9 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute permissionSetEndpoint = createRoute();
 		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
-		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
 		permissionSetEndpoint.addUriParameter("path", "API path to the element.",
-			"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
+			"projects/" + PROJECT_DEMO_UUID + "\nprojects/" + PROJECT_DEMO_UUID + "/nodes/" + NODE_DELOREAN_UUID);
 		permissionSetEndpoint.method(POST);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
 		permissionSetEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Permissions were set.");
@@ -71,9 +73,9 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute permissionGetEndpoint = createRoute();
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
-		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
 		permissionGetEndpoint.addUriParameter("path", "API path to the element.",
-			"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
+			"projects/" + PROJECT_DEMO_UUID + "\nprojects/" + PROJECT_DEMO_UUID + "/nodes/" + NODE_DELOREAN_UUID);
 		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
 		permissionGetEndpoint.method(GET);
 		permissionGetEndpoint.produces(APPLICATION_JSON);
@@ -89,7 +91,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 	private void addDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:roleUuid");
-		endpoint.addUriParameter("roleUuid", "Uuid of the role", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("roleUuid", "Uuid of the role", ROLE_CLIENT_UUID);
 		endpoint.method(DELETE);
 		endpoint.description("Delete the role with the given uuid");
 		endpoint.exampleResponse(NO_CONTENT, "Role was deleted.");
@@ -103,7 +105,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 	private void addUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:roleUuid");
-		endpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
 		endpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
@@ -119,7 +121,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 	private void addReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:roleUuid");
-		readOne.addUriParameter("roleUuid", "Uuid of the role", UUIDUtil.randomUUID());
+		readOne.addUriParameter("roleUuid", "Uuid of the role", ROLE_CLIENT_UUID);
 		readOne.description("Load the role with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);

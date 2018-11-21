@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
+import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -15,7 +17,6 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -75,7 +76,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.description("Deploys the plugin using the provided deployment information.");
 		deployEndpoint.produces(APPLICATION_JSON);
 		deployEndpoint.exampleRequest(adminExamples.createPluginDeploymentRequest());
-		deployEndpoint.exampleResponse(OK, adminExamples.createPluginResponse(), "Plugin response.");
+		deployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		deployEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			pluginHandler.handleDeploy(ac);
@@ -86,8 +87,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		undeployEndpoint.method(DELETE);
 		undeployEndpoint.description("Undeploys the plugin with the given uuid.");
 		undeployEndpoint.produces(APPLICATION_JSON);
-		undeployEndpoint.addUriParameter("uuid", "Uuid of the plugin.", UUIDUtil.randomUUID());
-		undeployEndpoint.exampleResponse(OK, adminExamples.createPluginResponse(), "Plugin response.");
+		undeployEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_UUID);
+		undeployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		undeployEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("uuid");
@@ -99,8 +100,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readEndpoint.method(GET);
 		readEndpoint.description("Loads deployment information for the plugin with the given id.");
 		readEndpoint.produces(APPLICATION_JSON);
-		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", UUIDUtil.randomUUID());
-		readEndpoint.exampleResponse(OK, adminExamples.createPluginResponse(), "Plugin response.");
+		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_UUID);
+		readEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		readEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("uuid");
@@ -250,7 +251,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJob.method(GET);
 		readJob.description("Load a specific job.");
 		readJob.produces(APPLICATION_JSON);
-		readJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		readJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		readJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
 		readJob.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -262,7 +263,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deleteJob.path("/jobs/:jobUuid");
 		deleteJob.method(DELETE);
 		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
-		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		deleteJob.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
@@ -273,7 +274,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		resetJob.path("/jobs/:jobUuid/error");
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
-		resetJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		resetJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		resetJob.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");

@@ -4,7 +4,10 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.TAGFAMILY_COLORS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAGFAMILY_FUELS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_GREEN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -19,16 +22,16 @@ public class TagExamples extends AbstractExamples {
 	public TagFamilyReference getTagFamilyReference() {
 		TagFamilyReference tagFamilyReference = new TagFamilyReference();
 		tagFamilyReference.setName("colors");
-		tagFamilyReference.setUuid(randomUUID());
+		tagFamilyReference.setUuid(TAGFAMILY_COLORS_UUID);
 		return tagFamilyReference;
 	}
 
 	public TagResponse createTagResponse1(String name) {
 		TagResponse tag = new TagResponse();
-		tag.setUuid(randomUUID());
-		tag.setCreated(createTimestamp());
+		tag.setUuid(TAG_GREEN_UUID);
+		tag.setCreated(createOldTimestamp());
 		tag.setCreator(createUserReference());
-		tag.setEdited(createTimestamp());
+		tag.setEdited(createNewTimestamp());
 		tag.setEditor(createUserReference());
 		tag.setName(name);
 		tag.setPermissions(READ, UPDATE, DELETE, CREATE);
@@ -38,10 +41,10 @@ public class TagExamples extends AbstractExamples {
 
 	public TagResponse getTagResponse2() {
 		TagResponse tag = new TagResponse();
-		tag.setUuid(randomUUID());
-		tag.setCreated(createTimestamp());
+		tag.setUuid(TAG_RED_UUID);
+		tag.setCreated(createOldTimestamp());
 		tag.setCreator(createUserReference());
-		tag.setEdited(createTimestamp());
+		tag.setEdited(createNewTimestamp());
 		tag.setEditor(createUserReference());
 		tag.setName("Name for language tag en");
 		tag.setTagFamily(getTagFamilyReference());
@@ -74,7 +77,7 @@ public class TagExamples extends AbstractExamples {
 		TagReference reference = new TagReference();
 		reference.setName(name);
 		reference.setTagFamily(tagFamilyName);
-		reference.setUuid(randomUUID());
+		reference.setUuid(TAGFAMILY_FUELS_UUID);
 		return reference;
 	}
 

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.user;
 
+import static com.gentics.mesh.example.ExampleUuids.USER_EDITOR_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -20,7 +21,6 @@ import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 public class UserEndpoint extends AbstractInternalEndpoint {
 
@@ -61,7 +61,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");
-		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description(
 			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
 		endpoint.method(POST);
@@ -76,7 +76,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.path("/:userUuid/token");
 		deleteEndpoint.setRAMLPath("/{userUuid}/token");
-		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		deleteEndpoint.description("Invalidate the issued API token.");
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
@@ -92,7 +92,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
-		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.addUriParameter("path", "Path to the element from which the permissions should be loaded.", "projects/:projectUuid/schemas");
 		endpoint.description("Read the user permissions on the element that can be located by the specified path.");
 		endpoint.method(GET);
@@ -110,7 +110,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/reset_token");
 		endpoint.setRAMLPath("/{userUuid}/reset_token");
-		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password)");
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
@@ -126,7 +126,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:userUuid");
 		readOne.description("Read the user with the given uuid");
-		readOne.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		readOne.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "User response which may also contain an expanded node.");
@@ -163,7 +163,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 	private void addDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");
-		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.method(DELETE);
 		endpoint.description(
 			"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
@@ -187,7 +187,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid");
-		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);

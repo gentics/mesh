@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.project;
 
+import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -54,7 +55,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint
 				.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
-		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
+		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
 		updateEndpoint.method(POST);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
@@ -87,7 +88,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 	private void addReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:projectUuid");
-		readOne.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
+		readOne.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
 		readOne.description("Load the project with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
@@ -120,9 +121,9 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 	private void addDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:projectUuid");
-		endpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
 		endpoint.method(DELETE);
-		endpoint.description("Delete the project and all attached nodes.");
+		endpoint.description("Delete the project and all attached nodes, tagfamiles and branches.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Project was deleted.");
 		endpoint.handler(rc -> {

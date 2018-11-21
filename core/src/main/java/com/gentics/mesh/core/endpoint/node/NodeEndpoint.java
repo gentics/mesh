@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -30,7 +33,6 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.MultiMap;
 
@@ -90,11 +92,11 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addNavigationHandlers() {
 
 		NavigationResponse responseExample = new NavigationResponse();
-		responseExample.setUuid(UUIDUtil.randomUUID());
+		responseExample.setUuid(UUID_1);
 
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/navigation");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Returns a navigation object for the provided node.");
@@ -112,7 +114,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addLanguageHandlers() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/languages/:language");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		endpoint.addUriParameter("language", "Language tag of the content which should be deleted.", "en");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
@@ -130,7 +132,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addBinaryHandlers() {
 		InternalEndpointRoute fieldUpdate = createRoute();
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
-		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
@@ -148,7 +150,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
-		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		imageTransform.addUriParameter("fieldName", "Name of the field", "image");
 		imageTransform.method(POST);
 		imageTransform.produces(APPLICATION_JSON);
@@ -165,7 +167,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute fieldGet = createRoute();
 		fieldGet.path("/:nodeUuid/binary/:fieldName");
-		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
@@ -183,8 +185,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addMoveHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/moveTo/:toUuid");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node which should be moved.", UUIDUtil.randomUUID());
-		endpoint.addUriParameter("toUuid", "Uuid of target the node.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node which should be moved.", NODE_DELOREAN_UUID);
+		endpoint.addUriParameter("toUuid", "Uuid of target the node.", TAG_RED_UUID);
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Move the node into the target node.");
@@ -202,7 +204,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addChildrenHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/children");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of loaded node children.");
@@ -223,7 +225,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addTagsHandler() {
 		InternalEndpointRoute getTags = createRoute();
 		getTags.path("/:nodeUuid/tags");
-		getTags.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		getTags.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
 		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the node.");
@@ -239,7 +241,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute bulkUpdate = createRoute();
 		bulkUpdate.path("/:nodeUuid/tags");
-		bulkUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		bulkUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		bulkUpdate.method(POST);
 		bulkUpdate.produces(APPLICATION_JSON);
 		bulkUpdate.description("Update the list of assigned tags");
@@ -254,8 +256,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute addTag = createRoute();
 		addTag.path("/:nodeUuid/tags/:tagUuid");
-		addTag.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
-		addTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
+		addTag.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		addTag.addUriParameter("tagUuid", "Uuid of the tag", TAG_RED_UUID);
 		addTag.method(POST);
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
@@ -272,8 +274,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		InternalEndpointRoute removeTag = createRoute();
 		removeTag.path("/:nodeUuid/tags/:tagUuid");
-		removeTag.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
-		removeTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
+		removeTag.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		removeTag.addUriParameter("tagUuid", "Uuid of the tag", TAG_RED_UUID);
 		removeTag.method(DELETE);
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the node.");
@@ -308,7 +310,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:nodeUuid");
-		readOne.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		readOne.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		readOne.method(GET);
 		readOne.description("Load the node with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
@@ -349,7 +351,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		endpoint.description("Delete the node with the given uuid.");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
@@ -372,7 +374,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			+ "Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. "
 			+ "Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.");
 		endpoint.path("/:nodeUuid");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
@@ -393,7 +395,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute getEndpoint = createRoute();
 		getEndpoint.description("Return the published status of the node.");
 		getEndpoint.path("/:nodeUuid/published");
-		getEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		getEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		getEndpoint.method(GET);
 		getEndpoint.produces(APPLICATION_JSON);
 		getEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
@@ -407,7 +409,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute putEndpoint = createRoute();
 		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
 		putEndpoint.path("/:nodeUuid/published");
-		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		putEndpoint.method(POST);
 		putEndpoint.produces(APPLICATION_JSON);
 		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
@@ -422,7 +424,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.description("Unpublish the given node.");
 		deleteEndpoint.path("/:nodeUuid/published");
-		deleteEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		deleteEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
@@ -439,7 +441,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute getLanguageRoute = createRoute();
 		getLanguageRoute.description("Return the publish status for the given language of the node.");
 		getLanguageRoute.path("/:nodeUuid/languages/:language/published");
-		getLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		getLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		getLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
@@ -454,7 +456,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute putLanguageRoute = createRoute();
 		putLanguageRoute.path("/:nodeUuid/languages/:language/published").method(POST).produces(APPLICATION_JSON);
-		putLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		putLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		putLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		putLanguageRoute.description(
 			"Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.");
@@ -471,7 +473,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute deleteLanguageRoute = createRoute();
 		deleteLanguageRoute.description("Take the language of the node offline.");
 		deleteLanguageRoute.path("/:nodeUuid/languages/:language/published").method(DELETE).produces(APPLICATION_JSON);
-		deleteLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
+		deleteLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		deleteLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		deleteLanguageRoute.exampleResponse(NO_CONTENT, "Node language was taken offline.");
 		deleteLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");

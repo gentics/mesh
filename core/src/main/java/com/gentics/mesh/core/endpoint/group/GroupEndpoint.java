@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.endpoint.group;
 
+import static com.gentics.mesh.example.ExampleUuids.GROUP_CLIENT_UUID;
+import static com.gentics.mesh.example.ExampleUuids.GROUP_EDITORS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
+import static com.gentics.mesh.example.ExampleUuids.USER_EDITOR_UUID;
+import static com.gentics.mesh.example.ExampleUuids.USER_WEBCLIENT_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -17,7 +22,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 public class GroupEndpoint extends AbstractInternalEndpoint {
 
@@ -54,7 +58,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 	private void addGroupRoleHandlers() {
 		InternalEndpointRoute readRoles = createRoute();
 		readRoles.path("/:groupUuid/roles");
-		readRoles.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
+		readRoles.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
 		readRoles.description("Load multiple roles that are assigned to the group. Return a paged list response.");
 		readRoles.method(GET);
 		readRoles.produces(APPLICATION_JSON);
@@ -69,8 +73,8 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute addRole = createRoute();
 		addRole.path("/:groupUuid/roles/:roleUuid");
-		addRole.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
-		addRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		addRole.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
+		addRole.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
 		addRole.method(POST);
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
@@ -84,8 +88,8 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute removeRole = createRoute();
 		removeRole.path("/:groupUuid/roles/:roleUuid");
-		removeRole.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
-		removeRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		removeRole.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
+		removeRole.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
 		removeRole.method(DELETE);
 		removeRole.description("Remove the given role from the group.");
 		removeRole.exampleResponse(NO_CONTENT, "Role was removed from the group.");
@@ -100,7 +104,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 	private void addGroupUserHandlers() {
 		InternalEndpointRoute readUsers = createRoute();
 		readUsers.path("/:groupUuid/users");
-		readUsers.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
+		readUsers.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
 		readUsers.method(GET);
 		readUsers.produces(APPLICATION_JSON);
 		readUsers.exampleResponse(OK, userExamples.getUserListResponse(), "List of users which belong to the group.");
@@ -114,8 +118,8 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute addUser = createRoute();
 		addUser.path("/:groupUuid/users/:userUuid");
-		addUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
-		addUser.addUriParameter("userUuid", "Uuid of the user which should be added to the group.", UUIDUtil.randomUUID());
+		addUser.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
+		addUser.addUriParameter("userUuid", "Uuid of the user which should be added to the group.", USER_EDITOR_UUID);
 		addUser.method(POST);
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
@@ -129,8 +133,8 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute removeUser = createRoute();
 		removeUser.path("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
-		removeUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
-		removeUser.addUriParameter("userUuid", "Uuid of the user which should be removed from the group.", UUIDUtil.randomUUID());
+		removeUser.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
+		removeUser.addUriParameter("userUuid", "Uuid of the user which should be removed from the group.", USER_WEBCLIENT_UUID);
 		removeUser.description("Remove the given user from the group.");
 		removeUser.exampleResponse(NO_CONTENT, "User was removed from the group.");
 		removeUser.handler(rc -> {
@@ -144,7 +148,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 	private void addDeleteHandler() {
 		InternalEndpointRoute deleteGroup = createRoute();
 		deleteGroup.path("/:groupUuid");
-		deleteGroup.addUriParameter("groupUuid", "Uuid of the group which should be deleted.", UUIDUtil.randomUUID());
+		deleteGroup.addUriParameter("groupUuid", "Uuid of the group which should be deleted.", GROUP_EDITORS_UUID);
 		deleteGroup.description("Delete the given group.");
 		deleteGroup.method(DELETE);
 		deleteGroup.exampleResponse(NO_CONTENT, "Group was deleted.");
@@ -161,7 +165,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 	private void addUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:groupUuid");
-		endpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", GROUP_CLIENT_UUID);
 		endpoint.description("Update the group with the given uuid. The group is created if no group with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
@@ -179,7 +183,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 	private void addReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:groupUuid");
-		readOne.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
+		readOne.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
 		readOne.description("Read the group with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);

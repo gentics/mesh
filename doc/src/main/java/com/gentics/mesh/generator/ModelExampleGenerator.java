@@ -82,7 +82,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		MeshOptions conf = new MeshOptions();
 		conf.setTempDirectory("/opt/mesh/data/tmp");
 		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
-		conf.getAuthenticationOptions().setKeystorePassword(TokenUtil.randomToken());
+		conf.getAuthenticationOptions().setKeystorePassword("<Your Password>");
 		conf.getAuthenticationOptions().getOauth2().setMapperScriptPath("config/mymapper.js");
 		conf.getAuthenticationOptions().getOauth2().setMapperScriptDevMode(true);
 

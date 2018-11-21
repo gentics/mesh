@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.tagfamily;
 
+import static com.gentics.mesh.example.ExampleUuids.TAGFAMILY_COLORS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_BLUE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -18,7 +20,6 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -79,8 +80,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private void addTagUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
-		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
@@ -103,7 +104,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute createTag = createRoute();
 		createTag.description("Create a new tag within the tag family.");
 		createTag.path("/:tagFamilyUuid/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
+		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		createTag.exampleRequest(tagExamples.createTagCreateRequest("red"));
 		createTag.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Created tag");
 		createTag.handler(rc -> {
@@ -117,8 +118,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private void addTagReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:tagFamilyUuid/tags/:tagUuid");
-		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
-		readOne.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
+		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		readOne.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		readOne.method(GET);
 		readOne.description("Read the specified tag from the tag family.");
 		readOne.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Loaded tag.");
@@ -133,7 +134,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/:tagFamilyUuid/tags");
-		readAll.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
+		readAll.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		readAll.method(GET);
 		readAll.description("Load tags which were assigned to this tag family and return a paged list response.");
 		readAll.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags.");
@@ -152,8 +153,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private void addTagDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
-		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the tag from the tag family.");
@@ -169,8 +170,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private void addTaggedNodesHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid/nodes");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
-		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
@@ -187,7 +188,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private void addTagFamilyDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:tagFamilyUuid");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the tag family.");
@@ -202,7 +203,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private void addTagFamilyReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:tagFamilyUuid");
-		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
+		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		readOne.method(GET);
 		readOne.description("Read the tag family with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
@@ -244,7 +245,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	private void addTagFamilyUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:tagFamilyUuid");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		endpoint.method(POST);
 		endpoint.description("Update the tag family with the given uuid.");
 		endpoint.consumes(APPLICATION_JSON);
