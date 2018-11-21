@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.FieldUtil;
@@ -490,6 +491,13 @@ public interface TestHelperMethods {
 		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().createSchema(schema));
+	}
+
+	default SchemaResponse getSchemaByName(String name) {
+		return client().findSchemas().toSingle()
+			.to(com.gentics.mesh.test.util.TestUtils::listObservable)
+			.filter(schema -> schema.getName().equals(name))
+			.blockingFirst();
 	}
 
 	default public Schema readSchema(String uuid) {

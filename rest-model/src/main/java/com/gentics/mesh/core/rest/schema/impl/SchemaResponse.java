@@ -151,6 +151,19 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 		return reference;
 	}
 
+	public SchemaUpdateRequest toUpdateRequest() {
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
+		updateRequest.setContainer(isContainer());
+		updateRequest.getFields().addAll(getFields());
+		updateRequest.setName(getName());
+		updateRequest.setSegmentField(getSegmentField());
+		updateRequest.setDisplayField(getDisplayField());
+		updateRequest.setDescription(getDescription());
+		updateRequest.setElasticsearch(getElasticsearch());
+		updateRequest.setUrlFields(getUrlFields());
+		return updateRequest;
+	}
+
 	@Override
 	public JsonObject getElasticsearch() {
 		return elasticsearch;

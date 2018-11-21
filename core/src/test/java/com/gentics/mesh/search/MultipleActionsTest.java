@@ -69,11 +69,8 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private Completable deleteSchemaByName(String schemaName) throws JSONException {
-		return getSchemaByName(schemaName).flatMapCompletable(schema -> client().deleteSchema(schema.getUuid()).toCompletable());
-	}
-
-	private Single<SchemaResponse> getSchemaByName(String schemaName) throws JSONException {
-		return client().searchSchemas(getSimpleTermQuery("name.raw", schemaName)).toObservable().flatMapIterable(it -> it.getData()).singleOrError();
+		SchemaResponse schema = getSchemaByName(schemaName);
+		return client().deleteSchema(schema.getUuid()).toCompletable();
 	}
 
 	private Single<SchemaResponse> createTestSchema() {

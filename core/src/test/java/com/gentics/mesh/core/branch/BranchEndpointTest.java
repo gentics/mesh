@@ -21,7 +21,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -37,6 +36,9 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -1231,6 +1233,38 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 	}
 
+	/**
+	 * Test for https://github.com/gentics/mesh/issues/521
+	 */
+	@Test
+	public void testNodeMigrationToNewBranch() {
+		// Using folder schema
+		// Using initial branch
+		NodeResponse node = createNode("name", new StringFieldImpl().setString("name"));
+		addSchemaField();
+		waitForJobs(() -> {
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName("branch1");
+			call(() -> client().createBranch(PROJECT_NAME, request));
+		}, MigrationStatus.COMPLETED, 2);
+		NodeResponse originalNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
+		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+
+		assertThat(originalNode).hasSchemaVersion("folder", "1.0");
+		assertThat(migratedNode).hasSchemaVersion("folder", "2.0");
+
+		assertThat(originalNode).hasVersion("0.1");
+		assertThat(migratedNode).hasVersion("0.2");
+	}
+
+	private void addSchemaField() {
+		SchemaResponse folder = getSchemaByName("folder");
+		SchemaUpdateRequest request = folder.toUpdateRequest();
+		request.getFields().add(new StringFieldSchemaImpl().setName("testField"));
+		call(() -> client().updateSchema(folder.getUuid(), request,
+			new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+	}
+
 	@Test
 	public void testUnassignedMigration() {
 		updateFolderSchema(false);
@@ -1253,14 +1287,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		client().updateSchema(schema.getUuid(), request, parameters).toSingle().blockingGet();
 	}
-
-	private SchemaResponse getSchemaByName(String name) {
-		return client().findSchemas().toSingle()
-			.to(TestUtils::listObservable)
-			.filter(schema -> schema.getName().equals(name))
-			.blockingFirst();
-	}
-
 
 	private void migrateSchema() {
 		client().migrateBranchSchemas(PROJECT_NAME, getCurrentBranch().getUuid()).toSingle().blockingGet();
