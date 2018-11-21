@@ -53,6 +53,7 @@ import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 
@@ -73,7 +74,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), FORBIDDEN, "error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), FORBIDDEN, "error_missing_perm", node.getUuid(),
+				UPDATE_PERM.getRestPerm().getName());
 		}
 
 	}
@@ -155,6 +157,40 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",
 				"nonBinary");
 		}
+	}
+
+	/**
+	 * Test parallel upload of the same binary data - thus the same binary vertex should be used.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testParallelDupUpload() throws IOException {
+
+		String folderUuid = tx(() -> folder("news").getUuid());
+		// Prepare schema
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		}
+
+		Buffer buffer = getBuffer("/pictures/blume.jpg");
+		Observable.range(0, 200).flatMapSingle(number -> {
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setLanguage("en");
+			request.setParentNodeUuid(folderUuid);
+			request.setSchemaName("folder");
+			request.getFields().put("slug", FieldUtil.createStringField("folder" + number));
+			return client().createNode(PROJECT_NAME, request).toSingle()
+				.flatMap(node -> {
+					return client()
+						.updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", node.getVersion(), "image", buffer, "blume.jpg", "image/jpeg")
+						.toSingle();
+				});
+		}).lastOrError().toCompletable().blockingAwait();
+
 	}
 
 	@Test
