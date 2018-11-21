@@ -183,7 +183,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// assign the newest schema versions of all project schemas to the branch
-		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
+		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAll()) {
 			newBranch.assignSchemaVersion(newBranch.getCreator(), schemaContainer.getLatestVersion());
 		}
 
@@ -194,7 +194,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			}
 		}
 
-		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAllIt()) {
+		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAll()) {
 			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschemaContainer.getLatestVersion());
 		}
 	}

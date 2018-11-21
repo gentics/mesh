@@ -205,13 +205,6 @@ public class MigrationFailureRecoveryTest extends AbstractMeshTest {
 		client().migrateBranchMicroschemas(PROJECT_NAME, branch.getUuid()).toCompletable().blockingAwait();
 	}
 
-	private SchemaResponse getSchemaByName(String name) {
-		return client().findSchemas().toSingle()
-			.to(TestUtils::listObservable)
-			.filter(schema -> schema.getName().equals(name))
-			.blockingFirst();
-	}
-
 	private MicroschemaResponse getMicroSchemaByName(String name) {
 		return client().findMicroschemas().toSingle()
 			.to(TestUtils::listObservable)
