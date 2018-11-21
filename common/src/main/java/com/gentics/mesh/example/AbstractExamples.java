@@ -1,9 +1,9 @@
 package com.gentics.mesh.example;
 
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
-
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.SCHEMA_FOLDER_UUID;
+import static com.gentics.mesh.example.ExampleUuids.USER_EDITOR_UUID;
 
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -18,13 +18,30 @@ import com.gentics.mesh.core.rest.user.UserReference;
  */
 public abstract class AbstractExamples {
 
+	public static final String DATE_OLD = "2018-10-12T14:15:06.024Z";
+
+	public static final String DATE_NEW = "2018-11-20T20:12:01.084Z";
+
+	public static final long TIMESTAMP_OLD = 1541744513012L;
+
+	public static final long TIMESTAMP_NEW = 1542746513622L;
+
 	/**
-	 * Return an ISO-8601 formatted timestamp string of the current date/time.
+	 * Return an ISO-8601 formatted timestamp.
 	 * 
 	 * @return
 	 */
-	public String createTimestamp() {
-		return ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
+	public String createNewTimestamp() {
+		return DATE_NEW;
+	}
+
+	/**
+	 * Return an ISO-8601 formatted timestamp.
+	 * 
+	 * @return
+	 */
+	public String createOldTimestamp() {
+		return DATE_OLD;
 	}
 
 	/**
@@ -53,7 +70,7 @@ public abstract class AbstractExamples {
 	public SchemaReferenceImpl getSchemaReference(String name) {
 		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName(name);
-		schemaReference.setUuid(randomUUID());
+		schemaReference.setUuid(SCHEMA_FOLDER_UUID);
 		schemaReference.setVersion("1.0");
 		return schemaReference;
 	}
@@ -65,14 +82,14 @@ public abstract class AbstractExamples {
 	 */
 	public UserReference createUserReference() {
 		UserReference reference = new UserReference();
-		reference.setUuid(randomUUID());
+		reference.setUuid(USER_EDITOR_UUID);
 		reference.setFirstName("Joe");
 		reference.setLastName("Doe");
 		return reference;
 	}
 
 	public MicroschemaReference getMicroschemaReference(String name, String version) {
-		return new MicroschemaReferenceImpl().setName(name).setUuid(randomUUID()).setVersion(version);
+		return new MicroschemaReferenceImpl().setName(name).setUuid(MICROSCHEMA_UUID).setVersion(version);
 	}
 
 	/**
@@ -82,7 +99,7 @@ public abstract class AbstractExamples {
 	 */
 	public NodeReference createNodeReference() {
 		NodeReference reference = new NodeReference();
-		reference.setUuid(randomUUID());
+		reference.setUuid(NODE_DELOREAN_UUID);
 		return reference;
 	}
 

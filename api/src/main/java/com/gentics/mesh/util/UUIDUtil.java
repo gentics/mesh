@@ -76,4 +76,5 @@ public final class UUIDUtil {
 			return p.matcher(text).matches();
 		}
 	}
+
 }

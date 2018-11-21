@@ -4,7 +4,9 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.BRANCH_UUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
+import static com.gentics.mesh.example.ExampleUuids.UUID_2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +40,7 @@ public class VersioningExamples extends AbstractExamples {
 	public PublishStatusResponse createPublishStatusResponse() {
 		PublishStatusResponse response = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		languages.put("en", createPublishStatusModel(true, createUserReference(), createTimestamp(), "3.0"));
+		languages.put("en", createPublishStatusModel(true, createUserReference(), createNewTimestamp(), "3.0"));
 		languages.put("de", createPublishStatusModel(false, null, null, "0.4"));
 		languages.put("fr", createPublishStatusModel(false, null, null, "5.2"));
 		response.setAvailableLanguages(languages);
@@ -71,7 +73,7 @@ public class VersioningExamples extends AbstractExamples {
 	}
 
 	public PublishStatusModel createPublishStatusModel() {
-		return createPublishStatusModel(true, createUserReference(), createTimestamp(), "3.0");
+		return createPublishStatusModel(true, createUserReference(), createNewTimestamp(), "3.0");
 	}
 
 	/**
@@ -85,11 +87,11 @@ public class VersioningExamples extends AbstractExamples {
 	public BranchResponse createBranchResponse(String name, boolean latest) {
 		BranchResponse response = new BranchResponse();
 		response.setName(name);
-		response.setUuid(randomUUID());
+		response.setUuid(BRANCH_UUID);
 		// response.setActive(true);
-		response.setCreated(createTimestamp());
+		response.setCreated(createOldTimestamp());
 		response.setCreator(createUserReference());
-		response.setEdited(createTimestamp());
+		response.setEdited(createNewTimestamp());
 		response.setEditor(createUserReference());
 		response.setHostname("getmesh.io");
 		response.setSsl(true);
@@ -97,8 +99,8 @@ public class VersioningExamples extends AbstractExamples {
 		response.setLatest(latest);
 
 		List<TagReference> tags = new ArrayList<>();
-		tags.add(new TagReference().setName("dev").setUuid(randomUUID()).setTagFamily("branchTags"));
-		tags.add(new TagReference().setName("prod").setUuid(randomUUID()).setTagFamily("branchTags"));
+		tags.add(new TagReference().setName("dev").setUuid(UUID_1).setTagFamily("branchTags"));
+		tags.add(new TagReference().setName("prod").setUuid(UUID_2).setTagFamily("branchTags"));
 		response.setTags(tags);
 		response.setMigrated(true);
 		response.setPermissions(READ, UPDATE,  DELETE, CREATE);

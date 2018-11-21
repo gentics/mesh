@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.microschema;
 
+import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -62,7 +63,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	private void addAssignHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
-		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Add the microschema to the project.");
@@ -77,7 +78,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	private void addDeleteHandlers() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
-		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the microschema from the project.");

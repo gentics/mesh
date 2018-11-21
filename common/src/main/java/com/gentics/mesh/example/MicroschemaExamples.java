@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -12,7 +13,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.util.UUIDUtil;
 
 public class MicroschemaExamples extends AbstractExamples {
 
@@ -28,7 +28,7 @@ public class MicroschemaExamples extends AbstractExamples {
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 		microschema.setVersion("1.0");
-		microschema.setUuid(UUIDUtil.randomUUID());
+		microschema.setUuid(MICROSCHEMA_UUID);
 
 		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
 		longitudeFieldSchema.setName("longitude");

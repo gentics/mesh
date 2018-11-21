@@ -236,7 +236,6 @@ public final class FieldUtil {
 		MicronodeResponse field = new MicronodeResponse();
 		MicroschemaReferenceImpl microschemaReference = new MicroschemaReferenceImpl();
 		microschemaReference.setName(microschema);
-		microschemaReference.setUuid(UUIDUtil.randomUUID());
 		field.setMicroschema(microschemaReference);
 
 		for (Tuple<String, Field> tuple : fields) {
@@ -249,8 +248,6 @@ public final class FieldUtil {
 	@SafeVarargs
 	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = (MicronodeResponse) createNewMicronodeField(microschema, fields);
-		field.setUuid(UUIDUtil.randomUUID());
-
 		return field;
 	}
 

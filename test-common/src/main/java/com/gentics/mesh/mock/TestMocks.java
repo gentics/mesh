@@ -1,6 +1,23 @@
 package com.gentics.mesh.mock;
 
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.AbstractExamples.TIMESTAMP_NEW;
+import static com.gentics.mesh.example.AbstractExamples.TIMESTAMP_OLD;
+import static com.gentics.mesh.example.ExampleUuids.GROUP_CLIENT_UUID;
+import static com.gentics.mesh.example.ExampleUuids.LANGUAGE_UUID;
+import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO2_UUID;
+import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
+import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
+import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAGFAMILY_FUELS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_BLUE_UUID;
+import static com.gentics.mesh.example.ExampleUuids.USER_EDITOR_UUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
+import static com.gentics.mesh.example.ExampleUuids.UUID_2;
+import static com.gentics.mesh.example.ExampleUuids.UUID_3;
+import static com.gentics.mesh.example.ExampleUuids.UUID_4;
+import static com.gentics.mesh.example.ExampleUuids.UUID_5;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -55,7 +72,6 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.util.UUIDUtil;
 
 public final class TestMocks {
 
@@ -65,28 +81,28 @@ public final class TestMocks {
 
 	public static Project mockProject(User user) {
 		Project project = mock(Project.class);
-		when(project.getUuid()).thenReturn(randomUUID());
+		when(project.getUuid()).thenReturn(PROJECT_DEMO2_UUID);
 		when(project.getName()).thenReturn("dummyProject");
 		when(project.getCreator()).thenReturn(user);
-		when(project.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(project.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(project.getEditor()).thenReturn(user);
-		when(project.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(project.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(project.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(project.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(project.getElementVersion()).thenReturn(UUID_1);
 		return project;
 	}
 
 	public static Language mockLanguage(String code) {
 		Language language = mock(Language.class);
-		when(language.getUuid()).thenReturn(randomUUID());
+		when(language.getUuid()).thenReturn(LANGUAGE_UUID);
 		when(language.getLanguageTag()).thenReturn("de");
-		when(language.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(language.getElementVersion()).thenReturn(UUID_2);
 		return language;
 	}
 
 	public static Node mockNodeBasic(String schemaType, User user) {
 		Node node = mock(Node.class);
-		when(node.getUuid()).thenReturn(randomUUID());
+		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
 		SchemaContainer schemaContainer = mockSchemaContainer(schemaType, user);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		return node;
@@ -94,7 +110,7 @@ public final class TestMocks {
 
 	public static Micronode mockMicronode(String microschemaName, User user) {
 		Micronode micronode = mock(Micronode.class);
-		when(micronode.getUuid()).thenReturn(randomUUID());
+		when(micronode.getUuid()).thenReturn(UUID_1);
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
@@ -110,33 +126,33 @@ public final class TestMocks {
 		NumberGraphField latitudeField = mock(NumberGraphField.class);
 		when(latitudeField.getNumber()).thenReturn(16.373063840833);
 		when(micronode.getNumber("latitude")).thenReturn(latitudeField);
-		when(micronode.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(micronode.getElementVersion()).thenReturn(UUID_3);
 		return micronode;
 	}
 
 	public static Role mockRole(String roleName, User creator) {
 		Role role = mock(Role.class);
 		when(role.getCreator()).thenReturn(creator);
-		when(role.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(role.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(role.getEditor()).thenReturn(creator);
-		when(role.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(role.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(role.getName()).thenReturn(roleName);
-		when(role.getUuid()).thenReturn(randomUUID());
+		when(role.getUuid()).thenReturn(ROLE_CLIENT_UUID);
 		when(role.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(role.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(role.getElementVersion()).thenReturn(UUID_4);
 		return role;
 	}
 
 	public static Group mockGroup(String groupName, User creator) {
 		Group group = mock(Group.class);
 		when(group.getCreator()).thenReturn(creator);
-		when(group.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(group.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(group.getEditor()).thenReturn(creator);
-		when(group.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(group.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(group.getName()).thenReturn(groupName);
-		when(group.getUuid()).thenReturn(randomUUID());
+		when(group.getUuid()).thenReturn(GROUP_CLIENT_UUID);
 		when(group.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(group.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(group.getElementVersion()).thenReturn(UUID_5);
 		return group;
 	}
 
@@ -150,69 +166,69 @@ public final class TestMocks {
 		when(user.getFirstname()).thenReturn(firstname);
 		when(user.getLastname()).thenReturn(lastname);
 		when(user.getEmailAddress()).thenReturn(username + "@nowhere.tld");
-		when(user.getUuid()).thenReturn(randomUUID());
-		when(user.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
-		when(user.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(user.getUuid()).thenReturn(USER_EDITOR_UUID);
+		when(user.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
+		when(user.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		if (creator != null) {
 			when(user.getCreator()).thenReturn(creator);
 			when(user.getEditor()).thenReturn(creator);
 		}
 		when(user.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(user.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(user.getElementVersion()).thenReturn(UUID_1);
 		return user;
 	}
 
 	public static UpdateDocumentEntry mockUpdateDocumentEntry() {
 		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
-		context.setProjectUuid(UUIDUtil.randomUUID());
+		context.setProjectUuid(PROJECT_DEMO_UUID);
 		when(entry.getContext()).thenReturn(context);
-		when(entry.getElementUuid()).thenReturn(randomUUID());
+		when(entry.getElementUuid()).thenReturn(UUID_3);
 		return entry;
 	}
 
 	public static TagFamily mockTagFamily(String name, User user, Project project) {
 		TagFamily tagFamily = mock(TagFamily.class);
 		when(tagFamily.getCreator()).thenReturn(user);
-		when(tagFamily.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(tagFamily.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(tagFamily.getEditor()).thenReturn(user);
-		when(tagFamily.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(tagFamily.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(tagFamily.getName()).thenReturn(name);
-		when(tagFamily.getUuid()).thenReturn(randomUUID());
+		when(tagFamily.getUuid()).thenReturn(TAGFAMILY_FUELS_UUID);
 		when(tagFamily.getProject()).thenReturn(project);
 		when(tagFamily.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(tagFamily.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(tagFamily.getElementVersion()).thenReturn(UUID_2);
 		return tagFamily;
 	}
 
 	public static Tag mockTag(String name, User user, TagFamily tagFamily, Project project) {
 		Tag tag = mock(Tag.class);
 		when(tag.getCreator()).thenReturn(user);
-		when(tag.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(tag.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(tag.getEditor()).thenReturn(user);
-		when(tag.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(tag.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(tag.getName()).thenReturn(name);
-		when(tag.getUuid()).thenReturn(randomUUID());
+		when(tag.getUuid()).thenReturn(TAG_BLUE_UUID);
 		when(tag.getTagFamily()).thenReturn(tagFamily);
 		when(tag.getProject()).thenReturn(project);
 		when(tag.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(tag.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(tag.getElementVersion()).thenReturn(UUID_3);
 		return tag;
 	}
 
 	public static SchemaContainer mockSchemaContainer(String name, User user) {
 		SchemaContainer container = mock(SchemaContainer.class);
 		when(container.getName()).thenReturn(name);
-		when(container.getUuid()).thenReturn(randomUUID());
+		when(container.getUuid()).thenReturn(SCHEMA_VEHICLE_UUID);
 		SchemaContainerVersion latestVersion = mock(SchemaContainerVersion.class);
 		when(latestVersion.getSchemaContainer()).thenReturn(container);
 		when(latestVersion.getSchema()).thenReturn(mockContentSchema());
 		when(latestVersion.getName()).thenReturn(name);
 		when(container.getLatestVersion()).thenReturn(latestVersion);
 		when(container.getCreator()).thenReturn(user);
-		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(container.getEditor()).thenReturn(user);
-		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return container;
 	}
@@ -220,17 +236,17 @@ public final class TestMocks {
 	public static MicroschemaContainer mockMicroschemaContainer(String name, User user) {
 		MicroschemaContainer container = mock(MicroschemaContainer.class);
 		when(container.getName()).thenReturn(name);
-		when(container.getUuid()).thenReturn(randomUUID());
+		when(container.getUuid()).thenReturn(MICROSCHEMA_UUID);
 		MicroschemaContainerVersion latestVersion = mock(MicroschemaContainerVersion.class);
 		when(latestVersion.getSchema()).thenReturn(mockGeolocationMicroschema());
 
 		when(container.getLatestVersion()).thenReturn(latestVersion);
 		when(container.getCreator()).thenReturn(user);
-		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(container.getEditor()).thenReturn(user);
-		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(container.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(container.getElementVersion()).thenReturn(UUID_5);
 		return container;
 	}
 
@@ -282,19 +298,19 @@ public final class TestMocks {
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
-		when(latestVersion.getUuid()).thenReturn(randomUUID());
+		when(latestVersion.getUuid()).thenReturn(UUID_2);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
-		when(node.getUuid()).thenReturn(randomUUID());
+		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
 		when(node.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		when(node.getRolesWithPerm(GraphPermission.READ_PUBLISHED_PERM)).thenReturn(Collections.emptyList());
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(container.getParentNode()).thenReturn(node);
-		when(container.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(container.getElementVersion()).thenReturn(UUID_5);
 		when(node.getLatestDraftFieldContainer(language)).thenReturn(container);
-		when(node.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
+		when(node.getElementVersion()).thenReturn(UUID_4);
 		Mockito.<Iterable<? extends NodeGraphFieldContainer>> when(node.getDraftGraphFieldContainers()).thenReturn(Arrays.asList(container));
 		return node;
 	}
@@ -317,7 +333,7 @@ public final class TestMocks {
 
 		// Date field
 		DateGraphField dateField = mock(DateGraphField.class);
-		when(dateField.getDate()).thenReturn(System.currentTimeMillis() / 1000);
+		when(dateField.getDate()).thenReturn(TIMESTAMP_NEW / 1000);
 		when(container.getDate("date")).thenReturn(dateField);
 
 		// Boolean field

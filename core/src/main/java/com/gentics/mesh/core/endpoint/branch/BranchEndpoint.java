@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.branch;
 
+import static com.gentics.mesh.example.ExampleUuids.BRANCH_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_BLUE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -19,7 +21,6 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle for REST endpoints to manage branches.
@@ -60,7 +61,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 	private void addMicroschemaInfoHandler() {
 		InternalEndpointRoute readMicroschemas = createRoute();
 		readMicroschemas.path("/:branchUuid/microschemas");
-		readMicroschemas.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		readMicroschemas.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		readMicroschemas.method(GET);
 		readMicroschemas.description("Load microschemas that are assigned to the branch and return a paged list response.");
 		readMicroschemas.produces(APPLICATION_JSON);
@@ -72,13 +73,12 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleGetMicroschemaVersions(ac, uuid);
 		});
 
-		
 	}
 
 	private void addSchemaInfoHandler() {
 		InternalEndpointRoute readSchemas = createRoute();
 		readSchemas.path("/:branchUuid/schemas");
-		readSchemas.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		readSchemas.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		readSchemas.method(GET);
 		readSchemas.description("Load schemas that are assigned to the branch and return a paged list response.");
 		readSchemas.addQueryParameters(PagingParametersImpl.class);
@@ -95,7 +95,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:branchUuid/migrateSchemas");
 		endpoint.method(POST);
-		endpoint.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the branch.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
@@ -110,7 +110,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:branchUuid/migrateMicroschemas");
 		endpoint.method(POST);
-		endpoint.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the branch.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
@@ -138,7 +138,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 	private void addReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:branchUuid");
-		readOne.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		readOne.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		readOne.description("Load the branch with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
@@ -171,7 +171,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 	private void addUpdateHandler() {
 		InternalEndpointRoute addSchema = createRoute();
 		addSchema.path("/:branchUuid/schemas");
-		addSchema.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		addSchema.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		addSchema.method(POST);
 		addSchema.description("Assign a schema version to the breanch.");
 		addSchema.consumes(APPLICATION_JSON);
@@ -186,7 +186,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute addMicroschema = createRoute();
 		addMicroschema.path("/:branchUuid/microschemas");
-		addMicroschema.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		addMicroschema.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		addMicroschema.method(POST);
 		addMicroschema.description("Assign a microschema version to the branch.");
 		addMicroschema.consumes(APPLICATION_JSON);
@@ -201,7 +201,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute setLatest = createRoute();
 		setLatest.path("/:branchUuid/latest");
-		setLatest.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		setLatest.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		setLatest.description("Set the branch with the given uuid as 'latest' branch of the project.");
 		setLatest.method(POST);
 		setLatest.produces(APPLICATION_JSON);
@@ -214,9 +214,9 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute updateBranch = createRoute();
 		updateBranch.path("/:branchUuid");
-		updateBranch.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
+		updateBranch.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		updateBranch
-				.description("Update the branch with the given uuid. The branch is created if no branch with the specified uuid could be found.");
+			.description("Update the branch with the given uuid. The branch is created if no branch with the specified uuid could be found.");
 		updateBranch.method(POST);
 		updateBranch.consumes(APPLICATION_JSON);
 		updateBranch.produces(APPLICATION_JSON);
@@ -232,7 +232,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 	private void addTagsHandler() {
 		InternalEndpointRoute getTags = createRoute();
 		getTags.path("/:branchUuid/tags");
-		getTags.addUriParameter("branchUuid", "Uuid of the branch.", UUIDUtil.randomUUID());
+		getTags.addUriParameter("branchUuid", "Uuid of the branch.", BRANCH_UUID);
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
 		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the branch.");
@@ -245,7 +245,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute bulkUpdate = createRoute();
 		bulkUpdate.path("/:branchUuid/tags");
-		bulkUpdate.addUriParameter("branchUuid", "Uuid of the branch.", UUIDUtil.randomUUID());
+		bulkUpdate.addUriParameter("branchUuid", "Uuid of the branch.", BRANCH_UUID);
 		bulkUpdate.method(POST);
 		bulkUpdate.produces(APPLICATION_JSON);
 		bulkUpdate.description("Update the list of assigned tags");
@@ -259,8 +259,8 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute addTag = createRoute();
 		addTag.path("/:branchUuid/tags/:tagUuid");
-		addTag.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
-		addTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
+		addTag.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
+		addTag.addUriParameter("tagUuid", "Uuid of the tag", TAG_BLUE_UUID);
 		addTag.method(POST);
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", false), "Updated branch.");
@@ -274,8 +274,8 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute removeTag = createRoute();
 		removeTag.path("/:branchUuid/tags/:tagUuid");
-		removeTag.addUriParameter("branchUuid", "Uuid of the branch", UUIDUtil.randomUUID());
-		removeTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
+		removeTag.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
+		removeTag.addUriParameter("tagUuid", "Uuid of the tag", TAG_BLUE_UUID);
 		removeTag.method(DELETE);
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the branch.");

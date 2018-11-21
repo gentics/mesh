@@ -1,5 +1,42 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.FieldUtil.createBooleanField;
+import static com.gentics.mesh.FieldUtil.createDateField;
+import static com.gentics.mesh.FieldUtil.createHtmlField;
+import static com.gentics.mesh.FieldUtil.createMicronodeField;
+import static com.gentics.mesh.FieldUtil.createMicronodeListField;
+import static com.gentics.mesh.FieldUtil.createNewMicronodeField;
+import static com.gentics.mesh.FieldUtil.createNodeField;
+import static com.gentics.mesh.FieldUtil.createNodeListField;
+import static com.gentics.mesh.FieldUtil.createNumberField;
+import static com.gentics.mesh.FieldUtil.createNumberListField;
+import static com.gentics.mesh.FieldUtil.createStringField;
+import static com.gentics.mesh.FieldUtil.createStringListField;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.example.ExampleUuids.NODE_AUTOMOBILES_CATEGEORY_UUID;
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.NODE_ROOT_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_GREEN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
+import static com.gentics.mesh.example.ExampleUuids.UUID_2;
+import static com.gentics.mesh.example.ExampleUuids.UUID_3;
+import static com.gentics.mesh.example.ExampleUuids.UUID_4;
+import static com.gentics.mesh.example.ExampleUuids.UUID_5;
+import static com.gentics.mesh.example.ExampleUuids.UUID_6;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.raml.model.ParamType;
+import org.raml.model.parameter.FormParameter;
+
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -20,80 +57,54 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.Tuple;
-import org.raml.model.ParamType;
-import org.raml.model.parameter.FormParameter;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.gentics.mesh.FieldUtil.createBooleanField;
-import static com.gentics.mesh.FieldUtil.createDateField;
-import static com.gentics.mesh.FieldUtil.createHtmlField;
-import static com.gentics.mesh.FieldUtil.createMicronodeField;
-import static com.gentics.mesh.FieldUtil.createMicronodeListField;
-import static com.gentics.mesh.FieldUtil.createNewMicronodeField;
-import static com.gentics.mesh.FieldUtil.createNodeField;
-import static com.gentics.mesh.FieldUtil.createNodeListField;
-import static com.gentics.mesh.FieldUtil.createNumberField;
-import static com.gentics.mesh.FieldUtil.createNumberListField;
-import static com.gentics.mesh.FieldUtil.createStringField;
-import static com.gentics.mesh.FieldUtil.createStringListField;
-import static com.gentics.mesh.core.rest.common.Permission.CREATE;
-import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 public class NodeExamples extends AbstractExamples {
 
 	public NodeResponse getNodeResponseWithAllFields() {
 		NodeResponse nodeResponse = new NodeResponse();
-		nodeResponse.setUuid(randomUUID());
+		nodeResponse.setUuid(NODE_DELOREAN_UUID);
 		NodeReference parentNodeReference = new NodeReference();
-		parentNodeReference.setUuid(randomUUID());
+		parentNodeReference.setUuid(NODE_ROOT_UUID);
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
-		nodeResponse.setCreated(createTimestamp());
-		nodeResponse.setEdited(createTimestamp());
+		nodeResponse.setCreated(createOldTimestamp());
+		nodeResponse.setEdited(createNewTimestamp());
 		nodeResponse.setCreator(createUserReference());
-		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
 
-		languageInfo.put("de", new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createTimestamp()).setPublisher(
-				createUserReference()));
-		languageInfo.put("en", new PublishStatusModel().setVersion("1.1").setPublished(false).setPublishDate(createTimestamp()).setPublisher(
-				createUserReference()));
+		languageInfo.put("de", new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createOldTimestamp()).setPublisher(
+			createUserReference()));
+		languageInfo.put("en", new PublishStatusModel().setVersion("1.1").setPublished(false).setPublishDate(createOldTimestamp()).setPublisher(
+			createUserReference()));
 
 		nodeResponse.setAvailableLanguages(languageInfo);
 		HashMap<String, String> languagePaths = new HashMap<>();
 		languagePaths.put("en", "/api/v1/yourProject/webroot/Images");
 		languagePaths.put("de", "/api/v1/yourProject/webroot/Bilder");
 		nodeResponse.setLanguagePaths(languagePaths);
-		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(randomUUID()));
-		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(randomUUID()));
+		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(UUID_2));
+		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(UUID_3));
 
 		FieldMap fields = nodeResponse.getFields();
 		fields.put("name", createStringField("Name for language tag de-DE"));
 		fields.put("filename", createStringField("dummy-content.de.html"));
 		fields.put("teaser", createStringField("Dummy teaser for de-DE"));
 		fields.put("content", createHtmlField("Content for language tag de-DE"));
-		fields.put("relatedProduct", createNodeField(randomUUID()));
+		fields.put("relatedProduct", createNodeField(UUID_1));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("branch", createDateField(createTimestamp()));
-		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
+		fields.put("branch", createDateField(createOldTimestamp()));
+		fields.put("categories", createNodeListField(UUID_4, UUID_5, UUID_6));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
 		fields.put("binary", createBinaryField());
 		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
-				"longitude", createNumberField(16.373063840833))));
+			"longitude", createNumberField(16.373063840833))));
 		fields.put("locations", createMicronodeListField(createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(
-				48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createMicronodeField("geolocation", Tuple.tuple(
-						"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
+			48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createMicronodeField("geolocation", Tuple.tuple(
+				"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions(READ, UPDATE, DELETE, CREATE);
@@ -101,16 +112,16 @@ public class NodeExamples extends AbstractExamples {
 		// breadcrumb
 		List<NodeReference> breadcrumb = new ArrayList<>();
 		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(NODE_DELOREAN_UUID));
+		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/automobiles/delorean-dmc-12").setUuid(NODE_AUTOMOBILES_CATEGEORY_UUID));
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags
-		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
-		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(randomUUID()).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(TAG_GREEN_UUID).setTagFamily("colors"));
 
-		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(randomUUID()));
-		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(randomUUID()));
+		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(UUID_1));
+		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(UUID_2));
 
 		return nodeResponse;
 	}
@@ -124,13 +135,13 @@ public class NodeExamples extends AbstractExamples {
 		binaryField.setHeight(600);
 		binaryField.setMimeType("image/jpeg");
 		binaryField.setSha512sum(
-				"ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
+			"ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
 		return binaryField;
 	}
 
 	public NavigationResponse getNavigationResponse() {
 		NavigationResponse response = new NavigationResponse();
-		String rootUuid = randomUUID();
+		String rootUuid = NODE_ROOT_UUID;
 
 		// Level 0
 		NodeResponse rootElement = getNodeResponseWithAllFields();
@@ -141,7 +152,7 @@ public class NodeExamples extends AbstractExamples {
 
 		// Level 1
 		NavigationElement navElement = new NavigationElement();
-		String navElementUuid = randomUUID();
+		String navElementUuid = UUID_1;
 		NodeResponse navElementNode = getNodeResponseWithAllFields();
 		navElementNode.setUuid(navElementUuid);
 		navElement.setUuid(navElementUuid);
@@ -153,17 +164,17 @@ public class NodeExamples extends AbstractExamples {
 
 	public NodeResponse getNodeResponse2() {
 		NodeResponse nodeResponse = new NodeResponse();
-		nodeResponse.setUuid(randomUUID());
+		nodeResponse.setUuid(UUID_1);
 		nodeResponse.setSchema(getSchemaReference("content"));
 
 		NodeReference parentNodeReference = new NodeReference();
-		parentNodeReference.setUuid(randomUUID());
+		parentNodeReference.setUuid(NODE_ROOT_UUID);
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 
 		nodeResponse.setParentNode(parentNodeReference);
 		nodeResponse.setCreator(createUserReference());
-		nodeResponse.setCreated(createTimestamp());
-		nodeResponse.setEdited(createTimestamp());
+		nodeResponse.setCreated(createOldTimestamp());
+		nodeResponse.setEdited(createNewTimestamp());
 		nodeResponse.setEditor(createUserReference());
 
 		FieldMap fields = nodeResponse.getFields();
@@ -177,22 +188,22 @@ public class NodeExamples extends AbstractExamples {
 		// breadcrumb
 		List<NodeReference> breadcrumb = new ArrayList<>();
 		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReference().setDisplayName("Automobiles").setPath("/automobiles").setUuid(NODE_AUTOMOBILES_CATEGEORY_UUID));
+		breadcrumb.add(new NodeReference().setDisplayName("DeLorean DMC-12").setPath("/automobiles/delorean-dmc-12").setUuid(NODE_DELOREAN_UUID));
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags
-		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
-		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(randomUUID()).setTagFamily("colors"));
-		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(randomUUID()).setTagFamily("vehicles"));
-		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(randomUUID()).setTagFamily("vehicles"));
+		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(TAG_GREEN_UUID).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(UUID_1).setTagFamily("vehicles"));
+		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(UUID_2).setTagFamily("vehicles"));
 
 		return nodeResponse;
 	}
 
 	public NodeCreateRequest getNodeCreateRequest2() {
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
-		contentCreate.setParentNodeUuid(randomUUID());
+		contentCreate.setParentNodeUuid(UUID_1);
 		contentCreate.setLanguage("en");
 		contentCreate.setSchema(getSchemaReference("content"));
 
@@ -202,18 +213,18 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("content", createStringField("English content"));
 		fields.put("title", createStringField("English title"));
 		fields.put("teaser", createStringField("English teaser"));
-		fields.put("relatedProduct", createNodeField(randomUUID()));
+		fields.put("relatedProduct", createNodeField(NODE_AUTOMOBILES_CATEGEORY_UUID));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("branch", createDateField(createTimestamp()));
-		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
+		fields.put("branch", createDateField(createOldTimestamp()));
+		fields.put("categories", createNodeListField(UUID_2, UUID_3, UUID_4));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
 		fields.put("location", createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
-				"longitude", createNumberField(16.373063840833))));
+			"longitude", createNumberField(16.373063840833))));
 		fields.put("locations", createMicronodeListField(createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(
-				48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createNewMicronodeField("geolocation", Tuple.tuple(
-						"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
+			48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createNewMicronodeField("geolocation", Tuple.tuple(
+				"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		return contentCreate;
 	}
@@ -221,11 +232,11 @@ public class NodeExamples extends AbstractExamples {
 	public NodeCreateRequest getNodeCreateRequest() {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(randomUUID());
+		nodeCreateRequest.setParentNodeUuid(NODE_AUTOMOBILES_CATEGEORY_UUID);
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("vehicle"));
 		nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString("DeLorean DMC-12"));
 		nodeCreateRequest.getFields().put("description", new HtmlFieldImpl().setHTML(
-				"The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."));
+			"The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."));
 		return nodeCreateRequest;
 	}
 
@@ -252,18 +263,18 @@ public class NodeExamples extends AbstractExamples {
 
 		FieldMap fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
-		fields.put("relatedProduct-", createNodeField(randomUUID()));
+		fields.put("relatedProduct-", createNodeField(UUID_1));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("branch", createDateField(createTimestamp()));
-		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
+		fields.put("branch", createDateField(createOldTimestamp()));
+		fields.put("categories", createNodeListField(UUID_2, UUID_3, UUID_4));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
 		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
-				"longitude", createNumberField(16.373063840833))));
+			"longitude", createNumberField(16.373063840833))));
 		fields.put("locations", createMicronodeListField(createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(
-				48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createMicronodeField("geolocation", Tuple.tuple(
-						"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
+			48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createMicronodeField("geolocation", Tuple.tuple(
+				"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		return nodeUpdate;
 	}

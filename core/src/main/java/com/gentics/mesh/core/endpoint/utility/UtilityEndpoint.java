@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.utility;
 
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -79,7 +81,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Return the posted text and resolve and replace all found mesh links. "
 			+ "A mesh link must be in the format {{mesh.link(\"UUID\",\"languageTag\")}}");
 		endpoint.addQueryParameters(NodeParametersImpl.class);
-		endpoint.exampleRequest("Some text before {{mesh.link(\"" + UUIDUtil.randomUUID() + "\", \"en\")}} and after.");
+		endpoint.exampleRequest("Some text before {{mesh.link(\"" + NODE_DELOREAN_UUID + "\", \"en\")}} and after.");
 		endpoint.exampleResponse(OK, "Some text before /api/v1/dummy/webroot/flower.jpg and after");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);

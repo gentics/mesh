@@ -9,7 +9,6 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.UserParameters;
-import com.gentics.mesh.util.TokenUtil;
 
 public class UserParametersImpl extends AbstractParameters implements UserParameters {
 
@@ -37,7 +36,7 @@ public class UserParametersImpl extends AbstractParameters implements UserParame
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDescription(
 				"Token code which can be used to update the user even if the connection is not authenticated. This can be used to implement a password recovery feature.");
-		pageParameter.setExample(TokenUtil.randomToken());
+		pageParameter.setExample("FDrbBDWRY3aS");
 		pageParameter.setRequired(false);
 		pageParameter.setType(ParamType.STRING);
 		parameters.put(TOKEN_PARAMETER_KEY, pageParameter);

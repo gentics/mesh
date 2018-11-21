@@ -4,7 +4,9 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.GROUP_ADMIN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.GROUP_EDITORS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.ROLE_ADMIN_UUID;
 
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -19,20 +21,20 @@ public class GroupExamples extends AbstractExamples {
 
 	public GroupResponse getGroupResponse1(String name) {
 		GroupResponse group = new GroupResponse();
-		group.setUuid(randomUUID());
-		group.setCreated(createTimestamp());
+		group.setUuid(GROUP_ADMIN_UUID);
+		group.setCreated(createOldTimestamp());
 		group.setCreator(createUserReference());
-		group.setEdited(createTimestamp());
+		group.setEdited(createNewTimestamp());
 		group.setEditor(createUserReference());
 		group.setName(name);
 		group.setPermissions(READ, UPDATE, DELETE, CREATE);
-		group.getRoles().add(new RoleReference().setName("admin").setUuid(randomUUID()));
+		group.getRoles().add(new RoleReference().setName("admin").setUuid(ROLE_ADMIN_UUID));
 		return group;
 	}
 
 	public GroupResponse getGroupResponse2() {
 		GroupResponse group2 = new GroupResponse();
-		group2.setUuid(randomUUID());
+		group2.setUuid(GROUP_EDITORS_UUID);
 		group2.setName("Editor Group");
 		group2.setPermissions(READ, UPDATE, DELETE, CREATE);
 		return group2;

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.microschema;
 
+import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -18,7 +19,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 
@@ -56,7 +56,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 	private void addDiffHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid/diff");
-		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
@@ -86,7 +86,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid/changes");
-		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);
@@ -104,7 +104,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 	private void addReadHandlers() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:microschemaUuid");
-		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
@@ -134,7 +134,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 	private void addDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
-		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was deleted.");
@@ -149,7 +149,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 	private void addUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:microschemaUuid");
-		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);

@@ -25,4 +25,5 @@ public final class TokenUtil {
 		}
 		return new String(password);
 	}
+
 }

@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -52,7 +52,7 @@ public class SchemaExamples extends AbstractExamples {
 
 	public SchemaResponse getSchemaResponse() {
 		SchemaResponse schema = new SchemaResponse();
-		schema.setUuid(randomUUID());
+		schema.setUuid(UUID_1);
 		schema.setDescription("Example schema description");
 		schema.setName("ExampleSchema");
 		schema.setSegmentField("name");

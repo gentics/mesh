@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.schema;
 
+import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -20,7 +21,6 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle for /api/v1/schemas endpoint
@@ -69,7 +69,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:schemaUuid/changes");
-		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		endpoint.method(POST);
 		endpoint.description("Apply the posted changes to the schema. The schema migration will not automatically be started.");
 		endpoint.produces(APPLICATION_JSON);
@@ -100,7 +100,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 	private void addDiffHandler() {
 		InternalEndpointRoute diffEndpoint = createRoute();
 		diffEndpoint.path("/:schemaUuid/diff");
-		diffEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		diffEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		diffEndpoint.method(POST);
 		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset.");
 		diffEndpoint.consumes(APPLICATION_JSON);
@@ -120,7 +120,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 	private void addUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:schemaUuid");
-		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		endpoint.method(POST);
 		endpoint.description("Update the schema.");
 		endpoint.consumes(APPLICATION_JSON);
@@ -142,7 +142,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 	private void addDeleteHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:schemaUuid");
-		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		endpoint.method(DELETE);
 		endpoint.description("Delete the schema with the given uuid.");
 		endpoint.produces(APPLICATION_JSON);
@@ -157,7 +157,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 	private void addReadHandlers() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:schemaUuid");
-		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		readOne.method(GET);
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.description("Load the schema with the given uuid.");

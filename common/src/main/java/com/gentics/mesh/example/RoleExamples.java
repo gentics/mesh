@@ -6,7 +6,10 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.GROUP_CLIENT_UUID;
+import static com.gentics.mesh.example.ExampleUuids.GROUP_EDITORS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.ROLE_ADMIN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +27,12 @@ public class RoleExamples extends AbstractExamples {
 	public RoleResponse getRoleResponse1(String name) {
 		RoleResponse role = new RoleResponse();
 		role.setName(name);
-		role.setCreated(createTimestamp());
+		role.setCreated(createOldTimestamp());
 		role.setCreator(createUserReference());
-		role.setEdited(createTimestamp());
+		role.setEdited(createNewTimestamp());
 		role.setEditor(createUserReference());
 		role.setPermissions(READ, UPDATE, DELETE, CREATE);
-		role.setUuid(randomUUID());
+		role.setUuid(ROLE_CLIENT_UUID);
 		return role;
 	}
 
@@ -59,15 +62,15 @@ public class RoleExamples extends AbstractExamples {
 	public RoleResponse getRoleResponse2() {
 		RoleResponse role = new RoleResponse();
 		role.setName("Admin role");
-		role.setUuid(randomUUID());
-		role.setCreated(createTimestamp());
+		role.setUuid(ROLE_ADMIN_UUID);
+		role.setCreated(createOldTimestamp());
 		role.setCreator(createUserReference());
-		role.setEdited(createTimestamp());
+		role.setEdited(createNewTimestamp());
 		role.setEditor(createUserReference());
 		role.setPermissions(READ, UPDATE, DELETE, CREATE);
 		List<GroupReference> groups = new ArrayList<>();
-		groups.add(new GroupReference().setName("editors").setUuid(randomUUID()));
-		groups.add(new GroupReference().setName("guests").setUuid(randomUUID()));
+		groups.add(new GroupReference().setName("editors").setUuid(GROUP_EDITORS_UUID));
+		groups.add(new GroupReference().setName("clients").setUuid(GROUP_CLIENT_UUID));
 		role.setGroups(groups);
 		return role;
 	}
