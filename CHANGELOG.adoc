@@ -32,6 +32,7 @@ icon:check[] Core: Fixed a bug that caused link:https://getmesh.io/docs/api/#pro
 
 icon:check[] Core: Nodes are now migrated to the newest schema version when a new branch is created. link:https://github.com/gentics/mesh/issues/521[#521]
 
+icon:check[] Core: Fixed a bug that prevented moving a published node in one language to a published container of another language.
 
 [[v0.28.0]]
 == 0.28.0 (20.11.2018)
@@ -79,8 +80,6 @@ icon:check[] REST: Fixed error while fetching jobs for deleted projects.
 icon:plus[] Elasticsearch: The index sync will now automatically remove no longer used indices.
 
 icon:check[] REST: Fixed an error that can happen when creating new nodes which contain binary fields that reference a not yet stored binary sha512sum. link:https://github.com/gentics/mesh/issues/524[#524]
-
-icon:check[] Core: Fixed a bug that prevented moving a published node in one language to a published container of another language.
 
 [[v0.27.0]]
 == 0.27.0 (19.10.2018)
