@@ -643,12 +643,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			MeshInternal.get().serverSchemaStorage().clear();
 		}
 
-		// Setup eventbus bridged latch - This will effectively block the unit test until the background schema migration process has finished.
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(containerUuid, schema));
-		}, COMPLETED, 1);
-		failingLatch(latch);
+		call(() -> client().updateSchema(containerUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 
 		// 3. Load the new schema and assign it to the branch
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));

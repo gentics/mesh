@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLET
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -17,6 +16,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.test.util.TestUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -250,12 +251,46 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 			if (i > 30) {
 				System.out.println(response.toJson());
 			}
-			if (i == MAX_WAIT) {
+			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
 			}
 			sleep(1000);
 		}
 		return null;
+	}
+
+	protected void waitForLatestJob(Runnable action, MigrationStatus status) {
+		// Load a status just before the action
+		JobListResponse before = call(() -> client().findJobs());
+
+		// Invoke the action
+		action.run();
+
+		// Now poll the migration status and check the response
+		final int MAX_WAIT = 120;
+		for (int i = 0; i < MAX_WAIT; i++) {
+			JobListResponse response = call(() -> client().findJobs());
+			List<JobResponse> diff = TestUtils.difference(response.getData(), before.getData(), JobResponse::getUuid);
+			if (diff.size() > 1) {
+				System.out.println(response.toJson());
+				throw new RuntimeException("More jobs than expected");
+			}
+			if (diff.size() == 1) {
+				JobResponse newJob = diff.get(0);
+				if (newJob.getStatus().equals(status)) {
+					return;
+				}
+			}
+
+			if (i > 2) {
+				System.out.println(response.toJson());
+			}
+
+			if (i == MAX_WAIT - 1) {
+				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
+			}
+			sleep(1000);
+		}
 	}
 
 	/**
@@ -284,7 +319,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 				System.out.println(response.toJson());
 			}
 
-			if (i == MAX_WAIT) {
+			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
 			}
 			sleep(1000);
@@ -343,7 +378,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 				System.out.println(response.toJson());
 			}
 
-			if (i == MAX_WAIT) {
+			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
 			}
 			sleep(1000);

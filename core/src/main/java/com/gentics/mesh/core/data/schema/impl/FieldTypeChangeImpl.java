@@ -68,8 +68,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = container.getField(getFieldName());
 
 		if (fieldSchema == null) {
-			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "} for change {"
-					+ getUuid() + "}");
+			throw error(BAD_REQUEST, "schema_error_change_field_not_found", getFieldName(), container.getName(), getUuid());
 		}
 
 		FieldSchema field = null;

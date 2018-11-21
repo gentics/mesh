@@ -43,8 +43,7 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 		FieldSchema fieldSchema = container.getField(getFieldName());
 
 		if (fieldSchema == null) {
-			//TODO i18n
-			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "}");
+			throw error(BAD_REQUEST, "schema_error_change_field_not_found", getFieldName(), container.getName(), getUuid());
 		}
 		// Remove prefix from map keys
 		Map<String, Object> properties = new HashMap<>();

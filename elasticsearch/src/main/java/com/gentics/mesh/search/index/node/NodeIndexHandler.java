@@ -142,8 +142,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 							.getUuid(), PUBLISHED);
 						if (log.isDebugEnabled()) {
-							log.debug("Adding index to map of known idices {" + draftIndexName + "}");
-							log.debug("Adding index to map of known idices {" + publishIndexName + "}");
+							log.debug("Adding index to map of known indices {" + draftIndexName + "}");
+							log.debug("Adding index to map of known indices {" + publishIndexName + "}");
 						}
 						branch.findAllMicroschemaVersions();
 						// Load the index mapping information for the index

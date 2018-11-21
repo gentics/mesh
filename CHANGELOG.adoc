@@ -46,6 +46,8 @@ icon:check[] REST: A concurrency issue has been fixed which could lead to proble
 
 icon:check[] REST: Fix error message when no node for a content can be found. link:https://github.com/gentics/mesh/issues/364[#364]
 
+icon:check[] Core: Fixed a bug that caused link:https://getmesh.io/docs/api/#project__branches__branchUuid__migrateSchemas_post[/migrateSchemas] to fail when a newer schema version was not assigned to the branch. link:https://github.com/gentics/mesh/issues/532[#532]
+
 [[v0.27.2]]
 == 0.27.2 (07.11.2018)
 
