@@ -213,8 +213,16 @@ public interface TestHelperMethods {
 		return getTestContext().getPort();
 	}
 
-	default public Node folder(String key) {
+	default Node folder(String key) {
 		return data().getFolder(key);
+	}
+
+	/**
+	 * Return uuid of the news folder.
+	 * @return
+	 */
+	default String folderUuid() {
+		return tx(() -> folder("news").getUuid());
 	}
 
 	default Node content(String key) {
@@ -462,7 +470,8 @@ public interface TestHelperMethods {
 		create.setParentNode(nodeResponse.getParentNode());
 
 		nodeResponse.getFields().keySet().forEach(key -> create.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().createNode(nodeResponse.getUuid(), projectName, create,  new VersioningParametersImpl().setBranch(targetBranchName)));
+		return call(
+			() -> client().createNode(nodeResponse.getUuid(), projectName, create, new VersioningParametersImpl().setBranch(targetBranchName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {

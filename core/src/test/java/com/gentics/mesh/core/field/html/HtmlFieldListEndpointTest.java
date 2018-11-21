@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
@@ -38,12 +38,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			HtmlFieldListImpl listField = new HtmlFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add("C");
-
-			NodeResponse response = createNode(FIELD_NAME, listField);
+			NodeResponse response = createNodeWithField();
 			HtmlFieldListImpl field = response.getFields().getHtmlFieldList(FIELD_NAME);
 			assertThat(field.getItems()).containsExactly("A", "B", "C");
 		}
@@ -138,7 +133,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		Node node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
-				Arrays.asList("X", "Y"), Arrays.asList("C"));
+			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
 		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
 		for (int i = 0; i < 20; i++) {
@@ -165,9 +160,9 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				// Assert the update within the graph
 				NodeGraphFieldContainer updatedContainer = container.getNextVersions().iterator().next();
 				assertEquals("The container version number did not match up with the response version number.",
-						updatedContainer.getVersion().toString(), response.getVersion());
+					updatedContainer.getVersion().toString(), response.getVersion());
 				assertEquals("We expected container {" + container.getVersion().toString() + "} to contain the old value.", newValue,
-						getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
+					getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
 				// assertEquals("We expected container {" + updatedContainer.getVersion().toString() +"} to contain the old value.", oldValue,
 				// getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
 				container = updatedContainer;
@@ -195,12 +190,12 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getHTMLList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHTMLList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getHTMLList(FIELD_NAME).getList().stream().map(item -> item.getHTML())
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("A", "B");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 
 	}
@@ -223,6 +218,16 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
 		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add("C");
+
+		return createNode(FIELD_NAME, listField);
 	}
 
 }

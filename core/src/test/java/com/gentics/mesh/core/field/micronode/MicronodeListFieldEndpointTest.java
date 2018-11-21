@@ -157,13 +157,13 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-							getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
 					container = newContainer;
 				}
 			} else {
 				try (Tx tx = tx()) {
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-							getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
 					assertEquals("The version should not have been updated.", container.getVersion().toString(), response.getVersion());
 				}
 			}
@@ -207,12 +207,12 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronodeList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getMicronodeList(FIELD_NAME).getList().stream()
-					.map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
+				.map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("Max", "Moritz");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -350,12 +350,14 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
+			// 1. Create the node
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("Max", "Böse"));
 			field.add(createItem("Moritz", "Böse"));
 			assertThat(field.getItems()).hasSize(2);
 			NodeResponse response = createNode(FIELD_NAME, field);
 
+			// Assert the response
 			FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 			assertNotNull(responseField);
 			assertFieldEquals(field, responseField, true);
@@ -413,7 +415,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			MicronodeField micronode = field.getItems().get(i);
 			for (String fieldName : Arrays.asList("firstName", "lastName")) {
 				assertEquals("Check " + fieldName + " of item # " + (i + 1), expectedMicronode.getFields().getStringField(fieldName).getString(),
-						micronode.getFields().getStringField(fieldName).getString());
+					micronode.getFields().getStringField(fieldName).getString());
 			}
 
 			// TODO enable comparing uuids
@@ -432,7 +434,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
 		try (Tx tx = tx()) {
 			Set<? extends MicronodeImpl> unboundMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
-					.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
+				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();
 		}
 	}
@@ -452,6 +454,15 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		item.getFields().put("firstName", new StringFieldImpl().setString(firstName));
 		item.getFields().put("lastName", new StringFieldImpl().setString(lastName));
 		return item;
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		field.add(createItem("Max", "Böse"));
+		field.add(createItem("Moritz", "Böse"));
+		assertThat(field.getItems()).hasSize(2);
+		return createNode(FIELD_NAME, field);
 	}
 
 }

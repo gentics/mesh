@@ -195,13 +195,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			MicronodeResponse field = new MicronodeResponse();
-			MicroschemaReferenceImpl microschema = new MicroschemaReferenceImpl();
-			microschema.setName("vcard");
-			field.setMicroschema(microschema);
-			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-			field.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
-			NodeResponse response = createNode(FIELD_NAME, field);
+			NodeResponse response = createNodeWithField();
 
 			MicronodeResponse createdField = response.getFields().getMicronodeField(FIELD_NAME);
 			assertNotNull("Created field does not exist", createdField);
@@ -394,6 +388,17 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	protected Micronode getMicronodeValue(NodeGraphFieldContainer container, String fieldName) {
 		MicronodeGraphField field = container.getMicronode(fieldName);
 		return field != null ? field.getMicronode() : null;
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		MicronodeResponse field = new MicronodeResponse();
+		MicroschemaReferenceImpl microschema = new MicroschemaReferenceImpl();
+		microschema.setName("vcard");
+		field.setMicroschema(microschema);
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
+		return createNode(FIELD_NAME, field);
 	}
 
 }

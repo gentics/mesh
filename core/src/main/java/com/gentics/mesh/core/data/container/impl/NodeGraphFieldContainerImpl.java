@@ -54,8 +54,19 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -166,26 +177,30 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			micronodeField.removeField(this);
 		}
 
-		// Lists
-		// for (NumberGraphFieldList list : out(HAS_FIELD).frame(NumberGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (DateGraphFieldList list : out(HAS_FIELD).frame(DateGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (BooleanGraphFieldList list : out(HAS_FIELD).frame(BooleanGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (HtmlGraphFieldList list : out(HAS_FIELD).frame(HtmlGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (StringGraphFieldList list : out(HAS_FIELD).frame(StringGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (NodeGraphFieldList list : out(HAS_FIELD).frame(NodeGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
+		for (MicronodeGraphFieldList micronodeList : out(HAS_LIST).has(MicronodeGraphFieldListImpl.class)
+			.frameExplicit(MicronodeGraphFieldListImpl.class)) {
+			micronodeList.removeField(this);
+		}
 
+		// Lists
+		for (NumberGraphFieldList list : out(HAS_LIST).frame(NumberGraphFieldListImpl.class)) {
+			list.removeField(this);
+		}
+		for (DateGraphFieldList list : out(HAS_LIST).frame(DateGraphFieldListImpl.class)) {
+			list.removeField(this);
+		}
+		for (BooleanGraphFieldList list : out(HAS_LIST).frame(BooleanGraphFieldListImpl.class)) {
+			list.removeField(this);
+		}
+		for (HtmlGraphFieldList list : out(HAS_LIST).frame(HtmlGraphFieldListImpl.class)) {
+			list.removeField(this);
+		}
+		for (StringGraphFieldList list : out(HAS_LIST).frame(StringGraphFieldListImpl.class)) {
+			list.removeField(this);
+		}
+		for (NodeGraphFieldList list : out(HAS_LIST).frame(NodeGraphFieldListImpl.class)) {
+			list.removeField(this);
+		}
 		// We don't need to handle node fields since those are only edges and will automatically be removed
 
 		// Delete the container from all branches and types

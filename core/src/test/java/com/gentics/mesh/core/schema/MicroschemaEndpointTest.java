@@ -9,10 +9,10 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateSet;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
@@ -34,7 +34,6 @@ import java.util.concurrent.CyclicBarrier;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -45,6 +44,8 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -57,6 +58,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -334,9 +336,13 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 	}
 
+	/**
+	 * Test delete of node with single micronode.
+	 * 
+	 * @throws Exception
+	 */
 	@Test
-	public void testDeleteByUUIDWhileInUse() throws Exception {
-		String microschemaContainerUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
+	public void testDeleteByUUIDWhileInUse1() throws Exception {
 		String baseUuid = tx(() -> project().getBaseNode().getUuid());
 
 		// 1. Create a new schema which uses the vcard microschema
@@ -348,6 +354,13 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
 
 		// 3. Create a new node which uses the schema
+		NodeResponse nodeResponse1 = createNodeWithMicronode(baseUuid);
+		NodeResponse nodeResponse2 = createNodeWithMicronode(baseUuid);
+		assertDelete(nodeResponse1.getUuid(), nodeResponse2.getUuid());
+
+	}
+
+	private NodeResponse createNodeWithMicronode(String baseUuid) {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
 
@@ -358,7 +371,55 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		nodeCreateRequest.getFields().put("vcardtest", micronodeField);
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("test"));
 		nodeCreateRequest.setParentNodeUuid(baseUuid);
-		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+	}
+
+	/**
+	 * Test delete of node with micronode list.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testDeleteByUUIDWhileInUse2() throws Exception {
+		String baseUuid = tx(() -> project().getBaseNode().getUuid());
+
+		// 1. Create a new schema which uses the vcard microschema
+		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		ListFieldSchema fieldSchema = FieldUtil.createListFieldSchema("vcardslist", "micronode").setAllowedSchemas("vcard");
+		schema.addField(fieldSchema);
+		SchemaResponse response = call(() -> client().createSchema(schema));
+
+		// 2. Assign the new schema to the project
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
+
+		// 3. Create a new node which uses the schema
+		NodeResponse nodeResponse1 = createNodeWithMicronodeList(baseUuid);
+		NodeResponse nodeResponse2 = createNodeWithMicronodeList(baseUuid);
+		assertDelete(nodeResponse1.getUuid(), nodeResponse2.getUuid());
+
+	}
+
+	private NodeResponse createNodeWithMicronodeList(String baseUuid) {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+
+		MicronodeFieldListImpl micronodeListField = new MicronodeFieldListImpl();
+		for (int i = 0; i < 3; i++) {
+			MicronodeResponse micronodeField = new MicronodeResponse();
+			micronodeField.getFields().put("firstName", FieldUtil.createStringField("firstnameValue" + i));
+			micronodeField.getFields().put("lastName", FieldUtil.createStringField("lastnameValue" + i));
+			micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+			micronodeListField.add(micronodeField);
+		}
+
+		nodeCreateRequest.getFields().put("vcardslist", micronodeListField);
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("test"));
+		nodeCreateRequest.setParentNodeUuid(baseUuid);
+		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+	}
+
+	private void assertDelete(String node1Uuid, String node2Uuid) {
+		String microschemaContainerUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 
 		// 4. Try to delete the microschema
 		call(() -> client().deleteMicroschema(microschemaContainerUuid), BAD_REQUEST, "microschema_delete_still_in_use",
@@ -370,16 +431,21 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 
 		// 5. Delete the newly created node
-		call(() -> client().deleteNode(PROJECT_NAME, nodeResponse.getUuid()));
+		call(() -> client().deleteNode(PROJECT_NAME, node1Uuid));
 
-		// 6. Attempt to delete the microschema now
+		call(() -> client().deleteMicroschema(microschemaContainerUuid), BAD_REQUEST, "microschema_delete_still_in_use",
+			microschemaContainerUuid);
+
+		// 6. Delete the second node and thus free the microschema from any references
+		call(() -> client().deleteNode(PROJECT_NAME, node2Uuid));
+
+		// 7. Attempt to delete the microschema now
 		call(() -> client().deleteMicroschema(microschemaContainerUuid));
 
 		try (Tx tx = tx()) {
 			MicroschemaContainer searched = boot().microschemaContainerRoot().findByUuid(microschemaContainerUuid);
 			assertNull("The microschema should have been deleted.", searched);
 		}
-
 	}
 
 	@Test
