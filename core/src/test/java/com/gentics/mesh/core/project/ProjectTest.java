@@ -91,11 +91,11 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			i++;
 
 			// Project tagFamilies
-			for (TagFamily tagFamily : project().getTagFamilyRoot().findAllIt()) {
+			for (TagFamily tagFamily : project().getTagFamilyRoot().findAll()) {
 				batchEnttries.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
 
 				// tags
-				for (Tag tag : tagFamily.findAllIt()) {
+				for (Tag tag : tagFamily.findAll()) {
 					batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
 				}
 			}
@@ -113,9 +113,9 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			long nProjectsBefore = projectRoot.computeCount();
+			long nProjectsBefore = projectRoot.findAll().count();
 			assertNotNull(projectRoot.create("test1234556", null, null, null, user(), schemaContainer("folder").getLatestVersion()));
-			long nProjectsAfter = projectRoot.computeCount();
+			long nProjectsAfter = projectRoot.findAll().count();
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
 	}
@@ -133,7 +133,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(meshRoot().getProjectRoot().findAllIt().iterator());
+			long size = Iterators.size(meshRoot().getProjectRoot().findAll().iterator());
 			assertEquals(1, size);
 		}
 	}
@@ -218,7 +218,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertNotNull(project.getBaseNode());
 			assertNotNull(project.getLanguages());
 			assertEquals(2, project.getLanguages().count());
-			assertEquals(3, project.getSchemaContainerRoot().computeCount());
+			assertEquals(3, project.getSchemaContainerRoot().findAll().count());
 		}
 	}
 

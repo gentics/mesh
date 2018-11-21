@@ -55,6 +55,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.UUIDUtil;
 
 public final class TestMocks {
@@ -71,7 +72,7 @@ public final class TestMocks {
 		when(project.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(project.getEditor()).thenReturn(user);
 		when(project.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
-		when(project.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(project.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(project.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return project;
 	}
@@ -122,7 +123,7 @@ public final class TestMocks {
 		when(role.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		when(role.getName()).thenReturn(roleName);
 		when(role.getUuid()).thenReturn(randomUUID());
-		when(role.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(role.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(role.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return role;
 	}
@@ -135,7 +136,7 @@ public final class TestMocks {
 		when(group.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		when(group.getName()).thenReturn(groupName);
 		when(group.getUuid()).thenReturn(randomUUID());
-		when(group.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(group.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(group.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return group;
 	}
@@ -157,7 +158,7 @@ public final class TestMocks {
 			when(user.getCreator()).thenReturn(creator);
 			when(user.getEditor()).thenReturn(creator);
 		}
-		when(user.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(user.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(user.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return user;
 	}
@@ -180,7 +181,7 @@ public final class TestMocks {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(randomUUID());
 		when(tagFamily.getProject()).thenReturn(project);
-		when(tagFamily.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(tagFamily.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tagFamily.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return tagFamily;
 	}
@@ -195,9 +196,13 @@ public final class TestMocks {
 		when(tag.getUuid()).thenReturn(randomUUID());
 		when(tag.getTagFamily()).thenReturn(tagFamily);
 		when(tag.getProject()).thenReturn(project);
-		when(tag.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(tag.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tag.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return tag;
+	}
+
+	private static <T> TraversalResult<T> createEmptyTraversal() {
+		return new TraversalResult<>(Collections.emptyList());
 	}
 
 	public static SchemaContainer mockSchemaContainer(String name, User user) {
@@ -213,7 +218,7 @@ public final class TestMocks {
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getEditor()).thenReturn(user);
 		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
-		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		return container;
 	}
 
@@ -229,7 +234,7 @@ public final class TestMocks {
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getEditor()).thenReturn(user);
 		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
-		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(container.getElementVersion()).thenReturn(UUIDUtil.randomUUID());
 		return container;
 	}
@@ -277,8 +282,8 @@ public final class TestMocks {
 		when(node.getParentNode(anyString())).thenReturn(parentNode);
 		when(node.getProject()).thenReturn(project);
 
-		List<? extends Tag> tagList = Arrays.asList(tagA, tagB);
-		Mockito.<List<? extends Tag>> when(node.getTags(any(Branch.class))).thenReturn(tagList);
+		TraversalResult<? extends Tag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
+		Mockito.<TraversalResult<? extends Tag>>when(node.getTags(any(Branch.class))).thenReturn(tagResult);
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
@@ -286,8 +291,8 @@ public final class TestMocks {
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
-		when(node.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
-		when(node.getRolesWithPerm(GraphPermission.READ_PUBLISHED_PERM)).thenReturn(Collections.emptyList());
+		when(node.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(node.getRolesWithPerm(GraphPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);

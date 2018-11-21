@@ -52,14 +52,14 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateByTagUuid() {
-		long previousCount = db().tx(() -> tagFamily("colors").computeCount());
+		long previousCount = db().tx(() -> tagFamily("colors").findAll().count());
 		String tagUuid = db().tx(() -> tag("red").getUuid());
 		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setUuid(tagUuid).setTagFamily("colors"));
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(1, response.getMetainfo().getTotalCount());
-		long afterCount = db().tx(() -> tagFamily("colors").computeCount());
+		long afterCount = db().tx(() -> tagFamily("colors").findAll().count());
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
 		try (Tx tx = tx()) {
@@ -70,14 +70,14 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateByTagName() {
-		long previousCount = db().tx(() -> tagFamily("colors").computeCount());
+		long previousCount = db().tx(() -> tagFamily("colors").findAll().count());
 		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("purple").setTagFamily("colors"));
 		request.getTags().add(new TagReference().setName("red").setTagFamily("colors"));
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals("The node should have two tags.", 2, response.getMetainfo().getTotalCount());
-		long afterCount = db().tx(() -> tagFamily("colors").computeCount());
+		long afterCount = db().tx(() -> tagFamily("colors").findAll().count());
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {

@@ -16,7 +16,6 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -248,7 +247,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	private Map<String, String> loadVersionsFromGraph() {
 		Map<String, String> versions = new HashMap<>();
-		for (T element : getRootVertex().findAllIt()) {
+		for (T element : getRootVertex().findAll()) {
 			String v = generateVersion(element);
 			versions.put(element.getUuid(), v);
 		}

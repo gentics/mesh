@@ -67,7 +67,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = project().getTagFamilyRoot().findAllIt().iterator().next();
+			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
 			assertNotNull(tagFamily);
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()));
 			assertNotNull(response);
@@ -79,7 +79,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Override
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = project().getTagFamilyRoot().findAllIt().iterator().next();
+			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
 			String uuid = tagFamily.getUuid();
 
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParametersImpl().setRoleUuid(
@@ -96,7 +96,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		String uuid;
 		try (Tx tx = tx()) {
 			Role role = role();
-			TagFamily tagFamily = project().getTagFamilyRoot().findAllIt().iterator().next();
+			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
 			uuid = tagFamily.getUuid();
 			assertNotNull(tagFamily);
 			role.revokePermissions(tagFamily, READ_PERM);
@@ -371,9 +371,9 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
-			for (Tag tag : tagfamily.findAllIt()) {
+			for (Tag tag : tagfamily.findAll()) {
 				storeCount++;
-				for (Node node : tag.getNodes(branch).iterable()) {
+				for (Node node : tag.getNodes(branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : new ContainerType[] { ContainerType.DRAFT, ContainerType.PUBLISHED }) {

@@ -1010,7 +1010,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			failingLatch(latch);
 
-			long nNodesFoundAfterRest = meshRoot().getNodeRoot().computeCount();
+			long nNodesFoundAfterRest = meshRoot().getNodeRoot().findAll().count();
 			assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
 			// for (Future<NodeResponse> future : set) {
 			// latchFor(future);

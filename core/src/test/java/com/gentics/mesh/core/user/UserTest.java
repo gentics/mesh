@@ -87,9 +87,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			UserRoot root = meshRoot().getUserRoot();
-			int nUserBefore = Iterables.size(root.findAllIt());
+			int nUserBefore = Iterables.size(root.findAll());
 			assertNotNull(root.create("dummy12345", user()));
-			int nUserAfter = Iterables.size(root.findAllIt());
+			int nUserAfter = Iterables.size(root.findAll());
 			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 		}
 	}

@@ -1,6 +1,5 @@
 package com.gentics.mesh.parameter;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.util.NumberUtils;
 

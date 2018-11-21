@@ -97,7 +97,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		return db.tx(() -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
-			for (Project project : projectRoot.findAllIt()) {
+			for (Project project : projectRoot.findAll()) {
 				String indexName = Tag.composeIndexName(project.getUuid());
 				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tag");
 				indexInfo.put(indexName, info);
@@ -113,7 +113,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 				ProjectRoot root = boot.meshRoot().getProjectRoot();
 				Set<Completable> actions = new HashSet<>();
 				SyncMetric metric = new SyncMetric(getType());
-				for (Project project : root.findAllIt()) {
+				for (Project project : root.findAll()) {
 					String uuid = project.getUuid();
 					actions.add(diffAndSync(Tag.composeIndexName(uuid), uuid, metric));
 				}
@@ -127,7 +127,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		return db.tx(() -> {
 			Set<String> activeIndices = new HashSet<>();
-			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
+			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
 				activeIndices.add(Tag.composeIndexName(project.getUuid()));
 			}
 			return indices.stream()

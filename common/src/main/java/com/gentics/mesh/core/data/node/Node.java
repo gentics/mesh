@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
@@ -104,7 +105,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	List<? extends Tag> getTags(Branch branch);
+	TraversalResult<? extends Tag> getTags(Branch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -188,43 +189,37 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @return
 	 */
-	default Iterable<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
+	default TraversalResult<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		// FIX ME: We should not rely on specific branchs.
 		return getGraphFieldContainersIt(getProject().getLatestBranch(), DRAFT);
 	}
 
 	/**
-	 * Return a list of all initial graph field containers for the node (in any branch).
+	 * Return a traversal of all initial graph field containers for the node (in any branch).
 	 *
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
+	TraversalResult<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given branch.
+	 * Return a traversal of graph field containers of given type for the node in the given branch.
 	 *
 	 * @param branch
 	 * @param type
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	@Deprecated
-	default List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
+	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
 		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given branch.
+	 * Return traversal of graph field containers of given type for the node in the given branch.
 	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive. Use {@link #getGraphFieldContainersIt(String, ContainerType)}
 	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
+	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -232,7 +227,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type);
+	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type);
 
 	/**
 	 * Return containers of the given type and branch.
@@ -241,7 +236,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type);
+	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type and branch.
@@ -250,7 +245,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	default Iterable<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Branch branch, ContainerType type) {
+	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Branch branch, ContainerType type) {
 		return getGraphFieldContainersIt(branch.getUuid(), type);
 	}
 
@@ -294,11 +289,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setProject(Project project);
 
 	/**
-	 * Return the children for this node for all branchs.
+	 * Return the children for this node for all branches.
 	 * 
 	 * @return
 	 */
-	Iterable<Node> getChildren();
+	TraversalResult<? extends Node> getChildren();
 
 	/**
 	 * Return the children for this node in the given branch.
@@ -306,7 +301,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return
 	 */
-	Iterable<Node> getChildren(String branchUuid);
+	TraversalResult<Node> getChildren(String branchUuid);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -325,7 +320,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @return
 	 */
-	List<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
+	TraversalResult<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.
@@ -734,7 +729,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	List<Node> getBreadcrumbNodes(InternalActionContext ac);
+	TraversalResult<? extends Node> getBreadcrumbNodes(InternalActionContext ac);
 
 	/**
 	 * Handle the node specific on deleted event.

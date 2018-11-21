@@ -58,6 +58,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
@@ -253,38 +254,6 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Branch::findActiveMicroschemaVersions,
 			JobRoot::enqueueMicroschemaMigration
 		);
-//		utils.asyncTx(ac, () -> {
-//			JobRoot jobRoot = boot.jobRoot();
-//			User user = ac.getUser();
-//			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
-//
-//			// Get all active versions and group by Microschema
-//			Collection<? extends List<? extends MicroschemaContainerVersion>> versions =
-//				StreamSupport.stream(branch.findActiveMicroschemaVersions().spliterator(), false)
-//				.collect(Collectors.groupingBy(MicroschemaContainerVersion::getName)).values();
-//
-//			// Get latest versions of all active Microschemas
-//			Map<String, MicroschemaContainerVersion> latestVersions = versions.stream()
-//				.map(list -> list.stream().max(Comparator.comparing(Function.identity())).get())
-//				.collect(Collectors.toMap(MicroschemaContainerVersion::getUuid, Function.identity()));
-//
-//			versions.stream()
-//				.flatMap(Collection::stream)
-//				// We don't need to migrate the latest active version
-//				.filter(version -> version != latestVersions.get(version.getName()))
-//				.forEach(microschemaVersion -> {
-//					Job job = jobRoot.enqueueMicroschemaMigration(user, branch, microschemaVersion, latestVersions.get(microschemaVersion.getName()));
-//					job.process();
-//					if (log.isInfoEnabled()) {
-//						Iterator<? extends NodeGraphFieldContainer> it = microschemaVersion.getDraftFieldContainers(branch.getUuid());
-//						log.info("After migration " + microschemaVersion.getName() + ":" + microschemaVersion.getVersion() + " - "
-//							+ microschemaVersion.getUuid() + "=" + it.hasNext());
-//					}
-//				});
-//
-//			return message(ac, "schema_migration_invoked");
-//		}, model -> ac.send(model, OK));
-
 	}
 
 	/**
@@ -298,32 +267,6 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Branch::findActiveSchemaVersions,
 			JobRoot::enqueueSchemaMigration
 		);
-//		utils.asyncTx(ac, () -> {
-//			JobRoot jobRoot = boot.jobRoot();
-//			User user = ac.getUser();
-//			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
-//
-//			// Get all active versions and group by Microschema
-//			Collection<? extends List<? extends MicroschemaContainerVersion>> versions =
-//				StreamSupport.stream(branch.findActiveMicroschemaVersions().spliterator(), false)
-//					.collect(Collectors.groupingBy(MicroschemaContainerVersion::getName)).values();
-//
-//			// Get latest versions of all active Microschemas
-//			Map<String, MicroschemaContainerVersion> latestVersions = versions.stream()
-//				.map(list -> list.stream().max(Comparator.comparing(Function.identity())).get())
-//				.collect(Collectors.toMap(MicroschemaContainerVersion::getUuid, Function.identity()));
-//
-//			versions.stream()
-//				.flatMap(Collection::stream)
-//				// We don't need to migrate the latest active version
-//				.filter(version -> version != latestVersions.get(version.getName()))
-//				.forEach(microschemaVersion -> {
-//					Job job = jobRoot.enqueueMicroschemaMigration(user, branch, microschemaVersion, latestVersions.get(microschemaVersion.getName()));
-//					job.process();
-//				});
-//
-//			return message(ac, "schema_migration_invoked");
-//		}, model -> ac.send(model, OK));
 	}
 
 	/**

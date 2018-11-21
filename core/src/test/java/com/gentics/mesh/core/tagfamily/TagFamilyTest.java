@@ -18,7 +18,7 @@ public class TagFamilyTest extends AbstractMeshTest {
 	@Test
 	public void testDelete() {
 		TagFamily tagFamily = tagFamily("colors");
-		Long nTags = tx(() -> TestUtils.size(tagFamily.findAllIt()));
+		Long nTags = tx(() -> tagFamily.findAll().count());
 		int nExtraTags = 100;
 		try (Tx tx = tx()) {
 			for (int i = 0; i < nExtraTags; i++) {

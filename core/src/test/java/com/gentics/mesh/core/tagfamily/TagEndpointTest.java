@@ -78,7 +78,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			List<? extends TagFamily> families = root.findAll();
+			List<? extends TagFamily> families = root.findAll().list();
 			assertNotNull(families);
 			assertEquals(2, families.size());
 
@@ -170,7 +170,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 				Tag redTag = tag("red");
 				affectedElements.put("tagFamily.red", new ElementEntry(DELETE_ACTION, redTag.getUuid()));
 				// Tagged nodes should be updated
-				for (Node node : redTag.getNodes(branch).iterable()) {
+				for (Node node : redTag.getNodes(branch)) {
 					affectedElements.put("red tagged node " + i,
 							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
 									ContainerType.DRAFT, node.getAvailableLanguageNames()));
@@ -179,7 +179,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 
 				Tag greenTag = tag("green");
 				affectedElements.put("tagFamily.green", new ElementEntry(DELETE_ACTION, greenTag.getUuid()));
-				for (Node node : greenTag.getNodes(branch).iterable()) {
+				for (Node node : greenTag.getNodes(branch)) {
 					affectedElements.put("green tagged node " + i,
 							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
 									ContainerType.DRAFT, node.getAvailableLanguageNames()));
@@ -188,7 +188,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 
 				Tag blueTag = tag("blue");
 				affectedElements.put("tagFamily.blue", new ElementEntry(DELETE_ACTION, blueTag.getUuid()));
-				for (Node node : blueTag.getNodes(branch).iterable()) {
+				for (Node node : blueTag.getNodes(branch)) {
 					affectedElements.put("blue tagged node " + i,
 							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
 									ContainerType.DRAFT, node.getAvailableLanguageNames()));

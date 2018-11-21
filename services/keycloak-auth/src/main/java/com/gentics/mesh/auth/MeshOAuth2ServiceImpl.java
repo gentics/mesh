@@ -279,7 +279,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			GroupRoot groupRoot = boot.groupRoot();
 
 			// First remove the user from all groups
-			for (Group group : groupRoot.findAllIt()) {
+			for (Group group : groupRoot.findAll()) {
 				// TODO only remove the user if needed.
 				// We should not touch other groups if not needed.
 				// Otherwise the permission store and index sync gets a lot of work.

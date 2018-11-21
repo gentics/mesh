@@ -87,7 +87,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		}
 		nodes.forEach(node -> {
 			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
-				assertThat(tx(() -> node.getGraphFieldContainers(newBranch, type))).as(type + " Field Containers before Migration").isNotNull()
+				assertThat(tx(() -> node.getGraphFieldContainers(newBranch, type).list())).as(type + " Field Containers before Migration").isNotNull()
 					.isEmpty();
 			});
 		});

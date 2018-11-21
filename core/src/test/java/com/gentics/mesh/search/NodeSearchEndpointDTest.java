@@ -202,7 +202,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		try (Tx tx = tx()) {
 			Node node = content("concorde");
-			int previousTagCount = node.getTags(project().getLatestBranch()).size();
+			long previousTagCount = node.getTags(project().getLatestBranch()).count();
 			// Create tags:
 			int tagCount = 20;
 			for (int i = 0; i < tagCount; i++) {

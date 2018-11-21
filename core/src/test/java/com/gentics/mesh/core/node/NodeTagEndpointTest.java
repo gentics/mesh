@@ -67,7 +67,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		String tagUuid = tx(() -> tag.getUuid());
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
@@ -89,7 +89,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
-			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 
 		// TODO check for properties of the nested tag
@@ -101,7 +101,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Node node = folder("2015");
 		Tag tag = tag("red");
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 			tx.success();
 		}
@@ -111,7 +111,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 	}
 
@@ -121,7 +121,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("red");
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -131,7 +131,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 	}
 
@@ -142,7 +142,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 		String tagUuid = tx(() -> tag.getUuid());
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 
 		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));
@@ -150,7 +150,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
-			assertFalse(node.getTags(project().getLatestBranch()).contains(tag));
+			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 		// TODO check for properties of the nested tag
 	}
@@ -172,7 +172,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 			tx.success();
 		}
@@ -180,7 +180,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN,
 					"error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
-			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestBranch()).contains(tag));
+			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 	}
 
@@ -354,7 +354,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestBranch()).contains(tag));
+			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -366,7 +366,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertTrue("The tag should not have been removed from the node",
-				node.getTags(project().getLatestBranch()).contains(tag));
+				node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 	}
 

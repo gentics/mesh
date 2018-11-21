@@ -274,7 +274,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// No job should be scheduled since this is the first time we assign the container to the project/branch
-			assertEquals(0, TestUtils.toList(boot().jobRoot().findAllIt()).size());
+			assertEquals(0, TestUtils.toList(boot().jobRoot().findAll()).size());
 		}
 
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,

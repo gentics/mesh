@@ -38,7 +38,7 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 
 	private GraphQLEnumType schemaEnum() {
 		Project project = context.getProject();
-		List<GraphQLEnumValueDefinition> values = StreamSupport.stream(project.getSchemaContainerRoot().findAllIt().spliterator(), false)
+		List<GraphQLEnumValueDefinition> values = StreamSupport.stream(project.getSchemaContainerRoot().findAll().spliterator(), false)
 			.map(schema -> {
 				String name = schema.getName();
 				return new GraphQLEnumValueDefinition(name, name, schema.getUuid());

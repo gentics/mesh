@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.madlmigration.TraversalResult;
 
 /**
  * A microschema container version is a container which holds a specific microschema. Microschema versions are usually bound to a {@link MicroschemaContainer}.
@@ -38,13 +39,13 @@ public interface MicroschemaContainerVersion extends
 	 *            Uuid of the branch
 	 * @return
 	 */
-	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
+	TraversalResult<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
 
 	/**
 	 * Return an iterator over micronodes which reference this microschema version.
 	 *
 	 * @return Iterator over micronodes
 	 */
-	Iterator<? extends Micronode> findMicronodes();
+	TraversalResult<? extends Micronode> findMicronodes();
 
 }

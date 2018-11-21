@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -15,8 +14,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -29,6 +28,7 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
@@ -65,10 +65,10 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		MigrationStatusHandler status) {
 
 		// Get the containers, that need to be transformed
-		Iterator<? extends NodeGraphFieldContainer> fieldContainersIt = db.tx(() -> fromVersion.getDraftFieldContainers(branch.getUuid()));
+		TraversalResult<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(() -> fromVersion.getDraftFieldContainers(branch.getUuid()));
 
 		// No field containers, migration is done
-		if (!fieldContainersIt.hasNext()) {
+		if (fieldContainersResult.isEmpty()) {
 			return Completable.complete();
 		}
 
@@ -94,8 +94,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
 		SearchQueueBatch sqb = null;
-		while (fieldContainersIt.hasNext()) {
-			NodeGraphFieldContainer container = fieldContainersIt.next();
+		for (NodeGraphFieldContainer container :fieldContainersResult) {
+			
 			// Create a new SQB to handle the ES update
 			if (sqb == null) {
 				sqb = searchQueue.create();

@@ -3,7 +3,6 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -23,11 +22,9 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -121,14 +118,14 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			// 3. Take only en offline
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"));
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
 
 			// 4. Assert status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isPublished("de");
 
 			// 5. Take also de offline
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("de");
 
 			// 6. Assert that both are offline
@@ -165,7 +162,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -194,10 +191,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"))).as("Initial publish status").isPublished();
 
 			// All nodes are initially published so lets take german offline
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
 
 			// Another take offline call should fail since there is no german page online anymore.
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
 		}
 	}
 
@@ -212,7 +209,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
 	}
 
@@ -237,9 +234,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		call(() -> client().publishNode(PROJECT_NAME, newsUuid));
 		call(() -> client().publishNode(PROJECT_NAME, news2015Uuid));
 
-		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "de"));
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "de"));
 
-		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
 			news2015Uuid);
 
 	}

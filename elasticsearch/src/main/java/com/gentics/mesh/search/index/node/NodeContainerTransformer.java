@@ -406,7 +406,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param document
 	 * @param tags
 	 */
-	private void addTagFamilies(JsonObject document, List<? extends Tag> tags) {
+	private void addTagFamilies(JsonObject document, Iterable<? extends Tag> tags) {
 		JsonObject familiesObject = new JsonObject();
 
 		for (Tag tag : tags) {

@@ -8,17 +8,15 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
@@ -33,6 +31,7 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
@@ -57,12 +56,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public String getRootLabel() {
 		return HAS_JOB;
-	}
-
-	@Override
-	public List<? extends Job> findAll() {
-		// Use #findAllIt instead!
-		throw error(INTERNAL_SERVER_ERROR, "The server tried to access the wrong method.");
 	}
 
 	/**
@@ -90,7 +83,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Iterable<? extends Job> findAllIt() {
+	public TraversalResult<? extends Job> findAll() {
 		// We need to enforce the usage of dynamic loading since the root->item yields different types of vertices.
 		return super.findAllDynamic();
 	}
@@ -203,7 +196,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void process() {
-		Iterable<? extends Job> it = findAllIt();
+		Iterable<? extends Job> it = findAll();
 		for (Job job : it) {
 			try {
 				// Don't execute failed or completed jobs again

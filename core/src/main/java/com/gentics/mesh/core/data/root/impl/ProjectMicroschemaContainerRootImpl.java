@@ -33,7 +33,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 		super.addMicroschema(user, microschema);
 
 		// assign the latest schema version to all branches of the project
-		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+		for (Branch branch : getProject().getBranchRoot().findAll()) {
 			branch.assignMicroschemaVersion(user, microschema.getLatestVersion());
 		}
 	}
@@ -43,7 +43,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 		super.removeMicroschema(microschema);
 
 		// unassign the schema from all branches
-		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+		for (Branch branch : getProject().getBranchRoot().findAll()) {
 			branch.unassignMicroschema(microschema);
 		}
 	}

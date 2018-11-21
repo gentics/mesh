@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
@@ -167,8 +168,8 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterable<Job> referencedJobsViaFrom() {
-		return in(HAS_FROM_VERSION).frame(Job.class);
+	public TraversalResult<Job> referencedJobsViaFrom() {
+		return new TraversalResult<>(in(HAS_FROM_VERSION).frame(Job.class));
 	}
 
 	@Override

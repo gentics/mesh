@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
@@ -55,12 +56,12 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	void setRolePermissions(InternalActionContext ac, GenericRestResponse model);
 
 	/**
-	 * Return an iterable for all roles which grant the permission to the element.
+	 * Return a traversal result for all roles which grant the permission to the element.
 	 * 
 	 * @param perm
 	 * @return
 	 */
-	Iterable<? extends Role> getRolesWithPerm(GraphPermission perm);
+	TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm);
 
 	/**
 	 * Method which is being invoked once the element has been created.

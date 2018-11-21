@@ -59,8 +59,8 @@ public class UserCheck implements ConsistencyCheck {
 			shortCutRoles.add(role);
 		}
 
-		for (Group group : user.getGroups().iterable()) {
-			for (Role role : group.getRoles().iterable()) {
+		for (Group group : user.getGroups()) {
+			for (Role role : group.getRoles()) {
 				if (!shortCutRoles.contains(role)) {
 					response.addInconsistency(
 							"The user's shortcut role edges do not match up with the currently configured groups/roles. Missing role {"

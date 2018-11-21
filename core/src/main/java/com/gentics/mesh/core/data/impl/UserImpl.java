@@ -214,20 +214,20 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Iterable<? extends Role> getRoles() {
-		return out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class);
+	public TraversalResult<? extends Role> getRoles() {
+		return new TraversalResult<>(out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends Role> getRolesViaShortcut() {
-		return out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class);
+	public TraversalResult<? extends Role> getRolesViaShortcut() {
+		return new TraversalResult<>(out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
 	public void updateShortcutEdges() {
 		outE(ASSIGNED_TO_ROLE).removeAll();
-		for (Group group : getGroups().iterable()) {
-			for (Role role : group.getRoles().iterable()) {
+		for (Group group : getGroups()) {
+			for (Role role : group.getRoles()) {
 				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 			}
 		}
@@ -334,8 +334,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
 			"published".equals(requestedVersion)
 				? READ_PUBLISHED_PERM.getRestPerm().getName()
-				: READ_PERM.getRestPerm().getName()
-		);
+				: READ_PERM.getRestPerm().getName());
 	}
 
 	@Override
@@ -384,7 +383,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	private void setGroups(InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (Group group : getGroups().iterable()) {
+		for (Group group : getGroups()) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
@@ -602,7 +601,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		for (Group group : getGroups().iterable()) {
+		for (Group group : getGroups()) {
 			keyBuilder.append(group.getUuid());
 		}
 

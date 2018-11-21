@@ -190,7 +190,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 
 		// Delete all the tags of the tag root
-		for (Tag tag : findAllIt()) {
+		for (Tag tag : findAll()) {
 			tag.delete(bac);
 		}
 		bac.batch().delete(this, false);
@@ -226,7 +226,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Tag tag : findAllIt()) {
+			for (Tag tag : findAll()) {
 				tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -235,7 +235,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (Tag tag : findAllIt()) {
+		for (Tag tag : findAll()) {
 			GenericEntryContextImpl context = new GenericEntryContextImpl();
 			context.setProjectUuid(tag.getProject().getUuid());
 			action.call(tag, context);
@@ -243,8 +243,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			// To prevent nodes from being handled multiple times
 			HashSet<String> handledNodes = new HashSet<>();
 
-			for (Branch branch : tag.getProject().getBranchRoot().findAllIt()) {
-				for (Node node : tag.getNodes(branch).iterable()) {
+			for (Branch branch : tag.getProject().getBranchRoot().findAll()) {
+				for (Node node : tag.getNodes(branch)) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());
 						GenericEntryContextImpl nodeContext = new GenericEntryContextImpl();

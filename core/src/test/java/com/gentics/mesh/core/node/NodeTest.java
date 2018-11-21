@@ -105,7 +105,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			newsNode.addTag(carTag, project().getLatestBranch());
 
-			assertEquals(1, newsNode.getTags(project().getLatestBranch()).size());
+			assertEquals(1, newsNode.getTags(project().getLatestBranch()).count());
 			Tag firstTag = newsNode.getTags(project().getLatestBranch()).iterator().next();
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
 		}
@@ -403,7 +403,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. assert for initial branch
 			List<String> nodeUuids = new ArrayList<>();
-			project.getNodeRoot().findAllIt().forEach(node -> nodeUuids.add(node.getUuid()));
+			project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 
 			// 5. assert searchqueuebatch

@@ -20,7 +20,7 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 		super.addSchemaContainer(user, schema);
 
 		// assign the latest schema version to all branches of the project
-		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+		for (Branch branch : getProject().getBranchRoot().findAll()) {
 			branch.assignSchemaVersion(user, schema.getLatestVersion());
 		}
 	}
@@ -30,7 +30,7 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 		super.removeSchemaContainer(schemaContainer);
 
 		// unassign the schema from all branches
-		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
+		for (Branch branch : getProject().getBranchRoot().findAll()) {
 			branch.unassignSchema(schemaContainer);
 		}
 	}

@@ -87,7 +87,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(boot().groupRoot().findAllIt().iterator());
+			long size = boot().groupRoot().computeCount();
 			assertEquals(groups().size(), size);
 		}
 	}
