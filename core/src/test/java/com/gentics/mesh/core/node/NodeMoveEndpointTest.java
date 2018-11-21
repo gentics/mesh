@@ -10,6 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -190,5 +195,41 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 					new VersioningParametersImpl().setBranch(initialBranch().getName()).draft())).getParentNode().getUuid())
 							.as("Parent Uuid in initial branch").isEqualTo(targetNode.getUuid());
 		}
+	}
+
+	@Test
+	public void moveToOtherLanguage() {
+		NodeReference rootNode = getRootNode();
+		NodeResponse deFolder = createFolder(rootNode, "de", "deFolder");
+		publishNode(deFolder);
+		NodeResponse enFolder = createFolder(rootNode, "en", "enFolder");
+		publishNode(enFolder);
+		moveFolder(enFolder, deFolder);
+	}
+
+	private NodeReference getRootNode() {
+		return client().findProjectByName(PROJECT_NAME).toSingle()
+			.map(ProjectResponse::getRootNode)
+			.blockingGet();
+	}
+
+	private NodeResponse createFolder(NodeReference parentNode, String language, String name) {
+		FieldMapImpl fields = new FieldMapImpl();
+		NodeCreateRequest request = new NodeCreateRequest()
+			.setParentNode(parentNode)
+			.setSchemaName("folder")
+			.setLanguage(language)
+			.setFields(fields);
+		fields.put("name", new StringFieldImpl().setString(name));
+		fields.put("slug", new StringFieldImpl().setString(name));
+		return client().createNode(PROJECT_NAME, request).toSingle().blockingGet();
+	}
+
+	private void publishNode(NodeResponse node) {
+		client().publishNode(PROJECT_NAME, node.getUuid()).toSingle().blockingGet();
+	}
+
+	private void moveFolder(NodeResponse from, NodeResponse to) {
+		client().moveNode(PROJECT_NAME, from.getUuid(), to.getUuid()).toSingle().blockingGet();
 	}
 }

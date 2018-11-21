@@ -425,6 +425,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	}
 
 	/**
+	 * Tests if the node has at least one content that is published.
+	 * @param branchUuid
+	 */
+	default boolean hasPublishedContent(String branchUuid) {
+		return getGraphFieldContainersIt(branchUuid, ContainerType.PUBLISHED).iterator().hasNext();
+	}
+
+	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter.
 	 * 
 	 * @param ac
