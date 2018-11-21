@@ -10,12 +10,14 @@ import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
@@ -31,6 +33,7 @@ public class FieldCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+
 		Iterator<? extends NumberGraphFieldList> it1 = db.getVerticesForType(NumberGraphFieldListImpl.class);
 		while (it1.hasNext()) {
 			checkList(it1.next(), response, "number");
@@ -50,6 +53,7 @@ public class FieldCheck implements ConsistencyCheck {
 		while (it4.hasNext()) {
 			checkList(it4.next(), response, "html");
 		}
+
 		Iterator<? extends StringGraphFieldList> it5 = db.getVerticesForType(StringGraphFieldListImpl.class);
 		while (it5.hasNext()) {
 			checkList(it5.next(), response, "string");
@@ -58,6 +62,11 @@ public class FieldCheck implements ConsistencyCheck {
 		Iterator<? extends NodeGraphFieldList> it6 = db.getVerticesForType(NodeGraphFieldListImpl.class);
 		while (it6.hasNext()) {
 			checkList(it6.next(), response, "node");
+		}
+
+		Iterator<? extends MicronodeGraphFieldList> it7 = db.getVerticesForType(MicronodeGraphFieldListImpl.class);
+		while (it7.hasNext()) {
+			checkList(it7.next(), response, "micronode");
 		}
 
 	}

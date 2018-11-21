@@ -169,7 +169,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 
 		// TODO delete linked aggregation nodes for node lists etc
-		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frame(BinaryGraphFieldImpl.class)) {
+		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(this);
 		}
 
@@ -177,30 +177,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			micronodeField.removeField(this);
 		}
 
-		for (MicronodeGraphFieldList micronodeList : out(HAS_LIST).has(MicronodeGraphFieldListImpl.class)
-			.frameExplicit(MicronodeGraphFieldListImpl.class)) {
-			micronodeList.removeField(this);
+		// Lists
+		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
+			field.removeField(this);
 		}
 
-		// Lists
-		for (NumberGraphFieldList list : out(HAS_LIST).frame(NumberGraphFieldListImpl.class)) {
-			list.removeField(this);
-		}
-		for (DateGraphFieldList list : out(HAS_LIST).frame(DateGraphFieldListImpl.class)) {
-			list.removeField(this);
-		}
-		for (BooleanGraphFieldList list : out(HAS_LIST).frame(BooleanGraphFieldListImpl.class)) {
-			list.removeField(this);
-		}
-		for (HtmlGraphFieldList list : out(HAS_LIST).frame(HtmlGraphFieldListImpl.class)) {
-			list.removeField(this);
-		}
-		for (StringGraphFieldList list : out(HAS_LIST).frame(StringGraphFieldListImpl.class)) {
-			list.removeField(this);
-		}
-		for (NodeGraphFieldList list : out(HAS_LIST).frame(NodeGraphFieldListImpl.class)) {
-			list.removeField(this);
-		}
 		// We don't need to handle node fields since those are only edges and will automatically be removed
 
 		// Delete the container from all branches and types
