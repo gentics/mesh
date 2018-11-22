@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.gentics.vertx</groupId>
 			<artifactId>vertx-filesystem-service-factory</artifactId>
-			<version>3.5.0</version>
+			<version>${vertx.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
