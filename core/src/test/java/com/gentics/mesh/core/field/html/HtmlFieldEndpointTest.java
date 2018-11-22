@@ -10,7 +10,6 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -108,7 +108,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -133,7 +133,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, new HtmlFieldImpl().setHTML("Some<b>html"));
+			NodeResponse response = createNodeWithField();
 			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
 			assertEquals("Some<b>html", htmlField.getHTML());
 		}
@@ -171,4 +171,8 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		return field != null ? field.getHTML() : null;
 	}
 
+	@Override
+	public NodeResponse createNodeWithField() {
+		return createNode(FIELD_NAME, new HtmlFieldImpl().setHTML("Some<b>html"));
+	}
 }

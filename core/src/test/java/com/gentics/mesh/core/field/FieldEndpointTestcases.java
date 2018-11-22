@@ -2,6 +2,8 @@ package com.gentics.mesh.core.field;
 
 import java.io.IOException;
 
+import com.gentics.mesh.core.rest.node.NodeResponse;
+
 /**
  * List of common verticle specific test cases for fields.
  */
@@ -51,6 +53,18 @@ public interface FieldEndpointTestcases {
 	 * fields must be set to null.
 	 */
 	void testCreateNodeWithNoField();
+
+	/**
+	 * Create a node which contains the field and delete it afterwards. The consistency checks will assert the clean removal.
+	 */
+	void testDeleteField();
+
+	/**
+	 * Create a node with the field.
+	 * 
+	 * @return response
+	 */
+	NodeResponse createNodeWithField();
 
 	// TODO testcases for mandatory fields? deletion testcases? We can use explicit null values to delete a field.
 

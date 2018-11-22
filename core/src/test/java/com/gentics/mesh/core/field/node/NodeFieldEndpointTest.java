@@ -126,7 +126,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -144,7 +144,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
-	public void testDeleteNodeWithReference() {
+	@Override
+	public void testDeleteField() {
 		Node target = folder("deals");
 		String targetUuid = tx(() -> target.getUuid());
 
@@ -172,7 +173,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		assertEquals(nodeUuid, field.getUuid());
 
 		loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNodeUuid, new NodeParametersImpl().setLanguages("en"),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 		field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertEquals(nodeUuid, field.getUuid());
 
@@ -182,7 +183,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		assertEquals(node2Uuid, field.getUuid());
 
 		loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNodeUuid, new NodeParametersImpl().setLanguages("en"),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 		field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
 		assertEquals(node2Uuid, field.getUuid());
 
@@ -201,7 +202,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
 			MeshResponse<NodeResponse> future = client()
-					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();
+				.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			response = future.result();
@@ -257,7 +258,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			parameters.setLanguages("en");
 			parameters.setResolveLinks(LinkType.FULL);
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
+				() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 
 			// Check whether the field contains the languagePath
 			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
@@ -277,8 +278,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertNull(
-					"The expanded node field within the response should be null since we created the node without providing any field information.",
-					field);
+				"The expanded node field within the response should be null since we created the node without providing any field information.",
+				field);
 		}
 	}
 
@@ -296,7 +297,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
-					new VersioningParametersImpl().draft()));
+				new VersioningParametersImpl().draft()));
 
 			// Check expanded node field
 			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
@@ -322,7 +323,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			container.createNode(FIELD_NAME, referencedNode);
 
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
-					new VersioningParametersImpl().draft()));
+				new VersioningParametersImpl().draft()));
 
 			// Assert that the field has not been loaded
 			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
@@ -412,7 +413,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			// read source node with expanded field
 			for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
 				MeshResponse<NodeResponse> resultFuture = client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
-						new NodeParametersImpl().setLanguages(requestedLangs).setExpandAll(true), new VersioningParametersImpl().draft()).invoke();
+					new NodeParametersImpl().setLanguages(requestedLangs).setExpandAll(true), new VersioningParametersImpl().draft()).invoke();
 				latchFor(resultFuture);
 				assertSuccess(resultFuture);
 				NodeResponse response = resultFuture.result();
@@ -436,5 +437,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	protected Node getNodeValue(NodeGraphFieldContainer container, String fieldName) {
 		NodeGraphField field = container.getNode(fieldName);
 		return field != null ? field.getNode() : null;
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		return createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
 	}
 }

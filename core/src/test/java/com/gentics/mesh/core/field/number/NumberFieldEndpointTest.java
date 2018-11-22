@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.number;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -12,7 +12,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
@@ -26,10 +25,10 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
-
 
 	@Test
 	@Override
@@ -55,7 +54,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")), BAD_REQUEST,
-					"field_number_error_invalid_type", fieldKey, "text");
+				"field_number_error_invalid_type", fieldKey, "text");
 		}
 	}
 
@@ -128,7 +127,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 
 			// Update again to restore a value
 			updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
@@ -186,6 +185,11 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	protected Number getNumberValue(NodeGraphFieldContainer container, String fieldName) {
 		NumberGraphField field = container.getNumber(fieldName);
 		return field != null ? field.getNumber() : null;
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		return createNode(FIELD_NAME, new NumberFieldImpl().setNumber(1.214353));
 	}
 
 }

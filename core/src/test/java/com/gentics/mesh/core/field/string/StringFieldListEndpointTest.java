@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
@@ -38,11 +38,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			StringFieldListImpl listField = new StringFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-
-			NodeResponse response = createNode(FIELD_NAME, listField);
+			NodeResponse response = createNodeWithField();
 			StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
 			assertThat(field.getItems()).as("Only valid values should be stored").containsExactly("A", "B");
 		}
@@ -166,7 +162,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		Node node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
-				Arrays.asList("X", "Y"), Arrays.asList("C"));
+			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
 		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
 		for (int i = 0; i < 20; i++) {
@@ -188,7 +184,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			try (Tx tx = tx()) {
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersions().iterator().next();
 				assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(),
-						response.getVersion().toString());
+					response.getVersion().toString());
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
 				assertEquals("Check new value", newValue, getListValues(newContainerVersion, StringGraphFieldListImpl.class, FIELD_NAME));
@@ -218,12 +214,12 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getStringList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(item -> item.getString())
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("A", "B");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -247,4 +243,12 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
 	}
 
+	@Override
+	public NodeResponse createNodeWithField() {
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+
+		return createNode(FIELD_NAME, listField);
+	}
 }

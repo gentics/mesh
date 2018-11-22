@@ -92,17 +92,17 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer,
-				"filename.txt", "application/binary"));
+			"filename.txt", "application/binary"));
 
 		assertThat(responseA.getVersion()).doesNotMatch(version.toString());
 
 		// Upload again - A conflict should be detected since we provide the original outdated version
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
-				"application/binary"), CONFLICT, "node_error_conflict_detected");
+			"application/binary"), CONFLICT, "node_error_conflict_detected");
 
 		// Now use the correct version and verify that the upload succeeds
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion(), FIELD_NAME, buffer, "filename.txt",
-				"application/binary"));
+			"application/binary"));
 
 	}
 
@@ -115,7 +115,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			Buffer buffer = TestUtils.randomBuffer(1000);
 			VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
-					"application/binary"));
+				"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
@@ -162,24 +162,20 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			// 3. Set the field to null one more time and assert that no new version was created
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse
-					.getVersion());
+				.getVersion());
 		}
 	}
 
 	@Test
 	public void testUpdateDelete() throws IOException {
 		// 1. Upload a binary field
-		String uuid = tx(() -> folder("2015").getUuid());
-		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
-				"application/binary"));
+		NodeResponse response = createNodeWithField();
 
 		// Clear the local binary storage directory to simulate a storage inconsistency
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
 
 		// 2. Delete the node
-		call(() -> client().deleteNode(PROJECT_NAME, uuid));
+		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid()));
 
 	}
 
@@ -192,7 +188,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			Buffer buffer = TestUtils.randomBuffer(1000);
 			VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
-					"application/binary"));
+				"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
@@ -212,7 +208,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
-				"application/binary"));
+			"application/binary"));
 
 		NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
@@ -237,10 +233,10 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", buffer, fileName,
-				"application/binary"));
+			"application/binary"));
 
 		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals(
-				"binary_content")).findFirst().get();
+			"binary_content")).findFirst().get();
 		SchemaUpdateRequest schemaUpdateRequest = JsonUtil.readValue(binarySchema.toJson(), SchemaUpdateRequest.class);
 		schemaUpdateRequest.setDisplayField("binary");
 		waitForJobs(() -> {
@@ -277,8 +273,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			"image/svg"));
 
 		NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", "binary",
-			new ImageManipulationParametersImpl().setWidth(100)
-		));
+			new ImageManipulationParametersImpl().setWidth(100)));
 
 		byte[] downloadBytes = download.getBuffer().getBytes();
 
@@ -293,6 +288,15 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithNoField() {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		String uuid = tx(() -> folder("2015").getUuid());
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
+			"application/binary"));
 	}
 
 }
