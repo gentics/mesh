@@ -110,6 +110,7 @@ services:
       - MESH_ELASTICSEARCH_URL=http://elasticsearch:9200
       - MESH_ELASTICSEARCH_START_EMBEDDED=false
       - MESH_AUTH_KEYSTORE_PASS=changeme
+    stop_grace_period: 5m
     ports:
       - '8081:8080'
     volumes:
@@ -128,6 +129,7 @@ services:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    stop_grace_period: 5m
     ports:
       - '127.0.0.1:9200:9200'
     volumes:
@@ -150,6 +152,8 @@ volumes:
   mesh-uploads:
     driver: local
 ----
+
+NOTE: The `stop_grace_period` setting is important to allow for a clean shutdown of Gentics Mesh.
 
 ==== Cluster
 
