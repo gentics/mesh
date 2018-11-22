@@ -196,10 +196,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("green", user, tagFamily, project));
 
 		when(tagFamily.findAll()).then(answer -> {
-			return tagList;
-		});
-		when(tagFamily.findAll()).then(answer -> {
-			return tagList;
+			return new TraversalResult<>(tagList);
 		});
 
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();

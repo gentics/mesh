@@ -73,7 +73,6 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.madlmigration.TraversalResult;
-import com.gentics.mesh.util.UUIDUtil;
 
 public final class TestMocks {
 
@@ -317,7 +316,7 @@ public final class TestMocks {
 		when(container.getElementVersion()).thenReturn(UUID_5);
 		when(node.getLatestDraftFieldContainer(language)).thenReturn(container);
 		when(node.getElementVersion()).thenReturn(UUID_4);
-		Mockito.<Iterable<? extends NodeGraphFieldContainer>> when(node.getDraftGraphFieldContainers()).thenReturn(Arrays.asList(container));
+		Mockito.<Iterable<? extends NodeGraphFieldContainer>> when(node.getDraftGraphFieldContainers()).thenReturn(createEmptyTraversal());
 		return node;
 	}
 
