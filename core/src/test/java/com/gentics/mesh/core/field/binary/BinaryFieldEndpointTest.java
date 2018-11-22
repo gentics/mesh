@@ -167,13 +167,6 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
-	@Override
-	public void testDeleteField() {
-		NodeResponse response = createNodeWithField();
-		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid()));
-	}
-
-	@Test
 	public void testUpdateDelete() throws IOException {
 		// 1. Upload a binary field
 		NodeResponse response = createNodeWithField();

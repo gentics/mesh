@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.field.node;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectException;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -20,7 +18,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
@@ -35,6 +32,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
@@ -220,17 +218,6 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		NodeResponse response = createNode(FIELD_NAME, listField);
 		NodeFieldList listFromResponse = response.getFields().getNodeFieldList(FIELD_NAME);
 		assertEquals(1, listFromResponse.getItems().size());
-	}
-
-	@Test
-	@Override
-	public void testDeleteField() {
-		NodeFieldListImpl listField = new NodeFieldListImpl();
-		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folderUuid());
-		listField.add(item);
-		NodeResponse response = createNode(FIELD_NAME, listField);
-
-		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid()));
 	}
 
 	@Test
