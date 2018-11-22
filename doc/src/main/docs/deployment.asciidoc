@@ -63,6 +63,13 @@ WantedBy=multi-user.target
 
 NOTE: The given limits are mandatory. Especially the `LimitNOFILE` setting must be set to prevent database issues.
 
+You can also change the `Wants` and `After` setting if you run Elasticsearch on the same server. In that case it is recommended to start Gentics Mesh after Elasticsearch has been started.
+
+```
+Wants=elasticsearch.service
+After=elasticsearch.service
+```
+
 Finally you can register the systemd service file:
 
 ```bash
