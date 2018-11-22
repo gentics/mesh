@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -236,7 +237,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReferenceImpl().setName("content"));
+		request.setSchemaName("content");
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
@@ -250,6 +251,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(restNode).matches(request);
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
+	}
+
+	@Test
+	public void testUpsert() {
+		String uuid = UUIDUtil.randomUUID();
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeUpsertRequest request = new NodeUpsertRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		for (int i = 0; i < 10; i++) {
+			NodeResponse response = call(() -> client().upsertNode(PROJECT_NAME, uuid, request));
+			assertEquals("No additional update should alter the version of the node.", "0.1", response.getVersion());
+		}
+
+		request.getFields().put("slug", FieldUtil.createStringField("new-page2.html"));
+		NodeResponse response = call(() -> client().upsertNode(PROJECT_NAME, uuid, request));
+		assertEquals("0.2", response.getVersion());
 	}
 
 	@Test
