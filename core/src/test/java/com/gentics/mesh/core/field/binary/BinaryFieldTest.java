@@ -101,7 +101,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			schema.addField(createFieldSchema(true));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-			Binary binary = meshRoot().getBinaryRoot().create(hash, 0L);
+			Binary binary = meshRoot().getBinaryRoot().create(hash, 10L);
 			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");
 			binary.setImageHeight(200);

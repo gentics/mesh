@@ -124,7 +124,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -165,7 +165,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, new StringFieldImpl().setString("someString"));
+			NodeResponse response = createNodeWithField();
 			StringFieldImpl field = response.getFields().getStringField(FIELD_NAME);
 			assertEquals("someString", field.getString());
 		}
@@ -203,7 +203,12 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testValueRestrictionInvalidValue() {
 		try (Tx tx = tx()) {
 			updateNodeFailure("restrictedstringField", new StringFieldImpl().setString("invalid"), HttpResponseStatus.BAD_REQUEST,
-					"node_error_invalid_string_field_value", "restrictedstringField", "invalid");
+				"node_error_invalid_string_field_value", "restrictedstringField", "invalid");
 		}
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		return createNode(FIELD_NAME, new StringFieldImpl().setString("someString"));
 	}
 }

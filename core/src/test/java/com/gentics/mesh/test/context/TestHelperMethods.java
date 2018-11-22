@@ -213,8 +213,16 @@ public interface TestHelperMethods {
 		return getTestContext().getPort();
 	}
 
-	default public Node folder(String key) {
+	default Node folder(String key) {
 		return data().getFolder(key);
+	}
+
+	/**
+	 * Return uuid of the news folder.
+	 * @return
+	 */
+	default String folderUuid() {
+		return tx(() -> folder("news").getUuid());
 	}
 
 	default Node content(String key) {
@@ -457,11 +465,12 @@ public interface TestHelperMethods {
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
 		// update node for target release
-		NodeUpdateRequest update = new NodeUpdateRequest();
-		update.setLanguage(nodeResponse.getLanguage());
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setLanguage(nodeResponse.getLanguage());
 
-		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setRelease(targetReleaseName)));
+		nodeResponse.getFields().keySet().forEach(key -> create.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
+		return call(
+			() -> client().createNode(nodeResponse.getUuid(), projectName, create, new VersioningParametersImpl().setRelease(targetReleaseName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {

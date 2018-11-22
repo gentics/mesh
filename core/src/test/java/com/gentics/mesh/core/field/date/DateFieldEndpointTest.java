@@ -14,7 +14,6 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -120,7 +120,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -187,5 +187,11 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertNotNull(deserializedDateField);
 			assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
 		}
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		return createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 	}
 }
