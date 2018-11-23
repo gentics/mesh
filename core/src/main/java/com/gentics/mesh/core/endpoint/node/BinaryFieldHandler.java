@@ -67,7 +67,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -339,19 +338,17 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 */
 	private Completable processUpload(ActionContext ac, FileUpload ul, String binaryUuid, boolean storeBinary) {
 
-		return Completable.defer(() -> {
-			// Store the data
-			if (storeBinary) {
-				String uploadFile = ul.uploadedFileName();
-				FileSystem fs = Mesh.rxVertx().fileSystem();
-				return fs.rxOpen(uploadFile, new OpenOptions()).flatMapCompletable(asyncFile -> {
-					Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-					return binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).toCompletable();
-				});
-			} else {
-				return Completable.complete();
-			}
-		});
+		// Store the data
+		if (storeBinary) {
+			String uploadFile = ul.uploadedFileName();
+			FileSystem fs = Mesh.rxVertx().fileSystem();
+			return fs.rxOpen(uploadFile, new OpenOptions()).flatMapCompletable(asyncFile -> {
+				Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
+				return binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).toCompletable();
+			});
+		} else {
+			return Completable.complete();
+		}
 	}
 
 	/**

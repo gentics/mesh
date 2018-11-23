@@ -118,40 +118,33 @@ public interface Database extends TxFactory {
 			reference.set(e1);
 		}
 
-		return Single.create(sub -> {
-			Mesh.vertx().executeBlocking(bc -> {
-				try (Tx tx = tx()) {
-					Single<T> result = trxHandler.handle();
-					if (result == null) {
-						bc.complete();
-					} else {
-						try {
-							T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
-							bc.complete(ele);
-						} catch (Exception e2) {
-							if (e2 instanceof TimeoutException) {
-								log.error("Timeout while processing result of transaction handler.", e2);
-								log.error("Calling transaction stacktrace.", reference.get());
-								bc.fail(reference.get());
-							} else {
-								throw e2;
-							}
+		return Mesh.rxVertx().rxExecuteBlocking(bc -> {
+			try (Tx tx = tx()) {
+				Single<T> result = trxHandler.handle();
+				if (result == null) {
+					bc.complete();
+				} else {
+					try {
+						T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
+						bc.complete(ele);
+					} catch (Exception e2) {
+						if (e2 instanceof TimeoutException) {
+							log.error("Timeout while processing result of transaction handler.", e2);
+							log.error("Calling transaction stacktrace.", reference.get());
+							bc.fail(reference.get());
+						} else {
+							throw e2;
 						}
 					}
-				} catch (Exception e) {
-					if (log.isTraceEnabled()) {
-						log.trace("Error while handling no-transaction.", e);
-					}
-					bc.fail(e);
 				}
-			}, false, (AsyncResult<T> done) -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onSuccess(done.result());
+			} catch (Exception e) {
+				if (log.isTraceEnabled()) {
+					log.trace("Error while handling no-transaction.", e);
 				}
-			});
-		});
+				bc.fail(e);
+			}
+
+		}, false);
 	}
 
 	/**
