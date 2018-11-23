@@ -11,9 +11,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -24,11 +26,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
@@ -59,6 +61,7 @@ import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -197,7 +200,18 @@ public class BinaryFieldHandler extends AbstractHandler {
 		// (if the transaction failed and has to be repeated).
 		ac.put("sourceFile", ul.uploadedFileName());
 
-		db.tx(() -> {
+		List<Consumer<BinaryGraphField>> processorActions = new ArrayList<>();
+
+		// Process the upload and extract needed information
+		String contentType = ul.contentType();
+		for (BinaryDataProcessor p : binaryProcessorRegistry.getProcessors(contentType)) {
+			try {
+				processorActions.add(p.process(ul));
+			} catch (Exception e) {
+				log.warn("Processing of upload {" + ul.fileName() + "/" + ul.uploadedFileName() + "} in handler {" + p.getClass() + "}", e);
+			}
+		}
+		db.asyncTx(() -> {
 			Project project = ac.getProject();
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
@@ -287,8 +301,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 				}
 			}
 
-			// Process the upload which will update the binary field
-			processUpload(ac, ul, field, storeBinary);
+			for (Consumer<BinaryGraphField> action : processorActions) {
+				action.accept(field);
+			}
 
 			// Now get rid of the old field
 			if (oldField != null) {
@@ -298,8 +313,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
-
-			return batch.store(node, branch.getUuid(), DRAFT, false).processAsync().andThen(node.transformToRest(ac, 0));
+			// Process the upload which will update the binary field
+			return processUpload(ac, ul, binary.getUuid(), storeBinary)
+				.andThen(batch.store(node, branch.getUuid(), DRAFT, false).processAsync().andThen(node.transformToRest(ac, 0)));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -310,33 +326,25 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param ac
 	 * @param ul
 	 *            Upload to process
-	 * @param field
-	 *            Field which will be updated with the extracted information
+	 * @param binaryUuid
+	 *            Uuid of the binary
 	 * @param storeBinary
 	 *            Whether to store the data in the binary store
+	 * @return
 	 */
-	private void processUpload(ActionContext ac, FileUpload ul, BinaryGraphField field, boolean storeBinary) {
+	private Completable processUpload(ActionContext ac, FileUpload ul, String binaryUuid, boolean storeBinary) {
 
-		// Process the upload and extract needed information
-		String contentType = ul.contentType();
-		for (BinaryDataProcessor p : binaryProcessorRegistry.getProcessors(contentType)) {
-			try {
-				p.process(ul, field);
-			} catch (Exception e) {
-				log.warn("Processing of upload {" + ul.fileName() + "/" + ul.uploadedFileName() + "} in handler {" + p.getClass() + "}", e);
+		return Completable.defer(() -> {
+			// Store the data
+			if (storeBinary) {
+				String uploadFile = ul.uploadedFileName();
+				AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
+				Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
+				return binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).toCompletable();
+			} else {
+				return Completable.complete();
 			}
-		}
-
-		// Store the data
-		if (storeBinary) {
-			Binary binary = field.getBinary();
-			String binaryUuid = binary.getUuid();
-			String uploadFile = ul.uploadedFileName();
-			AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
-			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-			binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).blockingGet();
-		}
-
+		});
 	}
 
 	/**

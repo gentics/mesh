@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Optional;
 
 import javax.imageio.ImageIO;
 
@@ -56,21 +57,36 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	@Override
 	public Single<ImageInfo> readImageInfo(String file) {
 		return vertx.rxExecuteBlocking(bh -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Reading image information from stream");
-			}
 			try {
-				BufferedImage image = ImageIO.read(new File(file));
-				if (image == null) {
-					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
+				Optional<ImageInfo> opt = readImageInfoBlocking(file);
+				if (opt.isPresent()) {
+					bh.complete(opt.get());
 				} else {
-					bh.complete(toImageInfo(image));
+					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 				}
 			} catch (Exception e) {
 				log.error("Reading image information failed", e);
 				bh.fail(e);
 			}
-		});
+		}, false);
+	}
+
+	@Override
+	public Optional<ImageInfo> readImageInfoBlocking(String file) throws Exception {
+		if (log.isDebugEnabled()) {
+			log.debug("Reading image information from stream");
+		}
+		try {
+			BufferedImage image = ImageIO.read(new File(file));
+			if (image == null) {
+				return Optional.empty();
+			} else {
+				return Optional.of(toImageInfo(image));
+			}
+		} catch (Exception e) {
+			log.error("Reading image information failed", e);
+			throw e;
+		}
 	}
 
 	/**

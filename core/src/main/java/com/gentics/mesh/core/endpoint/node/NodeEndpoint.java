@@ -140,13 +140,13 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
-		fieldUpdate.blockingHandler(rc -> {
+		fieldUpdate.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = wrap(rc);
 			binaryFieldHandler.handleUpdateField(ac, uuid, fieldName, attributes);
-		}, false);
+		});
 
 		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");

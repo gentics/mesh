@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Optional;
 
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.PropReadFileStream;
@@ -45,6 +46,15 @@ public interface ImageManipulator {
 	 * @return
 	 */
 	Single<ImageInfo> readImageInfo(String file);
+
+	/**
+	 * Read the image information from the image file.
+	 * 
+	 * @param file
+	 * @return
+	 * @throws Exception 
+	 */
+	Optional<ImageInfo> readImageInfoBlocking(String file) throws Exception;
 
 	/**
 	 * Return the dominant color in the image.

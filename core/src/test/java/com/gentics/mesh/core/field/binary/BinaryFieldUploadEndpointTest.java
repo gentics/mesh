@@ -53,7 +53,6 @@ import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.binary;
 
+import java.util.function.Consumer;
+
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
 import io.vertx.ext.web.FileUpload;
@@ -22,8 +24,8 @@ public interface BinaryDataProcessor {
 	 * Process the binary data and store the found meta data in the binary field.
 	 * 
 	 * @param upload
-	 * @param field
+	 * @return consumer which can update the field
 	 */
-	void process(FileUpload upload, BinaryGraphField field);
+	Consumer<BinaryGraphField> process(FileUpload upload);
 
 }

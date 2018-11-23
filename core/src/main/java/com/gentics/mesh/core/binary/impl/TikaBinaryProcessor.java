@@ -3,11 +3,15 @@ package com.gentics.mesh.core.binary.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -77,8 +81,10 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public void process(FileUpload upload, BinaryGraphField field) {
+	public Consumer<BinaryGraphField> process(FileUpload upload) {
 
+		Map<String, String> metadataMap = new HashedMap<>();
+		Location loc = new Location();
 		File uploadFile = new File(upload.uploadedFileName());
 		try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
 			Metadata metadata = new Metadata();
@@ -96,7 +102,6 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			}
 
 			String[] metadataNames = metadata.names();
-			Location loc = new Location();
 			for (String name : metadataNames) {
 				String value = metadata.get(name);
 				name = sanitizeName(name);
@@ -129,15 +134,21 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 				}
 
 				log.debug("Adding property {" + name + "}={" + value + "}");
-				field.setMetadata(name, value);
+				metadata.add(name, value);
 			}
 
-			if (loc.isPresent()) {
-				field.setLocation(loc);
-			}
 		} catch (Exception e) {
 			log.warn("Tika processing of upload failed", e);
 		}
+
+		return (field) -> {
+			for (Entry<String, String> entry : metadataMap.entrySet()) {
+				field.setMetadata(entry.getKey(), entry.getValue());
+			}
+			if (loc.isPresent()) {
+				field.setLocation(loc);
+			}
+		};
 
 	}
 

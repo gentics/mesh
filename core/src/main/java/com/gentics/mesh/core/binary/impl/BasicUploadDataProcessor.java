@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.binary.impl;
 
+import java.util.function.Consumer;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -21,9 +23,11 @@ public class BasicUploadDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public void process(FileUpload upload, BinaryGraphField field) {
-		field.setFileName(upload.fileName());
-		field.getBinary().setSize(upload.size());
-		field.setMimeType(upload.contentType());
+	public Consumer<BinaryGraphField> process(FileUpload upload) {
+		return (field) -> {
+			field.setFileName(upload.fileName());
+			field.getBinary().setSize(upload.size());
+			field.setMimeType(upload.contentType());
+		};
 	}
 }
