@@ -51,6 +51,12 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		containerB.validate();
 		List<SchemaChangeModel> changes = new ArrayList<>();
 
+		// If no fields are in the changed schema, don't apply any field changes.
+		// This will also return if the fields in the request were not set at all.
+		if (containerB.getFields().isEmpty()) {
+			return changes;
+		}
+
 		// Diff the fields
 		Map<String, FieldSchema> schemaAFields = transformFieldsToMap(containerA);
 		Map<String, FieldSchema> schemaBFields = transformFieldsToMap(containerB);
@@ -195,7 +201,8 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 */
 	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB,
 			Class<? extends FC> classOfFC) {
-		if (!CompareUtils.equals(objectA, objectB)) {
+		// If the property in the changed schema is null or not set, no change should be detected.
+		if (!CompareUtils.equals(objectA, objectB) && objectB != null) {
 			SchemaChangeModel change = createFieldContainerUpdateChange(classOfFC);
 			change.getProperties().put(key, objectB);
 			changes.add(change);

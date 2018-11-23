@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -142,4 +143,13 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		}
 	}
 
+	@Test
+	public void testEmptyRequest() {
+		String schemaUuid = getSchemaByName("content").getUuid();
+		Schema request = new SchemaModelImpl();
+		request.setName("content");
+
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).isEmpty();
+	}
 }
