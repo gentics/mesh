@@ -101,6 +101,7 @@ public interface Schema extends FieldSchemaContainer {
 		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
 		}
+
 	}
 
 	/**

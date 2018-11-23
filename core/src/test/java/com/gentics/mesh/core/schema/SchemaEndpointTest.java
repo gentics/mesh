@@ -426,6 +426,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testCreateEmptySchema() {
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("emptySchema");
+
+		call(() -> client().createSchema(request), BAD_REQUEST, "schema_missing_fields");
+	}
+
+	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
@@ -593,5 +601,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setName("new-name");
 		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid, UPDATE_PERM.getRestPerm().getName());
 	}
+
+
 
 }
