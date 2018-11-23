@@ -36,6 +36,8 @@ icon:check[] Core: Nodes are now migrated to the newest schema version when a ne
 
 icon:check[] Core: Fixed a bug that prevented moving a published node in one language to a published container of another language.
 
+icon:check[] REST: Unset properties in schema updates won't cause changes anymore. link:https://github.com/gentics/mesh/issues/496[#496] link:https://github.com/gentics/mesh/issues/165[#165]
+
 [[v0.28.0]]
 == 0.28.0 (20.11.2018)
 
