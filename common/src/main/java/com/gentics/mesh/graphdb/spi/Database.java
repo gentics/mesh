@@ -30,6 +30,7 @@ import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.WorkerExecutor;
 
 /**
  * Main description of a graph database.
@@ -82,8 +83,9 @@ public interface Database extends TxFactory {
 			reference.set(e1);
 		}
 
+		// TODO prevent nested Tx
 		return Completable.create(sub -> {
-			Mesh.vertx().executeBlocking(bc -> {
+			getExecutor().executeBlocking(bc -> {
 				try (Tx tx = tx()) {
 					txHandler.handle();
 					bc.complete();
@@ -118,34 +120,23 @@ public interface Database extends TxFactory {
 			reference.set(e1);
 		}
 
-		return Mesh.rxVertx().rxExecuteBlocking(bc -> {
-			try (Tx tx = tx()) {
-				Single<T> result = trxHandler.handle();
-				if (result == null) {
-					bc.complete();
-				} else {
-					try {
-						T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
-						bc.complete(ele);
-					} catch (Exception e2) {
-						if (e2 instanceof TimeoutException) {
-							log.error("Timeout while processing result of transaction handler.", e2);
-							log.error("Calling transaction stacktrace.", reference.get());
-							bc.fail(reference.get());
-						} else {
-							throw e2;
-						}
-					}
-				}
-			} catch (Exception e) {
-				if (log.isTraceEnabled()) {
-					log.trace("Error while handling no-transaction.", e);
-				}
-				bc.fail(e);
-			}
 
-		}, false);
+		Single<T> handler = Single.fromCallable(() -> {
+			try (Tx tx = tx()) {
+				return trxHandler.handle().timeout(40, TimeUnit.SECONDS).blockingGet();
+			}
+		});
+
+		boolean nested = Thread.currentThread().getName().startsWith("asyncTx");
+		// Only start transaction in new job if we are not already in an transaction
+		if (nested) {
+			return handler;
+		} else {
+			return getExecutor().rxExecuteBlocking(fut -> handler.subscribe(fut::complete, fut::fail), false);
+		}
 	}
+
+	WorkerExecutor getExecutor();
 
 	/**
 	 * Asynchronously execute the trxHandler within the scope of a non transaction.
@@ -162,8 +153,9 @@ public interface Database extends TxFactory {
 			reference.set(e1);
 		}
 
+		// TODO prevent nested Tx
 		return Single.create(sub -> {
-			Mesh.vertx().executeBlocking(bc -> {
+			getExecutor().executeBlocking(bc -> {
 				try (Tx tx = tx()) {
 					Single<T> result = trxHandler.handle(tx);
 					if (result == null) {
