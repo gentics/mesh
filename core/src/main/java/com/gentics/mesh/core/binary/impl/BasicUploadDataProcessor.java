@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
+import io.reactivex.Single;
 import io.vertx.ext.web.FileUpload;
 
 @Singleton
@@ -23,11 +24,12 @@ public class BasicUploadDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Consumer<BinaryGraphField> process(FileUpload upload) {
-		return (field) -> {
-			field.setFileName(upload.fileName());
-			field.getBinary().setSize(upload.size());
-			field.setMimeType(upload.contentType());
-		};
+	public Single<Consumer<BinaryGraphField>> process(FileUpload upload) {
+		return Single.just(
+			(field) -> {
+				field.setFileName(upload.fileName());
+				field.getBinary().setSize(upload.size());
+				field.setMimeType(upload.contentType());
+			});
 	}
 }

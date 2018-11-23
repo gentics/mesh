@@ -22,6 +22,7 @@ import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -81,7 +82,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Consumer<BinaryGraphField> process(FileUpload upload) {
+	public Single<Consumer<BinaryGraphField>> process(FileUpload upload) {
 
 		Map<String, String> metadataMap = new HashedMap<>();
 		Location loc = new Location();
@@ -141,14 +142,14 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			log.warn("Tika processing of upload failed", e);
 		}
 
-		return (field) -> {
+		return Single.just((field) -> {
 			for (Entry<String, String> entry : metadataMap.entrySet()) {
 				field.setMetadata(entry.getKey(), entry.getValue());
 			}
 			if (loc.isPresent()) {
 				field.setLocation(loc);
 			}
-		};
+		});
 
 	}
 

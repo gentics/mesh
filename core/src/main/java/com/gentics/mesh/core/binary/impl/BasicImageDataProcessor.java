@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.binary.impl;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
@@ -39,26 +38,18 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Consumer<BinaryGraphField> process(FileUpload upload) {
-		try {
-			Optional<ImageInfo> infoOpt = imageManipulator.readImageInfoBlocking(upload.uploadedFileName());
+	public Single<Consumer<BinaryGraphField>> process(FileUpload upload) {
+//		return Single.just((f)-> {} );
+		
+		Single<ImageInfo> infoSigle = imageManipulator.readImageInfo(upload.uploadedFileName());
+		return infoSigle.map(info -> {
 			return (field) -> {
-				if (infoOpt.isPresent()) {
-					ImageInfo info = infoOpt.get();
-					Binary binary = field.getBinary();
-					binary.setImageHeight(info.getHeight());
-					binary.setImageWidth(info.getWidth());
-					field.setImageDominantColor(info.getDominantColor());
-				}
+				Binary binary = field.getBinary();
+				binary.setImageHeight(info.getHeight());
+				binary.setImageWidth(info.getWidth());
+				field.setImageDominantColor(info.getDominantColor());
 			};
-		} catch (Exception e) {
-			if (log.isDebugEnabled()) {
-				log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
-			}
-			return (f) -> {
-			};
-		}
-
+		});
 	}
 
 }
