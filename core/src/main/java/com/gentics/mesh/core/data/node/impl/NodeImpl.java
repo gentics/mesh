@@ -1863,7 +1863,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		FramedGraph graph = Tx.getActive().getGraph();
 		String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
-		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
+		String key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
 		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
 			.iterator();
 		if (edges.hasNext()) {

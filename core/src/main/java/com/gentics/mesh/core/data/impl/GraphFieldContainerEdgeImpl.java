@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.syncleus.ferma.EdgeFrame;
@@ -46,15 +45,11 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 
 		// Webroot index:
 		fields = new FieldMap();
-		fields.put(BRANCH_UUID_KEY, STRING);
-		fields.put(EDGE_TYPE_KEY, STRING);
 		fields.put(WEBROOT_PROPERTY_KEY, STRING);
 		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_INDEX_POSTFIX_NAME, fields, true);
 
 		// Webroot url field index:
 		fields = new FieldMap();
-		fields.put(BRANCH_UUID_KEY, STRING);
-		fields.put(EDGE_TYPE_KEY, STRING);
 		fields.put(WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET);
 		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_URLFIELD_INDEX_POSTFIX_NAME, fields, true);
 
@@ -75,18 +70,16 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 *            Type of the container
 	 * @return The composed key
 	 */
-	public static Object composeWebrootIndexKey(String segmentInfo, String branchUuid, ContainerType type) {
-		Database db = MeshInternal.get().database();
-		return db.createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
+	public static String composeWebrootIndexKey(String segmentInfo, String branchUuid, ContainerType type) {
+		return branchUuid + "-" + type.getCode() + "-" + segmentInfo;
 	}
 
 	public static String composeSegmentInfo(Node parentNode, String segment) {
 		return parentNode == null ? "" : parentNode.getUuid() + segment;
 	}
 
-	public static Object composeWebrootUrlFieldIndexKey(String path, String branchUuid, ContainerType type) {
-		Database db = MeshInternal.get().database();
-		return db.createComposedIndexKey(branchUuid, type.getCode(), path);
+	public static String composeWebrootUrlFieldIndexKey(String path, String branchUuid, ContainerType type) {
+		return branchUuid + "-" +  type.getCode() + "-" + path;
 	}
 
 	/**
