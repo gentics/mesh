@@ -49,7 +49,7 @@ After=basic.target network.target syslog.target
 [Service]
 User=node
 Restart=on-failure
-ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize1024m -jar mesh-server.jar
+ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=1024m -jar mesh-server.jar
 WorkingDirectory=/opt/mesh-server
 LimitMEMLOCK=infinity
 LimitNOFILE=65536
