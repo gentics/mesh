@@ -74,33 +74,17 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	default Completable asyncTx(TxAction0 txHandler) {
-		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
-		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
-		try {
-			throw new Exception("Transaction timeout exception");
-		} catch (Exception e1) {
-			reference.set(e1);
-		}
-
-		return Completable.create(sub -> {
-			Mesh.vertx().executeBlocking(bc -> {
-				try (Tx tx = tx()) {
-					txHandler.handle();
-					bc.complete();
-				} catch (Exception e) {
-					if (log.isTraceEnabled()) {
-						log.trace("Error while handling no-transaction.", e);
-					}
-					bc.fail(e);
+		return Mesh.rxVertx().rxExecuteBlocking(bc -> {
+			try (Tx tx = tx()) {
+				txHandler.handle();
+				bc.complete();
+			} catch (Exception e) {
+				if (log.isTraceEnabled()) {
+					log.trace("Error while handling no-transaction.", e);
 				}
-			}, false, done -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onComplete();
-				}
-			});
-		});
+				bc.fail(e);
+			}
+		}, false).toCompletable();
 	}
 
 	/**
@@ -110,40 +94,12 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	default <T> Single<T> asyncTx(TxAction1<Single<T>> trxHandler) {
-		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
-		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
-		try {
-			throw new Exception("Transaction timeout exception");
-		} catch (Exception e1) {
-			reference.set(e1);
-		}
-
 		return Mesh.rxVertx().rxExecuteBlocking(bc -> {
 			try (Tx tx = tx()) {
-				Single<T> result = trxHandler.handle();
-				if (result == null) {
-					bc.complete();
-				} else {
-					try {
-						T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
-						bc.complete(ele);
-					} catch (Exception e2) {
-						if (e2 instanceof TimeoutException) {
-							log.error("Timeout while processing result of transaction handler.", e2);
-							log.error("Calling transaction stacktrace.", reference.get());
-							bc.fail(reference.get());
-						} else {
-							throw e2;
-						}
-					}
-				}
-			} catch (Exception e) {
-				if (log.isTraceEnabled()) {
-					log.trace("Error while handling no-transaction.", e);
-				}
+				trxHandler.handle().subscribe(bc::complete, bc::fail);
+			} catch (Throwable e) {
 				bc.fail(e);
 			}
-
 		}, false);
 	}
 
@@ -154,48 +110,13 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	default <T> Single<T> asyncTx(TxAction<Single<T>> trxHandler) {
-		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
-		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
-		try {
-			throw new Exception("Transaction timeout exception");
-		} catch (Exception e1) {
-			reference.set(e1);
-		}
+		return Mesh.rxVertx().rxExecuteBlocking(bc -> {
+			try (Tx tx = tx()) {
+				trxHandler.handle(tx).subscribe(bc::complete, bc::fail);
+			} catch (Exception e) {
 
-		return Single.create(sub -> {
-			Mesh.vertx().executeBlocking(bc -> {
-				try (Tx tx = tx()) {
-					Single<T> result = trxHandler.handle(tx);
-					if (result == null) {
-						bc.complete();
-					} else {
-						try {
-							T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
-							bc.complete(ele);
-						} catch (Exception e2) {
-							if (e2 instanceof TimeoutException) {
-								log.error("Timeout while processing result of transaction handler.", e2);
-								log.error("Calling transaction stacktrace.", reference.get());
-								bc.fail(reference.get());
-							} else {
-								throw e2;
-							}
-						}
-					}
-				} catch (Exception e) {
-					if (!(e instanceof GenericRestException)) {
-						log.error("Error while handling no-transaction.", e);
-					}
-					bc.fail(e);
-				}
-			}, false, (AsyncResult<T> done) -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onSuccess(done.result());
-				}
-			});
-		});
+			}
+		}, false);
 	}
 
 	/**
@@ -386,7 +307,7 @@ public interface Database extends TxFactory {
 	/**
 	 * Remove the vertex type with the given name.
 	 * 
-	 * @param string
+	 * @param typeName
 	 */
 	void removeVertexType(String typeName);
 
@@ -534,7 +455,7 @@ public interface Database extends TxFactory {
 	/**
 	 * Return the element version.
 	 * 
-	 * @param vertex
+	 * @param element
 	 * @return
 	 */
 	String getElementVersion(Element element);
