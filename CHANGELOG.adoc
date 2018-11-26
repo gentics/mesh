@@ -24,13 +24,13 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.28.1]]
-== 0.28.1 (TBD)
-
-icon:check[] Changelog: Fixed a bug in the webroot index database migration entry which caused a `ORecordDuplicatedException` changelog error and prevented update and startup of older databases. link:https://github.com/gentics/mesh/issues/554[#554], link:https://github.com/gentics/mesh/issues/546[#546]
+== 0.28.1 (26.11.2018)
 
 icon:plus[] Demo: The example uuids and dates in the `/api/v1/raml` response and the documentation are now static and will no longer change between releases. link:https://github.com/gentics/mesh/issues/477[#477]
 
 icon:plus[] Core: Deletion of micronode and list field data has been implemented in the core. Previously these elements were not removed from the graph. link:https://github.com/gentics/mesh/issues/192[#192]
+
+icon:check[] Changelog: Fixed a bug in the webroot index database migration entry which caused a `ORecordDuplicatedException` changelog error and prevented update and startup of older databases. link:https://github.com/gentics/mesh/issues/554[#554], link:https://github.com/gentics/mesh/issues/546[#546]
 
 icon:check[] Core: Fixed a bug that caused link:https://getmesh.io/docs/api/#project__branches__branchUuid__migrateSchemas_post[/migrateSchemas] to fail when a newer schema version was not assigned to the branch. link:https://github.com/gentics/mesh/issues/532[#532]
 
