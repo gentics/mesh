@@ -66,9 +66,13 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 					node = node.getParentNode(branchUuid);
 				}
 				edge.setUrlFieldInfo(container.getUrlFieldValues());
-				String newInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(node,
-					container.getSegmentFieldValue());
-				edge.setSegmentInfo(newInfo);
+				String segment = container.getSegmentFieldValue();
+				if (segment != null) {
+					String newInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(node, segment);
+					edge.setSegmentInfo(newInfo);
+				} else {
+					edge.setSegmentInfo(null);
+				}
 				if (count % 100 == 0) {
 					log.info("Updating edge {" + count + "}");
 				}
