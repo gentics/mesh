@@ -24,6 +24,7 @@
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
 		<jackson.version>2.9.7</jackson.version>
+		<madl.version>0.1.0-SNAPSHOT</madl.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
@@ -83,7 +84,6 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
-		<module>diktyo</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>
@@ -130,6 +130,13 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- MADL -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-orientdb3</artifactId>
+				<version>${madl.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>com.syncleus.ferma</groupId>
 				<artifactId>ferma</artifactId>
