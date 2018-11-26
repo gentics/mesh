@@ -1,13 +1,13 @@
 {
   "data" : [ {
-    "uuid" : "a93c5a9081f647e5bc5a9081f687e599",
+    "uuid" : "adaf48da8c124049af48da8c12a0493e",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "5a971334d7d34725971334d7d3972506"
+      "uuid" : "589319933be24ec79319933be24ec7fe"
     },
-    "created" : "2018-11-20T12:12:04.444Z",
-    "edited" : "2018-11-20T12:12:04.444Z",
+    "created" : "2018-10-12T14:15:06.024Z",
+    "edited" : "2018-11-20T20:12:01.084Z",
     "availableLanguages" : {
       "de" : {
         "published" : true,
@@ -15,9 +15,9 @@
         "publisher" : {
           "firstName" : "Joe",
           "lastName" : "Doe",
-          "uuid" : "962372d73dc94acea372d73dc96ace48"
+          "uuid" : "589319933be24ec79319933be24ec7fe"
         },
-        "publishDate" : "2018-11-20T12:12:04.444Z"
+        "publishDate" : "2018-10-12T14:15:06.024Z"
       },
       "en" : {
         "published" : false,
@@ -25,9 +25,9 @@
         "publisher" : {
           "firstName" : "Joe",
           "lastName" : "Doe",
-          "uuid" : "3c2c4049486d4ebdac4049486d2ebd55"
+          "uuid" : "589319933be24ec79319933be24ec7fe"
         },
-        "publishDate" : "2018-11-20T12:12:04.444Z"
+        "publishDate" : "2018-10-12T14:15:06.024Z"
       }
     },
     "languagePaths" : {
@@ -35,41 +35,41 @@
       "en" : "/api/v1/yourProject/webroot/Images"
     },
     "parentNode" : {
-      "uuid" : "b79c2f72f2f34ad39c2f72f2f30ad367",
+      "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
       "displayName" : "parentNodeDisplayName"
     },
     "tags" : [ {
       "name" : "red",
-      "uuid" : "383ab56c11af4987bab56c11aff987b7",
+      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
       "tagFamily" : "colors"
     }, {
       "name" : "red",
-      "uuid" : "bf77227f6eff4d7ab7227f6effcd7ab9",
+      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
       "tagFamily" : "colors"
     }, {
       "name" : "green",
-      "uuid" : "c7d713ae948f4c979713ae948f4c9725",
+      "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
       "tagFamily" : "colors"
     }, {
       "name" : "car",
-      "uuid" : "ad478c90f9604beb878c90f9600beb0c"
+      "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c"
     }, {
       "name" : "ship",
-      "uuid" : "88e4fa79dc3b4451a4fa79dc3ba45183"
+      "uuid" : "86c0a2b6435d434280a2b6435da34247"
     } ],
     "childrenInfo" : {
       "folder" : {
-        "schemaUuid" : "2ca2f6389b5941f6a2f6389b59f1f6d5",
+        "schemaUuid" : "4c83d010122c4a2783d010122c4a2782",
         "count" : 5
       },
       "blogpost" : {
-        "schemaUuid" : "a2365e4ea28e4430b65e4ea28e44307b",
+        "schemaUuid" : "86c0a2b6435d434280a2b6435da34247",
         "count" : 1
       }
     },
     "schema" : {
       "name" : "content",
-      "uuid" : "e1601f581ed5468fa01f581ed5568f83",
+      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
       "version" : "1.0"
     },
     "container" : false,
@@ -79,17 +79,17 @@
       "teaser" : "Dummy teaser for de-DE",
       "content" : "Content for language tag de-DE",
       "relatedProduct" : {
-        "uuid" : "4c62356413ca4e76a2356413caee76a4"
+        "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c"
       },
       "price" : 100.1,
       "enabled" : true,
-      "branch" : "2018-11-20T12:12:04.444Z",
+      "branch" : "2018-10-12T14:15:06.024Z",
       "categories" : [ {
-        "uuid" : "37819a00962b45ec819a00962bb5ecf0"
+        "uuid" : "cf26ed6198204bf0a6ed6198207bf046"
       }, {
-        "uuid" : "756f34abe6eb4aa6af34abe6eb2aa638"
+        "uuid" : "dff59dcc9f8e4061b59dcc9f8e80615b"
       }, {
-        "uuid" : "cd726d1e01e14f73b26d1e01e1bf730d"
+        "uuid" : "986fae0301fc4715afae0301fc27158f"
       } ],
       "names" : [ "Jack", "Joe", "Mary", "Tom" ],
       "categoryIds" : [ 1, 42, 133, 7 ],
@@ -103,10 +103,8 @@
         "dominantColor" : "#22a7f0"
       },
       "location" : {
-        "uuid" : "ae0c6026681b411c8c6026681b811c1c",
         "microschema" : {
-          "name" : "geolocation",
-          "uuid" : "817c52d033ea4699bc52d033eaa6997d"
+          "name" : "geolocation"
         },
         "fields" : {
           "latitude" : 48.208330230278,
@@ -114,20 +112,16 @@
         }
       },
       "locations" : [ {
-        "uuid" : "ef5f307e8fed45c49f307e8fed75c418",
         "microschema" : {
-          "name" : "geolocation",
-          "uuid" : "213ae95c56b64fd3bae95c56b66fd3d6"
+          "name" : "geolocation"
         },
         "fields" : {
           "latitude" : 48.208330230278,
           "longitude" : 16.373063840833
         }
       }, {
-        "uuid" : "b232d70b77b846e8b2d70b77b896e88e",
         "microschema" : {
-          "name" : "geolocation",
-          "uuid" : "6961971f069c43f4a1971f069cd3f44a"
+          "name" : "geolocation"
         },
         "fields" : {
           "latitude" : 48.137222,
@@ -137,13 +131,13 @@
     },
     "path" : "/api/v1/yourProject/webroot/Images",
     "breadcrumb" : [ {
-      "uuid" : "4d634c0223314105a34c0223318105b3",
+      "uuid" : "adaf48da8c124049af48da8c12a0493e",
       "displayName" : "news",
       "path" : "/news"
     }, {
-      "uuid" : "460cb166364c41d78cb166364cc1d796",
+      "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
       "displayName" : "2015",
-      "path" : "/news/2015"
+      "path" : "/automobiles/delorean-dmc-12"
     } ],
     "permissions" : {
       "create" : true,
@@ -154,44 +148,44 @@
       "readPublished" : false
     }
   }, {
-    "uuid" : "dbf4ff29803d4b69b4ff29803d7b69af",
+    "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
     "creator" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "a28088590f4c4b658088590f4c0b654f"
+      "uuid" : "589319933be24ec79319933be24ec7fe"
     },
-    "created" : "2018-11-20T12:12:04.444Z",
+    "created" : "2018-10-12T14:15:06.024Z",
     "editor" : {
       "firstName" : "Joe",
       "lastName" : "Doe",
-      "uuid" : "73f2214630f7427ab2214630f7e27aaf"
+      "uuid" : "589319933be24ec79319933be24ec7fe"
     },
-    "edited" : "2018-11-20T12:12:04.444Z",
+    "edited" : "2018-11-20T20:12:01.084Z",
     "parentNode" : {
-      "uuid" : "7eb0e04d0fd444a8b0e04d0fd434a868",
+      "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
       "displayName" : "parentNodeDisplayName"
     },
     "tags" : [ {
       "name" : "red",
-      "uuid" : "1c643a8b64724eeba43a8b64721eebb0",
+      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
       "tagFamily" : "colors"
     }, {
       "name" : "green",
-      "uuid" : "a2c8eb758dbb4e9788eb758dbb4e9713",
+      "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
       "tagFamily" : "colors"
     }, {
       "name" : "car",
-      "uuid" : "378adef7053542248adef7053562243a",
+      "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
       "tagFamily" : "vehicles"
     }, {
       "name" : "ship",
-      "uuid" : "0e8052c018a2482a8052c018a2482a3d",
+      "uuid" : "86c0a2b6435d434280a2b6435da34247",
       "tagFamily" : "vehicles"
     } ],
     "childrenInfo" : { },
     "schema" : {
       "name" : "content",
-      "uuid" : "791c62ea7a4d43549c62ea7a4d035418",
+      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
       "version" : "1.0"
     },
     "container" : false,
@@ -202,13 +196,13 @@
       "content" : "Content for language tag en"
     },
     "breadcrumb" : [ {
-      "uuid" : "932950f50a24400da950f50a24500de3",
-      "displayName" : "news",
-      "path" : "/news"
+      "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+      "displayName" : "Automobiles",
+      "path" : "/automobiles"
     }, {
-      "uuid" : "038924257a884b0c8924257a882b0c00",
-      "displayName" : "2015",
-      "path" : "/news/2015"
+      "uuid" : "adaf48da8c124049af48da8c12a0493e",
+      "displayName" : "DeLorean DMC-12",
+      "path" : "/automobiles/delorean-dmc-12"
     } ],
     "permissions" : {
       "create" : true,

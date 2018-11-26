@@ -1,42 +1,42 @@
 {
-  "uuid" : "9e9b4347725648469b43477256284655",
+  "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
   "creator" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "e54e76c3fa3444528e76c3fa34b452f0"
+    "uuid" : "589319933be24ec79319933be24ec7fe"
   },
-  "created" : "2018-11-20T12:12:04.548Z",
+  "created" : "2018-10-12T14:15:06.024Z",
   "editor" : {
     "firstName" : "Joe",
     "lastName" : "Doe",
-    "uuid" : "9c91a3068bfd4e2691a3068bfdde2632"
+    "uuid" : "589319933be24ec79319933be24ec7fe"
   },
-  "edited" : "2018-11-20T12:12:04.548Z",
+  "edited" : "2018-11-20T20:12:01.084Z",
   "parentNode" : {
-    "uuid" : "b8480d8816ea437e880d8816ea337eeb",
+    "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
     "displayName" : "parentNodeDisplayName"
   },
   "tags" : [ {
     "name" : "red",
-    "uuid" : "c1223ffd7afa40cca23ffd7afa90ccff",
+    "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
     "tagFamily" : "colors"
   }, {
     "name" : "green",
-    "uuid" : "0d3d34efd4a945c9bd34efd4a9e5c9ec",
+    "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
     "tagFamily" : "colors"
   }, {
     "name" : "car",
-    "uuid" : "b2e8a6b82b5640c5a8a6b82b5680c5b0",
+    "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
     "tagFamily" : "vehicles"
   }, {
     "name" : "ship",
-    "uuid" : "b8950dcd92294fe5950dcd9229dfe53c",
+    "uuid" : "86c0a2b6435d434280a2b6435da34247",
     "tagFamily" : "vehicles"
   } ],
   "childrenInfo" : { },
   "schema" : {
     "name" : "content",
-    "uuid" : "361c4e6558b74b919c4e6558b7ab910a",
+    "uuid" : "e287e8a7497940ac87e8a7497940ac82",
     "version" : "1.0"
   },
   "container" : false,
@@ -47,13 +47,13 @@
     "content" : "Content for language tag en"
   },
   "breadcrumb" : [ {
-    "uuid" : "964b7205d5ed4d888b7205d5eddd8820",
-    "displayName" : "news",
-    "path" : "/news"
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/automobiles"
   }, {
-    "uuid" : "c9f06a3a99714102b06a3a997161020c",
-    "displayName" : "2015",
-    "path" : "/news/2015"
+    "uuid" : "adaf48da8c124049af48da8c12a0493e",
+    "displayName" : "DeLorean DMC-12",
+    "path" : "/automobiles/delorean-dmc-12"
   } ],
   "permissions" : {
     "create" : true,

@@ -1,13 +1,13 @@
 {
-  "uuid" : "179e3cffead442179e3cffead4521782",
-  "name" : "Hello World",
+  "uuid" : "36fcb16dd9654e62bcb16dd9651e624e",
+  "name" : "Hello World 1",
   "manifest" : {
-    "name" : "Hello World",
-    "apiName" : "hello-world",
+    "name" : "Hello World 1",
+    "apiName" : "hello-world1",
     "description" : "A dummy plugin",
     "version" : "1.0",
     "author" : "Joe Doe",
-    "inception" : "2018-11-20T12:12:04Z",
+    "inception" : "2018-10-12T14:15:06.024Z",
     "license" : "Apache License 2.0"
   }
 }

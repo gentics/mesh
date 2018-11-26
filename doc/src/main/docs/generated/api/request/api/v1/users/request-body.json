@@ -3,15 +3,15 @@
   "emailAddress" : "j.doe@nowhere.com",
   "lastname" : "Doe",
   "firstname" : "Joe",
-  "groupUuid" : "341238041afc474e9238041afc174eab",
+  "groupUuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d",
   "password" : "iesiech0eewinioghaRa",
   "nodeReference" : {
     "projectName" : "dummy",
-    "uuid" : "d69054d91ede47289054d91ede772816",
+    "uuid" : "adaf48da8c124049af48da8c12a0493e",
     "displayName" : "DeLorean DMC-12",
     "schema" : {
       "name" : "vehicle",
-      "uuid" : "e8c8b6fd03574dc488b6fd03575dc44d",
+      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
       "version" : "1.0"
     }
   }
