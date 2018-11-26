@@ -3,8 +3,6 @@ package com.gentics.mesh.graphdb.spi;
 import java.io.File;
 import java.io.IOException;
 
-import com.gentics.mesh.Mesh;
-import io.vertx.reactivex.core.WorkerExecutor;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -24,7 +22,6 @@ public abstract class AbstractDatabase implements Database {
 	protected MeshOptions options;
 	protected String meshVersion;
 	protected String[] basePaths;
-	private WorkerExecutor worker;
 
 	@Override
 	public void clear() {
@@ -46,15 +43,6 @@ public abstract class AbstractDatabase implements Database {
 		this.options = options;
 		this.meshVersion = meshVersion;
 		this.basePaths = basePaths;
-	}
-
-	@Override
-	public WorkerExecutor getExecutor() {
-		if (worker == null) {
-			// TODO Review pool size
-			worker = Mesh.rxVertx().createSharedWorkerExecutor("asyncTx", 1);
-		}
-		return worker;
 	}
 
 	/**
