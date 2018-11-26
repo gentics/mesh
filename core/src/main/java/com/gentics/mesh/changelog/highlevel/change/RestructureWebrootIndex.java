@@ -52,6 +52,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 
 	@Override
 	public void apply() {
+		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
 			GraphFieldContainerEdgeImpl.class);
@@ -67,7 +68,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				}
 				edge.setUrlFieldInfo(container.getUrlFieldValues());
 				String segment = container.getSegmentFieldValue();
-				if (segment != null) {
+				if (segment != null && !segment.trim().isEmpty()) {
 					String newInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(node, segment);
 					edge.setSegmentInfo(newInfo);
 				} else {
@@ -78,6 +79,12 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				}
 				count++;
 			}
+
+			String segment = edge.getSegmentInfo();
+			if (segment == null || segment.trim().isEmpty()) {
+				edge.setSegmentInfo(null);
+			}
+
 		}
 		log.info("Done updating all edges. Total: {" + count + "}");
 
