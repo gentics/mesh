@@ -83,7 +83,6 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
-		<module>diktyo</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>

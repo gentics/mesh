@@ -20,9 +20,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-diktyo</artifactId>
-			<version>${project.version}</version>
+			<groupId>com.syncleus.ferma</groupId>
+			<artifactId>ferma</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>net.bytebuddy</groupId>
+					<artifactId>byte-buddy</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
