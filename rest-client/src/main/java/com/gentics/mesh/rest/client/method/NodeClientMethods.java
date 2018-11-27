@@ -60,7 +60,7 @@ public interface NodeClientMethods {
 	 * @param projectName
 	 *            Name of the project
 	 * @param uuid
-	 *            Uuid for the new node
+	 *            Uuid for the node
 	 * @param nodeUpsertRequest
 	 * @param parameters
 	 * @return Mesh request which can be invoked
