@@ -20,7 +20,7 @@ public class NodeUpsertRequest implements FieldContainer {
 	@JsonPropertyDescription("Reference to the parent node in which the node will be created. The uuid of this object must be set.")
 	private NodeReference parentNode;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version number which must be provided in order to handle and detect concurrent changes to the node content.")
 	private String version = "draft";
 
@@ -33,7 +33,7 @@ public class NodeUpsertRequest implements FieldContainer {
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String language;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Dynamic map with fields of the node content.")
 	private FieldMap fields = new FieldMapImpl();
 

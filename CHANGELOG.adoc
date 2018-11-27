@@ -26,6 +26,8 @@ title: Changelog
 [[v0.28.1]]
 == 0.28.1 (TBD)
 
+icon:plus[] Java Rest Client: The `version` property of the `NodeUpdateRequest` is now by default set to `draft`. Setting the value to draft will override the conflict detection handling and always compare the posted data with the latest draft version.
+
 icon:plus[] Java Rest Client: The `upsertNode` method has been added to the REST client which can be used to create or update a node.
 
 icon:plus[] Demo: The example uuids and dates in the `/api/v1/raml` response and the documentation are now static and will no longer change between releases. link:https://github.com/gentics/mesh/issues/477[#477]
