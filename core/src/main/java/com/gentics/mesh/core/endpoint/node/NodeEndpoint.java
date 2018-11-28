@@ -371,7 +371,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Update or create the node with the given uuid. "
-			+ "Mesh will automatically check for version conflicts when a version was specified in the request and return a 409 error if a conflict has been detected. "
+			+ "Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. "
 			+ "Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.");
 		endpoint.path("/:nodeUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
