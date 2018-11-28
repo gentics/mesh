@@ -22,7 +22,7 @@ public class NodeUpdateRequest implements FieldContainer {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version number which can be provided in order to handle and detect concurrent changes to the node content.")
-	private String version = "draft";
+	private String version;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of tags that should be used to tag the node.")

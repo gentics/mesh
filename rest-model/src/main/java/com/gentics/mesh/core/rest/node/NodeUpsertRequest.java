@@ -22,7 +22,7 @@ public class NodeUpsertRequest implements FieldContainer {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version number which must be provided in order to handle and detect concurrent changes to the node content.")
-	private String version = "draft";
+	private String version;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node.")
