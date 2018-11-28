@@ -31,6 +31,10 @@ icon:check[] Changelog: Enhanced changelog entry fix from release `0.28.1` to fi
 [[v0.28.1]]
 == 0.28.1 (26.11.2018)
 
+icon:plus[] Java Rest Client: The `version` property of the `NodeUpdateRequest` is now by default set to `draft`. Setting the value to draft will override the conflict detection handling and always compare the posted data with the latest draft version.
+
+icon:plus[] Java Rest Client: The `upsertNode` method has been added to the REST client which can be used to create or update a node.
+
 icon:plus[] Demo: The example uuids and dates in the `/api/v1/raml` response and the documentation are now static and will no longer change between releases. link:https://github.com/gentics/mesh/issues/477[#477]
 
 icon:plus[] Core: Deletion of micronode and list field data has been implemented in the core. Previously these elements were not removed from the graph. link:https://github.com/gentics/mesh/issues/192[#192]

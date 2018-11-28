@@ -1619,8 +1619,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			batch.store(latestDraftVersion, branch.getUuid(), DRAFT, false);
 			return true;
 		} else {
-			if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion())) {
-				throw error(BAD_REQUEST, "node_error_version_missing");
+			String version = requestModel.getVersion();
+			if (version == null) {
+				log.debug("No version was specified. Assuming 'draft' for latest version");
+				version = "draft";
 			}
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
@@ -1631,9 +1633,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Load the base version field container in order to create the diff
-			NodeGraphFieldContainer baseVersionContainer = findVersion(requestModel.getLanguage(), branch.getUuid(), requestModel.getVersion());
+			NodeGraphFieldContainer baseVersionContainer = findVersion(requestModel.getLanguage(), branch.getUuid(), version);
 			if (baseVersionContainer == null) {
-				throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion(), requestModel.getLanguage());
+				throw error(BAD_REQUEST, "node_error_draft_not_found", version, requestModel.getLanguage());
 			}
 
 			latestDraftVersion.getSchemaContainerVersion().getSchema().assertForUnhandledFields(requestModel.getFields());
@@ -1647,7 +1649,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
 
 			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-			if (!latestDraftVersion.getVersion().equals(requestModel.getVersion())) {
+			if (!latestDraftVersion.getVersion().getFullVersion().equals(version)) {
 
 				// Check whether a conflict has been detected
 				if (intersect.size() > 0) {
