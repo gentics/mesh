@@ -677,6 +677,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request) {
+		return prepareRequest(POST, "/schemas/" + uuid, SchemaResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole) {
 		return prepareRequest(POST, "/roles/" + uuid, RoleResponse.class, restRole);
 	}
@@ -779,7 +784,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		if (!path.startsWith("/")) {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
-		return webrootCreate(projectName, path.split("/"), nodeCreateRequest , parameters);
+		return webrootCreate(projectName, path.split("/"), nodeCreateRequest, parameters);
 	}
 
 	@Override
@@ -1123,6 +1128,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request) {
+		return prepareRequest(POST, "/microschemas/" + uuid, MicroschemaResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<MicroschemaResponse> findMicroschemaByUuid(String uuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaResponse.class);
@@ -1318,7 +1328,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/tags/" + tagUuid,
-				BranchResponse.class);
+			BranchResponse.class);
 	}
 
 	@Override
@@ -1334,7 +1344,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRequest<TagListResponse> findTagsForBranch(String projectName, String branchUuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/tags" + getQuery(parameters), TagListResponse.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/tags" + getQuery(parameters),
+			TagListResponse.class);
 	}
 
 	@Override

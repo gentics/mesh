@@ -584,6 +584,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
+		ac.setPayloadObject(request);
+		schemaCrudHandler.handleUpdate(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<SchemaResponse> findSchemaByUuid(String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class, parameters);
 		schemaCrudHandler.handleRead(ac, uuid);
@@ -1002,6 +1010,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleCreate(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request) {
+		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
+		ac.setPayloadObject(request);
+		microschemaCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

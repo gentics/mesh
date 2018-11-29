@@ -23,6 +23,15 @@ public interface SchemaClientMethods {
 	MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request);
 
 	/**
+	 * Create a new schema with the given uuid using the request.
+	 * 
+	 * @param uuid
+	 * @param request
+	 * @return
+	 */
+	MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request);
+
+	/**
 	 * Load the schema with the given uuid.
 	 * 
 	 * @param uuid
