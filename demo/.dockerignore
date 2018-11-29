@@ -4,4 +4,3 @@ data
 .vertx
 .settings
 target/classes
-target/dump

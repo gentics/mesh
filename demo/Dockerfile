@@ -13,10 +13,12 @@ RUN adduser -D -u 1000 -h /mesh mesh
 USER mesh
 WORKDIR /mesh
 ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
+ADD ./target/dump/data/binaryFiles /uploads
+ADD ./target/dump/data/graphdb /graphdb
 
 USER root
-RUN mkdir /graphdb   && chown mesh: /graphdb    -R && \
-    mkdir /uploads   && chown mesh: /uploads    -R && \
+RUN mkdir -p /graphdb   && chown mesh: /graphdb    -R && \
+    mkdir -p /uploads   && chown mesh: /uploads    -R && \
     mkdir /backups   && chown mesh: /backups    -R && \
     mkdir /plugins   && chown mesh: /plugins    -R && \
     mkdir /keystore  && chown mesh: /keystore   -R && \
