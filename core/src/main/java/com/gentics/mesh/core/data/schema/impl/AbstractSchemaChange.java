@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.EL
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -115,7 +116,16 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public <R> R getRestProperty(String key) {
-		return property(REST_PROPERTY_PREFIX_KEY + key);
+		Object value = property(REST_PROPERTY_PREFIX_KEY + key);
+		if (value == null) {
+			return null;
+		}
+		if (value.getClass().isArray()) {
+			Object[] array = (Object[]) value;
+			String[] stringArray = Arrays.copyOf(array, array.length, String[].class);
+			return (R) stringArray;
+		}
+		return (R) value;
 	}
 
 	@Override

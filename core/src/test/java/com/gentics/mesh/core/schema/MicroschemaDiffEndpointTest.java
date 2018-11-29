@@ -75,21 +75,35 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() {
-		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Microschema request = getMicroschema();
-			StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
-			stringField.setAllowedValues("one", "two");
-			request.addField(stringField);
-			SchemaChangesListModel changes = call(() ->
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
 
-			client().diffMicroschema(microschema.getUuid(), request));
-			assertNotNull(changes);
-			assertThat(changes.getChanges()).hasSize(2);
-			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
-			assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
-					new String[] { "firstName", "lastName", "address", "postcode", "someField" });
-		}
+		Microschema request = getMicroschema();
+		StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
+		stringField.setAllowedValues("one", "two");
+		request.addField(stringField);
+		SchemaChangesListModel changes = call(() -> client().diffMicroschema(uuid, request));
+		assertNotNull(changes);
+		assertThat(changes.getChanges()).hasSize(2);
+		assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
+		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
+			new String[] { "firstName", "lastName", "address", "postcode", "someField" });
+	}
+
+	@Test
+	public void testApplyChanges() {
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+
+		Microschema request = getMicroschema();
+		StringFieldSchema stringField = FieldUtil
+			.createStringFieldSchema("someField");
+		stringField.setAllowedValues("one", "two");
+		request.addField(stringField);
+
+		// 1. Diff the schema
+		SchemaChangesListModel changes = call(() -> client().diffMicroschema(uuid, request));
+
+		// 2. Apply the changes
+		call(() -> client().applyChangesToMicroschema(uuid, changes));
 	}
 
 	@Test
@@ -101,7 +115,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 			request.addField(binaryField);
 
 			call(() -> client().diffMicroschema(microschema.getUuid(), request), BAD_REQUEST, "microschema_error_field_type_not_allowed",
-					"binaryField", "binary");
+				"binaryField", "binary");
 		}
 	}
 
