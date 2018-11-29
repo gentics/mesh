@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
@@ -135,6 +136,15 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 		model.setOperation(getOperation());
 		model.setUuid(getUuid());
 		return model;
+	}
+
+	@Override
+	public void delete(BulkActionContext bc) {
+		SchemaChange<?> next = getNextChange();
+		if (next != null) {
+			next.delete(bc);
+		}
+		getElement().remove();
 	}
 
 }
