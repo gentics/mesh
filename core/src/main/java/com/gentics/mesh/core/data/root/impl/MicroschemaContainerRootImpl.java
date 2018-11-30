@@ -62,7 +62,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	@Override
 	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid) {
-		microschema.validate();
+		validateCreate(microschema);
 
 		String name = microschema.getName();
 		MicroschemaContainer conflictingSchema = findByName(name);
@@ -97,7 +97,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
-		microschema.validate();
+		validateCreate(microschema);
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
@@ -106,6 +106,14 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		batch.store(container, true);
 		return container;
 
+	}
+
+	private void validateCreate(MicroschemaModel microschema) {
+		microschema.validate();
+		// Don't allow creating microschema with empty fields
+		if (microschema.getFields().isEmpty()) {
+			throw error(BAD_REQUEST, "schema_missing_fields");
+		}
 	}
 
 	@Override

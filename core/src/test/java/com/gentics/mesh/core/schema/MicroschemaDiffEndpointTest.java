@@ -7,9 +7,9 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -119,5 +119,13 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 			assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order", new String[] { "firstName", "lastName", "address" });
 		}
 	}
+	@Test
+	public void testEmptyRequest() {
+		String schemaUuid = getMicroschemaByName("vcard").getUuid();
+		Microschema request = new MicroschemaUpdateRequest();
+		request.setName("content");
 
+		SchemaChangesListModel changes = call(() -> client().diffMicroschema(schemaUuid, request));
+		assertThat(changes.getChanges()).isEmpty();
+	}
 }

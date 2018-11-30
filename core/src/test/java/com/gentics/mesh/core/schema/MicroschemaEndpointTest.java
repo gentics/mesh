@@ -467,4 +467,11 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 	}
 
+	@Test
+	public void testCreateMicroschemaWithoutFields() {
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+		request.setName("emptySchema");
+
+		call(() -> client().createMicroschema(request), BAD_REQUEST, "schema_missing_fields");
+	}
 }
