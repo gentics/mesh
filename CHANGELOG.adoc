@@ -11,7 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.22.8]]
-== 0.22.8 (TBD)
+== 0.22.8 (30.11.2018)
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.37
 
