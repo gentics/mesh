@@ -426,7 +426,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
-	public void testCreateEmptySchema() {
+	public void testCreateSchemaWithoutFields() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("emptySchema");
 

@@ -113,6 +113,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				throw new RuntimeException(error);
 			}
 		}
+		// Don't allow creating schema with empty fields
+		if (schema.getFields().isEmpty()) {
+			throw error(BAD_REQUEST, "schema_missing_fields");
+		}
 	}
 
 	@Override
