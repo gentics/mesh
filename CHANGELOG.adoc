@@ -26,6 +26,8 @@ title: Changelog
 [[v0.28.3]]
 == 0.28.3 (TBD)
 
+icon:plus[] Core: When resolving links with type FULL, and the chosen branch is not the latest branch, the query parameter for the branch will be added to the rendered link.
+
 icon:check[] GraphQL: Resolved links will now contain the hostname of the target branch, not the latest branch.
 
 
