@@ -23,6 +23,12 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.28.3]]
+== 0.28.3 (TBD)
+
+icon:check[] GraphQL: Resolved links will now contain the hostname of the target branch, not the latest branch.
+
+
 [[v0.28.2]]
 == 0.28.2 (26.11.2018)
 
