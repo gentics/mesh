@@ -28,7 +28,7 @@ public class GraphQLEndpointBranchTest extends AbstractMeshTest {
 
 	@Before
 	public void setupData() {
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdminRole();
 		createBranchRest(BRANCH_NAME, false);
 
 		NodeResponse content1 = createContent("test1", "test");

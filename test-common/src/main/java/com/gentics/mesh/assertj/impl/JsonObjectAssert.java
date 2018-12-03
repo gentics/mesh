@@ -55,7 +55,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		try {
 			Object actualValue = getByPath(path);
 			String actualStringRep = String.valueOf(actualValue);
-			assertEquals("Value for property on path {" + path + "} did notmatch: " + msg, value, actualStringRep);
+			assertEquals("Value for property on path {" + path + "} did not match: " + msg, value, actualStringRep);
 		} catch (PathNotFoundException e) {
 			fail("Could not find property for path {" + path + "} - Json is:\n--snip--\n" + actual.encodePrettily() + "\n--snap--\n" + msg);
 		}
@@ -117,7 +117,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	}
 
 	private void evaluteAssertion(String assertion, int lineNr) {
-		String[] parts = assertion.split("=");
+		String[] parts = assertion.split("=", 2);
 		if (parts.length <= 1) {
 			fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
 		}
