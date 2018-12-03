@@ -1,0 +1,12 @@
+{
+  node(path: "/test2") {
+    fields {
+      ... on content {
+		    # [$.data.node.fields.content=/test1]
+        content(linkType: SHORT)
+		    # [$.data.node.fields.teaser=/test1]
+        teaser(linkType: SHORT)
+      }
+    }
+  }
+}
