@@ -1,0 +1,45 @@
+---
+title: Support
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+== Professional Services
+
+You can take advantage of our fast support with SLAs, enlightening consulting & empowering trainings.
+
+Customers with Professional Service contract get access to our dedicated support system and can report issues via phone.
+
+You can reach us at `mesh@gentics.com` for more details.
+
+== Versioning
+
+We apply link:https://semver.org/[Semantic Versioning] to our releases.
+
+Given a version number **MAJOR**.**MINOR**.**PATCH**:
+
+1. **MAJOR** version we make incompatible API changes,
+2. **MINOR** version we add functionality in a backwards-compatible manner, and
+3. **PATCH** version we make backwards-compatible bug fixes.
+
+== Release Cycle
+
+We use the rolling release model and thus release new features in regular one month intervals.
+
+Bugfix and security patches will be included in minor releases. We plan to support these releases for one year after a major release.
+
+Fixes and minor updates will currently be published in a one to two week interval.
+
+== Community Support
+
+You can chat with us via link:https://gitter.im/gentics/mesh[our gitter channel] or create link:http://stackoverflow.com/questions/tagged/gentics-mesh[Stackoverflow questions].
+
+Issues can be reported via link:https://github.com/gentics/mesh/issues[Github]. 
+
+== Unsupported releases
+
+We are currently no longer supporting releases below version 0.22.0. 
+
+Manually build versions (e.g. SNAPSHOT builds) or patches versions are not supported.

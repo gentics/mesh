@@ -410,6 +410,17 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
 
+		           <li class="section">
+                        <h2><a href="support">Support</a></h2>
+                        <ul>
+                            <li>
+                                <a href="support/#_professional_services">Professional Services</a>
+                            </li>
+                            <li>
+                                <a href="support/#_release_cycle">Release Cycle</a>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
