@@ -15,9 +15,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -28,6 +28,8 @@ import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.error.EdgeNotFoundException;
+import com.gentics.mesh.error.VertexNotFoundException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -66,7 +68,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            status handler which will be used to track the progress
 	 * @return Completable which is completed once the migration finishes
 	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Branch branch, SchemaContainerVersion fromVersion,
+		SchemaContainerVersion toVersion,
 		MigrationStatusHandler status) {
 
 		// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
@@ -157,14 +160,16 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @return
 	 */
-	private void migrateContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, NodeGraphFieldContainer container, SchemaContainerVersion toVersion,
+	private void migrateContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, NodeGraphFieldContainer container,
+		SchemaContainerVersion toVersion,
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Branch branch, SchemaModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
-		if (log.isDebugEnabled()) {
-			log.debug("Migrating container {" + container.getUuid() + "}");
-		}
 		try {
+
+			if (log.isDebugEnabled()) {
+				log.debug("Migrating container {" + container.getUuid() + "}");
+			}
 			// Run the actual migration in a dedicated transaction
 			db.tx((tx) -> {
 
@@ -193,9 +198,11 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema,
 					nextDraftVersion);
 			});
+		} catch (VertexNotFoundException | EdgeNotFoundException e2) {
+			log.warn("Migration failed since a element could no longer be found in the graph", e2);
+			// Ignoring these kinds of errors since those can happen when nodes get deleted during the schema migration
 		} catch (Exception e1) {
-			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
-				+ "} during schema migration.", e1);
+			System.out.println("Error: " + e1.getClass().getName());
 			errorsDetected.add(e1);
 		}
 

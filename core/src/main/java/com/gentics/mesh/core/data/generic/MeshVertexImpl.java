@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.error.VertexNotFoundException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
@@ -168,7 +169,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 		if (this instanceof IndexableElement) {
@@ -188,12 +189,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		FramedGraph fg = Tx.getActive().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
-					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
 		Vertex vertexForId = fg.getVertex(id);
 		if (vertexForId == null) {
-			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
+			throw new VertexNotFoundException(id, getClass());
 		}
 		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
 
@@ -203,7 +204,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		}
 		return (Vertex) vertex;
 	}
-	
+
 	@Override
 	public String getElementVersion() {
 		Vertex vertex = getElement();

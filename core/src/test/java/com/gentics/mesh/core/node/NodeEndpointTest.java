@@ -1452,7 +1452,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// level 0
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReferenceImpl().setName("folder"));
+		request.setSchemaName("folder");
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
 		request.getFields().put("slug", FieldUtil.createStringField("english folder-0"));

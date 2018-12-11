@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import io.reactivex.Observable;
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.FieldUtil;
@@ -18,11 +17,11 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -220,6 +219,7 @@ public interface TestHelperMethods {
 
 	/**
 	 * Return uuid of the news folder.
+	 * 
 	 * @return
 	 */
 	default String folderUuid() {
@@ -395,12 +395,30 @@ public interface TestHelperMethods {
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
-		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		nodeCreateRequest.setSchemaName("folder");
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 		return client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en"));
+	}
+
+	/**
+	 * Creates a folder node in the news folder.
+	 * 
+	 * @param slug
+	 * @return
+	 */
+	default public NodeResponse createFolder(String slug) {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNode(new NodeReference().setUuid(folderUuid()));
+		nodeCreateRequest.setSchemaName("folder");
+		nodeCreateRequest.setLanguage("en");
+
+		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Folder " + slug));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField(slug));
+
+		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 	}
 
 	default public NodeResponse createNode(String fieldKey, Field field) {
