@@ -50,6 +50,7 @@ import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -270,7 +271,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 			Completable obs = Completable.complete();
 
 			if (!seperateEntries.isEmpty()) {
-				obs = Completable.concat(seperateEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
+				List<Completable> seperateEntryList = seperateEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
+				obs = Completable.concat(Flowable.fromIterable(seperateEntryList), 1);
 			}
 			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
 			if (!bulkEntries.isEmpty()) {
