@@ -30,6 +30,7 @@ icon:plus[] Core: When resolving links with type FULL, and the chosen branch is 
 
 icon:check[] GraphQL: Resolved links will now contain the hostname of the target branch, not the latest branch.
 
+icon:check[] Elasticsearch: Search indices are now sequentially. This was causing problems when many indices would have to be created.
 
 [[v0.28.2]]
 == 0.28.2 (26.11.2018)
