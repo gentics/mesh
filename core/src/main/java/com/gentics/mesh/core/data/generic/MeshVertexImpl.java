@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.dagger.DB;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -202,6 +203,15 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		if (vertex instanceof WrappedElement) {
 			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
 		}
+
+		// Check if the vertex still exists in the graph
+		try {
+			DB.get().reload(vertex);
+		} catch (Throwable e) {
+			System.out.println("Not found!");
+			throw new VertexNotFoundException(id, getClass());
+		}
+
 		return (Vertex) vertex;
 	}
 

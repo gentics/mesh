@@ -9,7 +9,9 @@ import java.util.function.Function;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.Single;
+import io.reactivex.functions.Predicate;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.logging.Logger;
@@ -91,4 +93,9 @@ public final class RxUtil {
 			.doOnCancel(file::close);
 	}
 
+	public static <T> ObservableTransformer<T, T> onErrorResumeNextIf(Predicate<Throwable> predicate, Observable<T> resumeObservable) {
+		return upstream -> upstream.onErrorResumeNext(err ->
+			predicate.test(err) ? resumeObservable : Observable.error(err)
+		);
+	}
 }

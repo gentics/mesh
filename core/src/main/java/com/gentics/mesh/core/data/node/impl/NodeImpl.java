@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.Mesh;

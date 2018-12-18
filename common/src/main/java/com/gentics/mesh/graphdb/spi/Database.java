@@ -226,6 +226,13 @@ public interface Database extends TxFactory {
 	void reload(MeshElement element);
 
 	/**
+	 * Reload the given element.
+	 *
+	 * @param element
+	 */
+	void reload(Element element);
+
+	/**
 	 * Create a database export.
 	 * 
 	 * @param outputDirectory

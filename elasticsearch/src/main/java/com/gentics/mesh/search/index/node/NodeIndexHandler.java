@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
+import static com.gentics.mesh.util.RxUtil.onErrorResumeNextIf;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.error.AbstractElementNotFoundException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -548,30 +550,33 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	public Observable<? extends BulkEntry> moveForBulk(MoveDocumentEntry entry) {
-		MoveEntryContext context = entry.getContext();
-		ContainerType type = context.getContainerType();
-		String releaseUuid = context.getBranchUuid();
+		return Observable.defer(() -> {
+			MoveEntryContext context = entry.getContext();
+			ContainerType type = context.getContainerType();
+			String releaseUuid = context.getBranchUuid();
 
-		NodeGraphFieldContainer oldContainer = context.getOldContainer();
-		String oldProjectUuid = oldContainer.getParentNode().getProject().getUuid();
-		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
-			oldContainer.getSchemaContainerVersion().getUuid(),
-			type);
-		String oldLanguageTag = oldContainer.getLanguage().getLanguageTag();
-		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
-		DeleteBulkEntry deleteEntry = new DeleteBulkEntry(oldIndexName, oldDocumentId);
+			NodeGraphFieldContainer oldContainer = context.getOldContainer();
+			String oldProjectUuid = oldContainer.getParentNode().getProject().getUuid();
+			String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
+				oldContainer.getSchemaContainerVersion().getUuid(),
+				type);
+			String oldLanguageTag = oldContainer.getLanguage().getLanguageTag();
+			String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
+			DeleteBulkEntry deleteEntry = new DeleteBulkEntry(oldIndexName, oldDocumentId);
 
-		NodeGraphFieldContainer newContainer = context.getNewContainer();
-		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
-		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
-			newContainer.getSchemaContainerVersion().getUuid(),
-			type);
-		String newLanguageTag = newContainer.getLanguage().getLanguageTag();
-		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
-		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		IndexBulkEntry addEntry = new IndexBulkEntry(newIndexName, newDocumentId, doc, searchProvider.hasIngestPipelinePlugin());
-
-		return Observable.fromArray(addEntry, deleteEntry);
+			NodeGraphFieldContainer newContainer = context.getNewContainer();
+			Node parent = newContainer.getParentNode();
+			Project project = parent.getProject();
+			String newProjectUuid = project.getUuid();
+			String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
+				newContainer.getSchemaContainerVersion().getUuid(),
+				type);
+			String newLanguageTag = newContainer.getLanguage().getLanguageTag();
+			String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
+			JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
+			IndexBulkEntry addEntry = new IndexBulkEntry(newIndexName, newDocumentId, doc, searchProvider.hasIngestPipelinePlugin());
+			return Observable.fromArray(addEntry, deleteEntry);
+		}).compose(onErrorResumeNextIf(err -> err instanceof AbstractElementNotFoundException, Observable.empty()));
 	}
 
 	/**

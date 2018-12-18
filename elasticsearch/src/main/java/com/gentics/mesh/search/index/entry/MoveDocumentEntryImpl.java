@@ -34,19 +34,14 @@ public class MoveDocumentEntryImpl extends AbstractEntry<MoveEntryContext> imple
 	public Observable<? extends BulkEntry> process() {
 		switch (elementAction) {
 		case MOVE_ACTION:
-			try {
-				return indexHandler.moveForBulk(this).onErrorResumeNext(err -> {
-					if (err instanceof VertexNotFoundException || err instanceof EdgeNotFoundException) {
-						log.warn("Graph element could no longer be found. Ignoring the entry.", err);
-						return Observable.empty();
-					} else {
-						return Observable.error(err);
-					}
-				}).doOnComplete(onProcessAction);
-			} catch (VertexNotFoundException e) {
-				log.warn("Graph element could no longer be found. Ignoring the entry.", e);
-				return Observable.empty();
-			}
+			return indexHandler.moveForBulk(this).onErrorResumeNext(err -> {
+				if (err instanceof VertexNotFoundException || err instanceof EdgeNotFoundException) {
+					log.warn("Graph element could no longer be found. Ignoring the entry.", err);
+					return Observable.empty();
+				} else {
+					return Observable.error(err);
+				}
+			}).doOnComplete(onProcessAction);
 		default:
 			throw error(INTERNAL_SERVER_ERROR, "Can't process entry of for action {" + elementAction + "}");
 		}

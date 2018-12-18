@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.error.VertexNotFoundException;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -416,7 +417,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			if (initial != null) {
 				return initial.getParentNode();
 			}
-			throw error(INTERNAL_SERVER_ERROR, "error_field_container_without_node");
+			throw new VertexNotFoundException(getId(), getClass());
 		}
 		return parentNode;
 	}

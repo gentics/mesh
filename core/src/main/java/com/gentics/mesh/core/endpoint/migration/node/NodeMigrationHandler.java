@@ -199,7 +199,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					nextDraftVersion);
 			});
 		} catch (VertexNotFoundException | EdgeNotFoundException e2) {
-			log.warn("Migration failed since a element could no longer be found in the graph", e2);
 			// Ignoring these kinds of errors since those can happen when nodes get deleted during the schema migration
 		} catch (Exception e1) {
 			System.out.println("Error: " + e1.getClass().getName());

@@ -909,7 +909,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void reload(MeshElement element) {
-		((OrientVertex) element.getElement()).reload();
+		reload(element.getElement());
+	}
+
+	@Override
+	public void reload(Element element) {
+		((OrientVertex)element).reload();
 	}
 
 	@Override
