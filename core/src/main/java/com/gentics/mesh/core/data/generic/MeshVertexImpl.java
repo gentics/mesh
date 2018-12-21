@@ -205,12 +205,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		}
 
 		// Check if the vertex still exists in the graph
-		try {
-			DB.get().reload(vertex);
-		} catch (Throwable e) {
-			System.out.println("Not found!");
-			throw new VertexNotFoundException(id, getClass());
-		}
+	 	DB.get().reload(vertex);
 
 		return (Vertex) vertex;
 	}

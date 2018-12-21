@@ -25,7 +25,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -447,7 +446,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 				call(() -> client().deleteNode(PROJECT_NAME, folderUuid));
 			}
 		}, COMPLETED, 1);
-
 	}
 
 	@Test

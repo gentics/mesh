@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.EdgeNotFoundException;
 import com.gentics.mesh.util.UUIDUtil;
@@ -70,6 +71,9 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 		if (edge instanceof WrappedElement) {
 			edge = (Edge) ((WrappedElement) edge).getBaseElement();
 		}
+
+		// Check if the vertex still exists in the graph
+		DB.get().reload(edge);
 		return (Edge) edge;
 	}
 

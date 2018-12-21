@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.error.AbstractElementNotFoundException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
@@ -98,14 +99,18 @@ public class NodeMigrationJobImpl extends JobImpl {
 					MeshInternal.get().nodeMigrationHandler().migrateNodes(ac, project, branch, fromContainerVersion, toContainerVersion, status)
 						.blockingAwait();
 					// Check migration result
-					boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
-					if (i == MIGRATION_ATTEMPT_COUNT - 1 && hasRemainingContainers) {
-						log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
-					} else if (hasRemainingContainers) {
-						log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
-							+ fromContainerVersion.getVersion() + "} invoking migration again.");
-					} else {
-						break;
+					try {
+						boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
+						if (i == MIGRATION_ATTEMPT_COUNT - 1 && hasRemainingContainers) {
+							log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
+						} else if (hasRemainingContainers) {
+							log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
+								+ fromContainerVersion.getVersion() + "} invoking migration again.");
+						} else {
+							break;
+						}
+					} catch (AbstractElementNotFoundException e) {
+						// Repeat
 					}
 				}
 

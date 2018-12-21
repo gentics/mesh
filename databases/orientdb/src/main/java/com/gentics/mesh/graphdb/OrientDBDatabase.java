@@ -28,6 +28,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
+import com.gentics.mesh.error.EdgeNotFoundException;
+import com.gentics.mesh.error.VertexNotFoundException;
+import com.orientechnologies.orient.core.exception.ORecordNotFoundException;
+import com.tinkerpop.blueprints.impls.orient.OrientEdge;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -914,7 +918,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void reload(Element element) {
-		((OrientVertex)element).reload();
+		try {
+			((OrientElement)element).reload();
+		} catch (ORecordNotFoundException e) {
+			if (element instanceof OrientVertex) {
+				throw new VertexNotFoundException(element.getId(), element.getClass());
+			} else if (element instanceof OrientEdge) {
+				throw new EdgeNotFoundException(element.getId(), element.getClass());
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	@Override

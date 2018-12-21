@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.util.GraphUtil;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -504,11 +505,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Database db = MeshInternal.get().database();
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch", db.createComposedIndexKey(id(), branchUuid));
-		Iterator<Edge> it = edges.iterator();
-		Iterable<Edge> iterable = () -> it;
-		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
+		Stream<Edge> stream = StreamSupport.stream(edges.spliterator(), false);
 
-		Stream<Node> nstream = stream.map(edge -> {
+		Stream<Node> nstream = stream.filter(GraphUtil::filterFaultyElement).map(edge -> {
 			Vertex vertex = edge.getVertex(OUT);
 			return graph.frameElementExplicit(vertex, NodeImpl.class);
 		});

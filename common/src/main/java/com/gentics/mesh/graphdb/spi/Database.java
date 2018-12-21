@@ -11,6 +11,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.error.EdgeNotFoundException;
+import com.gentics.mesh.error.VertexNotFoundException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.EdgeFrame;
@@ -227,6 +229,8 @@ public interface Database extends TxFactory {
 
 	/**
 	 * Reload the given element.
+	 * @throws VertexNotFoundException if the element is a vertex and could not be found anymore.
+	 * @throws EdgeNotFoundException if the element is an edge and could not be found anymore.
 	 *
 	 * @param element
 	 */
