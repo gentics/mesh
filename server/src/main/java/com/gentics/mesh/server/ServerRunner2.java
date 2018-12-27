@@ -38,7 +38,7 @@ public class ServerRunner2 {
 		options.getClusterOptions().setClusterName("test");
 		options.setNodeName("node2");
 		options.getClusterOptions().setEnabled(true);
-		options.getSearchOptions().setUrl(null);
+		options.getSearchOptions().setUrl("http://localhost:9200");
 		options.getSearchOptions().setStartEmbedded(false);
 		options.getHttpServerOptions().setPort(8081);
 

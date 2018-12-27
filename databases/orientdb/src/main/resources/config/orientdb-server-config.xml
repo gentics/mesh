@@ -23,6 +23,14 @@
 				<parameter name="config" value="${ORIENTDB_HOME}/${ORIENTDB_CONFDIR_NAME}/automatic-backup.json" />
 			</parameters>
 		</handler>
+
+		<handler class="com.orientechnologies.orient.server.handler.OServerSideScriptInterpreter">
+			<parameters>
+				<parameter name="enabled" value="true"/>
+				<parameter name="allowedLanguages" value="SQL"/>
+			</parameters>
+		</handler>
+
 	</handlers>
 	<network>
 		<protocols>
@@ -59,12 +67,9 @@
 		<user name="admin" password="finger" resources="*" />
 	</users>
 	<properties>
-		<!-- DATABASE POOL: size min/max -->
-		<entry name="db.pool.min" value="1" />
-		<entry name="db.pool.max" value="50" />
-		<!-- PROFILER: configures the profiler as <seconds-for-snapshot>,<archive-snapshot-size>,<summary-size> -->
 		<entry name="profiler.enabled" value="false" />
 		<entry name="server.database.path" value="${ORIENTDB_DB_PATH}" />
+		<entry name="plugin.directory" value="${ORIENTDB_PLUGIN_DIR}" />
 
 		<!-- LOG: enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
 		<entry name="log.console.level" value="finest" />

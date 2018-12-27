@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -107,9 +108,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
 
+	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "plugins";
+
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.11.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.12.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -320,7 +323,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		String configString = FileUtils.readFileToString(configFile);
 
 		// Now replace the parameters within the configuration
-		// configString = configString.replaceAll("%PLUGIN_DIRECTORY%", Matcher.quoteReplacement(new File("orientdb-plugins").getAbsolutePath()));
+		System.setProperty("ORIENTDB_PLUGIN_DIR", Matcher.quoteReplacement(new File(ORIENTDB_PLUGIN_FOLDERNAME).getAbsolutePath()));
 		// configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
 		// configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		System.setProperty("ORIENTDB_CONFDIR_NAME", CONFIG_FOLDERNAME);
@@ -466,7 +469,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	private void updateOrientDBPlugin() throws FileNotFoundException, IOException {
 		try (InputStream ins = getClass().getResourceAsStream("/plugins/" + ORIENTDB_STUDIO_ZIP)) {
-			File pluginDirectory = new File("orientdb-plugins");
+			File pluginDirectory = new File(ORIENTDB_PLUGIN_FOLDERNAME);
 			pluginDirectory.mkdirs();
 
 			// Remove old plugins
