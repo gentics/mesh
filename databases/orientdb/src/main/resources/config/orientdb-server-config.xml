@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <orient-server>
 	<handlers>
-		<!-- DISABLED-->
-		<!--<handler class="com.orientechnologies.orient.graph.handler.OGraphServerHandler">-->
-		<!--<parameters>-->
-		<!--<parameter name="enabled" value="true"/>-->
-		<!--<parameter name="graph.pool.max" value="50"/>-->
-		<!--</parameters>-->
-		<!--</handler>-->
 		<handler class="com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin">
 			<parameters>
-				<parameter name="nodeName" value="%NODENAME%" />
-				<parameter name="enabled" value="%DISTRIBUTED%" />
-				<parameter name="configuration.db.default" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/default-distributed-db-config.json" />
-				<parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/hazelcast.xml" />
+				<parameter name="nodeName" value="${ORIENTDB_NODE_NAME}" />
+				<parameter name="enabled" value="${ORIENTDB_DISTRIBUTED}" />
+				<parameter name="configuration.db.default" value="${ORIENTDB_HOME}/${ORIENTDB_CONFDIR_NAME}/default-distributed-db-config.json" />
+				<parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/${ORIENTDB_CONFDIR_NAME}/hazelcast.xml" />
 			</parameters>
 		</handler>
 
@@ -27,20 +20,18 @@
 		<handler class="com.orientechnologies.orient.server.handler.OAutomaticBackup">
 			<parameters>
 				<parameter name="enabled" value="false" />
-				<parameter name="config" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/automatic-backup.json" />
+				<parameter name="config" value="${ORIENTDB_HOME}/${ORIENTDB_CONFDIR_NAME}/automatic-backup.json" />
 			</parameters>
 		</handler>
 	</handlers>
 	<network>
 		<protocols>
-			<protocol name="binary"
-						implementation="com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary" />
-			<protocol name="http"
-						implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb" />
+			<protocol name="binary" implementation="com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary" />
+			<protocol name="http" implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb" />
 		</protocols>
 		<listeners>
-			<listener protocol="binary" ip-address="%NETWORK_HOST%" port-range="2424-2430" socket="default" />
-			<listener protocol="http" ip-address="%NETWORK_HOST%" port-range="2480-2490" socket="default">
+			<listener protocol="binary" ip-address="${ORIENTDB_NETWORK_HOST}" port-range="2424-2430" socket="default" />
+			<listener protocol="http" ip-address="${ORIENTDB_NETWORK_HOST}" port-range="2480-2490" socket="default">
 				<parameters>
 					<!-- Connection's custom parameters. If not specified the global configuration will be taken -->
 					<parameter name="network.http.charset" value="utf-8" />
@@ -73,8 +64,7 @@
 		<entry name="db.pool.max" value="50" />
 		<!-- PROFILER: configures the profiler as <seconds-for-snapshot>,<archive-snapshot-size>,<summary-size> -->
 		<entry name="profiler.enabled" value="false" />
-		<entry name="plugin.directory" value="%PLUGIN_DIRECTORY%" />
-		<entry name="server.database.path" value="%DB_PARENT_PATH%" />
+		<entry name="server.database.path" value="${ORIENTDB_DB_PATH}" />
 
 		<!-- LOG: enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
 		<entry name="log.console.level" value="finest" />

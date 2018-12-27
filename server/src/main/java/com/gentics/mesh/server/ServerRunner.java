@@ -32,9 +32,12 @@ public class ServerRunner {
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
+		options.setInitCluster(true);
+		options.getAuthenticationOptions().setKeystorePassword("finger");
 		options.getStorageOptions().setStartServer(true);
-		// options.getClusterOptions().setClusterName("test");
-		// options.getClusterOptions().setEnabled(true);
+		options.getClusterOptions().setClusterName("test");
+		options.setNodeName("node1");
+		options.getClusterOptions().setEnabled(true);
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
 

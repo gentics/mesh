@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -46,12 +45,11 @@ import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.PropertyUtil;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
-import com.orientechnologies.orient.core.db.ODatabaseSession;
-import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
@@ -111,7 +109,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.10.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.11.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -322,28 +320,30 @@ public class OrientDBDatabase extends AbstractDatabase {
 		String configString = FileUtils.readFileToString(configFile);
 
 		// Now replace the parameters within the configuration
-		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", Matcher.quoteReplacement(new File("orientdb-plugins").getAbsolutePath()));
-		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
-		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
-		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
-		configString = configString.replaceAll("%NODENAME%", getNodeName());
+		// configString = configString.replaceAll("%PLUGIN_DIRECTORY%", Matcher.quoteReplacement(new File("orientdb-plugins").getAbsolutePath()));
+		// configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
+		// configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
+		System.setProperty("ORIENTDB_CONFDIR_NAME", CONFIG_FOLDERNAME);
+		System.setProperty("ORIENTDB_NODE_NAME", getNodeName());
+		System.setProperty("ORIENTDB_DISTRIBUTED", String.valueOf(options.getClusterOptions().isEnabled()));
 		String networkHost = options.getClusterOptions().getNetworkHost();
 		if (isEmpty(networkHost)) {
 			networkHost = "0.0.0.0";
 		}
-		configString = configString.replaceAll("%NETWORK_HOST%", networkHost);
-		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
+
+		System.setProperty("ORIENTDB_NETWORK_HOST", networkHost);
 		// Only use the cluster network host if clustering is enabled.
 		String dbDir = storageOptions().getDirectory();
 		if (dbDir != null) {
-			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
+			System.setProperty("ORIENTDB_DB_PATH", escapeSafe(storageOptions().getDirectory()));
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Not setting DB_PARENT_PATH because no database dir was configured.");
 			}
 		}
+		configString = PropertyUtil.resolve(configString);
 		if (log.isDebugEnabled()) {
-			log.debug("Effective orientdb server configuration:" + configString);
+			log.debug("OrientDB server configuration:" + configString);
 		}
 		return configString;
 	}
@@ -465,31 +465,33 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @throws IOException
 	 */
 	private void updateOrientDBPlugin() throws FileNotFoundException, IOException {
-		InputStream ins = getClass().getResourceAsStream("/plugins/" + ORIENTDB_STUDIO_ZIP);
-		File pluginDirectory = new File("orientdb-plugins");
-		pluginDirectory.mkdirs();
+		try (InputStream ins = getClass().getResourceAsStream("/plugins/" + ORIENTDB_STUDIO_ZIP)) {
+			File pluginDirectory = new File("orientdb-plugins");
+			pluginDirectory.mkdirs();
 
-		// Remove old plugins
-		boolean currentPluginFound = false;
-		for (File plugin : pluginDirectory.listFiles()) {
-			if (plugin.isFile()) {
-				String filename = plugin.getName();
-				log.debug("Checking orientdb plugin: " + filename);
-				if (filename.equals(ORIENTDB_STUDIO_ZIP)) {
-					currentPluginFound = true;
-					continue;
-				}
-				if (filename.startsWith("orientdb-studio-")) {
-					plugin.delete();
+			// Remove old plugins
+			boolean currentPluginFound = false;
+			for (File plugin : pluginDirectory.listFiles()) {
+				if (plugin.isFile()) {
+					String filename = plugin.getName();
+					log.debug("Checking orientdb plugin: " + filename);
+					if (filename.equals(ORIENTDB_STUDIO_ZIP)) {
+						currentPluginFound = true;
+						continue;
+					}
+					if (filename.startsWith("orientdb-studio-")) {
+						if (!plugin.delete()) {
+							log.error("Could not delete old plugin {" + plugin + "}");
+						}
+					}
 				}
 			}
-		}
 
-		if (!currentPluginFound) {
-			log.info("Extracting OrientDB Studio");
-			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, ORIENTDB_STUDIO_ZIP)));
+			if (!currentPluginFound) {
+				log.info("Extracting OrientDB Studio");
+				IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, ORIENTDB_STUDIO_ZIP)));
+			}
 		}
-
 	}
 
 	private void postStartupDBEventHandling() {
