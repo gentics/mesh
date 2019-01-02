@@ -19,22 +19,30 @@
 	</properties>
 
 	<dependencies>
+		<!-- Madl -->
 		<dependency>
-			<groupId>com.syncleus.ferma</groupId>
-			<artifactId>ferma</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>madl-api</artifactId>
 		</dependency>
+
+		<!-- Mesh -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-rest-model</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
+		<!-- Thirdparty -->
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
@@ -83,16 +91,7 @@
 			<version>1.7.25</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>

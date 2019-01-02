@@ -17,8 +17,7 @@
 
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>4.2.3.RELEASE</spring.security.version>
-		<ferma.version>2.4.0</ferma.version>
-		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
+		<madl.version>0.1.0-SNAPSHOT</madl.version>
 		<elasticsearch.client.version>0.5.0</elasticsearch.client.version>
 		<orientdb.version>2.2.37</orientdb.version>
 		<dagger.version>2.11</dagger.version>
@@ -130,9 +129,14 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.syncleus.ferma</groupId>
-				<artifactId>ferma</artifactId>
-				<version>${ferma.version}</version>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-api</artifactId>
+				<version>${madl.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-orientdb3</artifactId>
+				<version>${madl.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
