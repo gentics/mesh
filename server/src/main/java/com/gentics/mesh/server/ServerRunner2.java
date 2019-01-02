@@ -37,6 +37,7 @@ public class ServerRunner2 {
 		options.getStorageOptions().setStartServer(true);
 		options.getClusterOptions().setClusterName("test");
 		options.setNodeName("node2");
+		options.getClusterOptions().setVertxPort(6151);
 		options.getClusterOptions().setEnabled(true);
 		options.getSearchOptions().setUrl("http://localhost:9200");
 		options.getSearchOptions().setStartEmbedded(false);

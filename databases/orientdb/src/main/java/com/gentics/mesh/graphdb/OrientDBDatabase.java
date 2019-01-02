@@ -108,7 +108,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
 
-	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "plugins";
+	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "orientdb-plugins";
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
@@ -323,7 +323,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		String configString = FileUtils.readFileToString(configFile);
 
 		// Now replace the parameters within the configuration
-		System.setProperty("ORIENTDB_PLUGIN_DIR", Matcher.quoteReplacement(new File(ORIENTDB_PLUGIN_FOLDERNAME).getAbsolutePath()));
+		String pluginDir = Matcher.quoteReplacement(new File(ORIENTDB_PLUGIN_FOLDERNAME).getAbsolutePath());
+		System.setProperty("ORIENTDB_PLUGIN_DIR", pluginDir);
+		System.setProperty("plugin.directory", pluginDir);
 		// configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
 		// configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		System.setProperty("ORIENTDB_CONFDIR_NAME", CONFIG_FOLDERNAME);

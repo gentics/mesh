@@ -35,6 +35,7 @@ public class ServerRunner {
 		options.setInitCluster(true);
 		options.getAuthenticationOptions().setKeystorePassword("finger");
 		options.getStorageOptions().setStartServer(true);
+		options.getClusterOptions().setVertxPort(6152);
 		options.getClusterOptions().setClusterName("test");
 		options.setNodeName("node1");
 		options.getClusterOptions().setEnabled(true);

@@ -123,6 +123,7 @@ import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.URIUtils;
+import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -416,6 +417,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// remove existing draft edge
 		if (draftEdge != null) {
+			// TODO: Remove this once https://www.prjhub.com/#/issues/10542 has been fixed
+			Tx.getActive().getGraph().commit();
 			draftEdge.remove();
 			newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 		}
