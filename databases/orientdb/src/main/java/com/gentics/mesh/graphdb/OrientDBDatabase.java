@@ -112,7 +112,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.12.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.13.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -343,7 +343,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			System.setProperty("ORIENTDB_DB_PATH", escapeSafe(storageOptions().getDirectory()));
 		} else {
 			if (log.isDebugEnabled()) {
-				log.debug("Not setting DB_PARENT_PATH because no database dir was configured.");
+				log.debug("Not setting ORIENTDB_DB_PATH because no database dir was configured.");
 			}
 		}
 		configString = PropertyUtil.resolve(configString);

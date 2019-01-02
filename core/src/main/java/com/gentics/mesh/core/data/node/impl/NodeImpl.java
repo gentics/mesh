@@ -123,7 +123,6 @@ import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.URIUtils;
-import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -419,7 +418,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (draftEdge != null) {
 			draftEdge.remove();
 			// TODO: Remove this once https://www.prjhub.com/#/issues/10542 has been fixed
-			Tx.getActive().getGraph().commit();
+			//Tx.getActive().getGraph().commit();
 			newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 		}
 		// We need to update the display field property since we created a new
@@ -1279,7 +1278,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
 			// TODO: Remove this once https://www.prjhub.com/#/issues/10542 has been fixed
-			Tx.getActive().getGraph().commit();
+			//Tx.getActive().getGraph().commit();
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
 		}
 
