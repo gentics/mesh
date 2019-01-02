@@ -417,9 +417,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// remove existing draft edge
 		if (draftEdge != null) {
+			draftEdge.remove();
 			// TODO: Remove this once https://www.prjhub.com/#/issues/10542 has been fixed
 			Tx.getActive().getGraph().commit();
-			draftEdge.remove();
 			newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 		}
 		// We need to update the display field property since we created a new
