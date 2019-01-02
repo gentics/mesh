@@ -1278,6 +1278,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// check the published edge again
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
+			// TODO: Remove this once https://www.prjhub.com/#/issues/10542 has been fixed
+			Tx.getActive().getGraph().commit();
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
 		}
 
