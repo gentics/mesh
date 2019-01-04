@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;

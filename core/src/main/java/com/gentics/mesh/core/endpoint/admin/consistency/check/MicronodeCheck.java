@@ -9,12 +9,12 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 public class MicronodeCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends Micronode> it = db.getVerticesForType(MicronodeImpl.class);
 		while (it.hasNext()) {
 			checkMicronode(it.next(), response);

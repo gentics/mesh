@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -28,7 +28,7 @@ import com.gentics.mesh.path.PathSegment;
 public class WebRootServiceImpl implements WebRootService {
 
 	@Inject
-	public Database database;
+	public LegacyDatabase database;
 
 	@Inject
 	public WebRootServiceImpl() {

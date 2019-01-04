@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.CompareUtils;
 
 /**
@@ -81,7 +81,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 		return container.getBooleanList(fieldSchema.getName());
 	};
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

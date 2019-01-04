@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.stream.Stream;
 
+import com.gentics.madl.wrapper.element.WrappedEdge;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -44,7 +45,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
-import com.syncleus.ferma.EdgeFrame;
 
 import io.reactivex.Single;
 
@@ -760,7 +760,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @return existing edge or null
 	 */
-	EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
+	WrappedEdge getGraphFieldContainerWrappedEdge(String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Fully delete the node. Not that this delete operation will delete all versions of the node and also the node itself (from all branches).

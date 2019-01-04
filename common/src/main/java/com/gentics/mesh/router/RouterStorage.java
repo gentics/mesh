@@ -15,8 +15,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.tx.Tx;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -58,7 +58,7 @@ public class RouterStorage {
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private Lazy<Database> db;
+	private Lazy<LegacyDatabase> db;
 
 	public CorsHandler corsHandler;
 
@@ -68,7 +68,7 @@ public class RouterStorage {
 
 	@Inject
 	public RouterStorage(Vertx vertx, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
-		Lazy<Database> db) {
+		Lazy<LegacyDatabase> db) {
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
@@ -140,7 +140,7 @@ public class RouterStorage {
 		});
 
 		eb.consumer(EVENT_PROJECT_UPDATED, (Message<JsonObject> rh) -> {
-			Database database = db.get();
+			LegacyDatabase database = db.get();
 
 			try (Tx tx = database.tx()) {
 				// Check whether there are any projects which do not have an
@@ -169,7 +169,7 @@ public class RouterStorage {
 		return false;
 	}
 
-	public Lazy<Database> getDb() {
+	public Lazy<LegacyDatabase> getDb() {
 		return db;
 	}
 

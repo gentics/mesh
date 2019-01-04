@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
 
@@ -56,7 +56,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		allowedTypes.add("application/rtf");
 	}
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		// database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
 	}
 
@@ -189,7 +189,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public BinaryGraphField copyTo(BinaryGraphField target) {
-		for (String key : getPropertyKeys()) {
+		for (String key : keys()) {
 			// Don't copy the uuid
 			if ("uuid".equals(key)) {
 				continue;
@@ -207,7 +207,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public String getFieldKey() {
-		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
+		return value(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
 	@Override
@@ -240,7 +240,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		field.setFieldKey(getFieldKey());
 
 		// Clone all properties except the uuid and the type.
-		for (String key : getPropertyKeys()) {
+		for (String key : keys()) {
 			if (key.equals("uuid") || key.equals("ferma_type")) {
 				continue;
 			}
@@ -340,12 +340,12 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public Map<String, String> getMetadataProperties() {
-		List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
+		List<String> keys = keys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
 
 		Map<String, String> metadata = new HashMap<>();
 		for (String key : keys) {
 			String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
-			String value = property(key);
+			String value = value(key);
 			metadata.put(name, value);
 		}
 		return metadata;
@@ -373,7 +373,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public void setMetadata(String key, String value) {
-		setProperty(META_DATA_PROPERTY_PREFIX + key, value);
+		property(META_DATA_PROPERTY_PREFIX + key, value);
 	}
 
 }

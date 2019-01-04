@@ -1,6 +1,6 @@
 package com.gentics.mesh.changelog;
 
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Wrapper object which wraps a change vertex in order to provide getter and setters for various vertex properties.
@@ -24,7 +24,7 @@ public class ChangeWrapper {
 	 * @return
 	 */
 	public String getUuid() {
-		return vertex.getProperty("uuid");
+		return vertex.value("uuid");
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class ChangeWrapper {
 	 * @param duration
 	 */
 	private void setDuration(long duration) {
-		vertex.setProperty("duration", duration);
+		vertex.property("duration", duration);
 	}
 
 	/**
@@ -52,6 +52,6 @@ public class ChangeWrapper {
 	 * @param uuid
 	 */
 	private void setUuid(String uuid) {
-		vertex.setProperty("uuid", uuid);
+		vertex.property("uuid", uuid);
 	}
 }

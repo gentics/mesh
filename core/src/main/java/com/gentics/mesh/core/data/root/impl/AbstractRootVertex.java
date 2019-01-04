@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Abstract implementation for root vertices which are aggregation vertices for mesh core vertices. The abstract implementation contains various helper methods
@@ -28,7 +28,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	abstract public String getRootLabel();
 
 	@Override
-	public Database database() {
+	public LegacyDatabase database() {
 		return MeshInternal.get().database();
 	}
 

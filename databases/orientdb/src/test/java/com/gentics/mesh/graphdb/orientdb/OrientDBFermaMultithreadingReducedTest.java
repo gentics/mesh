@@ -9,12 +9,12 @@ import org.junit.Test;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.tx.Tx;
 
 public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest {
 
-	private Database db;
+	private LegacyDatabase db;
 	private Person p;
 
 	@Before
@@ -30,13 +30,13 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 	private void setupData() {
 		try (Tx tx = db.tx()) {
 			String name = "SomeName";
-			p = addPersonWithFriends(tx.getGraph(), name);
+			p = addPersonWithFriends(tx, name);
 			// tx.getGraph().commit();
 			tx.success();
 			runAndWait(() -> {
 				try (Tx tx2 = db.tx()) {
 					readPerson(p);
-					manipulatePerson(tx2.getGraph(), p);
+					manipulatePerson(tx2, p);
 				}
 			});
 		}
@@ -44,7 +44,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 		runAndWait(() -> {
 			try (Tx tx2 = db.tx()) {
 				readPerson(p);
-				manipulatePerson(tx2.getGraph(), p);
+				manipulatePerson(tx2, p);
 			}
 		});
 
@@ -57,7 +57,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 		runAndWait(() -> {
 			Person reloaded;
 			try (Tx tx = db.tx()) {
-				manipulatePerson(tx.getGraph(), p);
+				manipulatePerson(tx, p);
 				String name = "newName";
 				p.setName(name);
 				reloaded = tx.getGraph().v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class,

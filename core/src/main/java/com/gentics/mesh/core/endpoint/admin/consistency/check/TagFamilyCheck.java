@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Tag specific checks.
@@ -17,7 +17,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class TagFamilyCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends TagFamily> it = db.getVerticesForType(TagFamilyImpl.class);
 		while (it.hasNext()) {
 			checkTagFamily(it.next(), response);

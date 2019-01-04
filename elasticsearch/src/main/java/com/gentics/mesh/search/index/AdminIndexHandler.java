@@ -16,7 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
@@ -37,7 +37,7 @@ public class AdminIndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminIndexHandler.class);
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private SearchProvider searchProvider;
 
@@ -46,7 +46,7 @@ public class AdminIndexHandler {
 	private IndexHandlerRegistry registry;
 
 	@Inject
-	public AdminIndexHandler(Database db, SearchProvider searchProvider, ElasticsearchSyncVerticle syncVerticle, IndexHandlerRegistry registry) {
+	public AdminIndexHandler(LegacyDatabase db, SearchProvider searchProvider, ElasticsearchSyncVerticle syncVerticle, IndexHandlerRegistry registry) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.syncVerticle = syncVerticle;

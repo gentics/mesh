@@ -42,7 +42,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -254,12 +254,12 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
 					.map(SchemaContainer::getLatestVersion).collect(Collectors.toList());
 
-			SchemaContainerVersionImpl newVersion = tx.getGraph().addFramedVertexExplicit(SchemaContainerVersionImpl.class);
+			SchemaContainerVersionImpl newVersion = tx.createVertexExplicit(SchemaContainerVersionImpl.class);
 			newVersion.setVersion("4.0");
 			newVersion.setName("content");
 			versions.add(newVersion);
 			newVersion.setSchemaContainer(schemaContainer("content"));
-			branch.linkOut(newVersion, HAS_SCHEMA_VERSION);
+			branch.addEdge(newVersion, HAS_SCHEMA_VERSION);
 
 			List<SchemaContainerVersion> found = new ArrayList<>();
 			for (BranchSchemaEdge versionedge : branch.findAllLatestSchemaVersionEdges()) {

@@ -1,7 +1,6 @@
 package com.gentics.mesh.changelog;
 
-import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.TransactionalGraph;
+import com.gentics.madl.tx.Tx;
 
 /**
  * Interface for a mesh graph database change. A change may alter graph structure, content and indices.
@@ -42,18 +41,18 @@ public interface Change {
 	String getDescription();
 
 	/**
-	 * Set the graph instance to be used when handling the change.
+	 * Set the transaction that is to be used when handling the change.
 	 * 
 	 * @param graph
 	 */
-	void setGraph(TransactionalGraph graph);
+	void setTx(Tx tx);
 
 	/**
-	 * Return the graph that is currently set for the change.
+	 * Return the transaction that is currently used for the change.
 	 * 
 	 * @return
 	 */
-	TransactionalGraph getGraph();
+	Tx getTx();
 
 	/**
 	 * Persist the info that the change has been applied to the graph.
@@ -87,19 +86,5 @@ public interface Change {
 	 * @return
 	 */
 	boolean requiresReindex();
-
-	/**
-	 * Set the database.
-	 * 
-	 * @param db
-	 */
-	void setDb(Database db);
-
-	/**
-	 * Return the database.
-	 * 
-	 * @return
-	 */
-	Database getDb();
 
 }

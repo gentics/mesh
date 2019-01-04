@@ -25,7 +25,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 *            Creator
 	 */
 	default void setCreator(User user) {
-		setLinkOut(user, HAS_CREATOR);
+		setEdgeOut(user, HAS_CREATOR);
 	}
 
 	/**
@@ -34,7 +34,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @return Creation timestamp
 	 */
 	default Long getCreationTimestamp() {
-		return property(CREATION_TIMESTAMP_PROPERTY_KEY);
+		return value(CREATION_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	/**

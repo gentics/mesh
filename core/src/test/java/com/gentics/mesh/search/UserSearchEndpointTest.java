@@ -27,7 +27,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {

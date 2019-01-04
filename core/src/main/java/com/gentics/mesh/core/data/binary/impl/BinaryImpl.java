@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
 
@@ -24,7 +24,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	private static final Base64.Encoder BASE64 = Base64.getEncoder();
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(BinaryImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(BinaryImpl.class, true, Binary.SHA512SUM_KEY, FieldType.STRING);
 	}

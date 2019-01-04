@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
 
@@ -48,7 +48,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider) {
+	public UserCrudHandler(LegacyDatabase db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider) {
 		super(db, utils);
 		this.boot = boot;
 		this.authProvider = authProvider;

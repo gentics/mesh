@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -39,7 +39,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(TagFamilyRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_TAG_FAMILY, true, false, true);
 	}
@@ -62,7 +62,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	@Override
 	public TagFamily create(String name, User creator, String uuid) {
-		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
+		TagFamilyImpl tagFamily = createVertex(TagFamilyImpl.class);
 		if (uuid != null) {
 			tagFamily.setUuid(uuid);
 		}

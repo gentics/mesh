@@ -4,7 +4,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;

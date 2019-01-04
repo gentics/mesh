@@ -27,11 +27,15 @@ import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.madl.Madl;
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
@@ -81,7 +85,6 @@ import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.DevNullSearchProvider;
@@ -90,9 +93,6 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.hazelcast.core.HazelcastInstance;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
 import io.vertx.core.ServiceHelper;
@@ -118,7 +118,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public ServerSchemaStorage schemaStorage;
 
 	@Inject
-	public Database db;
+	public Madl madl;
 
 	@Inject
 	public SearchProvider searchProvider;
@@ -587,7 +587,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					isInitialSetup = false;
 					meshRoot = it.next();
 				} else {
-					meshRoot = Tx.getActive().getGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot = Tx.getActive().createVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}

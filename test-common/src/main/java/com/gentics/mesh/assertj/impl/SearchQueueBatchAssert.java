@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.node.ElementEntry;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAssert, SearchQueueBatch> {
 
@@ -45,7 +45,7 @@ public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAsser
 			// 1. Check for deletion from graph
 			if (DELETE_ACTION.equals(entry.getAction()) && entry.getType() == null) {
 				assertFalse("The element {" + key + "} vertex for uuid: {" + entry.getUuid() + "}",
-						Tx.getActive().getGraph().v().has("uuid", entry.getUuid()).hasNext());
+						Tx.get().getGraph().v().has("uuid", entry.getUuid()).hasNext());
 			}
 			// 2. Check batch entries
 			if (entry.getAction() != null) {

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
@@ -11,7 +12,6 @@ import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
-import com.syncleus.ferma.AbstractVertexFrame;
 
 public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implements NumberGraphField {
 
@@ -59,7 +59,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		return container.getNumber(fieldSchema.getName());
 	};
 
-	public NumberGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
+	public NumberGraphFieldImpl(String fieldKey, WrappedVertex parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

@@ -125,22 +125,22 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		SchemaChange<?> schemaChange = null;
 		switch (restChange.getOperation()) {
 		case ADDFIELD:
-			schemaChange = getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			schemaChange = createVertex(AddFieldChangeImpl.class);
 			break;
 		case REMOVEFIELD:
-			schemaChange = getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			schemaChange = createVertex(RemoveFieldChangeImpl.class);
 			break;
 		case UPDATEFIELD:
-			schemaChange = getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			schemaChange = createVertex(UpdateFieldChangeImpl.class);
 			break;
 		case CHANGEFIELDTYPE:
-			schemaChange = getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			schemaChange = createVertex(FieldTypeChangeImpl.class);
 			break;
 		case UPDATESCHEMA:
-			schemaChange = getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			schemaChange = createVertex(UpdateSchemaChangeImpl.class);
 			break;
 		case UPDATEMICROSCHEMA:
-			schemaChange = getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			schemaChange = createVertex(UpdateMicroschemaChangeImpl.class);
 			break;
 		default:
 			throw error(BAD_REQUEST, "error_change_operation_unknown", String.valueOf(restChange.getOperation()));
@@ -191,7 +191,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		resultingSchema.setVersion(String.valueOf(Double.valueOf(resultingSchema.getVersion()) + 1));
 
 		// Create and set the next version of the schema
-		SCV nextVersion = getGraph().addFramedVertex(getContainerVersionClass());
+		SCV nextVersion = createVertex(getContainerVersionClass());
 		nextVersion.setSchema(resultingSchema);
 
 		// Check for conflicting container names

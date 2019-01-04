@@ -2,25 +2,26 @@ package com.gentics.mesh.graphdb.orientdb.graph;
 
 import java.util.List;
 
-import com.syncleus.ferma.annotations.GraphElement;
+import com.gentics.madl.annotation.GraphElement;
+import com.gentics.madl.wrapper.element.AbstractWrappedVertex;
 
 @GraphElement
-public class Person extends AbstractInterceptingVertexFrame {
+public class Person extends AbstractWrappedVertex {
 
 	public List<? extends Person> getFriends() {
-		return out("HAS_FRIEND").has(Person.class).toListExplicit(Person.class);
+		return out("HAS_FRIEND").frameExplicit(Person.class).list();
 	}
 
 	public void addFriend(Person person) {
-		linkOut(person, "HAS_FRIEND");
+		addEdgeOut(person, "HAS_FRIEND");
 	}
 
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	public String getName() {
-		return getProperty("name");
+		return value("name");
 	}
 
 }

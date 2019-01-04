@@ -2,15 +2,15 @@ package com.gentics.mesh.graphdb;
 
 import java.util.Set;
 
-import com.syncleus.ferma.AbstractEdgeFrame;
-import com.syncleus.ferma.AbstractVertexFrame;
-import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.traversals.EdgeTraversal;
+import org.apache.tinkerpop.gremlin.structure.Element;
+
+import com.gentics.madl.type.resolver.TypeResolver;
+import com.gentics.madl.wrapper.element.AbstractWrappedEdge;
+import com.gentics.madl.wrapper.element.AbstractWrappedVertex;
+import com.gentics.madl.wrapper.element.WrappedEdge;
+import com.gentics.madl.wrapper.element.WrappedVertex;
+import com.orientechnologies.orient.core.sql.parser.OMatchStatement.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.typeresolvers.TypeResolver;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.gremlin.Tokens;
 
 /**
  * This type resolver will use the Java class stored in the 'java_class' on the element.
@@ -28,7 +28,7 @@ public class MeshTypeResolver implements TypeResolver {
 
 	@Override
 	public <T> Class<? extends T> resolve(final Element element, final Class<T> kind) {
-		final String nodeClazz = element.getProperty(this.typeResolutionKey);
+		final String nodeClazz = element.value(this.typeResolutionKey);
 		if (nodeClazz == null) {
 			return kind;
 		}
@@ -37,8 +37,8 @@ public class MeshTypeResolver implements TypeResolver {
 		if (nodeKind == null) {
 			throw new RuntimeException("Did not find class in cache {" + nodeClazz + "}");
 		}
-		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
-			|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
+		if (kind.isAssignableFrom(nodeKind) || kind.equals(WrappedVertex.class) || kind.equals(WrappedEdge.class)
+			|| kind.equals(AbstractWrappedVertex.class) || kind.equals(AbstractWrappedEdge.class) || kind.equals(Object.class)) {
 			return nodeKind;
 		} else {
 			return kind;
@@ -47,7 +47,7 @@ public class MeshTypeResolver implements TypeResolver {
 
 	@Override
 	public Class<?> resolve(final Element element) {
-		final String typeResolutionName = element.getProperty(this.typeResolutionKey);
+		final String typeResolutionName = element.value(this.typeResolutionKey);
 		if (typeResolutionName == null)
 			return null;
 
@@ -56,7 +56,7 @@ public class MeshTypeResolver implements TypeResolver {
 
 	@Override
 	public void init(final Element element, final Class<?> kind) {
-		element.setProperty(this.typeResolutionKey, kind.getSimpleName());
+		element.property(this.typeResolutionKey, kind.getSimpleName());
 	}
 
 	@Override

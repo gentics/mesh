@@ -5,11 +5,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = false)
 public class NodeRootTest extends AbstractMeshTest {
@@ -17,7 +17,7 @@ public class NodeRootTest extends AbstractMeshTest {
 	@Test
 	public void testAddNode() {
 		try (Tx tx = tx()) {
-			FramedGraph graph = tx.getGraph();
+			Database graph = tx.getGraph();
 			NodeImpl node = graph.addFramedVertex(NodeImpl.class);
 			long start = boot().nodeRoot().computeCount();
 			boot().nodeRoot().addItem(node);

@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 
 /**
@@ -34,7 +34,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
 		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false, true);
@@ -70,11 +70,11 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 			throw conflict(conflictingSchema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = createVertex(MicroschemaContainerImpl.class);
 		if (uuid != null) {
 			container.setUuid(uuid);
 		}
-		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		MicroschemaContainerVersion version = createVertex(MicroschemaContainerVersionImpl.class);
 
 		microschema.setVersion("1.0");
 		container.setLatestVersion(version);

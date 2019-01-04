@@ -18,9 +18,12 @@ import javax.inject.Singleton;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.madl.db.Database;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -51,14 +54,11 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -148,10 +148,10 @@ public class DemoDataProvider {
 	private void updateUuids() {
 		try (Tx tx = db.tx()) {
 			for (Vertex v : tx.getGraph().getVertices()) {
-				String uuid = v.getProperty("uuid");
+				String uuid = v.value("uuid");
 				String mapping = uuidMapping.get(uuid);
 				if (mapping != null) {
-					v.setProperty("uuid", mapping);
+					v.property("uuid", mapping);
 					uuidMapping.remove(mapping);
 				}
 			}

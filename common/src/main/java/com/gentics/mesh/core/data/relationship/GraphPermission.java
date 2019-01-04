@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Internal enum which provides labels for graph permission edges that are created between the target element and a role.
@@ -27,7 +27,7 @@ public enum GraphPermission {
 
 	PUBLISH_PERM("HAS_PUBLISH_PERMISSION", PUBLISH);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		for (String label : GraphPermission.labels()) {
 			database.addEdgeIndex(label, true, false, false);
 		}

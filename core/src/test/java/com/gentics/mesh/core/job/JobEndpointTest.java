@@ -27,7 +27,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
 public class JobEndpointTest extends AbstractMeshTest {

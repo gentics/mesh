@@ -12,15 +12,15 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
-import com.syncleus.ferma.tx.Tx;
 
 public class OrientDBTxTest extends AbstractOrientDBTest {
 
-	private Database db = new OrientDBDatabase();
+	private LegacyDatabase db = new OrientDBDatabase();
 	private Person p;
 
 	@Before
@@ -93,7 +93,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		Thread.sleep(1000);
 		System.out.println("Asserting");
 		try (Tx tx = db.tx()) {
-			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
+			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.id());
 			int nFriendsAfter = p.getFriends().size();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
 		}
@@ -106,8 +106,8 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		// Test creation of user in current thread
 		int nFriendsBefore;
 		try (Tx tx = db.tx()) {
-			p = addPersonWithFriends(tx.getGraph(), "Person2");
-			manipulatePerson(tx.getGraph(), p);
+			p = addPersonWithFriends(tx, "Person2");
+			manipulatePerson(tx, p);
 			tx.success();
 			nFriendsBefore = p.getFriends().size();
 		}
@@ -120,7 +120,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		b.await();
 		Thread.sleep(1000);
 		try (Tx tx = db.tx()) {
-			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
+			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.id());
 			int nFriendsAfter = p.getFriends().size();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
 		}
@@ -133,7 +133,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 				System.out.println("Try: " + retry);
 				//				try {
 				try (Tx tx = db.tx()) {
-					addFriend(tx.getGraph(), p);
+					addFriend(tx, p);
 					tx.success();
 					if (retry == 0) {
 						try {

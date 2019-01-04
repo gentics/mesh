@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true, clusterMode = true)
 public class ClusterStatusTest extends AbstractMeshTest {

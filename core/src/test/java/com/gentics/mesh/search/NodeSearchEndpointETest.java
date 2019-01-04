@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;

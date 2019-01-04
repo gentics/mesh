@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.changelog.Change;
 import com.gentics.mesh.core.data.changelog.ChangeMarkerVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 
@@ -17,7 +17,7 @@ public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(ChangelogRootImpl.class, MeshVertexImpl.class);
 	}
 
@@ -33,7 +33,7 @@ public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 
 	@Override
 	public void add(Change change, long duration) {
-		ChangeMarkerVertex marker = getGraph().addFramedVertex(ChangeMarkerVertexImpl.class);
+		ChangeMarkerVertex marker = createVertex(ChangeMarkerVertexImpl.class);
 		marker.setUuid(change.getUuid());
 		marker.setDuration(duration);
 		addFramedEdge(HAS_CHANGE, marker);

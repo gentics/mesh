@@ -27,7 +27,7 @@ import com.gentics.mesh.madlmigration.TraversalResult;
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
 public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex,
-		IndexableElement {
+	IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.relationship;
 
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Main class that holds all the graph relationship names.
@@ -12,7 +12,7 @@ public class GraphRelationships {
 	 * 
 	 * @param db
 	 */
-	public static void init(Database db) {
+	public static void init(LegacyDatabase db) {
 
 		db.addEdgeType(HAS_INITIAL_BRANCH);
 		db.addEdgeType(HAS_LATEST_BRANCH);

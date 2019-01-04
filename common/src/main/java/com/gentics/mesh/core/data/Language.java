@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.data;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 /**
  * Graph Domain Model interface for languages.
  */
-public interface Language extends MeshCoreVertex<LanguageResponse, Language>, NamedElement {
+public interface Language extends MeshCoreVertex<LanguageResponse, Language>, NamedElement<Vertex> {
 
 	String TYPE = "language";
 

@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.logging.Logger;
@@ -108,7 +108,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		return container.getMicronode(fieldSchema.getName());
 	};
 
-	public static void init(Database db) {
+	public static void init(LegacyDatabase db) {
 		db.addEdgeType(MicronodeGraphFieldImpl.class.getSimpleName());
 		db.addEdgeType(HAS_FIELD, MicronodeGraphFieldImpl.class);
 	}

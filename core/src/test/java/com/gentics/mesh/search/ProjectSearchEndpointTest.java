@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;

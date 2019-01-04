@@ -58,7 +58,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -77,7 +77,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		// TODO index to name + unique constraint
 		database.addVertexType(ProjectImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(ProjectImpl.class, true, "name", FieldType.STRING);
@@ -117,8 +117,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public TagFamilyRoot getTagFamilyRoot() {
 		TagFamilyRoot root = out(HAS_TAGFAMILY_ROOT).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(TagFamilyRootImpl.class);
-			linkOut(root, HAS_TAGFAMILY_ROOT);
+			root = createVertex(TagFamilyRootImpl.class);
+			addEdge(root, HAS_TAGFAMILY_ROOT);
 		}
 		return root;
 	}
@@ -127,8 +127,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public SchemaContainerRoot getSchemaContainerRoot() {
 		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).nextOrDefaultExplicit(ProjectSchemaContainerRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(ProjectSchemaContainerRootImpl.class);
-			linkOut(root, HAS_SCHEMA_ROOT);
+			root = createVertex(ProjectSchemaContainerRootImpl.class);
+			addEdgeOut(root, HAS_SCHEMA_ROOT);
 		}
 		return root;
 	}
@@ -137,8 +137,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
 		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT).nextOrDefaultExplicit(ProjectMicroschemaContainerRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(ProjectMicroschemaContainerRootImpl.class);
-			linkOut(root, HAS_MICROSCHEMA_ROOT);
+			root = createVertex(ProjectMicroschemaContainerRootImpl.class);
+			addEdgeOut(root, HAS_MICROSCHEMA_ROOT);
 		}
 		return root;
 	}
@@ -152,15 +152,15 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public NodeRoot getNodeRoot() {
 		NodeRoot root = out(HAS_NODE_ROOT).nextOrDefaultExplicit(NodeRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(NodeRootImpl.class);
-			linkOut(root, HAS_NODE_ROOT);
+			root = createVertex(NodeRootImpl.class);
+			addEdge(root, HAS_NODE_ROOT);
 		}
 		return root;
 	}
 
 	@Override
 	public void setBaseNode(Node baseNode) {
-		linkOut(baseNode, HAS_ROOT_NODE);
+		addEdge(baseNode, HAS_ROOT_NODE);
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public Node createBaseNode(User creator, SchemaContainerVersion schemaContainerVersion) {
 		Node baseNode = getBaseNode();
 		if (baseNode == null) {
-			baseNode = getGraph().addFramedVertex(NodeImpl.class);
+			baseNode = createVertex(NodeImpl.class);
 			baseNode.setSchemaContainer(schemaContainerVersion.getSchemaContainer());
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
@@ -336,8 +336,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public BranchRoot getBranchRoot() {
 		BranchRoot root = out(HAS_BRANCH_ROOT).nextOrDefaultExplicit(BranchRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(BranchRootImpl.class);
-			linkOut(root, HAS_BRANCH_ROOT);
+			root = createVertex(BranchRootImpl.class);
+			addEdge(root, HAS_BRANCH_ROOT);
 		}
 		return root;
 	}

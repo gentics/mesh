@@ -21,8 +21,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -102,7 +102,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -124,13 +124,13 @@ import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.FramedGraph;
+import com.gentics.madl.wrapper.element.WrappedEdge;
+import com.syncleus.ferma.Database;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.madl.tx.Tx;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -145,7 +145,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_PARENT_NODE);
 		database.addCustomEdgeIndex(HAS_PARENT_NODE, "branch_out", FieldMap.create("out", LINK, BRANCH_UUID_KEY, STRING), false);
@@ -371,21 +371,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch branch, User editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
-		EdgeFrame draftEdge = null;
+		WrappedEdge draftEdge = null;
 		String languageTag = language.getLanguageTag();
 		String branchUuid = branch.getUuid();
 
 		// check whether there is a current draft version
 
 		if (handleDraftEdge) {
-			draftEdge = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
+			draftEdge = getGraphFieldContainerWrappedEdge(languageTag, branchUuid, DRAFT);
 			if (draftEdge != null) {
 				previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 			}
 		}
 
 		// Create the new container
-		NodeGraphFieldContainerImpl newContainer = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NodeGraphFieldContainerImpl newContainer = createVertex(NodeGraphFieldContainerImpl.class);
 		if (original != null) {
 			newContainer.setEditor(editor);
 			newContainer.setLastEditedTimestamp();
@@ -443,7 +443,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
+	public WrappedEdge getGraphFieldContainerWrappedEdge(String languageTag, String branchUuid, ContainerType type) {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		if (edgeTraversal.hasNext()) {
@@ -460,7 +460,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	protected List<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+	protected List<? extends WrappedEdge> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
 			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		return edgeTraversal.toList();
@@ -500,15 +500,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TraversalResult<Node> getChildren(String branchUuid) {
-		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
+		LegacyDatabase db = MeshInternal.get().database();
+		Tx tx = Tx.get();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch", db.createComposedIndexKey(id(), branchUuid));
 		Iterator<Edge> it = edges.iterator();
 		Iterable<Edge> iterable = () -> it;
 		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
 
 		Stream<Node> nstream = stream.map(edge -> {
-			Vertex vertex = edge.getVertex(OUT);
+			Vertex vertex = edge.outVertex();
 			return graph.frameElementExplicit(vertex, NodeImpl.class);
 		});
 		return new TraversalResult<>(() -> nstream.iterator());
@@ -516,8 +516,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
+		LegacyDatabase db = MeshInternal.get().database();
+		Database graph = Tx.get();
 		MeshAuthUser user = ac.getUser();
 
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch",
@@ -526,9 +526,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Iterable<Edge> iterable = () -> it;
 		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
 		return stream
-			.map(edge -> edge.getVertex(OUT))
+			.map(edge -> edge.outVertex())
 			.filter(vertex -> {
-				Object id = vertex.getId();
+				Object id = vertex.id();
 				return user.hasPermissionForId(id, READ_PERM) || user.hasPermissionForId(id, READ_PUBLISHED_PERM);
 			})
 			.map(vertex -> graph.frameElementExplicit(vertex, NodeImpl.class));
@@ -536,12 +536,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Node getParentNode(String branchUuid) {
-		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
+		LegacyDatabase db = MeshInternal.get().database();
+		Database graph = Tx.get().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch_out", db.createComposedIndexKey(id(), branchUuid));
 		Iterator<Edge> it = edges.iterator();
 		if (it.hasNext()) {
-			Vertex in = it.next().getVertex(IN);
+			Vertex in = it.next().inVertex();
 			return graph.frameElementExplicit(in, NodeImpl.class);
 		} else {
 			return null;
@@ -551,7 +551,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setParentNode(String branchUuid, Node parent) {
 		outE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid).removeAll();
-		addFramedEdge(HAS_PARENT_NODE, parent).setProperty(BRANCH_UUID_KEY, branchUuid);
+		addEdgeOut(HAS_PARENT_NODE, parent).setProperty(BRANCH_UUID_KEY, branchUuid);
 	}
 
 	@Override
@@ -561,7 +561,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void setProject(Project project) {
-		setLinkOut(project, ASSIGNED_TO_PROJECT);
+		setEdgeOut(project, ASSIGNED_TO_PROJECT);
 	}
 
 	@Override
@@ -1174,7 +1174,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Remove the published edge for each found container
 		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
-		getGraphFieldContainerEdges(branchUuid, PUBLISHED).stream().forEach(EdgeFrame::remove);
+		getGraphFieldContainerEdges(branchUuid, PUBLISHED).stream().forEach(WrappedEdge::remove);
 
 		assertPublishConsistency(ac, branch);
 
@@ -1187,7 +1187,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
-		Database db = MeshInternal.get().database();
+		LegacyDatabase db = MeshInternal.get().database();
 		Branch branch = ac.getBranch(getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		db.tx(() -> {
@@ -1269,7 +1269,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String languageTag = container.getLanguage().getLanguageTag();
 
 		// Remove an existing published edge
-		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
+		WrappedEdge currentPublished = getGraphFieldContainerWrappedEdge(languageTag, branchUuid, PUBLISHED);
 		if (currentPublished != null) {
 			// We need to remove the edge first since updateWebrootPathInfo will
 			// check the published edge again
@@ -1863,7 +1863,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			log.debug("Resolving for path segment {" + segment + "}");
 		}
 
-		FramedGraph graph = Tx.getActive().getGraph();
+		Database graph = Tx.getActive().getGraph();
 		String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
 		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)

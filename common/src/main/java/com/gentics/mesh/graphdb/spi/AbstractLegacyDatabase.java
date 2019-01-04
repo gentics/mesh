@@ -7,7 +7,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -15,9 +15,9 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Abstract class for graph database implementations.
  */
-public abstract class AbstractDatabase implements Database {
+public abstract class AbstractLegacyDatabase implements LegacyDatabase {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractLegacyDatabase.class);
 
 	protected MeshOptions options;
 	protected String meshVersion;

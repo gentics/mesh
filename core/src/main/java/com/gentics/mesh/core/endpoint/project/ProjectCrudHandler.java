@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Handler for project specific requests.
@@ -22,7 +22,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	private BootstrapInitializer boot;
 
 	@Inject
-	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils) {
+	public ProjectCrudHandler(LegacyDatabase db, BootstrapInitializer boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.boot = boot;
 	}

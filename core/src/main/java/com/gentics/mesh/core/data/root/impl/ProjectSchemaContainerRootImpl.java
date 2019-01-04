@@ -4,14 +4,14 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Project specific implementation of schema container root
  */
 public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 

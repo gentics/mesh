@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -16,10 +16,10 @@ public class DatabaseService {
 
 	private static final Logger log = LoggerFactory.getLogger(DatabaseService.class);
 	private static DatabaseService service;
-	private ServiceLoader<Database> loader;
+	private ServiceLoader<LegacyDatabase> loader;
 
 	private DatabaseService() {
-		loader = ServiceLoader.load(Database.class);
+		loader = ServiceLoader.load(LegacyDatabase.class);
 	}
 
 	/**
@@ -39,11 +39,11 @@ public class DatabaseService {
 	 * 
 	 * @return
 	 */
-	public Database getDatabase() {
-		Database database = null;
+	public LegacyDatabase getDatabase() {
+		LegacyDatabase database = null;
 		//TODO fail when more than one provider was found?
 		try {
-			Iterator<Database> databaseProviders = loader.iterator();
+			Iterator<LegacyDatabase> databaseProviders = loader.iterator();
 			while (database == null && databaseProviders.hasNext()) {
 				database = databaseProviders.next();
 				log.debug("Found database service provider {" + database.getClass() + "}");

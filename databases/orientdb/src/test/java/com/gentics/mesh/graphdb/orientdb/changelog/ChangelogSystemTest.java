@@ -28,11 +28,11 @@ import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
 import com.gentics.mesh.maven.VersionNumber;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -104,7 +104,7 @@ public class ChangelogSystemTest {
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
 		options.setNodeName("dummyNode");
 
-		Database db = getDatabase(options);
+		LegacyDatabase db = getDatabase(options);
 		db.setupConnectionPool();
 		ChangelogSystem cls = new ChangelogSystem(db);
 		List<Change> testChanges = new ArrayList<>();
@@ -113,7 +113,7 @@ public class ChangelogSystemTest {
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
-		Iterator<Vertex> it = db.rawTx().getVertices("name", "moped2").iterator();
+		Iterator<Vertex> it = db.rawTx().vertices("name", "moped2").iterator();
 		assertTrue("The changelog was executed but the expected vertex which was created could not be found.", it.hasNext());
 		Vertex vertex = it.next();
 		assertNotNull("The node which was created using the changelog system should be found.", vertex);
@@ -126,9 +126,9 @@ public class ChangelogSystemTest {
 	 * @param options
 	 * @return
 	 */
-	public static Database getDatabase(MeshOptions options) {
+	public static LegacyDatabase getDatabase(MeshOptions options) {
 		DatabaseService databaseService = DatabaseService.getInstance();
-		Database database = databaseService.getDatabase();
+		LegacyDatabase database = databaseService.getDatabase();
 		if (database == null) {
 			String message = "No database provider could be found.";
 			throw new RuntimeException(message);

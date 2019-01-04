@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Group specific consistency checks.
@@ -20,7 +20,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class GroupCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends Group> it = db.getVerticesForType(GroupImpl.class);
 		while (it.hasNext()) {
 			checkGroup(it.next(), response);

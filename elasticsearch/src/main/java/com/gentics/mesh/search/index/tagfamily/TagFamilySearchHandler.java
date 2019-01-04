@@ -5,7 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
@@ -13,7 +13,7 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class TagFamilySearchHandler extends AbstractSearchHandler<TagFamily, TagFamilyResponse> {
 
 	@Inject
-	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandler indexHandler) {
+	public TagFamilySearchHandler(LegacyDatabase db, SearchProvider searchProvider, TagFamilyIndexHandler indexHandler) {
 		super(db, searchProvider, indexHandler);
 	}
 

@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import io.reactivex.Completable;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;

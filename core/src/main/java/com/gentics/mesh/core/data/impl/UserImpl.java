@@ -56,18 +56,18 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -96,7 +96,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String RESET_TOKEN_ISSUE_TIMESTAMP_KEY = "resetTokenTimestamp";
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
 	}
@@ -182,7 +182,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getUsername() {
-		return property(USERNAME_PROPERTY_KEY);
+		return value(USERNAME_PROPERTY_KEY);
 	}
 
 	@Override
@@ -193,7 +193,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getEmailAddress() {
-		return property(EMAIL_PROPERTY_KEY);
+		return value(EMAIL_PROPERTY_KEY);
 	}
 
 	@Override
@@ -225,7 +225,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void updateShortcutEdges() {
-		outE(ASSIGNED_TO_ROLE).removeAll();
+		traverse(v -> v.outE(ASSIGNED_TO_ROLE)).removeAll();
 		for (Group group : getGroups()) {
 			for (Role role : group.getRoles()) {
 				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
@@ -280,26 +280,26 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-		if (PermissionStore.hasPermission(getId(), permission, elementId)) {
+		if (PermissionStore.hasPermission(id(), permission, elementId)) {
 			return true;
 		} else {
-			FramedGraph graph = getGraph();
+			Database graph = getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
 			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.id());
 			for (Edge roleEdge : roleEdges) {
-				Vertex role = roleEdge.getVertex(Direction.IN);
+				Vertex role = roleEdge.inVertex();
 				// Find all permission edges between the found role and target
 				// vertex with the specified label
 				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
-					MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
+					MeshInternal.get().database().createComposedIndexKey(elementId, role.id()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
 					// reduce the invalidation calls.
 					// This way we do not need to invalidate the cache if a role
 					// is removed from a group or a role is deleted.
-					PermissionStore.store(getId(), permission, elementId);
+					PermissionStore.store(id(), permission, elementId);
 					return true;
 				}
 			}
@@ -426,7 +426,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getPasswordHash() {
-		return property(PASSWORD_HASH_PROPERTY_KEY);
+		return value(PASSWORD_HASH_PROPERTY_KEY);
 	}
 
 	@Override
@@ -625,12 +625,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR).frameExplicit(UserImpl.class).firstOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR).frameExplicit(UserImpl.class).firstOrNull();
 	}
 
 	@Override

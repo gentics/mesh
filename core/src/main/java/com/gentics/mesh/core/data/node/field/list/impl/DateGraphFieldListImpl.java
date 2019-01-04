@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.CompareUtils;
 
 /**
@@ -81,7 +81,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 		return container.getDateList(fieldSchema.getName());
 	};
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(DateGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

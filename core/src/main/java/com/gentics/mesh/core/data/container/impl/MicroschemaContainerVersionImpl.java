@@ -33,13 +33,13 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.VertexFrame;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 
 import io.reactivex.Single;
 
@@ -47,7 +47,7 @@ public class MicroschemaContainerVersionImpl extends
 		AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
@@ -69,11 +69,11 @@ public class MicroschemaContainerVersionImpl extends
 						GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).back(), (a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(
 								HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
 										GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).back()).fairMerge()
-				// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
-				// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
+				// To circumvent a bug in the ferma library we have to transform the WrappedVertex object to itself
+				// before calling dedup(). This forces the actual conversion to WrappedVertex inside of the pipeline.
 				.transform(v -> v)
 				// when calling dedup we use the the id of the vertex instead of the whole object to save memory
-				.dedup(VertexFrame::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
+				.dedup(WrappedVertex::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
 		return new TraversalResult<>(() -> it);
 	}
 

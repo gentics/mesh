@@ -15,6 +15,11 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.db.Database;
+import com.gentics.madl.tx.TxAction;
+import com.gentics.madl.tx.TxAction0;
+import com.gentics.madl.tx.TxAction1;
+import com.gentics.madl.tx.TxAction2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,15 +33,10 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.TxAction;
-import com.syncleus.ferma.tx.TxAction0;
-import com.syncleus.ferma.tx.TxAction1;
-import com.syncleus.ferma.tx.TxAction2;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;

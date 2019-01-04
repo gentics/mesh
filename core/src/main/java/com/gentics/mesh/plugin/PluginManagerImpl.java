@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.router.PluginRouter;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.UUIDUtil;
@@ -271,7 +271,7 @@ public class PluginManagerImpl implements PluginManager {
 	public String adminToken() {
 		MeshComponent mesh = MeshInternal.get();
 		MeshJWTAuthProvider authProvider = mesh.authProvider();
-		Database db = mesh.database();
+		LegacyDatabase db = mesh.database();
 
 		return db.tx(() -> {
 			User admin = mesh.boot().userRoot().findByUsername("admin");

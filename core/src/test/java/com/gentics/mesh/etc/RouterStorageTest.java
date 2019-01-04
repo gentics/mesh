@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.auth.MeshAuthChain;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.router.RouterStorage;
 
 import io.vertx.core.http.CaseInsensitiveHeaders;
@@ -24,7 +24,7 @@ public class RouterStorageTest {
 	public void testFailureHandler() throws Exception {
 		MeshAuthChain chain = Mockito.mock(MeshAuthChain.class);
 		RouterStorage storage = new RouterStorage(null, chain, null, null, null, () -> {
-			return Mockito.mock(Database.class);
+			return Mockito.mock(LegacyDatabase.class);
 		});
 
 		RoutingContext rc = mock(RoutingContext.class);

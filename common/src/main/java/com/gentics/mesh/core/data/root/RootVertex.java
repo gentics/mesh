@@ -22,15 +22,15 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.madl.tx.Tx;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -42,7 +42,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
-	Database database();
+	LegacyDatabase database();
 
 	/**
 	 * Return a traversal of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
@@ -62,12 +62,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+		FramedTransactionalGraph graph = Tx.get().getGraph();
 
 		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
-			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))
+			.map(edge -> edge.inVertex())
+			.filter(vertex -> user.hasPermissionForId(vertex.id(), READ_PERM))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
@@ -167,14 +167,14 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Found element or null if the element could not be located
 	 */
 	default T findByUuid(String uuid) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		Database graph = Tx.get().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { MeshVertex.UUID_KEY }, new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-				.getId(), id()));
+				.id(), id()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
@@ -308,12 +308,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param item
 	 */
 	default void addItem(T item) {
-		FramedGraph graph = getGraph();
+		Tx tx = Tx.get();
 		// Check whether the item was already added by checking the index
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.id(),
+		Iterable<Edge> edges = tx.edges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.id(),
 			id()));
 		if (!edges.iterator().hasNext()) {
-			linkOut(item, getRootLabel());
+			addEdgeOut(item, getRootLabel());
 		}
 	}
 
@@ -323,7 +323,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param item
 	 */
 	default void removeItem(T item) {
-		unlinkOut(item, getRootLabel());
+		removeEdgeOut(item, getRootLabel());
 	}
 
 	/**

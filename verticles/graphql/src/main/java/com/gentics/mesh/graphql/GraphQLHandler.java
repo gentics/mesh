@@ -11,11 +11,12 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.db.Database;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.error.PermissionException;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
+
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;

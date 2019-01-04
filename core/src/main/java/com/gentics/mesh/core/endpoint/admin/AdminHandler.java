@@ -24,9 +24,9 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.router.RouterStorage;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -40,14 +40,14 @@ public class AdminHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private RouterStorage routerStorage;
 
 	private BootstrapInitializer boot;
 
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot) {
+	public AdminHandler(LegacyDatabase db, RouterStorage routerStorage, BootstrapInitializer boot) {
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;

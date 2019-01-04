@@ -8,14 +8,14 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Project specific implementation of microschema container root.
  */
 public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRootImpl {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(ProjectMicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 

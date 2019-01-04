@@ -39,9 +39,9 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterators;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
+import com.gentics.madl.tx.Tx;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -104,7 +104,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Role role = meshRoot().getRoleRoot().create("testRole", user());
 			group().addRole(role);
-			NodeImpl extraNode = tx.getGraph().addFramedVertex(NodeImpl.class);
+			NodeImpl extraNode = tx.createVertex(NodeImpl.class);
 			assertEquals(0, countEdges(role, READ_PERM.label(), Direction.OUT));
 			role.grantPermissions(extraNode, READ_PERM);
 			assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));

@@ -43,7 +43,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -66,14 +66,14 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
 		database.addEdgeIndex(HAS_TAG, true, false, true);
 	}
 
 	@Override
-	public Database database() {
+	public LegacyDatabase database() {
 		return MeshInternal.get().database();
 	}
 
@@ -314,7 +314,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Tag create(String name, Project project, User creator, String uuid) {
-		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+		TagImpl tag = createVertex(TagImpl.class);
 		if (uuid != null) {
 			tag.setUuid(uuid);
 		}

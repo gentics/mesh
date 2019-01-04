@@ -10,19 +10,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import io.reactivex.Observable;
 import org.apache.commons.io.IOUtils;
 
+import com.gentics.madl.db.Database;
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.tx.TxAction;
+import com.gentics.madl.tx.TxAction0;
+import com.gentics.madl.tx.TxAction1;
+import com.gentics.madl.tx.TxAction2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -69,7 +74,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -80,11 +85,6 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxAction;
-import com.syncleus.ferma.tx.TxAction0;
-import com.syncleus.ferma.tx.TxAction1;
-import com.syncleus.ferma.tx.TxAction2;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -104,7 +104,7 @@ public interface TestHelperMethods {
 	/**
 	 * Create a new transaction.
 	 * 
-	 * @see Database#tx()
+	 * @see LegacyDatabase#tx()
 	 * @return
 	 */
 	default Tx tx() {

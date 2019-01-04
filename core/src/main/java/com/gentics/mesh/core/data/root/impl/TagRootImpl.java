@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,7 +31,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(TagRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
 		database.addEdgeIndex(HAS_TAG, true, false, true);
@@ -81,7 +81,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public Tag create(String name, Project project, TagFamily tagFamily, User creator) {
-		Tag tag = getGraph().addFramedVertex(TagImpl.class);
+		Tag tag = createVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);

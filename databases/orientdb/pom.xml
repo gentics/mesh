@@ -26,11 +26,7 @@
 				<artifactId>orientdb-core</artifactId>
 				<version>${orientdb.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>com.orientechnologies</groupId>
-				<artifactId>orientdb-graphdb</artifactId>
-				<version>${orientdb.version}</version>
-			</dependency>
+			<!-- <dependency> <groupId>com.orientechnologies</groupId> <artifactId>orientdb-graphdb</artifactId> <version>${orientdb.version}</version> </dependency> -->
 			<dependency>
 				<groupId>com.orientechnologies</groupId>
 				<artifactId>orientdb-distributed</artifactId>
@@ -40,6 +36,12 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- MADL -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>madl-orientdb3</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-changelog-system</artifactId>
@@ -51,10 +53,7 @@
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orientdb-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.orientechnologies</groupId>
-			<artifactId>orientdb-graphdb</artifactId>
-		</dependency>
+		<!-- <dependency> <groupId>com.orientechnologies</groupId> <artifactId>orientdb-graphdb</artifactId> </dependency> -->
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orientdb-distributed</artifactId>
@@ -66,10 +65,7 @@
 			<version>2.4</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>madl-orientdb3</artifactId>
-		</dependency>
+
 
 		<!-- Common Tools -->
 		<dependency>

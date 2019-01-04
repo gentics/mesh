@@ -22,14 +22,14 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * @see GroupRoot
  */
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_GROUP, true, false, true);
 	}
@@ -56,7 +56,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 	@Override
 	public Group create(String name, User creator, String uuid) {
-		GroupImpl group = getGraph().addFramedVertex(GroupImpl.class);
+		GroupImpl group = createVertex(GroupImpl.class);
 		if (uuid != null) {
 			group.setUuid(uuid);
 		}

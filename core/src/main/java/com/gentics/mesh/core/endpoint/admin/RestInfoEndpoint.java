@@ -14,7 +14,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.generator.RAMLGenerator;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -30,12 +30,12 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 
 	private RestInfoExamples examples = new RestInfoExamples();
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private RouterStorage routerStorage;
 
 	@Inject
-	public RestInfoEndpoint(MeshAuthChain chain, Database db, SearchProvider searchProvider) {
+	public RestInfoEndpoint(MeshAuthChain chain, LegacyDatabase db, SearchProvider searchProvider) {
 		super(null, chain);
 		this.searchProvider = searchProvider;
 		this.db = db;

@@ -30,20 +30,20 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.syncleus.ferma.Database;
+import com.gentics.madl.tx.Tx;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @see JobRoot
  */
 public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(JobRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_JOB, true, false, true);
 	}
@@ -66,17 +66,17 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 * @return Found element or null if the element could not be located
 	 */
 	public Job findByUuid(String uuid) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		Tx tx = Tx.get();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(MeshVertexImpl.class, new String[] { "uuid" }, new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-					database().createComposedIndexKey(potentialElement.getId(), id()));
+			Iterable<Edge> edges = tx.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
+					database().createComposedIndexKey(potentialElement.id(), id()));
 			if (edges.iterator().hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
-				return graph.frameElement(potentialElement, getPersistanceClass());
+				return tx.frameElement(potentialElement, getPersistanceClass());
 			}
 		}
 		return null;
@@ -90,7 +90,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
-		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
+		NodeMigrationJobImpl job = createVertex(NodeMigrationJobImpl.class);
 		job.setType(MigrationType.schema);
 		job.setCreated(creator);
 		job.setBranch(branch);
@@ -108,7 +108,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion) {
-		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
+		MicronodeMigrationJobImpl job = createVertex(MicronodeMigrationJobImpl.class);
 		job.setType(MigrationType.microschema);
 		job.setCreated(creator);
 		job.setBranch(branch);
@@ -126,7 +126,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
-		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
+		Job job = createVertex(BranchMigrationJobImpl.class);
 		job.setCreated(creator);
 		job.setType(MigrationType.branch);
 		job.setBranch(branch);
@@ -143,7 +143,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch) {
-		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
+		Job job = createVertex(BranchMigrationJobImpl.class);
 		job.setCreated(creator);
 		job.setType(MigrationType.branch);
 		job.setStatus(QUEUED);

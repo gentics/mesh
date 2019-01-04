@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
@@ -18,12 +18,12 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 
 public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 
 	protected NodeGraphFieldContainer createContainer(FieldSchema field) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		Database graph = Tx.getActive().getGraph();
 		// 1. Setup schema
 		SchemaContainer schemaContainer = graph.addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainerVersionImpl version = graph.addFramedVertex(SchemaContainerVersionImpl.class);

@@ -2,10 +2,10 @@ package com.gentics.mesh.util;
 
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.syncleus.ferma.VertexFrame;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 /**
  * This class contains a collection of traversal methods that can be used for pagination and other traversals.
@@ -41,7 +41,7 @@ public final class TraversalHelper {
 	 * Simple debug method for printing all existing vertices.
 	 */
 	public static void printDebugVertices() {
-		for (VertexFrame frame : Tx.getActive().getGraph().v()) {
+		for (WrappedVertex frame : Tx.getActive().getGraph().v()) {
 			System.out.println(
 					frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
 		}

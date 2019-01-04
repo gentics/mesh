@@ -45,7 +45,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -74,7 +74,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private static BinaryRoot binaryRoot;
 	private static ChangelogRoot changelogRoot;
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
 	}
 
@@ -104,8 +104,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				BinaryRoot foundAssetBinaryRoot = out(HAS_BINARY_ROOT).nextOrDefaultExplicit(BinaryRootImpl.class, null);
 				if (foundAssetBinaryRoot == null) {
-					binaryRoot = getGraph().addFramedVertex(BinaryRootImpl.class);
-					linkOut(binaryRoot, HAS_BINARY_ROOT);
+					binaryRoot = createVertex(BinaryRootImpl.class);
+					addEdgeOut(binaryRoot, HAS_BINARY_ROOT);
 					if (log.isInfoEnabled()) {
 						log.info("Created binary root {" + binaryRoot.getUuid() + "}");
 					}
@@ -123,8 +123,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT).nextOrDefaultExplicit(ChangelogRootImpl.class, null);
 				if (foundChangelogRoot == null) {
-					changelogRoot = getGraph().addFramedVertex(ChangelogRootImpl.class);
-					linkOut(changelogRoot, HAS_CHANGELOG_ROOT);
+					changelogRoot = createVertex(ChangelogRootImpl.class);
+					addEdgeOut(changelogRoot, HAS_CHANGELOG_ROOT);
 					if (log.isInfoEnabled()) {
 						log.info("Created changelog root {" + changelogRoot.getUuid() + "}");
 					}
@@ -142,8 +142,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				JobRoot foundJobRoot = out(HAS_JOB_ROOT).nextOrDefaultExplicit(JobRootImpl.class, null);
 				if (foundJobRoot == null) {
-					jobRoot = getGraph().addFramedVertex(JobRootImpl.class);
-					linkOut(jobRoot, HAS_JOB_ROOT);
+					jobRoot = createVertex(JobRootImpl.class);
+					addEdgeOut(jobRoot, HAS_JOB_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created job root {" + jobRoot.getUuid() + "}");
 					}
@@ -161,8 +161,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				UserRoot foundUserRoot = out(HAS_USER_ROOT).has(UserRootImpl.class).nextOrDefaultExplicit(UserRootImpl.class, null);
 				if (foundUserRoot == null) {
-					userRoot = getGraph().addFramedVertex(UserRootImpl.class);
-					linkOut(userRoot, HAS_USER_ROOT);
+					userRoot = createVertex(UserRootImpl.class);
+					addEdge(userRoot, HAS_USER_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created tag root {" + userRoot.getUuid() + "}");
 					}
@@ -180,8 +180,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				RoleRoot foundRoleRoot = out(HAS_ROLE_ROOT).has(RoleRootImpl.class).nextOrDefaultExplicit(RoleRootImpl.class, null);
 				if (foundRoleRoot == null) {
-					roleRoot = getGraph().addFramedVertex(RoleRootImpl.class);
-					linkOut(roleRoot, HAS_ROLE_ROOT);
+					roleRoot = createVertex(RoleRootImpl.class);
+					addEdge(roleRoot, HAS_ROLE_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created role root {" + roleRoot.getUuid() + "}");
 					}
@@ -199,8 +199,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				GroupRoot foundGroupRoot = out(HAS_GROUP_ROOT).nextOrDefaultExplicit(GroupRootImpl.class, null);
 				if (foundGroupRoot == null) {
-					groupRoot = getGraph().addFramedVertex(GroupRootImpl.class);
-					linkOut(groupRoot, HAS_GROUP_ROOT);
+					groupRoot = createVertex(GroupRootImpl.class);
+					addEdge(groupRoot, HAS_GROUP_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created group root {" + groupRoot.getUuid() + "}");
 					}
@@ -218,8 +218,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				TagRoot foundTagRoot = out(HAS_TAG_ROOT).nextOrDefaultExplicit(TagRootImpl.class, null);
 				if (foundTagRoot == null) {
-					tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
-					linkOut(tagRoot, HAS_TAG_ROOT);
+					tagRoot = createVertex(TagRootImpl.class);
+					addEdgeOut(tagRoot, HAS_TAG_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created tag root {" + tagRoot.getUuid() + "}");
 					}
@@ -238,8 +238,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(
 					SchemaContainerRootImpl.class, null);
 				if (foundSchemaContainerRoot == null) {
-					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
-					linkOut(schemaContainerRoot, HAS_SCHEMA_ROOT);
+					schemaContainerRoot = createVertex(SchemaContainerRootImpl.class);
+					addEdgeOut(schemaContainerRoot, HAS_SCHEMA_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created schema container root {" + schemaContainerRoot.getUuid() + "}");
 					}
@@ -257,8 +257,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				LanguageRoot foundLanguageRoot = out(HAS_LANGUAGE_ROOT).nextOrDefaultExplicit(LanguageRootImpl.class, null);
 				if (foundLanguageRoot == null) {
-					languageRoot = getGraph().addFramedVertex(LanguageRootImpl.class);
-					linkOut(languageRoot, HAS_LANGUAGE_ROOT);
+					languageRoot = createVertex(LanguageRootImpl.class);
+					addEdgeOut(languageRoot, HAS_LANGUAGE_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created language root {" + languageRoot.getUuid() + "}");
 					}
@@ -276,8 +276,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				ProjectRoot foundProjectRoot = out(HAS_PROJECT_ROOT).has(ProjectRootImpl.class).nextOrDefaultExplicit(ProjectRootImpl.class, null);
 				if (foundProjectRoot == null) {
-					projectRoot = getGraph().addFramedVertex(ProjectRootImpl.class);
-					linkOut(projectRoot, HAS_PROJECT_ROOT);
+					projectRoot = createVertex(ProjectRootImpl.class);
+					addEdge(projectRoot, HAS_PROJECT_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created project root {" + projectRoot.getUuid() + "}");
 					}
@@ -295,8 +295,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			synchronized (MeshRootImpl.class) {
 				NodeRoot foundNodeRoot = out(HAS_NODE_ROOT).nextOrDefaultExplicit(NodeRootImpl.class, null);
 				if (foundNodeRoot == null) {
-					nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
-					linkOut(nodeRoot, HAS_NODE_ROOT);
+					nodeRoot = createVertex(NodeRootImpl.class);
+					addEdge(nodeRoot, HAS_NODE_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created node root {" + nodeRoot.getUuid() + "}");
 					}
@@ -315,8 +315,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 				TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class,
 					null);
 				if (foundTagFamilyRoot == null) {
-					tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
-					linkOut(tagFamilyRoot, HAS_TAGFAMILY_ROOT);
+					tagFamilyRoot = createVertex(TagFamilyRootImpl.class);
+					addEdgeOut(tagFamilyRoot, HAS_TAGFAMILY_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created tag family root {" + tagFamilyRoot.getUuid() + "}");
 					}
@@ -335,8 +335,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 				MicroschemaContainerRoot foundMicroschemaContainerRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class)
 					.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
 				if (foundMicroschemaContainerRoot == null) {
-					microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
-					linkOut(microschemaContainerRoot, HAS_MICROSCHEMA_ROOT);
+					microschemaContainerRoot = createVertex(MicroschemaContainerRootImpl.class);
+					addEdgeOut(microschemaContainerRoot, HAS_MICROSCHEMA_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created microschema root {" + microschemaContainerRoot.getUuid() + "}");
 					}

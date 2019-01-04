@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.changelog;
 
 import com.gentics.mesh.core.data.changelog.ChangeMarkerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 public class ChangeMarkerVertexImpl extends MeshVertexImpl implements ChangeMarkerVertex {
 
@@ -11,7 +11,7 @@ public class ChangeMarkerVertexImpl extends MeshVertexImpl implements ChangeMark
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(ChangeMarkerVertexImpl.class, MeshVertexImpl.class);
 	}
 

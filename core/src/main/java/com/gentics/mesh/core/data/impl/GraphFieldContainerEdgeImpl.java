@@ -18,10 +18,10 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.graphdb.spi.FieldMap;
-import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.annotations.GraphElement;
+import com.gentics.madl.wrapper.element.WrappedEdge;
+import com.gentics.madl.annotation.GraphElement;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;
@@ -33,7 +33,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 @GraphElement
 public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFieldContainerEdge {
 
-	public static void init(Database db) {
+	public static void init(LegacyDatabase db) {
 		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
 
@@ -76,7 +76,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @return The composed key
 	 */
 	public static Object composeWebrootIndexKey(String segmentInfo, String branchUuid, ContainerType type) {
-		Database db = MeshInternal.get().database();
+		LegacyDatabase db = MeshInternal.get().database();
 		return db.createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
 	}
 
@@ -85,7 +85,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	}
 
 	public static Object composeWebrootUrlFieldIndexKey(String path, String branchUuid, ContainerType type) {
-		Database db = MeshInternal.get().database();
+		LegacyDatabase db = MeshInternal.get().database();
 		return db.createComposedIndexKey(branchUuid, type.getCode(), path);
 	}
 
@@ -165,7 +165,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	/**
 	 * Traversal function that restricts by given language tag
 	 */
-	protected static class LanguageRestrictionFunction implements TraversalFunction<EdgeFrame, Traversal<?, ?, ?, ?>> {
+	protected static class LanguageRestrictionFunction implements TraversalFunction<WrappedEdge, Traversal<?, ?, ?, ?>> {
 		protected String languageTag;
 
 		public LanguageRestrictionFunction(String languageTag) {
@@ -173,7 +173,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		}
 
 		@Override
-		public Traversal<?, ?, ?, ?> compute(EdgeFrame argument) {
+		public Traversal<?, ?, ?, ?> compute(WrappedEdge argument) {
 			return argument.traversal().has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
 		}
 	}

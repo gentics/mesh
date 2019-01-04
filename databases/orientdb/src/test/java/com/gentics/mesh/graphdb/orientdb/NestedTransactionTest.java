@@ -7,8 +7,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -16,7 +16,7 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 @Ignore
 public class NestedTransactionTest {
 
-	private Database db = new OrientDBDatabase();
+	private LegacyDatabase db = new OrientDBDatabase();
 
 	static {
 		// Use slf4j instead of jul

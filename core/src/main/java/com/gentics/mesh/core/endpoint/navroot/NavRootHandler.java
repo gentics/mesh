@@ -13,18 +13,18 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
 public class NavRootHandler {
 
 	private WebRootServiceImpl webrootService;
-	private Database db;
+	private LegacyDatabase db;
 
 
 	@Inject
-	public NavRootHandler(WebRootServiceImpl webRootService, Database db) {
+	public NavRootHandler(WebRootServiceImpl webRootService, LegacyDatabase db) {
 		this.webrootService = webRootService;
 		this.db = db;
 	}

@@ -57,10 +57,10 @@ import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -79,7 +79,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	private BootstrapInitializer boot;
 
 	@Inject
-	public BranchCrudHandler(Database db, SearchQueue searchQueue, HandlerUtilities utils, BootstrapInitializer boot) {
+	public BranchCrudHandler(LegacyDatabase db, SearchQueue searchQueue, HandlerUtilities utils, BootstrapInitializer boot) {
 		super(db, utils);
 		this.searchQueue = searchQueue;
 		this.boot = boot;

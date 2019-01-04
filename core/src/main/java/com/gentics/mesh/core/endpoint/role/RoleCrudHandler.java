@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
@@ -46,7 +46,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	private SearchQueue searchQueue;
 
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, SearchQueue searchQueue) {
+	public RoleCrudHandler(LegacyDatabase db, BootstrapInitializer boot, HandlerUtilities utils, SearchQueue searchQueue) {
 		super(db, utils);
 		this.boot = boot;
 		this.searchQueue = searchQueue;

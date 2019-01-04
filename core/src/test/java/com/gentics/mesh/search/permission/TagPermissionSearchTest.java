@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
 public class TagPermissionSearchTest extends AbstractMeshTest {

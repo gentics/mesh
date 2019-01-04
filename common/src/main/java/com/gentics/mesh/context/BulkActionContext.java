@@ -3,7 +3,7 @@ package com.gentics.mesh.context;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -54,7 +54,7 @@ public class BulkActionContext {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
 			batch.processSync();
-			Tx.getActive().getGraph().commit();
+			Tx.get().commit();
 			// Reset the counter back to zero
 			elementCounter.set(0);
 			batchCounter.incrementAndGet();

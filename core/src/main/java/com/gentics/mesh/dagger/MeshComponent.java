@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.madl.Madl;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -22,7 +23,6 @@ import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
@@ -53,7 +53,7 @@ public interface MeshComponent {
 
 	BootstrapInitializer boot();
 
-	Database database();
+	Madl madl();
 
 	EndpointRegistry endpointRegistry();
 

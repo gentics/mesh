@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;
@@ -34,14 +34,14 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private Long periodicTimerId;
 
 	private long timerId;
 
 	@Inject
-	public JobWorkerVerticle(Database db, Lazy<BootstrapInitializer> boot) {
+	public JobWorkerVerticle(LegacyDatabase db, Lazy<BootstrapInitializer> boot) {
 		this.db = db;
 		this.boot = boot;
 	}

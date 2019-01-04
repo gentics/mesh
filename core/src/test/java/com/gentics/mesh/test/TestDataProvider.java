@@ -46,9 +46,9 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.MeshJsonException;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -68,7 +68,7 @@ public class TestDataProvider {
 		return instance;
 	}
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private BootstrapInitializer boot;
 
@@ -100,7 +100,7 @@ public class TestDataProvider {
 
 	private String contentUuid;
 
-	public TestDataProvider(TestSize size, BootstrapInitializer boot, Database database) {
+	public TestDataProvider(TestSize size, BootstrapInitializer boot, LegacyDatabase database) {
 		this.size = size;
 		this.boot = boot;
 		this.db = database;

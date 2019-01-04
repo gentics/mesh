@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -20,12 +20,12 @@ public class HighLevelChangelogSystem {
 
 	private static final Logger log = LoggerFactory.getLogger(HighLevelChangelogSystem.class);
 
-	private final Database db;
+	private final LegacyDatabase db;
 
 	private final HighLevelChangesList highLevelChangesList;
 
 	@Inject
-	public HighLevelChangelogSystem(Database db, HighLevelChangesList highLevelChangesList) {
+	public HighLevelChangelogSystem(LegacyDatabase db, HighLevelChangesList highLevelChangesList) {
 		this.db = db;
 		this.highLevelChangesList = highLevelChangesList;
 	}

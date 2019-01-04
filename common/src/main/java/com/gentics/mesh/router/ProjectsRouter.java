@@ -13,7 +13,7 @@ import javax.naming.InvalidNameException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -81,7 +81,7 @@ public class ProjectsRouter {
 
 			projectRouter.route().handler(ctx -> {
 				BootstrapInitializer boot = apiRouter.getRoot().getStorage().getBoot().get();
-				Database db = apiRouter.getRoot().getStorage().getDb().get();
+				LegacyDatabase db = apiRouter.getRoot().getStorage().getDb().get();
 				Project project = db.tx(() -> boot.projectRoot().findByName(name));
 				if (project == null) {
 					log.warn("Project for name {" + name + "} could not be found.");

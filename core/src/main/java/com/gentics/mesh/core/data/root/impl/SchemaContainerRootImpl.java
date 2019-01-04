@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.logging.Logger;
@@ -44,7 +44,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_SCHEMA_ROOT);
 		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
@@ -85,11 +85,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerImpl container = createVertex(SchemaContainerImpl.class);
 		if (uuid != null) {
 			container.setUuid(uuid);
 		}
-		SchemaContainerVersion version = getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersion version = createVertex(SchemaContainerVersionImpl.class);
 		container.setLatestVersion(version);
 
 		// set the initial version

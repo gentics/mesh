@@ -16,10 +16,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.router.RouterStorage;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import dagger.Lazy;
 import io.vertx.core.eventbus.EventBus;
@@ -41,7 +41,7 @@ public class DistributedEventManager {
 	public Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public Lazy<Database> db;
+	public Lazy<LegacyDatabase> db;
 
 	@Inject
 	public DistributedEventManager() {
@@ -106,7 +106,7 @@ public class DistributedEventManager {
 
 	private void synchronizeProjectRoutes() throws InvalidNameException {
 		BootstrapInitializer cboot = boot.get();
-		Database cdb = db.get();
+		LegacyDatabase cdb = db.get();
 
 		try (Tx tx = cdb.tx()) {
 			for (RouterStorage rs : RouterStorage.getInstances()) {

@@ -2,12 +2,12 @@ package com.gentics.mesh.core.data.branch;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.syncleus.ferma.EdgeFrame;
+import com.gentics.madl.wrapper.element.WrappedEdge;
 
 /**
  * Common class for {@link BranchSchemaEdge} and {@link BranchMicroschemaEdge} edges
  */
-public interface BranchVersionEdge extends EdgeFrame  {
+public interface BranchVersionEdge extends WrappedEdge  {
 
 	public static final String ACTIVE_PROPERTY_KEY = "active";
 

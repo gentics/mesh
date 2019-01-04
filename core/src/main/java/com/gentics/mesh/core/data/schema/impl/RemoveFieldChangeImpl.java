@@ -6,14 +6,14 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * @see RemoveFieldChange
  */
 public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements RemoveFieldChange {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(RemoveFieldChangeImpl.class, MeshVertexImpl.class);
 	}
 

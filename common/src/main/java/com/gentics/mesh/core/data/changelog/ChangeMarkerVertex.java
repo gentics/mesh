@@ -15,7 +15,7 @@ public interface ChangeMarkerVertex extends MeshVertex {
 	 * @return
 	 */
 	default Long getDuration() {
-		return getProperty(DURATION_KEY);
+		return value(DURATION_KEY);
 	}
 
 	/**
@@ -24,6 +24,6 @@ public interface ChangeMarkerVertex extends MeshVertex {
 	 * @param duration
 	 */
 	default void setDuration(long duration) {
-		setProperty(DURATION_KEY, duration);
+		property(DURATION_KEY, duration);
 	}
 }

@@ -42,7 +42,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<?> getPreviousChange() {
-		return (SchemaChange) in(HAS_CHANGE).nextOrDefault(null);
+		return in(HAS_CHANGE).frameDynamic(SchemaChange.class).firstOrNull();
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public String getMigrationScript() throws IOException {
-		String migrationScript = getProperty(MIGRATION_SCRIPT_PROPERTY_KEY);
+		String migrationScript = value(MIGRATION_SCRIPT_PROPERTY_KEY);
 		if (migrationScript == null) {
 			migrationScript = getAutoMigrationScript();
 		}
@@ -115,7 +115,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public <R> R getRestProperty(String key) {
-		return property(REST_PROPERTY_PREFIX_KEY + key);
+		return value(REST_PROPERTY_PREFIX_KEY + key);
 	}
 
 	@Override

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -41,7 +41,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(ConsistencyCheckHandler.class);
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private static List<ConsistencyCheck> checks = Arrays.asList(
 		new GroupCheck(),
@@ -70,7 +70,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	}
 
 	@Inject
-	public ConsistencyCheckHandler(Database db) {
+	public ConsistencyCheckHandler(LegacyDatabase db) {
 		this.db = db;
 	}
 

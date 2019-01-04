@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.node.field;
 
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.ActionContext;
-import com.syncleus.ferma.AbstractVertexFrame;
 
 /**
  * Abstract class for basic fields. All basic fields should implement this class in order to provide various methods that can be used to access basic field values.
@@ -14,9 +14,9 @@ import com.syncleus.ferma.AbstractVertexFrame;
 public abstract class AbstractBasicField<T extends Field> implements BasicGraphField<T> {
 
 	private String fieldKey;
-	private AbstractVertexFrame parentContainer;
+	private WrappedVertex parentContainer;
 
-	public AbstractBasicField(String fieldKey, AbstractVertexFrame parentContainer) {
+	public AbstractBasicField(String fieldKey, WrappedVertex parentContainer) {
 		this.fieldKey = fieldKey;
 		this.parentContainer = parentContainer;
 	}
@@ -36,7 +36,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	 * 
 	 * @return Parent container (micronode container or node graph field container)
 	 */
-	public AbstractVertexFrame getParentContainer() {
+	public WrappedVertex getParentContainer() {
 		return parentContainer;
 	}
 
@@ -47,7 +47,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	 * @param value
 	 */
 	public void setFieldProperty(String key, Object value) {
-		parentContainer.setProperty(fieldKey + "-" + key, value);
+		parentContainer.property(fieldKey + "-" + key, value);
 	}
 
 	/***
@@ -57,7 +57,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	 * @return
 	 */
 	public <E> E getFieldProperty(String key) {
-		return parentContainer.getProperty(fieldKey + "-" + key);
+		return parentContainer.value(fieldKey + "-" + key);
 	}
 
 	/**

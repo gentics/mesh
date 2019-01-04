@@ -17,8 +17,8 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -27,7 +27,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationJobImpl.class);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 

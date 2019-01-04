@@ -287,8 +287,8 @@ public interface Branch
 	Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions();
 
 	/**
-	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
-	 * is queued and will soon contain containers due to an executed node migration.
+	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
+	 * which is queued and will soon contain containers due to an executed node migration.
 	 *
 	 * @return Iterable
 	 */

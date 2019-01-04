@@ -39,7 +39,7 @@ import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeConflictEndpointTest extends AbstractMeshTest {

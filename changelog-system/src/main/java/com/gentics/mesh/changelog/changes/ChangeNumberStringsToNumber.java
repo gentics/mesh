@@ -1,8 +1,8 @@
 package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -17,8 +17,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
 public class ChangeNumberStringsToNumber extends AbstractChange {
+
 	private static final String NUMBER_TYPE = "number";
 	private static final String LIST_TYPE = "list";
 	private static final String SCHEMA_FIELDS = "fields";
@@ -52,16 +52,15 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		return "Changes the values of number fields (and number list fields) from strings to actual numbers.";
 	}
 
-
 	private Schema buildSchemaFromVertex(Vertex schemaVertex, String className) {
-		return schemaMap.computeIfAbsent(schemaVertex.getProperty(UUID), uuid -> {
+		return schemaMap.computeIfAbsent(schemaVertex.value(UUID), uuid -> {
 			Schema schema = new Schema();
 			schema.type = className;
 			schema.uuid = uuid;
-			Object val = schemaVertex.getProperty("version");
+			Object val = schemaVertex.value("version");
 			schema.version = String.valueOf(val);
 
-			String json = schemaVertex.getProperty(JSON_FIELD);
+			String json = schemaVertex.value(JSON_FIELD);
 			if (json == null) {
 				return schema;
 			}
@@ -72,24 +71,25 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 			schema.name = jsonSchema.getString("name");
 			JsonArray fields = jsonSchema.getJsonArray(SCHEMA_FIELDS);
 			schema.fieldMap = IntStream.range(0, fields.size())
-					.mapToObj(fields::getJsonObject)
-					.filter(f -> {
-						String type = f.getString(FIELD_TYPE_KEY);
-						return NUMBER_TYPE.equals(type) || (LIST_TYPE.equals(type) && NUMBER_TYPE.equals(f.getString(FIELD_LIST_TYPE_KEY)));
-					})
-					.collect(Collectors.toMap(o -> o.getString(FIELD_NAME_KEY), Function.identity()));
+				.mapToObj(fields::getJsonObject)
+				.filter(f -> {
+					String type = f.getString(FIELD_TYPE_KEY);
+					return NUMBER_TYPE.equals(type) || (LIST_TYPE.equals(type) && NUMBER_TYPE.equals(f.getString(FIELD_LIST_TYPE_KEY)));
+				})
+				.collect(Collectors.toMap(o -> o.getString(FIELD_NAME_KEY), Function.identity()));
 			return schema;
 		});
 	}
 
 	private void updateProperty(String propertyName, Vertex node) {
-		Object obj = node.getProperty(propertyName);
+		Object obj = node.property(propertyName);
 		if (obj == null) {
 			return;
 		}
 		if (!(obj instanceof String)) {
 			if (log.isDebugEnabled()) {
-				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName, node.getProperty(UUID), obj.getClass(), obj);
+				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName, node.property(UUID),
+					obj.getClass(), obj);
 			}
 			return;
 		}
@@ -98,35 +98,34 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		try {
 			numVal = format.parse(strVal);
 		} catch (ParseException e) {
-			log.warn("Could not parse the number '{}', for field '{}' in node {}", strVal, propertyName, node.getId());
+			log.warn("Could not parse the number '{}', for field '{}' in node {}", strVal, propertyName, node.id());
 			numVal = 0;
 		}
-		node.removeProperty(propertyName);
-		node.setProperty(propertyName, numVal);
+		node.property(propertyName).remove();
+		node.property(propertyName, numVal);
 	}
 
 	private void updateLists(Vertex container, Map<String, JsonObject> fieldMap) {
-		for (Vertex listElement: container.getVertices(Direction.OUT, HAS_LIST)) {
-			String fieldName = listElement.getProperty(FIELD_KEY);
+		for (Vertex listElement : (Iterable<Vertex>) () -> container.vertices(Direction.OUT, HAS_LIST)) {
+			String fieldName = listElement.value(FIELD_KEY);
 			if (fieldMap.containsKey(fieldName) && NUMBER_TYPE.equals(fieldMap.get(fieldName).getString(FIELD_LIST_TYPE_KEY))) {
-				listElement.getPropertyKeys().stream()
-						.filter(k -> k.startsWith(ITEM_PREFIX))
-						.forEach(k -> updateProperty(k, listElement));
+				listElement.keys().stream()
+					.filter(k -> k.startsWith(ITEM_PREFIX))
+					.forEach(k -> updateProperty(k, listElement));
 			}
 		}
 	}
 
 	private void updateFields(Vertex container, Map<String, JsonObject> fieldMap) {
 		fieldMap.entrySet().stream()
-				.map(Map.Entry::getValue)
-				.filter(f -> NUMBER_TYPE.equals(f.getString(FIELD_TYPE_KEY)))
-				.forEach(f -> updateProperty(f.getString(FIELD_NAME_KEY) + "-" + NUMBER_TYPE, container));
+			.map(Map.Entry::getValue)
+			.filter(f -> NUMBER_TYPE.equals(f.getString(FIELD_TYPE_KEY)))
+			.forEach(f -> updateProperty(f.getString(FIELD_NAME_KEY) + "-" + NUMBER_TYPE, container));
 	}
-
 
 	public void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
 		long count = 0;
-		for (Vertex vertex : schemaVertex.getVertices(Direction.IN, label)) {
+		for (Vertex vertex : (Iterable<Vertex>) () -> schemaVertex.vertices(Direction.IN, label)) {
 			count++;
 			updateFields(vertex, fieldMap);
 			updateLists(vertex, fieldMap);
@@ -139,7 +138,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	public void convertViaSchema(String schemaVersionClassName, String label) {
-		for (Vertex schemaVertex : getGraph().getVertices("@class", schemaVersionClassName)) {
+		for (Vertex schemaVertex : getGraph().vertices("@class", schemaVersionClassName)) {
 			Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
 			if (!schema.fieldMap.isEmpty()) {
 				log.info("Update vertices for {}", schema);
@@ -173,10 +172,10 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		@Override
 		public String toString() {
 			return type + "{" +
-					"name='" + name + '\'' +
-					", uuid='" + uuid + '\'' +
-					", version='" + version + '\'' +
-					'}';
+				"name='" + name + '\'' +
+				", uuid='" + uuid + '\'' +
+				", version='" + version + '\'' +
+				'}';
 		}
 	}
 }

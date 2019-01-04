@@ -27,11 +27,11 @@ import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
@@ -44,7 +44,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
 
 	@Inject
-	public MicronodeMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler binaryFieldHandler) {
+	public MicronodeMigrationHandler(LegacyDatabase db, SearchQueue searchQueue, BinaryFieldHandler binaryFieldHandler) {
 		super(db, searchQueue, binaryFieldHandler);
 	}
 

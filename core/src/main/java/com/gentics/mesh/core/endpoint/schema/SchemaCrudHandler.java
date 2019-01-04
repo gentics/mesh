@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
@@ -59,7 +59,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	private SearchQueue searchQueue;
 
 	@Inject
-	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
+	public SchemaCrudHandler(LegacyDatabase db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
 			HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;

@@ -90,7 +90,7 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		container.linkOut(this, HAS_LIST);
+		container.addEdge(this, HAS_LIST);
 		return container.getList(getClass(), getFieldKey());
 	}
 

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Microschema container specific consistency checks.
@@ -16,7 +16,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class MicroschemaContainerCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends MicroschemaContainer> it = db.getVerticesForType(MicroschemaContainerImpl.class);
 		while (it.hasNext()) {
 			checkMicroschemaContainer(it.next(), response);

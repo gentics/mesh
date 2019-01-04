@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest implements FieldDiffTestcases {
@@ -94,7 +94,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 					FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 
 			// Create microschema vcard 
-			FramedGraph graph = tx.getGraph();
+			Database graph = tx.getGraph();
 			MicroschemaContainer schemaContainer = graph.addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersionImpl version = graph.addFramedVertex(MicroschemaContainerVersionImpl.class);
 			schemaContainer.setLatestVersion(version);

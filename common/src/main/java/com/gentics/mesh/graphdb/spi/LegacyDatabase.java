@@ -7,23 +7,22 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.tx.TxAction;
+import com.gentics.madl.tx.TxAction0;
+import com.gentics.madl.tx.TxAction1;
+import com.gentics.madl.wrapper.element.WrappedEdge;
+import com.gentics.madl.wrapper.element.WrappedElement;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.ElementFrame;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxAction;
-import com.syncleus.ferma.tx.TxAction0;
-import com.syncleus.ferma.tx.TxAction1;
-import com.syncleus.ferma.tx.TxFactory;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -34,9 +33,9 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Main description of a graph database.
  */
-public interface Database extends TxFactory {
+public interface LegacyDatabase extends TxFactory {
 
-	Logger log = LoggerFactory.getLogger(Database.class);
+	Logger log = LoggerFactory.getLogger(LegacyDatabase.class);
 
 	/**
 	 * Stop the graph database.
@@ -340,7 +339,7 @@ public interface Database extends TxFactory {
 	 *            index key to check
 	 * @return the conflicting element or null if no conflict exists
 	 */
-	<T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key);
+	<T extends WrappedElement> T checkIndexUniqueness(String indexName, T element, Object key);
 
 	/**
 	 * Check whether the value can be put into the given index for a new element of given class.
@@ -435,7 +434,7 @@ public interface Database extends TxFactory {
 	 * 
 	 * @return
 	 */
-	TransactionalGraph rawTx();
+	Tx rawTx();
 
 	/**
 	 * Return the vendor name.
@@ -524,7 +523,7 @@ public interface Database extends TxFactory {
 	 * @param clazz
 	 * @return Found element or null if no element was found
 	 */
-	<T extends EdgeFrame> T findEdge(String propertyKey, Object propertyValue, Class<T> clazz);
+	<T extends WrappedEdge> T findEdge(String propertyKey, Object propertyValue, Class<T> clazz);
 
 	/**
 	 * Generate the database revision change by generating a hash over all database changes and the database vendor version.
@@ -560,6 +559,6 @@ public interface Database extends TxFactory {
 	 * @param indexName
 	 * @param clazz
 	 */
-	void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz);
+	void removeVertexIndex(String indexName, Class<? extends WrappedVertex> clazz);
 
 }

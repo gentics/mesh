@@ -1,12 +1,12 @@
 package com.gentics.mesh.graphdb.orientdb;
 
-import org.junit.Test;
+import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.runAndWait;
 
-import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.*;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientElement;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import org.apache.tinkerpop.gremlin.orientdb.OrientElement;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Test;
 
 public class OrientDBTinkerpopMultithreadingTest extends AbstractOrientDBTest {
 
@@ -23,7 +23,7 @@ public class OrientDBTinkerpopMultithreadingTest extends AbstractOrientDBTest {
 		runAndWait(() -> {
 			graph.getRawGraph().activateOnCurrentThread();
 			graph.attach((OrientElement) v);
-			v.setProperty("sfaf", "dxgvasdg");
+			v.property("sfaf", "dxgvasdg");
 			v.addEdge("adadsg", v2);
 			//			Vertex e = memoryGraph.getVertex(id);
 			//			assertNotNull(e);

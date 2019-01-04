@@ -23,7 +23,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.Plugin;
 import com.gentics.mesh.plugin.PluginManager;
@@ -40,10 +40,10 @@ public class PluginHandler extends AbstractHandler {
 
 	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
 
-	private Database db;
+	private LegacyDatabase db;
 
 	@Inject
-	public PluginHandler(Database db) {
+	public PluginHandler(LegacyDatabase db) {
 		this.db = db;
 	}
 

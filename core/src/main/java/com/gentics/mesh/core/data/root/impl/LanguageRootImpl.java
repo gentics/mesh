@@ -8,7 +8,10 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import com.gentics.madl.db.Database;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
@@ -18,17 +21,14 @@ import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * @see LanguageRoot
  */
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_LANGUAGE, true, false, false);
 		// TODO add unique index
@@ -51,7 +51,8 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 
 	@Override
 	public Language create(String languageName, String languageTag, String uuid) {
-		Language language = getGraph().addFramedVertex(LanguageImpl.class);
+		Tx tx = Tx.get();
+		Language language = tx.createVertex(LanguageImpl.class);
 		if (uuid != null) {
 			language.setUuid(uuid);
 		}
@@ -74,13 +75,13 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	 */
 	@Override
 	public Language findByLanguageTag(String languageTag) {
-		Database db = MeshInternal.get().database();
+		LegacyDatabase db = MeshInternal.get().database();
 		Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
 				new Object[] { languageTag });
 		if (it.hasNext()) {
 			//TODO check whether the language was assigned to this root node?
 			//return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
-			FramedGraph graph = Tx.getActive().getGraph();
+			Database graph = Tx.getActive().getGraph();
 			return graph.frameElementExplicit(it.next(), LanguageImpl.class);
 		} else {
 			return null;

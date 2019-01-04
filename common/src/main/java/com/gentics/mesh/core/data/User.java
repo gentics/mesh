@@ -424,7 +424,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return API token id or null if no token has yet been generated.
 	 */
 	default String getAPIKeyTokenCode() {
-		return property(API_TOKEN_ID);
+		return value(API_TOKEN_ID);
 	}
 
 	/**
@@ -444,7 +444,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	default Long getAPITokenIssueTimestamp() {
-		return property(API_TOKEN_ISSUE_TIMESTAMP);
+		return value(API_TOKEN_ISSUE_TIMESTAMP);
 	}
 
 	/**
@@ -485,8 +485,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Reset the API token id and issue timestamp and thus invalidating the token.
 	 */
 	default void resetAPIToken() {
-		setProperty(API_TOKEN_ID, null);
-		setProperty(API_TOKEN_ISSUE_TIMESTAMP, null);
+		property(API_TOKEN_ID).remove();
+		property(API_TOKEN_ISSUE_TIMESTAMP).remove();
 	}
 
 }

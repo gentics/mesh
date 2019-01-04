@@ -30,11 +30,11 @@ import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
-import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
+import com.syncleus.ferma.Database;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @see UserRoot
@@ -46,7 +46,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(UserRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_USER, true, false, true);
 	}
@@ -73,7 +73,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public User create(String username, User creator, String uuid) {
-		User user = getGraph().addFramedVertex(UserImpl.class);
+		User user = createVertex(UserImpl.class);
 		if (uuid != null) {
 			user.setUuid(uuid);
 		}
@@ -111,12 +111,12 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		Database db = MeshInternal.get().database();
+		LegacyDatabase db = MeshInternal.get().database();
 		Iterator<Vertex> it = db.getVertices(UserImpl.class, new String[] { "uuid" }, new Object[] { userUuid });
 		if (!it.hasNext()) {
 			return null;
 		}
-		FramedGraph graph = getGraph();
+		Database graph = getGraph();
 		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
 		if (it.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");

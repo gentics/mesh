@@ -6,9 +6,9 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.annotations.GraphElement;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.wrapper.element.WrappedVertex;
+import com.gentics.madl.annotation.GraphElement;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 /**
@@ -18,7 +18,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	public static final String BRANCH_UUID_KEY = "branchUuid";
 
-	public static void init(Database db) {
+	public static void init(LegacyDatabase db) {
 		db.addEdgeType(TagEdgeImpl.class.getSimpleName(), (Class<?>) null, TagEdgeImpl.BRANCH_UUID_KEY);
 		db.addEdgeType(HAS_TAG, TagEdgeImpl.class);
 	}
@@ -30,7 +30,7 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Branch branch) {
+	public static VertexTraversal<?, ?, ?> getTagTraversal(WrappedVertex vertex, Branch branch) {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV();
 	}
 

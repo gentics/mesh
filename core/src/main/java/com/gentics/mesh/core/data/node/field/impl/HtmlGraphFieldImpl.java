@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 
 import java.util.Objects;
 
+import com.gentics.madl.wrapper.element.AbstractWrappedVertex;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -16,7 +17,6 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
-import com.syncleus.ferma.AbstractVertexFrame;
 
 public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements HtmlGraphField {
 
@@ -75,7 +75,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 		return container.getHtml(fieldSchema.getName());
 	};
 
-	public HtmlGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
+	public HtmlGraphFieldImpl(String fieldKey, AbstractWrappedVertex parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

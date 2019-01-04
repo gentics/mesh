@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class AddFieldChangeTest extends AbstractChangeTest {
@@ -30,7 +30,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setCustomMigrationScript("1234");
 			assertEquals("1234", change.getMigrationScript());
 
@@ -49,9 +49,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setType("html");
 			version.setSchema(schema);
@@ -64,13 +64,13 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAtEndPosition() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModel schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
 
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
 			change.setInsertAfterPosition("thirdField");
@@ -88,13 +88,13 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAtPosition() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
 
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
 			change.setInsertAfterPosition("firstField");
@@ -112,9 +112,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringField() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
 			version.setSchema(schema);
@@ -128,9 +128,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNodeField() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeField");
 			change.setType("node");
 			version.setSchema(schema);
@@ -146,9 +146,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyMicronodeField() {
 		try (Tx tx = tx()) {
 			
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeField");
 			change.setType("micronode");
 			version.setSchema(schema);
@@ -163,9 +163,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyDateField() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("dateField");
 			change.setType("date");
 			version.setSchema(schema);
@@ -179,9 +179,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNumberField() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("numberField");
 			change.setType("number");
 			version.setSchema(schema);
@@ -195,9 +195,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyBinaryField() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("binaryField");
 			change.setType("binary");
 			version.setSchema(schema);
@@ -211,9 +211,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyListField() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("listField");
 			change.setType("list");
 			change.setListType("html");
@@ -230,9 +230,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredTrue() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("requiredField");
 			change.setType("string");
 			change.setRestProperty(SchemaChangeModel.REQUIRED_KEY, true);
@@ -247,9 +247,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredFalse() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("optionalField");
 			change.setType("string");
 			change.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
@@ -264,9 +264,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredNull() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("defaultRequiredField");
 			change.setType("string");
 			version.setSchema(schema);
@@ -280,9 +280,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringAllowField");
 			change.setType("string");
 			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"one", "two", "three"});
@@ -298,9 +298,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNodeFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeAllowField");
 			change.setType("node");
 			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
@@ -315,9 +315,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNodeListFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeListFieldAllow");
 			change.setType("list");
 			change.setListType("node");
@@ -333,9 +333,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyMicronodeFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeAllowField");
 			change.setType("micronode");
 			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
@@ -350,9 +350,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyMicronodeListFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeListFieldAllow");
 			change.setType("list");
 			change.setListType("micronode");
@@ -372,7 +372,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
 			model.setMigrationScript("custom");
 
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals(change.getType(), model.getProperties().get(SchemaChangeModel.TYPE_KEY));
 			assertEquals(change.getFieldName(), model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
@@ -384,7 +384,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setType("html");
 			change.setRestProperty("someProperty", "test");
@@ -402,7 +402,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testGetMigrationScript() throws IOException {
 		try (Tx tx = tx()) {
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = tx.createVertex(AddFieldChangeImpl.class);
 			assertNull("Add field changes have no auto migation script.", change.getAutoMigrationScript());
 
 			assertNull("Intitially no migration script should be set.", change.getMigrationScript());

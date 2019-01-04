@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
@@ -28,7 +28,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = tx.createVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("test");
 			assertEquals("test", change.getDescription());
 		}
@@ -38,10 +38,10 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			MicroschemaContainerVersion version = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			MicroschemaContainerVersion version = tx.createVertex(MicroschemaContainerVersionImpl.class);
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = tx.createVertex(UpdateMicroschemaChangeImpl.class);
 			change.setName("updated");
 			change.setIndexOptions(new JsonObject().put("key", "value"));
 			version.setSchema(schema);
@@ -51,7 +51,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 			assertEquals("updated", updatedSchema.getName());
 			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
 
-			change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			change = tx.createVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("text");
 			version.setNextChange(change);
 			updatedSchema = mutator.apply(version);
@@ -66,7 +66,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
 			model.setProperty(SchemaChangeModel.NAME_KEY, "someName");
 
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = tx.createVertex(UpdateMicroschemaChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals("someName", change.getName());
 		}
@@ -76,7 +76,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testGetMigrationScript() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = tx.createVertex(UpdateMicroschemaChangeImpl.class);
 			assertNull("Update microschema changes have a auto migation script.", change.getAutoMigrationScript());
 
 			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
@@ -89,7 +89,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = tx.createVertex(UpdateMicroschemaChangeImpl.class);
 			change.setCustomMigrationScript("testScript");
 			change.setName("vcard");
 

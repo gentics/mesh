@@ -4,10 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
 import org.junit.Test;
-
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
 public class NestedOrientDBTransactionTest {
 
@@ -30,7 +29,7 @@ public class NestedOrientDBTransactionTest {
 						long count = tx.countVertices();
 						System.out.println("Inner " + count);
 					} finally {
-						tx2.shutdown();
+						tx2.close();
 					}
 					latch.countDown();
 				}).start();
@@ -41,7 +40,7 @@ public class NestedOrientDBTransactionTest {
 				e.printStackTrace();
 			} finally {
 				tx.rollback();
-				tx.shutdown();
+				tx.close();
 			}
 		} catch (RuntimeException e) {
 			e.printStackTrace();
@@ -51,7 +50,7 @@ public class NestedOrientDBTransactionTest {
 			long count = tx.countVertices();
 			assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 		} finally {
-			tx.shutdown();
+			tx.close();
 		}
 
 	}
@@ -75,12 +74,12 @@ public class NestedOrientDBTransactionTest {
 					System.out.println("Inner " + count);
 				} finally {
 					tx2.rollback();
-					tx2.shutdown();
+					tx2.close();
 				}
 				throw new RuntimeException();
 			} finally {
 				tx.rollback();
-				tx.shutdown();
+				tx.close();
 			}
 		} catch (RuntimeException e) {
 			e.printStackTrace();
@@ -90,7 +89,7 @@ public class NestedOrientDBTransactionTest {
 			long count = tx.countVertices();
 			assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 		} finally {
-			tx.shutdown();
+			tx.close();
 		}
 
 	}

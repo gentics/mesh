@@ -9,7 +9,7 @@ import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.http.MeshHeaders;
 
 import io.vertx.core.AsyncResult;
@@ -31,13 +31,13 @@ public class MeshAnonymousAuthHandler extends AuthHandlerImpl implements MeshAut
 	public static final String ANONYMOUS_USERNAME = "anonymous";
 
 	private static final Logger log = LoggerFactory.getLogger(MeshAnonymousAuthHandler.class);
-	private Database db;
+	private LegacyDatabase db;
 	private BootstrapInitializer boot;
 
 	private MeshOptions options;
 
 	@Inject
-	public MeshAnonymousAuthHandler(MeshJWTAuthProvider authProvider, MeshOptions options, Database db, BootstrapInitializer boot) {
+	public MeshAnonymousAuthHandler(MeshJWTAuthProvider authProvider, MeshOptions options, LegacyDatabase db, BootstrapInitializer boot) {
 		super(authProvider);
 		this.options = options;
 		this.db = db;

@@ -25,7 +25,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 *            Editor
 	 */
 	default void setEditor(User user) {
-		setLinkOut(user, HAS_EDITOR);
+		setEdgeOut(user, HAS_EDITOR);
 	}
 
 	/**
@@ -34,7 +34,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 * @return Edit timestamp
 	 */
 	default Long getLastEditedTimestamp() {
-		return property(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
+		return value(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	/**

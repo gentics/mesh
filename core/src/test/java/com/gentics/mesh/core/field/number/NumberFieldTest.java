@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -49,18 +49,18 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	public void testSimpleNumber() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldImpl field = new NumberGraphFieldImpl("test", container);
-			assertEquals(2, container.getPropertyKeys().size());
-			assertNull(container.getProperty("test-number"));
-			assertEquals(2, container.getPropertyKeys().size());
+			assertEquals(2, container.keys().size());
+			assertNull(container.value("test-number"));
+			assertEquals(2, container.keys().size());
 			field.setNumber(42);
 			assertEquals(42, field.getNumber());
-			assertEquals(new Integer(42), container.getProperty("test-number"));
-			assertEquals(3, container.getPropertyKeys().size());
+			assertEquals(new Integer(42), container.value("test-number"));
+			assertEquals(3, container.keys().size());
 			field.setNumber(null);
 			assertNull(field.getNumber());
-			assertNull(container.getProperty("test-number"));
+			assertNull(container.value("test-number"));
 		}
 	}
 
@@ -68,11 +68,11 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphField testField = container.createNumber("testField");
 			testField.setNumber(4711);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField,
@@ -84,7 +84,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphField numberField = container.createNumber("numberField");
 			assertEquals("numberField", numberField.getFieldKey());
 			numberField.setNumber(42);
@@ -134,7 +134,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			Long number = System.currentTimeMillis();
 			NumberGraphField fieldA = container.createNumber(NUMBER_FIELD);
 			NumberGraphField fieldB = container.createNumber(NUMBER_FIELD + "_2");
@@ -148,7 +148,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphField fieldA = container.createNumber(NUMBER_FIELD);
 			NumberGraphField fieldB = container.createNumber(NUMBER_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -159,7 +159,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			Long number = System.currentTimeMillis();
 
 			// rest null - graph null

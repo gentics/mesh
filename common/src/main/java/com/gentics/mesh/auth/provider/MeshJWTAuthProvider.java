@@ -18,8 +18,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -50,14 +50,14 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private static final String API_KEY_TOKEN_CODE_FIELD_NAME = "jti";
 
-	protected Database db;
+	protected LegacyDatabase db;
 
 	private BCryptPasswordEncoder passwordEncoder;
 
 	private BootstrapInitializer boot;
 
 	@Inject
-	public MeshJWTAuthProvider(Vertx vertx, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
+	public MeshJWTAuthProvider(Vertx vertx, BCryptPasswordEncoder passwordEncoder, LegacyDatabase database, BootstrapInitializer boot) {
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 		this.boot = boot;

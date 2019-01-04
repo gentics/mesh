@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -11,7 +12,6 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
-import com.syncleus.ferma.AbstractVertexFrame;
 
 public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
 
@@ -60,7 +60,7 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 		return container.getBoolean(fieldSchema.getName());
 	};
 
-	public BooleanGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
+	public BooleanGraphFieldImpl(String fieldKey, WrappedVertex parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

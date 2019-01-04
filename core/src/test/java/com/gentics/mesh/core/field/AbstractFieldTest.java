@@ -32,15 +32,15 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
 
 	abstract protected FS createFieldSchema(boolean isRequired);
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
-		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersionImpl version = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainer container = Tx.getActive().createVertex(SchemaContainerImpl.class);
+		SchemaContainerVersionImpl version = Tx.getActive().createVertex(SchemaContainerVersionImpl.class);
 		version.setSchemaContainer(container);
 		container.setLatestVersion(version);
 		SchemaModel schema = new SchemaModelImpl();
@@ -51,7 +51,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
-		Branch branch = Tx.getActive().getGraph().addFramedVertex(BranchImpl.class);
+		Branch branch = Tx.getActive().createVertex(BranchImpl.class);
 		branch.assignSchemaVersion(user(), version);
 		project().getBranchRoot().addItem(branch);
 		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), branch, user());

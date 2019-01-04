@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Contains checks for complex fields (list field).
@@ -32,7 +32,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class FieldCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 
 		Iterator<? extends NumberGraphFieldList> it1 = db.getVerticesForType(NumberGraphFieldListImpl.class);
 		while (it1.hasNext()) {

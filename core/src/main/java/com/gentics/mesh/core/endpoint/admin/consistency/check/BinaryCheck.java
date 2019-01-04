@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Binary specific consistency checks
@@ -17,7 +17,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class BinaryCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends Binary> it = db.getVerticesForType(BinaryImpl.class);
 		while (it.hasNext()) {
 			checkBinary(it.next(), response);

@@ -23,7 +23,7 @@ import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.router.RouterStorage;
@@ -34,7 +34,7 @@ import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -176,7 +176,7 @@ public class MeshTestContext extends TestWatcher {
 		}
 	}
 
-	private Database db() {
+	private LegacyDatabase db() {
 		return meshDagger.database();
 	}
 
@@ -227,12 +227,12 @@ public class MeshTestContext extends TestWatcher {
 		BootstrapInitializerImpl.clearReferences();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			MeshInternal.get().database().clear();
+			MeshInternal.get().madl().clear();
 		} else {
-			MeshInternal.get().database().stop();
+			MeshInternal.get().madl().stop();
 			File dbDir = new File(Mesh.mesh().getOptions().getStorageOptions().getDirectory());
 			FileUtils.deleteDirectory(dbDir);
-			MeshInternal.get().database().setupConnectionPool();
+			MeshInternal.get().madl().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");

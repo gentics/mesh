@@ -4,8 +4,8 @@ import java.util.Iterator;
 
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.changelog.MeshGraphHelper;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class ChangeFixReleaseRelationship extends AbstractChange {
 
@@ -26,13 +26,13 @@ public class ChangeFixReleaseRelationship extends AbstractChange {
 
 	@Override
 	public void apply() {
-		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
-		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
-		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
-			Iterator<Vertex> it = project.getVertices(Direction.OUT, "HAS_RELEASE_ROOT").iterator();
+		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getTx());
+		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(Direction.OUT, "HAS_PROJECT")) {
+			Iterator<Vertex> it = project.vertices(Direction.OUT, "HAS_RELEASE_ROOT");
 			if (it.hasNext()) {
 				Vertex releaseRoot = it.next();
-				for (Vertex release : releaseRoot.getVertices(Direction.OUT, "HAS_RELEASE")) {
+				for (Vertex release : (Iterable<Vertex>) () -> releaseRoot.vertices(Direction.OUT, "HAS_RELEASE")) {
 					// Assign the release to the project
 					release.addEdge("ASSIGNED_TO_PROJECT", project);
 				}

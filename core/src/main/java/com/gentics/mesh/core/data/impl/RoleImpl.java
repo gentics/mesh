@@ -33,17 +33,17 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Edge;
+import com.gentics.madl.tx.Tx;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import io.reactivex.Single;
 
@@ -52,7 +52,7 @@ import io.reactivex.Single;
  */
 public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> implements Role {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(RoleImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(RoleImpl.class, true, "name", FieldType.STRING);
 	}
@@ -97,7 +97,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		Database graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout", MeshInternal.get().database().createComposedIndexKey(vertex
 			.id(), id()));
 		return edges.iterator().hasNext();
@@ -140,7 +140,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		Database graph = Tx.get().getGraph();
 		Object indexKey = MeshInternal.get().database().createComposedIndexKey(vertex.id(), getId());
 
 		long edgesRemoved = Arrays.stream(permissions).map(perm -> "e." + perm.label() + "_inout").flatMap(key -> StreamSupport.stream(graph.getEdges(

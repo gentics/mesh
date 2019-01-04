@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.reactivex.Observable;
@@ -88,7 +88,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		return container.getMicronodeList(fieldSchema.getName());
 	};
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
@@ -110,7 +110,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 	@Override
 	public Micronode createMicronode() {
-		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
+		MicronodeImpl micronode = createVertex(MicronodeImpl.class);
 		addItem(String.valueOf(getSize() + 1), micronode);
 
 		return micronode;
@@ -154,7 +154,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 				// Create a new micronode if none could be found
 				if (micronode == null) {
-					micronode = getGraph().addFramedVertex(MicronodeImpl.class);
+					micronode = createVertex(MicronodeImpl.class);
 					micronode.setSchemaContainerVersion(microschemaContainerVersion);
 				} else {
 					// Avoid microschema container changes for micronode updates

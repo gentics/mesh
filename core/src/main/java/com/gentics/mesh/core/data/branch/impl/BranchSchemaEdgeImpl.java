@@ -5,8 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.annotations.GraphElement;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.annotation.GraphElement;
 
 /**
  * @see BranchSchemaEdge
@@ -14,7 +14,7 @@ import com.syncleus.ferma.annotations.GraphElement;
 @GraphElement
 public class BranchSchemaEdgeImpl extends AbstractVersionEdge implements BranchSchemaEdge {
 
-	public static void init(Database db) {
+	public static void init(LegacyDatabase db) {
 		db.addEdgeType(BranchSchemaEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_SCHEMA_VERSION, BranchSchemaEdgeImpl.class);
 	}

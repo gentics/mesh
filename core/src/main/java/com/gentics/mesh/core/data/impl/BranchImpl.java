@@ -58,7 +58,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -82,7 +82,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	public static final String MIGRATED_PROPERTY_KEY = "migrated";
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(BranchImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(UNIQUENAME_INDEX_NAME, BranchImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
 	}
@@ -94,7 +94,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
-		Database db = MeshInternal.get().database();
+		LegacyDatabase db = MeshInternal.get().database();
 		BranchUpdateRequest requestModel = ac.fromJson(BranchUpdateRequest.class);
 		boolean modified = false;
 

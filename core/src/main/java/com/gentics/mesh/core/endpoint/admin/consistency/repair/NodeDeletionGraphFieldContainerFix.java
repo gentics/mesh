@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -77,7 +77,7 @@ public class NodeDeletionGraphFieldContainerFix {
 
 		log.info("Schema container " + schemaContainer.getName());
 
-		FramedGraph graph = container.getGraph();
+		Database graph = container.getGraph();
 		Node node = graph.addFramedVertex(NodeImpl.class);
 		node.setProject(project);
 		node.setCreated(project.getCreator());

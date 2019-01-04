@@ -42,12 +42,12 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.TxAction1;
+import com.gentics.madl.tx.TxAction1;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
@@ -62,7 +62,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public NodeCrudHandler(Database db, SearchQueue searchQueue, HandlerUtilities utils, BootstrapInitializer boot) {
+	public NodeCrudHandler(LegacyDatabase db, SearchQueue searchQueue, HandlerUtilities utils, BootstrapInitializer boot) {
 		super(db, utils);
 		this.searchQueue = searchQueue;
 		this.boot = boot;

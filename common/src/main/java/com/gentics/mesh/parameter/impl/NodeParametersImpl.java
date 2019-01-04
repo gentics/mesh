@@ -10,7 +10,7 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -29,7 +29,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 	public void validate() {
 		// Check whether all given language tags exists
 		for (String languageTag : getLanguages()) {
-			Iterator<?> it = Tx.getActive().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
+			Iterator<?> it = Tx.get().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
 			if (!it.hasNext()) {
 				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 			}

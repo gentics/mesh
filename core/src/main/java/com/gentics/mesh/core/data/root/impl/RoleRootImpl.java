@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -32,7 +32,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(RoleRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_ROLE, true, false, true);
 	}
@@ -64,7 +64,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	@Override
 	public Role create(String name, User creator, String uuid) {
-		Role role = getGraph().addFramedVertex(RoleImpl.class);
+		Role role = createVertex(RoleImpl.class);
 		if (uuid != null) {
 			role.setUuid(uuid);
 		}

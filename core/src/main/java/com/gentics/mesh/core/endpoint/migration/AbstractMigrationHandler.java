@@ -18,7 +18,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
@@ -37,13 +37,13 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 */
 	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
-	protected Database db;
+	protected LegacyDatabase db;
 
 	protected SearchQueue searchQueue;
 
 	protected BinaryFieldHandler binaryFieldHandler;
 
-	public AbstractMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler binaryFieldHandler) {
+	public AbstractMigrationHandler(LegacyDatabase db, SearchQueue searchQueue, BinaryFieldHandler binaryFieldHandler) {
 		this.db = db;
 		this.searchQueue = searchQueue;
 		this.binaryFieldHandler = binaryFieldHandler;

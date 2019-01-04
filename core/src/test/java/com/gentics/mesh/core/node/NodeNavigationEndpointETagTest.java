@@ -8,7 +8,7 @@ import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;

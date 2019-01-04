@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Branch specific consistency checks.
@@ -26,7 +26,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class BranchCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends BranchRoot> it = db.getVerticesForType(BranchRootImpl.class);
 		while (it.hasNext()) {
 			checkBranchRoot(it.next(), response);

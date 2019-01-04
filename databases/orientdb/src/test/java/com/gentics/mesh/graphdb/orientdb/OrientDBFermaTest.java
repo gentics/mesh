@@ -4,29 +4,29 @@ package com.gentics.mesh.graphdb.orientdb;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	private final static int nMembers = 2000;
 
-	private Database db = new OrientDBDatabase();
+	private LegacyDatabase db = new OrientDBDatabase();
 
 	@Before
 	public void setup() throws Exception {
@@ -39,14 +39,14 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 	@Test
 	public void testOrientVerticleClass() {
 		try (Tx tx = db.tx()) {
-			Person p = tx.getGraph().addFramedVertex(Person.class);
+			Person p = tx.createVertex(Person.class);
 			p.setName("personName");
-			System.out.println(p.getId());
-			System.out.println(p.getElement().getId());
+			System.out.println(p.id());
+			System.out.println(p.getElement().id());
 			System.out.println(((OrientVertex) p.getElement()).getBaseClassName());
 			System.out.println(((OrientVertex) p.getElement()).getElementType());
 			System.out.println(((OrientVertex) p.getElement()).getType());
-			System.out.println(((OrientVertex) p.getElement()).getLabel());
+			System.out.println(((OrientVertex) p.getElement()).label());
 			System.out.println(p.getElement().getClass().getName());
 			tx.success();
 		}
@@ -61,7 +61,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 		}
 
 		try (Tx tx = db.tx()) {
-			OrientGraph g = ((DelegatingFramedOrientGraph) tx.getGraph()).getBaseGraph();
+			OrientGraph g = (DelegatingFramedOrientGraph) tx.getBaseGraph();
 			System.out.println(g.getClass().getName());
 
 			OrientEdgeType e = g.createEdgeType("HAS_MEMBER");
@@ -88,10 +88,10 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 		List<Person> persons = new ArrayList<>();
 		Group g;
 		try (Tx tx = db.tx()) {
-			g = tx.getGraph().addFramedVertex(Group.class);
+			g = tx.createVertex(Group.class);
 			g.setName("groupName");
 			for (int i = 0; i < nMembers; i++) {
-				Person p = tx.getGraph().addFramedVertex(Person.class);
+				Person p = tx.createVertex(Person.class);
 				p.setName("personName_" + i);
 				g.addMember(p);
 				persons.add(p);

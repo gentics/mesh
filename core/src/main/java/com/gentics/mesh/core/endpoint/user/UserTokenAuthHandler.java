@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.UserParameters;
 
 import io.vertx.core.AsyncResult;
@@ -38,10 +38,10 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 
 	public static final int DEFAULT_MAX_TOKEN_AGE_IN_MINS = 30;
 	private BootstrapInitializer boot;
-	private Database db;
+	private LegacyDatabase db;
 
 	@Inject
-	public UserTokenAuthHandler(MeshJWTAuthProvider authProvider, BootstrapInitializer boot, Database db) {
+	public UserTokenAuthHandler(MeshJWTAuthProvider authProvider, BootstrapInitializer boot, LegacyDatabase db) {
 		super(authProvider);
 		this.boot = boot;
 		this.db = db;

@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NodeGraphFieldContainerTest extends AbstractMeshTest {
@@ -23,9 +23,9 @@ public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 	@Test(expected = ORecordDuplicatedException.class)
 	public void testConflictingWebRootPath() {
 		try (Tx tx = tx()) {
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
-			NodeGraphFieldContainer containerA = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NodeGraphFieldContainer containerB = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			Node node = tx.createVertex(NodeImpl.class);
+			NodeGraphFieldContainer containerA = tx.createVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer containerB = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			GraphFieldContainerEdge n1 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerA, GraphFieldContainerEdgeImpl.class);
 			GraphFieldContainerEdge n2 = node.addFramedEdge(HAS_FIELD_CONTAINER, containerB, GraphFieldContainerEdgeImpl.class);
 			n1.setSegmentInfo("test");

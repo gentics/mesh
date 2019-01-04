@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -14,7 +15,6 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
-import com.syncleus.ferma.AbstractVertexFrame;
 
 /**
  * @see DateGraphField
@@ -65,7 +65,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 		return container.getDate(fieldSchema.getName());
 	};
 
-	public DateGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
+	public DateGraphFieldImpl(String fieldKey, WrappedVertex parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

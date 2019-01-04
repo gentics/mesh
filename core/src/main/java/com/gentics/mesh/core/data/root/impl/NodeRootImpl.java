@@ -44,12 +44,12 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Edge;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -61,7 +61,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(NodeRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_NODE, true, false, true);
 	}
@@ -116,7 +116,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	private boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
-		FramedGraph graph = getGraph();
+		Database graph = getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 				database().createComposedIndexKey(nodeId, branchUuid, code));
 		return edges.iterator().hasNext();
@@ -178,7 +178,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Node create(User creator, SchemaContainerVersion version, Project project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
-		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
+		NodeImpl node = createVertex(NodeImpl.class);
 		if (uuid != null) {
 			node.setUuid(uuid);
 		}

@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;
@@ -26,7 +26,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(LanguageImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY, STRING);
 	}

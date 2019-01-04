@@ -20,8 +20,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterators;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.madl.tx.Tx;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT, startServer = false)
 public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcases {

@@ -1,11 +1,12 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
@@ -33,46 +34,46 @@ public class ChangeSchemaVersionType extends AbstractChange {
 	}
 
 	private void updateMicroschemas(Vertex meshRoot) {
-		Vertex microschemaRoot = meshRoot.getVertices(OUT, "HAS_MICROSCHEMA_ROOT").iterator().next();
-		Iterator<Vertex> microschemaIt = microschemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();
+		Vertex microschemaRoot = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT").next();
+		Iterator<Vertex> microschemaIt = microschemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (microschemaIt.hasNext()) {
 			Vertex microschemaVertex = microschemaIt.next();
-			Iterator<Vertex> versionIt = microschemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
+			Iterator<Vertex> versionIt = microschemaVertex.vertices(OUT, "HAS_PARENT_CONTAINER");
 			while (versionIt.hasNext()) {
 				Vertex schemaVersion = versionIt.next();
 
 				// Update the version within the vertex
-				int vertexVersion = schemaVersion.getProperty("version");
-				schemaVersion.removeProperty("version");
-				schemaVersion.setProperty("version", String.valueOf(vertexVersion) + ".0");
+				int vertexVersion = schemaVersion.value("version");
+				schemaVersion.property("version").remove();
+				schemaVersion.property("version", String.valueOf(vertexVersion) + ".0");
 
 				// Update the version within the json
-				String json = schemaVersion.getProperty("json");
+				String json = schemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				int version = schema.getInteger("version");
 				schema.remove("version");
 				schema.put("version", String.valueOf(version) + ".0");
-				schemaVersion.setProperty("json", schema.toString());
+				schemaVersion.property("json", schema.toString());
 			}
 		}
 	}
 
 	private void updateSchemas(Vertex meshRoot) {
-		Vertex schemaRoot = meshRoot.getVertices(OUT, "HAS_ROOT_SCHEMA").iterator().next();
-		Iterator<Vertex> schemaIt = schemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();
+		Vertex schemaRoot = meshRoot.vertices(OUT, "HAS_ROOT_SCHEMA").next();
+		Iterator<Vertex> schemaIt = schemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (schemaIt.hasNext()) {
 			Vertex schemaVertex = schemaIt.next();
-			Iterator<Vertex> versionIt = schemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
+			Iterator<Vertex> versionIt = schemaVertex.vertices(OUT, "HAS_PARENT_CONTAINER");
 			while (versionIt.hasNext()) {
 				Vertex schemaVersion = versionIt.next();
 
 				// Update the version within the vertex
-				int vertexVersion = schemaVersion.getProperty("version");
-				schemaVersion.removeProperty("version");
-				schemaVersion.setProperty("version", String.valueOf(vertexVersion) + ".0");
+				int vertexVersion = schemaVersion.value("version");
+				schemaVersion.property("version").remove();
+				schemaVersion.property("version", String.valueOf(vertexVersion) + ".0");
 
 				// Update the version within the json
-				String json = schemaVersion.getProperty("json");
+				String json = schemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 
 				Object versionValue = schema.getValue("version");
@@ -84,7 +85,7 @@ public class ChangeSchemaVersionType extends AbstractChange {
 					int version = Integer.valueOf((Integer) versionValue);
 					schema.put("version", String.valueOf(version) + ".0");
 				}
-				schemaVersion.setProperty("json", schema.toString());
+				schemaVersion.property("json", schema.toString());
 			}
 		}
 	}

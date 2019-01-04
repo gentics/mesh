@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -50,7 +50,7 @@ import io.reactivex.Single;
  */
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(GroupImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(GroupImpl.class, true, "name", FieldType.STRING);
 	}

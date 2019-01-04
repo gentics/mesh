@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
@@ -50,7 +50,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	private SearchQueue searchQueue;
 
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
+	public MicroschemaCrudHandler(LegacyDatabase db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
 		HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;

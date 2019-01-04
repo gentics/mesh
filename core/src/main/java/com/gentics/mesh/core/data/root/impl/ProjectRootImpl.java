@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.router.RouterStorage;
 
 /**
@@ -46,7 +46,7 @@ import com.gentics.mesh.router.RouterStorage;
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_PROJECT);
 		database.addEdgeIndex(HAS_PROJECT, true, false, true);
@@ -74,7 +74,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion, String uuid) {
-		Project project = getGraph().addFramedVertex(ProjectImpl.class);
+		Project project = createVertex(ProjectImpl.class);
 		if (uuid != null) {
 			project.setUuid(uuid);
 		}

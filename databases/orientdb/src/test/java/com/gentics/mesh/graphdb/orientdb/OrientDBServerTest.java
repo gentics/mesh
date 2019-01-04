@@ -12,13 +12,13 @@ import org.junit.Test;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.tx.Tx;
 
 @Ignore
 public class OrientDBServerTest {
 
-	private Database db = new OrientDBDatabase();
+	private LegacyDatabase db = new OrientDBDatabase();
 
 	private File dbDirectory;
 
@@ -43,7 +43,7 @@ public class OrientDBServerTest {
 
 		for (int i = 0; i < 100; i++) {
 			try (Tx tx = db.tx()) {
-				Person p = tx.getGraph().addFramedVertex(Person.class);
+				Person p = tx.createVertex(Person.class);
 				p.setName("personName_" + i);
 				tx.success();
 				Thread.sleep(5000);

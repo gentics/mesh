@@ -48,7 +48,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default String getSHA512Sum() {
-		return property(SHA512SUM_KEY);
+		return value(SHA512SUM_KEY);
 	}
 
 	/**
@@ -68,7 +68,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default long getSize() {
-		Long size = property(BINARY_FILESIZE_PROPERTY_KEY);
+		Long size = value(BINARY_FILESIZE_PROPERTY_KEY);
 		return size == null ? 0 : size;
 	}
 
@@ -89,7 +89,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default Integer getImageHeight() {
-		return property(BINARY_IMAGE_HEIGHT_PROPERTY_KEY);
+		return value(BINARY_IMAGE_HEIGHT_PROPERTY_KEY);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default Integer getImageWidth() {
-		return property(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
+		return value(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
 	}
 
 	/**

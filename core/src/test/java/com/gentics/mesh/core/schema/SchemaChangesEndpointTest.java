@@ -58,7 +58,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 

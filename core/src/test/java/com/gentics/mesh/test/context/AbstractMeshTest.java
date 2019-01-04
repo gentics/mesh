@@ -51,7 +51,7 @@ import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.reactivex.functions.Action;
 import io.vertx.core.buffer.Buffer;

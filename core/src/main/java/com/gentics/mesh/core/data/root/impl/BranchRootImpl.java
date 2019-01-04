@@ -36,14 +36,14 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * @see BranchRoot
  */
 public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(BranchRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_BRANCH);
 		database.addEdgeIndex(HAS_BRANCH, true, false, true);
@@ -60,7 +60,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas) {
-		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
+		Branch branch = createVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
 		}
@@ -110,7 +110,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Branch create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
-		Database db = MeshInternal.get().database();
+		LegacyDatabase db = MeshInternal.get().database();
 
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();

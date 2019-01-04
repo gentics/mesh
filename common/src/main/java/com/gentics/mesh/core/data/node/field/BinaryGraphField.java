@@ -42,7 +42,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default String getFileName() {
-		return property(BINARY_FILENAME_PROPERTY_KEY);
+		return value(BINARY_FILENAME_PROPERTY_KEY);
 	}
 
 	/**
@@ -89,7 +89,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default String getMimeType() {
-		return property(BINARY_CONTENT_TYPE_PROPERTY_KEY);
+		return value(BINARY_CONTENT_TYPE_PROPERTY_KEY);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default String getImageDominantColor() {
-		return property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
+		return value(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
 	}
 
 	/**
@@ -136,8 +136,8 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return Focal point or null if no focal point has been set
 	 */
 	default FocalPoint getImageFocalPoint() {
-		Float x = property(BINARY_IMAGE_FOCAL_POINT_X);
-		Float y = property(BINARY_IMAGE_FOCAL_POINT_Y);
+		Float x = value(BINARY_IMAGE_FOCAL_POINT_X);
+		Float y = value(BINARY_IMAGE_FOCAL_POINT_Y);
 		if (x == null || y == null) {
 			return null;
 		}
@@ -218,7 +218,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default Double getLocationLatitude() {
-		return property(BINARY_LAT_KEY);
+		return value(BINARY_LAT_KEY);
 	}
 
 	/**
@@ -236,7 +236,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default Double getLocationLongitude() {
-		return property(BINARY_LON_KEY);
+		return value(BINARY_LON_KEY);
 	}
 
 	/**
@@ -254,7 +254,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default Integer getLocationAltitude() {
-		return property(BINARY_ALT_KEY);
+		return value(BINARY_ALT_KEY);
 	}
 
 	/**
@@ -275,7 +275,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 		setLocationLatitude(null);
 
 		// Remove all other metadata properties
-		getPropertyKeys().stream()
+		keys().stream()
 			.filter(e -> e.startsWith(META_DATA_PROPERTY_PREFIX))
 			.forEach(e -> {
 				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);

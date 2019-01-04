@@ -1,8 +1,9 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
-import com.syncleus.ferma.annotations.GraphElement;
+import com.gentics.madl.annotation.GraphElement;
+import com.gentics.madl.wrapper.element.AbstractWrappedEdge;
 
 @GraphElement
-public class HasJob extends AbstractInterceptingEdgeFrame {
+public class HasJob extends AbstractWrappedEdge {
 
 }

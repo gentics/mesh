@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
@@ -56,7 +56,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	private BootstrapInitializer boot;
 
 	@Inject
-	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler, HandlerUtilities utils,
+	public NodeSearchHandler(SearchProvider searchProvider, LegacyDatabase db, NodeIndexHandler nodeIndexHandler, HandlerUtilities utils,
 		BootstrapInitializer boot) {
 		super(db, searchProvider, nodeIndexHandler);
 		this.boot = boot;

@@ -2,18 +2,19 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.syncleus.ferma.VertexFrame;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * A mesh vertex is a mesh element that exposes various graph OGM specific methods. We use the interface abstraction in order to hide certain ferma methods
  * which would otherwise clutter the API.
  */
-public interface MeshVertex extends MeshElement, VertexFrame {
+public interface MeshVertex extends MeshElement, WrappedVertex {
 
 	String UUID_KEY = "uuid";
 
@@ -53,6 +54,6 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 * @param labels
 	 *            Labels to handle
 	 */
-	void setUniqueLinkOutTo(VertexFrame vertex, String... labels);
+	void setUniqueLinkOutTo(WrappedVertex vertex, String... labels);
 
 }

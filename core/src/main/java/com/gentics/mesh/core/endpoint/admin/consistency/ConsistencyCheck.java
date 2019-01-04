@@ -3,7 +3,7 @@ package com.gentics.mesh.core.endpoint.admin.consistency;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * A consistency check must identify and log database inconsistencies.
@@ -18,7 +18,7 @@ public interface ConsistencyCheck {
 	 * @param response
 	 * @param attemptRepair
 	 */
-	void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair);
+	void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair);
 
 	/**
 	 * Check existence of an incoming edge.

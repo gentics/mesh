@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -61,7 +61,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	public static final String TAG_VALUE_KEY = "tagValue";
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
 	}
 
@@ -73,7 +73,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public String getName() {
-		return property(TAG_VALUE_KEY);
+		return value(TAG_VALUE_KEY);
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public void removeNode(Node node) {
-		unlinkIn(node, HAS_TAG);
+		removeEdgeIn(node, HAS_TAG);
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TagFamily getTagFamily() {
-		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
+		return out(HAS_TAGFAMILY_ROOT).frameExplicit(TagFamilyImpl.class).firstOrNull();
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT).frameExplicit(ProjectImpl.class).firstOrNull();
 	}
 
 	@Override
@@ -256,12 +256,12 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR).frameExplicit(UserImpl.class).firstOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR).frameExplicit(UserImpl.class).firstOrNull();
 	}
 
 	@Override

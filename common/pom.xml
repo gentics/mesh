@@ -22,7 +22,7 @@
 		<!-- Madl -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>madl-api</artifactId>
+			<artifactId>madl-core</artifactId>
 		</dependency>
 
 		<!-- Mesh -->

@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.gentics.madl.wrapper.element.AbstractWrappedVertex;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
-import com.syncleus.ferma.AbstractVertexFrame;
 
 public class StringGraphFieldImpl extends AbstractBasicField<StringField> implements StringGraphField {
 
@@ -91,7 +91,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		return container.getString(fieldSchema.getName());
 	};
 
-	public StringGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
+	public StringGraphFieldImpl(String fieldKey, AbstractWrappedVertex parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

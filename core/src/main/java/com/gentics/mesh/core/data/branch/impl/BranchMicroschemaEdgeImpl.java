@@ -5,8 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.annotations.GraphElement;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.madl.annotation.GraphElement;
 
 /**
  * @see BranchMicroschemaEdge
@@ -14,7 +14,7 @@ import com.syncleus.ferma.annotations.GraphElement;
 @GraphElement
 public class BranchMicroschemaEdgeImpl extends AbstractVersionEdge implements BranchMicroschemaEdge {
 
-	public static void init(Database db) {
+	public static void init(LegacyDatabase db) {
 		db.addEdgeType(BranchMicroschemaEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_MICROSCHEMA_VERSION, BranchMicroschemaEdgeImpl.class);
 	}

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -51,7 +51,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
 			// Create field
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
 
 			// Check field key
@@ -112,7 +112,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField fieldA = container.createHTML("fieldA");
 			HtmlGraphField fieldB = container.createHTML("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -130,7 +130,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField fieldA = container.createHTML("htmlField1");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -141,7 +141,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField fieldA = container.createHTML("htmlField1");
 
 			// graph empty - rest empty
@@ -165,11 +165,11 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
 			htmlField.setHtml("<i>HTML</i>");
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			htmlField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getHtml(HTML_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(htmlField, "parentContainer");

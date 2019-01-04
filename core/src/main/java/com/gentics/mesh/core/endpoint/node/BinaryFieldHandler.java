@@ -47,7 +47,7 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -81,7 +81,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private ImageManipulator imageManipulator;
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -95,7 +95,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	@Inject
 	public BinaryFieldHandler(ImageManipulator imageManipulator,
-		Database db,
+		LegacyDatabase db,
 		Lazy<BootstrapInitializer> boot,
 		SearchQueue searchQueue,
 		BinaryFieldResponseHandler binaryFieldResponseHandler,

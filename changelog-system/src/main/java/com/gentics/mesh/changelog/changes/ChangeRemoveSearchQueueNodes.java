@@ -1,9 +1,9 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class ChangeRemoveSearchQueueNodes extends AbstractChange {
 
@@ -20,10 +20,10 @@ public class ChangeRemoveSearchQueueNodes extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex searchQueueRoot = meshRoot.getVertices(OUT, "HAS_SEARCH_QUEUE_ROOT").iterator().next();
+		Vertex searchQueueRoot = meshRoot.vertices(OUT, "HAS_SEARCH_QUEUE_ROOT").next();
 
-		for (Vertex batch : searchQueueRoot.getVertices(OUT, "HAS_BATCH")) {
-			for (Vertex entry : batch.getVertices(OUT, "HAS_ITEM")) {
+		for (Vertex batch : (Iterable<Vertex>) () -> searchQueueRoot.vertices(OUT, "HAS_BATCH")) {
+			for (Vertex entry : (Iterable<Vertex>) () -> batch.vertices(OUT, "HAS_ITEM")) {
 				entry.remove();
 			}
 			batch.remove();

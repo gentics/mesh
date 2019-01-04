@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
@@ -29,7 +29,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.createVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("name");
 			assertEquals("name", change.getFieldName());
 		}
@@ -39,7 +39,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -50,7 +50,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			stringField.setRequired(true);
 			schema.addField(stringField);
 
-			FieldTypeChange fieldTypeUpdate = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange fieldTypeUpdate = tx.createVertex(FieldTypeChangeImpl.class);
 			fieldTypeUpdate.setFieldName("stringField");
 			fieldTypeUpdate.setType("html");
 
@@ -67,7 +67,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	public void testChangeFieldTypeToList() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.createVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -79,7 +79,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			stringField.setLabel("test123");
 			schema.addField(stringField);
 
-			FieldTypeChange fieldTypeUpdate = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange fieldTypeUpdate = tx.createVertex(FieldTypeChangeImpl.class);
 			fieldTypeUpdate.setFieldName("stringField");
 			fieldTypeUpdate.setType("list");
 			fieldTypeUpdate.setListType("html");
@@ -104,7 +104,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
 			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
-			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.createVertex(FieldTypeChangeImpl.class);
 			change.updateFromRest(model);
 
 			assertEquals("test", change.getMigrationScript());
@@ -118,7 +118,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testGetMigrationScript() throws IOException {
 		try (Tx tx = tx()) {
-			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.createVertex(FieldTypeChangeImpl.class);
 			assertNotNull("Field Type changes have a auto migation script.", change.getAutoMigrationScript());
 
 			assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
@@ -131,7 +131,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.createVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("test");
 			change.setCustomMigrationScript("script");
 			change.setListType("html");

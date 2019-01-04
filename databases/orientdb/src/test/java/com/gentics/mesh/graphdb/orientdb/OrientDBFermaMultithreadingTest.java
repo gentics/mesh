@@ -9,16 +9,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
-	private Database db = new OrientDBDatabase();
+	private LegacyDatabase db = new OrientDBDatabase();
 
 	@Before
 	public void setup() throws Exception {
@@ -71,22 +71,22 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 		AtomicReference<Person> reference = new AtomicReference<>();
 		runAndWait(() -> {
 			try (Tx tx = db.tx()) {
-				manipulatePerson(tx.getGraph(), p);
+				manipulatePerson(tx, p);
 			}
 			try (Tx tx = db.tx()) {
-				Person p2 = addPersonWithFriends(tx.getGraph(), "Person3");
+				Person p2 = addPersonWithFriends(tx, "Person3");
 				tx.success();
 				reference.set(p2);
 			}
 			runAndWait(() -> {
 				try (Tx tx = db.tx()) {
-					manipulatePerson(tx.getGraph(), p);
+					manipulatePerson(tx, p);
 				}
 			});
 		});
 
 		try (Tx tx = db.tx()) {
-			for (VertexFrame vertex : tx.getGraph().v().toList()) {
+			for (WrappedVertex vertex : tx.v().toList()) {
 				System.out.println(vertex.toString());
 			}
 		}

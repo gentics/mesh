@@ -34,13 +34,13 @@ import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ClassInitializer;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.Database;
 import com.syncleus.ferma.TEdge;
-import com.syncleus.ferma.VertexFrame;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
@@ -395,37 +395,37 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public <T> T addFramedEdge(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
+			public <T> T addFramedEdge(String label, WrappedVertex inVertex, ClassInitializer<T> initializer) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public <T> T addFramedEdge(String label, VertexFrame inVertex, Class<T> kind) {
+			public <T> T addFramedEdge(String label, WrappedVertex inVertex, Class<T> kind) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
+			public <T> T addFramedEdgeExplicit(String label, WrappedVertex inVertex, ClassInitializer<T> initializer) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, Class<T> kind) {
+			public <T> T addFramedEdgeExplicit(String label, WrappedVertex inVertex, Class<T> kind) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public TEdge addFramedEdge(String label, VertexFrame inVertex) {
+			public TEdge addFramedEdge(String label, WrappedVertex inVertex) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public TEdge addFramedEdgeExplicit(String label, VertexFrame inVertex) {
+			public TEdge addFramedEdgeExplicit(String label, WrappedVertex inVertex) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -498,72 +498,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public EdgeTraversal<?, ?, ?> bothE(String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public void linkOut(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void linkIn(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void linkBoth(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void unlinkOut(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void unlinkIn(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void unlinkBoth(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void setLinkOut(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void setLinkIn(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void setLinkBoth(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public <K> K setLinkOut(ClassInitializer<K> initializer, String... labels) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkOut(Class<K> kind, String... labels) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -677,7 +611,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public FramedGraph getGraph() {
+			public Database getGraph() {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -742,7 +676,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
+			public void setUniqueLinkOutTo(WrappedVertex vertex, String... labels) {
 				// TODO Auto-generated method stub
 
 			}

@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
@@ -44,7 +44,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	private SearchQueue searchQueue;
 
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue, HandlerUtilities utils) {
+	public GroupCrudHandler(LegacyDatabase db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue, HandlerUtilities utils) {
 		super(db, utils);
 		this.boot = boot;
 		this.searchQueue = searchQueue;

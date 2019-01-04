@@ -14,17 +14,17 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
 	private MeshJWTAuthProvider authProvider;
-	private Database db;
+	private LegacyDatabase db;
 
 	@Inject
-	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, Database db) {
+	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, LegacyDatabase db) {
 		this.authProvider = authProvider;
 		this.db = db;
 	}

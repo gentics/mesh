@@ -53,7 +53,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.reactivex.exceptions.CompositeException;
 
@@ -125,7 +125,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainer container = Tx.getActive().createVertex(SchemaContainerImpl.class);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -137,7 +137,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		SchemaContainerVersion versionB = createSchemaVersion(container, schemaName, "2.0", creator.create(persistentFieldName));
 
 		// link the schemas with the change in between
-		RemoveFieldChange change = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange change = Tx.getActive().createVertex(RemoveFieldChangeImpl.class);
 		change.setFieldName(removedFieldName);
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
@@ -186,7 +186,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Tx.getActive().createVertex(MicroschemaContainerImpl.class);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(persistentFieldName),
@@ -196,7 +196,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		MicroschemaContainerVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", creator.create(persistentFieldName));
 
 		// link the microschemas with the change in between
-		RemoveFieldChange change = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange change = Tx.getActive().createVertex(RemoveFieldChangeImpl.class);
 		change.setFieldName(removedFieldName);
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
@@ -279,7 +279,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainer container = Tx.getActive().createVertex(SchemaContainerImpl.class);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -291,13 +291,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		SchemaContainerVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		AddFieldChangeImpl addFieldChange = Tx.getActive().getGraph().addFramedVertex(AddFieldChangeImpl.class);
+		AddFieldChangeImpl addFieldChange = Tx.getActive().createVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
 		addFieldChange.setCustomMigrationScript(
 				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
 
-		RemoveFieldChange removeFieldChange = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange removeFieldChange = Tx.getActive().createVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
 
 		addFieldChange.setPreviousContainerVersion(versionA);
@@ -351,7 +351,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Tx.getActive().createVertex(MicroschemaContainerImpl.class);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(oldFieldName));
@@ -361,13 +361,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		MicroschemaContainerVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the microschemas with the changes in between
-		AddFieldChangeImpl addFieldChange = Tx.getActive().getGraph().addFramedVertex(AddFieldChangeImpl.class);
+		AddFieldChangeImpl addFieldChange = Tx.getActive().createVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
 		addFieldChange.setCustomMigrationScript(
 				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
 
-		RemoveFieldChange removeFieldChange = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange removeFieldChange = Tx.getActive().createVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
 
 		addFieldChange.setPreviousContainerVersion(versionA);
@@ -453,7 +453,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
-		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainer container = Tx.getActive().createVertex(SchemaContainerImpl.class);
 		container.setName(schemaName);
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -465,7 +465,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		SchemaContainerVersion versionB = createSchemaVersion(container, schemaName, "2.0", newFieldSchema);
 
 		// link the schemas with the change in between
-		FieldTypeChange change = Tx.getActive().getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+		FieldTypeChange change = Tx.getActive().createVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
 		change.setType(newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
@@ -532,7 +532,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
-		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Tx.getActive().createVertex(MicroschemaContainerImpl.class);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldFieldSchema);
@@ -542,7 +542,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		MicroschemaContainerVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newFieldSchema);
 
 		// link the schemas with the change in between
-		FieldTypeChange change = Tx.getActive().getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+		FieldTypeChange change = Tx.getActive().createVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
 		change.setType(newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
@@ -638,7 +638,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
-		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainer container = Tx.getActive().createVertex(SchemaContainerImpl.class);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -650,7 +650,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		SchemaContainerVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// Link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().createVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 		updateFieldChange.setCustomMigrationScript(migrationScript);
 
@@ -703,7 +703,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Tx.getActive().createVertex(MicroschemaContainerImpl.class);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
@@ -713,7 +713,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		MicroschemaContainerVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().createVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 		updateFieldChange.setCustomMigrationScript(migrationScript);
 
@@ -796,7 +796,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
-		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainer container = Tx.getActive().createVertex(SchemaContainerImpl.class);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -808,7 +808,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		SchemaContainerVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().createVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 		updateFieldChange.setCustomMigrationScript(script);
 
@@ -852,7 +852,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Tx.getActive().createVertex(MicroschemaContainerImpl.class);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
@@ -862,7 +862,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		MicroschemaContainerVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().createVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 		updateFieldChange.setCustomMigrationScript(script);
 
@@ -903,7 +903,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 //		schema.setSegmentField("name");
 		schema.validate();
 
-		SchemaContainerVersion containerVersion = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersion containerVersion = Tx.getActive().createVertex(SchemaContainerVersionImpl.class);
 		containerVersion.setName(name);
 		containerVersion.setSchema(schema);
 		containerVersion.setSchemaContainer(container);
@@ -929,7 +929,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		for (FieldSchema field : fields) {
 			schema.addField(field);
 		}
-		MicroschemaContainerVersion containerVersion = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		MicroschemaContainerVersion containerVersion = Tx.getActive().createVertex(MicroschemaContainerVersionImpl.class);
 		containerVersion.setSchema(schema);
 		containerVersion.setName(name);
 		containerVersion.setSchemaContainer(container);

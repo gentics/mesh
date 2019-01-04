@@ -79,8 +79,8 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	void setBranchUuid(String uuid);
 
 	default void defaultClearDraftPaths() {
-		property(WEBROOT_PROPERTY_KEY, null);
-		property(WEBROOT_URLFIELD_PROPERTY_KEY, null);
+		removeProperty(WEBROOT_PROPERTY_KEY);
+		removeProperty(WEBROOT_URLFIELD_PROPERTY_KEY);
 	}
 
 	BasicFieldContainer getContainer();
@@ -109,7 +109,7 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	 * @return
 	 */
 	default String getSegmentInfo() {
-		return property(WEBROOT_PROPERTY_KEY);
+		return value(WEBROOT_PROPERTY_KEY);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	 * @return
 	 */
 	default Set<String> getUrlFieldInfo() {
-		return property(WEBROOT_URLFIELD_PROPERTY_KEY);
+		return value(WEBROOT_URLFIELD_PROPERTY_KEY);
 	}
 
 }

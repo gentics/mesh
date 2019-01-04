@@ -1,11 +1,11 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class RestructureTags extends AbstractChange {
 
@@ -27,14 +27,14 @@ public class RestructureTags extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex root = getMeshRootVertex();
-		Vertex tagFamilyRoot = root.getVertices(OUT, "HAS_TAGFAMILY_ROOT").iterator().next();
+		Vertex tagFamilyRoot = root.vertices(OUT, "HAS_TAGFAMILY_ROOT").next();
 		// Iterate over all tag families
-		Iterator<Vertex> iterator = tagFamilyRoot.getVertices(OUT, "HAS_TAG_FAMILY").iterator();
+		Iterator<Vertex> iterator = tagFamilyRoot.vertices(OUT, "HAS_TAG_FAMILY");
 		while (iterator.hasNext()) {
 			Vertex tagFamily = iterator.next();
-			Vertex tagRoot = tagFamily.getVertices(OUT, "HAS_TAG_ROOT").iterator().next();
+			Vertex tagRoot = tagFamily.vertices(OUT, "HAS_TAG_ROOT").next();
 			// Now iterate over all tags and assign them directly to the tag family 
-			Iterator<Vertex> tagIterator = tagRoot.getVertices(OUT, "HAS_TAG").iterator();
+			Iterator<Vertex> tagIterator = tagRoot.vertices(OUT, "HAS_TAG");
 			while (tagIterator.hasNext()) {
 				Vertex tag = tagIterator.next();
 				tagFamily.addEdge("HAS_TAG", tag);
@@ -44,11 +44,11 @@ public class RestructureTags extends AbstractChange {
 		}
 
 		// Locate all tag roots for all projects and remove them
-		Vertex projectRoot = root.getVertices(OUT, "HAS_PROJECT_ROOT").iterator().next();
-		Iterator<Vertex> projectIterator = projectRoot.getVertices(OUT, "HAS_PROJECT").iterator();
+		Vertex projectRoot = root.vertices(OUT, "HAS_PROJECT_ROOT").next();
+		Iterator<Vertex> projectIterator = projectRoot.vertices(OUT, "HAS_PROJECT");
 		while (projectIterator.hasNext()) {
 			Vertex project = projectIterator.next();
-			Vertex tagRoot = project.getVertices(OUT, "HAS_TAG_ROOT").iterator().next();
+			Vertex tagRoot = project.vertices(OUT, "HAS_TAG_ROOT").next();
 			tagRoot.remove();
 		}
 	}

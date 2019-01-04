@@ -68,6 +68,5 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 		}
 		return ETag.hash(builder.toString());
 	}
-	
 
 }

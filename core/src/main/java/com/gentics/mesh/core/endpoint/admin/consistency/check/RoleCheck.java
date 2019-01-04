@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * Role specific consistency checks.
@@ -18,7 +18,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class RoleCheck implements ConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends Role> it = db.getVerticesForType(RoleImpl.class);
 		while (it.hasNext()) {
 			checkRole(it.next(), response);

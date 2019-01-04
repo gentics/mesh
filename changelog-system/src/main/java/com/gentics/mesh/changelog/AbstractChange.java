@@ -3,13 +3,13 @@ package com.gentics.mesh.changelog;
 import java.util.Iterator;
 import java.util.UUID;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -21,9 +21,7 @@ public abstract class AbstractChange implements Change {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
 
-	private TransactionalGraph graph;
-
-	private Database db;
+	private Tx tx;
 
 	private long duration;
 
@@ -49,7 +47,7 @@ public abstract class AbstractChange implements Change {
 		if (meshRoot == null) {
 			throw new RuntimeException("Could not find mesh root node. The change can't be applied without the mesh root vertex.");
 		}
-		Iterator<Vertex> it = meshRoot.getVertices(Direction.OUT, ChangelogRootWrapper.HAS_CHANGELOG_ROOT).iterator();
+		Iterator<Vertex> it = meshRoot.vertices(Direction.OUT, ChangelogRootWrapper.HAS_CHANGELOG_ROOT);
 		Vertex changelogRoot = null;
 		if (it.hasNext()) {
 			changelogRoot = it.next();
@@ -58,10 +56,10 @@ public abstract class AbstractChange implements Change {
 		// Create the change if it could not be found.
 		if (changelogRoot == null) {
 			log.debug("The changelog root could not be found. Creating it...");
-			changelogRoot = graph.addVertex(ChangelogRootWrapper.class);
+			changelogRoot = tx.addVertex(ChangelogRootWrapper.class);
 			meshRoot.addEdge(ChangelogRootWrapper.HAS_CHANGELOG_ROOT, changelogRoot);
 		}
-		return new ChangelogRootWrapper(graph, changelogRoot);
+		return new ChangelogRootWrapper(tx, changelogRoot);
 	}
 
 	public Vertex getMeshRootVertex() {
@@ -74,13 +72,13 @@ public abstract class AbstractChange implements Change {
 	}
 
 	@Override
-	public void setGraph(TransactionalGraph graph) {
-		this.graph = graph;
+	public void setTx(Tx tx) {
+		this.tx = tx;
 	}
 
 	@Override
-	public TransactionalGraph getGraph() {
-		return graph;
+	public Tx getTx() {
+		return tx;
 	}
 
 	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
@@ -93,7 +91,7 @@ public abstract class AbstractChange implements Change {
 	public String randomUUID() {
 		final UUID uuid = UUID_GENERATOR.generate();
 		String randomUuid = (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4) + digits(uuid
-				.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4) + digits(uuid.getLeastSignificantBits(), 12));
+			.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4) + digits(uuid.getLeastSignificantBits(), 12));
 		return randomUuid;
 	}
 
@@ -133,20 +131,10 @@ public abstract class AbstractChange implements Change {
 		return false;
 	}
 
-	@Override
-	public Database getDb() {
-		return db;
-	}
-
-	@Override
-	public void setDb(Database db) {
-		this.db = db;
-	}
-
 	public void debug(Element element) {
 		System.out.println("---");
-		for (String key : element.getPropertyKeys()) {
-			System.out.println(key + " : " + element.getProperty(key));
+		for (String key : element.keys()) {
+			System.out.println(key + " : " + element.property(key));
 		}
 		System.out.println("---");
 	}

@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.DevNullSearchProvider;
@@ -43,7 +43,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
@@ -62,7 +62,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
 
-	protected Database db;
+	protected LegacyDatabase db;
 
 	protected SearchProvider searchProvider;
 
@@ -75,7 +75,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * @param searchProvider
 	 * @param indexHandler
 	 */
-	public AbstractSearchHandler(Database db, SearchProvider searchProvider, IndexHandler<T> indexHandler) {
+	public AbstractSearchHandler(LegacyDatabase db, SearchProvider searchProvider, IndexHandler<T> indexHandler) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.indexHandler = indexHandler;

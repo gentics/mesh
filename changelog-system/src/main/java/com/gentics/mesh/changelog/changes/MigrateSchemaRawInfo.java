@@ -1,11 +1,11 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -30,31 +30,31 @@ public class MigrateSchemaRawInfo extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex microschemaRoot = meshRoot.getVertices(OUT, "HAS_MICROSCHEMA_ROOT").iterator().next();
-		Iterator<Vertex> microschemaIt = microschemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();
+		Vertex microschemaRoot = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT").next();
+		Iterator<Vertex> microschemaIt = microschemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (microschemaIt.hasNext()) {
 			Vertex microschemaVertex = microschemaIt.next();
-			Iterator<Vertex> versionIt = microschemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
+			Iterator<Vertex> versionIt = microschemaVertex.vertices(OUT, "HAS_PARENT_CONTAINER");
 			while (versionIt.hasNext()) {
 				Vertex microschemaVersion = versionIt.next();
-				String json = microschemaVersion.getProperty("json");
+				String json = microschemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				migrateFields(schema);
-				microschemaVersion.setProperty("json", schema.toString());
+				microschemaVersion.property("json", schema.toString());
 			}
 		}
 
-		Vertex schemaRoot = meshRoot.getVertices(OUT, "HAS_ROOT_SCHEMA").iterator().next();
-		Iterator<Vertex> schemaIt = schemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();
+		Vertex schemaRoot = meshRoot.vertices(OUT, "HAS_ROOT_SCHEMA").next();
+		Iterator<Vertex> schemaIt = schemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (schemaIt.hasNext()) {
 			Vertex schemaVertex = schemaIt.next();
-			Iterator<Vertex> versionIt = schemaVertex.getVertices(OUT, "HAS_PARENT_CONTAINER").iterator();
+			Iterator<Vertex> versionIt = schemaVertex.vertices(OUT, "HAS_PARENT_CONTAINER");
 			while (versionIt.hasNext()) {
 				Vertex schemaVersion = versionIt.next();
-				String json = schemaVersion.getProperty("json");
+				String json = schemaVersion.value("json");
 				JsonObject schema = new JsonObject(json);
 				migrateFields(schema);
-				schemaVersion.setProperty("json", schema.toString());
+				schemaVersion.property("json", schema.toString());
 			}
 		}
 	}

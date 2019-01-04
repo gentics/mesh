@@ -42,7 +42,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -127,7 +127,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			Binary binary = meshRoot().getBinaryRoot().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
 				0L);
@@ -162,7 +162,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 
 			Binary binary = meshRoot().getBinaryRoot().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
@@ -178,7 +178,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			field.getBinary().setImageHeight(133);
 			field.getBinary().setImageWidth(7);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			field.cloneTo(otherContainer);
 
 			BinaryGraphField clonedField = otherContainer.getBinary(BINARY_FIELD);
@@ -191,7 +191,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 
 			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID(), 1L);
 			BinaryGraphField fieldA = container.createBinary("fieldA", binary);
@@ -211,7 +211,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			Binary binary = meshRoot().getBinaryRoot().create(UUIDUtil.randomUUID(), 0L);
 			BinaryGraphField fieldA = container.createBinary(BINARY_FIELD, binary);
 			assertFalse(fieldA.equals((Field) null));
@@ -223,7 +223,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.createVertex(NodeGraphFieldContainerImpl.class);
 			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
 			BinaryGraphField fieldA = container.createBinary("fieldA", binary);
 

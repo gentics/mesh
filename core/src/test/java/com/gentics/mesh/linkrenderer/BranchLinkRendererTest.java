@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 @RunWith(value = Parameterized.class)
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)

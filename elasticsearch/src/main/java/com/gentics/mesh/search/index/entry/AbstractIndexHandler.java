@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
+import com.gentics.madl.db.Database;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
@@ -27,7 +29,6 @@ import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -35,7 +36,6 @@ import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;

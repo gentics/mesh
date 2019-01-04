@@ -3,8 +3,15 @@ package com.gentics.mesh.graphdb.orientdb;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
+import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -13,14 +20,8 @@ import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 public class EdgeIndexPerformanceTest {
@@ -30,8 +31,8 @@ public class EdgeIndexPerformanceTest {
 	private final static int nDocuments = 2000;
 	private final static int nChecks = 4000;
 
-	private static List<OrientVertex> items;
-	private static OrientVertex root;
+	private static List<Vertex> items;
+	private static Vertex root;
 
 	@BeforeClass
 	public static void setupDatabase() {
@@ -48,7 +49,7 @@ public class EdgeIndexPerformanceTest {
 			g.setUseLightweightEdges(false);
 			g.setUseVertexFieldsForEdgeLabels(false);
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 
 		try {
@@ -67,7 +68,7 @@ public class EdgeIndexPerformanceTest {
 			v.createIndex("item", OClass.INDEX_TYPE.FULLTEXT_HASH_INDEX, "name");
 
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 
 	}
@@ -79,9 +80,9 @@ public class EdgeIndexPerformanceTest {
 		OrientVertex v;
 		try {
 			v = g.addVertex(null);
-			v.setProperty("name", "extraName");
+			v.property("name", "extraName");
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 
 		// Migrate vertex
@@ -96,10 +97,10 @@ public class EdgeIndexPerformanceTest {
 		g = factory.getTx();
 		System.out.println("Size: " + g.getVertexType("item").getClassIndex("item").getSize());
 		try {
-			Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "extraName" });
-			assertTrue(vertices.iterator().hasNext());
+			Iterator<Vertex> vertices = g.vertices("item", new String[] { "name" }, new Object[] { "extraName" });
+			assertTrue(vertices.hasNext());
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 
 	}
@@ -110,25 +111,25 @@ public class EdgeIndexPerformanceTest {
 			System.out.println("Creating {" + count + "} items.");
 			List<OrientVertex> items = new ArrayList<>();
 			for (int i = 0; i < count; i++) {
-				OrientVertex item = g.addVertex("class:item");
-				item.setProperty("name", "item_" + i);
+				Vertex item = g.addVertex("class:item");
+				item.property("name", "item_" + i);
 				items.add(item);
 				root.addEdge("HAS_ITEM", item);
 			}
 			return items;
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 	}
 
-	private static OrientVertex createRoot(OrientGraphFactory factory) {
+	private static Vertex createRoot(OrientGraphFactory factory) {
 		OrientGraph g = factory.getTx();
 		try {
-			OrientVertex root = g.addVertex("class:root");
-			root.setProperty("name", "root vertex");
+			Vertex root = g.addVertex("class:root");
+			root.property("name", "root vertex");
 			return root;
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 	}
 
@@ -141,16 +142,16 @@ public class EdgeIndexPerformanceTest {
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
 				int randomDocumentId = (int) (Math.random() * nDocuments);
-				Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "item_" + randomDocumentId });
+				Iterator<Vertex> vertices = g.vertices("item", new String[] { "name" }, new Object[] { "item_" + randomDocumentId });
 				// Iterable<Vertex> vertices = g.getVertices("item.name", "item_" + randomDocumentId);
-				assertTrue(vertices.iterator().hasNext());
+				assertTrue(vertices.hasNext());
 			}
 			long dur = System.currentTimeMillis() - start;
 			double perCheck = ((double) dur / (double) nChecks);
 			System.out.println("[graph.getVertices] Duration per lookup: " + perCheck);
 			System.out.println("[graph.getVertices] Duration: " + dur);
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 	}
 
@@ -165,7 +166,7 @@ public class EdgeIndexPerformanceTest {
 			// OIndex<?> index = g.getRawGraph().getMetadata().getIndexManager().getIndex("edge.has_item");
 			// assertNotNull("Index could not be found", index);
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 
 		double total = 0;
@@ -175,9 +176,9 @@ public class EdgeIndexPerformanceTest {
 			try {
 				long start = System.currentTimeMillis();
 				for (int i = 0; i < nChecks; i++) {
-					OrientVertex randomDocument = items.get((int) (Math.random() * items.size()));
-					Iterable<Edge> edges = g.getEdges("e.has_item", new OCompositeKey(root.getId(), randomDocument.getId()));
-					assertTrue(edges.iterator().hasNext());
+					Vertex randomDocument = items.get((int) (Math.random() * items.size()));
+					Iterator<Edge> edges = g.edges("e.has_item", new OCompositeKey(root.id(), randomDocument.id()));
+					assertTrue(edges.hasNext());
 				}
 				long dur = System.currentTimeMillis() - start;
 				System.out.println("[graph.getEdges] Duration: " + dur);
@@ -185,7 +186,7 @@ public class EdgeIndexPerformanceTest {
 				total += perCheck;
 				System.out.println("[graph.getEdges] Duration per lookup: " + perCheck);
 			} finally {
-				g.shutdown();
+				g.close();
 			}
 		}
 		System.out.println("Average: " + (total / (double) nRuns));
@@ -197,11 +198,11 @@ public class EdgeIndexPerformanceTest {
 		try {
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
-				OrientVertex randomDocument = items.get((int) (Math.random() * items.size()));
-				Iterable<Edge> edges = root.getEdges(Direction.OUT, "HAS_ITEM");
+				Vertex randomDocument = items.get((int) (Math.random() * items.size()));
+				Iterator<Edge> edges = root.edges(Direction.OUT, "HAS_ITEM");
 				boolean found = false;
-				for (Edge edge : edges) {
-					if (edge.getVertex(Direction.IN).equals(randomDocument)) {
+				for (Edge edge : (Iterable<Edge>) () -> edges) {
+					if (edge.inVertex().equals(randomDocument)) {
 						found = true;
 						break;
 					}
@@ -212,7 +213,7 @@ public class EdgeIndexPerformanceTest {
 			System.out.println("[root.getEdges - iterating] Duration: " + dur);
 			System.out.println("[root.getEdges - iterating] Duration per lookup: " + ((double) dur / (double) nChecks));
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 	}
 
@@ -222,15 +223,15 @@ public class EdgeIndexPerformanceTest {
 		try {
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
-				OrientVertex randomDocument = items.get((int) (Math.random() * items.size()));
-				Iterable<Edge> edges = root.getEdges(randomDocument, Direction.OUT, "HAS_ITEM");
-				assertTrue(edges.iterator().hasNext());
+				Vertex randomDocument = items.get((int) (Math.random() * items.size()));
+				Iterator<Edge> edges = root.edges(randomDocument, Direction.OUT, "HAS_ITEM");
+				assertTrue(edges.hasNext());
 			}
 			long dur = System.currentTimeMillis() - start;
 			System.out.println("[root.getEdges] Duration: " + dur);
 			System.out.println("[root.getEdges] Duration per lookup: " + ((double) dur / (double) nChecks));
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 	}
 
@@ -241,10 +242,10 @@ public class EdgeIndexPerformanceTest {
 			System.out.println("Checking edge");
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
-				OrientVertex randomDocument = items.get((int) (Math.random() * items.size()));
+				Vertex randomDocument = items.get((int) (Math.random() * items.size()));
 
 				OCommandSQL cmd = new OCommandSQL("select from index:e.has_item where key=?");
-				OCompositeKey key = new OCompositeKey(root.getId(), randomDocument.getId());
+				OCompositeKey key = new OCompositeKey(root.id(), randomDocument.id());
 
 				assertTrue(((Iterable<Vertex>) g.command(cmd).execute(key)).iterator().hasNext());
 			}
@@ -252,7 +253,7 @@ public class EdgeIndexPerformanceTest {
 			System.out.println("[query] Duration: " + dur);
 			System.out.println("[query] Duration per lookup: " + ((double) dur / (double) nChecks));
 		} finally {
-			g.shutdown();
+			g.close();
 		}
 	}
 

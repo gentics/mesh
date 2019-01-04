@@ -27,7 +27,7 @@ import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -51,12 +51,12 @@ public class WebRootHandler {
 
 	private BinaryFieldResponseHandler binaryFieldResponseHandler;
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private NodeCrudHandler nodeCrudHandler;
 
 	@Inject
-	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
+	public WebRootHandler(LegacyDatabase database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
 		NodeCrudHandler nodeCrudHandler) {
 		this.db = database;
 		this.webrootService = webrootService;

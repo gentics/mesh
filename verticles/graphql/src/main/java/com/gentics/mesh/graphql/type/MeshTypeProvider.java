@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.search.SearchProvider;
 
 import graphql.schema.GraphQLFieldDefinition;
@@ -22,12 +22,12 @@ public class MeshTypeProvider {
 
 	public static final String MESH_TYPE_NAME = "Mesh";
 
-	private final Database db;
+	private final LegacyDatabase db;
 
 	private final SearchProvider searchProvider;
 
 	@Inject
-	public MeshTypeProvider(Database db, SearchProvider searchProvider) {
+	public MeshTypeProvider(LegacyDatabase db, SearchProvider searchProvider) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 	}

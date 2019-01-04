@@ -81,7 +81,7 @@ public class DemoDumpGenerator {
 		// Initialise demo data
 		MeshComponent meshDagger = MeshInternal.get();
 		BootstrapInitializer boot = meshDagger.boot();
-		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl(), boot);
+		DemoDataProvider provider = new DemoDataProvider(meshDagger.madl(), meshDagger.meshLocalClientImpl(), boot);
 		invokeDump(boot, provider);
 
 	}

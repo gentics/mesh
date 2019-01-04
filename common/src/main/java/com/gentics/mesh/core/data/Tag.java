@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import static com.gentics.mesh.Events.EVENT_TAG_CREATED;
 import static com.gentics.mesh.Events.EVENT_TAG_DELETED;
 import static com.gentics.mesh.Events.EVENT_TAG_UPDATED;
+
 import java.util.List;
 import java.util.Objects;
 

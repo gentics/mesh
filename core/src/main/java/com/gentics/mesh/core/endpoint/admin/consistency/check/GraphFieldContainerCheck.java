@@ -18,9 +18,9 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.repair.NodeDeletionGraphFieldContainerFix;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -30,14 +30,14 @@ public class GraphFieldContainerCheck implements ConsistencyCheck {
 	private static final Logger log = LoggerFactory.getLogger(GraphFieldContainerCheck.class);
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
+	public void invoke(LegacyDatabase db, ConsistencyCheckResponse response, boolean attemptRepair) {
 		Iterator<? extends NodeGraphFieldContainerImpl> it = db.getVerticesForType(NodeGraphFieldContainerImpl.class);
 		while (it.hasNext()) {
 			checkGraphFieldContainer(db, it.next(), response, attemptRepair);
 		}
 	}
 
-	private void checkGraphFieldContainer(Database db, NodeGraphFieldContainer container, ConsistencyCheckResponse response, boolean attemptRepair) {
+	private void checkGraphFieldContainer(LegacyDatabase db, NodeGraphFieldContainer container, ConsistencyCheckResponse response, boolean attemptRepair) {
 		String uuid = container.getUuid();
 		if (container.getSchemaContainerVersion() == null) {
 			response.addInconsistency("The GraphFieldContainer has no assigned SchemaContainerVersion", uuid, HIGH);

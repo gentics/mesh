@@ -18,7 +18,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -30,12 +30,12 @@ public class TagCrudHandler extends AbstractHandler {
 
 	private SearchQueue searchQueue;
 
-	private Database db;
+	private LegacyDatabase db;
 
 	private HandlerUtilities utils;
 
 	@Inject
-	public TagCrudHandler(SearchQueue searchQueue, Database db, HandlerUtilities utils) {
+	public TagCrudHandler(SearchQueue searchQueue, LegacyDatabase db, HandlerUtilities utils) {
 		this.searchQueue = searchQueue;
 		this.db = db;
 		this.utils = utils;
@@ -98,7 +98,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		utils.asyncTx(ac, () -> {
-			Database db = MeshInternal.get().database();
+			LegacyDatabase db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);

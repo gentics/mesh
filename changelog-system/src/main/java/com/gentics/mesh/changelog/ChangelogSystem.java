@@ -2,11 +2,12 @@ package com.gentics.mesh.changelog;
 
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -24,9 +25,9 @@ public class ChangelogSystem {
 
 	public static final String MESH_DB_REV = "meshDatabaseRevision";
 
-	private Database db;
+	private LegacyDatabase db;
 
-	public ChangelogSystem(Database db) {
+	public ChangelogSystem(LegacyDatabase db) {
 		this.db = db;
 	}
 
@@ -41,9 +42,8 @@ public class ChangelogSystem {
 		boolean reindex = false;
 		for (Change change : list) {
 			// Execute each change in a new transaction
-			TransactionalGraph graph = db.rawTx();
-			change.setDb(db);
-			change.setGraph(graph);
+			Tx tx = db.rawTx();
+			change.setTx(tx);
 			try {
 				if (!change.isApplied()) {
 					log.info("Handling change {" + change.getUuid() + "}");
@@ -52,6 +52,7 @@ public class ChangelogSystem {
 
 					long start = System.currentTimeMillis();
 					change.apply();
+					tx.commit();
 					change.setDuration(System.currentTimeMillis() - start);
 					if (!change.validate()) {
 						throw new Exception("Validation for change {" + change.getUuid() + "/" + change.getName() + "} failed.");
@@ -61,12 +62,13 @@ public class ChangelogSystem {
 				} else {
 					log.debug("Change {" + change.getUuid() + "} is already applied.");
 				}
+
 			} catch (Exception e) {
 				log.error("Error while handling change {" + change.getUuid() + "/" + change.getName() + "}. Invoking rollback..", e);
-				graph.rollback();
+				tx.rollback();
 				return false;
 			} finally {
-				graph.shutdown();
+				tx.close();
 			}
 		}
 		if (reindex) {
@@ -79,15 +81,15 @@ public class ChangelogSystem {
 	 * Mark all changelog entries as applied. This is useful if you resolved issues manually or if you want to create a fresh mesh database dump.
 	 */
 	public void markAllAsApplied(List<Change> list) {
-		TransactionalGraph graph = db.rawTx();
+		Tx tx = db.rawTx();
 		try {
 			for (Change change : list) {
-				change.setGraph(graph);
+				change.setTx(tx);
 				change.markAsComplete();
 				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
 		} finally {
-			graph.shutdown();
+			tx.close();
 		}
 	}
 
@@ -116,15 +118,15 @@ public class ChangelogSystem {
 		log.info("Updating stored database revision and mesh version.");
 		// Version is okay. So lets store the version and the updated revision.
 		String currentVersion = Mesh.getPlainVersion();
-		TransactionalGraph graph = db.rawTx();
+		Tx tx = db.rawTx();
 		try {
-			Vertex root = MeshGraphHelper.getMeshRootVertex(graph);
+			Vertex root = MeshGraphHelper.getMeshRootVertex(tx);
 			String rev = db.getDatabaseRevision();
-			root.setProperty(MESH_VERSION, currentVersion);
-			root.setProperty(MESH_DB_REV, rev);
-			graph.commit();
+			root.property(MESH_VERSION, currentVersion);
+			root.property(MESH_DB_REV, rev);
+			tx.commit();
 		} finally {
-			graph.shutdown();
+			tx.close();
 		}
 	}
 }

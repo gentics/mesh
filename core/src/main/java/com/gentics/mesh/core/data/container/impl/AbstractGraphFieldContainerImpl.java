@@ -173,7 +173,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		}
 
 		// 2. Create a new micronode and assign the given schema to it
-		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
+		MicronodeImpl micronode = createVertex(MicronodeImpl.class);
 		micronode.setSchemaContainerVersion(microschema);
 		if (existingMicronode != null) {
 			micronode.clone(existingMicronode);
@@ -296,9 +296,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 */
 	private <T extends ListGraphField<?, ?, ?>> T createList(Class<T> classOfT, String fieldKey) {
 		T existing = getList(classOfT, fieldKey);
-		T list = getGraph().addFramedVertex(classOfT);
+		T list = createVertex(classOfT);
 		list.setFieldKey(fieldKey);
-		linkOut(list, HAS_LIST);
+		addEdge(list, HAS_LIST);
 
 		if (existing != null) {
 			unlinkOut(existing, HAS_LIST);

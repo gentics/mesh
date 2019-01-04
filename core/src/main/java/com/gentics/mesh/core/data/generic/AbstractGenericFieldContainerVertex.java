@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.tinkerpop.blueprints.Direction.IN;
+import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
 
 import java.util.Iterator;
 
@@ -14,12 +14,12 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.FramedGraph;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.syncleus.ferma.Database;
 import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.madl.tx.Tx;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
 		AbstractMeshCoreVertex<T, R> {
@@ -29,8 +29,8 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	}
 
 	protected Edge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
-		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
+		LegacyDatabase db = MeshInternal.get().database();
+		Tx graph = Tx.get();
 		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.createComposedIndexKey(id(),
 			branchUuid, type.getCode(), languageTag)).iterator();
 		if (iterator.hasNext()) {
@@ -56,7 +56,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 			Class<U> classOfU) {
 		Edge edge = getGraphFieldContainerEdge(languageTag, branchUuid, type);
 		if (edge != null) {
-			FramedGraph graph = Tx.getActive().getGraph();
+			Database graph = Tx.getActive().getGraph();
 			Vertex in = edge.getVertex(IN);
 			return graph.frameElementExplicit(in, classOfU);
 		} else {
@@ -85,7 +85,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 
 		// Create a new container if no existing one was found
 		if (container == null) {
-			container = getGraph().addFramedVertex(classOfU);
+			container = createVertex(classOfU);
 			container.setLanguage(language);
 			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			edge.setLanguageTag(language.getLanguageTag());

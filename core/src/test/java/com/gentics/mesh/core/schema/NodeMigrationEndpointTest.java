@@ -75,7 +75,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.IndexOptionHelper;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
@@ -776,9 +776,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			User user = user();
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = tx.createVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
-			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			versionA = tx.createVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
@@ -792,7 +792,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			boot().microschemaContainerRoot().addMicroschema(user, container);
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			versionB = tx.createVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
 			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
 			microschemaB.setName("migratedSchema");
@@ -804,7 +804,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
-			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChangeImpl updateFieldChange = tx.createVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
 			updateFieldChange.setCustomMigrationScript(
 				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
@@ -876,9 +876,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = tx.createVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
-			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			versionA = tx.createVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
@@ -892,7 +892,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			boot().microschemaContainerRoot().addMicroschema(user(), container);
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			versionB = tx.createVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
 			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
 			microschemaB.setName("migratedSchema");
@@ -904,7 +904,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
-			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChangeImpl updateFieldChange = tx.createVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
 			updateFieldChange.setCustomMigrationScript(
 				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
@@ -998,9 +998,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = tx.createVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
-			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			versionA = tx.createVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
@@ -1014,7 +1014,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			boot().microschemaContainerRoot().addMicroschema(user(), container);
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			versionB = tx.createVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
 			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
 			microschemaB.setName("migratedSchema");
@@ -1026,7 +1026,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
-			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChangeImpl updateFieldChange = tx.createVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
 			updateFieldChange.setCustomMigrationScript(
 				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
@@ -1095,13 +1095,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	private SchemaContainer createDummySchemaWithChanges(String fieldName, boolean setAddRaw) {
 
-		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainer container = Tx.get().createVertex(SchemaContainerImpl.class);
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addSchemaContainer(user(), container);
 
 		// create version 1 of the schema
-		SchemaContainerVersion versionA = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersion versionA = Tx.get().createVertex(SchemaContainerVersionImpl.class);
 		SchemaModel schemaA = new SchemaModelImpl();
 		schemaA.setName("migratedSchema");
 		schemaA.setVersion("1.0");
@@ -1116,7 +1116,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		versionA.setSchemaContainer(container);
 
 		// create version 2 of the schema (with the field renamed)
-		SchemaContainerVersion versionB = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersion versionB = Tx.get().createVertex(SchemaContainerVersionImpl.class);
 		SchemaModel schemaB = new SchemaModelImpl();
 		schemaB.setName("migratedSchema");
 		schemaB.setVersion("2.0");
@@ -1134,7 +1134,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		versionB.setSchemaContainer(container);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = Tx.get().createVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 		updateFieldChange.setCustomMigrationScript(
 			"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");

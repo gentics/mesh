@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 /**
  * @see SchemaContainer
@@ -45,7 +45,7 @@ public class SchemaContainerImpl extends
 		return SchemaContainerVersionImpl.class;
 	}
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
@@ -56,7 +56,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public List<? extends SchemaContainerRoot> getRoots() {
-		return in(HAS_SCHEMA_CONTAINER_ITEM).toListExplicit(SchemaContainerRootImpl.class);
+		return in(HAS_SCHEMA_CONTAINER_ITEM).frameExplicit(SchemaContainerRootImpl.class).list();
 	}
 
 	@Override
@@ -91,12 +91,12 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR).frameExplicit(UserImpl.class).firstOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR).frameExplicit(UserImpl.class).firstOrNull();
 	}
 
 }

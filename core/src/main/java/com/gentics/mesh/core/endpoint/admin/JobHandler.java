@@ -23,7 +23,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import io.vertx.core.logging.Logger;
@@ -37,7 +37,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils) {
+	public JobHandler(LegacyDatabase db, BootstrapInitializer boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.boot = boot;
 

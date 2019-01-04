@@ -6,7 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -33,7 +33,7 @@ public class PluginRouter {
 	 * @param db
 	 * @param parentRouter
 	 */
-	public PluginRouter(MeshAuthChain chain, Database db, Router parentRouter) {
+	public PluginRouter(MeshAuthChain chain, LegacyDatabase db, Router parentRouter) {
 		this.router = Router.router(Mesh.vertx());
 
 		// Ensure that all plugin requests are authenticated

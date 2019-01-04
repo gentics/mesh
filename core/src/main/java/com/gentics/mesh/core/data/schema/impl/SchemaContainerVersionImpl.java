@@ -39,13 +39,13 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.VertexFrame;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 
 import io.reactivex.Single;
 
@@ -56,7 +56,7 @@ public class SchemaContainerVersionImpl extends
 	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
 	SchemaContainerVersion {
 
-	public static void init(Database database) {
+	public static void init(LegacyDatabase database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
@@ -91,7 +91,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Stream<NodeGraphFieldContainer> getFieldContainers(String branchUuid) {
-		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
+		Spliterator<WrappedVertex> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
 		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
 			.filter(e -> e.getParentNode(branchUuid) != null).map(e -> (NodeGraphFieldContainer) e);
 		return stream;

@@ -71,7 +71,7 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		container.linkOut(this, HAS_LIST);
+		container.addEdge(this, HAS_LIST);
 		return container.getList(getClass(), getFieldKey());
 	}
 

@@ -1,10 +1,12 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.IN;
+import java.util.Iterator;
+
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 public class CreateMissingDraftEdges extends AbstractChange {
 
@@ -21,12 +23,12 @@ public class CreateMissingDraftEdges extends AbstractChange {
 	@Override
 	public void apply() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
+		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
 
 		// Iterate over all projects
-		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
+		for (Vertex project : (Iterable<Vertex>) () -> projectRoot.vertices(Direction.OUT, "HAS_PROJECT")) {
 			// Migrate all nodes of the project
-			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
+			Vertex baseNode = project.vertices(Direction.OUT, "HAS_ROOT_NODE").next();
 			migrateNode(baseNode);
 		}
 	}
@@ -39,13 +41,13 @@ public class CreateMissingDraftEdges extends AbstractChange {
 	private void migrateNode(Vertex node) {
 
 		boolean foundDraft = false;
-		Iterable<Edge> edges = node.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER");
+		Iterator<Edge> edges = node.edges(Direction.OUT, "HAS_FIELD_CONTAINER");
 		Edge referenceEdge = null;
 		Vertex possibleDraftContainer = null;
-		// Determine whether a draft edge exists and locate the publish edge. 
-		//The publish edge will be copied to create the missing draft edge.
-		for (Edge edge : edges) {
-			String type = edge.getProperty("edgeType");
+		// Determine whether a draft edge exists and locate the publish edge.
+		// The publish edge will be copied to create the missing draft edge.
+		for (Edge edge : (Iterable<Edge>) () -> edges) {
+			String type = edge.value("edgeType");
 			if ("D".equals(type)) {
 				foundDraft = true;
 			}
@@ -54,8 +56,8 @@ public class CreateMissingDraftEdges extends AbstractChange {
 			}
 
 			// Only one field container can have the webroot path info set
-			Vertex fieldContainer = edge.getVertex(IN);
-			String pathInfo = fieldContainer.getProperty("webrootPathInfo");
+			Vertex fieldContainer = edge.inVertex();
+			String pathInfo = fieldContainer.value("webrootPathInfo");
 			if (pathInfo != null) {
 				referenceEdge = edge;
 				possibleDraftContainer = fieldContainer;
@@ -66,19 +68,19 @@ public class CreateMissingDraftEdges extends AbstractChange {
 			// Check which container should become the new draft. We may have found the original draft container. Use it if possible
 			Vertex fieldContainer = possibleDraftContainer;
 			if (fieldContainer == null) {
-				fieldContainer = referenceEdge.getVertex(IN);
+				fieldContainer = referenceEdge.inVertex();
 			}
 			Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", fieldContainer);
-			draftEdge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
-			draftEdge.setProperty("branchUuid", referenceEdge.getProperty("branchUuid"));
-			draftEdge.setProperty("edgeType", "D");
-			draftEdge.setProperty("languageTag", referenceEdge.getProperty("languageTag"));
+			draftEdge.property("ferma_type", "GraphFieldContainerEdgeImpl");
+			draftEdge.property("branchUuid", referenceEdge.property("branchUuid"));
+			draftEdge.property("edgeType", "D");
+			draftEdge.property("languageTag", referenceEdge.property("languageTag"));
 		}
 
 		// Now check the children and migrate structure
-		Iterable<Edge> childrenEdges = node.getEdges(Direction.IN, "HAS_PARENT_NODE");
-		for (Edge childEdge : childrenEdges) {
-			migrateNode(childEdge.getVertex(Direction.OUT));
+		Iterator<Edge> childrenEdges = node.edges(Direction.IN, "HAS_PARENT_NODE");
+		for (Edge childEdge : (Iterable<Edge>) () -> childrenEdges) {
+			migrateNode(childEdge.outVertex());
 		}
 
 	}

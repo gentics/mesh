@@ -50,7 +50,7 @@ import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;

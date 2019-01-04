@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.util.HttpQueryUtils;
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
