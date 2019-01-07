@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
@@ -21,7 +20,7 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.Events;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -518,7 +517,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	public void onCreated() {
 		super.onCreated();
 		// TODO make this configurable via query parameter. It should be possible to postpone the migration.
-		Mesh.vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+		Events.triggerJobWorker();
 	}
 
 	@Override

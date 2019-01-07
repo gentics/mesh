@@ -5,6 +5,7 @@ import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -48,7 +49,7 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	@Override
 	public String getJobAdress() {
-		return JOB_WORKER_ADDRESS;
+		return JOB_WORKER_ADDRESS+ Mesh.mesh().getOptions().getNodeName();
 	}
 
 	@Override

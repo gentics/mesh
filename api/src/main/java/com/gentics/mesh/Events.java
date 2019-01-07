@@ -3,6 +3,8 @@ package com.gentics.mesh;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.vertx.core.eventbus.EventBus;
+
 /**
  * Central list of used eventbus addresses.
  */
@@ -142,10 +144,17 @@ public final class Events {
 	 */
 	public static final String INDEX_SYNC_EVENT = "mesh.search.index.sync";
 
-//	/**
-//	 * Address to query the index sync status.
-//	 */
-//	public static final String INDEX_SYNC_STATUS_EVENT = "mesh.search.index.sync.status";
+	// /**
+	// * Address to query the index sync status.
+	// */
+	// public static final String INDEX_SYNC_STATUS_EVENT = "mesh.search.index.sync.status";
+
+	public static void triggerJobWorker() {
+		Mesh mesh = Mesh.mesh();
+		EventBus eb = mesh.getVertx().eventBus();
+		String name = mesh.getOptions().getNodeName();
+		eb.send(JOB_WORKER_ADDRESS + name, null);
+	}
 
 	/**
 	 * Returns a list of all events which are publicly exposed via the eventbus websocket bridge.
@@ -252,7 +261,7 @@ public final class Events {
 
 		events.add(INDEX_SYNC_EVENT);
 
-//		events.add(INDEX_SYNC_STATUS_EVENT);
+		// events.add(INDEX_SYNC_STATUS_EVENT);
 
 		return events;
 	}

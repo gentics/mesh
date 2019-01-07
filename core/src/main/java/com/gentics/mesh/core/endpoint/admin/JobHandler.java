@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -13,6 +12,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import com.gentics.mesh.Events;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.job.Job;
@@ -144,7 +144,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+			Events.triggerJobWorker();
 			return message(ac, "job_processing_invoked");
 		}, (model) -> ac.send(model, OK));
 	}
