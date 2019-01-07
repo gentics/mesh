@@ -259,7 +259,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public String getErrorDetail() {
-		return property(ERROR_DETAIL_PROPERTY_KEY);
+		return value(ERROR_DETAIL_PROPERTY_KEY);
 	}
 
 	@Override

@@ -134,7 +134,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getResetToken() {
-		return property(RESET_TOKEN_KEY);
+		return value(RESET_TOKEN_KEY);
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getFirstname() {
-		return property(FIRSTNAME_PROPERTY_KEY);
+		return value(FIRSTNAME_PROPERTY_KEY);
 	}
 
 	@Override
@@ -161,7 +161,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getLastname() {
-		return property(LASTNAME_PROPERTY_KEY);
+		return value(LASTNAME_PROPERTY_KEY);
 	}
 
 	@Override

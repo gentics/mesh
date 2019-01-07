@@ -9,15 +9,20 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.madl.db.Database;
+import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -34,13 +39,9 @@ import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ClassInitializer;
-import com.syncleus.ferma.Database;
 import com.syncleus.ferma.TEdge;
-import com.gentics.madl.wrapper.element.WrappedVertex;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;

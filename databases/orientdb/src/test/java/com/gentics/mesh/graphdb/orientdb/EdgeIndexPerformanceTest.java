@@ -11,6 +11,7 @@ import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
 import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -105,11 +106,11 @@ public class EdgeIndexPerformanceTest {
 
 	}
 
-	private static List<OrientVertex> createData(OrientVertex root, OrientGraphFactory factory, int count) {
-		OrientGraph g = factory.getTx();
+	private static List<Vertex> createData(Vertex root, OrientGraphFactory factory, int count) {
+		Graph g = factory.getTx();
 		try {
 			System.out.println("Creating {" + count + "} items.");
-			List<OrientVertex> items = new ArrayList<>();
+			List<Vertex> items = new ArrayList<>();
 			for (int i = 0; i < count; i++) {
 				Vertex item = g.addVertex("class:item");
 				item.property("name", "item_" + i);

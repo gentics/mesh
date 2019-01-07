@@ -247,7 +247,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean isMigrated() {
-		Boolean flag = property(MIGRATED_PROPERTY_KEY);
+		Boolean flag = value(MIGRATED_PROPERTY_KEY);
 		return flag == null ? false : flag;
 	}
 
@@ -259,7 +259,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Branch getNextBranch() {
-		return out(HAS_NEXT_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+		return out(HAS_NEXT_BRANCH).frameExplicit(BranchImpl.class).firstOrNull();
 	}
 
 	@Override
@@ -270,12 +270,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Branch getPreviousBranch() {
-		return in(HAS_NEXT_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+		return in(HAS_NEXT_BRANCH).frameExplicit(BranchImpl.class).firstOrNull();
 	}
 
 	@Override
 	public BranchRoot getRoot() {
-		return in(HAS_BRANCH).nextOrDefaultExplicit(BranchRootImpl.class, null);
+		return in(HAS_BRANCH).frameExplicit(BranchRootImpl.class).firstOrNull();
 	}
 
 	@Override

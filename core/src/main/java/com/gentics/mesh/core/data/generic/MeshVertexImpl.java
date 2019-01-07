@@ -121,7 +121,7 @@ public class MeshVertexImpl extends AbstractWrappedVertex implements MeshVertex 
 	 */
 	public void setSingleLinkOutTo(WrappedVertex vertex, String... labels) {
 		// Unlink all edges with the given label
-		unlinkOut(null, labels);
+		removeEdgeOut(null, labels);
 		// Create a new edge with the given label
 		addEdge(vertex, labels);
 	}
@@ -129,7 +129,7 @@ public class MeshVertexImpl extends AbstractWrappedVertex implements MeshVertex 
 	@Override
 	public void setUniqueLinkOutTo(WrappedVertex vertex, String... labels) {
 		// Unlink all edges between both objects with the given label
-		unlinkOut(vertex, labels);
+		removeEdgeOut(vertex, labels);
 		// Create a new edge with the given label
 		addEdge(vertex, labels);
 	}
@@ -137,7 +137,7 @@ public class MeshVertexImpl extends AbstractWrappedVertex implements MeshVertex 
 	public String getUuid() {
 		// Return the locally stored uuid if possible. Otherwise load it from the graph.
 		if (uuid == null) {
-			this.uuid = property("uuid");
+			this.uuid = value("uuid");
 		}
 		return uuid;
 	}
@@ -157,7 +157,7 @@ public class MeshVertexImpl extends AbstractWrappedVertex implements MeshVertex 
 
 	@Override
 	public Database getGraph() {
-		return Tx.get().getGraph();
+		return Tx.get();
 	}
 
 	@Override
