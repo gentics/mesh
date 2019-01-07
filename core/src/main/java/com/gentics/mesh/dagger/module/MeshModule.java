@@ -14,10 +14,11 @@ import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.gentics.mesh.madl.MadlService;
+import com.gentics.mesh.madl.MadlProvider;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.BinaryStorageService;
 
@@ -52,18 +53,10 @@ public class MeshModule {
 		return new ImgscalrImageManipulator();
 	}
 
-	// @Provides
-	// @Singleton
-	// public static DatabaseService databaseService() {
-	// return DatabaseService.getInstance();
-	// }
-
 	@Provides
 	@Singleton
-	public static Madl madl() {
-		ServerConfig config = new ServerConfig().setClusterName("dummy").setNodeName("serverA").setClusterNameSuffix("latest");
-		Madl madl = Madl.madl("com.gentics.mesh.core.data", config);
-		return madl;
+	public static MadlProvider madlProvider() {
+		return MadlProvider.getInstance();
 	}
 
 	@Provides
@@ -81,7 +74,7 @@ public class MeshModule {
 	@Provides
 	@Singleton
 	public static LegacyDatabase database() {
-		LegacyDatabase database = databaseService().getDatabase();
+		LegacyDatabase database = databaseService().getMadlProvider();
 		if (database == null) {
 			String message = "No database provider could be found.";
 			log.error(message);

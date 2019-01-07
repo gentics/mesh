@@ -60,7 +60,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas) {
-		Branch branch = createVertex(BranchImpl.class);
+		Branch branch = getTx().createVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
 		}
@@ -95,12 +95,12 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Branch getInitialBranch() {
-		return out(HAS_INITIAL_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+		return out(HAS_INITIAL_BRANCH).frameExplicit(BranchImpl.class).firstOrNull();
 	}
 
 	@Override
 	public Branch getLatestBranch() {
-		return out(HAS_LATEST_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+		return out(HAS_LATEST_BRANCH).frameExplicit(BranchImpl.class).firstOrNull();
 	}
 
 	@Override

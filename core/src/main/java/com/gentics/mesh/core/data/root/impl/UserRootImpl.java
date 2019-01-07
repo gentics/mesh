@@ -12,7 +12,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Iterator;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import com.gentics.madl.db.Database;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -32,9 +35,6 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.json.JsonUtil;
-import com.syncleus.ferma.Database;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @see UserRoot
@@ -127,7 +127,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			throw new RuntimeException("Found multiple nodes with the same UUID");
 		}
 
-		if (root.getId().equals(id())) {
+		if (root.id().equals(id())) {
 			return user;
 		} else {
 			throw new RuntimeException("User does not belong to the UserRoot");

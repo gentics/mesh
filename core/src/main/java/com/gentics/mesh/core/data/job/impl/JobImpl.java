@@ -123,7 +123,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public JobWarningList getWarnings() {
-		String json = property(WARNING_PROPERTY_KEY);
+		String json = value(WARNING_PROPERTY_KEY);
 		if (json == null) {
 			return new JobWarningList();
 		} else {
@@ -273,7 +273,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public String getErrorMessage() {
-		return property(ERROR_MSG_PROPERTY_KEY);
+		return value(ERROR_MSG_PROPERTY_KEY);
 	}
 
 	@Override

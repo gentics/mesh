@@ -90,7 +90,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getName() {
-		return property("name");
+		return value("name");
 	}
 
 	@Override
@@ -135,9 +135,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
-		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT).nextOrDefaultExplicit(ProjectMicroschemaContainerRootImpl.class, null);
+		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT).frameExplicit(ProjectMicroschemaContainerRootImpl.class).firstOrNull();
 		if (root == null) {
-			root = createVertex(ProjectMicroschemaContainerRootImpl.class);
+			root = getTx().createVertex(ProjectMicroschemaContainerRootImpl.class);
 			addEdgeOut(root, HAS_MICROSCHEMA_ROOT);
 		}
 		return root;
@@ -145,14 +145,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Node getBaseNode() {
-		return out(HAS_ROOT_NODE).nextOrDefaultExplicit(NodeImpl.class, null);
+		return out(HAS_ROOT_NODE).frameExplicit(NodeImpl.class).firstOrNull();
 	}
 
 	@Override
 	public NodeRoot getNodeRoot() {
-		NodeRoot root = out(HAS_NODE_ROOT).nextOrDefaultExplicit(NodeRootImpl.class, null);
+		NodeRoot root = out(HAS_NODE_ROOT).frameExplicit(NodeRootImpl.class).firstOrNull();
 		if (root == null) {
-			root = createVertex(NodeRootImpl.class);
+			root = getTx().createVertex(NodeRootImpl.class);
 			addEdge(root, HAS_NODE_ROOT);
 		}
 		return root;
@@ -186,7 +186,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public Node createBaseNode(User creator, SchemaContainerVersion schemaContainerVersion) {
 		Node baseNode = getBaseNode();
 		if (baseNode == null) {
-			baseNode = createVertex(NodeImpl.class);
+			baseNode = getTx().createVertex(NodeImpl.class);
 			baseNode.setSchemaContainer(schemaContainerVersion.getSchemaContainer());
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
@@ -334,10 +334,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public BranchRoot getBranchRoot() {
-		BranchRoot root = out(HAS_BRANCH_ROOT).nextOrDefaultExplicit(BranchRootImpl.class, null);
+		BranchRoot root = out(HAS_BRANCH_ROOT).frameExplicit(BranchRootImpl.class).firstOrNull();
 		if (root == null) {
-			root = createVertex(BranchRootImpl.class);
-			addEdge(root, HAS_BRANCH_ROOT);
+			root = getTx().createVertex(BranchRootImpl.class);
+			addEdgeOut(root, HAS_BRANCH_ROOT);
 		}
 		return root;
 	}
@@ -354,7 +354,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR).frameExplicit(UserImpl.class).firstOrNull();
 	}
 
 	@Override

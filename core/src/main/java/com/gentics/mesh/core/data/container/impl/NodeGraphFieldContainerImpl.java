@@ -121,7 +121,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public SchemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_SCHEMA_CONTAINER_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER_VERSION).frameExplicit(SchemaContainerVersionImpl.class).firstOrNull();
 	}
 
 	@Override
@@ -132,7 +132,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// 3. Loading the value from that field
 		// This is very costly and thus we store the precomputed display field
 		// within a local property.
-		return property(DISPLAY_FIELD_PROPERTY_KEY);
+		return value(DISPLAY_FIELD_PROPERTY_KEY);
 	}
 
 	@Override
@@ -439,7 +439,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public VersionNumber getVersion() {
-		String version = property(VERSION_PROPERTY_KEY);
+		String version = value(VERSION_PROPERTY_KEY);
 		return version == null ? null : new VersionNumber(version);
 	}
 
@@ -465,7 +465,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
-		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		return in(HAS_VERSION).frameExplicit(NodeGraphFieldContainerImpl.class).firstOrNull();
 	}
 
 	@Override

@@ -62,7 +62,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public String getName() {
-		return property("name");
+		return value("name");
 	}
 
 	@Override

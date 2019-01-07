@@ -27,8 +27,8 @@ import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.LegacyDatabase;
+import com.gentics.mesh.madl.MadlService;
 import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
 import com.gentics.mesh.maven.VersionNumber;
@@ -127,8 +127,8 @@ public class ChangelogSystemTest {
 	 * @return
 	 */
 	public static LegacyDatabase getDatabase(MeshOptions options) {
-		DatabaseService databaseService = DatabaseService.getInstance();
-		LegacyDatabase database = databaseService.getDatabase();
+		MadlService databaseService = MadlService.getInstance();
+		LegacyDatabase database = databaseService.getMadlProvider();
 		if (database == null) {
 			String message = "No database provider could be found.";
 			throw new RuntimeException(message);

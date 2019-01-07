@@ -64,7 +64,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public String getName() {
-		return property("name");
+		return value("name");
 	}
 
 	@Override

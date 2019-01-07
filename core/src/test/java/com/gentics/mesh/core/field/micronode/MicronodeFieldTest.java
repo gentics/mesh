@@ -301,7 +301,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			Micronode micronode = field.getMicronode();
 			String originalUuid = micronode.getUuid();
 
-			Set<? extends MicronodeImpl> existingMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
+			Set<? extends MicronodeImpl> existingMicronodes = tx.v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
 			for (Micronode foundMicronode : existingMicronodes) {
 				assertEquals(micronode.getUuid(), foundMicronode.getUuid());
 			}
@@ -312,7 +312,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 			assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
 
-			existingMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
+			existingMicronodes = tx.v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
 			for (MicronodeImpl foundMicronode : existingMicronodes) {
 				assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
 			}

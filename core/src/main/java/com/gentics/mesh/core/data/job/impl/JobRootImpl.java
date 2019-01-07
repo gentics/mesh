@@ -90,7 +90,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
-		NodeMigrationJobImpl job = createVertex(NodeMigrationJobImpl.class);
+		NodeMigrationJobImpl job = getTx().createVertex(NodeMigrationJobImpl.class);
 		job.setType(MigrationType.schema);
 		job.setCreated(creator);
 		job.setBranch(branch);
@@ -108,7 +108,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion) {
-		MicronodeMigrationJobImpl job = createVertex(MicronodeMigrationJobImpl.class);
+		MicronodeMigrationJobImpl job = getTx().createVertex(MicronodeMigrationJobImpl.class);
 		job.setType(MigrationType.microschema);
 		job.setCreated(creator);
 		job.setBranch(branch);
@@ -143,7 +143,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch) {
-		Job job = createVertex(BranchMigrationJobImpl.class);
+		Job job = getTx().createVertex(BranchMigrationJobImpl.class);
 		job.setCreated(creator);
 		job.setType(MigrationType.branch);
 		job.setStatus(QUEUED);

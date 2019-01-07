@@ -184,10 +184,10 @@ public class TxTest extends AbstractMeshTest {
 									}
 								}
 								// Load used elements
-								TagFamily reloadedTagFamily = tx.getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getId());
-								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
-								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
-								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getId());
+								TagFamily reloadedTagFamily = tx.getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.id());
+								Node reloadedNode = tx.getFramedVertexExplicit(NodeImpl.class, node.id());
+								User reloadedUser = tx.getFramedVertexExplicit(UserImpl.class, user.id());
+								Project reloadedProject = tx.getFramedVertexExplicit(ProjectImpl.class, project.id());
 
 								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
@@ -224,7 +224,7 @@ public class TxTest extends AbstractMeshTest {
 			// Thread.sleep(1000);
 			try (Tx tx = tx()) {
 				int expect = nThreads * (r + 1);
-				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
+				Node reloadedNode = tx.getFramedVertexExplicit(NodeImpl.class, node.id());
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
 						reloadedNode.getTags(project().getLatestBranch()).count());

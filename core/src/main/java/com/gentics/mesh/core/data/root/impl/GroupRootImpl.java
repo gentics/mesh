@@ -56,7 +56,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 	@Override
 	public Group create(String name, User creator, String uuid) {
-		GroupImpl group = createVertex(GroupImpl.class);
+		GroupImpl group = getTx().createVertex(GroupImpl.class);
 		if (uuid != null) {
 			group.setUuid(uuid);
 		}

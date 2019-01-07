@@ -89,7 +89,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public String getName() {
-		return property("name");
+		return value("name");
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public String getDescription() {
-		return property("description");
+		return value("description");
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT).frameExplicit(ProjectImpl.class).firstOrNull();
 	}
 
 	@Override

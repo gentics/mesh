@@ -20,7 +20,7 @@ public final class TraversalHelper {
 	 */
 	public static void debug(VertexTraversal<?, ?, ?> traversal) {
 		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
-			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
+			System.out.println(v.value("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
 
 		}
 	}
@@ -32,8 +32,8 @@ public final class TraversalHelper {
 	 */
 	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
 		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
-			System.out.println(e.getElement().getId() + "from " + e.inV().next() + " to " + e.outV().next());
-			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
+			System.out.println(e.getElement().id() + "from " + e.inV().next() + " to " + e.outV().next());
+			System.out.println(e.label() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
 	}
 
@@ -41,9 +41,9 @@ public final class TraversalHelper {
 	 * Simple debug method for printing all existing vertices.
 	 */
 	public static void printDebugVertices() {
-		for (WrappedVertex frame : Tx.getActive().getGraph().v()) {
+		for (WrappedVertex frame : Tx.get().v()) {
 			System.out.println(
-					frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
+					frame.id() + " " + frame.value("ferma_type") + " " + frame.value("name") + " " + frame.value("uuid"));
 		}
 
 	}

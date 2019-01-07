@@ -56,14 +56,14 @@ public abstract class AbstractChange implements Change {
 		// Create the change if it could not be found.
 		if (changelogRoot == null) {
 			log.debug("The changelog root could not be found. Creating it...");
-			changelogRoot = tx.addVertex(ChangelogRootWrapper.class);
+			changelogRoot = tx.createVertex(ChangelogRootWrapper.class);
 			meshRoot.addEdge(ChangelogRootWrapper.HAS_CHANGELOG_ROOT, changelogRoot);
 		}
 		return new ChangelogRootWrapper(tx, changelogRoot);
 	}
 
 	public Vertex getMeshRootVertex() {
-		return MeshGraphHelper.getMeshRootVertex(getGraph());
+		return MeshGraphHelper.getMeshRootVertex(getTx());
 	}
 
 	@Override

@@ -33,7 +33,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public String getName() {
-		return property(LANGUAGE_NAME_PROPERTY_KEY);
+		return value(LANGUAGE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public String getNativeName() {
-		return property(LANGUAGE_NATIVE_NAME_PROPERTY_KEY);
+		return value(LANGUAGE_NATIVE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public String getLanguageTag() {
-		return property(LANGUAGE_TAG_PROPERTY_KEY);
+		return value(LANGUAGE_TAG_PROPERTY_KEY);
 	}
 
 	@Override

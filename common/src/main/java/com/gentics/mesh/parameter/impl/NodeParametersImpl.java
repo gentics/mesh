@@ -29,7 +29,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 	public void validate() {
 		// Check whether all given language tags exists
 		for (String languageTag : getLanguages()) {
-			Iterator<?> it = Tx.get().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
+			Iterator<?> it = Tx.get().getVertices("LanguageImpl.languageTag", languageTag).iterator();
 			if (!it.hasNext()) {
 				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 			}

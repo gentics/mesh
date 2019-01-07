@@ -27,7 +27,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.graphdb.spi.LegacyDatabase;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.Database;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 /**
