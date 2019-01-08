@@ -17,6 +17,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -33,43 +34,41 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		// NOP
 	}
 
-	protected void processTask() {
+	protected Completable processTask() {
 		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
-		try {
 
-			try (Tx tx = DB.get().tx()) {
-				Branch branch = getBranch();
-				if (branch == null) {
-					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
-				}
-
-				MicroschemaContainerVersion fromContainerVersion = getFromMicroschemaVersion();
-				if (fromContainerVersion == null) {
-					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
-				}
-
-				MicroschemaContainerVersion toContainerVersion = getToMicroschemaVersion();
-				if (toContainerVersion == null) {
-					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
-				}
-
-				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
-				BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
-				statusHandler.setVersionEdge(branchVersionEdge);
-
-				if (log.isDebugEnabled()) {
-					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
-							+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
-				}
-
-				statusHandler.commit();
-
-				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(branch, fromContainerVersion, toContainerVersion, statusHandler)
-						.blockingAwait();
-				statusHandler.done();
+		try (Tx tx = DB.get().tx()) {
+			Branch branch = getBranch();
+			if (branch == null) {
+				throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
 			}
+
+			MicroschemaContainerVersion fromContainerVersion = getFromMicroschemaVersion();
+			if (fromContainerVersion == null) {
+				throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
+			}
+
+			MicroschemaContainerVersion toContainerVersion = getToMicroschemaVersion();
+			if (toContainerVersion == null) {
+				throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
+			}
+
+			MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
+			BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
+			statusHandler.setVersionEdge(branchVersionEdge);
+
+			if (log.isDebugEnabled()) {
+				log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
+					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
+			}
+
+			statusHandler.commit();
+			return MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(branch, fromContainerVersion, toContainerVersion, statusHandler);
+			// statusHandler.done();
 		} catch (Exception e) {
 			statusHandler.error(e, "Error while preparing micronode migration.");
+			return Completable.error(e);
 		}
 	}
+
 }

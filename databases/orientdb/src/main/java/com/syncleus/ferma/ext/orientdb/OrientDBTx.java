@@ -1,8 +1,7 @@
 package com.syncleus.ferma.ext.orientdb;
 
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
+import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.tx.AbstractTx;
 import com.syncleus.ferma.tx.Tx;
@@ -15,7 +14,6 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	boolean isWrapped = false;
 
 	public OrientDBTx(OrientGraphFactory factory, TypeResolver typeResolver) {
-
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.getActive();
 		if (activeTx != null) {
@@ -35,20 +33,32 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			isWrapped = true;
 			init(activeTx.getGraph());
 		} else {
-			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph)provider.rawTx(), typeResolver);
+			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
 	}
 
 	@Override
 	public void close() {
+		// if(isWrapped) {
+		// if (isSuccess()) {
+		// commit();
+		// }
+		// return;
+		// }
 		try {
 			if (isSuccess()) {
-				commit();
+				try {
+					commit();
+				} catch (Exception e) {
+					rollback();
+					throw e;
+				}
 			} else {
 				rollback();
 			}
-		} catch (OConcurrentModificationException e) {
+
+		} catch (ONeedRetryException e) {
 			throw e;
 		} finally {
 			if (!isWrapped) {

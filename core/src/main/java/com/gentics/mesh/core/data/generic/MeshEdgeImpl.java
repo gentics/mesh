@@ -29,7 +29,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	protected void init(FramedGraph graph, Element element) {
-		super.init(graph, element);
+		super.init(graph, null);
 		this.id = element.getId();
 	}
 

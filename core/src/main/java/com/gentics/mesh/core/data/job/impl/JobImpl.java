@@ -36,6 +36,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 
+import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -312,21 +313,24 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void process() {
-		log.info("Processing job {" + getUuid() + "}");
-		DB.get().tx(() -> {
-			setStartTimestamp();
-			setStatus(STARTING);
-			setNodeName();
-		});
+	public Completable process() {
+		return Completable.defer(() -> {
 
-		processTask();
+			DB.get().tx(() -> {
+				log.info("Processing job {" + getUuid() + "}");
+				setStartTimestamp();
+				setStatus(STARTING);
+				setNodeName();
+			});
+
+			return processTask();
+		});
 	}
 
 	/**
 	 * Actual implementation of the task which the job executes.
 	 */
-	protected abstract void processTask();
+	protected abstract Completable processTask();
 
 	@Override
 	public String getNodeName() {

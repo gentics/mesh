@@ -182,7 +182,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				bac.batch().delete(this, branchUuid, type, false);
 			}
 		});
-
+		System.out.println("Removing NGFC " + id());
 		getElement().remove();
 		bac.inc();
 	}

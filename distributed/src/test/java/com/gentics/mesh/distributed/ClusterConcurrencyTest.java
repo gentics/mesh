@@ -34,7 +34,7 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);
 
-	private static final int TEST_DATA_SIZE = 300;
+	private static final int TEST_DATA_SIZE = 100;
 
 	private static String clusterPostFix = randomUUID();
 
@@ -116,7 +116,7 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 			log.error("Operation failed", err);
 		});
 		
-		Thread.sleep(30000);
+		Thread.sleep(50000);
 
 		// Finally assert that both nodes can still access the graph
 		call(() -> clientA.findSchemaByUuid(contentSchema.getUuid()));

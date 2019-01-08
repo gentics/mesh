@@ -49,7 +49,7 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	@Override
 	public String getJobAdress() {
-		return JOB_WORKER_ADDRESS+ Mesh.mesh().getOptions().getNodeName();
+		return JOB_WORKER_ADDRESS + Mesh.mesh().getOptions().getNodeName();
 	}
 
 	@Override
@@ -79,11 +79,9 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	@Override
 	public Completable executeJob(Message<Object> message) {
-		return Completable.fromAction(() -> {
-			db.tx(() -> {
-				JobRoot jobRoot = boot.get().jobRoot();
-				jobRoot.process();
-			});
+		return db.tx(() -> {
+			JobRoot jobRoot = boot.get().jobRoot();
+			return jobRoot.process();
 		});
 	}
 

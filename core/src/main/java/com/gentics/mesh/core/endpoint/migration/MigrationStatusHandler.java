@@ -53,6 +53,9 @@ public interface MigrationStatusHandler {
 	 */
 	void setCompletionCount(long completionCount);
 
+	/**
+	 * Increment the completion counter.
+	 */
 	void incCompleted();
 
 }

@@ -10,14 +10,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections.IteratorUtils;
+
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -31,6 +34,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
+import com.google.common.collect.Lists;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
@@ -66,65 +70,75 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            status handler which will be used to track the progress
 	 * @return Completable which is completed once the migration finishes
 	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Branch branch, SchemaContainerVersion fromVersion,
+		SchemaContainerVersion toVersion,
 		MigrationStatusHandler status) {
-
-		// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-		// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-		Iterator<? extends NodeGraphFieldContainer> fieldContainers = fromVersion.getDraftFieldContainers(branch.getUuid());
 
 		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
+		SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
+
 		try (Tx tx = db.tx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
+
+			ac.setProject(project);
+			ac.setBranch(branch);
+
+			if (status != null) {
+				status.setStatus(RUNNING);
+				status.commit();
+			}
+			tx.success();
 		} catch (IOException e) {
+			log.error("Error while preparing migration");
 			return Completable.error(e);
 		}
 
-		ac.setProject(project);
-		ac.setBranch(branch);
-
-		SchemaModel newSchema = toVersion.getSchema();
-
-		if (status != null) {
-			status.setStatus(RUNNING);
-			status.commit();
-		}
+		// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+		// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+		List<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
+			Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
+			return Lists.newArrayList(it);
+		});
 
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
-		SearchQueueBatch sqb = null;
-		while (fieldContainers.hasNext()) {
-			NodeGraphFieldContainer container = fieldContainers.next();
+		AtomicReference<SearchQueueBatch> sqb = new AtomicReference<>(null);
+		for (NodeGraphFieldContainer container : containers) {
 			// Create a new SQB to handle the ES update
-			if (sqb == null) {
-				sqb = searchQueue.create();
+			if (sqb.get() == null) {
+				sqb.set(searchQueue.create());
 			}
-			migrateContainer(ac, sqb, container, toVersion, migrationScripts, branch, newSchema, errorsDetected, touchedFields);
+			db.tx(() -> {
+				System.out.println("Migrating: " + container.getId());
+				migrateContainer(ac, sqb.get(), container, toVersion, migrationScripts, branch, newSchema, errorsDetected, touchedFields);
+			});
 
 			if (status != null) {
 				status.incCompleted();
 			}
-			if (count % 50 == 0) {
+			if (count % 10 == 0) {
 				log.info("Migrated containers: " + count);
 				if (status != null) {
-					status.commit();
+					db.tx(() -> {
+						status.commit();
+					});
 				}
 			}
 			count++;
-			if (count % 500 == 0) {
+			if (count % 10 == 0) {
 				// Process the batch and reset it
-				log.info("Syncing batch with size: " + sqb.size());
-				sqb.processSync();
-				sqb = null;
+				log.info("Syncing batch with size: " + sqb.get().size());
+				sqb.get().processSync();
+				sqb.set(null);
 			}
 		}
-		if (sqb != null) {
-			log.info("Syncing last batch with size: " + sqb.size());
-			sqb.processSync();
-			sqb = null;
+		if (sqb.get() != null) {
+			log.info("Syncing last batch with size: " + sqb.get().size());
+			sqb.get().processSync();
+			sqb.set(null);
 		}
 
 		log.info("Migration of " + count + " containers done..");
@@ -140,6 +154,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			result = Completable.error(new CompositeException(errorsDetected));
 		}
 		return result;
+
 	}
 
 	/**
@@ -157,7 +172,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @return
 	 */
-	private void migrateContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, NodeGraphFieldContainer container, SchemaContainerVersion toVersion,
+	private void migrateContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, NodeGraphFieldContainer container,
+		SchemaContainerVersion toVersion,
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Branch branch, SchemaModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
@@ -166,33 +182,34 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		}
 		try {
 			// Run the actual migration in a dedicated transaction
-			db.tx((tx) -> {
+			// db.tx((tx) -> {
 
-				Node node = container.getParentNode();
-				String languageTag = container.getLanguage().getLanguageTag();
-				ac.getNodeParameters().setLanguages(languageTag);
-				ac.getVersioningParameters().setVersion("draft");
+			Node node = container.getParentNode();
+			String languageTag = container.getLanguage().getLanguageTag();
+			ac.getNodeParameters().setLanguages(languageTag);
+			ac.getVersioningParameters().setVersion("draft");
 
-				VersionNumber nextDraftVersion = null;
-				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
-				// 1. Check whether there is any other published container which we need to handle separately
-				if (oldPublished != null && !oldPublished.equals(container)) {
-					// We only need to migrate the container if the container's schema version is also "old"
-					boolean hasSameOldSchemaVersion = container != null
-						&& container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
-					if (hasSameOldSchemaVersion) {
-						nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
-							migrationScripts,
-							newSchema);
-						nextDraftVersion = nextDraftVersion.nextDraft();
-					}
-
+			VersionNumber nextDraftVersion = null;
+			NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+			// 1. Check whether there is any other published container which we need to handle separately
+			if (oldPublished != null && !oldPublished.equals(container)) {
+				// We only need to migrate the container if the container's schema version is also "old"
+				boolean hasSameOldSchemaVersion = container != null
+					&& container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
+				if (hasSameOldSchemaVersion) {
+					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
+						migrationScripts,
+						newSchema);
+					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
 
-				// 2. Migrate the draft container. This will also update the draft edge.
-				migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema,
-					nextDraftVersion);
-			});
+			}
+
+			// 2. Migrate the draft container. This will also update the draft edge.
+			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema,
+				nextDraftVersion);
+			// Tx.getActive().getGraph().commit();
+			// });
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
 				+ "} during schema migration.", e1);

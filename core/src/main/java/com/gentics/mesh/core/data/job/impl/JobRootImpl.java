@@ -9,7 +9,9 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -37,6 +39,8 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
+import io.reactivex.Completable;
 
 /**
  * @see JobRoot
@@ -73,7 +77,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-					database().createComposedIndexKey(potentialElement.getId(), id()));
+				database().createComposedIndexKey(potentialElement.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());
@@ -107,7 +111,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion,
-			MicroschemaContainerVersion toVersion) {
+		MicroschemaContainerVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(MigrationType.microschema);
 		job.setCreated(creator);
@@ -119,7 +123,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued microschema migration job {" + job.getUuid() + "} - " + toVersion.getSchemaContainer().getName() + " "
-					+ fromVersion.getVersion() + " to " + toVersion.getVersion());
+				+ fromVersion.getVersion() + " to " + toVersion.getVersion());
 		}
 		return job;
 	}
@@ -195,7 +199,8 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public void process() {
+	public Completable process() {
+		List<Completable> actions = new ArrayList<>();
 		Iterable<? extends Job> it = findAll();
 		for (Job job : it) {
 			try {
@@ -204,15 +209,13 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 				if (job.hasFailed() || (jobStatus == COMPLETED || jobStatus == FAILED || jobStatus == UNKNOWN)) {
 					continue;
 				}
-				try (Tx tx = DB.get().tx()) {
-					job.process();
-					tx.success();
-				}
+				actions.add(job.process());
 			} catch (Exception e) {
 				job.markAsFailed(e);
 				log.error("Error while processing job {" + job.getUuid() + "}");
 			}
 		}
+		return Completable.concat(actions);
 	}
 
 	@Override
