@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.impl;
 
+import io.reactivex.Maybe;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -44,5 +45,10 @@ public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 	public Observable<T> toObservable() {
 		return Observable.defer(() -> invoke().rxSetHandler()
 				.toObservable());
+	}
+
+	@Override
+	public Maybe<T> toMaybe() {
+		return toSingle().toMaybe();
 	}
 }

@@ -12,6 +12,10 @@ import io.vertx.core.http.HttpMethod;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	private String token;
@@ -28,6 +32,17 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 			request.headers().add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 		}
 		return Completable.complete();
+	}
+
+	@Override
+	public Map<String, String> getHeaders() {
+		if (token == null) {
+			return Collections.emptyMap();
+		}
+		Map<String, String> headers = new HashMap<>(2);
+		headers.put(HttpHeaders.COOKIE.toString(), "mesh.token=" + token);
+		headers.put(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + token);
+		return headers;
 	}
 
 	@Override

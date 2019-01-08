@@ -15,6 +15,7 @@ import static org.junit.Assert.fail;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -39,15 +40,13 @@ public final class ClientHelper {
 	 * @return result of the future
 	 */
 	public static <T> T call(ClientHandler<T> handler) {
-		MeshResponse<T> future;
 		try {
-			future = handler.handle().invoke();
+			AtomicReference<T> result = new AtomicReference<>();
+			handler.handle().toObservable().blockingForEach(result::set);
+			return result.get();
 		} catch (Exception e) {
-			future = new MeshResponse<>(Future.failedFuture(e));
+			throw new RuntimeException(e);
 		}
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
 	}
 
 	/**
@@ -120,17 +119,18 @@ public final class ClientHelper {
 	 */
 	public static <T> MeshRestClientMessageException call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey,
 		String... i18nParams) {
-		MeshResponse<T> future;
 		try {
-			future = handler.handle().invoke();
+			handler.handle().toSingle().blockingGet();
+			fail("We expected the future to have failed but it succeeded.");
+		} catch (RuntimeException e) {
+			expectException(e.getCause(), status, bodyMessageI18nKey, i18nParams);
+			if (e.getCause() instanceof MeshRestClientMessageException) {
+				return (MeshRestClientMessageException) e.getCause();
+			}
 		} catch (Exception e) {
-			future = new MeshResponse<>(Future.failedFuture(e));
+			throw new RuntimeException(e);
 		}
-		latchFor(future);
-		expectException(future, status, bodyMessageI18nKey, i18nParams);
-		if (future.cause() instanceof MeshRestClientMessageException) {
-			return (MeshRestClientMessageException) future.cause();
-		}
+
 		return null;
 	}
 
@@ -204,4 +204,27 @@ public final class ClientHelper {
 		expectFailureMessage(future, status, message);
 	}
 
+	public static void expectException(Throwable e, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+		Locale en = Locale.ENGLISH;
+		String message = I18NUtil.get(en, bodyMessageI18nKey, i18nParams);
+		assertNotEquals("Translation for key " + bodyMessageI18nKey + " not found", message, bodyMessageI18nKey);
+		expectFailureMessage(e, status, message);
+	}
+
+	public static void expectFailureMessage(Throwable e, HttpResponseStatus status, String message) {
+		if (e instanceof MeshRestClientMessageException) {
+			MeshRestClientMessageException exception = ((MeshRestClientMessageException) e);
+			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
+
+			GenericMessageResponse msg = exception.getResponseMessage();
+			if (msg != null) {
+				assertEquals(message, msg.getMessage());
+			} else {
+				assertEquals(message, exception.getMessage());
+			}
+		} else {
+			e.printStackTrace();
+			fail("Unhandled exception");
+		}
+	}
 }
