@@ -1,18 +1,13 @@
 package com.gentics.mesh.rest.client.impl;
 
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.client.MeshRequest;
-import io.reactivex.Single;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
-import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.util.HashMap;
 import java.util.Map;
 

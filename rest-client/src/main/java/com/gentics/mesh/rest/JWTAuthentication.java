@@ -47,22 +47,13 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	@Override
 	public Single<GenericMessageResponse> login(MeshRestClient meshRestClient) {
-		this.loginRequest = Single.create(sub -> {
+		return Single.defer(() -> {
 			LoginRequest loginRequest = new LoginRequest();
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
-
-			MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, meshRestClient, null, false).invoke()
-					.setHandler(rh -> {
-						if (rh.failed()) {
-							sub.onError(rh.cause());
-						} else {
-							token = rh.result().getToken();
-							sub.onSuccess(new GenericMessageResponse("OK"));
-						}
-					});
-		});
-		return this.loginRequest;
+			return MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, meshRestClient, null, false).toSingle();
+		}).doOnSuccess(response -> token = response.getToken())
+		.map(ignore -> new GenericMessageResponse("OK"));
 	}
 
 	@Override

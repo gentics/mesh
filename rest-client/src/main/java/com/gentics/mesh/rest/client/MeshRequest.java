@@ -59,4 +59,19 @@ public interface MeshRequest<T> {
 	default Observable<T> toObservable() {
 		return toMaybe().toObservable();
 	}
+
+	/**
+	 * Invokes the request and blocks the current thread until the result is received.
+	 * @return The result from the response or null if the response is empty
+	 */
+	default T blockingGet() {
+		return toSingle().blockingGet();
+	}
+
+	/**
+	 * Invokes the request and block the current thread until a response is received.
+	 */
+	default void blockingAwait() {
+		blockingGet();
+	}
 }

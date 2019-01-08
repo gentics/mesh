@@ -20,6 +20,7 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	private final OkHttpClient client;
@@ -94,36 +95,64 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 
 				@Override
 				public void onResponse(Call call, Response response) throws IOException {
-
-					if (!sub.isDisposed()) {
-						String body = response.body().string();
-						if (!response.isSuccessful() && !sub.isDisposed()) {
-							// TODO correct error
-							sub.onError(new MeshRestClientMessageException(
-								response.code(),
-								response.message(),
-								JsonUtil.readValue(body, GenericMessageResponse.class),
-								HttpMethod.valueOf(request.method().toUpperCase()),
-								request.url().toString()
-							));
-						}
-						try {
-							if (!sub.isDisposed()) {
-								if (body.length() == 0) {
-									sub.onComplete();
-								} else {
-									sub.onSuccess(JsonUtil.readValue(body, resultClass));
-								}
-							}
-						} catch (Throwable t) {
-							if (!sub.isDisposed()) {
-								sub.onError(t);
+					try {
+						if (!sub.isDisposed()) {
+							Optional<T> result = mapResponse(response);
+							result.ifPresent(sub::onSuccess);
+							if (!result.isPresent()) {
+								sub.onComplete();
 							}
 						}
+					} catch (Throwable e) {
+						sub.onError(e);
+					} finally {
+						response.close();
 					}
 				}
 			});
 
 		});
+	}
+
+	private Optional<T> mapResponse(Response response) throws IOException, MeshRestClientMessageException {
+		String body = response.body().string();
+		if (!response.isSuccessful()) {
+			throw new MeshRestClientMessageException(
+				response.code(),
+				response.message(),
+				JsonUtil.readValue(body, GenericMessageResponse.class),
+				HttpMethod.valueOf(request.method().toUpperCase()),
+				request.url().toString()
+			);
+		} else {
+			String contentType = response.header("Content-Type");
+			if (body.length() == 0) {
+				return Optional.empty();
+			} else if (contentType != null && contentType.startsWith("application/json")) {
+				return Optional.of(JsonUtil.readValue(body, resultClass));
+			} else if (resultClass.isAssignableFrom(String.class)) {
+				return Optional.of((T) body);
+			} else {
+				throw new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}");
+			}
+		}
+	}
+
+	@Override
+	public T blockingGet() {
+		try (Response response = client.newCall(request).execute()) {
+			return mapResponse(response).orElse(null);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public void blockingAwait() {
+		try {
+			client.newCall(request).execute().close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
