@@ -20,8 +20,7 @@
     },
     "version" : {
       "type" : "string",
-      "required" : true,
-      "description" : "Version number which must be provided in order to handle and detect concurrent changes to the node content."
+      "description" : "Version number which can be provided in order to handle and detect concurrent changes to the node content."
     },
     "tags" : {
       "type" : "array",

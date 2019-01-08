@@ -122,7 +122,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OHazelcastPlugin hazelcastPlugin;
 
-	private int maxRetry = 100;
+	private int maxRetry = 10;
 
 	private OrientStorage txProvider;
 
@@ -925,6 +925,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (ONeedRetryException e) {
+				log.info("Error in tx", e);
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}

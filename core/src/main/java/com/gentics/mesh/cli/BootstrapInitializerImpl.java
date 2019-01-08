@@ -402,7 +402,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
-			log.info("Created clustered vert.x instance");
+			log.info("Created clustered Vert.x instance");
 			if (rh.failed()) {
 				Throwable cause = rh.cause();
 				log.error("Failed to create clustered vert.x instance", cause);

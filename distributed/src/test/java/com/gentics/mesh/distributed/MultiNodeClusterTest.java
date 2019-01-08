@@ -62,6 +62,8 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 		serverC.login();
 		serverD.awaitStartup(200);
 		serverD.login();
+		serverA.awaitStartup(200);
+		serverA.login();
 	}
 
 	/**
