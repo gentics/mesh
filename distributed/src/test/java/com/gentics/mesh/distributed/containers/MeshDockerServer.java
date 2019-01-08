@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
+		client = new MeshRestOkHttpClientImpl("localhost", getMappedPort(8080), false, vertx);
 	};
 
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -38,7 +39,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false, vertx);
+		client = new MeshRestOkHttpClientImpl(getContainerIpAddress(), getMappedPort(8080), false, vertx);
 		client.setLogin("admin", "admin");
 		client.login().blockingGet();
 	};

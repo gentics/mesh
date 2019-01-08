@@ -82,12 +82,10 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 			// System.out.println(container.isPublished(project().getLatestBranch().getUuid()));
 			// }
 			String path = "/";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertThat(future.result()).isValid(7).hasDepth(3);
+			NavigationResponse response = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).blockingGet();
+			assertThat(response).isValid(7).hasDepth(3);
 			assertEquals("The root element of the navigation did not contain the project basenode uuid.", project().getBaseNode().getUuid(),
-					future.result().getUuid());
+				response.getUuid());
 		}
 	}
 
@@ -111,10 +109,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 	public void testReadNavWithPathToContent() {
 		try (Tx tx = tx()) {
 			String path = "/News/2015/News_2015.en.html";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de"))
-					.invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "navigation_error_no_container");
+			call(() -> client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")), BAD_REQUEST, "navigation_error_no_container");
 		}
 	}
 }

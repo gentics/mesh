@@ -143,11 +143,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			MeshResponse<TagListResponse> pageFuture = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0L))
-					.invoke();
-			latchFor(pageFuture);
-			assertSuccess(pageFuture);
-			assertEquals(0, pageFuture.result().getData().size());
+			TagListResponse pageResponse = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0L)).blockingGet();
+			assertEquals(0, pageResponse.getData().size());
 		}
 	}
 
@@ -158,10 +155,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-			MeshResponse<TagResponse> future = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertThat(future.result()).matches(tag);
+			TagResponse response = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()).blockingGet();
+			assertThat(response).matches(tag);
 		}
 	}
 

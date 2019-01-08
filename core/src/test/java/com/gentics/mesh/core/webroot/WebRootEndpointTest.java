@@ -243,10 +243,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testReadWithEmptyPath() {
-		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, "").invoke();
-		latchFor(future);
-		assertSuccess(future);
-		WebRootResponse response = future.result();
+		WebRootResponse response = client().webroot(PROJECT_NAME, "").blockingGet();
 		assertEquals(project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 	}
 

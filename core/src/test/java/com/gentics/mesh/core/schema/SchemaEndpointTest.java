@@ -200,11 +200,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			List<Schema> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<SchemaListResponse> pageFuture = client().findSchemas(new PagingParametersImpl(page, perPage)).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-
-				restResponse = pageFuture.result();
+				restResponse = client().findSchemas(new PagingParametersImpl(page, perPage)).blockingGet();
 				allSchemas.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all schemas were loaded when loading all pages.", totalSchemas, allSchemas.size());

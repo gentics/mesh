@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.User.composeIndexName;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -28,6 +29,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+import static io.vertx.core.http.HttpHeaders.HOST;
+import static io.vertx.core.http.HttpHeaders.LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -474,10 +477,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		List<UserResponse> allUsers = new ArrayList<>();
 		for (int page = 1; page < totalPages; page++) {
-			MeshResponse<UserListResponse> pageFuture = client().findUsers(new PagingParametersImpl(page, perPage)).invoke();
-			latchFor(pageFuture);
-			assertSuccess(pageFuture);
-			restResponse = pageFuture.result();
+			restResponse = client().findUsers(new PagingParametersImpl(page, perPage)).blockingGet();
 			allUsers.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
@@ -1241,16 +1241,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), restUser.getUuid());
+			assertThat(trackingSearchProvider()).hasStore(composeIndexName(), restUser.getUuid());
 			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
 			trackingSearchProvider().clear();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
 
-			MeshResponse<Void> future = client().deleteUser(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			Void future = client().deleteUser(uuid).blockingGet();
 
 			try (Tx tx2 = tx()) {
 				User loadedUser = boot().userRoot().findByUuid(uuid);
@@ -1260,7 +1258,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Load the user again and check whether it is disabled
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
-			assertThat(trackingSearchProvider()).hasDelete(User.composeIndexName(), uuid);
+			assertThat(trackingSearchProvider()).hasDelete(composeIndexName(), uuid);
 			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
 		}
 
@@ -1368,13 +1366,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setUsername(name);
 		request.setPassword("bla");
 		MeshResponse<UserResponse> response = client().createUser(request).invoke();
-		latchFor(response);
-		assertSuccess(response);
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
-			String location = response.getRawResponse().getHeader(HttpHeaders.LOCATION);
+			String location = response.getRawResponse().getHeader(LOCATION);
 			assertEquals("Location header value did not match", "http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
@@ -1388,15 +1384,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		userRequest.setPassword("bla");
 
 		MeshRequest<UserResponse> request = client().createUser(userRequest);
-		request.getRequest().putHeader(HttpHeaders.HOST, "jotschi.de:" + port());
+		request.getRequest().putHeader(HOST, "jotschi.de:" + port());
 		MeshResponse<UserResponse> response = request.invoke();
-		latchFor(response);
-		assertSuccess(response);
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
-			String location = response.getRawResponse().getHeader(HttpHeaders.LOCATION);
+			String location = response.getRawResponse().getHeader(LOCATION);
 			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}

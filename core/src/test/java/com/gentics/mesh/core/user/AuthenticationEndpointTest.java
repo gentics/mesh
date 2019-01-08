@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -34,7 +35,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			String username = user.getUsername();
 			String uuid = user.getUuid();
 
-			MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
+			MeshRestClient client = new MeshRestOkHttpClientImpl("localhost", port(), false, Mesh.vertx());
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
@@ -74,7 +75,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	public void testLoginAndDisableUser() {
 		String username = db().tx(() -> user().getUsername());
 
-		MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
+		MeshRestClient client = new MeshRestOkHttpClientImpl("localhost", port(), false, Mesh.vertx());
 		client.setLogin(username, data().getUserInfo().getPassword());
 		Single<GenericMessageResponse> future = client.login();
 
@@ -97,7 +98,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			User user = user();
 			String username = user.getUsername();
 
-			MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
+			MeshRestClient client = new MeshRestOkHttpClientImpl("localhost", port(), false, Mesh.vertx());
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 

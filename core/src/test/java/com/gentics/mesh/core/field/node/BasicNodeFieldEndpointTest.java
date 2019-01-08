@@ -58,11 +58,9 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.setVersion("0.1");
 
-			MeshResponse<NodeResponse> updateFuture = client()
-					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();
-			latchFor(updateFuture);
-			assertSuccess(updateFuture);
-			assertNotNull("The response could not be found in the result of the future.", updateFuture.result());
+			NodeResponse updateResponse = client()
+				.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).blockingGet();
+			assertNotNull("The response could not be found in the result of the future.", updateResponse);
 		}
 	}
 }

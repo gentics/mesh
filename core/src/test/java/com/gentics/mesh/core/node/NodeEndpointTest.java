@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -22,6 +23,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.out;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -193,17 +196,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				NodeCreateRequest request = new NodeCreateRequest();
 				request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
 				request.setLanguage("en");
-				request.getFields().put("title", FieldUtil.createStringField("some title " + i));
-				request.getFields().put("teaser", FieldUtil.createStringField("some teaser " + i));
-				request.getFields().put("slug", FieldUtil.createStringField("new-page_" + i + ".html"));
-				request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+				request.getFields().put("title", createStringField("some title " + i));
+				request.getFields().put("teaser", createStringField("some teaser " + i));
+				request.getFields().put("slug", createStringField("new-page_" + i + ".html"));
+				request.getFields().put("content", createStringField("Blessed mealtime again!"));
 				request.setParentNodeUuid(uuid);
 
-				MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
-				latchFor(future);
-				assertSuccess(future);
-				long duration = System.currentTimeMillis() - start;
-				System.out.println("Duration:" + i + " " + (duration / i));
+				NodeResponse future = client().createNode(PROJECT_NAME, request).blockingGet();
+				long duration = currentTimeMillis() - start;
+				out.println("Duration:" + i + " " + (duration / i));
 			}
 		}
 	}
@@ -534,14 +535,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 			schemaReference.setName("node");
 			request.setSchema(schemaReference);
-			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("teaser", createStringField("some teaser"));
+			request.getFields().put("slug", createStringField("new-page.html"));
+			request.getFields().put("content", createStringField("Blessed mealtime again!"));
 			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
 
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_missing_parentnode_field");
+			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_missing_parentnode_field");
 		}
 	}
 
@@ -703,11 +702,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<NodeListResponse> pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
-					new VersioningParametersImpl().draft()).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-				restResponse = pageFuture.result();
+				restResponse = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
+					new VersioningParametersImpl().draft()).blockingGet();
 				allNodes.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());

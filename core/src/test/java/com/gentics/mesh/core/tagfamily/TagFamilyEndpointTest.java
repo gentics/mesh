@@ -162,9 +162,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)).invoke();
-			latchFor(pageFuture);
-			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 			call(() -> client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(0, perPage)), BAD_REQUEST,
 					"error_page_parameter_must_be_positive", "0");
@@ -185,10 +183,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0L)).invoke();
-		latchFor(pageFuture);
-		assertSuccess(pageFuture);
-		assertEquals(0, pageFuture.result().getData().size());
+		TagFamilyListResponse page = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0L)).toSingle().blockingGet();
+		assertEquals(0, page.getData().size());
 	}
 
 	@Test
@@ -334,11 +330,9 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			String name = tagFamily.getName();
 
 			// 1. Read the current tagfamily
-			MeshResponse<TagFamilyResponse> readTagFut = client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
-			latchFor(readTagFut);
-			assertSuccess(readTagFut);
+			TagFamilyResponse readTagResponse = client().findTagFamilyByUuid(PROJECT_NAME, uuid).blockingGet();
 			assertNotNull("The name of the tag should be loaded.", name);
-			String restName = readTagFut.result().getName();
+			String restName = readTagResponse.getName();
 			assertNotNull("The tag name must be set.", restName);
 			assertEquals(name, restName);
 
@@ -399,9 +393,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("new Name");
 
-		MeshResponse<TagFamilyResponse> future = client().updateTagFamily(PROJECT_NAME, "bogus", request).invoke();
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_illegal_uuid", "bogus");
+		call(() -> client().updateTagFamily(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test

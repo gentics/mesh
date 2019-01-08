@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -163,7 +164,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	@Override
 	public MeshRestClient client() {
 		if (client == null) {
-			client = MeshRestClient.create("localhost", httpPort, false, Mesh.vertx());
+			client = new MeshRestOkHttpClientImpl("localhost", httpPort, false, Mesh.vertx());
 			client.setLogin("admin", "admin");
 			client.login().blockingGet();
 		}

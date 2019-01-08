@@ -27,6 +27,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.lang.Math.ceil;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -338,24 +340,18 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 		// Test default paging parameters
-		MeshResponse<ProjectListResponse> future = client().findProjects(new PagingParametersImpl()).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		ProjectListResponse restResponse = future.result();
+		ProjectListResponse restResponse = client().findProjects(new PagingParametersImpl()).blockingGet();
 		assertNull(restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(nProjects + 1, restResponse.getData().size());
 
 		long perPage = 11;
-		future = client().findProjects(new PagingParametersImpl(3, perPage)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		restResponse = future.result();
+		restResponse = client().findProjects(new PagingParametersImpl(3, perPage)).blockingGet();
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra projects + dummy project
 		int totalProjects = nProjects + 1;
-		int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
+		int totalPages = (int) ceil(totalProjects / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -372,7 +368,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// Verify that the no perm project is not part of the response
 		List<ProjectResponse> filteredProjectList = allProjects.parallelStream().filter(restProject -> restProject.getName().equals(
-			noPermProjectName)).collect(Collectors.toList());
+			noPermProjectName)).collect(toList());
 		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
 		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");

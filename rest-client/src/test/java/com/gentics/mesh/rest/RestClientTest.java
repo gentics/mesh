@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.junit.Test;
 
 import com.gentics.mesh.parameter.NodeParameters;
@@ -17,7 +18,7 @@ public class RestClientTest {
 
 	@Test
 	public void testRestClient() {
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, false, Vertx.vertx());
+		MeshRestClient client = new MeshRestOkHttpClientImpl("localhost", 8080, false, Vertx.vertx());
 		client.close();
 	}
 

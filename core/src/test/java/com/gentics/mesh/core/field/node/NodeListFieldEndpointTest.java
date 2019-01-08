@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
@@ -78,9 +79,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl("bogus"));
 
-			MeshResponse<NodeResponse> future = createNodeAsync("listField", listField).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_list_item_not_found", "bogus");
+			call(() -> createNodeAsync("listField", listField), BAD_REQUEST, "node_list_item_not_found", "bogus");
 		}
 	}
 

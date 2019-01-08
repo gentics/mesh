@@ -318,10 +318,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<RoleListResponse> future = client().findRoles(new PagingParametersImpl(1, 0L)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+		RoleListResponse response = client().findRoles(new PagingParametersImpl(1, 0L)).blockingGet();
+		assertEquals(0, response.getData().size());
 	}
 
 	// Update tests

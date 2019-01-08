@@ -1,5 +1,6 @@
 package com.gentics.mesh.test.remote;
 
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
@@ -26,7 +27,7 @@ public class MeshRemoteServer extends TestWatcher implements MeshTestServer {
 
 	@Override
 	protected void starting(Description description) {
-		client = MeshRestClient.create(getHostname(), getPort(), false, vertx);
+		client = new MeshRestOkHttpClientImpl(getHostname(), getPort(), false, vertx);
 		client.setLogin("admin", "admin");
 		client.login().blockingGet();
 	}

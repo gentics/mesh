@@ -310,31 +310,26 @@ public class DemoDataProvider {
 	 * @throws IOException
 	 */
 	private void addBootstrappedData() throws InterruptedException, IOException {
-
-		MeshResponse<GroupListResponse> groupsFuture = client.findGroups().invoke();
-		latchFor(groupsFuture);
-		for (GroupResponse group : groupsFuture.result().getData()) {
+		GroupListResponse groupsResponse = client.findGroups().blockingGet();
+		for (GroupResponse group : groupsResponse.getData()) {
 			groups.put(group.getName(), group);
 			uuidMapping.put(group.getUuid(), mappingData.getString("group/" + group.getName()));
 		}
 
-		MeshResponse<UserListResponse> usersFuture = client.findUsers().invoke();
-		latchFor(usersFuture);
-		for (UserResponse user : usersFuture.result().getData()) {
+		UserListResponse usersResponse = client.findUsers().blockingGet();
+		for (UserResponse user : usersResponse.getData()) {
 			users.put(user.getUsername(), user);
 			uuidMapping.put(user.getUuid(), mappingData.getString("user/" + user.getUsername()));
 		}
 
-		MeshResponse<RoleListResponse> rolesFuture = client.findRoles().invoke();
-		latchFor(rolesFuture);
-		for (RoleResponse role : rolesFuture.result().getData()) {
+		RoleListResponse rolesResponse = client.findRoles().blockingGet();
+		for (RoleResponse role : rolesResponse.getData()) {
 			roles.put(role.getName(), role);
 			uuidMapping.put(role.getUuid(), mappingData.getString("role/" + role.getName()));
 		}
 
-		MeshResponse<SchemaListResponse> schemasFuture = client.findSchemas().invoke();
-		latchFor(schemasFuture);
-		for (SchemaResponse schema : schemasFuture.result().getData()) {
+		SchemaListResponse schemasResponse = client.findSchemas().blockingGet();
+		for (SchemaResponse schema : schemasResponse.getData()) {
 			schemas.put(schema.getName(), schema);
 		}
 	}
@@ -544,17 +539,11 @@ public class DemoDataProvider {
 	}
 
 	protected <T> T call(ClientHandler<T> handler) {
-		MeshResponse<T> future;
 		try {
-			future = handler.handle().invoke();
+			return handler.handle().blockingGet();
 		} catch (Exception e) {
-			future = new MeshResponse<>(Future.failedFuture(e));
+			throw new RuntimeException("Error while handling request.", e);
 		}
-		if (future.failed()) {
-			throw new RuntimeException("Error while handling request.", future.cause());
-		}
-		latchFor(future);
-		return future.result();
 	}
 
 	private JsonObject loadJson(String name) throws IOException {
