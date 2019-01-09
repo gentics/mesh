@@ -12,20 +12,16 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -33,13 +29,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import io.reactivex.Observable;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -66,7 +60,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -200,11 +193,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			List<Schema> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<SchemaListResponse> pageFuture = client().findSchemas(new PagingParametersImpl(page, perPage)).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-
-				restResponse = pageFuture.result();
+				restResponse = client().findSchemas(new PagingParametersImpl(page, perPage)).blockingGet();
 				allSchemas.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all schemas were loaded when loading all pages.", totalSchemas, allSchemas.size());
@@ -497,17 +486,15 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateMultithreaded() throws Exception {
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 		String json = tx(() -> schemaContainer("content").getLatestVersion().getJson());
-		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		int nJobs = 20;
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i <= nJobs; i++) {
-			request.setName("newname" + i);
-			set.add(client().updateSchema(uuid, request).invoke());
-		}
-		validateSet(set, barrier);
+		Observable.range(0, nJobs)
+			.flatMapCompletable(i -> {
+				SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+				request.setName("newname" + i);
+				return client().updateSchema(uuid, request).toCompletable();
+			}).blockingAwait();
 		failingLatch(latch);
 	}
 
@@ -519,12 +506,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String uuid = schema.getUuid();
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findSchemaByUuid(uuid).invoke());
-			}
-			validateSet(set, barrier);
+			Observable.range(0, nJobs)
+				.flatMapCompletable(i -> client().findSchemaByUuid(uuid).toCompletable())
+				.blockingAwait();
 		}
 	}
 
@@ -535,12 +519,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		int nJobs = 3;
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<Void>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().deleteSchema(schema.getUuid()).invoke());
-			}
-			validateDeletion(set, barrier);
+			validateDeletion(i -> client().deleteSchema(schema.getUuid()), nJobs);
 		}
 	}
 
@@ -553,12 +532,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setName("new schema name");
 		request.setDisplayField("name");
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().createSchema(request).invoke());
-		}
-		validateCreation(set, barrier);
+		validateCreation(i -> client().createSchema(request), nJobs);
 	}
 
 	@Test
@@ -567,14 +541,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		int nJobs = 200;
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
-			Set<MeshResponse<SchemaResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findSchemaByUuid(schema.getUuid()).invoke());
-			}
-			for (MeshResponse<SchemaResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			awaitConcurrentRequests(i -> client().findSchemaByUuid(schema.getUuid()), nJobs);
 		}
 	}
 

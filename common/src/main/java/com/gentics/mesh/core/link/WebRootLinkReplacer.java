@@ -11,6 +11,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.parameter.VersioningParameters;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -231,7 +232,7 @@ public class WebRootLinkReplacer {
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return APIRouter.API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path;
+			return APIRouter.API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(theirProject.getBranchRoot().findByUuid(branchUuid));
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}
@@ -239,7 +240,7 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Return the URL prefix for the given node. The latest branch of the node's project will be used to fetch the needed information.
-	 * 
+	 *
 	 * @param node
 	 * @param branch branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
@@ -261,4 +262,18 @@ public class WebRootLinkReplacer {
 		return buffer.toString();
 	}
 
+	/**
+	 * Returns the query parameter for the given branch. This is the query parameter that is necessary to get the
+	 * node in the correct branch.
+	 * If the given branch is the latest branch, no query parameter is necessary and thus an empty string is returned.
+	 *
+	 * @param branch The branch to generate the query parameter for.
+	 * @return Example: "?branch=test1"
+	 */
+	private String branchQueryParameter(Branch branch) {
+		if (branch.isLatest()) {
+			return "";
+		}
+		return String.format("?%s=%s", VersioningParameters.BRANCH_QUERY_PARAM_KEY, branch.getName());
+	}
 }

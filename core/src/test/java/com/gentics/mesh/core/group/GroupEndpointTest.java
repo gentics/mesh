@@ -13,13 +13,10 @@ import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -32,12 +29,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -52,7 +47,6 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -493,13 +487,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName("changed");
 
 		int nJobs = 5;
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().updateGroup(group().getUuid(), request).invoke());
-		}
-		validateSet(set, barrier);
-
+		awaitConcurrentRequests(i -> client().updateGroup(group().getUuid(), request), nJobs);
 	}
 
 	@Test
@@ -508,13 +496,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		String uuid = user().getUuid();
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			log.debug("Invoking findGroupByUuid REST call");
-			set.add(client().findGroupByUuid(uuid).invoke());
-		}
-		validateSet(set, barrier);
+		awaitConcurrentRequests(i -> client().findGroupByUuid(uuid), nJobs);
 	}
 
 	@Test
@@ -522,46 +504,29 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testDeleteByUUIDMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		String uuid = db().tx(() -> group().getUuid());
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<Void>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			log.debug("Invoking deleteUser REST call");
-			set.add(client().deleteGroup(uuid).invoke());
-		}
-		validateDeletion(set, barrier);
+
+		validateDeletion(i -> client().deleteGroup(uuid), nJobs);
 	}
 
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 50;
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			log.debug("Invoking createGroup REST call");
+
+		validateCreation(i -> {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName("test12345_" + i);
-			set.add(client().createGroup(request).invoke());
-		}
-		validateCreation(set, barrier);
-
+			return client().createGroup(request);
+		}, nJobs);
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		Set<MeshResponse<GroupResponse>> set = new HashSet<>();
-		try (Tx tx = tx()) {
-			int nJobs = 200;
-			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking findGroupByUuid REST call");
-				set.add(client().findGroupByUuid(group().getUuid()).invoke());
-			}
-		}
-		for (MeshResponse<GroupResponse> future : set) {
-			latchFor(future);
-			assertSuccess(future);
-		}
+		int nJobs = 200;
+		Observable.range(0, nJobs)
+			.flatMapCompletable(i -> client().findGroupByUuid(group().getUuid()).toCompletable())
+			.blockingAwait();
 	}
 
 }

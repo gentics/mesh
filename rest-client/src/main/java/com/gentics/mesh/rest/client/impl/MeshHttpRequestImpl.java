@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.impl;
 
+import io.reactivex.Maybe;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
@@ -97,18 +98,22 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	@Override
+	public Single<T> toSingle() {
+		return Single.defer(() -> invoke().rxSetHandler());
+	}
+
+	@Override
 	public Completable toCompletable() {
 		return toSingle().toCompletable();
 	}
 
 	@Override
-	public Single<T> toSingle() {
-		return Single.defer(() -> invoke().rxSetHandler());
-	}
-
-
-	@Override
 	public Observable<T> toObservable() {
 		return toSingle().toObservable();
+	}
+
+	@Override
+	public Maybe<T> toMaybe() {
+		return toSingle().toMaybe();
 	}
 }

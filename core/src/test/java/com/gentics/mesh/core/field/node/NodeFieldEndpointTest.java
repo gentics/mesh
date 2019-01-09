@@ -1,10 +1,13 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.FieldUtil.createNodeField;
+import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -201,11 +204,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
-			MeshResponse<NodeResponse> future = client()
-				.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			response = future.result();
+			response = client()
+				.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).blockingGet();
 
 			assertNull("The field should have been deleted", response.getFields().getNodeField(FIELD_NAME));
 		}
@@ -382,41 +382,30 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			createGermanNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createGermanNode.setParentNodeUuid(folder.getUuid());
 			createGermanNode.setLanguage("de");
-			createGermanNode.getFields().put("name", FieldUtil.createStringField("German Target"));
+			createGermanNode.getFields().put("name", createStringField("German Target"));
 
-			MeshResponse<NodeResponse> createGermanFuture = client().createNode(PROJECT_NAME, createGermanNode).invoke();
-			latchFor(createGermanFuture);
-			assertSuccess(createGermanFuture);
-			NodeResponse germanTarget = createGermanFuture.result();
+			NodeResponse germanTarget = client().createNode(PROJECT_NAME, createGermanNode).blockingGet();
 
 			NodeUpdateRequest createEnglishNode = new NodeUpdateRequest();
 			createEnglishNode.setLanguage("en");
-			createEnglishNode.getFields().put("name", FieldUtil.createStringField("English Target"));
+			createEnglishNode.getFields().put("name", createStringField("English Target"));
 
-			MeshResponse<NodeResponse> updateEnglishNode = client().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode).invoke();
-			latchFor(updateEnglishNode);
-			assertSuccess(updateEnglishNode);
+			NodeResponse updateEnglishNode = client().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode).blockingGet();
 
 			// add a node in german (referencing the target node)
 			NodeCreateRequest createSourceNode = new NodeCreateRequest();
 			createSourceNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createSourceNode.setParentNodeUuid(folder.getUuid());
 			createSourceNode.setLanguage("de");
-			createSourceNode.getFields().put("name", FieldUtil.createStringField("German Source"));
-			createSourceNode.getFields().put(FIELD_NAME, FieldUtil.createNodeField(germanTarget.getUuid()));
+			createSourceNode.getFields().put("name", createStringField("German Source"));
+			createSourceNode.getFields().put(FIELD_NAME, createNodeField(germanTarget.getUuid()));
 
-			MeshResponse<NodeResponse> createSourceFuture = client().createNode(PROJECT_NAME, createSourceNode).invoke();
-			latchFor(createSourceFuture);
-			assertSuccess(createSourceFuture);
-			NodeResponse source = createSourceFuture.result();
+			NodeResponse source = client().createNode(PROJECT_NAME, createSourceNode).blockingGet();
 
 			// read source node with expanded field
-			for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
-				MeshResponse<NodeResponse> resultFuture = client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
-					new NodeParametersImpl().setLanguages(requestedLangs).setExpandAll(true), new VersioningParametersImpl().draft()).invoke();
-				latchFor(resultFuture);
-				assertSuccess(resultFuture);
-				NodeResponse response = resultFuture.result();
+			for (String[] requestedLangs : asList(new String[]{"de"}, new String[]{"de", "en"}, new String[]{"en", "de"})) {
+				NodeResponse response = client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
+					new NodeParametersImpl().setLanguages(requestedLangs).setExpandAll(true), new VersioningParametersImpl().draft()).blockingGet();
 				assertEquals("Check node language", "de", response.getLanguage());
 				NodeResponse nodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 				assertNotNull("Field must be present", nodeField);

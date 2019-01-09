@@ -2,26 +2,24 @@ package com.gentics.mesh.storage.s3;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
 
-import io.netty.buffer.ByteBuf;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import software.amazon.awssdk.core.async.AsyncRequestProvider;
-import software.amazon.awssdk.core.async.AsyncResponseHandler;
-import software.amazon.awssdk.core.auth.AwsCredentials;
-import software.amazon.awssdk.core.auth.StaticCredentialsProvider;
-import software.amazon.awssdk.core.regions.Region;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
+import software.amazon.awssdk.core.async.SdkPublisher;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
@@ -48,7 +46,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	private void init() {
-		AwsCredentials credentials = AwsCredentials.create(options.getAccessId(), options.getAccessKey());
+		AwsCredentials credentials = AwsBasicCredentials.create(options.getAccessId(), options.getAccessKey());
 		// ClientConfiguration clientConfiguration = new ClientConfiguration();
 		// clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
@@ -68,19 +66,19 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 			.build();
 
 		String bucketName = options.getBucketName();
-//		try {
-			//HeadBucketResponse response = client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build()).get();
-//		} catch (InterruptedException | ExecutionException e) {
+		// try {
+		// HeadBucketResponse response = client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build()).get();
+		// } catch (InterruptedException | ExecutionException e) {
+		// TODO Auto-generated catch block
+		// e.printStackTrace();
+		// } catch (NoSuchKeyException e) {
+		try {
+			CreateBucketResponse response2 = client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build()).get();
+		} catch (InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (NoSuchKeyException e) {
-			try {
-				CreateBucketResponse response2 = client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build()).get();
-			} catch (InterruptedException | ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-//		}
+			e.printStackTrace();
+		}
+		// }
 
 		// s3Client = AmazonS3ClientBuilder
 		// .standard()
@@ -123,26 +121,33 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 			}
 			// GetObjectRequest rangeObjectRequest = new GetObjectRequest(options.getBucketName(), hashsum);
 			GetObjectRequest request = GetObjectRequest.builder().bucket(options.getBucketName()).build();
-			client.getObject(request, new AsyncResponseHandler<GetObjectResponse, String>() {
+			client.getObject(request, new AsyncResponseTransformer<GetObjectResponse, String>() {
 
 				@Override
-				public void responseReceived(GetObjectResponse response) {
-				}
-
-				@Override
-				public void onStream(Publisher<ByteBuffer> publisher) {
-				}
-
-				@Override
-				public void exceptionOccurred(Throwable throwable) {
-				}
-
-				@Override
-				public String complete() {
+				public CompletableFuture<String> prepare() {
+					// TODO Auto-generated method stub
 					return null;
 				}
 
+				@Override
+				public void onResponse(GetObjectResponse response) {
+					// TODO Auto-generated method stub
+
+				}
+
+				@Override
+				public void onStream(SdkPublisher<ByteBuffer> publisher) {
+					// TODO Auto-generated method stub
+
+				}
+
+				@Override
+				public void exceptionOccurred(Throwable error) {
+					// TODO Auto-generated method stub
+
+				}
 			});
+
 			// try (InputStream stream = objectPortion.getObjectContent()) {
 			//
 			// if (log.isDebugEnabled()) {
@@ -162,45 +167,48 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 				.key(hashsum)
 				.build();
 
-			client.putObject(request, new AsyncRequestProvider() {
+			/*
+			client.putObject(request, new AsyncRequestBody() {
+
 				@Override
 				public void subscribe(Subscriber<? super ByteBuffer> s) {
 					stream.map(Buffer::getByteBuf).map(ByteBuf::nioBuffer).subscribe(s);
 				}
 
 				@Override
-				public long contentLength() {
-					// TODO Auto-generated method stub
-					return 10;
+				public Optional<Long> contentLength() {
+					// return Optional.from(10L);
+					return null;
 				}
 			});
-
-			// try {
-			// if (log.isDebugEnabled()) {
-			// log.debug("Uploading {" + hashsum + "} to S3.");
-			// }
-			// try (InputStream ins = RxUtil.toInputStream(stream, new io.vertx.reactivex.core.Vertx(vertx))) {
-			// ObjectMetadata metaData = new ObjectMetadata();
-			// metaData.setContentLength(90);
-			// s3Client.putObject(new PutObjectRequest(options.getBucketName(), hashsum, ins, metaData));
-			// sub.onComplete();
-			// }
-			// } catch (AmazonServiceException ase) {
-			// log.debug(
-			// "Caught an AmazonServiceException, which means your request made it to Amazon S3, but was rejected with an error response for some reason.");
-			// log.debug("Error Message: " + ase.getMessage());
-			// log.debug("HTTP Status Code: " + ase.getStatusCode());
-			// log.debug("AWS Error Code: " + ase.getErrorCode());
-			// log.debug("Error Type: " + ase.getErrorType());
-			// log.debug("Request ID: " + ase.getRequestId());
-			// sub.onError(ase);
-			// } catch (AmazonClientException ace) {
-			// log.debug("Caught an AmazonClientException, which " + "means the client encountered " + "an internal error while trying to "
-			// + "communicate with S3, " + "such as not being able to access the network.");
-			// log.debug("Error Message: " + ace.getMessage());
-			// sub.onError(ace);
-			// }
+			*/
 		});
+
+		// try {
+		// if (log.isDebugEnabled()) {
+		// log.debug("Uploading {" + hashsum + "} to S3.");
+		// }
+		// try (InputStream ins = RxUtil.toInputStream(stream, new io.vertx.reactivex.core.Vertx(vertx))) {
+		// ObjectMetadata metaData = new ObjectMetadata();
+		// metaData.setContentLength(90);
+		// s3Client.putObject(new PutObjectRequest(options.getBucketName(), hashsum, ins, metaData));
+		// sub.onComplete();
+		// }
+		// } catch (AmazonServiceException ase) {
+		// log.debug(
+		// "Caught an AmazonServiceException, which means your request made it to Amazon S3, but was rejected with an error response for some reason.");
+		// log.debug("Error Message: " + ase.getMessage());
+		// log.debug("HTTP Status Code: " + ase.getStatusCode());
+		// log.debug("AWS Error Code: " + ase.getErrorCode());
+		// log.debug("Error Type: " + ase.getErrorType());
+		// log.debug("Request ID: " + ase.getRequestId());
+		// sub.onError(ase);
+		// } catch (AmazonClientException ace) {
+		// log.debug("Caught an AmazonClientException, which " + "means the client encountered " + "an internal error while trying to "
+		// + "communicate with S3, " + "such as not being able to access the network.");
+		// log.debug("Error Message: " + ace.getMessage());
+		// sub.onError(ace);
+		// }
 	}
 
 	@Override

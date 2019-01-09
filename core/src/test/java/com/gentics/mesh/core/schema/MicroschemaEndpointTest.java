@@ -10,14 +10,9 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -27,10 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
-
+import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -54,7 +46,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -79,12 +70,9 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findMicroschemaByUuid(uuid).invoke());
-			}
-			validateSet(set, barrier);
+			Observable.range(0, nJobs)
+				.flatMapCompletable(i -> client().findMicroschemaByUuid(uuid).toCompletable())
+				.blockingAwait();
 		}
 	}
 
@@ -99,16 +87,13 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
-		request.setName("new_microschema_name");
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			request.setName("new_microschema_name" + i);
-			set.add(client().createMicroschema(request).invoke());
-		}
-		validateCreation(set, barrier);
+		Observable.range(0, nJobs)
+			.flatMapCompletable(i -> {
+				MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+				request.setName("new_microschema_name" + i);
+				return client().createMicroschema(request).toCompletable();
+			}).blockingAwait();
 	}
 
 	@Test
@@ -120,14 +105,9 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			Set<MeshResponse<MicroschemaResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findMicroschemaByUuid(uuid).invoke());
-			}
-			for (MeshResponse<MicroschemaResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			Observable.range(0, nJobs)
+				.flatMapCompletable(i -> client().findMicroschemaByUuid(uuid).toCompletable())
+				.blockingAwait();
 		}
 	}
 

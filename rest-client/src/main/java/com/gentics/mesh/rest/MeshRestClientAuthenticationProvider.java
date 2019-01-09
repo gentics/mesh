@@ -7,6 +7,8 @@ import io.vertx.core.http.HttpClientRequest;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
+import java.util.Map;
+
 public interface MeshRestClientAuthenticationProvider {
 	
 	/**
@@ -34,4 +36,10 @@ public interface MeshRestClientAuthenticationProvider {
 	 * @return A future that completes when the logout has completed.
 	 */
 	public Single<GenericMessageResponse> logout(MeshRestClient client);
+
+	/**
+	 * Gets authentication information as http headers.
+	 * @return A map containing the headers.
+	 */
+	Map<String, String> getHeaders();
 }

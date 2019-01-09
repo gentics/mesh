@@ -74,10 +74,10 @@ NOTE: It is important to understand that a node is just a container for language
 | API endpoint
 
 | Create a new node
-| link:++/docs/api#project__nodes__post++[```POST /api/v1/projectName/nodes```]
+| link:++/docs/api#project__nodes__post++[```POST /api/v1/:projectName/nodes```]
 
 | Get all nodes of a project
-| link:++/docs/api#project__nodes__get++[```GET /api/v1/projectName/nodes```]
+| link:++/docs/api#project__nodes__get++[```GET /api/v1/:projectName/nodes```]
 
 | Get a node
 | link:++/docs/api#project__nodes__nodeUuid__get++[```GET /api/v1/:projectName/nodes/:nodeUuid```]

@@ -31,23 +31,14 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 			recreateIndices();
 		}
 
-		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleQuery("name", "dummy"), new PagingParametersImpl().setPage(1)
-			.setPerPage(2L)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		ProjectListResponse response = future.result();
+		ProjectListResponse response = client().searchProjects(getSimpleQuery("name", "dummy"), new PagingParametersImpl().setPage(1)
+			.setPerPage(2L)).blockingGet();
 		assertEquals(1, response.getData().size());
 
-		future = client().searchProjects(getSimpleQuery("name", "blub"), new PagingParametersImpl().setPage(1).setPerPage(2L)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		response = future.result();
+		response = client().searchProjects(getSimpleQuery("name", "blub"), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(0, response.getData().size());
 
-		future = client().searchProjects(getSimpleTermQuery("name.raw", "dummy"), new PagingParametersImpl().setPage(1).setPerPage(2L)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		response = future.result();
+		response = client().searchProjects(getSimpleTermQuery("name.raw", "dummy"), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(1, response.getData().size());
 	}
 
@@ -71,17 +62,13 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		final String projectName = "newproject";
 		ProjectResponse project = createProject(projectName);
 
-		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
-			.setPage(1).setPerPage(2L)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(1, future.result().getData().size());
+		ProjectListResponse response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
+			.setPage(1).setPerPage(2L)).blockingGet();
+		assertEquals(1, response.getData().size());
 
 		deleteProject(project.getUuid());
-		future = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl().setPage(1).setPerPage(2L)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+		response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
+		assertEquals(0, response.getData().size());
 	}
 
 	@Test
@@ -93,17 +80,13 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		String newProjectName = "updatedprojectname";
 		updateProject(project.getUuid(), newProjectName);
 
-		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
-			.setPage(1).setPerPage(2L)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+		ProjectListResponse response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
+			.setPage(1).setPerPage(2L)).blockingGet();
+		assertEquals(0, response.getData().size());
 
-		future = client().searchProjects(getSimpleTermQuery("name.raw", newProjectName), new PagingParametersImpl().setPage(1).setPerPage(2L))
-			.invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(1, future.result().getData().size());
+		response = client().searchProjects(getSimpleTermQuery("name.raw", newProjectName), new PagingParametersImpl().setPage(1).setPerPage(2L))
+			.blockingGet();
+		assertEquals(1, response.getData().size());
 	}
 
 }

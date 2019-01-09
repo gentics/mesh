@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -52,6 +53,19 @@ public interface NodeClientMethods {
 	 * @return Mesh request which can be invoked
 	 */
 	MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
+
+	/**
+	 * Create or update a node within the given project.
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param uuid
+	 *            Uuid for the node
+	 * @param nodeUpsertRequest
+	 * @param parameters
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<NodeResponse> upsertNode(String projectName, String uuid, NodeUpsertRequest nodeUpsertRequest, ParameterProvider... parameters);
 
 	/**
 	 * Update the node with the given UUID.

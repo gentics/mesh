@@ -23,6 +23,17 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.28.3]]
+== 0.28.3 (09.01.19)
+
+icon:check[] GraphQL: Resolved links will now contain the hostname of the target branch, not the latest branch.
+
+icon:check[] Elasticsearch: Search indices are now created sequentially. Parallel creation of indices caused problems when many indices would have to be created.
+
+icon:plus[] Core: When resolving links with type FULL, and the chosen branch is not the latest branch, the query parameter for the branch will be added to the rendered link.
+
+icon:plus[] Java Rest Client: Added new REST client implementation. The `MeshRestOkHttpClientImpl` implementation will replace the current Java client in a future release. It is advised to switch to the new implementation which is based on the OkHttp library instead of Vert.x.
+
 [[v0.28.2]]
 == 0.28.2 (26.11.2018)
 
@@ -30,6 +41,10 @@ icon:check[] Changelog: Enhanced changelog entry fix from release `0.28.1` to fi
 
 [[v0.28.1]]
 == 0.28.1 (26.11.2018)
+
+icon:plus[] Java Rest Client: The `version` property of the `NodeUpdateRequest` is now by default set to `draft`. Setting the value to draft will override the conflict detection handling and always compare the posted data with the latest draft version.
+
+icon:plus[] Java Rest Client: The `upsertNode` method has been added to the REST client which can be used to create or update a node.
 
 icon:plus[] Demo: The example uuids and dates in the `/api/v1/raml` response and the documentation are now static and will no longer change between releases. link:https://github.com/gentics/mesh/issues/477[#477]
 

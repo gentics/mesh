@@ -5,7 +5,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.28.3-SNAPSHOT</version>
+	<version>0.28.4-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -83,7 +83,6 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
-		<module>diktyo</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>

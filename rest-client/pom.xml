@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.28.3-SNAPSHOT</version>
+		<version>0.28.4-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -32,6 +32,11 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-rx-java2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>3.12.1</version>
 		</dependency>
 
 		<!-- Test dependencies -->

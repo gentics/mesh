@@ -7,7 +7,7 @@ import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,6 +38,7 @@ import com.google.common.collect.Maps;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -346,16 +347,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable init() {
 		// Create the indices
-		Map<String, IndexInfo> indexInfo = getIndices();
-		Set<Completable> obs = new HashSet<>();
+		List<Completable> obs = getIndices().values().stream()
+			.map(searchProvider::createIndex)
+			.peek(info -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Creating index {" + info + "}");
+				}
+			})
+			.collect(Collectors.toList());
 
-		for (IndexInfo info : indexInfo.values()) {
-			if (log.isDebugEnabled()) {
-				log.debug("Creating index {" + indexInfo + "}");
-			}
-			obs.add(searchProvider.createIndex(info));
-		}
-		return Completable.merge(obs);
+		return Completable.merge(Flowable.fromIterable(obs), 1);
 	}
 
 	@Override

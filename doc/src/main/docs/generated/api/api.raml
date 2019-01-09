@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.28.2"
+version: "0.28.3"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -12801,7 +12801,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.28.2",
+                                  "meshVersion" : "0.28.3",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -14690,7 +14690,7 @@ mediaType: application/json
                                   }
                                 }
         post: 
-            description: Update the node with the given uuid. It is mandatory to specify the version within the update request. Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.
+            description: Update or create the node with the given uuid. Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.
             body: 
                 application/json: 
                     schema: |
@@ -14716,8 +14716,7 @@ mediaType: application/json
                             },
                             "version" : {
                               "type" : "string",
-                              "required" : true,
-                              "description" : "Version number which must be provided in order to handle and detect concurrent changes to the node content."
+                              "description" : "Version number which can be provided in order to handle and detect concurrent changes to the node content."
                             },
                             "tags" : {
                               "type" : "array",
@@ -21797,8 +21796,7 @@ mediaType: application/json
                             },
                             "version" : {
                               "type" : "string",
-                              "required" : true,
-                              "description" : "Version number which must be provided in order to handle and detect concurrent changes to the node content."
+                              "description" : "Version number which can be provided in order to handle and detect concurrent changes to the node content."
                             },
                             "tags" : {
                               "type" : "array",

@@ -4,14 +4,12 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +32,6 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -106,10 +103,14 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			// Update the node and change the name field. Base the update on 1.0 thus a conflict check must be performed. A conflict should be detected.
 			NodeUpdateRequest request3 = prepareNameFieldUpdateRequest("1234", "1.0");
 			request3.getFields().put("teaser", FieldUtil.createStringField("updatedField"));
-			MeshResponse<NodeResponse> future = client().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).invoke();
-			latchFor(future);
-			assertTrue("The node update should fail with a conflict error", future.failed());
-			Throwable error = future.cause();
+
+			Throwable error = null;
+			try {
+				client().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).blockingGet();
+				fail("The node update should fail with a conflict error");
+			} catch (RuntimeException e) {
+				error = e.getCause();
+			}
 			assertThat(error).isNotNull().isInstanceOf(MeshRestClientMessageException.class);
 			MeshRestClientMessageException conflictException = ((MeshRestClientMessageException) error);
 
@@ -333,12 +334,16 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			request.getFields().put("micronode", FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField(
 				"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname-also-modified"))));
 
-			MeshResponse<NodeResponse> future = client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).invoke();
-			latchFor(future);
-			assertTrue("The node update should fail with a conflict error", future.failed());
-			Throwable error = future.cause();
+			Throwable error = null;
+			try {
+				client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).blockingGet();
+				fail("The node update should fail with a conflict error");
+			} catch (RuntimeException e) {
+				error = e.getCause();
+			}
 			assertThat(error).isNotNull().isInstanceOf(MeshRestClientMessageException.class);
 			MeshRestClientMessageException conflictException = ((MeshRestClientMessageException) error);
+
 			assertThat(((List) conflictException.getResponseMessage().getProperty("conflicts"))).hasSize(2).containsExactly("micronode.firstName",
 				"micronode.lastName");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());

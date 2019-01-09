@@ -10,15 +10,11 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -30,10 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -53,7 +46,6 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -143,11 +135,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			MeshResponse<TagListResponse> pageFuture = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0L))
-					.invoke();
-			latchFor(pageFuture);
-			assertSuccess(pageFuture);
-			assertEquals(0, pageFuture.result().getData().size());
+			TagListResponse pageResponse = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0L)).blockingGet();
+			assertEquals(0, pageResponse.getData().size());
 		}
 	}
 
@@ -158,10 +147,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-			MeshResponse<TagResponse> future = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertThat(future.result()).matches(tag);
+			TagResponse response = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()).blockingGet();
+			assertThat(response).matches(tag);
 		}
 	}
 
@@ -272,9 +259,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tagUpdateRequest.setName(newName);
 			assertEquals(newName, tagUpdateRequest.getName());
 
-			MeshResponse<TagResponse> updatedTagFut = client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest).invoke();
-			latchFor(updatedTagFut);
-			expectException(updatedTagFut, CONFLICT, "tag_create_tag_with_same_name_already_exists", newName, tagFamilyName);
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest),
+				CONFLICT, "tag_create_tag_with_same_name_already_exists", newName, tagFamilyName);
 		}
 	}
 
@@ -312,10 +298,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid, UPDATE_PERM.getRestPerm().getName());
 
 			// read the tag again and verify that it was not changed
-			MeshResponse<TagResponse> tagReloadFut = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
-			latchFor(tagReloadFut);
-			assertTrue(tagReloadFut.succeeded());
-			TagResponse loadedTag = tagReloadFut.result();
+			TagResponse loadedTag = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).blockingGet();
 			assertEquals(tagName, loadedTag.getName());
 		}
 
@@ -384,10 +367,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tagCreateRequest.setName("red");
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
-			MeshResponse<TagResponse> future = client().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", "colors");
-			MeshRestClientMessageException exception = ((MeshRestClientMessageException) future.cause());
+			MeshRestClientMessageException exception = call(() -> client().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest),
+				CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", "colors");
 			assertNotNull(exception.getResponseMessage().getProperties());
 			assertNotNull(exception.getResponseMessage().getProperties().get("conflictingUuid"));
 		}
@@ -482,12 +463,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagUpdateRequest request = new TagUpdateRequest();
 			request.setName("newName");
 			String uuid = tag("red").getUuid();
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, request).invoke());
-			}
-			validateSet(set, barrier);
+
+			awaitConcurrentRequests(i -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, request), nJobs);
 		}
 
 	}
@@ -500,12 +477,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke());
-			}
-			validateSet(set, barrier);
+
+			awaitConcurrentRequests(i -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid), nJobs);
 		}
 	}
 
@@ -518,12 +491,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<Void>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke());
-			}
-			validateDeletion(set, barrier);
+			validateDeletion(i -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), nJobs);
 		}
 	}
 
@@ -534,14 +502,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		int nJobs = 200;
 		TagFamily parentTagFamily = tagFamily("colors");
 
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
+		validateCreation(i -> {
 			TagCreateRequest request = new TagCreateRequest();
 			request.setName("newcolor_" + i);
-			// request.setTagFamily(new TagFamilyReference().setName("colors"));
-			set.add(client().createTag(PROJECT_NAME, parentTagFamily.getUuid(), request).invoke());
-		}
-		validateCreation(set, null);
+			return client().createTag(PROJECT_NAME, parentTagFamily.getUuid(), request);
+		}, nJobs);
 	}
 
 	@Test
@@ -551,14 +516,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			Set<MeshResponse<TagResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag("red").getUuid()).invoke());
-			}
-			for (MeshResponse<TagResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			awaitConcurrentRequests(i -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag("red").getUuid()), nJobs);
 		}
 	}
 

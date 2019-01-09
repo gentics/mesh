@@ -3,6 +3,10 @@ package com.gentics.mesh.rest.client;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.reactivex.core.Future;
 
+/**
+ * @deprecated Used in Vert.x client. Use OkHttp client instead.
+ */
+@Deprecated
 public class MeshResponse<T> extends Future<T> {
 
 	private HttpClientResponse rawResponse;

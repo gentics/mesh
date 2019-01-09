@@ -14,19 +14,17 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.lang.Math.ceil;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -38,11 +36,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -338,24 +335,18 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 		// Test default paging parameters
-		MeshResponse<ProjectListResponse> future = client().findProjects(new PagingParametersImpl()).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		ProjectListResponse restResponse = future.result();
+		ProjectListResponse restResponse = client().findProjects(new PagingParametersImpl()).blockingGet();
 		assertNull(restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(nProjects + 1, restResponse.getData().size());
 
 		long perPage = 11;
-		future = client().findProjects(new PagingParametersImpl(3, perPage)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		restResponse = future.result();
+		restResponse = client().findProjects(new PagingParametersImpl(3, perPage)).blockingGet();
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra projects + dummy project
 		int totalProjects = nProjects + 1;
-		int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
+		int totalPages = (int) ceil(totalProjects / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -372,7 +363,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// Verify that the no perm project is not part of the response
 		List<ProjectResponse> filteredProjectList = allProjects.parallelStream().filter(restProject -> restProject.getName().equals(
-			noPermProjectName)).collect(Collectors.toList());
+			noPermProjectName)).collect(toList());
 		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
 		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -678,33 +669,23 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws Exception {
-		try (Tx tx = tx()) {
-			int nJobs = 5;
-			ProjectUpdateRequest request = new ProjectUpdateRequest();
-			request.setName("New Name");
+		int nJobs = 5;
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("New Name");
 
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().updateProject(project().getUuid(), request).invoke());
-			}
-			validateSet(set, barrier);
-		}
+		Observable.range(0, nJobs)
+			.flatMapCompletable(i -> client().updateProject(projectUuid(), request).toCompletable())
+			.blockingAwait();
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (Tx tx = tx()) {
-			String uuid = project().getUuid();
-			// CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findProjectByUuid(uuid).invoke());
-			}
-			validateSet(set, null);
-		}
+
+		Observable.range(0, nJobs)
+			.flatMapCompletable(i -> client().findProjectByUuid(projectUuid()).toCompletable())
+			.blockingAwait();
 	}
 
 	@Test
@@ -713,12 +694,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		String uuid = project().getUuid();
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<Void>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().deleteProject(uuid).invoke());
-		}
-		validateDeletion(set, barrier);
+		validateDeletion(i -> client().deleteProject(uuid), nJobs);
 	}
 
 	@Test
@@ -728,14 +704,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		int nJobs = 100;
 		long nProjectsBefore = meshRoot().getProjectRoot().computeCount();
 
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
+
+		validateCreation(i -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
-			set.add(client().createProject(request).invoke());
-		}
-		validateCreation(set, null);
+			return client().createProject(request);
+		}, nJobs);
 
 		try (Tx tx = tx()) {
 			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
@@ -749,17 +724,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (Tx tx = tx()) {
-			int nJobs = 200;
-			Set<MeshResponse<ProjectResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findProjectByUuid(project().getUuid()).invoke());
-			}
-			for (MeshResponse<ProjectResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
-		}
+		int nJobs = 200;
+
+		Observable.range(0, nJobs)
+			.flatMapCompletable(i -> client().findProjectByUuid(projectUuid()).toCompletable())
+			.blockingAwait();
 	}
 
 	@Test

@@ -8,7 +8,7 @@
 
 
 | fields
-| true
+| false
 | object
 | Dynamic map with fields of the node content.
 
@@ -16,6 +16,16 @@
 | true
 | string
 | ISO 639-1 language tag of the node content.
+
+| parentNode
+| true
+| object
+| Reference to the parent node in which the node will be created. The uuid of this object must be set.
+
+| schema
+| true
+| object
+| Reference to the schema of the node.
 
 | tags
 | false
@@ -25,6 +35,6 @@
 | version
 | false
 | string
-| Version number which can be provided in order to handle and detect concurrent changes to the node content.
+| Version number which must be provided in order to handle and detect concurrent changes to the node content.
 
 |======

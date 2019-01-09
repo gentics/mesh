@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -10,13 +11,13 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-services</artifactId>
-		<version>0.28.3-SNAPSHOT</version>
+		<version>0.28.4-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}/../..</projectRoot>
-		<aws.sdk.version>1.11.106</aws.sdk.version>
+		<aws.sdk.version>2.1.0</aws.sdk.version>
 	</properties>
 
 	<dependencyManagement>
@@ -42,19 +43,14 @@
 			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 		<dependency>
-			<artifactId>s3</artifactId>
 			<groupId>software.amazon.awssdk</groupId>
-			<version>2.0.0-preview-7</version>
+			<artifactId>s3</artifactId>
+			<version>${aws.sdk.version}</version>
 		</dependency>
-
-		<!-- <dependency> <groupId>com.amazonaws</groupId> <artifactId>aws-java-sdk-s3</artifactId> 
-			</dependency> -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
