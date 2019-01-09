@@ -48,9 +48,7 @@ public final class ClientHelper {
 	 */
 	public static <T> T call(ClientHandler<T> handler) {
 		try {
-			AtomicReference<T> result = new AtomicReference<>();
-			handler.handle().toObservable().blockingForEach(result::set);
-			return result.get();
+			return handler.handle().toSingle().blockingGet();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

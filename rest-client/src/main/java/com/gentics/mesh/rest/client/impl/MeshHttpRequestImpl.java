@@ -103,6 +103,16 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	@Override
+	public Completable toCompletable() {
+		return toSingle().toCompletable();
+	}
+
+	@Override
+	public Observable<T> toObservable() {
+		return toSingle().toObservable();
+	}
+
+	@Override
 	public Maybe<T> toMaybe() {
 		return toSingle().toMaybe();
 	}
