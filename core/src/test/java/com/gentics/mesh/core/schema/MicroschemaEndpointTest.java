@@ -87,12 +87,13 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
-		request.setName("new_microschema_name");
 
 		Observable.range(0, nJobs)
-			.flatMapCompletable(i -> client().createMicroschema(request).toCompletable())
-			.blockingAwait();
+			.flatMapCompletable(i -> {
+				MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+				request.setName("new_microschema_name" + i);
+				return client().createMicroschema(request).toCompletable();
+			}).blockingAwait();
 	}
 
 	@Test
