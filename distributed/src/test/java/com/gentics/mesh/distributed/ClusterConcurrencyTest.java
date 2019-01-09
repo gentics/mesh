@@ -110,13 +110,8 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 		Completable opA = clientA.updateSchema(contentSchema.getUuid(), schemaUpdateRequest).toCompletable();
 		Completable opB = clientB.deleteNode(projectName, uuids.get(0)).toCompletable().delay(2000, TimeUnit.MILLISECONDS);
 
-		Completable.merge(Arrays.asList(opA, opB)).subscribe(() -> {
-			log.info("Operation executed");
-		}, err -> {
-			log.error("Operation failed", err);
-		});
-		
-		Thread.sleep(50000);
+		Completable.merge(Arrays.asList(opA, opB)).blockingAwait();
+		Thread.sleep(30000);
 
 		// Finally assert that both nodes can still access the graph
 		call(() -> clientA.findSchemaByUuid(contentSchema.getUuid()));

@@ -1,5 +1,6 @@
 package com.syncleus.ferma.ext.orientdb;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -49,6 +50,8 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		try {
 			if (isSuccess()) {
 				try {
+					System.out.println();
+					System.out.println("COMMIT in " + Mesh.mesh().getOptions().getNodeName());
 					commit();
 				} catch (Exception e) {
 					rollback();
