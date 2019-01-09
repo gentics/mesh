@@ -32,6 +32,8 @@ icon:check[] GraphQL: Resolved links will now contain the hostname of the target
 
 icon:check[] Elasticsearch: Search indices are now created sequentially. Parallel creation of indices caused problems when many indices would have to be created.
 
+icon:plus[] Java Rest Client: Added new REST client implementation. The MeshRestOkHttpClientImpl implementation will replace the current Java client in a future release. It is advised to switch to the new implementation which is based on the OkHttp library instead of Vert.x.
+
 [[v0.28.2]]
 == 0.28.2 (26.11.2018)
 
