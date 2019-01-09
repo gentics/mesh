@@ -112,7 +112,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getDocumentId() {
-		return composeDocumentId(getParentNode().getUuid(), getLanguage().getLanguageTag());
+		return composeDocumentId(getParentNode().getUuid(), getLanguageTag());
 	}
 
 	/**

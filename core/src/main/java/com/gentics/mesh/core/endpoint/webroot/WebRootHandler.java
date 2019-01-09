@@ -164,7 +164,7 @@ public class WebRootHandler {
 				NodeUpdateRequest request = ac.fromJson(NodeUpdateRequest.class);
 				// We can deduce a missing the language via the path
 				if (request.getLanguage() == null) {
-					String lang = container.getLanguage().getLanguageTag();
+					String lang = container.getLanguageTag();
 					log.debug("Using deduced language of container: " + lang);
 					request.setLanguage(lang);
 				}

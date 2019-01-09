@@ -121,7 +121,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				BulkActionContext context = searchQueue.createBulkContext();
-				node.deleteLanguageContainer(ac, ac.getBranch(), language, context, true);
+				node.deleteLanguageContainer(ac, ac.getBranch(), languageTag, context, true);
 				return context.batch();
 			}).processSync();
 			node.onDeleted(uuid, name, schema, languageTag);

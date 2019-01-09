@@ -151,9 +151,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
 				for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(branch, containerType)) {
-					Language currLanguage = currentFieldContainer.getLanguage();
-					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage.getLanguageTag());
-					languagePaths.put(currLanguage.getLanguageTag(), languagePath);
+					String currLanguage = currentFieldContainer.getLanguageTag();
+					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage);
+					languagePaths.put(currLanguage, languagePath);
 				}
 				nodeField.setLanguagePaths(languagePaths);
 

@@ -272,8 +272,8 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
-			Language german = german();
-			Language english = english();
+			String german = german();
+			String english = english();
 			Node parentNode = folder("2015");
 
 			SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();

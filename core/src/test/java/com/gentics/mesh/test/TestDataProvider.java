@@ -74,9 +74,9 @@ public class TestDataProvider {
 
 	// References to dummy data
 
-	private Language english;
+	private String english = "en";
 
-	private Language german;
+	private String german = "de";
 
 	private Project project;
 	private String projectUuid;
@@ -128,8 +128,6 @@ public class TestDataProvider {
 			groups.clear();
 
 			root = boot.meshRoot();
-			english = boot.languageRoot().findByLanguageTag("en");
-			german = boot.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
 			addSchemaContainers();
@@ -332,8 +330,8 @@ public class TestDataProvider {
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
 		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
-		project.addLanguage(getEnglish());
-		project.addLanguage(getGerman());
+//		project.addLanguage(getEnglish());
+//		project.addLanguage(getGerman());
 		User jobUser = userInfo.getUser();
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"));
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"));
@@ -559,18 +557,18 @@ public class TestDataProvider {
 	/**
 	 * Returns the path to the tag for the given language.
 	 */
-	public String getPathForNews2015Tag(Language language) {
+	public String getPathForNews2015Tag(String languageTag) {
 
-		String name = folders.get("news").getLatestDraftFieldContainer(language).getString("name").getString();
-		String name2 = folders.get("2015").getLatestDraftFieldContainer(language).getString("name").getString();
+		String name = folders.get("news").getLatestDraftFieldContainer(languageTag).getString("name").getString();
+		String name2 = folders.get("2015").getLatestDraftFieldContainer(languageTag).getString("name").getString();
 		return name + "/" + name2;
 	}
 
-	public Language getEnglish() {
+	public String getEnglish() {
 		return english;
 	}
 
-	public Language getGerman() {
+	public String getGerman() {
 		return german;
 	}
 

@@ -186,7 +186,7 @@ public class ODistributedDatabaseImpl implements ODistributedDatabase {
           }
         }, "distributed.db.*.recordLocks");
 
-    long timeout = 5000;
+    long timeout = 500;
     recordLockManager = new LockLessLockManager<>(timeout);
     indexKeyLockManager = new LockLessLockManager<>(timeout);
   }

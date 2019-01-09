@@ -611,13 +611,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
 					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 						ngfc.getSchemaContainerVersion().getUuid(), PUBLISHED);
-					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguage().getLanguageTag());
+					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
 					documentDeletes.add(Tuple.tuple(idx, did));
 				}
 				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), DRAFT)) {
 					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 						ngfc.getSchemaContainerVersion().getUuid(), DRAFT);
-					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguage().getLanguageTag());
+					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
 					documentDeletes.add(Tuple.tuple(idx, did));
 				}
 			}

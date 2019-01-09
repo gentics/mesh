@@ -18,13 +18,13 @@ public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImp
 	public static final String I18N_PREFIX = "i18n-";
 
 	@Override
-	public Language getLanguage() {
-		return out(HAS_LANGUAGE).nextOrDefault(LanguageImpl.class, null);
+	public String getLanguageTag() {
+		return property("LANGUAGE_TAG");
 	}
 
 	@Override
-	public void setLanguage(Language language) {
-		setLinkOut(language, HAS_LANGUAGE);
+	public void setLanguageTag(String languageTag) {
+		property("LANGUAGE_TAG", languageTag);
 	}
 
 	/**

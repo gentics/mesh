@@ -129,7 +129,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					String id = hit.getString("_id");
 					int pos = id.indexOf("-");
 
-					String language = pos > 0 ? id.substring(pos + 1) : null;
+					String languageTag = pos > 0 ? id.substring(pos + 1) : null;
 					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
 					RootVertex<Node> root = getIndexHandler().getRootVertex();
@@ -141,9 +141,9 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					}
 
 					ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-					Language languageTag = boot.languageRoot().findByLanguageTag(language);
-					if (languageTag == null) {
-						log.warn("Could not find language {" + language + "}");
+					Language language = boot.languageRoot().findByLanguageTag(languageTag);
+					if (language== null) {
+						log.warn("Could not find language {" + languageTag + "}");
 						totalCount--;
 						continue;
 					}
@@ -151,7 +151,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					// Locate the matching container and add it to the list of found containers
 					NodeGraphFieldContainer container = element.getGraphFieldContainer(languageTag, ac.getBranch(), type);
 					if (container != null) {
-						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag.getLanguageTag())));
+						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag)));
 					} else {
 						totalCount--;
 						continue;

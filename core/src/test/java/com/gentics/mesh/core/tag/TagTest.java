@@ -135,7 +135,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			final String GERMAN_TEST_FILENAME = "german.html";
 			Node parentNode = folder("2015");
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project);
-			Language german = boot().languageRoot().findByLanguageTag("de");
+			String german = "de";
 			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, branch, user());
 
 			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);

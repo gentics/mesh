@@ -140,7 +140,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
 		context.setBranchUuid(branchUuid);
-		context.setLanguageTag(container.getLanguage().getLanguageTag());
+		context.setLanguageTag(container.getLanguageTag());
 		context.setSchemaContainerVersionUuid(container.getSchemaContainerVersion().getUuid());
 		context.setProjectUuid(node.getProject().getUuid());
 		store((IndexableElement) node, context, addRelatedElements);
@@ -174,7 +174,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		context.setProjectUuid(container.getParentNode().getProject().getUuid());
 		context.setBranchUuid(branchUuid);
 		context.setSchemaContainerVersionUuid(container.getSchemaContainerVersion().getUuid());
-		context.setLanguageTag(container.getLanguage().getLanguageTag());
+		context.setLanguageTag(container.getLanguageTag());
 		delete((IndexableElement) container.getParentNode(), context, addRelatedEntries);
 		return this;
 	}

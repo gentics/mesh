@@ -274,9 +274,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
 
-					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-						.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
-						conflictingContainer.getLanguage().getLanguageTag());
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
+						conflictingContainer.getLanguageTag());
 				}
 			}
 			edge.setUrlFieldInfo(urlFieldValues);
@@ -320,7 +319,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		final int MAX_NUMBER = 255;
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
-		String languageTag = getLanguage().getLanguageTag();
+		String languageTag = getLanguageTag();
 
 		// Handle node migration conflicts automagically
 		if (ac instanceof NodeMigrationActionContextImpl) {
@@ -361,7 +360,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		String conflictI18n,
 		ContainerType type) {
 		// Determine the webroot path of the container parent node
-		String segment = node.getPathSegment(branchUuid, type, getLanguage().getLanguageTag());
+		String segment = node.getPathSegment(branchUuid, type, getLanguageTag());
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
@@ -378,8 +377,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
 						+ "}");
 				}
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-					.getLanguageTag(), conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag()
+					, conflictI18n, segmentFieldName, segment);
 			} else {
 				edge.setSegmentInfo(segmentInfo);
 				return true;
@@ -695,7 +694,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {
 		Path nodePath = new Path();
-		nodePath.addSegment(new PathSegment(this, null, getLanguage().getLanguageTag(), null));
+		nodePath.addSegment(new PathSegment(this, null, getLanguageTag(), null));
 		return nodePath;
 	}
 

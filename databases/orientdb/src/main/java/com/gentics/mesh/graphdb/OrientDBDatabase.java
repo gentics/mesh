@@ -51,6 +51,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
+import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
@@ -89,6 +90,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
+import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -164,6 +166,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			throw new RuntimeException(
 				"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 		}
+		
+		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(-1);
 
 		initConfigurationFiles();
 
@@ -924,12 +928,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (ONeedRetryException e) {
+			} catch (ONeedRetryException|FastNoSuchElementException e) {
 				log.info("Error in tx", e);
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
-				int rnd = (int) (Math.random() * 9000.0);
+				int rnd = (int) (Math.random() * 6000.0);
 				System.out.println("Extra delay: " + rnd);
 				try {
 					// Increase the delay for each retry by 25ms to give the other transaction a chance to finish

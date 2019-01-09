@@ -148,12 +148,12 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 
 				node.getGraphFieldContainersIt(oldBranch, DRAFT).forEach(container -> {
 					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					initialEdge.setLanguageTag(container.getLanguageTag());
 					initialEdge.setType(INITIAL);
 					initialEdge.setBranchUuid(newBranch.getUuid());
 
 					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					draftEdge.setLanguageTag(container.getLanguageTag());
 					draftEdge.setType(DRAFT);
 					draftEdge.setBranchUuid(newBranch.getUuid());
 					String value = container.getSegmentFieldValue();
@@ -168,7 +168,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 
 				node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
 					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					publishEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
 					publishEdge.setBranchUuid(newBranch.getUuid());
 					String value = container.getSegmentFieldValue();

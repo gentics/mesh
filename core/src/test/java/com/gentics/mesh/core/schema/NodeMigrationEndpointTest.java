@@ -304,7 +304,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				project().getLatestBranch().assignSchemaVersion(user, versionA));
 
 			// create a node based on the old schema
-			Language english = english();
+			String english = english();
 			Node parentNode = folder("2015");
 			firstNode = parentNode.create(user, versionA, project());
 			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(),
@@ -412,7 +412,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				project().getLatestBranch().assignSchemaVersion(user, versionA));
 
 			// create a node based on the old schema
-			Language english = english();
+			String english = english();
 			Node parentNode = folder("2015");
 			firstNode = parentNode.create(user, versionA, project());
 			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(),
@@ -814,7 +814,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionA.setNextVersion(versionB);
 
 			// create micronode based on the old schema
-			Language english = english();
+			String english = english();
 			firstNode = folder("2015");
 			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
@@ -914,7 +914,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionA.setNextVersion(versionB);
 
 			// create micronode based on the old schema
-			Language english = english();
+			String english = english();
 			firstNode = folder("2015");
 			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName()).setName(micronodeFieldName)
@@ -1036,7 +1036,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionA.setNextVersion(versionB);
 
 			// create micronode based on the old schema
-			Language english = english();
+			String english = english();
 			firstNode = folder("2015");
 			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName(), "vcard").setName(

@@ -96,7 +96,8 @@ public class ODistributedLockManagerRequester implements ODistributedLockManager
 							manager.getNextMessageIdCounter(), ODistributedRequest.EXECUTION_MODE.RESPONSE, null, null, null);
 
 					if (dResponse == null) {
-						log.warn(this, manager.getLocalNodeName(), server, ODistributedServerLog.DIRECTION.OUT,
+						System.out.println("LOCK ERROR!");
+						log.info(this, manager.getLocalNodeName(), server, ODistributedServerLog.DIRECTION.OUT,
 							"Server '%s' cannot acquire distributed lock on resource '%s' (timeout=%d)...", nodeSource, resource, timeout);
 
 						throw new OLockException(

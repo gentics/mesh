@@ -232,7 +232,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					// Otherwise return the last segment.
 					PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
 					NodeGraphFieldContainer container = lastSegment.getContainer();
-					return new NodeContent(null, container, Arrays.asList(container.getLanguage().getLanguageTag()));
+					return new NodeContent(null, container, Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}));
@@ -314,7 +314,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			}
 			ContainerType containerType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 			String branchUuid = gc.getBranch().getUuid();
-			String languageTag = container.getLanguage().getLanguageTag();
+			String languageTag = container.getLanguageTag();
 			return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);
 		}));
 
@@ -398,7 +398,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			if (container == null) {
 				return null;
 			}
-			return container.getLanguage().getLanguageTag();
+			return container.getLanguageTag();
 		}));
 
 		nodeType

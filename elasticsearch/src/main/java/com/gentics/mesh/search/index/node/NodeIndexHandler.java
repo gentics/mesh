@@ -227,7 +227,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			.filter(c -> c.isType(type, branchUuid))
 			.forEach(c -> {
 				String v = generateVersion(c, branchUuid, type);
-				versions.put(c.getParentNode().getUuid() + "-" + c.getLanguage().getLanguageTag(), v);
+				versions.put(c.getParentNode().getUuid() + "-" + c.getLanguageTag(), v);
 			});
 		return versions;
 	}
@@ -557,7 +557,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
 			oldContainer.getSchemaContainerVersion().getUuid(),
 			type);
-		String oldLanguageTag = oldContainer.getLanguage().getLanguageTag();
+		String oldLanguageTag = oldContainer.getLanguageTag();
 		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
 		DeleteBulkEntry deleteEntry = new DeleteBulkEntry(oldIndexName, oldDocumentId);
 
@@ -566,7 +566,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
 			newContainer.getSchemaContainerVersion().getUuid(),
 			type);
-		String newLanguageTag = newContainer.getLanguage().getLanguageTag();
+		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
 		IndexBulkEntry addEntry = new IndexBulkEntry(newIndexName, newDocumentId, doc, searchProvider.hasIngestPipelinePlugin());
@@ -602,7 +602,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
-		String languageTag = container.getLanguage().getLanguageTag();
+		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
 	}
@@ -622,7 +622,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
-		String languageTag = container.getLanguage().getLanguageTag();
+		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 
 		return Single.just(new IndexBulkEntry(indexName, documentId, doc, searchProvider.hasIngestPipelinePlugin()));

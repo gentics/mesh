@@ -15,8 +15,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.collections.IteratorUtils;
-
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -181,11 +179,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			log.debug("Migrating container {" + container.getUuid() + "}");
 		}
 		try {
-			// Run the actual migration in a dedicated transaction
-			// db.tx((tx) -> {
-
 			Node node = container.getParentNode();
-			String languageTag = container.getLanguage().getLanguageTag();
+			String languageTag = container.getLanguageTag();
 			ac.getNodeParameters().setLanguages(languageTag);
 			ac.getVersioningParameters().setVersion("draft");
 
@@ -206,10 +201,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			// 2. Migrate the draft container. This will also update the draft edge.
-			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema,
-				nextDraftVersion);
-			// Tx.getActive().getGraph().commit();
-			// });
+			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema,	nextDraftVersion);
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
 				+ "} during schema migration.", e1);
@@ -245,7 +237,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		throws Exception {
 
 		String branchUuid = branch.getUuid();
-		String languageTag = container.getLanguage().getLanguageTag();
+		String languageTag = container.getLanguageTag();
 
 		// Check whether the same container is also used as a published version within the given branch.
 		// A migration is always scoped to a specific branch.
@@ -259,7 +251,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		restModel.getSchema().setVersion(newSchema.getVersion());
 
 		// Actual migration - Create the new version
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), branch, container.getEditor(), container, true);
+		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
@@ -304,14 +296,14 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema) throws Exception {
 
-		String languageTag = container.getLanguage().getLanguageTag();
+		String languageTag = container.getLanguageTag();
 		String branchUuid = branch.getUuid();
 
 		ac.getVersioningParameters().setVersion("published");
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 		restModel.getSchema().setVersion(newSchema.getVersion());
 
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), branch, container.getEditor(), container, true);
+		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
 		node.setPublished(migrated, branchUuid);

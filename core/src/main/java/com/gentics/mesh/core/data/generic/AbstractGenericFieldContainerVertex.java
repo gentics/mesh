@@ -6,11 +6,10 @@ import static com.tinkerpop.blueprints.Direction.IN;
 import java.util.Iterator;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -24,8 +23,8 @@ import com.tinkerpop.blueprints.Vertex;
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
 		AbstractMeshCoreVertex<T, R> {
 
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Branch branch, ContainerType type, Class<U> classOfU) {
-		return getGraphFieldContainer(language.getLanguageTag(), branch != null ? branch.getUuid() : null, type, classOfU);
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, Branch branch, ContainerType type, Class<U> classOfU) {
+		return getGraphFieldContainer(languageTag, branch != null ? branch.getUuid() : null, type, classOfU);
 	}
 
 	protected Edge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
@@ -74,11 +73,11 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 *            Container implementation class to be used for element creation
 	 * @return Located field container or created field container
 	 */
-	protected <U extends BasicFieldContainer> U getOrCreateGraphFieldContainer(Language language, Class<U> classOfU) {
+	protected <U extends BasicFieldContainer> U getOrCreateGraphFieldContainer(String languageTag, Class<U> classOfU) {
 
 		// Check all existing containers in order to find existing ones
 		U container = null;
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, language.getLanguageTag());
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
 		if (edgeTraversal.hasNext()) {
 			container = edgeTraversal.next().inV().has(classOfU).nextOrDefault(classOfU, null);
 		}
@@ -86,9 +85,9 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		// Create a new container if no existing one was found
 		if (container == null) {
 			container = getGraph().addFramedVertex(classOfU);
-			container.setLanguage(language);
+			container.setLanguageTag(languageTag);
 			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(language.getLanguageTag());
+			edge.setLanguageTag(languageTag);
 		}
 
 		return container;

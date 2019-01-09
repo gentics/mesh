@@ -146,7 +146,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		project().getLatestBranch().assignSchemaVersion(user(), versionA);
 		User user = user();
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -308,7 +308,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		User user = user();
 		project().getLatestBranch().assignSchemaVersion(user, versionA);
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -478,7 +478,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		project().getLatestBranch().assignSchemaVersion(user(), versionA);
 		User user = user();
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -661,7 +661,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		project().getLatestBranch().assignSchemaVersion(user(), versionA);
 		User user = user();
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -819,7 +819,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		User user = user();
 		project().getLatestBranch().assignSchemaVersion(user, versionA);
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -952,7 +952,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected MicronodeGraphField createMicronodefield(Node node, String micronodeFieldName, MicroschemaContainerVersion schemaVersion,
 			DataProvider dataProvider, String... fieldNames) {
-		Language english = english();
+		String english = english();
 
 		SchemaContainerVersion latestVersion = node.getSchemaContainer().getLatestVersion();
 

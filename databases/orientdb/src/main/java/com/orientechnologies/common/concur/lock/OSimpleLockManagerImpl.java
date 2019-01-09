@@ -23,7 +23,7 @@ public class OSimpleLockManagerImpl<T> implements OSimpleLockManager<T> {
 	@Override
 	public void lock(T key) {
 
-		System.out.println("Locking " + key + " on " + Mesh.mesh().getOptions().getNodeName());
+//		System.out.println("Locking " + key + " on " + Mesh.mesh().getOptions().getNodeName() + " in thread " + Thread.currentThread());
 		lock.lock();
 		try {
 			try {
@@ -36,7 +36,8 @@ public class OSimpleLockManagerImpl<T> implements OSimpleLockManager<T> {
 							c.await();
 						} else {
 							if (!c.await(timeout, TimeUnit.MILLISECONDS)) {
-								System.out.println("Lock timeout for " + key);
+								System.out.println("Lock timeout for " + key + " on " + Mesh.mesh().getOptions().getNodeName() + " in thread "
+									+ Thread.currentThread());
 								throw new OLockException(String.format("Time out acquire lock for resource: '%s' ", key));
 							}
 						}
@@ -55,7 +56,7 @@ public class OSimpleLockManagerImpl<T> implements OSimpleLockManager<T> {
 
 	@Override
 	public void unlock(T key) {
-		System.out.println("Unlocking " + key + " on " + Mesh.mesh().getOptions().getNodeName());
+//		System.out.println("Unlocking " + key + " on " + Mesh.mesh().getOptions().getNodeName());
 		lock.lock();
 		try {
 			Condition c = map.remove(key);
