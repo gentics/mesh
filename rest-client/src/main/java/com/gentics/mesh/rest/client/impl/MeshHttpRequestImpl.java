@@ -1,6 +1,9 @@
 package com.gentics.mesh.rest.client.impl;
 
+import com.gentics.mesh.rest.client.MeshResponse2;
 import io.reactivex.Maybe;
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpClientResponse;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
@@ -15,6 +18,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Wrapper for a mesh HTTP request.
@@ -110,6 +118,54 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 	@Override
 	public Observable<T> toObservable() {
 		return toSingle().toObservable();
+	}
+
+	@Override
+	public void setHeader(String name, String value) {
+		request.headers().set(name, value);
+	}
+
+	@Override
+	public void setHeaders(Map<String, String> headers) {
+		request.headers().setAll(headers);
+	}
+
+	@Override
+	public Single<MeshResponse2<T>> getResponse() {
+		return Single.defer(() -> {
+			MeshResponse<T> response = invoke();
+			return response.rxSetHandler().map(result -> {
+				HttpClientResponse rawResponse = response.getRawResponse();
+				return new MeshResponse2<T>() {
+					Map<String, List<String>> headers;
+
+					@Override
+					public Map<String, List<String>> getHeaders() {
+						if (headers == null) {
+							MultiMap map = rawResponse.headers();
+							return map.names().stream()
+								.collect(Collectors.toMap(Function.identity(), map::getAll));
+						}
+						return headers;
+					}
+
+					@Override
+					public int getStatusCode() {
+						return rawResponse.statusCode();
+					}
+
+					@Override
+					public String getBodyAsString() {
+						return response.getBodyJson();
+					}
+
+					@Override
+					public T getBody() {
+						return result;
+					}
+				};
+			});
+		});
 	}
 
 	@Override

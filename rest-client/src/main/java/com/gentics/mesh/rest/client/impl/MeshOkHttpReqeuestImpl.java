@@ -199,7 +199,7 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 
 			@Override
 			public T getBody() {
-				return null;
+				return JsonUtil.readValue(getBodyAsString(), resultClass);
 			}
 		});
 	}
