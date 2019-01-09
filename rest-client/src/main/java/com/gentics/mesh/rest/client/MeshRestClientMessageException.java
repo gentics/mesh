@@ -26,17 +26,25 @@ public class MeshRestClientMessageException extends Exception {
 	private HttpMethod method;
 
 	public MeshRestClientMessageException(HttpClientResponse response, String body, HttpMethod method, String uri) {
-		super("Error:" + response.statusCode() + " in " + method.name() + " " + uri + " : " + response.statusMessage());
-		this.statusCode = response.statusCode();
+		this(response.statusCode(), response.statusMessage(), body, method, uri);
+	}
+
+	public MeshRestClientMessageException(HttpClientResponse response, GenericMessageResponse responseMessage, HttpMethod method, String uri) {
+		this(response.statusCode(), response.statusMessage(), responseMessage, method, uri);
+	}
+
+	public MeshRestClientMessageException(int statusCode, String statusMessage, String body, HttpMethod method, String uri) {
+		super("Error:" + statusCode + " in " + method.name() + " " + uri + " : " + statusMessage);
+		this.statusCode = statusCode;
 		this.body = body;
 		this.uri = uri;
 		this.method = method;
 	}
 
-	public MeshRestClientMessageException(HttpClientResponse response, GenericMessageResponse responseMessage, HttpMethod method, String uri) {
-		super("Error:" + response.statusCode() + " in " + method.name() + " " + uri + " : " + response.statusMessage());
+	public MeshRestClientMessageException(int statusCode, String statusMessage, GenericMessageResponse responseMessage, HttpMethod method, String uri) {
+		super("Error:" + statusCode + " in " + method.name() + " " + uri + " : " + statusMessage);
 		this.responseMessage = responseMessage;
-		this.statusCode = response.statusCode();
+		this.statusCode = statusCode;
 		this.uri = uri;
 		this.method = method;
 	}

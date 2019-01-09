@@ -6,11 +6,17 @@ import static org.junit.Assert.assertFalse;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
+import java.util.function.Function;
 
+import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -29,33 +35,30 @@ public final class MeshTestHelper {
 	/**
 	 * Wait for all responses and assert that the requests did not fail.
 	 * 
-	 * @param set
-	 * @param barrier
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
-	 * @throws NoSuchMethodException
-	 * @throws SecurityException
+	 * @param uuidList
 	 */
-	public static void validateCreation(Set<MeshResponse<?>> set, CyclicBarrier barrier)
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+	public static void validateCreation(List<String> uuidList) {
 		Set<String> uuids = new HashSet<>();
-		for (MeshResponse<?> future : set) {
-			latchFor(future);
-			assertSuccess(future);
-			Object result = future.result();
-			// Rest responses do not share a common class. We just use reflection to extract the uuid from the response pojo
-			Object uuidObject = result.getClass().getMethod("getUuid").invoke(result);
-			String currentUuid = uuidObject.toString();
+		for (String currentUuid : uuidList) {
 			assertFalse("The rest api returned a response with a uuid that was returned before. Each create request must always be atomic.",
 					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
-		// Trx.disableDebug();
-		if (barrier != null) {
-			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
-		}
+	}
 
+	public static void validateCreation(Function<Integer, MeshRequest<? extends AbstractResponse>> creator, int count) {
+		List<String> uuids = Observable.range(0, count)
+			.flatMapSingle(i -> creator.apply(i).toSingle())
+			.map(AbstractResponse::getUuid)
+			.toList()
+			.blockingGet();
+		validateCreation(uuids);
+	}
+
+	public static void awaitConcurrentRequests(Function<Integer, MeshRequest<?>> creator, int count) {
+		Observable.range(0, count)
+			.flatMapCompletable(i -> creator.apply(i).toCompletable())
+			.blockingAwait();
 	}
 
 	public static String getSimpleQuery(String field, String text) {

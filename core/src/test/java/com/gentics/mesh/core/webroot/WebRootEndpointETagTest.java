@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.callETag;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
+import static com.gentics.mesh.util.ETag.extract;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -50,11 +51,8 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 			// 3. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
-			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft"))
-				.invoke();
-			latchFor(response);
-			assertSuccess(response);
-			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")).invoke();
+			String etag = extract(response.getRawResponse().getHeader(ETAG));
 			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
 
 			params.setHeight(103);

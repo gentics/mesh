@@ -8,6 +8,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -162,14 +163,11 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			MeshResponse<NavigationResponse> future = client()
-					.loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(2).setIncludeAll(true)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			NavigationResponse response = future.result();
+			NavigationResponse response = client()
+				.loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(2).setIncludeAll(true)).blockingGet();
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 
-			String[] expectedNodes = { "2015", "2014", "News Overview_english_name" };
+			String[] expectedNodes = {"2015", "2014", "News Overview_english_name"};
 			List<String> nodeNames = response.getChildren().stream().map(e -> {
 				StringField titleField = e.getNode().getFields().getStringField("teaser");
 				StringField slugField = e.getNode().getFields().getStringField("slug");
@@ -178,7 +176,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 				} else {
 					return slugField.getString();
 				}
-			}).collect(Collectors.toList());
+			}).collect(toList());
 			assertThat(response).hasDepth(2).isValid(8);
 			assertThat(nodeNames).containsExactly(expectedNodes);
 		}
@@ -197,16 +195,13 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			MeshResponse<NavigationResponse> future = client()
-					.loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(2).setIncludeAll(false)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			NavigationResponse response = future.result();
+			NavigationResponse response = client()
+				.loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(2).setIncludeAll(false)).blockingGet();
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 
-			String[] expectedNodes = { "2015", "2014" };
+			String[] expectedNodes = {"2015", "2014"};
 			List<String> nodeNames = response.getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
-					.collect(Collectors.toList());
+				.collect(toList());
 			assertThat(response).hasDepth(2).isValid(4);
 			assertThat(nodeNames).containsExactly(expectedNodes);
 		}

@@ -488,8 +488,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// 2. Upload some binary data without content type
 		try {
-			MeshResponse<?> mr = uploadRandomData(node, "en", binaryFieldName, 8000, "", "filename.dat").invoke();
-			latchFor(mr);
+			uploadRandomData(node, "en", binaryFieldName, 8000, "", "filename.dat").blockingAwait();
 			fail("Uploading data without contentype should cause an exception");
 		} catch (Exception e) {
 			assertThat(e).isInstanceOf(IllegalArgumentException.class);

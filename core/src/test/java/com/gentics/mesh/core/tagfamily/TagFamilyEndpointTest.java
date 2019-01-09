@@ -6,16 +6,12 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -29,8 +25,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -53,7 +47,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -162,9 +155,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)).invoke();
-			latchFor(pageFuture);
-			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 			call(() -> client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(0, perPage)), BAD_REQUEST,
 					"error_page_parameter_must_be_positive", "0");
@@ -185,10 +176,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0L)).invoke();
-		latchFor(pageFuture);
-		assertSuccess(pageFuture);
-		assertEquals(0, pageFuture.result().getData().size());
+		TagFamilyListResponse page = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0L)).toSingle().blockingGet();
+		assertEquals(0, page.getData().size());
 	}
 
 	@Test
@@ -334,11 +323,9 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			String name = tagFamily.getName();
 
 			// 1. Read the current tagfamily
-			MeshResponse<TagFamilyResponse> readTagFut = client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
-			latchFor(readTagFut);
-			assertSuccess(readTagFut);
+			TagFamilyResponse readTagResponse = client().findTagFamilyByUuid(PROJECT_NAME, uuid).blockingGet();
 			assertNotNull("The name of the tag should be loaded.", name);
-			String restName = readTagFut.result().getName();
+			String restName = readTagResponse.getName();
 			assertNotNull("The tag name must be set.", restName);
 			assertEquals(name, restName);
 
@@ -399,9 +386,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("new Name");
 
-		MeshResponse<TagFamilyResponse> future = client().updateTagFamily(PROJECT_NAME, "bogus", request).invoke();
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_illegal_uuid", "bogus");
+		call(() -> client().updateTagFamily(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test
@@ -436,12 +421,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		request.setName("New Name");
 
 		try (Tx tx = tx()) {
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request).invoke());
-			}
-			validateSet(set, barrier);
+			awaitConcurrentRequests(i -> client().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request), nJobs);
 		}
 	}
 
@@ -452,12 +432,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		int nJobs = 10;
 		try (Tx tx = tx()) {
 			String uuid = tagFamily("colors").getUuid();
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke());
-			}
-			validateSet(set, barrier);
+
+			awaitConcurrentRequests(i -> client().findTagFamilyByUuid(PROJECT_NAME, uuid), nJobs);
 		}
 	}
 
@@ -468,12 +444,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		int nJobs = 3;
 		try (Tx tx = tx()) {
 			String uuid = project().getUuid();
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<Void>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().deleteTagFamily(PROJECT_NAME, uuid).invoke());
-			}
-			validateDeletion(set, barrier);
+			validateDeletion(i -> client().deleteTagFamily(PROJECT_NAME, uuid), nJobs);
 		}
 	}
 
@@ -485,12 +456,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("test12345");
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().createTagFamily(PROJECT_NAME, request).invoke());
-		}
-		validateCreation(set, barrier);
+		validateCreation(i -> client().createTagFamily(PROJECT_NAME, request), nJobs);
 	}
 
 	@Test
@@ -498,14 +464,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (Tx tx = tx()) {
 			int nJobs = 200;
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()).invoke());
-			}
-			for (MeshResponse<?> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			awaitConcurrentRequests(i -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()), nJobs);
 		}
 	}
 

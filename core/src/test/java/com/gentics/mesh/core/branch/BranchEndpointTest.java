@@ -39,6 +39,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import io.reactivex.Observable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -103,15 +104,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			String projectName = PROJECT_NAME;
 			String uuid = initialBranchUuid();
 
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findBranchByUuid(projectName, uuid).invoke());
-			}
-
-			for (MeshResponse<?> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			Observable.range(0, nJobs)
+				.flatMapCompletable(i -> client().findBranchByUuid(projectName, uuid).toCompletable())
+				.blockingAwait();
 		}
 	}
 
@@ -129,23 +124,19 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			Project project = project();
 			int nJobs = 100;
 
-			Set<MeshResponse<BranchResponse>> responseFutures = new HashSet<>();
+			Set<BranchResponse> responseFutures = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				BranchCreateRequest request = new BranchCreateRequest();
 				request.setName(branchName + i);
-				MeshResponse<BranchResponse> future = client().createBranch(PROJECT_NAME, request).invoke();
-				responseFutures.add(future);
+				responseFutures.add(client().createBranch(PROJECT_NAME, request).blockingGet());
 			}
 
 			Set<String> uuids = new HashSet<>();
 			uuids.add(initialBranchUuid());
-			for (MeshResponse<BranchResponse> future : responseFutures) {
-				latchFor(future);
-				assertSuccess(future);
-
-				assertThat(future.result()).as("Response").isNotNull();
-				assertThat(uuids).as("Existing uuids").doesNotContain(future.result().getUuid());
-				uuids.add(future.result().getUuid());
+			for (BranchResponse response : responseFutures) {
+				assertThat(response).as("Response").isNotNull();
+				assertThat(uuids).as("Existing uuids").doesNotContain(response.getUuid());
+				uuids.add(response.getUuid());
 			}
 
 			// All branches must form a chain
@@ -171,14 +162,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		try (Tx tx = tx()) {
-			Set<MeshResponse<BranchResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()).invoke());
-			}
-			for (MeshResponse<BranchResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			Observable.range(1, nJobs)
+				.flatMapCompletable(i -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()).toCompletable())
+				.blockingAwait();
 		}
 	}
 

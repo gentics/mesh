@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -88,26 +89,22 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
 			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some name"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			create.getFields().put("title", createStringField("some title"));
+			create.getFields().put("teaser", createStringField("some name"));
+			create.getFields().put("slug", createStringField(conflictingName));
+			create.getFields().put("content", createStringField("Blessed mealtime!"));
+			NodeResponse response = client().createNode(PROJECT_NAME, create).blockingGet();
 
 			// try to create the new content with same slug
-			create = new NodeCreateRequest();
-			create.setParentNodeUuid(parent.getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some other title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some other name"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			future = client().createNode(PROJECT_NAME, create).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
+			NodeCreateRequest create2 = new NodeCreateRequest();
+			create2.setParentNodeUuid(parent.getUuid());
+			create2.setLanguage("en");
+			create2.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create2.getFields().put("title", createStringField("some other title"));
+			create2.getFields().put("teaser", createStringField("some other name"));
+			create2.getFields().put("slug", createStringField(conflictingName));
+			create2.getFields().put("content", createStringField("Blessed mealtime again!"));
+			call(() -> client().createNode(PROJECT_NAME, create2), CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
 			return null;
 		});
 	}
@@ -169,10 +166,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			String uuid = future.result().getUuid();
+			String uuid = client().createNode(PROJECT_NAME, create).toSingle().blockingGet().getUuid();
 
 			// translate the content
 			NodeUpdateRequest update = new NodeUpdateRequest();
@@ -181,9 +175,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			update.getFields().put("teaser", FieldUtil.createStringField("Irgendein teaser"));
 			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			update.getFields().put("content", FieldUtil.createStringField("Gesegnete Mahlzeit!"));
-			future = client().updateNode(PROJECT_NAME, uuid, update).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
+
+			call(() -> client().updateNode(PROJECT_NAME, uuid, update), CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
 			return null;
 		});
 	}

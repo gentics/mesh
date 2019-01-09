@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -12,6 +13,7 @@ import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
@@ -22,9 +24,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.out;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -38,9 +40,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import io.reactivex.Observable;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -193,17 +195,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				NodeCreateRequest request = new NodeCreateRequest();
 				request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
 				request.setLanguage("en");
-				request.getFields().put("title", FieldUtil.createStringField("some title " + i));
-				request.getFields().put("teaser", FieldUtil.createStringField("some teaser " + i));
-				request.getFields().put("slug", FieldUtil.createStringField("new-page_" + i + ".html"));
-				request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+				request.getFields().put("title", createStringField("some title " + i));
+				request.getFields().put("teaser", createStringField("some teaser " + i));
+				request.getFields().put("slug", createStringField("new-page_" + i + ".html"));
+				request.getFields().put("content", createStringField("Blessed mealtime again!"));
 				request.setParentNodeUuid(uuid);
 
-				MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
-				latchFor(future);
-				assertSuccess(future);
-				long duration = System.currentTimeMillis() - start;
-				System.out.println("Duration:" + i + " " + (duration / i));
+				NodeResponse future = client().createNode(PROJECT_NAME, request).blockingGet();
+				long duration = currentTimeMillis() - start;
+				out.println("Duration:" + i + " " + (duration / i));
 			}
 		}
 	}
@@ -534,14 +534,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 			schemaReference.setName("node");
 			request.setSchema(schemaReference);
-			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("teaser", createStringField("some teaser"));
+			request.getFields().put("slug", createStringField("new-page.html"));
+			request.getFields().put("content", createStringField("Blessed mealtime again!"));
 			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
 
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_missing_parentnode_field");
+			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_missing_parentnode_field");
 		}
 	}
 
@@ -703,11 +701,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<NodeListResponse> pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
-					new VersioningParametersImpl().draft()).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-				restResponse = pageFuture.result();
+				restResponse = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
+					new VersioningParametersImpl().draft()).blockingGet();
 				allNodes.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());
@@ -717,17 +712,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				Collectors.toList());
 			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<NodeListResponse> pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25L)).invoke();
-			latchFor(pageFuture);
-			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25L)),
+				BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25L)).invoke();
-			latchFor(pageFuture);
-			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
+			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25L)),
+				BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1L)).invoke();
-			latchFor(pageFuture);
-			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
+			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1L)),
+				BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25L), new VersioningParametersImpl()
 				.draft()));
@@ -1046,47 +1038,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws InterruptedException {
+		int nJobs = 500;
+		String uuid = null;
+
 		try (Tx tx = tx()) {
 			Node parentNode = folder("news");
-			String uuid = parentNode.getUuid();
+			uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
 			assertNotNull(parentNode.getUuid());
-
-			int nJobs = 500;
-			// CyclicBarrier barrier = new CyclicBarrier(nJobs);
-			// Trx.enableDebug();
-			// Trx.setBarrier(barrier);
-			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
-			final AtomicInteger e = new AtomicInteger(0);
-			for (int i = 0; i < nJobs; i++) {
-				new Thread(() -> {
-					NodeCreateRequest request = new NodeCreateRequest();
-					request.setSchema(new SchemaReferenceImpl().setName("content"));
-					request.setLanguage("en");
-					request.getFields().put("title", FieldUtil.createStringField("some title"));
-					request.getFields().put("teaser", FieldUtil.createStringField("some-teaser"));
-					request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-					request.getFields().put("slug", FieldUtil.createStringField("new-page" + e.incrementAndGet() + ".html"));
-					request.setParentNodeUuid(uuid);
-					set.add(client().createNode(PROJECT_NAME, request).invoke());
-				}).start();
-			}
-
-			Thread.sleep(10000);
-			//
-			// // Check each call response
-			Set<String> uuids = new HashSet<>();
-			for (MeshResponse<NodeResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-				String currentUuid = future.result().getUuid();
-				assertFalse("The rest api returned a node response with a uuid that was returned before. Each create request must always be atomic.",
-					uuids.contains(currentUuid));
-				uuids.add(currentUuid);
-			}
-			// Trx.disableDebug();
-			// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
+
+		String fUuid = uuid;
+
+		validateCreation(i -> {
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
+			request.setLanguage("en");
+			request.getFields().put("title", FieldUtil.createStringField("some title"));
+			request.getFields().put("teaser", FieldUtil.createStringField("some-teaser"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
+			request.setParentNodeUuid(fUuid);
+			return client().createNode(PROJECT_NAME, request);
+		}, nJobs);
 	}
 
 	@Test
@@ -1132,21 +1106,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUIDMultithreaded() {
-
 		String uuid = tx(() -> folder("2015").getUuid());
 		int nJobs = 6;
 
-		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		// Trx.enableDebug();
-		// Trx.setBarrier(barrier);
-		Set<MeshResponse<Void>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)).invoke());
-		}
-
-		validateDeletion(set, null);
-		// call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
-
+		validateDeletion(i -> client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)), nJobs);
 	}
 
 	@Test
@@ -1154,14 +1117,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
 		try (Tx tx = tx()) {
-			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).invoke());
-			}
-			for (MeshResponse<NodeResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			Observable.range(0, nJobs)
+				.flatMapCompletable(i -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
+				.blockingAwait();
 		}
 	}
 
@@ -1170,15 +1128,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
 		try (Tx tx = tx()) {
-			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).invoke());
-			}
-			for (MeshResponse<NodeResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
-			// Trx.disableDebug();
+			Observable.range(0, nJobs)
+				.flatMapCompletable(i ->
+					client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
+				.blockingAwait();
 		}
 	}
 
@@ -1634,9 +1587,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams),
+				BAD_REQUEST, "error_language_not_found", "blabla");
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 	}

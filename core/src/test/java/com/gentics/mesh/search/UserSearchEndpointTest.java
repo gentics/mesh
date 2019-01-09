@@ -189,10 +189,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		call(() -> client().createUser(request));
 
-		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
+		UserListResponse searchResponse = client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())).blockingGet();
+		assertEquals("We expected to see one result.", 1, searchResponse.getData().size());
 	}
 
 	@Test
@@ -230,11 +228,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
 
-		MeshResponse<UserResponse> future = client().createUser(request).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		UserResponse response = client().createUser(request).blockingGet();
 
-		String userUuid = future.result().getUuid();
+		String userUuid = response.getUuid();
 
 		call(() -> client().removeUserFromGroup(group.getUuid(), userUuid));
 
