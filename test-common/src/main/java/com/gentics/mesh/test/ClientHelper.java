@@ -127,9 +127,19 @@ public final class ClientHelper {
 		try {
 			handler.handle().toSingle().blockingGet();
 			fail("We expected the future to have failed but it succeeded.");
-		} catch (RuntimeException e) {
-			expectException(e.getCause(), status, bodyMessageI18nKey, i18nParams);
-			if (e.getCause() instanceof MeshRestClientMessageException) {
+		} catch (RuntimeException | MeshRestClientMessageException e) {
+			MeshRestClientMessageException error;
+			if (e instanceof RuntimeException) {
+				error = (MeshRestClientMessageException) e.getCause();
+			} else {
+				error = (MeshRestClientMessageException) e;
+			}
+			if (bodyMessageI18nKey == null) {
+				expectFailureMessage(error, status, null);
+			} else {
+				expectException(error, status, bodyMessageI18nKey, i18nParams);
+			}
+			if (error instanceof MeshRestClientMessageException) {
 				return (MeshRestClientMessageException) e.getCause();
 			}
 		} catch (Exception e) {
@@ -137,6 +147,19 @@ public final class ClientHelper {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Call the given handler, latch for the future and expect the given failure in the future.
+	 *
+	 * @param handler
+	 *            handler
+	 * @param status
+	 *            expected response status
+	 * @return
+	 */
+	public static <T> MeshRestClientMessageException call(ClientHandler<T> handler, HttpResponseStatus status) {
+		return call(handler, status, null);
 	}
 
 	public static void validateDeletion(Function<Integer, MeshRequest<Void>> deleteOperation, int count) {

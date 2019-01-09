@@ -335,7 +335,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			call(() -> client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft()), NOT_FOUND, null);
+			call(() -> client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft()), NOT_FOUND);
 		}
 	}
 
