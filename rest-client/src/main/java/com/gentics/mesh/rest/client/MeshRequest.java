@@ -6,6 +6,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpClientRequest;
 
+import java.util.Map;
+
 public interface MeshRequest<T> {
 
 	/**
@@ -74,4 +76,21 @@ public interface MeshRequest<T> {
 	default void blockingAwait() {
 		blockingGet();
 	}
+
+	/**
+	 * Set a header for this request. Overwrites existing header with the same name.
+	 */
+	void setHeader(String name, String value);
+
+	/**
+	 * Set headers for this request. Overwrites existing headers with the same name.
+	 */
+	default void setHeaders(Map<String, String> headers) {
+		headers.forEach(this::setHeader);
+	}
+
+	/**
+	 * Gets the response with additional information.
+	 */
+	Single<MeshResponse2<T>> getResponse();
 }
