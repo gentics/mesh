@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.remote;
 
-import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
