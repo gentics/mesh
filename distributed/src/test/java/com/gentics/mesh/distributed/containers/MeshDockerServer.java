@@ -63,7 +63,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = new MeshRestOkHttpClientImpl("localhost", getMappedPort(8080), false, vertx);
+		client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
 	};
 
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);

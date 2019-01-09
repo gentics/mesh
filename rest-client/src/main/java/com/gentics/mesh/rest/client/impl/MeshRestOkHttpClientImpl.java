@@ -8,6 +8,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import okhttp3.OkHttpClient;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,11 +23,11 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	public MeshRestOkHttpClientImpl(String host, Vertx vertx) {
 		super(host, vertx);
 		origin = "http://" + host;
-		this.client = new OkHttpClient();
+		this.client = createClient();
 	}
 
 	public MeshRestOkHttpClientImpl(String host, int port, boolean ssl, Vertx vertx) {
-		this(host, port, ssl, vertx, new OkHttpClient());
+		this(host, port, ssl, vertx, createClient());
 	}
 
 	public MeshRestOkHttpClientImpl(String host, int port, boolean ssl, Vertx vertx, OkHttpClient client) {
@@ -35,15 +36,15 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 		origin = scheme + "://" + host + ":" + port;
 		this.client = client;
 	}
-//
-//	private static OkHttpClient createClient() {
-//		CookieManager cookieManager = new CookieManager();
-//		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-//
-//		return new OkHttpClient.Builder()
-//			.cookieJar(new JavaNetCookieJar(cookieManager))
-//			.build();
-//	}
+
+	private static OkHttpClient createClient() {
+		return new OkHttpClient.Builder()
+			.callTimeout(Duration.ofMinutes(1))
+			.connectTimeout(Duration.ofMinutes(1))
+			.writeTimeout(Duration.ofMinutes(1))
+			.readTimeout(Duration.ofMinutes(1))
+			.build();
+	}
 
 	@Override
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {

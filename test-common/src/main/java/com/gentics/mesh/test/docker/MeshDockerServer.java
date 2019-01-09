@@ -39,7 +39,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = new MeshRestOkHttpClientImpl(getContainerIpAddress(), getMappedPort(8080), false, vertx);
+		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false, vertx);
 		client.setLogin("admin", "admin");
 		client.login().blockingGet();
 	};

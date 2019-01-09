@@ -27,7 +27,7 @@ public class MeshRemoteServer extends TestWatcher implements MeshTestServer {
 
 	@Override
 	protected void starting(Description description) {
-		client = new MeshRestOkHttpClientImpl(getHostname(), getPort(), false, vertx);
+		client = MeshRestClient.create(getHostname(), getPort(), false, vertx);
 		client.setLogin("admin", "admin");
 		client.login().blockingGet();
 	}
