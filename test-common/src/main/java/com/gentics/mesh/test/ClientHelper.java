@@ -9,13 +9,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -23,9 +27,12 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.ClientHandler;
+import com.gentics.mesh.test.util.MeshAssert;
 import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.vertx.core.Future;
 
 public final class ClientHelper {
@@ -134,35 +141,17 @@ public final class ClientHelper {
 		return null;
 	}
 
-	public static void validateDeletion(Set<MeshResponse<Void>> set, CyclicBarrier barrier) {
-		boolean foundDelete = false;
-		for (MeshResponse<Void> future : set) {
-			latchFor(future);
-			if (future.succeeded() && foundDelete == true) {
-				fail("We found more than one request that succeeded. Only one of the requests should be able to delete the node.");
-			}
-			if (future.succeeded()) {
-				foundDelete = true;
-				continue;
-			}
-		}
-		assertTrue("We did not find a single request which succeeded.", foundDelete);
+	public static void validateDeletion(Function<Integer, MeshRequest<Void>> deleteOperation, int count) {
+		Long successCount = Observable.range(0, count)
+			.flatMap(i -> deleteOperation.apply(i).toMaybe()
+				.map(ignore -> "dummy")
+				.toSingle("dummy")
+				.toObservable()
+				.onErrorResumeNext(Observable.empty())
+			).count().blockingGet();
 
-		// Trx.disableDebug();
-		if (barrier != null) {
-			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
-		}
-	}
-
-	public static void validateSet(Set<MeshResponse<?>> set, CyclicBarrier barrier) {
-		for (MeshResponse<?> future : set) {
-			latchFor(future);
-			assertSuccess(future);
-		}
-		// Trx.disableDebug();
-		if (barrier != null) {
-			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
-		}
+		assertFalse("We found more than one request that succeeded. Only one of the requests should be able to delete the node.", successCount > 1);
+		assertTrue("We did not find a single request which succeeded.", successCount != 0);
 	}
 
 	public static void validateFutures(Set<MeshResponse<?>> set) {

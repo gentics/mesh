@@ -13,14 +13,11 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -31,7 +28,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -41,10 +37,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -83,7 +76,6 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
@@ -388,12 +380,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		try (Tx tx = tx()) {
 			int nJobs = 10;
-			// CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findUserByUuid(userUuid()).invoke());
-			}
-			validateSet(set, null);
+			awaitConcurrentRequests(i -> client().findUserByUuid(userUuid()), nJobs);
 		}
 	}
 
@@ -401,14 +388,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
-		Set<MeshResponse<UserResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().findUserByUuid(userUuid()).invoke());
-		}
-		for (MeshResponse<UserResponse> future : set) {
-			latchFor(future);
-			assertSuccess(future);
-		}
+		awaitConcurrentRequests(i -> client().findUserByUuid(userUuid()), nJobs);
 	}
 
 	@Test
@@ -526,17 +506,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setLastname("Epic Stark");
 
 		int nJobs = 50;
-		Set<MeshResponse<UserResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			updateRequest.setUsername("dummy_user_changed" + i);
-			set.add(client().updateUser(uuid, updateRequest).invoke());
-		}
-
-		for (MeshResponse<UserResponse> response : set) {
-			latchFor(response);
-			assertSuccess(response);
-		}
-
+		awaitConcurrentRequests(i -> client().updateUser(uuid, updateRequest), nJobs);
 	}
 
 	@Test
@@ -1173,9 +1143,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
+		validateCreation(i -> {
 			UserCreateRequest request = new UserCreateRequest();
 			request.setEmailAddress("n.user@spam.gentics.com");
 			request.setFirstname("Joe");
@@ -1183,9 +1151,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setUsername("new_user_" + i);
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
-			set.add(client().createUser(request).invoke());
-		}
-		validateCreation(set, barrier);
+			return client().createUser(request);
+		}, nJobs);
 	}
 
 	/**
@@ -1270,12 +1237,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUIDMultithreaded() throws InterruptedException {
 		int nJobs = 3;
 		String uuid = user().getUuid();
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<Void>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().deleteUser(uuid).invoke());
-		}
-		validateDeletion(set, barrier);
+		validateDeletion(i -> client().deleteUser(uuid), nJobs);
 	}
 
 	@Test
@@ -1304,9 +1266,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test(expected = NullPointerException.class)
 	public void testDeleteWithUuidNull() throws Exception {
-		MeshResponse<Void> future = client().deleteUser(null).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "null");
+		call(() -> client().deleteUser(null), NOT_FOUND, "object_not_found_for_uuid", "null");
 	}
 
 	@Test

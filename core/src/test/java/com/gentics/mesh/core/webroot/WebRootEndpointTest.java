@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectFailureMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -183,16 +184,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		int nJobs = 200;
 		String path = "/News/2015/News_2015.en.html";
 
-		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
-		for (int i = 0; i < nJobs; i++) {
-			futures.add(client()
-				.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke());
-		}
-
-		for (MeshResponse<WebRootResponse> fut : futures) {
-			latchFor(fut);
-			assertSuccess(fut);
-		}
+		awaitConcurrentRequests(i -> client()
+			.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")), nJobs);
 	}
 
 	@Test
@@ -342,10 +335,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft())
-				.invoke();
-			latchFor(webrootFuture);
-			expectFailureMessage(webrootFuture, NOT_FOUND, null);
+			call(() -> client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft()), NOT_FOUND, null);
 		}
 	}
 

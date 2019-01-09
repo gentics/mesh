@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -36,16 +37,9 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 			int nJobs = 200;
 			String path = "/";
 
-			List<MeshResponse<NavigationResponse>> futures = new ArrayList<>();
-			for (int i = 0; i < nJobs; i++) {
-				futures.add(client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")).invoke());
-			}
-
-			for (MeshResponse<NavigationResponse> fut : futures) {
-				latchFor(fut);
-				assertSuccess(fut);
-				assertThat(fut.result()).isValid(7).hasDepth(3);
-			}
+			Observable.range(0, 200)
+				.flatMapSingle(i -> client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")).toSingle())
+				.blockingForEach(result -> assertThat(result).isValid(7).hasDepth(3));
 		}
 	}
 
@@ -96,9 +90,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 	public void testReadNavWithInvalidPath() {
 		try (Tx tx = tx()) {
 			String path = "/blub";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path).invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "node_not_found_for_path", "/blub");
+			call(() -> client().navroot(PROJECT_NAME, path), NOT_FOUND, "node_not_found_for_path", "/blub");
 		}
 	}
 

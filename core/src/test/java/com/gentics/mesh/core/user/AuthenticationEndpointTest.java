@@ -43,10 +43,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			MeshResponse<UserResponse> meResponse = client.me().invoke();
-			latchFor(meResponse);
-			UserResponse me = meResponse.result();
-			assertFalse("The request failed.", meResponse.failed());
+			UserResponse me = client().me().blockingGet();
 
 			assertNotNull(me);
 			assertEquals(uuid, me.getUuid());
@@ -56,9 +53,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			Single<GenericMessageResponse> logoutFuture = client.logout();
 			logoutFuture.blockingGet();
 
-			meResponse = client.me().invoke();
-			latchFor(meResponse);
-			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
+			call(() -> client.me(), UNAUTHORIZED, "error_not_authorized");
 		}
 	}
 
