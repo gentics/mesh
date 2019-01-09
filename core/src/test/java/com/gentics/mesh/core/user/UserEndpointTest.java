@@ -18,6 +18,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -1326,6 +1327,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setUsername(name);
 		request.setPassword("bla");
 		MeshResponse<UserResponse> response = client().createUser(request).invoke();
+		latchFor(response);
+		assertSuccess(response);
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
@@ -1346,6 +1349,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		MeshRequest<UserResponse> request = client().createUser(userRequest);
 		request.getRequest().putHeader(HOST, "jotschi.de:" + port());
 		MeshResponse<UserResponse> response = request.invoke();
+		latchFor(response);
+		assertSuccess(response);
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
