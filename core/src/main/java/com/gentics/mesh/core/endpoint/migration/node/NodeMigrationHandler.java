@@ -11,10 +11,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -71,7 +71,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 */
 	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Branch branch, SchemaContainerVersion fromVersion,
 		SchemaContainerVersion toVersion,
-		MigrationStatusHandler status) {
+		@NotNull MigrationStatusHandler status) {
 
 		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();

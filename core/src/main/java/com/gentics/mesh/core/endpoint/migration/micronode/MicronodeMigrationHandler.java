@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -63,7 +63,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return Completable which will be completed once the migration has completed
 	 */
 	public Completable migrateMicronodes(Branch branch, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
-		MigrationStatusHandler status) {
+		@NotNull MigrationStatusHandler status) {
 
 		// Collect the migration scripts
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
