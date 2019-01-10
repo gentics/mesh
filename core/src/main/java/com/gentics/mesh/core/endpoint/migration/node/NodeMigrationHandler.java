@@ -115,15 +115,19 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
-		AtomicReference<SearchQueueBatch> sqb = new AtomicReference<>(null);
+		SearchQueueBatch sqb = searchQueue.create();
 		for (NodeGraphFieldContainer container : containers) {
-			// Create a new SQB to handle the ES update
-			if (sqb.get() == null) {
-				sqb.set(searchQueue.create());
+			try {
+				// Each container migration has its own search queue batch which is then combined with other batch entries.
+				// This prevents adding partial entries from failed migrations.
+				SearchQueueBatch containerBatch = searchQueue.create();
+				db.tx(() -> {
+					migrateContainer(ac, containerBatch, container, toVersion, migrationScripts, branch, newSchema, errorsDetected, touchedFields);
+				});
+				sqb.addAll(containerBatch);
+			} catch (Exception e) {
+				errorsDetected.add(e);
 			}
-			db.tx(() -> {
-				migrateContainer(ac, sqb.get(), container, toVersion, migrationScripts, branch, newSchema, errorsDetected, touchedFields);
-			});
 
 			if (status != null) {
 				status.incCompleted();
@@ -139,19 +143,18 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			count++;
 			if (count % 10 == 0) {
 				// Process the batch and reset it
-				log.info("Syncing batch with size: " + sqb.get().size());
+				log.info("Syncing batch with size: " + sqb.size());
 				db.tx(() -> {
-					sqb.get().processSync();
-					sqb.set(null);
+					sqb.processSync();
+					sqb.clear();
 				});
 			}
 		}
-		if (sqb.get() != null) {
-			log.info("Syncing last batch with size: " + sqb.get().size());
+		if (sqb.size() > 0) {
+			log.info("Syncing last batch with size: " + sqb.size());
 			db.tx(() -> {
-				sqb.get().processSync();
+				sqb.processSync();
 			});
-			sqb.set(null);
 		}
 
 		log.info("Migration of " + count + " containers done..");

@@ -333,4 +333,15 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return bulkEntries.size() + seperateEntries.size();
 	}
 
+	@Override
+	public void addAll(SearchQueueBatch otherBatch) {
+		if (otherBatch instanceof SearchQueueBatchImpl) {
+			SearchQueueBatchImpl batch = (SearchQueueBatchImpl) otherBatch;
+			bulkEntries.addAll(batch.bulkEntries);
+			seperateEntries.addAll(batch.seperateEntries);
+		} else {
+			throw new RuntimeException("Cannot mix SearchQueueBatch instances");
+		}
+	}
+
 }
