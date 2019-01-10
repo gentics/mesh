@@ -51,25 +51,24 @@ public class BranchMigrationJobImpl extends JobImpl {
 	@Override
 	protected Completable processTask() {
 		return Completable.fromAction(() -> {
-			MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch);
-			try {
+			try (Tx tx = DB.get().tx()) {
+				MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch);
+				try {
+					if (log.isDebugEnabled()) {
+						log.debug("Branch migration for job {" + getUuid() + "} was requested");
+					}
+					status.commit();
 
-				if (log.isDebugEnabled()) {
-					log.debug("Branch migration for job {" + getUuid() + "} was requested");
-				}
-				status.commit();
-
-				try (Tx tx = DB.get().tx()) {
 					Branch branch = getBranch();
 					if (branch == null) {
 						throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
 					}
 					MeshInternal.get().branchMigrationHandler().migrateBranch(branch, status).blockingAwait();
 					status.done();
+				} catch (Exception e) {
+					status.error(e, "Error while preparing branch migration.");
+					throw e;
 				}
-			} catch (Exception e) {
-				status.error(e, "Error while preparing branch migration.");
-				throw e;
 			}
 		});
 	}
