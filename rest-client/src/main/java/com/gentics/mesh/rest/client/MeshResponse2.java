@@ -20,6 +20,15 @@ public interface MeshResponse2<T> {
 	}
 
 	/**
+	 * Retrieve a header from the response.
+	 * @param name The name of the header
+	 * @return The value of the first header with the given name
+	 */
+	default String getHeader(String name) {
+		return getHeaders(name).get(0);
+	}
+
+	/**
 	 * Retrieves the status code of the response
 	 * @return The status code
 	 */

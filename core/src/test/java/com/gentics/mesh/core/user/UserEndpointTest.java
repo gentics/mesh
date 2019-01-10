@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.rest.client.MeshResponse2;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -1328,14 +1329,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(name);
 		request.setPassword("bla");
-		MeshResponse<UserResponse> response = client().createUser(request).invoke();
-		latchFor(response);
-		assertSuccess(response);
+
+		MeshResponse2<UserResponse> response = client().createUser(request).getResponse().blockingGet();
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
-			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
-			String location = response.getRawResponse().getHeader(LOCATION);
+			assertEquals(CREATED.code(), response.getStatusCode());
+			String location = response.getHeader(LOCATION.toString());
 			assertEquals("Location header value did not match", "http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
