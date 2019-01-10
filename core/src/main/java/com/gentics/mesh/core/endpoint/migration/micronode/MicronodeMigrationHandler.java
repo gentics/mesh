@@ -100,46 +100,10 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			return Completable.complete();
 		}
 
-		// Iterate over all containers and invoke a migration for each one
-		long count = 0;
-		List<Exception> errorsDetected = new ArrayList<>();
-		AtomicReference<SearchQueueBatch> sqb = new AtomicReference<>(null);
-		for (NodeGraphFieldContainer container : fieldContainersResult) {
+		List<Exception> errorsDetected = migrateLoop(fieldContainersResult, status, (batch, container, errors) ->
+			migrateMicronodeContainer(ac, batch, branch, fromVersion, toVersion, container, touchedFields, migrationScripts, errors)
+		);
 
-			// Create a new SQB to handle the ES update
-			if (sqb.get() == null) {
-				sqb.set(searchQueue.create());
-			}
-			db.tx(() -> {
-				migrateMicronodeContainer(ac, sqb.get(), branch, fromVersion, toVersion, container, touchedFields, migrationScripts, errorsDetected);
-			});
-
-			if (status != null) {
-				status.incCompleted();
-			}
-			if (count % 50 == 0) {
-				log.info("Migrated micronode containers: " + count);
-				db.tx(() -> {
-					if (status != null) {
-						status.commit();
-					}
-				});
-			}
-			count++;
-			if (count % 500 == 0) {
-				// Process the batch and reset it
-				log.info("Syncing batch with size: " + sqb.get().size());
-				sqb.get().processSync();
-				sqb.set(null);
-			}
-		}
-		if (sqb.get() != null) {
-			log.info("Syncing last batch with size: " + sqb.get().size());
-			sqb.get().processSync();
-			sqb.set(null);
-		}
-		log.info("Migration of " + count + " containers done..");
-		log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
 		Completable result = Completable.complete();
 		if (!errorsDetected.isEmpty()) {
 			if (log.isDebugEnabled()) {
@@ -153,59 +117,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	}
 
 	/**
-	 * Migrate the given micronode container.
-	 * 
-	 * @param ac
-	 * @param batch
-	 * @param branch
-	 * @param fromVersion
-	 * @param toVersion
-	 * @param container
-	 * @param touchedFields
-	 * @param migrationScripts
-	 * @param errorsDetected
-	 */
-	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, Branch branch,
-		MicroschemaContainerVersion fromVersion,
-		MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, List<Exception> errorsDetected) {
-
-		if (log.isDebugEnabled()) {
-			log.debug("Migrating container {" + container.getUuid() + "}");
-		}
-		String branchUuid = branch.getUuid();
-
-		// Run the actual migration in a dedicated transaction
-		try {
-			db.tx((tx) -> {
-
-				Node node = container.getParentNode();
-				String languageTag = container.getLanguageTag();
-				ac.getNodeParameters().setLanguages(languageTag);
-				ac.getVersioningParameters().setVersion("draft");
-				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branchUuid, PUBLISHED);
-
-				VersionNumber nextDraftVersion = null;
-				// 1. Check whether there is any other published container which we need to handle separately
-				if (oldPublished != null && !oldPublished.equals(container)) {
-					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields,
-						migrationScripts);
-					nextDraftVersion = nextDraftVersion.nextDraft();
-				}
-
-				// 2. Migrate the draft container. This will also update the draft edge.
-				migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, migrationScripts, nextDraftVersion);
-			});
-		} catch (Exception e1) {
-			log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
-			errorsDetected.add(e1);
-		}
-
-	}
-
-	/**
 	 * Migrate the draft container. Internally we will also check whether the container is also the published container and handle this case correctly.
-	 * 
+	 *
 	 * @param ac
 	 * @param sqb
 	 * @param branch
@@ -248,6 +161,57 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		if (publish) {
 			sqb.store(node, branchUuid, PUBLISHED, false);
 		}
+	}
+
+	/**
+	 * Migrate the given micronode container.
+	 *
+	 * @param ac
+	 * @param batch
+	 * @param branch
+	 * @param fromVersion
+	 * @param toVersion
+	 * @param container
+	 * @param touchedFields
+	 * @param migrationScripts
+	 * @param errorsDetected
+	 */
+	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, Branch branch,
+										   MicroschemaContainerVersion fromVersion,
+										   MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
+										   List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, List<Exception> errorsDetected) {
+
+		if (log.isDebugEnabled()) {
+			log.debug("Migrating container {" + container.getUuid() + "}");
+		}
+		String branchUuid = branch.getUuid();
+
+		// Run the actual migration in a dedicated transaction
+		try {
+			db.tx((tx) -> {
+
+				Node node = container.getParentNode();
+				String languageTag = container.getLanguageTag();
+				ac.getNodeParameters().setLanguages(languageTag);
+				ac.getVersioningParameters().setVersion("draft");
+				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branchUuid, PUBLISHED);
+
+				VersionNumber nextDraftVersion = null;
+				// 1. Check whether there is any other published container which we need to handle separately
+				if (oldPublished != null && !oldPublished.equals(container)) {
+					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields,
+						migrationScripts);
+					nextDraftVersion = nextDraftVersion.nextDraft();
+				}
+
+				// 2. Migrate the draft container. This will also update the draft edge.
+				migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, migrationScripts, nextDraftVersion);
+			});
+		} catch (Exception e1) {
+			log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+			errorsDetected.add(e1);
+		}
+
 	}
 
 	/**

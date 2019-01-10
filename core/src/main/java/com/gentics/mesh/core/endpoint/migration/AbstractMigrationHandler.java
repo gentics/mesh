@@ -1,19 +1,25 @@
 package com.gentics.mesh.core.endpoint.migration;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.script.ScriptEngine;
+import javax.validation.constraints.NotNull;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -22,6 +28,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
+import io.reactivex.functions.Function3;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jdk.nashorn.api.scripting.ClassFilter;
@@ -138,6 +145,51 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		container.setSchemaContainerVersion(newVersion);
 		container.updateFieldsFromRest(ac, transformedRestModel.getFields());
 
+	}
+
+	@ParametersAreNonnullByDefault
+	protected <T> List<Exception> migrateLoop(Iterable<T> containers, MigrationStatusHandler status, TriConsumer<SearchQueueBatch, T, List<Exception>> migrator) {
+		// Iterate over all containers and invoke a migration for each one
+		long count = 0;
+		List<Exception> errorsDetected = new ArrayList<>();
+		SearchQueueBatch sqb = searchQueue.create();
+		for (T container : containers) {
+			try {
+				// Each container migration has its own search queue batch which is then combined with other batch entries.
+				// This prevents adding partial entries from failed migrations.
+				SearchQueueBatch containerBatch = searchQueue.create();
+				db.tx(() -> {
+					migrator.accept(containerBatch, container, errorsDetected);
+				});
+				sqb.addAll(containerBatch);
+				status.incCompleted();
+				if (count % 50 == 0) {
+					log.info("Migrated containers: " + count);
+				}
+				count++;
+			} catch (Exception e) {
+				errorsDetected.add(e);
+			}
+
+			if (count % 500 == 0) {
+				// Process the batch and reset it
+				log.info("Syncing batch with size: " + sqb.size());
+				db.tx(() -> {
+					sqb.processSync();
+					sqb.clear();
+				});
+			}
+		}
+		if (sqb.size() > 0) {
+			log.info("Syncing last batch with size: " + sqb.size());
+			db.tx(() -> {
+				sqb.processSync();
+			});
+		}
+
+		log.info("Migration of " + count + " containers done..");
+		log.info("Encountered {" + errorsDetected.size() + "} errors during node migration.");
+		return errorsDetected;
 	}
 
 	/**

@@ -112,53 +112,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			return Completable.complete();
 		}
 
-		// Iterate over all containers and invoke a migration for each one
-		long count = 0;
-		List<Exception> errorsDetected = new ArrayList<>();
-		SearchQueueBatch sqb = searchQueue.create();
-		for (NodeGraphFieldContainer container : containers) {
-			try {
-				// Each container migration has its own search queue batch which is then combined with other batch entries.
-				// This prevents adding partial entries from failed migrations.
-				SearchQueueBatch containerBatch = searchQueue.create();
-				db.tx(() -> {
-					migrateContainer(ac, containerBatch, container, toVersion, migrationScripts, branch, newSchema, errorsDetected, touchedFields);
-				});
-				sqb.addAll(containerBatch);
-			} catch (Exception e) {
-				errorsDetected.add(e);
-			}
+		List<Exception> errorsDetected = migrateLoop(containers, status, (batch, container, errors) ->
+			migrateContainer(ac, batch, container, toVersion, migrationScripts, branch, newSchema, errors, touchedFields)
+		);
 
-			if (status != null) {
-				status.incCompleted();
-			}
-			if (count % 50 == 0) {
-				log.info("Migrated containers: " + count);
-				if (status != null) {
-					db.tx(() -> {
-						status.commit();
-					});
-				}
-			}
-			count++;
-			if (count % 500 == 0) {
-				// Process the batch and reset it
-				log.info("Syncing batch with size: " + sqb.size());
-				db.tx(() -> {
-					sqb.processSync();
-					sqb.clear();
-				});
-			}
-		}
-		if (sqb.size() > 0) {
-			log.info("Syncing last batch with size: " + sqb.size());
-			db.tx(() -> {
-				sqb.processSync();
-			});
-		}
-
-		log.info("Migration of " + count + " containers done..");
-		log.info("Encountered {" + errorsDetected.size() + "} errors during node migration.");
 		// TODO prepare errors. They should be easy to understand and to grasp
 		Completable result = Completable.complete();
 		if (!errorsDetected.isEmpty()) {
