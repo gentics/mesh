@@ -32,7 +32,9 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	}
 
 	public Language englishLang() {
-		return boot().languageRoot().findByLanguageTag("en");
+		try (Tx tx = tx()) {
+			return boot().languageRoot().findByLanguageTag("en");
+		}
 	}
 
 	@Test
