@@ -5,12 +5,14 @@ import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -58,54 +60,66 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 	protected Completable processTask() {
 
-		Project project;
-		Branch branch;
-		SchemaContainerVersion fromContainerVersion;
-		SchemaContainerVersion toContainerVersion;
-		MigrationStatusHandler status;
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
 
-		try (Tx tx = DB.get().tx()) {
-			status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
-			branch = getBranch();
-			if (branch == null) {
-				throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
+		return Completable.defer(() -> {
+			AtomicReference<Project> projectRef = new AtomicReference<>(null);
+			AtomicReference<Branch> branchRef = new AtomicReference<>(null);
+			AtomicReference<SchemaContainerVersion> fromContainerVersionRef = new AtomicReference<>(null);
+			AtomicReference<SchemaContainerVersion> toContainerVersionRef = new AtomicReference<>(null);
+
+			try (Tx tx = DB.get().tx()) {
+
+				Branch branch = getBranch();
+				if (branch == null) {
+					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
+				}
+				branchRef.set(branch);
+
+				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
+				if (fromContainerVersion == null) {
+					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
+				}
+				fromContainerVersionRef.set(fromContainerVersion);
+
+				SchemaContainerVersion toContainerVersion = getToSchemaVersion();
+				if (toContainerVersion == null) {
+					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
+				}
+				toContainerVersionRef.set(toContainerVersion);
+
+				SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
+				if (schemaContainer == null) {
+					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
+				}
+
+				Project project = branch.getProject();
+				if (project == null) {
+					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
+				}
+				projectRef.set(project);
+
+				BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
+				status.setVersionEdge(branchVersionEdge);
+
+				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
+					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
+					+ "} in project {" + project.getUuid() + "}");
+
+				status.commit();
+				tx.success();
+			} catch (Exception e) {
+				DB.get().tx(() -> {
+					status.error(e, "Error while preparing node migration.");
+				});
+				throw e;
 			}
 
-			fromContainerVersion = getFromSchemaVersion();
-			if (fromContainerVersion == null) {
-				throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
-			}
-
-			toContainerVersion = getToSchemaVersion();
-			if (toContainerVersion == null) {
-				throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
-			}
-
-			SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
-			if (schemaContainer == null) {
-				throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
-			}
-
-			project = branch.getProject();
-			if (project == null) {
-				throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
-			}
-
-			BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
-			status.setVersionEdge(branchVersionEdge);
-
-			log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
-				+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
-				+ "} in project {" + project.getUuid() + "}");
-
-			status.commit();
-			tx.success();
-
-		}
-		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
-		// for (int i = 0; i < MIGRATION_ATTEMPT_COUNT; i++) {
-		Completable migration = MeshInternal.get().nodeMigrationHandler()
-			.migrateNodes(ac, project, branch, fromContainerVersion, toContainerVersion, status).doOnComplete(() -> {
+			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
+			// for (int i = 0; i < MIGRATION_ATTEMPT_COUNT; i++) {
+			Completable migration = MeshInternal.get().nodeMigrationHandler()
+				.migrateNodes(ac, projectRef.get(), branchRef.get(), fromContainerVersionRef.get(), toContainerVersionRef.get(), status);
+			migration = migration.doOnComplete(() -> {
 				DB.get().tx(() -> {
 					JobWarningList warnings = new JobWarningList();
 					if (!ac.getConflicts().isEmpty()) {
@@ -115,27 +129,23 @@ public class NodeMigrationJobImpl extends JobImpl {
 						}
 					}
 					setWarnings(warnings);
-					finalizeMigration(project, branch, fromContainerVersion);
+					finalizeMigration(projectRef.get(), branchRef.get(), fromContainerVersionRef.get());
 					status.done();
 				});
 			});
-		// // Check migration result
-		// boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
-		// if (i == MIGRATION_ATTEMPT_COUNT - 1 && hasRemainingContainers) {
-		// log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
-		// } else if (hasRemainingContainers) {
-		// log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
-		// + fromContainerVersion.getVersion() + "} invoking migration again.");
-		// } else {
-		// break;
-		// }
-		// }
-		migration = migration.doOnError(err -> {
-			DB.get().tx(() -> {
-				status.error(err, "Error while preparing node migration.");
-			});
+			// // Check migration result
+			// boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
+			// if (i == MIGRATION_ATTEMPT_COUNT - 1 && hasRemainingContainers) {
+			// log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
+			// } else if (hasRemainingContainers) {
+			// log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
+			// + fromContainerVersion.getVersion() + "} invoking migration again.");
+			// } else {
+			// break;
+			// }
+			// }
+			return migration;
 		});
-		return migration;
 	}
 
 	private void finalizeMigration(Project project, Branch branch, SchemaContainerVersion fromContainerVersion) {

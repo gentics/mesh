@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
-import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;

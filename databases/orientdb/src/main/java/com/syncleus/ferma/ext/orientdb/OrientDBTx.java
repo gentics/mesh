@@ -41,17 +41,9 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Override
 	public void close() {
-		// if(isWrapped) {
-		// if (isSuccess()) {
-		// commit();
-		// }
-		// return;
-		// }
 		try {
 			if (isSuccess()) {
 				try {
-					System.out.println();
-					System.out.println("COMMIT in " + Mesh.mesh().getOptions().getNodeName());
 					commit();
 				} catch (Exception e) {
 					rollback();

@@ -427,7 +427,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			edge.setLanguageTag(languageTag);
 			edge.setBranchUuid(branchUuid);
 			edge.setType(DRAFT);
-			System.out.println("Draft Edge: " + edge.id());
 		}
 
 		// if there is no initial edge, create one
@@ -436,17 +435,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			initialEdge.setLanguageTag(languageTag);
 			initialEdge.setBranchUuid(branchUuid);
 			initialEdge.setType(INITIAL);
-			System.out.println("Initial Edge: " + initialEdge.id());
 		}
 
-		System.out.println("New Container: " + newContainer.id());
-		if (original != null) {
-			System.out.println("Original Container: " + original.id());
-		}
-		System.out.println("Branch: " + branch.id());
-		if (previous != null) {
-			System.out.println("Previous: " + previous.id());
-		}
 		return newContainer;
 	}
 

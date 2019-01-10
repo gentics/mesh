@@ -2,6 +2,7 @@ package com.gentics.mesh.core.endpoint.migration.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 
 import java.io.IOException;
@@ -100,6 +101,17 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			return Lists.newArrayList(it);
 		});
 
+		// No field containers, migration is done
+		if (containers.isEmpty()) {
+			if (status != null) {
+				db.tx(() -> {
+					status.setStatus(COMPLETED);
+					status.commit();
+				});
+			}
+			return Completable.complete();
+		}
+
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
@@ -110,7 +122,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				sqb.set(searchQueue.create());
 			}
 			db.tx(() -> {
-				System.out.println("Migrating: " + container.getId());
 				migrateContainer(ac, sqb.get(), container, toVersion, migrationScripts, branch, newSchema, errorsDetected, touchedFields);
 			});
 
@@ -129,13 +140,17 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			if (count % 10 == 0) {
 				// Process the batch and reset it
 				log.info("Syncing batch with size: " + sqb.get().size());
-				sqb.get().processSync();
-				sqb.set(null);
+				db.tx(() -> {
+					sqb.get().processSync();
+					sqb.set(null);
+				});
 			}
 		}
 		if (sqb.get() != null) {
 			log.info("Syncing last batch with size: " + sqb.get().size());
-			sqb.get().processSync();
+			db.tx(() -> {
+				sqb.get().processSync();
+			});
 			sqb.set(null);
 		}
 
@@ -201,7 +216,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			// 2. Migrate the draft container. This will also update the draft edge.
-			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema,	nextDraftVersion);
+			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
 				+ "} during schema migration.", e1);

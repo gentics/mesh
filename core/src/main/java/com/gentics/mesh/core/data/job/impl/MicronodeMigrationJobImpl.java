@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -35,40 +36,59 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected Completable processTask() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
+		return Completable.defer(() -> {
 
-		try (Tx tx = DB.get().tx()) {
-			Branch branch = getBranch();
-			if (branch == null) {
-				throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
+			Branch branch = null;
+			MicroschemaContainerVersion fromContainerVersion = null;
+			MicroschemaContainerVersion toContainerVersion = null;
+
+			try (Tx tx = DB.get().tx()) {
+				branch = getBranch();
+				if (branch == null) {
+					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
+				}
+
+				fromContainerVersion = getFromMicroschemaVersion();
+				if (fromContainerVersion == null) {
+					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
+				}
+
+				toContainerVersion = getToMicroschemaVersion();
+				if (toContainerVersion == null) {
+					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
+				}
+
+				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
+				BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
+				status.setVersionEdge(branchVersionEdge);
+
+				if (log.isDebugEnabled()) {
+					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
+						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
+				}
+
+				status.commit();
+				tx.success();
+			} catch (Exception e) {
+				DB.get().tx(() -> {
+					status.error(e, "Error while preparing micronode migration.");
+				});
+				throw e;
 			}
 
-			MicroschemaContainerVersion fromContainerVersion = getFromMicroschemaVersion();
-			if (fromContainerVersion == null) {
-				throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
-			}
+			Completable migration = MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(branch, fromContainerVersion, toContainerVersion,
+				status);
 
-			MicroschemaContainerVersion toContainerVersion = getToMicroschemaVersion();
-			if (toContainerVersion == null) {
-				throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
-			}
-
-			MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
-			BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
-			statusHandler.setVersionEdge(branchVersionEdge);
-
-			if (log.isDebugEnabled()) {
-				log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
-					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
-			}
-
-			statusHandler.commit();
-			return MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(branch, fromContainerVersion, toContainerVersion, statusHandler);
-			// statusHandler.done();
-		} catch (Exception e) {
-			statusHandler.error(e, "Error while preparing micronode migration.");
-			return Completable.error(e);
-		}
+			migration = migration.doOnComplete(() -> {
+				DB.get().tx(() -> {
+					JobWarningList warnings = new JobWarningList();
+					setWarnings(warnings);
+					status.done();
+				});
+			});
+			return migration;
+		});
 	}
 
 }
