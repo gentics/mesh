@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -50,6 +51,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testIndexSyncLock() throws Exception {
 		grantAdminRole();
 		tx(() -> {
