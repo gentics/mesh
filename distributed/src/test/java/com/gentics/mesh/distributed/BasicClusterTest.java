@@ -57,6 +57,7 @@ import com.gentics.mesh.test.util.TestUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 public class BasicClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
