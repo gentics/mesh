@@ -167,7 +167,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 		}
 		
-		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(-1);
+		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(Integer.MAX_VALUE);
 
 		initConfigurationFiles();
 
