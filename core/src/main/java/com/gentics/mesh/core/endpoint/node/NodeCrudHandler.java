@@ -86,11 +86,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			SchemaContainer schema = node.getSchemaContainer();
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
-//			db.tx(() -> {
+			db.tx(() -> {
 				BulkActionContext context = searchQueue.createBulkContext();
 				node.deleteFromBranch(ac, ac.getBranch(), context, false);
-				context.batch().processAsync();
-//			}).processSync();
+				return context.batch();
+			}).processSync();
 			node.onDeleted(uuid, name, schema, null);
 
 			return null;

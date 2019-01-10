@@ -564,4 +564,6 @@ public interface Database extends TxFactory {
 
 	void shutdown();
 
+	void reindex();
+
 }

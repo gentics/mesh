@@ -57,6 +57,7 @@ import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.index.OIndexCursor;
+import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
@@ -166,8 +167,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			throw new RuntimeException(
 				"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 		}
-		
-		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(Integer.MAX_VALUE);
+
+		// OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(Integer.MAX_VALUE);
 
 		initConfigurationFiles();
 
@@ -192,6 +193,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public TransactionalGraph rawTx() {
 		return txProvider.rawTx();
+	}
+
+	@Override
+	public void reindex() {
+		OrientGraphNoTx tx = txProvider.rawNoTx();
+		try {
+			OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
+			manager.getIndexes().forEach(i -> i.rebuild());
+		} finally {
+			tx.shutdown();
+		}
+
 	}
 
 	protected OrientGraphNoTx rawNoTx() {
@@ -928,7 +941,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (ONeedRetryException|FastNoSuchElementException e) {
+			} catch (ONeedRetryException | FastNoSuchElementException e) {
 				log.info("Error in tx", e);
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);

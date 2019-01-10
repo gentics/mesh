@@ -35,6 +35,7 @@ public final class ChangesList {
 		list.add(new BinaryStorageMigration());
 		list.add(new ChangeNumberStringsToNumber());
 		list.add(new RenameReleasesToBranches());
+		list.add(new NodeContentLanguageMigration());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}

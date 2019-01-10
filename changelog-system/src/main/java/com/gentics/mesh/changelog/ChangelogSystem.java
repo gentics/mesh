@@ -38,6 +38,8 @@ public class ChangelogSystem {
 	 * @return Flag which indicates whether all changes were applied successfully
 	 */
 	public boolean applyChanges(ReindexAction reindexAction, List<Change> list) {
+		// TODO - Only invoke for major upgrades to OrientDB 3.0.x
+		//db.reindex();
 		boolean reindex = false;
 		for (Change change : list) {
 			// Execute each change in a new transaction
