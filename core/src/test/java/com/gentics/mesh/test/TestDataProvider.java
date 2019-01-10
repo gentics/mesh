@@ -330,8 +330,6 @@ public class TestDataProvider {
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
 		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
-//		project.addLanguage(getEnglish());
-//		project.addLanguage(getGerman());
 		User jobUser = userInfo.getUser();
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"));
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"));
