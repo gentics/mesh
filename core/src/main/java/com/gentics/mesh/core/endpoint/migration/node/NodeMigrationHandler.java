@@ -132,7 +132,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			if (status != null) {
 				status.incCompleted();
 			}
-			if (count % 10 == 0) {
+			if (count % 50 == 0) {
 				log.info("Migrated containers: " + count);
 				if (status != null) {
 					db.tx(() -> {
@@ -141,7 +141,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				}
 			}
 			count++;
-			if (count % 10 == 0) {
+			if (count % 500 == 0) {
 				// Process the batch and reset it
 				log.info("Syncing batch with size: " + sqb.size());
 				db.tx(() -> {
