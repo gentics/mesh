@@ -106,7 +106,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 				ConsistencyCheckResult result = check.invoke(db, tx, attemptRepair);
 				log.info("Check {" + check.getName() + "} completed.");
 				if (attemptRepair) {
-					log.info("Check {" + check.getName() + "} repaired {" + result.getRepairCount() + "}");
+					log.info("Check {" + check.getName() + "} repaired {" + result.getRepairCount() + "} elements.");
 				}
 				response.getInconsistencies().addAll(result.getResults());
 				response.getRepairCount().put(check.getName(), result.getRepairCount());

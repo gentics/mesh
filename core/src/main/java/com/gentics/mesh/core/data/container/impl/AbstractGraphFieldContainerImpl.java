@@ -7,12 +7,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.security.InvalidParameterException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
@@ -393,14 +398,13 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			.filter(this::isNodeReferenceType)
 			.collect(Collectors.groupingBy(FieldSchema::getType));
 
-		Function<FieldTypes, List<FieldSchema>> getFields = type ->
-			Optional.ofNullable(affectedFields.get(type.toString())).orElse(Collections.emptyList());
+		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
+			.orElse(Collections.emptyList());
 
 		return Stream.of(
 			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
 			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
-			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
-		).flatMap(Function.identity())::iterator;
+			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)).flatMap(Function.identity())::iterator;
 	}
 
 	/**
@@ -413,7 +417,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	/**
 	 * Gets the node from a node field.
-	 * @param field The node field to get the node from
+	 * 
+	 * @param field
+	 *            The node field to get the node from
 	 * @return Gets the node as a stream or an empty stream if the node field is not set
 	 */
 	private Stream<Node> getNodeFromNodeField(FieldSchema field) {
@@ -424,8 +430,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	/**
-	 * Gets the nodes that are referenced by a micronode in the given field.
-	 * This includes all node fields and node list fields in the micronode.
+	 * Gets the nodes that are referenced by a micronode in the given field. This includes all node fields and node list fields in the micronode.
 	 */
 	private Stream<? extends Node> getNodesFromMicronode(FieldSchema field) {
 		return Optional.ofNullable(getMicronode(field.getName()))
@@ -434,15 +439,13 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	/**
-	 * Gets the nodes that are referenced by a list field.
-	 * In case of a node list, all nodes in that list are returned.
-	 * In case of a micronode list, all nodes referenced by all node fields and node list fields in all microschemas are returned.
-	 * Otherwise an empty stream is returned.
+	 * Gets the nodes that are referenced by a list field. In case of a node list, all nodes in that list are returned. In case of a micronode list, all nodes
+	 * referenced by all node fields and node list fields in all microschemas are returned. Otherwise an empty stream is returned.
 	 */
 	private Stream<? extends Node> getNodesFromList(FieldSchema field) {
 		ListFieldSchema list;
 		if (field instanceof ListFieldSchema) {
-			list = (ListFieldSchema)field;
+			list = (ListFieldSchema) field;
 		} else {
 			throw new InvalidParameterException("Invalid field type");
 		}
@@ -462,4 +465,15 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			return Stream.empty();
 		}
 	}
+
+	@Override
+	public void delete(BulkActionContext context) {
+
+		// Lists
+		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
+			field.removeField(this);
+		}
+
+	}
+
 }
