@@ -187,7 +187,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			existing.remove();
 
 			// If the existing micronode was only used by this container, remove it
-			if (existingMicronode.in(HAS_FIELD).count() == 0) {
+			if (!existingMicronode.in(HAS_FIELD).hasNext()) {
 				existingMicronode.remove();
 			}
 		}

@@ -83,7 +83,7 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	public void removeField(GraphFieldContainer container) {
 		container.unlinkOut(this, HAS_LIST);
 
-		if (in(HAS_LIST).count() == 0) {
+		if (!in(HAS_LIST).hasNext()) {
 			delete(null);
 		}
 	}

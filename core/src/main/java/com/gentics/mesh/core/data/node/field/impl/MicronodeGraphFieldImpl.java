@@ -150,7 +150,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		remove();
 		if (micronode != null) {
 			// Remove the micronode if this was the last edge to the micronode
-			if (micronode.in(HAS_FIELD).count() == 0) {
+			if (!micronode.in(HAS_FIELD).hasNext()) {
 				micronode.delete(null);
 			}
 		}

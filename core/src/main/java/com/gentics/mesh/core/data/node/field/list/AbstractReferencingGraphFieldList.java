@@ -64,7 +64,7 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 		container.unlinkOut(this, HAS_LIST);
 
 		// Remove the field if no more containers are attached to it
-		if (in(HAS_LIST).count() == 0) {
+		if (!in(HAS_LIST).hasNext()) {
 			delete(null);
 		}
 	}
