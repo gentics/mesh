@@ -78,6 +78,7 @@ public class ChangelogSystem {
 		try {
 			for (Change change : list) {
 				change.setGraph(graph);
+				change.setDb(db);
 				change.markAsComplete();
 				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
