@@ -132,6 +132,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 					finalizeMigration(projectRef.get(), branchRef.get(), fromContainerVersionRef.get());
 					status.done();
 				});
+			}).doOnError(err -> {
+				DB.get().tx(() -> {
+					status.error(err, "Error in node migration.");
+				});
 			});
 			// // Check migration result
 			// boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();

@@ -77,17 +77,18 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				throw e;
 			}
 
-			Completable migration = MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(branch, fromContainerVersion, toContainerVersion,
-				status);
-
-			migration = migration.doOnComplete(() -> {
+			return MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(branch, fromContainerVersion, toContainerVersion,
+				status).doOnComplete(() -> {
 				DB.get().tx(() -> {
 					JobWarningList warnings = new JobWarningList();
 					setWarnings(warnings);
 					status.done();
 				});
+			}).doOnError(err -> {
+				DB.get().tx(() -> {
+					status.error(err, "Error in micronode migration.");
+				});
 			});
-			return migration;
 		});
 	}
 
