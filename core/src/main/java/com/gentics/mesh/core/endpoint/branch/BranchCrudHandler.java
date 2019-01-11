@@ -287,12 +287,15 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				// We don't need to migrate the latest active version
 				.filter(version -> version != latestVersions.get(version.getName()))
 				.forEach(schemaVersion -> {
-					Job job = enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
-					job.process();
+					enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
 				});
 
 			return message(ac, "schema_migration_invoked");
-		}, model -> ac.send(model, OK));
+		}, model -> {
+			// Trigger job worker after jobs have been queued
+			Events.triggerJobWorker();
+			ac.send(model, OK);
+		});
 	}
 
 	/**
