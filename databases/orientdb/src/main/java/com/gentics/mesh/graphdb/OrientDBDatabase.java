@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -191,13 +192,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public TransactionalGraph rawTx() {
+	public OrientGraph rawTx() {
 		return txProvider.rawTx();
 	}
 
 	@Override
 	public void reindex() {
-		OrientGraphNoTx tx = txProvider.rawNoTx();
+		OrientGraph tx = txProvider.rawTx();
 		try {
 			OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
 			manager.getIndexes().forEach(i -> i.rebuild());

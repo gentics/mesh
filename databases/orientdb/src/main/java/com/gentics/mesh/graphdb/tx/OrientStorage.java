@@ -3,7 +3,7 @@ package com.gentics.mesh.graphdb.tx;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 /**
@@ -42,7 +42,7 @@ public interface OrientStorage {
 	 * 
 	 * @return
 	 */
-	TransactionalGraph rawTx();
+	OrientGraph rawTx();
 
 	/**
 	 * Get a raw noTx tinkerpop transaction.

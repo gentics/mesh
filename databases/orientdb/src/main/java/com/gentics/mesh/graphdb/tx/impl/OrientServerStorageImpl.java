@@ -6,7 +6,6 @@ import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -46,7 +45,7 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public TransactionalGraph rawTx() {
+	public OrientGraph rawTx() {
 		ODatabaseSession db = context.open(DB_NAME, "admin", "admin");
 		return (OrientGraph) OrientGraphFactory.getTxGraphImplFactory().getGraph((ODatabaseDocumentInternal) db);
 	}

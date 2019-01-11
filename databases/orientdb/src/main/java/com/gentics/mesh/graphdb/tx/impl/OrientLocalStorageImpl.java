@@ -17,7 +17,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
-import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
@@ -51,7 +51,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public TransactionalGraph rawTx() {
+	public OrientGraph rawTx() {
 		return factory.getTx();
 	}
 
