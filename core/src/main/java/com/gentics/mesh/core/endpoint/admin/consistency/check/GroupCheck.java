@@ -5,44 +5,47 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Iterator;
-
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * Group specific consistency checks.
  */
-public class GroupCheck implements ConsistencyCheck {
+public class GroupCheck extends AbstractConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
-		Iterator<? extends Group> it = db.getVerticesForType(GroupImpl.class);
-		while (it.hasNext()) {
-			checkGroup(it.next(), response);
-		}
+	public String getName() {
+		return "groups";
 	}
 
-	private void checkGroup(Group group, ConsistencyCheckResponse response) {
+	@Override
+	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
+		return processForType(db, GroupImpl.class, (group, result) -> {
+			checkGroup(group, result);
+		}, attemptRepair, tx);
+	}
+
+	private void checkGroup(Group group, ConsistencyCheckResult result) {
 		String uuid = group.getUuid();
 
-		checkIn(group, HAS_GROUP, GroupRootImpl.class, response, HIGH);
+		checkIn(group, HAS_GROUP, GroupRootImpl.class, result, HIGH);
 
 		// checkOut(group, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 		// checkOut(group, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(group.getName())) {
-			response.addInconsistency("Group has no valid name", uuid, MEDIUM);
+			result.addInconsistency("Group has no valid name", uuid, MEDIUM);
 		}
 		if (group.getCreationTimestamp() == null) {
-			response.addInconsistency("The group creation date is not set", uuid, MEDIUM);
+			result.addInconsistency("The group creation date is not set", uuid, MEDIUM);
 		}
 		if (group.getLastEditedTimestamp() == null) {
-			response.addInconsistency("The group edit timestamp is not set", uuid, MEDIUM);
+			result.addInconsistency("The group edit timestamp is not set", uuid, MEDIUM);
 		}
 
 	}

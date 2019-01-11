@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.endpoint.admin.consistency;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * A consistency check must identify and log database inconsistencies.
@@ -11,14 +11,16 @@ import com.gentics.mesh.graphdb.spi.Database;
 public interface ConsistencyCheck {
 
 	/**
-	 * Invoke the consistency check and update the given response with found inconsistencies.
+	 * Invoke the consistency check and return the result.
 	 * 
 	 * @param db
 	 *            database
-	 * @param response
+	 * @param tx
+	 *            current transaction
 	 * @param attemptRepair
+	 * @return Result of the consistency check
 	 */
-	void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair);
+	ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair);
 
 	/**
 	 * Check existence of an incoming edge.
@@ -30,11 +32,11 @@ public interface ConsistencyCheck {
 	 * @param severity
 	 * @param edges
 	 */
-	default <N extends MeshVertex> void checkIn(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResponse response,
+	default <N extends MeshVertex> void checkIn(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResult result,
 		InconsistencySeverity severity, Edge... edges) {
 		N ref = vertex.in(edgeLabel).has(clazz).nextOrDefaultExplicit(clazz, null);
 		if (ref == null) {
-			response.addInconsistency(String.format("%s: incoming edge %s from %s not found", vertex.getClass().getSimpleName(), edgeLabel, clazz
+			result.addInconsistency(String.format("%s: incoming edge %s from %s not found", vertex.getClass().getSimpleName(), edgeLabel, clazz
 				.getSimpleName()), vertex.getUuid(), severity);
 		} else if (edges.length > 0) {
 			MeshVertex ref2 = vertex;
@@ -46,7 +48,7 @@ public interface ConsistencyCheck {
 			}
 
 			if (ref2 != null && !ref.equals(ref2)) {
-				response.addInconsistency(String.format("%s: incoming edge %s from %s should be equal to %s but was %s", vertex.getClass()
+				result.addInconsistency(String.format("%s: incoming edge %s from %s should be equal to %s but was %s", vertex.getClass()
 					.getSimpleName(), edgeLabel, clazz.getSimpleName(), ref2.getUuid(), ref.getUuid()), vertex.getUuid(), severity);
 			}
 		}
@@ -62,11 +64,11 @@ public interface ConsistencyCheck {
 	 * @param severity
 	 * @param edges
 	 */
-	default <N extends MeshVertex> void checkOut(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResponse response,
+	default <N extends MeshVertex> void checkOut(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResult result,
 		InconsistencySeverity severity, Edge... edges) {
 		N ref = vertex.out(edgeLabel).has(clazz).nextOrDefaultExplicit(clazz, null);
 		if (ref == null) {
-			response.addInconsistency(String.format("%s: outgoing edge %s to %s not found", vertex.getClass().getSimpleName(), edgeLabel, clazz
+			result.addInconsistency(String.format("%s: outgoing edge %s to %s not found", vertex.getClass().getSimpleName(), edgeLabel, clazz
 				.getSimpleName()), vertex.getUuid(), severity);
 		} else if (edges.length > 0) {
 			MeshVertex ref2 = vertex;
@@ -78,7 +80,7 @@ public interface ConsistencyCheck {
 			}
 
 			if (ref2 != null && !ref.equals(ref2)) {
-				response.addInconsistency(String.format("%s: outgoing edge %s to %s should be equal to %s but was %s", vertex.getClass()
+				result.addInconsistency(String.format("%s: outgoing edge %s to %s should be equal to %s but was %s", vertex.getClass()
 					.getSimpleName(), edgeLabel, clazz.getSimpleName(), ref2.getUuid(), ref.getUuid()), vertex.getUuid(), severity);
 			}
 		}
@@ -113,4 +115,11 @@ public interface ConsistencyCheck {
 	public static interface Edge {
 		MeshVertex follow(MeshVertex v);
 	}
+
+	/**
+	 * Return the public name of the check.
+	 * 
+	 * @return
+	 */
+	String getName();
 }

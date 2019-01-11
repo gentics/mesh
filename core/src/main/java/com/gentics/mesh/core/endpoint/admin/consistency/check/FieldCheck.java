@@ -3,17 +3,8 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.LOW;
 
-import java.util.Iterator;
-
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
@@ -22,56 +13,50 @@ import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Contains checks for complex fields (list field).
  */
-public class FieldCheck implements ConsistencyCheck {
+public class FieldCheck extends AbstractConsistencyCheck {
+
+	private static final Logger log = LoggerFactory.getLogger(FieldCheck.class);
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
-
-		Iterator<? extends NumberGraphFieldList> it1 = db.getVerticesForType(NumberGraphFieldListImpl.class);
-		while (it1.hasNext()) {
-			checkList(it1.next(), response, "number");
-		}
-
-		Iterator<? extends DateGraphFieldList> it2 = db.getVerticesForType(DateGraphFieldListImpl.class);
-		while (it2.hasNext()) {
-			checkList(it2.next(), response, "date");
-		}
-
-		Iterator<? extends BooleanGraphFieldList> it3 = db.getVerticesForType(BooleanGraphFieldListImpl.class);
-		while (it3.hasNext()) {
-			checkList(it3.next(), response, "boolean");
-		}
-
-		Iterator<? extends HtmlGraphFieldList> it4 = db.getVerticesForType(HtmlGraphFieldListImpl.class);
-		while (it4.hasNext()) {
-			checkList(it4.next(), response, "html");
-		}
-
-		Iterator<? extends StringGraphFieldList> it5 = db.getVerticesForType(StringGraphFieldListImpl.class);
-		while (it5.hasNext()) {
-			checkList(it5.next(), response, "string");
-		}
-
-		Iterator<? extends NodeGraphFieldList> it6 = db.getVerticesForType(NodeGraphFieldListImpl.class);
-		while (it6.hasNext()) {
-			checkList(it6.next(), response, "node");
-		}
-
-		Iterator<? extends MicronodeGraphFieldList> it7 = db.getVerticesForType(MicronodeGraphFieldListImpl.class);
-		while (it7.hasNext()) {
-			checkList(it7.next(), response, "micronode");
-		}
-
+	public String getName() {
+		return "fields";
 	}
 
-	private void checkList(ListGraphField<?, ?, ?> list, ConsistencyCheckResponse response, String type) {
+	@Override
+	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
+		ConsistencyCheckResult result = new ConsistencyCheckResult();
+		result.merge(checkListType(db, tx, NumberGraphFieldListImpl.class, "number", attemptRepair));
+		result.merge(checkListType(db, tx, DateGraphFieldListImpl.class, "date", attemptRepair));
+		result.merge(checkListType(db, tx, BooleanGraphFieldListImpl.class, "boolean", attemptRepair));
+		result.merge(checkListType(db, tx, HtmlGraphFieldListImpl.class, "html", attemptRepair));
+		result.merge(checkListType(db, tx, StringGraphFieldListImpl.class, "string", attemptRepair));
+		result.merge(checkListType(db, tx, NodeGraphFieldListImpl.class, "node", attemptRepair));
+		result.merge(checkListType(db, tx, MicronodeGraphFieldListImpl.class, "micronode", attemptRepair));
+		return result;
+	}
+
+	private ConsistencyCheckResult checkListType(Database db, Tx tx, Class<? extends ListGraphField<?, ?, ?>> clazz, String name,
+		boolean attemptRepair) {
+		log.info("Checking list of type {" + name + "}");
+		return processForType(db, clazz, (list, result) -> {
+			checkList(list, result, name, attemptRepair);
+		}, attemptRepair, tx);
+	}
+
+	private void checkList(ListGraphField<?, ?, ?> list, ConsistencyCheckResult result, String type, boolean attemptRepair) {
 		String uuid = list.getUuid();
 		// Check whether the list has a parent container
 		Iterable<? extends NodeGraphFieldContainerImpl> nodeContainers = list.in(HAS_LIST).has(NodeGraphFieldContainerImpl.class)
@@ -80,7 +65,15 @@ public class FieldCheck implements ConsistencyCheck {
 		Iterable<? extends MicronodeImpl> micronodeContainers = list.in(HAS_LIST).has(MicronodeImpl.class)
 			.frameExplicit(MicronodeImpl.class);
 		if (!nodeContainers.iterator().hasNext() && !micronodeContainers.iterator().hasNext()) {
-			response.addInconsistency("Found dangling list of type {" + type + "} with uuid {" + uuid + "}. No parent container found.", uuid, LOW);
+			InconsistencyInfo info = new InconsistencyInfo()
+				.setDescription("Found dangling list of type {" + type + "} with uuid {" + uuid + "}. No parent container found.")
+				.setElementUuid(uuid).setSeverity(LOW);
+			if (attemptRepair) {
+				list.delete(null);
+				info.setRepaired(true)
+					.setRepairAction(RepairAction.DELETE);
+			}
+			result.addInconsistency(info);
 		}
 
 	}

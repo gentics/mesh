@@ -2,31 +2,42 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.LOW;
 
-import java.util.Iterator;
-
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
 
-public class MicronodeCheck implements ConsistencyCheck {
+public class MicronodeCheck extends AbstractConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
-		Iterator<? extends Micronode> it = db.getVerticesForType(MicronodeImpl.class);
-		while (it.hasNext()) {
-			checkMicronode(it.next(), response);
-		}
+	public String getName() {
+		return "micronodes";
 	}
 
-	private void checkMicronode(Micronode node, ConsistencyCheckResponse response) {
+	@Override
+	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
+		return processForType(db, MicronodeImpl.class, (micronode, result) -> {
+			checkMicronode(micronode, result, attemptRepair);
+		}, attemptRepair, tx);
+	}
+
+	private void checkMicronode(MicronodeImpl node, ConsistencyCheckResult result, boolean attemptRepair) {
 		String uuid = node.getUuid();
 
 		NodeGraphFieldContainer firstFoundContainer = node.getContainer();
+
 		if (firstFoundContainer == null) {
-			response.addInconsistency("The micronode is dangling", uuid, LOW);
+			InconsistencyInfo info = new InconsistencyInfo().setDescription("The micronode is dangling").setElementUuid(uuid).setSeverity(LOW);
+			if (attemptRepair) {
+				node.delete(null);
+				info.setRepaired(true)
+					.setRepairAction(RepairAction.DELETE);
+			}
+			result.addInconsistency(info);
 		}
 
 	}
