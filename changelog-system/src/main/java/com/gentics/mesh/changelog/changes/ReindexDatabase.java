@@ -4,8 +4,13 @@ import com.gentics.mesh.changelog.AbstractChange;
 
 public class ReindexDatabase extends AbstractChange {
 	@Override
-	public void apply() {
+	public void actualApply() {
 		getDb().reindex();
+	}
+
+	@Override
+	protected boolean applyInTx() {
+		return false;
 	}
 
 	@Override

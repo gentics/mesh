@@ -27,7 +27,7 @@ public class AddTagFamiliesToNodeIndex extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 	}
 
 	@Override

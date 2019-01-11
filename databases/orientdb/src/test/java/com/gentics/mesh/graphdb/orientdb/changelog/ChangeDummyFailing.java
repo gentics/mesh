@@ -20,7 +20,7 @@ public class ChangeDummyFailing extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 		throw new NullPointerException("testing error handling");
 	}
 

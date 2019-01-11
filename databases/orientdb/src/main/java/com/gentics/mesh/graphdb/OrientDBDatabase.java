@@ -205,8 +205,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			tx.shutdown();
 		}
-
 	}
+
+
 
 	protected OrientGraphNoTx rawNoTx() {
 		return txProvider.rawNoTx();

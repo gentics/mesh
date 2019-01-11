@@ -20,7 +20,7 @@ public class ChangeReindexAll extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 
 	}
 

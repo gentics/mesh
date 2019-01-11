@@ -21,7 +21,7 @@ public class PurgeOldJobs extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 
 		// 1. Remove jobs
 		Vertex meshRoot = getMeshRootVertex();
