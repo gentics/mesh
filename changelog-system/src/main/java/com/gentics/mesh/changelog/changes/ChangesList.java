@@ -1,5 +1,6 @@
 package com.gentics.mesh.changelog.changes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,8 +13,11 @@ import com.gentics.mesh.util.UUIDUtil;
  */
 public final class ChangesList {
 
+	private static List<Change> list = new ArrayList<>();
+
 	public static List<Change> getList() {
-		return Arrays.asList(
+
+		list.addAll(Arrays.asList(
 			new ReindexDatabase(),
 			new ChangeAddPublishFlag(),
 			new ChangeAddVersioning(),
@@ -36,8 +40,10 @@ public final class ChangesList {
 			new ChangeNumberStringsToNumber(),
 			new RenameReleasesToBranches(),
 			new NodeContentLanguageMigration()
-			// ADD NEW CHANGES HERE!
-		);
+		// ADD NEW CHANGES HERE!
+		));
+
+		return list;
 	}
 
 	public static void main(String[] args) {
