@@ -34,13 +34,13 @@ icon:plus[] OrientDB 3.0.x: A reindex of all vertices and edges will be triggere
 
 icon:plus[] Memory: The internal overall memory usage has been optimized.
 
-icon:plus[] Core: The way language references are stored has been refactored to increase performance and reduce contention during database operations. A changelog entry will be invoked which migrated the data.
+icon:plus[] Core: The way language references are stored has been refactored to increase performance and reduce contention during database operations. A changelog entry will be invoked which migrates the data.
 
-icon:check[] Clustering: The OrientDB 3.0.13 update adresses various issues which were related to clustering.
+icon:check[] Clustering: The OrientDB 3.0.13 update addresses various issues which were related to clustering.
 
 icon:check[] Migrations: The schema migration code has been optimized for speed and memory usage.
 
-icon:check[] Migrations: Schemas migrations will now always be executed on the cluster node which also handled the REST request. Previously the migration was executed on a random node in the cluster.
+icon:check[] Migrations: Schema migrations will now always be executed on the cluster node which also handled the REST request. Previously the migration was executed on a random node in the cluster.
 
 icon:check[] Core: The internal transaction retry max count has been reduced from 100 to 10 iterations.
 
