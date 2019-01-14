@@ -46,6 +46,7 @@ icon:check[] Core: The internal transaction retry max count has been reduced fro
 
 icon:check[] Core: The internal transaction handling has been optimized.
 
+icon:check[] Security: A minor security issue has been fixed.
 
 [[v0.28.3]]
 == 0.28.3 (09.01.2019)
