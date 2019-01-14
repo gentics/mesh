@@ -552,8 +552,8 @@ public interface Database extends TxFactory {
 	 * 
 	 * @param vertex
 	 * @param newType
-	 * @param tx 
-	 * @return 
+	 * @param tx
+	 * @return
 	 */
 	Vertex changeType(Vertex vertex, String newType, Graph tx);
 
@@ -567,8 +567,23 @@ public interface Database extends TxFactory {
 
 	void shutdown();
 
+	/**
+	 * Invoke a reindex of the graph database indices.
+	 */
 	void reindex();
 
-	void reload(Element vertex);
+	/**
+	 * Reload the given element.
+	 * 
+	 * @param element
+	 */
+	void reload(Element element);
+
+	/**
+	 * Initialize the configuration files.
+	 * 
+	 * @throws IOException
+	 */
+	void initConfigurationFiles() throws IOException;
 
 }

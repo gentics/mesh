@@ -258,7 +258,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * 
 	 * @throws IOException
 	 */
-	private void initConfigurationFiles() throws IOException {
+	@Override
+	public void initConfigurationFiles() throws IOException {
 
 		File distributedConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_DISTRIBUTED_CONFIG);
 		if (!distributedConfigFile.exists()) {
