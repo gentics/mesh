@@ -23,7 +23,7 @@
 		<orientdb.version>3.0.13</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
-		<jackson.version>2.9.7</jackson.version>
+		<jackson.version>2.9.8</jackson.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
