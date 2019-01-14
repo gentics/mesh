@@ -28,15 +28,42 @@ public abstract class AbstractChange implements Change {
 	private long duration;
 
 	@Override
-	public abstract void apply();
+	public void apply() {
+		if (applyInTx()) {
+			TransactionalGraph graph = db.rawTx();
+			setGraph(graph);
+			try {
+				actualApply();
+			} catch (Throwable e) {
+				log.error("Invoking rollback due to error");
+				graph.rollback();
+				throw e;
+			} finally {
+				graph.shutdown();
+			}
+		} else {
+			actualApply();
+		}
+	}
+
+	protected abstract void actualApply();
+
+	protected boolean applyInTx() {
+		return true;
+	}
 
 	@Override
 	public abstract String getUuid();
 
 	@Override
 	public boolean isApplied() {
+		TransactionalGraph graph = db.rawTx();
+		setGraph(graph);
 		ChangelogRootWrapper changelogRoot = changelogRoot();
-		return changelogRoot.hasChange(getUuid());
+		boolean hasChange = changelogRoot.hasChange(getUuid());
+		graph.shutdown();
+		setGraph(null);
+		return hasChange;
 	}
 
 	/**
@@ -70,7 +97,12 @@ public abstract class AbstractChange implements Change {
 
 	@Override
 	public void markAsComplete() {
+		TransactionalGraph graph = db.rawTx();
+		setGraph(graph);
 		changelogRoot().add(this);
+		setGraph(null);
+		graph.commit();
+		graph.shutdown();
 	}
 
 	@Override

@@ -194,7 +194,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
-			return new NodeContent(nodeOfContainer, container, Arrays.asList(container.getLanguage().getLanguageTag()));
+			return new NodeContent(nodeOfContainer, container, Arrays.asList(container.getLanguageTag()));
 		}
 		return null;
 	}

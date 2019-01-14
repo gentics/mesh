@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.job;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
@@ -11,6 +11,8 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.util.DateUtils;
+
+import io.reactivex.Completable;
 
 /**
  * A job can be added to the {@link JobRoot} vertex. Jobs are used to persist information about long running tasks.
@@ -132,7 +134,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	/**
 	 * Process the job.
 	 */
-	void process();
+	Completable process();
 
 	/**
 	 * Mark the job as failed.

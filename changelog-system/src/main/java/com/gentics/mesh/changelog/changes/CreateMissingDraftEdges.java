@@ -19,7 +19,7 @@ public class CreateMissingDraftEdges extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
 

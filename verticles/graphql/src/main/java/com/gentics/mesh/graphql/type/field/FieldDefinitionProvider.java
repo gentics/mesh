@@ -196,7 +196,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					LinkType type = getLinkType(env);
 					String content = htmlField.getHTML();
 					return linkReplacer.replace(gc, gc.getBranch()
-						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -212,7 +212,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					LinkType type = getLinkType(env);
 					String content = field.getString();
 					return linkReplacer.replace(gc, gc.getBranch()
-						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -272,7 +272,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
 				StringGraphFieldList stringList = container.getStringList(schema.getName());
@@ -282,7 +282,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":
 				NumberGraphFieldList numberList = container.getNumberList(schema.getName());
@@ -306,7 +306,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Node node = item.getNode();
 					List<String> languageTags = Collections.emptyList();
 					if (container instanceof NodeGraphFieldContainer) {
-						languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
+						languageTags = Arrays.asList(container.getLanguageTag());
 					} else {
 						// Other containers (e.g. micronodes do not have a language thus we can't use that language to define the loaded language variant. We
 						// thus fallback to the default mesh language.

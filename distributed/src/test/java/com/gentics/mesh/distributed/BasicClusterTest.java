@@ -13,6 +13,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -23,7 +25,6 @@ import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -83,7 +84,6 @@ public class BasicClusterTest extends AbstractClusterTest {
 	public static MeshRestClient clientB;
 
 	@ClassRule
-	// public static RuleChain chain = RuleChain.outerRule(serverA).around(serverB);
 	public static RuleChain chain = RuleChain.outerRule(serverB).around(serverA);
 
 	@BeforeClass
@@ -106,12 +106,10 @@ public class BasicClusterTest extends AbstractClusterTest {
 	public void testClusterStatus() {
 		ClusterStatusResponse response = call(() -> clientA.clusterStatus());
 		assertThat(response.getInstances()).hasSize(2);
-		ClusterInstanceInfo first = response.getInstances().get(0);
-		assertEquals("ONLINE", first.getStatus());
-		assertEquals("nodeB", first.getName());
-		ClusterInstanceInfo second = response.getInstances().get(1);
-		assertEquals("ONLINE", second.getStatus());
-		assertEquals("nodeA", second.getName());
+		Set<String> names = response.getInstances().stream().map(i -> i.getName()).collect(Collectors.toSet());
+		Set<String> stati = response.getInstances().stream().map(i -> i.getStatus()).collect(Collectors.toSet());
+		assertThat(names).containsExactly("nodeA", "nodeB");
+		assertThat(stati).containsExactly("ONLINE", "ONLINE");
 	}
 
 	@Test

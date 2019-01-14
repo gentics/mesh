@@ -52,7 +52,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	protected void init(FramedGraph graph, Element element) {
-		super.init(graph, element);
+		super.init(graph, null);
 		this.id = element.getId();
 	}
 

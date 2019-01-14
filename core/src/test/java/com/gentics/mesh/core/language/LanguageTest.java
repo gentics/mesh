@@ -31,6 +31,12 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testTransformToReference() throws Exception {
 	}
 
+	public Language englishLang() {
+		try (Tx tx = tx()) {
+			return boot().languageRoot().findByLanguageTag("en");
+		}
+	}
+
 	@Test
 	@Override
 	public void testRootNode() {
@@ -55,7 +61,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 				Iterable<Vertex> it = tx.getGraph().getVertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
 				Iterable<Vertex> it2 = tx.getGraph().getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY,
-						"en");
+					"en");
 				assertTrue(it2.iterator().hasNext());
 				Vertex vertex = it2.iterator().next();
 				assertNotNull("The language node with languageTag 'en' could not be found.", vertex);
@@ -151,7 +157,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			Language language = english();
+			Language language = englishLang();
 			assertNotNull(language.getName());
 			assertEquals("English", language.getName());
 			assertNotNull(language.getNativeName());
@@ -193,25 +199,25 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(GraphPermission.READ_PERM, english());
+		testPermission(GraphPermission.READ_PERM, englishLang());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(GraphPermission.DELETE_PERM, english());
+		testPermission(GraphPermission.DELETE_PERM, englishLang());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(GraphPermission.UPDATE_PERM, english());
+		testPermission(GraphPermission.UPDATE_PERM, englishLang());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(GraphPermission.CREATE_PERM, english());
+		testPermission(GraphPermission.CREATE_PERM, englishLang());
 	}
 
 }

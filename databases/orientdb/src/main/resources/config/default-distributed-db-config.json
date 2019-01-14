@@ -1,9 +1,9 @@
 {
   "autoDeploy": true,
-  "hotAlignment": true,
-  "executionMode": "synchronous",
   "readQuorum": 1,
   "writeQuorum": 1,
+  "hotAlignment": true,
+  "executionMode": "synchronous",
   "failureAvailableNodesLessQuorum": false,
   "readYourWrites": true,
   "newNodeStrategy": "static",

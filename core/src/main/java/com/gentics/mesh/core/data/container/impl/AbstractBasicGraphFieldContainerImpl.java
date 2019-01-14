@@ -1,13 +1,9 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
-
 import java.util.Map;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.LanguageImpl;
 
 /**
  * Abstract implementation of a basic graph field container. This implementation will store basic graph fields within the properties of of this container
@@ -16,15 +12,16 @@ import com.gentics.mesh.core.data.impl.LanguageImpl;
 public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImpl implements BasicFieldContainer {
 
 	public static final String I18N_PREFIX = "i18n-";
+	public static final String LANGUAGE_TAG_KEY = "languageTag";
 
 	@Override
-	public Language getLanguage() {
-		return out(HAS_LANGUAGE).nextOrDefault(LanguageImpl.class, null);
+	public String getLanguageTag() {
+		return property(LANGUAGE_TAG_KEY);
 	}
 
 	@Override
-	public void setLanguage(Language language) {
-		setLinkOut(language, HAS_LANGUAGE);
+	public void setLanguageTag(String languageTag) {
+		property(LANGUAGE_TAG_KEY, languageTag);
 	}
 
 	/**
