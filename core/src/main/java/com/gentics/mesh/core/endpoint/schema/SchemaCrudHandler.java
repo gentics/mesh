@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.schema;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -18,10 +17,11 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.Events;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -163,7 +163,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			info.v1().processSync();
 			if (updateParams.getUpdateAssignedBranches()) {
-				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+				Events.triggerJobWorker();
 				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
 			} else {
 				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());

@@ -292,7 +292,7 @@ public final class TestMocks {
 		return microschema;
 	}
 
-	public static Node mockNode(Node parentNode, Project project, User user, Language language, Tag tagA, Tag tagB) {
+	public static Node mockNode(Node parentNode, Project project, User user, String languageTag, Tag tagA, Tag tagB) {
 		Node node = mock(Node.class);
 
 		when(node.getParentNode(anyString())).thenReturn(parentNode);
@@ -310,19 +310,19 @@ public final class TestMocks {
 		when(node.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(node.getRolesWithPerm(GraphPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
 
-		NodeGraphFieldContainer container = mockContainer(language, user);
+		NodeGraphFieldContainer container = mockContainer(languageTag, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(container.getParentNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
-		when(node.getLatestDraftFieldContainer(language)).thenReturn(container);
+		when(node.getLatestDraftFieldContainer(languageTag)).thenReturn(container);
 		when(node.getElementVersion()).thenReturn(UUID_4);
 		Mockito.<Iterable<? extends NodeGraphFieldContainer>> when(node.getDraftGraphFieldContainers()).thenReturn(createEmptyTraversal());
 		return node;
 	}
 
-	public static NodeGraphFieldContainer mockContainer(Language language, User user) {
+	public static NodeGraphFieldContainer mockContainer(String languageTag, User user) {
 		NodeGraphFieldContainer container = mock(NodeGraphFieldContainer.class);
-		when(container.getLanguage()).thenReturn(language);
+		when(container.getLanguageTag()).thenReturn(languageTag);
 
 		when(container.getEditor()).thenReturn(user);
 

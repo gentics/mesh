@@ -1,11 +1,11 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -24,12 +24,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.test.util.TestUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
+import com.gentics.mesh.Events;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -50,6 +50,7 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
@@ -351,13 +352,13 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 */
 	protected JobListResponse triggerAndWaitForJob(String jobUuid, MigrationStatus status) {
 		waitForJob(() -> {
-			vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+			Events.triggerJobWorker();
 		}, jobUuid, status);
 		return call(() -> client().findJobs());
 	}
 
 	protected void triggerAndWaitForAllJobs(MigrationStatus expectedStatus) {
-		vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+		Events.triggerJobWorker();
 
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;

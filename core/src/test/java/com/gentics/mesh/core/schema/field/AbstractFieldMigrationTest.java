@@ -146,7 +146,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		project().getLatestBranch().assignSchemaVersion(user(), versionA);
 		User user = user();
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -156,7 +156,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -212,7 +212,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
@@ -308,7 +308,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		User user = user();
 		project().getLatestBranch().assignSchemaVersion(user, versionA);
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -317,7 +317,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -387,7 +387,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		if (job != null) {
 			triggerAndWaitForJob(job.getUuid());
 		} else {
-			micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
+			micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait(10, TimeUnit.SECONDS);
 		}
 
 		// old container must be unchanged
@@ -478,7 +478,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		project().getLatestBranch().assignSchemaVersion(user(), versionA);
 		User user = user();
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -490,7 +490,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
@@ -563,7 +563,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(oldFieldFetcher.fetch(micronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the micronode
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be untouched
 		micronodeField = oldContainer.getMicronode(micronodeFieldName);
@@ -661,7 +661,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		project().getLatestBranch().assignSchemaVersion(user(), versionA);
 		User user = user();
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -670,7 +670,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -731,7 +731,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the micronode
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
@@ -819,7 +819,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a node based on the old schema
 		User user = user();
 		project().getLatestBranch().assignSchemaVersion(user, versionA);
-		Language english = english();
+		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
@@ -828,7 +828,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, null).blockingAwait();
+		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
 	}
 
 	/**
@@ -876,7 +876,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait(10, TimeUnit.SECONDS);
 	}
 
 	/**
@@ -952,7 +952,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected MicronodeGraphField createMicronodefield(Node node, String micronodeFieldName, MicroschemaContainerVersion schemaVersion,
 			DataProvider dataProvider, String... fieldNames) {
-		Language english = english();
+		String english = english();
 
 		SchemaContainerVersion latestVersion = node.getSchemaContainer().getLatestVersion();
 

@@ -289,4 +289,9 @@ public interface SearchQueueBatch {
 	 */
 	int size();
 
+	/**
+	 * Adds all entries from another batch to this batch
+	 * @param otherBatch
+	 */
+	void addAll(SearchQueueBatch otherBatch);
 }

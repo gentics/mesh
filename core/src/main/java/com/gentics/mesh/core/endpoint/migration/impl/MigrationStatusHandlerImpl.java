@@ -44,11 +44,14 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	public MigrationStatusHandlerImpl(Job job, Vertx vertx, MigrationType type) {
 		this.vertx = vertx;
 		this.job = job;
-		status = job.getStatus();
 	}
 
 	@Override
 	public MigrationStatusHandler commit() {
+		// Load the status if it has not yet been set or loaded.
+		if (status == null) {
+			status = job.getStatus();
+		}
 		if (versionEdge != null) {
 			versionEdge.setMigrationStatus(status);
 		}

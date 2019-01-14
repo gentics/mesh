@@ -54,19 +54,8 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -193,7 +182,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				bac.batch().delete(this, branchUuid, type, false);
 			}
 		});
-
 		getElement().remove();
 		bac.inc();
 	}
@@ -285,9 +273,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
 
-					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-						.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
-						conflictingContainer.getLanguage().getLanguageTag());
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
+						conflictingContainer.getLanguageTag());
 				}
 			}
 			edge.setUrlFieldInfo(urlFieldValues);
@@ -331,7 +318,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		final int MAX_NUMBER = 255;
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
-		String languageTag = getLanguage().getLanguageTag();
+		String languageTag = getLanguageTag();
 
 		// Handle node migration conflicts automagically
 		if (ac instanceof NodeMigrationActionContextImpl) {
@@ -372,7 +359,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		String conflictI18n,
 		ContainerType type) {
 		// Determine the webroot path of the container parent node
-		String segment = node.getPathSegment(branchUuid, type, getLanguage().getLanguageTag());
+		String segment = node.getPathSegment(branchUuid, type, getLanguageTag());
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
@@ -389,8 +376,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
 						+ "}");
 				}
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-					.getLanguageTag(), conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag()
+					, conflictI18n, segmentFieldName, segment);
 			} else {
 				edge.setSegmentInfo(segmentInfo);
 				return true;
@@ -706,7 +693,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {
 		Path nodePath = new Path();
-		nodePath.addSegment(new PathSegment(this, null, getLanguage().getLanguageTag(), null));
+		nodePath.addSegment(new PathSegment(this, null, getLanguageTag(), null));
 		return nodePath;
 	}
 

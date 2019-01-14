@@ -21,6 +21,7 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
 /**
  * Tests various interacts with the cluster. (e.g.: Adding new nodes, Removing nodes)
  */
+@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

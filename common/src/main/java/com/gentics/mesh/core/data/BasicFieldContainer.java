@@ -3,17 +3,17 @@ package com.gentics.mesh.core.data;
 public interface BasicFieldContainer extends MeshVertex {
 
 	/**
-	 * Return the language of the field container.
+	 * Return the language tag of the field container.
 	 * 
 	 * @return
 	 */
-	Language getLanguage();
+	String getLanguageTag();
 
 	/**
 	 * Set the language for the field container.
 	 * 
 	 * @param language
 	 */
-	void setLanguage(Language language);
+	void setLanguageTag(String languageTag);
 
 }

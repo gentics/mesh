@@ -50,7 +50,7 @@ public class ChangeTVCMigration extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 		try {
 			FileUtils.moveDirectory(new File("data/binaryFiles"), new File("data/binaryFilesOld"));
 		} catch (IOException e) {

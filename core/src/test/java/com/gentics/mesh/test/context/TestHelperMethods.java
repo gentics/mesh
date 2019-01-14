@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import io.reactivex.Observable;
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.FieldUtil;
@@ -18,11 +17,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -220,6 +218,7 @@ public interface TestHelperMethods {
 
 	/**
 	 * Return uuid of the news folder.
+	 * 
 	 * @return
 	 */
 	default String folderUuid() {
@@ -258,12 +257,12 @@ public interface TestHelperMethods {
 		return data().getTags();
 	}
 
-	default Language english() {
-		return data().getEnglish();
+	default String english() {
+		return "en";
 	}
 
-	default Language german() {
-		return data().getGerman();
+	default String german() {
+		return "de";
 	}
 
 	default Map<String, Group> groups() {

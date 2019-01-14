@@ -1594,7 +1594,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 			node = parentNode.create(user(), version, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl, node.getProject().getLatestBranch(), user());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(), node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
 			englishContainer.createString("displayName").setString("displayName");

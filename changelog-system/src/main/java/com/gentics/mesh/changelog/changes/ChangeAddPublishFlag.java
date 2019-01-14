@@ -22,7 +22,7 @@ public class ChangeAddPublishFlag extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex nodeRoot = meshRoot.getVertices(Direction.OUT, "HAS_NODE_ROOT").iterator().next();
 

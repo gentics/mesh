@@ -192,7 +192,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Initialize the local data or create the initial dataset if no local data could be found.
 	 * 
-	 * @param configuration Mesh configuration
+	 * @param configuration
+	 *            Mesh configuration
 	 * @param isJoiningCluster
 	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
 	 * @return True if an empty installation was detected, false if existing data was found
@@ -256,9 +257,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// handles the clustering.
 				db.setupConnectionPool();
 				boolean setupData = initLocalData(options, false);
+				db.closeConnectionPool();
+				db.shutdown();
+
 				db.startServer();
 				initVertx(options, isClustered);
 				db.registerEventHandlers();
+				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
 				if (setupData) {
@@ -295,7 +300,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			db.setupConnectionPool();
 			initLocalData(options, false);
 			if (startOrientServer) {
+				db.closeConnectionPool();
 				db.startServer();
+				db.setupConnectionPool();
 			}
 		}
 
@@ -395,7 +402,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
-			log.info("Created clustered vert.x instance");
+			log.info("Created clustered Vert.x instance");
 			if (rh.failed()) {
 				Throwable cause = rh.cause();
 				log.error("Failed to create clustered vert.x instance", cause);
@@ -908,8 +915,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Create languages in the set, which do not exist yet
-	 * @param root language root
-	 * @param languageSet language set
+	 * 
+	 * @param root
+	 *            language root
+	 * @param languageSet
+	 *            language set
 	 */
 	protected void initLanguages(LanguageRoot root, LanguageSet languageSet) {
 		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
