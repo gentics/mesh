@@ -1,6 +1,6 @@
 package com.gentics.mesh.changelog.highlevel;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -20,13 +20,12 @@ public class HighLevelChangesList {
 
 	@Inject
 	public HighLevelChangesList() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public List<HighLevelChange> getList() {
-		List<HighLevelChange> list = new ArrayList<>();
-		list.add(restructureWebroot);
+		return Arrays.asList(
+			restructureWebroot
 		// ADD NEW CHANGES HERE!
-		return list;
+		);
 	}
 }

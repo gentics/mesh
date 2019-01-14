@@ -776,9 +776,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public Vertex changeType(Vertex vertex, String newType, Graph tx) {
 		OrientVertex v = (OrientVertex) vertex;
 		ORID newId = v.moveToClass(newType);
-		Vertex newV = tx.getVertex(newId);
-		//reload(newV);
-		return newV;
+		return tx.getVertex(newId);
 	}
 
 	@Override

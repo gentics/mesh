@@ -3,10 +3,8 @@ package com.gentics.mesh.changelog.changes;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.gentics.mesh.changelog.AbstractChange;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -28,7 +26,9 @@ public class RenameReleasesToBranches extends AbstractChange {
 		getDb().addVertexType("BranchRootImpl", "MeshVertexImpl");
 		getDb().addVertexType("BranchMigrationJobImpl", "MeshVertexImpl");
 
-		List<Runnable> migrationActions = new ArrayList<>();
+		migrateVertices("ReleaseImpl", "BranchImpl");
+		migrateVertices("ReleaseRootImpl", "BranchRootImpl");
+		migrateVertices("ReleaseMigrationJobImpl", "BranchMigrationJobImpl");
 
 		Vertex meshRoot = getMeshRootVertex();
 
@@ -41,10 +41,8 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 				// Iterate over all releases
 				Vertex in = edge.getVertex(IN);
-				migrationActions.add(() -> migrateType(in, "BranchRootImpl"));
 				for (Edge edge1 : in.getEdges(OUT, "HAS_RELEASE")) {
 					Vertex release = edge1.getVertex(IN);
-					migrationActions.add(() -> migrateType(release, "BranchImpl"));
 					for (Edge nextReleaseEdge : release.getEdges(OUT, "HAS_NEXT_RELEASE")) {
 						migrateEdge(nextReleaseEdge, "HAS_NEXT_BRANCH", true);
 					}
@@ -93,16 +91,48 @@ public class RenameReleasesToBranches extends AbstractChange {
 			for (Vertex job : root.getVertices(OUT, "HAS_JOB")) {
 				migrateProperty(job, "releaseName", "branchName");
 				migrateProperty(job, "releaseUuid", "branchUuid");
-				String type = job.getProperty("ferma_type");
-				if (type.equals("ReleaseMigrationJobImpl")) {
-					migrationActions.add(() -> migrateType(job, "BranchMigrationJobImpl"));
-				}
 			}
 		}
 
-		// Finally migrate the types
-		migrationActions.forEach(r -> r.run());
+	}
 
+	private void migrateVertices(String from, String to) {
+		log.info("Migrating vertex type {" + from + "} to {" + to + "}");
+		Iterable<Vertex> it = getGraph().getVertices("@class", from);
+		long count = 0;
+		for (Vertex fromV : it) {
+			// Create new vertex with new type
+			Vertex toV = getGraph().addVertex("class:" + to);
+			// Duplicate the in edges
+			for (Edge inE : fromV.getEdges(Direction.IN)) {
+				Vertex out = inE.getVertex(OUT);
+				Edge e = out.addEdge(inE.getLabel(), toV);
+				for (String key : inE.getPropertyKeys()) {
+					e.setProperty(key, inE.getProperty(key));
+				}
+			}
+			// Duplicate the out edges
+			for (Edge outE : fromV.getEdges(Direction.OUT)) {
+				Vertex in = outE.getVertex(IN);
+				Edge e = toV.addEdge(outE.getLabel(), in);
+				for (String key : outE.getPropertyKeys()) {
+					e.setProperty(key, outE.getProperty(key));
+				}
+			}
+			// Duplicate properties
+			for (String key : fromV.getPropertyKeys()) {
+				toV.setProperty(key, fromV.getProperty(key));
+			}
+
+			// Update the ferma type
+			toV.setProperty("ferma_type", to);
+			fromV.remove();
+			count++;
+			if (count % 100 == 0) {
+				log.info("Migrated {" + count + "} vertices.");
+			}
+		}
+		log.info("Migrated total of {" + count + "} vertices from {" + from + "} to {" + to + "}");
 	}
 
 	private void migrateProperty(Vertex vertex, String oldPropertyKey, String newPropertyKey) {
@@ -122,13 +152,13 @@ public class RenameReleasesToBranches extends AbstractChange {
 		}
 	}
 
-	private Vertex migrateType(Vertex vertex, String newType) {
-		String type = vertex.getProperty("ferma_type");
-		vertex.setProperty("ferma_type", newType);
-		Vertex newVertex = getDb().changeType(vertex, newType, getGraph());
-		log.info("Migrating {" + type + "} to {" + newType + "}");
-		return newVertex;
-	}
+	// private Vertex migrateType(Vertex vertex, String newType) {
+	// String type = vertex.getProperty("ferma_type");
+	// vertex.setProperty("ferma_type", newType);
+	// Vertex newVertex = getDb().changeType(vertex, newType, getGraph());
+	// log.info("Migrating {" + type + "} to {" + newType + "}");
+	// return newVertex;
+	// }
 
 	private void migrateEdge(Edge edge, String newLabel, boolean reverseOrder) {
 		Vertex in = edge.getVertex(IN);
