@@ -950,12 +950,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (ONeedRetryException | FastNoSuchElementException e) {
-				log.info("Error in tx", e);
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
 				int rnd = (int) (Math.random() * 6000.0);
-				System.out.println("Extra delay: " + rnd);
 				try {
 					// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
 					Thread.sleep(50 + (retry * 25) + rnd);
