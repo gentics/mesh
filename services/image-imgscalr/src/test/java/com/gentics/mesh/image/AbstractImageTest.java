@@ -13,7 +13,7 @@ import org.junit.Before;
 
 public class AbstractImageTest {
 
-	private File cacheDir;
+	protected File cacheDir;
 
 	@Before
 	public void setup() {

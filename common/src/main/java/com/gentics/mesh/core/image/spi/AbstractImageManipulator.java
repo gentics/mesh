@@ -46,7 +46,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		if (!baseFolder.exists()) {
 			baseFolder.mkdirs();
 		}
-		File cacheFile = new File(baseFolder, "image-" + parameters.getCacheKey() + ".jpg");
+		File cacheFile = new File(baseFolder, "image-" + parameters.getCacheKey());
 		if (log.isDebugEnabled()) {
 			log.debug("Using cache file {" + cacheFile + "}");
 		}
