@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -52,9 +51,9 @@ import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
-import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.exception.OSchemaException;
+import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.index.OIndexCursor;
@@ -82,12 +81,12 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientElementType;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
@@ -206,8 +205,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 			tx.shutdown();
 		}
 	}
-
-
 
 	protected OrientGraphNoTx rawNoTx() {
 		return txProvider.rawNoTx();
@@ -775,9 +772,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void changeType(Vertex vertex, String newType) {
+	public Vertex changeType(Vertex vertex, String newType, Graph tx) {
 		OrientVertex v = (OrientVertex) vertex;
-		v.moveToClass(newType);
+		ORID newId = v.moveToClass(newType);
+		Vertex newV = tx.getVertex(newId);
+		//reload(newV);
+		return newV;
 	}
 
 	@Override
@@ -916,7 +916,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void reload(MeshElement element) {
-		((OrientVertex) element.getElement()).reload();
+		reload(element.getElement());
+	}
+
+	@Override
+	public void reload(Element element) {
+		if (element instanceof OrientElement) {
+			((OrientElement) element).reload();
+		}
 	}
 
 	@Override
