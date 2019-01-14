@@ -952,7 +952,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (ONeedRetryException | FastNoSuchElementException e) {
-				log.info("Error in tx", e);
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
