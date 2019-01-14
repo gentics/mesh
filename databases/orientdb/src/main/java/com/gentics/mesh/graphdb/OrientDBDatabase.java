@@ -956,7 +956,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
 				int rnd = (int) (Math.random() * 6000.0);
-				System.out.println("Extra delay: " + rnd);
 				try {
 					// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
 					Thread.sleep(50 + (retry * 25) + rnd);
