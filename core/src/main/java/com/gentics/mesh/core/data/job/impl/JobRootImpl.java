@@ -242,9 +242,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		clear();
-		getElement().remove();
-		bac.inc();
+		throw new NotImplementedException("The job root can't be deleted");
 	}
 
 }

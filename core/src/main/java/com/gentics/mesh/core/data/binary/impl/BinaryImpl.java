@@ -65,10 +65,4 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 		getElement().remove();
 	}
 
-	@Override
-	public void remove() {
-		// TODO Auto-generated method stub
-		super.remove();
-	}
-
 }
