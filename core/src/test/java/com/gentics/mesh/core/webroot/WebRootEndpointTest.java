@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -177,8 +178,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		int nJobs = 200;
 		String path = "/News/2015/News_2015.en.html";
 
-		awaitConcurrentRequests(i -> client()
-			.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")), nJobs);
+		awaitConcurrentRequests(nJobs, i -> client()
+			.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 	}
 
 	@Test

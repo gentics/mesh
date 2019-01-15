@@ -49,10 +49,9 @@ public class RoleEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		try (Tx tx = tx()) {
 			Role role = role();
-			MeshResponse<RoleResponse> response = client().findRoleByUuid(role.getUuid()).invoke();
-			latchFor(response);
+			String responseEtag = callETag(() -> client().findRoleByUuid(role.getUuid()));
 			String etag = role.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getRawResponse().getHeader(ETAG)));
+			assertEquals(etag, responseEtag);
 
 			// Check whether 304 is returned for correct etag
 			assertEquals(etag, callETag(() -> client().findRoleByUuid(role.getUuid()), etag, true, 304));

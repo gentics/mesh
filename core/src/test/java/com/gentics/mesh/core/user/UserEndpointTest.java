@@ -271,9 +271,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Check whether new cookies are generated when using an API key
 		MeshRequest<UserResponse> userRequest = client().findUserByUuid(uuid);
-		MeshResponse<UserResponse> userResponse = userRequest.invoke();
-		latchFor(userResponse);
-		assertThat(userResponse.getRawResponse().cookies()).as("Requests using the api key should not yield a new cookie").isEmpty();
+		MeshResponse2<UserResponse> userResponse = userRequest.getResponse().blockingGet();
+		assertThat(userResponse.getCookies()).as("Requests using the api key should not yield a new cookie").isEmpty();
 
 		// Now invalidate the api key by generating a new one
 		String oldKey = response.getToken();
@@ -384,7 +383,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		try (Tx tx = tx()) {
 			int nJobs = 10;
-			awaitConcurrentRequests(i -> client().findUserByUuid(userUuid()), nJobs);
+			awaitConcurrentRequests(nJobs, i -> client().findUserByUuid(userUuid()));
 		}
 	}
 
@@ -392,7 +391,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
-		awaitConcurrentRequests(i -> client().findUserByUuid(userUuid()), nJobs);
+		awaitConcurrentRequests(nJobs, i -> client().findUserByUuid(userUuid()));
 	}
 
 	@Test
@@ -510,7 +509,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setLastname("Epic Stark");
 
 		int nJobs = 50;
-		awaitConcurrentRequests(i -> client().updateUser(uuid, updateRequest), nJobs);
+		awaitConcurrentRequests(nJobs, i -> client().updateUser(uuid, updateRequest));
 	}
 
 	@Test
@@ -1147,7 +1146,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 
-		validateCreation(i -> {
+		validateCreation(nJobs, i -> {
 			UserCreateRequest request = new UserCreateRequest();
 			request.setEmailAddress("n.user@spam.gentics.com");
 			request.setFirstname("Joe");
@@ -1156,7 +1155,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
 			return client().createUser(request);
-		}, nJobs);
+		});
 	}
 
 	/**
@@ -1349,15 +1348,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		userRequest.setPassword("bla");
 
 		MeshRequest<UserResponse> request = client().createUser(userRequest);
-		request.getRequest().putHeader(HOST, "jotschi.de:" + port());
-		MeshResponse<UserResponse> response = request.invoke();
-		latchFor(response);
-		assertSuccess(response);
+		request.setHeader(HOST.toString(), "jotschi.de:" + port());
+		MeshResponse2<UserResponse> response = request.getResponse().blockingGet();
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
-			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
-			String location = response.getRawResponse().getHeader(LOCATION);
+			assertEquals(CREATED.code(), response.getStatusCode());
+			String location = response.getHeader(LOCATION.toString());
 			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}

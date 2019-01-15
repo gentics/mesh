@@ -98,15 +98,11 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			MeshResponse<UserResponse> response = client.me().invoke();
-			latchFor(response);
-			String meshTokenCookie1 = response.getRawResponse().getHeader("Set-Cookie");
+			String meshTokenCookie1 = client.me().getResponse().blockingGet().getHeader("Set-Cookie");
 
 			Thread.sleep(2000);
 
-			response = client.me().invoke();
-			latchFor(response);
-			String meshTokenCookie2 = response.getRawResponse().getHeader("Set-Cookie");
+			String meshTokenCookie2 = client.me().getResponse().blockingGet().getHeader("Set-Cookie");
 
 			assertNotEquals("Both cookies should be different. Otherwise the token was not regenerated and the exp. date was not bumped.",
 					meshTokenCookie1, meshTokenCookie2);

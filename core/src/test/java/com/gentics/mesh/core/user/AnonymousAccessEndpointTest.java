@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import com.gentics.mesh.rest.client.MeshResponse2;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -30,9 +31,8 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		UserResponse response = call(() -> client().me());
 		assertEquals(MeshJWTAuthHandler.ANONYMOUS_USERNAME, response.getUsername());
 
-		MeshResponse<UserResponse> rawResponse = client().me().invoke();
-		latchFor(rawResponse);
-		assertThat(rawResponse.getRawResponse().cookies()).as("Anonymous access should not set any cookie").isEmpty();
+		MeshResponse2<UserResponse> rawResponse = client().me().getResponse().blockingGet();
+		assertThat(rawResponse.getCookies()).as("Anonymous access should not set any cookie").isEmpty();
 
 		String uuid = db().tx(() -> content().getUuid());
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());

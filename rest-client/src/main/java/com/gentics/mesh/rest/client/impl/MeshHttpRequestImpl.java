@@ -163,6 +163,11 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 					public T getBody() {
 						return result;
 					}
+
+					@Override
+					public List<String> getCookies() {
+						return rawResponse.cookies();
+					}
 				};
 			});
 		});

@@ -51,10 +51,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 			// 3. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
-			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")).invoke();
-			latchFor(response);
-			assertSuccess(response);
-			String etag = extract(response.getRawResponse().getHeader(ETAG));
+			String etag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")));
 			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
 
 			params.setHeight(103);
@@ -87,12 +84,8 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
-			MeshResponse<WebRootResponse> response = client()
-				.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL))
-				.invoke();
 
-			latchFor(response);
-			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+			String etag = callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertNotNull(etag);
 
 			// Check whether 304 is returned for correct etag
@@ -116,14 +109,12 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		MeshResponse<WebRootResponse> response = client()
-			.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke();
-		latchFor(response);
+		String responseTag = callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
 			Node node = content("news_2015");
 			String etag = node.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getRawResponse().getHeader(ETAG)));
+			assertEquals(etag, responseTag);
 
 			// Check whether 304 is returned for correct etag
 			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),

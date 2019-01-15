@@ -533,7 +533,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setName("new schema name");
 		request.setDisplayField("name");
 
-		validateCreation(i -> client().createSchema(request), nJobs);
+		validateCreation(nJobs, i -> client().createSchema(request));
 	}
 
 	@Test
@@ -542,7 +542,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		int nJobs = 200;
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
-			awaitConcurrentRequests(i -> client().findSchemaByUuid(schema.getUuid()), nJobs);
+			awaitConcurrentRequests(nJobs, i -> client().findSchemaByUuid(schema.getUuid()));
 		}
 	}
 

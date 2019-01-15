@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshResponse2;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.ClientHandler;
 import com.gentics.mesh.util.ETag;
@@ -59,15 +60,13 @@ public final class ClientHelper {
 	}
 
 	public static <T> String callETagRaw(ClientHandler<T> handler) {
-		MeshResponse<T> response;
+		MeshResponse2<T> response;
 		try {
-			response = handler.handle().invoke();
+			response = handler.handle().getResponse().blockingGet();
 		} catch (Exception e) {
-			response = new MeshResponse<>(Future.failedFuture(e));
+			throw new RuntimeException(e);
 		}
-		latchFor(response);
-		assertSuccess(response);
-		return ETag.extract(response.getRawResponse().getHeader(ETAG));
+		return ETag.extract(response.getHeader(ETAG));
 	}
 
 	/**
@@ -81,22 +80,20 @@ public final class ClientHelper {
 	 * @return result of the future
 	 */
 	public static <T> String callETag(ClientHandler<T> handler, String etag, boolean isWeak, int statusCode) {
-		MeshResponse<T> response;
+		MeshResponse2<T> response;
 		try {
 			MeshRequest<T> request = handler.handle();
-			request.getRequest().putHeader(IF_NONE_MATCH, ETag.prepareHeader(etag, isWeak));
-			response = request.invoke();
+			request.setHeader(IF_NONE_MATCH, ETag.prepareHeader(etag, isWeak));
+			response = request.getResponse().blockingGet();
 		} catch (Exception e) {
-			response = new MeshResponse<>(Future.failedFuture(e));
+			throw new RuntimeException(e);
 		}
-		latchFor(response);
-		assertSuccess(response);
-		int actualStatusCode = response.getRawResponse().statusCode();
-		String actualETag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+		int actualStatusCode = response.getStatusCode();
+		String actualETag = ETag.extract(response.getHeader(ETAG));
 		assertEquals("The response code did not match.", statusCode, actualStatusCode);
 		if (statusCode == 304) {
 			assertEquals(etag, actualETag);
-			assertNull("The response should be null since we got a 304", response.result());
+			assertNull("The response should be null since we got a 304", response.getBody());
 		}
 		return actualETag;
 	}

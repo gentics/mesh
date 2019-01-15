@@ -421,7 +421,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		request.setName("New Name");
 
 		try (Tx tx = tx()) {
-			awaitConcurrentRequests(i -> client().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request), nJobs);
+			awaitConcurrentRequests(nJobs, i -> client().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request));
 		}
 	}
 
@@ -433,7 +433,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		try (Tx tx = tx()) {
 			String uuid = tagFamily("colors").getUuid();
 
-			awaitConcurrentRequests(i -> client().findTagFamilyByUuid(PROJECT_NAME, uuid), nJobs);
+			awaitConcurrentRequests(nJobs, i -> client().findTagFamilyByUuid(PROJECT_NAME, uuid));
 		}
 	}
 
@@ -456,7 +456,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("test12345");
 
-		validateCreation(i -> client().createTagFamily(PROJECT_NAME, request), nJobs);
+		validateCreation(nJobs, i -> client().createTagFamily(PROJECT_NAME, request));
 	}
 
 	@Test
@@ -464,7 +464,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (Tx tx = tx()) {
 			int nJobs = 200;
-			awaitConcurrentRequests(i -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()), nJobs);
+			awaitConcurrentRequests(nJobs, i -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()));
 		}
 	}
 

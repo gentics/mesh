@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.callETag;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
@@ -39,10 +40,9 @@ public class SchemaEndpointETagTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 
-			MeshResponse<SchemaResponse> response = client().findSchemaByUuid(schema.getUuid()).invoke();
-			latchFor(response);
+			String responseTag = callETag(() -> client().findSchemaByUuid(schema.getUuid()));
 			String etag = schema.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getRawResponse().getHeader(ETAG)));
+			assertEquals(etag, responseTag);
 
 			// Check whether 304 is returned for correct etag
 			assertThat(callETag(() -> client().findSchemaByUuid(schema.getUuid()), etag, true, 304)).contains(etag);

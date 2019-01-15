@@ -29,6 +29,14 @@ public interface MeshResponse2<T> {
 	}
 
 	/**
+	 * Retrieve the Set-Cookie headers.
+	 * @return A list of Set-Cookie directives
+	 */
+	default List<String> getCookies() {
+		return getHeaders("Set-Cookie");
+	}
+
+	/**
 	 * Retrieves the status code of the response
 	 * @return The status code
 	 */

@@ -78,6 +78,11 @@ public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 			public T getBody() {
 				return result;
 			}
+
+			@Override
+			public List<String> getCookies() {
+				throw new RuntimeException("There are no cookies in local requests");
+			}
 		});
 	}
 

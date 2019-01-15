@@ -487,7 +487,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName("changed");
 
 		int nJobs = 5;
-		awaitConcurrentRequests(i -> client().updateGroup(group().getUuid(), request), nJobs);
+		awaitConcurrentRequests(nJobs, i -> client().updateGroup(group().getUuid(), request));
 	}
 
 	@Test
@@ -496,7 +496,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		String uuid = user().getUuid();
-		awaitConcurrentRequests(i -> client().findGroupByUuid(uuid), nJobs);
+		awaitConcurrentRequests(nJobs, i -> client().findGroupByUuid(uuid));
 	}
 
 	@Test
@@ -513,11 +513,11 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 50;
 
-		validateCreation(i -> {
+		validateCreation(nJobs, i -> {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName("test12345_" + i);
 			return client().createGroup(request);
-		}, nJobs);
+		});
 	}
 
 	@Test
