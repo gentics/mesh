@@ -201,6 +201,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		if (params.canWriteProgressive()) {
 			// TODO Maybe make this configurable or read from metadata of original image.
+			// Note that it depends on the writer plugin used, if this setting is actually used.
 			params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
 		}
 
