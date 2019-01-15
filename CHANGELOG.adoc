@@ -23,13 +23,40 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[v0.28.4]]
-== 0.28.4 (TBD)
+[[v0.29.1]]
+== 0.29.1 (TBD)
+
+CAUTION: Because of a change in the image cache, the change below might not apply when an image is already in the cache. To make sure, that the changes take effect the cache in `data/binaryImageCache/` must be cleared.
 
 icon:check[] Image: Resizing and cropping will no longer transform the image to JPG format but return an image in the original format. When no image writing plugin for this format is available the fallback is PNG.
 
+[[v0.29.0]]
+== 0.29.0 (14.01.2019)
+
+CAUTION: The embedded Graph Database was updated from version 2.2.37 to 3.0.13. See required changes below.
+
+icon:plus[] OrientDB 3.0.x: Existing `orientdb-server-config.xml`, `hazelcast.xml`, `default-distributed-db-config.json` configuration files will automatically be moved away and the new configuration files will be created instead.
+
+icon:plus[] OrientDB 3.0.x: A reindex of all vertices and edges will be triggered during the first startup. This can take some time depending on the database size.
+
+icon:plus[] Memory: The internal overall memory usage has been optimized.
+
+icon:plus[] Core: The way language references are stored has been refactored to increase performance and reduce contention during database operations. A changelog entry will be invoked which migrates the data.
+
+icon:check[] Clustering: The OrientDB 3.0.13 update addresses various issues which were related to clustering.
+
+icon:check[] Migrations: The schema migration code has been optimized for speed and memory usage.
+
+icon:check[] Migrations: Schema migrations will now always be executed on the cluster node which also handled the REST request. Previously the migration was executed on a random node in the cluster.
+
+icon:check[] Core: The internal transaction retry max count has been reduced from 100 to 10 iterations.
+
+icon:check[] Core: The internal transaction handling has been optimized.
+
+icon:check[] Security: A minor security issue has been fixed.
+
 [[v0.28.3]]
-== 0.28.3 (09.01.19)
+== 0.28.3 (09.01.2019)
 
 icon:check[] GraphQL: Resolved links will now contain the hostname of the target branch, not the latest branch.
 

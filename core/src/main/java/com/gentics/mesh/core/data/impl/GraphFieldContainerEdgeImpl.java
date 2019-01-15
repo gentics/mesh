@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -119,23 +118,19 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		property(LANGUAGE_TAG_KEY, languageTag);
 	}
 
-	public MeshVertexImpl getStartNode() {
-		return inV().nextOrDefault(MeshVertexImpl.class, null);
-	}
-
 	@Override
 	public BasicFieldContainer getContainer() {
-		return outV().nextOrDefault(AbstractBasicGraphFieldContainerImpl.class, null);
+		return outV().nextOrDefaultExplicit(AbstractBasicGraphFieldContainerImpl.class, null);
 	}
 
 	@Override
 	public NodeGraphFieldContainer getNodeContainer() {
-		return inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+		return inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 	}
 
 	@Override
 	public Node getNode() {
-		return outV().nextOrDefault(NodeImpl.class, null);
+		return outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override

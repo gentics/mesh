@@ -28,7 +28,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -72,10 +71,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			InternalActionContext ac = mockActionContext();
-			String path = newsNode.getPath(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
+			String path = newsNode.getPath(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
 			assertEquals("/News/News%20Overview.en.html", path);
-			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestBranch().getUuid(), ContainerType.DRAFT, english()
-				.getLanguageTag());
+			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
 			assertEquals("News Overview.en.html", pathSegementFieldValue);
 		}
 	}
@@ -131,7 +129,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testMeshNodeFields() throws IOException {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
-			Language german = german();
+			String german = german();
 			InternalActionContext ac = mockActionContext("lang=de,en&version=draft");
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
 			NodeGraphFieldContainer germanFields = newsNode.getLatestDraftFieldContainer(german);
@@ -259,8 +257,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(creationTimeStamp);
 			assertEquals(ts, creationTimeStamp.longValue());
 			assertEquals(user, node.getCreator());
-			Language english = english();
-			Language german = german();
+			String english = english();
+			String german = german();
 
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
 			englishContainer.createString("content").setString("english content");

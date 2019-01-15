@@ -108,7 +108,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	public List<String> getLanguageArgument(DataFetchingEnvironment env, GraphFieldContainer source) {
-		return getLanguageArgument(env, Arrays.asList(source.getLanguage().getLanguageTag()));
+		return getLanguageArgument(env, Arrays.asList(source.getLanguageTag()));
 	}
 
 	/**

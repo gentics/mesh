@@ -369,7 +369,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch
 										.getUuid(), schema.getUuid(), containerType), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
-												fieldContainer.getLanguage().getLanguageTag()));
+												fieldContainer.getLanguageTag()));
 							}
 						}
 					}

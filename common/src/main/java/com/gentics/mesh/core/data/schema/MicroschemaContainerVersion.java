@@ -4,8 +4,6 @@ import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_CREATED;
 import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
 
-import java.util.Iterator;
-
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-orientdb</artifactId>
@@ -9,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-databases</artifactId>
-		<version>0.28.4-SNAPSHOT</version>
+		<version>0.29.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -28,6 +29,11 @@
 			<dependency>
 				<groupId>com.orientechnologies</groupId>
 				<artifactId>orientdb-graphdb</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-server</artifactId>
 				<version>${orientdb.version}</version>
 			</dependency>
 			<dependency>
@@ -52,11 +58,16 @@
 		</dependency>
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
-			<artifactId>orientdb-graphdb</artifactId>
+			<artifactId>orientdb-server</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orientdb-distributed</artifactId>
+		</dependency>
+		<!-- Load graphdb last to avoid class path conflict: PRJ-10537 -->
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-graphdb</artifactId>
 		</dependency>
 
 		<dependency>
@@ -68,6 +79,20 @@
 			<groupId>com.syncleus.ferma</groupId>
 			<artifactId>ferma-orientdb</artifactId>
 			<version>${ferma.orientdb.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.orientechnologies</groupId>
+					<artifactId>orientdb-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.orientechnologies</groupId>
+					<artifactId>orientdb-server</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.orientechnologies</groupId>
+					<artifactId>orientdb-graphdb</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Common Tools -->

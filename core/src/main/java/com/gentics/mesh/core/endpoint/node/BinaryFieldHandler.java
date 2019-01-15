@@ -208,7 +208,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			}
 
 			// Load the current latest draft
-			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, branch, ContainerType.DRAFT);
+			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
 
 			if (latestDraftVersion == null) {
 				// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
@@ -258,7 +258,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 			SearchQueueBatch batch = searchQueue.create();
 			// Create a new node version field container to store the upload
-			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser(), latestDraftVersion, true);
+			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(), latestDraftVersion, true);
 
 			// Check whether the binary with the given hashsum was already stored
 			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
@@ -368,7 +368,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
 
-			NodeGraphFieldContainer latestDraftVersion = node.getLatestDraftFieldContainer(language);
+			NodeGraphFieldContainer latestDraftVersion = node.getLatestDraftFieldContainer(language.getLanguageTag());
 			if (latestDraftVersion == null) {
 				throw error(NOT_FOUND, "error_language_not_found", language.getLanguageTag());
 			}
@@ -408,7 +408,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					Branch branch = ac.getBranch();
 
 					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser(), latestDraftVersion,
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language.getLanguageTag(), branch, ac.getUser(), latestDraftVersion,
 						true);
 
 					String binaryUuid = initialField.getBinary().getUuid();

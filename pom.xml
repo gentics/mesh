@@ -5,7 +5,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.28.4-SNAPSHOT</version>
+	<version>0.29.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -20,10 +20,10 @@
 		<ferma.version>2.4.0</ferma.version>
 		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
 		<elasticsearch.client.version>0.5.0</elasticsearch.client.version>
-		<orientdb.version>2.2.37</orientdb.version>
+		<orientdb.version>3.0.13</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
-		<jackson.version>2.9.7</jackson.version>
+		<jackson.version>2.9.8</jackson.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>

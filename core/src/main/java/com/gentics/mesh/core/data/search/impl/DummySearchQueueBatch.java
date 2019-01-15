@@ -134,4 +134,7 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 		return 0;
 	}
 
+	@Override
+	public void addAll(SearchQueueBatch otherBatch) {
+	}
 }

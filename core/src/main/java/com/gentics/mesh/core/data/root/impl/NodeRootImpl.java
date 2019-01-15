@@ -254,7 +254,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
-		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, branch, requestUser);
+		NodeGraphFieldContainer container = node.createGraphFieldContainer(language.getLanguageTag(), branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
 		batch.store(node, branch.getUuid(), ContainerType.DRAFT, true);
 

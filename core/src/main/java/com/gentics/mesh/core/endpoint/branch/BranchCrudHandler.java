@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.branch;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -9,29 +8,22 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.util.PentaFunction;
-import io.reactivex.functions.Function5;
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.Events;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
@@ -42,9 +34,8 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -58,9 +49,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.util.PentaFunction;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -147,7 +137,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			tuple.v2().processSync();
 
 			// 2. Invoke migrations which will populate the created index
-			Mesh.vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+			Events.triggerJobWorker();
 
 			return tuple.v1();
 
@@ -201,7 +191,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				return getMicroschemaVersions(branch);
 			});
 
-			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+			Events.triggerJobWorker();
 			return model;
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -297,12 +287,15 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				// We don't need to migrate the latest active version
 				.filter(version -> version != latestVersions.get(version.getName()))
 				.forEach(schemaVersion -> {
-					Job job = enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
-					job.process();
+					enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
 				});
 
 			return message(ac, "schema_migration_invoked");
-		}, model -> ac.send(model, OK));
+		}, model -> {
+			// Trigger job worker after jobs have been queued
+			Events.triggerJobWorker();
+			ac.send(model, OK);
+		});
 	}
 
 	/**

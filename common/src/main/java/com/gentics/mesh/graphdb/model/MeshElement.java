@@ -38,9 +38,11 @@ public interface MeshElement extends ElementFrame {
 	String getElementVersion();
 
 	/**
-	 * Provide TP 3.x compliant method.
-	 * 
-	 * @return
+	 * Return the id of the element.
+	 *
+	 * @param <N>
+	 *            The ID's type.
+	 * @return The id of this element.
 	 */
 	default <N> N id() {
 		return getId();

@@ -502,7 +502,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 			addParentNodeInfo(document, node.getParentNode(branchUuid));
 		}
 
-		String language = container.getLanguage().getLanguageTag();
+		String language = container.getLanguageTag();
 		document.put("language", language);
 		addSchema(document, container.getSchemaContainerVersion());
 

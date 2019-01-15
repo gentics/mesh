@@ -120,21 +120,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return the draft field container for the given language in the latest branch.
 	 * 
-	 * @param language
+	 * @param languageTag
 	 * @return
 	 */
-	NodeGraphFieldContainer getLatestDraftFieldContainer(Language language);
+	NodeGraphFieldContainer getLatestDraftFieldContainer(String languageTag);
 
 	/**
 	 * Return the field container for the given language, type and branch.
 	 * 
-	 * @param language
+	 * @param languageTag
 	 * @param branch
 	 * @param type
 	 *            type
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(Language language, Branch branch, ContainerType type);
+	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, Branch branch, ContainerType type);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
@@ -159,14 +159,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * be the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
 	 * container will be a clone of the last draft and will have the next version number.
 	 * 
-	 * @param language
+	 * @param languageTag
 	 * @param branch
 	 *            branch
 	 * @param user
 	 *            user
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch branch, User user);
+	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User user);
 
 	/**
 	 * Like {@link #createGraphFieldContainer(Language, Branch, User)}, but let the new graph field container be a clone of the given original (if not null).
@@ -181,7 +181,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, Branch branch, User editor, NodeGraphFieldContainer original,
+	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge);
 
 	/**
@@ -190,7 +190,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	default TraversalResult<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
-		// FIX ME: We should not rely on specific branchs.
+		// FIX ME: We should not rely on specific branches.
 		return getGraphFieldContainersIt(getProject().getLatestBranch(), DRAFT);
 	}
 
@@ -547,13 +547,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param branch
-	 * @param language
+	 * @param languageTag
 	 *            Language which will be used to find the field container which should be deleted
 	 * @param bac
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Branch branch, Language language, BulkActionContext bac, boolean failForLastContainer);
+	void deleteLanguageContainer(InternalActionContext ac, Branch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -663,7 +663,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Create a new published version of the given language in the branch.
 	 * 
-	 * @param language
+	 * @param languageTag
 	 *            language
 	 * @param branch
 	 *            branch
@@ -671,7 +671,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            user
 	 * @return published field container
 	 */
-	NodeGraphFieldContainer publish(Language language, Branch branch, User user);
+	NodeGraphFieldContainer publish(String languageTag, Branch branch, User user);
 
 	/**
 	 * Publish the node for the specified branch.

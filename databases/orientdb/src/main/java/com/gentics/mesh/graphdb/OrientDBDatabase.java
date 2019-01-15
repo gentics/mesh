@@ -9,16 +9,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -45,23 +41,25 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.graphdb.tx.OrientStorage;
+import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
+import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.PropertyUtil;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
-import com.orientechnologies.orient.core.command.OCommandOutputListener;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
-import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OSchemaException;
+import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.index.OIndexCursor;
+import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
-import com.orientechnologies.orient.core.intent.OIntentNoCache;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
@@ -84,17 +82,17 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientElementType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
+import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -114,15 +112,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
 
+	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "orientdb-plugins";
+
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String DB_NAME = "storage";
-
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.34.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.13.zip";
 
 	private TopologyEventBridge topologyEventBridge;
-
-	private OrientGraphFactory factory;
 
 	private TypeResolver resolver;
 
@@ -130,9 +126,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OHazelcastPlugin hazelcastPlugin;
 
-	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
+	private int maxRetry = 10;
 
-	private int maxRetry = 100;
+	private OrientStorage txProvider;
 
 	@Override
 	public void stop() {
@@ -146,9 +142,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		// e.printStackTrace();
 		// }
 		// }
-		if (factory != null) {
-			factory.close();
-			Orient.instance().shutdown();
+		if (txProvider != null) {
+			txProvider.close();
 		}
 		if (server != null) {
 			server.shutdown();
@@ -158,24 +153,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void clear() {
-		if (log.isDebugEnabled()) {
-			log.debug("Clearing graph");
-		}
-
-		OrientGraphNoTx tx2 = factory.getNoTx();
-		tx2.declareIntent(new OIntentNoCache());
-		try {
-			for (Vertex vertex : tx2.getVertices()) {
-				vertex.remove();
-			}
-		} finally {
-			tx2.declareIntent(null);
-			tx2.shutdown();
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("Cleared graph");
-		}
-
+		txProvider.clear();
 	}
 
 	@Override
@@ -191,6 +169,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 				"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 		}
 
+		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(Integer.MAX_VALUE);
+
 		initConfigurationFiles();
 
 		// resolver = new OrientDBTypeResolver(basePaths);
@@ -203,17 +183,32 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void setMassInsertIntent() {
-		factory.declareIntent(new OIntentMassiveInsert());
+		txProvider.setMassInsertIntent();
 	}
 
 	@Override
 	public void resetIntent() {
-		factory.declareIntent(null);
+		txProvider.resetIntent();
 	}
 
 	@Override
-	public TransactionalGraph rawTx() {
-		return factory.getTx();
+	public OrientGraph rawTx() {
+		return txProvider.rawTx();
+	}
+
+	@Override
+	public void reindex() {
+		OrientGraph tx = txProvider.rawTx();
+		try {
+			OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
+			manager.getIndexes().forEach(i -> i.rebuild());
+		} finally {
+			tx.shutdown();
+		}
+	}
+
+	protected OrientGraphNoTx rawNoTx() {
+		return txProvider.rawNoTx();
 	}
 
 	@Override
@@ -239,18 +234,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * Setup the OrientDB Graph connection
 	 */
 	private void initGraphDB() {
-		GraphStorageOptions storageOptions = options.getStorageOptions();
-		if (storageOptions == null || storageOptions.getDirectory() == null) {
-			log.info("No graph database settings found. Fallback to in memory mode.");
-			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(16, 100);
+		if (server != null && server.isActive()) {
+			txProvider = new OrientServerStorageImpl(options, server.getContext());
 		} else {
-			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(16, 100);
+			txProvider = new OrientLocalStorageImpl(options);
 		}
+		// Open the storage
+		txProvider.open();
 	}
 
 	@Override
 	public void closeConnectionPool() {
-		factory.close();
+		txProvider.close();
+	}
+
+	@Override
+	public void shutdown() {
 		Orient.instance().shutdown();
 	}
 
@@ -259,7 +258,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * 
 	 * @throws IOException
 	 */
-	private void initConfigurationFiles() throws IOException {
+	@Override
+	public void initConfigurationFiles() throws IOException {
 
 		File distributedConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_DISTRIBUTED_CONFIG);
 		if (!distributedConfigFile.exists()) {
@@ -341,28 +341,32 @@ public class OrientDBDatabase extends AbstractDatabase {
 		String configString = FileUtils.readFileToString(configFile);
 
 		// Now replace the parameters within the configuration
-		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", Matcher.quoteReplacement(new File("orientdb-plugins").getAbsolutePath()));
-		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
-		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
-		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
-		configString = configString.replaceAll("%NODENAME%", getNodeName());
+		String pluginDir = Matcher.quoteReplacement(new File(ORIENTDB_PLUGIN_FOLDERNAME).getAbsolutePath());
+		System.setProperty("ORIENTDB_PLUGIN_DIR", pluginDir);
+		System.setProperty("plugin.directory", pluginDir);
+		// configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
+		// configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
+		System.setProperty("ORIENTDB_CONFDIR_NAME", CONFIG_FOLDERNAME);
+		System.setProperty("ORIENTDB_NODE_NAME", getNodeName());
+		System.setProperty("ORIENTDB_DISTRIBUTED", String.valueOf(options.getClusterOptions().isEnabled()));
 		String networkHost = options.getClusterOptions().getNetworkHost();
 		if (isEmpty(networkHost)) {
 			networkHost = "0.0.0.0";
 		}
-		configString = configString.replaceAll("%NETWORK_HOST%", networkHost);
-		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
+
+		System.setProperty("ORIENTDB_NETWORK_HOST", networkHost);
 		// Only use the cluster network host if clustering is enabled.
 		String dbDir = storageOptions().getDirectory();
 		if (dbDir != null) {
-			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
+			System.setProperty("ORIENTDB_DB_PATH", escapeSafe(storageOptions().getDirectory()));
 		} else {
 			if (log.isDebugEnabled()) {
-				log.debug("Not setting DB_PARENT_PATH because no database dir was configured.");
+				log.debug("Not setting ORIENTDB_DB_PATH because no database dir was configured.");
 			}
 		}
+		configString = PropertyUtil.resolve(configString);
 		if (log.isDebugEnabled()) {
-			log.debug("Effective orientdb server configuration:" + configString);
+			log.debug("OrientDB server configuration:" + configString);
 		}
 		return configString;
 	}
@@ -484,31 +488,33 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @throws IOException
 	 */
 	private void updateOrientDBPlugin() throws FileNotFoundException, IOException {
-		InputStream ins = getClass().getResourceAsStream("/plugins/" + ORIENTDB_STUDIO_ZIP);
-		File pluginDirectory = new File("orientdb-plugins");
-		pluginDirectory.mkdirs();
+		try (InputStream ins = getClass().getResourceAsStream("/plugins/" + ORIENTDB_STUDIO_ZIP)) {
+			File pluginDirectory = new File(ORIENTDB_PLUGIN_FOLDERNAME);
+			pluginDirectory.mkdirs();
 
-		// Remove old plugins
-		boolean currentPluginFound = false;
-		for (File plugin : pluginDirectory.listFiles()) {
-			if (plugin.isFile()) {
-				String filename = plugin.getName();
-				log.debug("Checking orientdb plugin: " + filename);
-				if (filename.equals(ORIENTDB_STUDIO_ZIP)) {
-					currentPluginFound = true;
-					continue;
-				}
-				if (filename.startsWith("orientdb-studio-")) {
-					plugin.delete();
+			// Remove old plugins
+			boolean currentPluginFound = false;
+			for (File plugin : pluginDirectory.listFiles()) {
+				if (plugin.isFile()) {
+					String filename = plugin.getName();
+					log.debug("Checking orientdb plugin: " + filename);
+					if (filename.equals(ORIENTDB_STUDIO_ZIP)) {
+						currentPluginFound = true;
+						continue;
+					}
+					if (filename.startsWith("orientdb-studio-")) {
+						if (!plugin.delete()) {
+							log.error("Could not delete old plugin {" + plugin + "}");
+						}
+					}
 				}
 			}
-		}
 
-		if (!currentPluginFound) {
-			log.info("Extracting OrientDB Studio");
-			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.26.zip")));
+			if (!currentPluginFound) {
+				log.info("Extracting OrientDB Studio");
+				IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, ORIENTDB_STUDIO_ZIP)));
+			}
 		}
-
 	}
 
 	private void postStartupDBEventHandling() {
@@ -520,7 +526,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addCustomEdgeIndex(String label, String indexPostfix, FieldMap fields, boolean unique) {
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = rawNoTx();
 		try {
 			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
@@ -554,7 +560,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields) {
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = rawNoTx();
 		try {
 			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
@@ -669,7 +675,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = txProvider.rawNoTx();
 		try {
 			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
@@ -706,7 +712,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex type for class {" + clazzOfVertex + "}");
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = rawNoTx();
 		try {
 			OrientVertexType vertexType = noTx.getVertexType(clazzOfVertex);
 			if (vertexType == null) {
@@ -743,7 +749,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex type with name {" + typeName + "}");
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = txProvider.rawNoTx();
 		try {
 			noTx.dropEdgeType(typeName);
 		} finally {
@@ -756,7 +762,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex type with name {" + typeName + "}");
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = rawNoTx();
 		try {
 			OrientVertexType type = noTx.getVertexType(typeName);
 			if (type != null) {
@@ -768,9 +774,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void changeType(Vertex vertex, String newType) {
+	public Vertex changeType(Vertex vertex, String newType, Graph tx) {
 		OrientVertex v = (OrientVertex) vertex;
-		v.moveToClass(newType);
+		ORID newId = v.moveToClass(newType);
+		return tx.getVertex(newId);
 	}
 
 	@Override
@@ -778,7 +785,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index for class {" + clazzOfVertices.getName() + "}");
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = rawNoTx();
 		try {
 			String name = clazzOfVertices.getSimpleName();
 			OrientVertexType v = noTx.getVertexType(name);
@@ -810,7 +817,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex index for class {" + clazz.getName() + "}");
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraphNoTx noTx = rawNoTx();
 		try {
 			String name = clazz.getSimpleName();
 			OrientVertexType v = noTx.getVertexType(name);
@@ -909,12 +916,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void reload(MeshElement element) {
-		((OrientVertex) element.getElement()).reload();
+		reload(element.getElement());
+	}
+
+	@Override
+	public void reload(Element element) {
+		if (element instanceof OrientElement) {
+			((OrientElement) element).reload();
+		}
 	}
 
 	@Override
 	public Tx tx() {
-		return new OrientDBTx(factory, resolver);
+		return new OrientDBTx(txProvider, resolver);
 	}
 
 	@Override
@@ -936,13 +950,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (ONeedRetryException e) {
+			} catch (ONeedRetryException | FastNoSuchElementException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
+				int rnd = (int) (Math.random() * 6000.0);
 				try {
 					// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
-					Thread.sleep(50 + (retry * 25));
+					Thread.sleep(50 + (retry * 25) + rnd);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -978,89 +993,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void backupGraph(String backupDirectory) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Running backup to backup directory {" + backupDirectory + "}.");
-		}
-		ODatabaseDocumentTx db = factory.getDatabase();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-			String dateString = formatter.format(new Date());
-			String backupFile = "backup_" + dateString + ".zip";
-			new File(backupDirectory).mkdirs();
-			OutputStream out = new FileOutputStream(new File(backupDirectory, backupFile).getAbsolutePath());
-			db.backup(out, null, null, listener, 9, 2048);
-		} finally {
-			db.close();
-		}
+		txProvider.backup(backupDirectory);
 	}
 
 	@Override
 	public void restoreGraph(String backupFile) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Running restore using {" + backupFile + "} backup file.");
-		}
-		ODatabaseDocumentTx db = factory.getDatabase();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-			InputStream in = new FileInputStream(backupFile);
-			db.restore(in, null, null, listener);
-		} finally {
-			db.close();
-		}
+		txProvider.restore(backupFile);
 	}
 
 	@Override
 	public void exportGraph(String outputDirectory) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Running export to {" + outputDirectory + "} directory.");
-		}
-		ODatabaseDocumentTx db = factory.getDatabase();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-
-			String dateString = formatter.format(new Date());
-			String exportFile = "export_" + dateString;
-			new File(outputDirectory).mkdirs();
-			ODatabaseExport export = new ODatabaseExport(db, new File(outputDirectory, exportFile).getAbsolutePath(), listener);
-			export.exportDatabase();
-			export.close();
-		} finally {
-			db.close();
-		}
+		txProvider.exportGraph(outputDirectory);
 	}
 
 	@Override
 	public void importGraph(String importFile) throws IOException {
-		ODatabaseDocumentTx db = factory.getDatabase();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-			ODatabaseImport databaseImport = new ODatabaseImport(db, importFile, listener);
-			databaseImport.importDatabase();
-			databaseImport.close();
-		} finally {
-			db.close();
-		}
-
+		txProvider.importGraph(importFile);
 	}
 
 	@Override

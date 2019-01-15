@@ -62,6 +62,10 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 			if (DRAFT.equals(type) || PUBLISHED.equals(type)) {
 				String branchUuid = edge.getBranchUuid();
 				NodeGraphFieldContainer container = edge.getNodeContainer();
+				// Skip graph inconsistencies
+				if (container == null) {
+					continue;
+				}
 				Node node = container.getParentNode();
 				if (node != null) {
 					node = node.getParentNode(branchUuid);

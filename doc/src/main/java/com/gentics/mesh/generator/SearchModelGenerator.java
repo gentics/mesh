@@ -135,7 +135,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	}
 
 	private void writeNodeDocumentExample() throws Exception {
-		Language language = mockLanguage("de");
+		String language = "de";
 		User user = mockUser("joe1", "Joe", "Doe");
 		Project project = mockProject(user);
 		TagFamily tagFamily = mockTagFamily("colors", user, project);

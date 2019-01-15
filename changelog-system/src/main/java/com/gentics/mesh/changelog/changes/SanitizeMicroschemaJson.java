@@ -22,7 +22,7 @@ public class SanitizeMicroschemaJson extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void actualApply() {
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex microschemaRoot = meshRoot.getVertices(OUT, "HAS_MICROSCHEMA_ROOT").iterator().next();
 		Iterator<Vertex> microschemaIt = microschemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();

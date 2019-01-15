@@ -6,6 +6,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
+import io.reactivex.Completable;
+
 /**
  * Aggregation vertex for jobs.
  */
@@ -56,7 +58,7 @@ public interface JobRoot extends RootVertex<Job> {
 	/**
 	 * Process all remaining jobs.
 	 */
-	void process();
+	Completable process();
 
 	/**
 	 * Purge all failed jobs from the job root.

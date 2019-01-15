@@ -22,6 +22,7 @@ import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
 import com.syncleus.ferma.tx.TxFactory;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -551,8 +552,10 @@ public interface Database extends TxFactory {
 	 * 
 	 * @param vertex
 	 * @param newType
+	 * @param tx
+	 * @return
 	 */
-	void changeType(Vertex vertex, String newType);
+	Vertex changeType(Vertex vertex, String newType, Graph tx);
 
 	/**
 	 * Remove the index.
@@ -561,5 +564,26 @@ public interface Database extends TxFactory {
 	 * @param clazz
 	 */
 	void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz);
+
+	void shutdown();
+
+	/**
+	 * Invoke a reindex of the graph database indices.
+	 */
+	void reindex();
+
+	/**
+	 * Reload the given element.
+	 * 
+	 * @param element
+	 */
+	void reload(Element element);
+
+	/**
+	 * Initialize the configuration files.
+	 * 
+	 * @throws IOException
+	 */
+	void initConfigurationFiles() throws IOException;
 
 }

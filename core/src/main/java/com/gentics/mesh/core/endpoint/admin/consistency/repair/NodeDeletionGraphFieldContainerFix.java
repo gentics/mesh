@@ -84,18 +84,18 @@ public class NodeDeletionGraphFieldContainerFix {
 
 		if (published != null) {
 			GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, published, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(published.getLanguage().getLanguageTag());
+			edge.setLanguageTag(published.getLanguageTag());
 			edge.setBranchUuid(branchUuid);
 			edge.setType(PUBLISHED);
 		}
 
 		GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, draft, GraphFieldContainerEdgeImpl.class);
-		edge.setLanguageTag(draft.getLanguage().getLanguageTag());
+		edge.setLanguageTag(draft.getLanguageTag());
 		edge.setBranchUuid(branchUuid);
 		edge.setType(DRAFT);
 
 		GraphFieldContainerEdge initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-		initialEdge.setLanguageTag(initial.getLanguage().getLanguageTag());
+		initialEdge.setLanguageTag(initial.getLanguageTag());
 		initialEdge.setBranchUuid(branchUuid);
 		initialEdge.setType(INITIAL);
 

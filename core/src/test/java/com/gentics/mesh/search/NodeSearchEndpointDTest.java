@@ -159,7 +159,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
 			User user = user();
-			Language english = english();
+			String english = english();
 			Node concorde = content("concorde");
 
 			Project project = concorde.getProject();

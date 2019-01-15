@@ -41,7 +41,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testTakeNodeOzfflineManyChildren() {
+	public void testTakeNodeOfflineManyChildren() {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
