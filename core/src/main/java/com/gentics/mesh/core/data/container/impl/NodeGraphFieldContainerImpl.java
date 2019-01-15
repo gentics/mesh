@@ -30,6 +30,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -161,30 +162,17 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 		}
 
+		// Invoke common field removal operations
+		super.delete(bac);
+
 		// TODO delete linked aggregation nodes for node lists etc
-		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frame(BinaryGraphFieldImpl.class)) {
-			binaryField.removeField(this);
+		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
+			binaryField.removeField(bac, this);
 		}
 
-		// Lists
-		// for (NumberGraphFieldList list : out(HAS_FIELD).frame(NumberGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (DateGraphFieldList list : out(HAS_FIELD).frame(DateGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (BooleanGraphFieldList list : out(HAS_FIELD).frame(BooleanGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (HtmlGraphFieldList list : out(HAS_FIELD).frame(HtmlGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (StringGraphFieldList list : out(HAS_FIELD).frame(StringGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
-		// for (NodeGraphFieldList list : out(HAS_FIELD).frame(NodeGraphFieldListImpl.class)) {
-		// list.removeField(this);
-		// }
+		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
+			micronodeField.removeField(bac,this);
+		}
 
 		// We don't need to handle node fields since those are only edges and will automatically be removed
 
@@ -203,12 +191,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromRelease(Release release, BulkActionContext context) {
+	public void deleteFromRelease(Release release, BulkActionContext bac) {
 		String releaseUuid = release.getUuid();
 
-		context.batch().delete(this, releaseUuid, DRAFT, false);
+		bac.batch().delete(this, releaseUuid, DRAFT, false);
 		if (isPublished(releaseUuid)) {
-			context.batch().delete(this, releaseUuid, PUBLISHED, false);
+			bac.batch().delete(this, releaseUuid, PUBLISHED, false);
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
 		// Remove the edge between the node and the container that matches the release

@@ -16,6 +16,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Release;
@@ -80,7 +81,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-					database().createComposedIndexKey(potentialElement.getId(), getId()));
+				database().createComposedIndexKey(potentialElement.getId(), getId()));
 			if (edges.iterator().hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());
@@ -114,7 +115,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueMicroschemaMigration(User creator, Release release, MicroschemaContainerVersion fromVersion,
-			MicroschemaContainerVersion toVersion) {
+		MicroschemaContainerVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(MigrationType.microschema);
 		job.setCreated(creator);
@@ -126,7 +127,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued microschema migration job {" + job.getUuid() + "} - " + toVersion.getSchemaContainer().getName() + " "
-					+ fromVersion.getVersion() + " to " + toVersion.getVersion());
+				+ fromVersion.getVersion() + " to " + toVersion.getVersion());
 		}
 		return job;
 	}
@@ -228,7 +229,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
 		long count = 0;
 		for (Job job : it) {
-			job.delete(null);
+			job.delete();
 			count++;
 		}
 		log.info("Purged {" + count + "} failed jobs.");
@@ -237,6 +238,11 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public void clear() {
 		out(HAS_JOB).removeAll();
+	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		throw new NotImplementedException("The job root can't be deleted");
 	}
 
 }

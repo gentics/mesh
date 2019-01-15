@@ -53,14 +53,14 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		for (MicroschemaContainerVersion version : findAll()) {
 			if (version.findMicronodes().hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
 			}
-			version.delete(context);
+			version.delete(bac);
 		}
-		super.delete(context);
+		super.delete(bac);
 	}
 
 	@Override

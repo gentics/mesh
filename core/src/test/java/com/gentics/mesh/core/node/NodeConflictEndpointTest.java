@@ -115,7 +115,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 			assertThat((List) conflictException.getResponseMessage().getProperty("conflicts")).hasSize(1).containsExactly("teaser");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());
-			assertThat(conflictException.getMessage()).isEqualTo(I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
+			assertThat(conflictException.getMessage()).isEqualTo("Error:409 in POST /api/v1/dummy/nodes/" + node.getUuid()
+				+ "?lang=en,de : Conflict Info: " + I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
 			assertThat(conflictException.getResponseMessage().getProperty("oldVersion")).isEqualTo("1.0");
 			assertThat(conflictException.getResponseMessage().getProperty("newVersion")).isEqualTo("1.2");
 		}
@@ -158,7 +159,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		// Add micronode / string list
 		request.getFields().put("stringList", FieldUtil.createStringListField("a", "b", "c"));
 		request.getFields().put("micronode", FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField(
-				"test-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-lastname"))));
+			"test-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-lastname"))));
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en", "de");
 
@@ -169,11 +170,11 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertNotNull("The old version should have a new version 1.1", oldContainer.getNextVersions().iterator().next());
 			NodeGraphFieldContainer newContainer = node.findVersion("en", project().getLatestRelease().getUuid(), "1.1");
 			assertEquals("The name field value of the old container version should not have been changed.", "Concorde_english_name", oldContainer
-					.getString("teaser").getString());
+				.getString("teaser").getString());
 			assertEquals("The name field value of the new container version should contain the expected value.", "1234", newContainer.getString(
-					"teaser").getString());
+				"teaser").getString());
 			assertNotNull("The new container should also contain the title since basic field types are not deduplicated", newContainer.getString(
-					"title"));
+				"title"));
 			assertNotNull("The container for version 0.1 should contain the title value.", oldContainer.getString("title"));
 		}
 	}
@@ -188,13 +189,13 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			// Add micronode / string list - This time only change the order
 			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
 			request.getFields().put("micronode", FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField(
-					"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname"))));
+				"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname"))));
 
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
 			NodeGraphFieldContainer createdVersion = node.findVersion(Arrays.asList("en"), project().getLatestRelease().getUuid(),
-					"1.2");
+				"1.2");
 			assertNotNull("The graph field container for version 1.2 could not be found.", createdVersion);
 			return request;
 		}
@@ -221,7 +222,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findVersion(Arrays.asList("en"), project().getLatestRelease().getUuid(),
-					"1.3");
+				"1.3");
 			assertNotNull("The graph field container for version 1.3 could not be found.", createdVersion);
 			NodeGraphFieldContainer previousVersion = createdVersion.getPreviousVersion();
 			assertNotNull("The graph field container for version 1.2 could not be found.", previousVersion);
@@ -233,7 +234,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertNotNull("Could not find the field within the previous version.", previousMicronode);
 			assertNotNull("Could not find the expected field in the created version.", nextMicronode);
 			assertEquals("Both fields should have the same uuid since both are referenced by the both versions.", nextMicronode.getMicronode()
-					.getUuid(), previousMicronode.getMicronode().getUuid());
+				.getUuid(), previousMicronode.getMicronode().getUuid());
 
 			StringGraphFieldList previousStringList = previousVersion.getStringList("stringList");
 			StringGraphFieldList nextStringList = createdVersion.getStringList("stringList");
@@ -241,7 +242,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertNotNull("Could not find the field within the previous version.", previousStringList);
 			assertNotNull("Could not find the expected field in the created version.", nextStringList);
 			assertEquals("Both fields should have the same uuid since both are referenced by the both versions.", nextStringList.getUuid(),
-					previousStringList.getUuid());
+				previousStringList.getUuid());
 
 		}
 	}
@@ -263,7 +264,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertNotNull("The graph field container for version 0.5 could not be found.", createdVersion);
 			assertNull("The micronode should not exist in this version since we explicitly removed it.", createdVersion.getMicronode("micronode"));
 			assertNull("The string list should not exist in this version since we explicitly removed it via a null update request.", createdVersion
-					.getStringList("stringList"));
+				.getStringList("stringList"));
 		}
 	}
 
@@ -311,13 +312,13 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			// Add micronode / string list - This time only change the order
 			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
 			request.getFields().put("micronode", FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField(
-					"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname"))));
+				"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname"))));
 
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
 			NodeGraphFieldContainer createdVersion = node.findVersion(Arrays.asList("en"), project().getLatestRelease().getUuid(),
-					"1.2");
+				"1.2");
 			assertNotNull("The graph field container for version 0.3 could not be found.", createdVersion);
 		}
 
@@ -330,7 +331,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			// Add micronode / string list - This time only change the order
 			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
 			request.getFields().put("micronode", FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField(
-					"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname-also-modified"))));
+				"test-updated-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname-also-modified"))));
 
 			MeshResponse<NodeResponse> future = client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).invoke();
 			latchFor(future);
@@ -339,9 +340,10 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertThat(error).isNotNull().isInstanceOf(MeshRestClientMessageException.class);
 			MeshRestClientMessageException conflictException = ((MeshRestClientMessageException) error);
 			assertThat(((List) conflictException.getResponseMessage().getProperty("conflicts"))).hasSize(2).containsExactly("micronode.firstName",
-					"micronode.lastName");
+				"micronode.lastName");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());
-			assertThat(conflictException.getMessage()).isEqualTo(I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
+			assertThat(conflictException.getMessage()).isEqualTo("Error:409 in POST /api/v1/dummy/nodes/" + node.getUuid()
+				+ "?lang=en,de : Conflict Info: " + I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
 			assertThat(conflictException.getResponseMessage().getProperty("oldVersion")).isEqualTo("1.1");
 			assertThat(conflictException.getResponseMessage().getProperty("newVersion")).isEqualTo("1.2");
 		}
@@ -358,7 +360,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			parameters.setLanguages("en", "de");
 
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters), BAD_REQUEST, "node_error_draft_not_found", "42.1",
-					"en");
+				"en");
 		}
 	}
 }

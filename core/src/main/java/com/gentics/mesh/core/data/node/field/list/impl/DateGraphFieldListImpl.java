@@ -108,7 +108,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		getElement().remove();
 	}
 

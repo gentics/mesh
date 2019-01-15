@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -163,7 +164,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		// TODO BUG We must only remove one edge to the given container!
 		remove();
 	}

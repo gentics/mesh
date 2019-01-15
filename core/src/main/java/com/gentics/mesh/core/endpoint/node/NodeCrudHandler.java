@@ -87,9 +87,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				BulkActionContext context = searchQueue.createBulkContext();
-				node.deleteFromRelease(ac, ac.getRelease(), context, false);
-				return context.batch();
+				BulkActionContext bac = searchQueue.createBulkContext();
+				node.deleteFromRelease(ac, ac.getRelease(), bac, false);
+				return bac.batch();
 			}).processSync();
 			node.onDeleted(uuid, name, schema, null);
 
@@ -120,9 +120,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			SchemaContainer schema = node.getSchemaContainer();
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				BulkActionContext context = searchQueue.createBulkContext();
-				node.deleteLanguageContainer(ac, ac.getRelease(), language, context, true);
-				return context.batch();
+				BulkActionContext bac = searchQueue.createBulkContext();
+				node.deleteLanguageContainer(ac, ac.getRelease(), language, bac, true);
+				return bac.batch();
 			}).processSync();
 			node.onDeleted(uuid, name, schema, languageTag);
 			return null;

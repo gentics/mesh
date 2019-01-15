@@ -104,7 +104,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		getElement().remove();
 	}
 

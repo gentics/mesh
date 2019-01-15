@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -125,7 +125,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -164,9 +164,14 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
+			NodeResponse response = createNodeWithField();
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertTrue(field.getValue());
 		}
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		return createNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 	}
 }

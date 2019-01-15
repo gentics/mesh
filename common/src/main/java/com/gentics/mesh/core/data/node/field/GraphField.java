@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -32,7 +34,7 @@ public interface GraphField {
 	 * @throws GenericRestException
 	 */
 	public static void failOnMissingRequiredField(GraphField field, boolean isFieldNull, FieldSchema fieldSchema, String key,
-			FieldSchemaContainer schema) throws GenericRestException {
+		FieldSchemaContainer schema) throws GenericRestException {
 		if (field == null && fieldSchema.isRequired() && isFieldNull) {
 			throw error(BAD_REQUEST, "node_error_missing_required_field_value", key, schema.getName());
 		}
@@ -48,7 +50,7 @@ public interface GraphField {
 	 * @param schema
 	 */
 	public static void failOnDeletionOfRequiredField(GraphField graphField, boolean isFieldSetToNull, FieldSchema fieldSchema, String key,
-			FieldSchemaContainer schema) {
+		FieldSchemaContainer schema) {
 		// Field is required and already set and value is null -> deletion is not allowed for required fields
 		if (fieldSchema.isRequired() && graphField != null && isFieldSetToNull) {
 			throw error(BAD_REQUEST, "node_error_required_field_not_deletable", key, schema.getName());
@@ -72,10 +74,20 @@ public interface GraphField {
 	/**
 	 * Remove this field from the container.
 	 * 
+	 * @param bac
 	 * @param container
 	 *            container
 	 */
-	void removeField(GraphFieldContainer container);
+	void removeField(BulkActionContext bac, GraphFieldContainer container);
+
+	/**
+	 * Remove the field and use a dummy bulk action context.
+	 * 
+	 * @param container
+	 */
+	default void removeField(GraphFieldContainer container) {
+		removeField(new DummyBulkActionContext(), container);
+	}
 
 	/**
 	 * Clone this field into the given container. If the field uses extra vertices for storing the data, they must be reused, not copied

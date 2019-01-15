@@ -92,11 +92,11 @@ public class HandlerUtilities {
 			}
 
 			database.tx(() -> {
-				BulkActionContext context = searchQueue.createBulkContext();
+				BulkActionContext bac = searchQueue.createBulkContext();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
-					element.delete(context);
-					return context.batch();
+					element.delete(bac);
+					return bac.batch();
 				} else {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}

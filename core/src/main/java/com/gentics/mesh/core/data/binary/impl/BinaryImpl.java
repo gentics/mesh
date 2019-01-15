@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.Base64;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -12,6 +13,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
+
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
@@ -41,11 +43,11 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	@Override
 	public Flowable<String> getBase64Stream() {
-		//TODO use stream instead to optimze the binary handling
-//		Flowable.using(() -> {
-//			Base64InputStream bins = new Base64InputStream(RxUtil.toInputStream(getStream(), Mesh.rxVertx()), true, 0, null);
-//			return bins;
-//		});
+		// TODO use stream instead to optimze the binary handling
+		// Flowable.using(() -> {
+		// Base64InputStream bins = new Base64InputStream(RxUtil.toInputStream(getStream(), Mesh.rxVertx()), true, 0, null);
+		// return bins;
+		// });
 		return getStream().reduce((a, b) -> a.appendBuffer(b)).map(buffer -> {
 			return BASE64.encodeToString(buffer.getBytes());
 		}).toFlowable();
@@ -57,10 +59,10 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public void remove() {
+	public void delete(BulkActionContext bac) {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
 		storage.delete(getUuid()).blockingAwait();
-		super.remove();
+		getElement().remove();
 	}
 
 }

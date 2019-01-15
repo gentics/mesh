@@ -110,6 +110,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	@Override
 	public void delete(BulkActionContext context) {
+		// We only need to remove the vertex. The entry are edges which will automatically be removed.
 		getElement().remove();
 	}
 

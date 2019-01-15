@@ -10,6 +10,18 @@
 
 = Gentics Mesh Changelog
 
+[[v0.22.9]]
+== 0.22.9 (11.01.2019)
+
+icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
+
+icon:plus[] Memory: The memory footprint of various operations has been reduced.
+
+icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations. 
+            The response will now only contain the first 200 results. The `outputTruncated` property indicates whether the result has been truncated.
+
+icon:check[] Core: Node deletion will now also remove connected lists and micronodes. Previously these elements were not properly removed. On large systems this could lead to increased disk usage.
+
 [[v0.22.8]]
 == 0.22.8 (30.11.2018)
 

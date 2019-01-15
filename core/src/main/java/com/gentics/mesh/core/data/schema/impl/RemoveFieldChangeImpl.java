@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import java.io.IOException;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -31,6 +32,11 @@ public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	@Override
 	public String getAutoMigrationScript() throws IOException {
 		return OPERATION.getAutoMigrationScript(null);
+	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		getElement().remove();
 	}
 
 }

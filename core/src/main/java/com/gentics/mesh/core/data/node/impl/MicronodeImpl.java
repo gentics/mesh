@@ -109,7 +109,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
+		super.delete(bac);
 		getElement().remove();
 	}
 

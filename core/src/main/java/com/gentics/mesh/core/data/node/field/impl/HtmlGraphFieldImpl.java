@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 
 import java.util.Objects;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -99,7 +100,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		//TODO remove the vertex from the graph if it is no longer be used by other containers 
 		setFieldProperty("html", null);
 		setFieldKey(null);

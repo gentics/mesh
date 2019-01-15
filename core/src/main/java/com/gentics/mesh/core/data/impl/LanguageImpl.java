@@ -72,7 +72,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		throw new NotImplementedException();
 	}
 

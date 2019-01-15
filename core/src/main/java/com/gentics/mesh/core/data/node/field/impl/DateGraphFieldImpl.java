@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -96,7 +97,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		setFieldProperty("date", null);
 		setFieldKey(null);
 	}

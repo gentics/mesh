@@ -4,44 +4,47 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Iterator;
-
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.impl.TagImpl;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * Tag specific consistency checks.
  */
-public class TagCheck implements ConsistencyCheck {
+public class TagCheck extends AbstractConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
-		Iterator<? extends Tag> it = db.getVerticesForType(TagImpl.class);
-		while (it.hasNext()) {
-			checkTag(it.next(), response);
-		}
+	public String getName() {
+		return "tags";
 	}
 
-	private void checkTag(Tag tag, ConsistencyCheckResponse response) {
+	@Override
+	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
+		return processForType(db, TagImpl.class, (tag, result) -> {
+			checkTag(tag, result);
+		}, attemptRepair, tx);
+	}
+
+	private void checkTag(Tag tag, ConsistencyCheckResult result) {
 		String uuid = tag.getUuid();
 
 		// checkOut(tag, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 		// checkOut(tag, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(tag.getName())) {
-			response.addInconsistency("Tag has no name", uuid, HIGH);
+			result.addInconsistency("Tag has no name", uuid, HIGH);
 		}
 		if (tag.getTagFamily() == null) {
-			response.addInconsistency("Tag has no tag family linked to it", uuid, HIGH);
+			result.addInconsistency("Tag has no tag family linked to it", uuid, HIGH);
 		}
 		if (tag.getCreationTimestamp() == null) {
-			response.addInconsistency("The tag creation date is not set", uuid, MEDIUM);
+			result.addInconsistency("The tag creation date is not set", uuid, MEDIUM);
 		}
 		if (tag.getLastEditedTimestamp() == null) {
-			response.addInconsistency("The tag edit timestamp is not set", uuid, MEDIUM);
+			result.addInconsistency("The tag edit timestamp is not set", uuid, MEDIUM);
 		}
 
 	}

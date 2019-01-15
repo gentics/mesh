@@ -446,7 +446,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		// TODO Do we need to delete affected nodes as well? Currently only deletion of projects is possible. Release can't be deleted without deleting the
 		// project.
 		getVertex().remove();
