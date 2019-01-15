@@ -11,7 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.22.9]]
-== 0.22.9 (11.01.2019)
+== 0.22.9 (15.01.2019)
 
 icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
 
