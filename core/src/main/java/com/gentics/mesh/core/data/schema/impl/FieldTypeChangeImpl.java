@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -69,7 +70,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 		if (fieldSchema == null) {
 			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "} for change {"
-					+ getUuid() + "}");
+				+ getUuid() + "}");
 		}
 
 		FieldSchema field = null;
@@ -132,6 +133,12 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	@Override
 	public String getAutoMigrationScript() throws IOException {
 		return OPERATION.getAutoMigrationScript(Arrays.asList(SchemaChangeModel.TYPE_KEY, SchemaChangeModel.LIST_TYPE_KEY).stream()
-				.filter(key -> getRestProperty(key) != null).collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
+			.filter(key -> getRestProperty(key) != null).collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
 	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		getElement().remove();
+	}
+
 }

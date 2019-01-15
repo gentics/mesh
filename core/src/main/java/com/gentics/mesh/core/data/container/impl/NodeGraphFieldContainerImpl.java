@@ -30,6 +30,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -166,11 +167,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
-			binaryField.removeField(this);
+			binaryField.removeField(bac, this);
 		}
 
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
-			micronodeField.removeField(this);
+			micronodeField.removeField(bac,this);
 		}
 
 		// We don't need to handle node fields since those are only edges and will automatically be removed
@@ -190,12 +191,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromRelease(Release release, BulkActionContext context) {
+	public void deleteFromRelease(Release release, BulkActionContext bac) {
 		String releaseUuid = release.getUuid();
 
-		context.batch().delete(this, releaseUuid, DRAFT, false);
+		bac.batch().delete(this, releaseUuid, DRAFT, false);
 		if (isPublished(releaseUuid)) {
-			context.batch().delete(this, releaseUuid, PUBLISHED, false);
+			bac.batch().delete(this, releaseUuid, PUBLISHED, false);
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
 		// Remove the edge between the node and the container that matches the release

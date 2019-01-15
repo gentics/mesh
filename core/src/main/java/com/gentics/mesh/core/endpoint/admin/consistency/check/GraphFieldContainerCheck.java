@@ -115,40 +115,4 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		}
 	}
 
-//	private void printVersions(NodeGraphFieldContainer container) {
-//		System.out.println("Version history for {" + container.getUuid() + "}" + "version {" + container.getVersion() + "}");
-//		// Find the root
-//		NodeGraphFieldContainer prev = container.getPreviousVersion();
-//		while (prev != null) {
-//			NodeGraphFieldContainer p = prev.getPreviousVersion();
-//			if (p != null) {
-//				prev = p;
-//			} else {
-//				break;
-//			}
-//		}
-//
-//		if (prev == null) {
-//			prev = container;
-//		}
-//
-//		System.out.println("(" + prev.getVersion() + ") - Node: " + prev.in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null));
-//		Iterable<? extends NodeGraphFieldContainer> versions = prev.getNextVersions();
-//
-//		printVersions(versions, 1);
-//
-//	}
-
-//	private void printVersions(Iterable<? extends NodeGraphFieldContainer> versions, int level) {
-//		Iterator<? extends NodeGraphFieldContainer> it = versions.iterator();
-//		if (it.hasNext()) {
-//			for (NodeGraphFieldContainer v : versions) {
-//				String info = " - Node: " + v.in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
-//				String str = "↳ (" + v.getVersion() + ")" + info;
-//				System.out.println(StringUtils.leftPad(str, (level * 2) + str.length()));
-//				printVersions(v.getNextVersions(), ++level);
-//			}
-//		}
-//
-//	}
 }

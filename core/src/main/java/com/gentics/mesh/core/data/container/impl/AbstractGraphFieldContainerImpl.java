@@ -174,7 +174,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		Micronode existingMicronode = null;
 		if (existing != null) {
 			existingMicronode = existing.getMicronode();
-			// existing.getMicronode().delete(null);
+			// existing.getMicronode().delete();
 		}
 
 		// 2. Create a new micronode and assign the given schema to it
@@ -404,7 +404,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		return Stream.of(
 			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
 			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
-			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)).flatMap(Function.identity())::iterator;
+			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
+		).flatMap(Function.identity())::iterator;
 	}
 
 	/**
@@ -467,11 +468,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 
 		// Lists
 		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
-			field.removeField(this);
+			field.removeField(bac, this);
 		}
 
 	}

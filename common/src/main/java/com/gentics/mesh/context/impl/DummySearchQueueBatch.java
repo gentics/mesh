@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.search.impl;
+package com.gentics.mesh.context.impl;
 
 import java.util.Collections;
 import java.util.List;

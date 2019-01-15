@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
@@ -80,11 +81,11 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		container.unlinkOut(this, HAS_LIST);
 
 		if (!in(HAS_LIST).hasNext()) {
-			delete(null);
+			delete(bac);
 		}
 	}
 
@@ -108,6 +109,6 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	 * Delete the vertex which is used to store the field. This will effectively also delete the field.
 	 */
 	public void removeField() {
-		delete(null);
+		delete();
 	}
 }

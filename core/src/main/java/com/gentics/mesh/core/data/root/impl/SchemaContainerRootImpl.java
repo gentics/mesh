@@ -125,7 +125,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		if (MeshInternal.get().boot().meshRoot().getSchemaContainerRoot() == this) {
 			throw error(INTERNAL_SERVER_ERROR, "Deletion of the global schema root is not possible");
 		}
@@ -133,7 +133,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			log.debug("Deleting schema container root {" + getUuid() + "}");
 		}
 		getElement().remove();
-		context.inc();
+		bac.inc();
 	}
 
 	@Override

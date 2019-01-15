@@ -45,7 +45,7 @@ public class BinaryCheck extends AbstractConsistencyCheck {
 			InconsistencyInfo info = new InconsistencyInfo().setDescription("The binary is dangling and not used by any container")
 				.setElementUuid(uuid).setSeverity(MEDIUM);
 			if (attemptRepair) {
-				binary.delete(null);
+				binary.delete();
 				info.setRepaired(true).setRepairAction(RepairAction.DELETE);
 			}
 			result.addInconsistency(info);

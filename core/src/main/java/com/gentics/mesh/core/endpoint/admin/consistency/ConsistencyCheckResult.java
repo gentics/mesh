@@ -2,7 +2,6 @@ package com.gentics.mesh.core.endpoint.admin.consistency;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
@@ -12,11 +11,11 @@ public class ConsistencyCheckResult {
 
 	private static final int MAX_RESULTS = 200;
 
-	private AtomicLong repairCount = new AtomicLong();
+	private long repairCount = 0;
 
 	private List<InconsistencyInfo> results = new ArrayList<>(MAX_RESULTS);
 
-	public AtomicLong getRepairCount() {
+	public long getRepairCount() {
 		return repairCount;
 	}
 
@@ -30,7 +29,7 @@ public class ConsistencyCheckResult {
 
 	public void addInconsistency(InconsistencyInfo info) {
 		if (info.isRepaired()) {
-			repairCount.incrementAndGet();
+			repairCount++;
 		}
 		// Keep the list of results small
 		if (results.size() < MAX_RESULTS) {
@@ -64,7 +63,7 @@ public class ConsistencyCheckResult {
 	 */
 	public ConsistencyCheckResult merge(ConsistencyCheckResult result) {
 		getResults().addAll(result.getResults());
-		getRepairCount().addAndGet(result.getRepairCount().get());
+		repairCount += result.getRepairCount();
 		return this;
 	}
 

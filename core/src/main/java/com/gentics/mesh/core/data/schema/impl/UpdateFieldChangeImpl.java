@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -43,7 +44,7 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 		FieldSchema fieldSchema = container.getField(getFieldName());
 
 		if (fieldSchema == null) {
-			//TODO i18n
+			// TODO i18n
 			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "}");
 		}
 		// Remove prefix from map keys
@@ -55,6 +56,11 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 		}
 		fieldSchema.apply(properties);
 		return container;
+	}
+
+	@Override
+	public void delete(BulkActionContext context) {
+		getElement().remove();
 	}
 
 }

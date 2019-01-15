@@ -11,6 +11,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -136,6 +137,11 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 			restChange.setProperty(SEGMENT_FIELD_KEY, "");
 		}
 		super.updateFromRest(restChange);
+	}
+
+	@Override
+	public void delete(BulkActionContext context) {
+		getElement().remove();
 	}
 
 }

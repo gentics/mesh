@@ -33,7 +33,7 @@ public class MicronodeCheck extends AbstractConsistencyCheck {
 		if (firstFoundContainer == null) {
 			InconsistencyInfo info = new InconsistencyInfo().setDescription("The micronode is dangling").setElementUuid(uuid).setSeverity(LOW);
 			if (attemptRepair) {
-				node.delete(null);
+				node.delete();
 				info.setRepaired(true)
 					.setRepairAction(RepairAction.DELETE);
 			}

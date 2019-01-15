@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
@@ -144,14 +145,14 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		Micronode micronode = getMicronode();
-		// 1. Remove the edge
+		// Remove the edge to get rid of the reference
 		remove();
 		if (micronode != null) {
 			// Remove the micronode if this was the last edge to the micronode
 			if (!micronode.in(HAS_FIELD).hasNext()) {
-				micronode.delete(null);
+				micronode.delete(bac);
 			}
 		}
 	}

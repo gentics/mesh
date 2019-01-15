@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LI
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -62,7 +63,7 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 	public String[] getAllowProp() {
 		return getRestProperty(ALLOW_KEY);
 	}
-	
+
 	@Override
 	public void setListType(String type) {
 		setRestProperty(LIST_TYPE_KEY, type);
@@ -152,6 +153,11 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 		}
 		container.addField(field, position);
 		return container;
+	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		getElement().remove();
 	}
 
 }

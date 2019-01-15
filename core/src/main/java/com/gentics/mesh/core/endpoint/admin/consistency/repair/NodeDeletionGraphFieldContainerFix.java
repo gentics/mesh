@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.syncleus.ferma.FramedGraph;
 
@@ -99,10 +98,8 @@ public class NodeDeletionGraphFieldContainerFix {
 		initialEdge.setReleaseUuid(releaseUuid);
 		initialEdge.setType(INITIAL);
 
-		SearchQueueBatch batch = MeshInternal.get().searchQueue().create();
-		BulkActionContext context = new BulkActionContext(batch);
-		node.delete(context);
-
+		BulkActionContext bac = MeshInternal.get().searchQueue().createBulkContext();
+		node.delete(bac);
 	}
 
 	private NodeGraphFieldContainer findDraft(NodeGraphFieldContainer latest) {
@@ -113,7 +110,8 @@ public class NodeDeletionGraphFieldContainerFix {
 			}
 			previous = previous.getPreviousVersion();
 		}
-		return null;	}
+		return null;
+	}
 
 	/**
 	 * Iterate over all versions and try to find the latest published version.

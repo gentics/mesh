@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +28,7 @@ public class ConsistencyCheckResponse implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Counter for repair operations")
-	private Map<String, AtomicLong> repairCount = new HashMap<>();
+	private Map<String, Long> repairCount = new HashMap<>();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of found inconsistencies.")
@@ -94,7 +93,7 @@ public class ConsistencyCheckResponse implements RestModel {
 		this.outputTruncated = outputTruncated;
 	}
 
-	public Map<String, AtomicLong> getRepairCount() {
+	public Map<String, Long> getRepairCount() {
 		return repairCount;
 	}
 

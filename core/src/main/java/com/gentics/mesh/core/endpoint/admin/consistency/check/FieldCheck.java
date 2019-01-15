@@ -69,7 +69,7 @@ public class FieldCheck extends AbstractConsistencyCheck {
 				.setDescription("Found dangling list of type {" + type + "} with uuid {" + uuid + "}. No parent container found.")
 				.setElementUuid(uuid).setSeverity(LOW);
 			if (attemptRepair) {
-				list.delete(null);
+				list.delete();
 				info.setRepaired(true)
 					.setRepairAction(RepairAction.DELETE);
 			}
