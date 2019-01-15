@@ -4,15 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
-
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.script.ScriptEngine;
-import javax.validation.constraints.NotNull;
-
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
@@ -28,7 +23,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
-import io.reactivex.functions.Function3;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jdk.nashorn.api.scripting.ClassFilter;

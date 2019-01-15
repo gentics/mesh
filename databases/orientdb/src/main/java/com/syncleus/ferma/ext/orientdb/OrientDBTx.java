@@ -1,6 +1,5 @@
 package com.syncleus.ferma.ext.orientdb;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;

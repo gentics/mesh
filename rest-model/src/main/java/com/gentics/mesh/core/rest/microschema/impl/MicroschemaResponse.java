@@ -12,7 +12,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import io.vertx.core.json.JsonObject;
 
 /**

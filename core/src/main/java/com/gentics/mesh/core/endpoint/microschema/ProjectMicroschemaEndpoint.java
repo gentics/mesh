@@ -15,7 +15,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Endpoint for /api/v1/PROJECTNAME/microschemas

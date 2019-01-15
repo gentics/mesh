@@ -1,16 +1,13 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;

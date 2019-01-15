@@ -1,10 +1,7 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertFalse;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,10 +10,7 @@ import java.util.function.Function;
 
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 

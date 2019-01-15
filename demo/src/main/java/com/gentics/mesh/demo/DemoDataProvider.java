@@ -60,7 +60,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.endpoint.utility;
 
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
-import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -12,7 +11,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle providing endpoints for various utilities.

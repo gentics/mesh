@@ -48,7 +48,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.util.Tuple;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Utility class that is commonly used for tests and the RAML generator.

@@ -2,7 +2,6 @@ package com.gentics.mesh.generator;
 
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.mock.TestMocks.mockGroup;
-import static com.gentics.mesh.mock.TestMocks.mockLanguage;
 import static com.gentics.mesh.mock.TestMocks.mockMicroschemaContainer;
 import static com.gentics.mesh.mock.TestMocks.mockNode;
 import static com.gentics.mesh.mock.TestMocks.mockNodeBasic;
@@ -28,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;

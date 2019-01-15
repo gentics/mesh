@@ -17,7 +17,6 @@ import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.util.DateUtils;
 
 public class AdminExamples {
 
