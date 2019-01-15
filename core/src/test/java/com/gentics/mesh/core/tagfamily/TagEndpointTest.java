@@ -272,8 +272,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			String uuid = tagFamily.getUuid();
 			TagFamily foundTagFamily = root.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
-			BulkActionContext context = createBulkContext();
-			tagFamily.delete(context);
+			BulkActionContext bac = createBulkContext();
+			tagFamily.delete(bac);
 			// TODO check for attached nodes
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(project);

@@ -30,6 +30,13 @@ CAUTION: Because of a change in the image cache, the change below might not appl
 
 icon:check[] Image: Resizing and cropping will no longer transform the image to JPG format but return an image in the original format. When no image writing plugin for this format is available the fallback is PNG.
 
+icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
+
+icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations. 
+            The response will now only contain the first 200 results. The `outputTruncated` property indicates whether the result has been truncated.
+
+icon:check[] Core: Node deletion will now also remove connected lists and micronodes. Previously these elements were not properly removed. On large systems this could lead to increased disk usage.
+
 [[v0.29.0]]
 == 0.29.0 (14.01.2019)
 
@@ -237,6 +244,23 @@ icon:check[] GraphQL: Fixed a bug that caused an error when multiple queries whe
 icon:check[] Core: Increased performance for webroot endpoint.
 
 icon:plus[] REST: Re-enabled SSL options. It is now possible to configure SSL via `MESH_HTTP_SSL_KEY_PATH`, `MESH_HTTP_SSL_CERT_PATH`, `MESH_HTTP_SSL_ENABLE` environment options.
+
+[[v0.22.9]]
+== 0.22.9 (11.01.2019)
+
+icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
+
+icon:plus[] Memory: The memory footprint of various operations has been reduced.
+
+icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations. 
+            The response will now only contain the first 200 results. The `outputTruncated` property indicates whether the result has been truncated.
+
+icon:check[] Core: Node deletion will now also remove connected lists and micronodes. Previously these elements were not properly removed. On large systems this could lead to increased disk usage.
+
+[[v0.22.8]]
+== 0.22.8 (30.11.2018)
+
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.37
 
 [[v0.22.7]]
 == 0.22.7 (12.11.2018)

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -18,6 +19,11 @@ public class UpdateMicroschemaChangeImpl extends AbstractFieldSchemaContainerUpd
 	@Override
 	public SchemaChangeOperation getOperation() {
 		return OPERATION;
+	}
+
+	@Override
+	public void delete(BulkActionContext context) {
+		getElement().remove();
 	}
 
 }

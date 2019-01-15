@@ -21,9 +21,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -45,6 +45,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.google.common.collect.Iterables;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -252,8 +253,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertTrue(user.isEnabled());
 			assertNotNull(user);
 			String uuid = user.getUuid();
-			BulkActionContext context = createBulkContext();
-			user.delete(context);
+			BulkActionContext bac = createBulkContext();
+			user.delete(bac);
 			User foundUser = root.getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}
@@ -442,8 +443,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid = user.getUuid();
 			assertEquals(1, user.getGroups().count());
 			assertTrue(user.isEnabled());
-			BulkActionContext context = createBulkContext();
-			user.delete(context);
+			BulkActionContext bac = createBulkContext();
+			user.delete(bac);
 			User foundUser = meshRoot().getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}

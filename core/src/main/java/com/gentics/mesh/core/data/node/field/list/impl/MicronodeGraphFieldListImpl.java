@@ -189,7 +189,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				}
 				// Delete remaining items in order to prevent dangling micronodes
 				existing.values().stream().forEach(micronode -> {
-					micronode.delete(null);
+					micronode.delete();
 				});
 				subscriber.onNext(true);
 				subscriber.onComplete();
@@ -200,9 +200,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		getList().stream().map(MicronodeGraphField::getMicronode).forEach(micronode -> {
-			micronode.delete(null);
+			micronode.delete(bac);
 		});
 		getElement().remove();
 	}

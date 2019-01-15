@@ -68,7 +68,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		throw new NotImplementedException("The group root node can't be deleted");
 	}
 

@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
@@ -225,12 +226,12 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	 * the binary storage as well.
 	 */
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		Binary binary = getBinary();
 		remove();
 		// Only get rid of the binary as well if no other fields are using the binary.
 		if (!binary.findFields().iterator().hasNext()) {
-			binary.remove();
+			binary.delete(bac);
 		}
 	}
 

@@ -17,7 +17,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -37,6 +36,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterators;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -100,11 +100,11 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 				}
 			}
 
-			BulkActionContext context = createBulkContext();
+			BulkActionContext bac = createBulkContext();
 			Project project = project();
-			project.delete(context);
+			project.delete(bac);
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
-			assertThat(context.batch()).containsEntries(batchEnttries);
+			assertThat(bac.batch()).containsEntries(batchEnttries);
 		}
 	}
 
@@ -179,10 +179,10 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			Project project = meshRoot().getProjectRoot().create("newProject", null, null, null, user(), schemaContainer("folder").getLatestVersion());
 			assertNotNull(project);
 			String uuid = project.getUuid();
-			BulkActionContext context = createBulkContext();
+			BulkActionContext bac = createBulkContext();
 			Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull(foundProject);
-			project.delete(context);
+			project.delete(bac);
 			// TODO check for attached nodes
 			foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(foundProject);

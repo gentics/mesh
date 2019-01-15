@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -85,7 +86,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		try (Tx tx = tx()) {
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
 			for (ConsistencyCheck check : ConsistencyCheckHandler.getChecks()) {
-				check.invoke(db(), response, false);
+				ConsistencyCheckResult result = check.invoke(db(), tx, false);
+				response.getInconsistencies().addAll(result.getResults());
 			}
 
 			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();

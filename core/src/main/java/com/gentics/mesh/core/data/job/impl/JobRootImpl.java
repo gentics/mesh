@@ -16,6 +16,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -223,7 +224,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
 		long count = 0;
 		for (Job job : it) {
-			job.delete(null);
+			job.delete();
 			count++;
 		}
 		log.info("Purged {" + count + "} failed jobs.");
@@ -232,6 +233,11 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public void clear() {
 		out(HAS_JOB).removeAll();
+	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		throw new NotImplementedException("The job root can't be deleted");
 	}
 
 }

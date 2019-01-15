@@ -21,7 +21,7 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	public static final String TYPE = "micronode";
 
 	/**
-	 * Get the container of this micronode.
+	 * Get the container of this micronode which can either be referenced via a micronode list or a directly to the container.
 	 *
 	 * @return container
 	 */

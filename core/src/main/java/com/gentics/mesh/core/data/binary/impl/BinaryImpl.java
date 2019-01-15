@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.Base64;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -58,10 +59,10 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public void remove() {
+	public void delete(BulkActionContext bac) {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
 		storage.delete(getUuid()).blockingAwait();
-		super.remove();
+		getElement().remove();
 	}
 
 }

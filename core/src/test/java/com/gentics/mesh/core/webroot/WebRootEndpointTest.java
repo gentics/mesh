@@ -400,7 +400,6 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			BulkActionContext bac = createBulkContext();
 			folder("news").publish(mockActionContext(), bac);
 			folder("2015").publish(mockActionContext(), bac);
-			return null;
 		});
 
 		// 2. Change names

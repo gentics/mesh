@@ -70,13 +70,13 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends NodeImpl> it = getNodes().iterator();
 		if (!it.hasNext()) {
-			context.batch().delete(this, true);
+			bac.batch().delete(this, true);
 			for(SchemaContainerVersion v : findAll()) {
-				v.delete(context);
+				v.delete(bac);
 			}
 			remove();
 		} else {

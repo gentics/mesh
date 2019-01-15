@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -33,6 +34,13 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	void delete(BulkActionContext context);
 
 	/**
+	 * Invoke deletion without any given bulk action context.
+	 */
+	default void delete() {
+		delete(new DummyBulkActionContext());
+	}
+
+	/**
 	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
 	 * 
 	 * @param batch
@@ -42,7 +50,7 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 * @param permissionsToRevoke
 	 */
 	void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke);
+		Set<GraphPermission> permissionsToRevoke);
 
 	/**
 	 * Add a unique <b>out-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one

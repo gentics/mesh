@@ -16,7 +16,7 @@ import org.mockito.Mockito;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
-import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -244,7 +244,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Now manually delete the project
 		tx(() -> {
 			Project project = boot().projectRoot().findByName("project_2");
-			BulkActionContext context = Mockito.mock(BulkActionContext.class);
+			BulkActionContextImpl context = Mockito.mock(BulkActionContextImpl.class);
 			Mockito.when(context.batch()).thenReturn(Mockito.mock(SearchQueueBatch.class));
 			project.delete(context);
 		});

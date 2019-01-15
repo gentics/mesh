@@ -82,7 +82,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			Job job = root.loadObjectByUuidNoPerm(uuid, true);
 			db.tx(() -> {
 				if (job.hasFailed()) {
-					job.delete(null);
+					job.delete();
 				} else {
 					throw error(BAD_REQUEST, "job_error_invalid_state", uuid);
 				}

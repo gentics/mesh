@@ -106,7 +106,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		getElement().remove();
 	}
 

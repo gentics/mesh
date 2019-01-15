@@ -240,7 +240,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		remove();
 	}
 

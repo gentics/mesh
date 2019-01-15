@@ -35,6 +35,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
@@ -158,18 +159,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 		}
 
+		// Invoke common field removal operations
+		super.delete(bac);
+
 		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
-			binaryField.removeField(this);
+			binaryField.removeField(bac, this);
 		}
 
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
-			micronodeField.removeField(this);
-		}
-
-		// Lists
-		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
-			field.removeField(this);
+			micronodeField.removeField(bac, this);
 		}
 
 		// We don't need to handle node fields since those are only edges and will automatically be removed

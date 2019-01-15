@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -119,7 +120,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		setFieldProperty("string", null);
 		setFieldKey(null);
 	}

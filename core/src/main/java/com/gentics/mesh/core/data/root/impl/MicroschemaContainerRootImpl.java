@@ -89,8 +89,8 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void delete(BulkActionContext batch) {
-		throw new NotImplementedException();
+	public void delete(BulkActionContext bac) {
+		throw new NotImplementedException("The microschema container root can't be deleted");
 	}
 
 	@Override

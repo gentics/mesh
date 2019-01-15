@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -90,7 +91,7 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		setFieldProperty("boolean", null);
 		setFieldKey(null);
 	}

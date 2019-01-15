@@ -1374,8 +1374,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
-		delete(context, false);
+	public void delete(BulkActionContext bac) {
+		delete(bac, false);
 	}
 
 	@Override

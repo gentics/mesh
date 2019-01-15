@@ -129,9 +129,9 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		// TODO should all references be updated to a new fallback schema?
-		context.batch().delete(this, true);
+		bac.batch().delete(this, true);
 		getElement().remove();
 		// TODO delete versions and nodes as well
 	}

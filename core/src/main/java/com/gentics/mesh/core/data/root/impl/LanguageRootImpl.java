@@ -93,7 +93,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		throw new NotImplementedException("The language root should never be deleted.");
 	}
 
