@@ -39,7 +39,7 @@ public class BufferedImageAssert extends AbstractAssert<BufferedImageAssert, Buf
 				// Get 8bit pixel color
 				int pixel = actual.getRGB(x, y);
 				int pixelRef = refImage.getRGB(x, y);
-				assertEquals("The 8bit pixel value of {" + x + "/" + y + "} did not match with the reference image", pixelRef, pixel);
+				assertEquals(getWritableAssertionInfo().description() + ": The 8bit pixel value of {" + x + "/" + y + "} did not match with the reference image", pixelRef, pixel);
 			}
 		}
 		return this;

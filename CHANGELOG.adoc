@@ -23,6 +23,13 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.29.1]]
+== 0.29.1 (TBD)
+
+CAUTION: Because of a change in the image cache, the change below might not apply when an image is already in the cache. To make sure, that the changes take effect the cache in `data/binaryImageCache/` must be cleared.
+
+icon:check[] Image: Resizing and cropping will no longer transform the image to JPG format but return an image in the original format. When no image writing plugin for this format is available the fallback is PNG.
+
 [[v0.29.0]]
 == 0.29.0 (14.01.2019)
 

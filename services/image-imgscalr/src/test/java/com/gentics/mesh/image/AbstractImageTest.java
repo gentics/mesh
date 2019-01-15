@@ -13,7 +13,7 @@ import org.junit.Before;
 
 public class AbstractImageTest {
 
-	private File cacheDir;
+	protected File cacheDir;
 
 	@Before
 	public void setup() {
@@ -22,9 +22,7 @@ public class AbstractImageTest {
 
 	@After
 	public void cleanup() throws IOException {
-		if (cacheDir != null && cacheDir.exists()) {
-			FileUtils.deleteDirectory(cacheDir);
-		}
+		FileUtils.deleteDirectory(cacheDir);
 		FileUtils.deleteDirectory(new File("data"));
 		FileUtils.deleteDirectory(new File("target/data"));
 	}

@@ -31,10 +31,19 @@ public interface ImageManipulator {
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.
-	 * 
+	 *
+	 * The provided <code>sha512sum</code> will be used to determine the cache directory, and the image manipulation parameters determine the
+	 * filename without the extension.
+	 *
+	 * When multiple files match the given hashsum and parameters, only the first found file will be returned.
+	 *
+	 * This method either returns an existing file, or a file object which filename is the name of the cache file without the extension.
+	 *
 	 * @param sha512sum
 	 * @param parameters
 	 * @return
+	 *            A <code>File</code> object referencing an existing file, when the file already exists in the cache, or a <code>File</code> object
+	 *            which filename is to be used as base filename without the file extension
 	 */
 	File getCacheFile(String sha512sum, ImageManipulationParameters parameters);
 
