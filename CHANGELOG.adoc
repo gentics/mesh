@@ -246,7 +246,7 @@ icon:check[] Core: Increased performance for webroot endpoint.
 icon:plus[] REST: Re-enabled SSL options. It is now possible to configure SSL via `MESH_HTTP_SSL_KEY_PATH`, `MESH_HTTP_SSL_CERT_PATH`, `MESH_HTTP_SSL_ENABLE` environment options.
 
 [[v0.22.9]]
-== 0.22.9 (11.01.2019)
+== 0.22.9 (15.01.2019)
 
 icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
 
