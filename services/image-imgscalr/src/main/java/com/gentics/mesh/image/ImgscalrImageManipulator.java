@@ -20,6 +20,7 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -148,6 +149,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		if (!it.hasNext()) {
 			// No reader available for this image type.
+			log.error("No suitable image reader found for input image");
+
 			throw error(BAD_REQUEST, "image_error_reading_failed");
 		}
 
@@ -262,7 +265,9 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 				try {
 					image = reader.read(0);
-				} catch (IOException e1) {
+				} catch (IOException e) {
+					log.error("Could not read input image", e);
+
 					throw error(BAD_REQUEST, "image_error_reading_failed");
 				}
 
@@ -272,15 +277,19 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 				image = cropAndResize(image, parameters);
 
+				String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+				String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+				File outCacheFile = new File(cacheFile.getAbsolutePath() + "." + extension);
+
 				// Write image
-				try (ImageOutputStream out = new FileImageOutputStream(cacheFile)) {
+				try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
 					getImageWriter(reader, out).write(image);
 				} catch (Exception e) {
 					throw error(BAD_REQUEST, "image_error_writing_failed");
 				}
 
 				// Return buffer to written cache file
-				PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath()).subscribe(bh::complete, bh::fail);
+				PropReadFileStream.openFile(this.vertx, outCacheFile.getAbsolutePath()).subscribe(bh::complete, bh::fail);
 			} catch (Exception e) {
 				bh.fail(e);
 			}

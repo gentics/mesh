@@ -141,7 +141,7 @@ public class BinaryFieldResponseHandler {
 			.toFlowable()
 			.map(fileWithProps -> {
 				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
-				response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
+				response.putHeader(HttpHeaders.CONTENT_TYPE, fileWithProps.getMimeType());
 				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 				// Set to IDENTITY to avoid gzip compression

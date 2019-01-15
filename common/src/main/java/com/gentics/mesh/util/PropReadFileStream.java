@@ -4,6 +4,7 @@ import io.reactivex.Single;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;
+import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -14,13 +15,37 @@ public class PropReadFileStream {
 	private FileProps props;
 	private AsyncFile file;
 	private String path;
+	private String mimeType;
 
 	private static final OpenOptions openOptions = new OpenOptions().setRead(true);
 
+	/**
+	 * Convenience constructor where the MIME type is automatically derived from the filename.
+	 *
+	 * @param props
+	 * @param file
+	 * @param path
+	 */
 	private PropReadFileStream(FileProps props, AsyncFile file, String path) {
+		this(
+			props,
+			file,
+			path,
+			MimeMapping.getMimeTypeForFilename(path));
+	}
+
+	/**
+	 * Default constructor.
+	 * @param props
+	 * @param file
+	 * @param path
+	 * @param mimeType
+	 */
+	private PropReadFileStream(FileProps props, AsyncFile file, String path, String mimeType) {
 		this.props = props;
 		this.file = file;
 		this.path = path;
+		this.mimeType = mimeType;
 	}
 
 	/**
@@ -63,5 +88,14 @@ public class PropReadFileStream {
 	 */
 	public String getPath() {
 		return path;
+	}
+
+	/**
+	 * Gets the MIME type of the file.
+	 *
+	 * @return The MIME type of the file
+	 */
+	public String getMimeType() {
+		return mimeType;
 	}
 }

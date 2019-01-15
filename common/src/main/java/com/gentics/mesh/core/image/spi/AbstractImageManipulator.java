@@ -5,6 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -46,11 +48,40 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		if (!baseFolder.exists()) {
 			baseFolder.mkdirs();
 		}
-		File cacheFile = new File(baseFolder, "image-" + parameters.getCacheKey());
-		if (log.isDebugEnabled()) {
-			log.debug("Using cache file {" + cacheFile + "}");
+
+		String baseName = "image-" + parameters.getCacheKey();
+		File[] foundFiles = baseFolder.listFiles((dir, name) -> name.startsWith(baseName));
+		int numFiles = foundFiles.length;
+
+		if (numFiles == 0) {
+			File ret = new File(baseFolder, baseName);
+
+			if (log.isDebugEnabled()) {
+				log.debug("No cache file found for base path {" + ret.getAbsolutePath() + "}");
+			}
+
+			return ret;
 		}
-		return cacheFile;
+
+		if (numFiles > 1) {
+			String indent = System.lineSeparator() + "    - ";
+
+			log.warn(
+				"More than one cache file found:"
+				+ System.lineSeparator() + "  hash: " + sha512sum
+				+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
+				+ System.lineSeparator() + "  files:"
+				+ indent
+				+ Arrays.stream(foundFiles).map(File::getName).collect(Collectors.joining(indent))
+				+ System.lineSeparator()
+				+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Using cache file {" + foundFiles[0] + "}");
+		}
+
+		return foundFiles[0];
 	}
 
 	@Override

@@ -462,8 +462,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 						oldField.remove();
 					}
 					field.getBinary().setSize(result.getSize());
-					// The resized image will always be a JPEG
-					field.setMimeType("image/jpeg");
+					field.setMimeType(result.getMimeType());
 					// TODO should we rename the image, if the extension is wrong?
 					field.getBinary().setImageHeight(result.getImageInfo().getHeight());
 					field.getBinary().setImageWidth(result.getImageInfo().getWidth());

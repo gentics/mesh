@@ -22,9 +22,7 @@ public class AbstractImageTest {
 
 	@After
 	public void cleanup() throws IOException {
-		if (cacheDir != null && cacheDir.exists()) {
-			FileUtils.deleteDirectory(cacheDir);
-		}
+		FileUtils.deleteDirectory(cacheDir);
 		FileUtils.deleteDirectory(new File("data"));
 		FileUtils.deleteDirectory(new File("target/data"));
 	}
