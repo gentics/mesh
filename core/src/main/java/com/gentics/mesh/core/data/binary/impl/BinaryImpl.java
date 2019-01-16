@@ -42,20 +42,11 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public Flowable<String> getBase64Stream() {
-		//TODO use stream instead to optimize the binary handling
-//		Flowable.using(() -> {
-//			Base64InputStream bins = new Base64InputStream(RxUtil.toInputStream(getStream(), Mesh.rxVertx()), true, 0, null);
-//			return bins;
-//		});
-		return getStream().reduce((a, b) -> a.appendBuffer(b)).map(buffer -> {
-			return BASE64.encodeToString(buffer.getBytes());
-		}).toFlowable();
-	}
-
-	@Override
 	public Single<String> getBase64Content() {
-		return getBase64Stream().reduce(String::concat).toSingle("");
+		return getStream()
+			.reduce(Buffer::appendBuffer)
+			.map(buffer -> BASE64.encodeToString(buffer.getBytes()))
+			.toSingle("");
 	}
 
 	@Override
