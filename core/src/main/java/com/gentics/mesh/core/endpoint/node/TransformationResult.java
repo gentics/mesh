@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import com.gentics.mesh.core.image.spi.ImageInfo;
+import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 
-import io.vertx.core.http.impl.MimeMapping;
+import com.gentics.mesh.core.image.spi.ImageInfo;
+import com.gentics.mesh.util.MimeTypeUtils;
 
 /**
  * Image transformation result object.
@@ -35,7 +36,7 @@ public class TransformationResult {
 			size,
 			imageInfo,
 			filePath,
-			MimeMapping.getMimeTypeForFilename(filePath));
+			MimeTypeUtils.getMimeTypeForFilename(filePath).orElse(DEFAULT_BINARY_MIME_TYPE));
 	}
 
 	/**

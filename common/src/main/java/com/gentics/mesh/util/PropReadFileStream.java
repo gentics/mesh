@@ -1,10 +1,11 @@
 package com.gentics.mesh.util;
 
+import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
+
 import io.reactivex.Single;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -31,7 +32,7 @@ public class PropReadFileStream {
 			props,
 			file,
 			path,
-			MimeMapping.getMimeTypeForFilename(path));
+			MimeTypeUtils.getMimeTypeForFilename(path).orElse(DEFAULT_BINARY_MIME_TYPE));
 	}
 
 	/**
