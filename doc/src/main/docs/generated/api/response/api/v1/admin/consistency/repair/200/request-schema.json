@@ -2,11 +2,24 @@
   "type" : "object",
   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:consistency:ConsistencyCheckResponse",
   "properties" : {
+    "outputTruncated" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether the output was truncated because more than 250 have been found."
+    },
     "result" : {
       "type" : "string",
       "required" : true,
       "description" : "Result of the consistency check.",
       "enum" : [ "CONSISTENT", "INCONSISTENT" ]
+    },
+    "repairCount" : {
+      "type" : "object",
+      "required" : true,
+      "description" : "Counter for repair operations",
+      "additionalProperties" : {
+        "type" : "integer"
+      }
     },
     "inconsistencies" : {
       "type" : "array",

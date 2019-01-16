@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.29.0"
+version: "0.29.1"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -7730,11 +7730,24 @@ mediaType: application/json
                                   "type" : "object",
                                   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:consistency:ConsistencyCheckResponse",
                                   "properties" : {
+                                    "outputTruncated" : {
+                                      "type" : "boolean",
+                                      "required" : true,
+                                      "description" : "Flag which indicates whether the output was truncated because more than 250 have been found."
+                                    },
                                     "result" : {
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "Result of the consistency check.",
                                       "enum" : [ "CONSISTENT", "INCONSISTENT" ]
+                                    },
+                                    "repairCount" : {
+                                      "type" : "object",
+                                      "required" : true,
+                                      "description" : "Counter for repair operations",
+                                      "additionalProperties" : {
+                                        "type" : "integer"
+                                      }
                                     },
                                     "inconsistencies" : {
                                       "type" : "array",
@@ -7778,7 +7791,9 @@ mediaType: application/json
                                 }
                             example: |
                                 {
+                                  "outputTruncated" : false,
                                   "result" : "INCONSISTENT",
+                                  "repairCount" : { },
                                   "inconsistencies" : [ {
                                     "description" : "A dangling field container has been found.",
                                     "severity" : "LOW",
@@ -7800,11 +7815,24 @@ mediaType: application/json
                                   "type" : "object",
                                   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:consistency:ConsistencyCheckResponse",
                                   "properties" : {
+                                    "outputTruncated" : {
+                                      "type" : "boolean",
+                                      "required" : true,
+                                      "description" : "Flag which indicates whether the output was truncated because more than 250 have been found."
+                                    },
                                     "result" : {
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "Result of the consistency check.",
                                       "enum" : [ "CONSISTENT", "INCONSISTENT" ]
+                                    },
+                                    "repairCount" : {
+                                      "type" : "object",
+                                      "required" : true,
+                                      "description" : "Counter for repair operations",
+                                      "additionalProperties" : {
+                                        "type" : "integer"
+                                      }
                                     },
                                     "inconsistencies" : {
                                       "type" : "array",
@@ -7848,7 +7876,9 @@ mediaType: application/json
                                 }
                             example: |
                                 {
+                                  "outputTruncated" : false,
                                   "result" : "INCONSISTENT",
+                                  "repairCount" : { },
                                   "inconsistencies" : [ {
                                     "description" : "A dangling field container has been found.",
                                     "severity" : "LOW",
@@ -12801,7 +12831,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.29.0",
+                                  "meshVersion" : "0.29.1",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

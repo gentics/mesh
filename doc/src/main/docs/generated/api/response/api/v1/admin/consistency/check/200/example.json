@@ -1,5 +1,7 @@
 {
+  "outputTruncated" : false,
   "result" : "INCONSISTENT",
+  "repairCount" : { },
   "inconsistencies" : [ {
     "description" : "A dangling field container has been found.",
     "severity" : "LOW",
