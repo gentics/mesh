@@ -29,13 +29,6 @@ public interface Binary extends MeshVertex {
 	Flowable<Buffer> getStream();
 
 	/**
-	 * Return the data as base 64 encoded string.
-	 * 
-	 * @return
-	 */
-	Single<String> getBase64Content();
-
-	/**
 	 * Return the data as base 64 encoded string in the same thread blockingly.
 	 *
 	 * @return

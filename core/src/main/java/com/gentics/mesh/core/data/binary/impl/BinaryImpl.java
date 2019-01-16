@@ -42,14 +42,6 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public Single<String> getBase64Content() {
-		return getStream()
-			.reduce(Buffer::appendBuffer)
-			.map(buffer -> BASE64.encodeToString(buffer.getBytes()))
-			.toSingle("");
-	}
-
-	@Override
 	public String getBase64ContentSync() {
 		Buffer buffer = MeshInternal.get().binaryStorage().readAllSync(getUuid());
 		return BASE64.encodeToString(buffer.getBytes());
