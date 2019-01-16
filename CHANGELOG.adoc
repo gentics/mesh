@@ -24,16 +24,18 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.29.1]]
-== 0.29.1 (TBD)
+== 0.29.1 (16.01.2019)
 
 CAUTION: Because of a change in the image cache, the change below might not apply when an image is already in the cache. To make sure, that the changes take effect the cache in `data/binaryImageCache/` must be cleared.
 
-icon:check[] Image: Resizing and cropping will no longer transform the image to JPG format but return an image in the original format. When no image writing plugin for this format is available the fallback is PNG.
+icon:plus[] Core: Performance of the deletion process has been increased.
 
 icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
 
 icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations. 
             The response will now only contain the first 200 results. The `outputTruncated` property indicates whether the result has been truncated.
+
+icon:check[] Image: Resizing and cropping will no longer transform the image to JPG format but return an image in the original format. When no image writing plugin for this format is available the fallback is PNG.
 
 icon:check[] Core: Node deletion will now also remove connected lists and micronodes. Previously these elements were not properly removed. On large systems this could lead to increased disk usage.
 
