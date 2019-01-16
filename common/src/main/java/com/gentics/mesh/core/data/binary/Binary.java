@@ -36,6 +36,13 @@ public interface Binary extends MeshVertex {
 	Single<String> getBase64Content();
 
 	/**
+	 * Return the data as base 64 encoded string in the same thread blockingly.
+	 *
+	 * @return
+	 */
+	String getBase64ContentSync();
+
+	/**
 	 * Return the sha512 checksum.
 	 * 
 	 * @return

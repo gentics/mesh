@@ -50,6 +50,12 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
+	public String getBase64ContentSync() {
+		Buffer buffer = MeshInternal.get().binaryStorage().readAllSync(getUuid());
+		return BASE64.encodeToString(buffer.getBytes());
+	}
+
+	@Override
 	public void delete(BulkActionContext bac) {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
 		storage.delete(getUuid()).blockingAwait();
