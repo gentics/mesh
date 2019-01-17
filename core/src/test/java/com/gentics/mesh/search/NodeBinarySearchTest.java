@@ -40,7 +40,7 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true, withIngestPlugin = true)
 public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
