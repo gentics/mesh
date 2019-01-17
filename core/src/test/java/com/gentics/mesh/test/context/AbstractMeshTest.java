@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import io.reactivex.Single;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -518,5 +520,15 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 		// return new branch
 		return tx(() -> project().getBranchRoot().findByUuid(uuid.toString()));
+	}
+
+	protected Single<NodeResponse> createBinaryContent() {
+		String parentUuid = client().findProjects().blockingGet().getData().get(0).getRootNode().getUuid();
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setParentNodeUuid("uuid");
+		request.setSchemaName("binary_content");
+		request.setParentNodeUuid(parentUuid);
+		return client().createNode(PROJECT_NAME, request).toSingle();
 	}
 }

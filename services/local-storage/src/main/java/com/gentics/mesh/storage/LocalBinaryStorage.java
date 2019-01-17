@@ -92,6 +92,11 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
+	public Buffer readAllSync(String binaryUuid) {
+		return Mesh.vertx().fileSystem().readFileBlocking(getFilePath(binaryUuid));
+	}
+
+	@Override
 	public String getLocalPath(String binaryUuid) {
 		return getFilePath(binaryUuid);
 	}
