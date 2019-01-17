@@ -18,6 +18,13 @@ public @interface MeshTestSetting {
 	boolean useElasticsearch() default false;
 
 	/**
+	 * Flag which indicates whether the ES docker container should use the ingest plugin.
+	 *
+	 * @return
+	 */
+	boolean withIngestPlugin() default false;
+
+	/**
 	 * Flag which indicates whether the ES test container should be used. Otherwise the embedded ES will be used instead.
 	 * 
 	 * @return

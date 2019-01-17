@@ -209,4 +209,9 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 		return null;
 	}
 
+	@Override
+	public Buffer readAllSync(String uuid) {
+		// TODO implement
+		return null;
+	}
 }

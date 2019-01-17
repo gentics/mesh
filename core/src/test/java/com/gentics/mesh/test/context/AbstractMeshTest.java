@@ -1,11 +1,11 @@
 package com.gentics.mesh.test.context;
 
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import io.reactivex.Single;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -248,7 +250,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 			if (i > 30) {
 				System.out.println(response.toJson());
 			}
-			if (i == MAX_WAIT) {
+			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
 			}
 			sleep(1000);
@@ -282,7 +284,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 				System.out.println(response.toJson());
 			}
 
-			if (i == MAX_WAIT) {
+			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
 			}
 			sleep(1000);
@@ -341,7 +343,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 				System.out.println(response.toJson());
 			}
 
-			if (i == MAX_WAIT) {
+			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
 			}
 			sleep(1000);
@@ -434,5 +436,15 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	public ElasticSearchProvider getProvider() {
 		return ((ElasticSearchProvider) searchProvider());
+	}
+
+	protected Single<NodeResponse> createBinaryContent() {
+		String parentUuid = client().findProjects().toSingle().blockingGet().getData().get(0).getRootNode().getUuid();
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setParentNodeUuid("uuid");
+		request.setSchemaName("binary_content");
+		request.setParentNodeUuid(parentUuid);
+		return client().createNode(PROJECT_NAME, request).toSingle();
 	}
 }
