@@ -117,7 +117,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	 * @param filename The filename of the original image
 	 * @return The filename for the corresponding reference file
 	 */
-	private String getReferenceFilename(String filename) {
+	public static String getReferenceFilename(String filename) {
 		int idx = filename.lastIndexOf('.');
 		String name;
 		String ext;
