@@ -549,8 +549,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 			name = name.toLowerCase();
 			if (fields.size() != 0 && e.getClassIndex(name) == null) {
 				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				e.createIndex(name, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null,
+				OIndex<?> idx = e.createIndex(name,
+					unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null,
 					new ODocument().fields("ignoreNullValues", true), fieldArray);
+				if (idx == null) {
+					new RuntimeException("Index for {" + label + "/" + indexPostfix + "} was not created.");
+				}
 			}
 
 		} finally {

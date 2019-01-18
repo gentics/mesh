@@ -115,7 +115,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 
 		// GFC must have a language
 		if (container.getLanguageTag() == null) {
-			InconsistencyInfo info = new InconsistencyInfo().setDescription("GraphFielContainer {" + version + "} has no language set")
+			InconsistencyInfo info = new InconsistencyInfo().setDescription("GraphFieldContainer {" + version + "} has no language set")
 				.setElementUuid(uuid).setSeverity(MEDIUM);
 			if (attemptRepair) {
 				if (container.hasNextVersion()) {
