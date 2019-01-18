@@ -28,6 +28,8 @@ title: Changelog
 
 icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
 
+icon:check[] Image: Resizing images will now use the balanced quality setting. This helps with images that suffered from visible aliasing.
+
 [[v0.29.1]]
 == 0.29.1 (16.01.2019)
 
