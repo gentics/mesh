@@ -123,7 +123,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			int width = pWidth == null ? (int) (pHeight * aspectRatio) : pWidth;
 			int height = pHeight == null ? (int) (width / aspectRatio) : pHeight;
 			try {
-				BufferedImage image = Scalr.resize(originalImage, Mode.FIT_EXACT, width, height);
+				BufferedImage image = Scalr.resize(originalImage, Scalr.Method.BALANCED, Mode.FIT_EXACT, width, height);
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
