@@ -26,6 +26,10 @@ title: Changelog
 [[v0.29.2]]
 == 0.29.2 (18.01.2019)
 
+icon:plus[] Changelog: The changelog execution performance has been increased.
+
+icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
+
 icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
 
 icon:check[] Image: Resizing images will now use the balanced quality setting. This helps with images that suffered from visible aliasing.
