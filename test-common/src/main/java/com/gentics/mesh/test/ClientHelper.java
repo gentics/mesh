@@ -66,7 +66,7 @@ public final class ClientHelper {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		return ETag.extract(response.getHeader(ETAG));
+		return ETag.extract(response.getHeader(ETAG).orElse(null));
 	}
 
 	/**
@@ -89,7 +89,7 @@ public final class ClientHelper {
 			throw new RuntimeException(e);
 		}
 		int actualStatusCode = response.getStatusCode();
-		String actualETag = ETag.extract(response.getHeader(ETAG));
+		String actualETag = ETag.extract(response.getHeader(ETAG).orElse(null));
 		assertEquals("The response code did not match.", statusCode, actualStatusCode);
 		if (statusCode == 304) {
 			assertEquals(etag, actualETag);

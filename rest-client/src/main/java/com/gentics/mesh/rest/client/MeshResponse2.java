@@ -1,7 +1,9 @@
 package com.gentics.mesh.rest.client;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface MeshResponse2<T> {
 	/**
@@ -16,7 +18,10 @@ public interface MeshResponse2<T> {
 	 * @return The value of the header
 	 */
 	default List<String> getHeaders(String name) {
-		return getHeaders().get(name);
+		List<String> headers = getHeaders().get(name);
+		return headers == null
+			? Collections.emptyList()
+			: headers;
 	}
 
 	/**
@@ -24,8 +29,11 @@ public interface MeshResponse2<T> {
 	 * @param name The name of the header
 	 * @return The value of the first header with the given name
 	 */
-	default String getHeader(String name) {
-		return getHeaders(name).get(0);
+	default Optional<String> getHeader(String name) {
+		List<String> headers = getHeaders(name);
+		return headers.size() == 0
+			? Optional.empty()
+			: Optional.of(headers.get(0));
 	}
 
 	/**

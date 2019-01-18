@@ -1334,7 +1334,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
-			String location = response.getHeader(LOCATION.toString());
+			String location = response.getHeader(LOCATION.toString()).orElse(null);
 			assertEquals("Location header value did not match", "http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
@@ -1354,7 +1354,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
-			String location = response.getHeader(LOCATION.toString());
+			String location = response.getHeader(LOCATION.toString()).orElse(null);
 			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}

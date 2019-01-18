@@ -188,6 +188,6 @@ public class NodeEndpointETagReferenceTest extends AbstractMeshTest {
 
 	private Single<String> getEtag(NodeResponse node) {
 		return client().findNodeByUuid(PROJECT_NAME, node.getUuid()).getResponse()
-			.map(response -> response.getHeader(ETAG));
+			.map(response -> response.getHeader(ETAG).orElse(null));
 	}
 }
