@@ -24,7 +24,7 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.29.2]]
-== 0.29.2 (TBD)
+== 0.29.2 (18.01.2019)
 
 icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
 
@@ -253,6 +253,13 @@ icon:check[] GraphQL: Fixed a bug that caused an error when multiple queries whe
 icon:check[] Core: Increased performance for webroot endpoint.
 
 icon:plus[] REST: Re-enabled SSL options. It is now possible to configure SSL via `MESH_HTTP_SSL_KEY_PATH`, `MESH_HTTP_SSL_CERT_PATH`, `MESH_HTTP_SSL_ENABLE` environment options.
+
+[[v0.22.10]]
+== 0.22.10 (18.01.2019)
+
+icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
+
+icon:check[] Image: Resizing images will now use the balanced quality setting. This helps with images that suffered from visible aliasing.
 
 [[v0.22.9]]
 == 0.22.9 (15.01.2019)

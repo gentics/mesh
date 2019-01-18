@@ -15,7 +15,6 @@ import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
 /**
