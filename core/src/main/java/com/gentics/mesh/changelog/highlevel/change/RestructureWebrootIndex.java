@@ -57,6 +57,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
 			GraphFieldContainerEdgeImpl.class);
 		long count = 0;
+		long total = 0;
 		for (GraphFieldContainerEdgeImpl edge : edges) {
 			ContainerType type = edge.getType();
 			if (DRAFT.equals(type) || PUBLISHED.equals(type)) {
@@ -66,20 +67,20 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				if (container == null) {
 					continue;
 				}
-				Node node = container.getParentNode();
-				if (node != null) {
-					node = node.getParentNode(branchUuid);
-				}
 				edge.setUrlFieldInfo(container.getUrlFieldValues());
 				String segment = container.getSegmentFieldValue();
 				if (segment != null && !segment.trim().isEmpty()) {
+					Node node = container.getParentNode();
+					if (node != null) {
+						node = node.getParentNode(branchUuid);
+					}
 					String newInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(node, segment);
 					edge.setSegmentInfo(newInfo);
 				} else {
 					edge.setSegmentInfo(null);
 				}
 				if (count % 100 == 0) {
-					log.info("Updating edge {" + count + "}");
+					log.info("Updated {" + count + "} content edges. Processed {" + total + "} edges in total");
 				}
 				count++;
 			}
@@ -88,9 +89,12 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 			if (segment == null || segment.trim().isEmpty()) {
 				edge.setSegmentInfo(null);
 			}
-
+			if (total % 1000 == 0) {
+				graph.commit();
+			}
+			total++;
 		}
-		log.info("Done updating all edges. Total: {" + count + "}");
+		log.info("Done updating all content edges. Updated: {" + count + "} of {" + total + "}");
 
 		Iterable<? extends NodeGraphFieldContainerImpl> containers = graph.getFramedVertices("@class",
 			NodeGraphFieldContainerImpl.class.getSimpleName(), NodeGraphFieldContainerImpl.class);

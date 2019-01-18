@@ -13,6 +13,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.endpoint.admin.consistency.repair.NodeDeletionGraphFieldContainerFix;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
@@ -31,7 +33,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 
 	@Override
 	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
-		return processForType(db, NodeGraphFieldContainerImpl.class, (element,result) -> {
+		return processForType(db, NodeGraphFieldContainerImpl.class, (element, result) -> {
 			checkGraphFieldContainer(db, element, result, attemptRepair);
 		}, attemptRepair, tx);
 	}
@@ -56,12 +58,9 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 				boolean repaired = false;
 				if (attemptRepair) {
 					// printVersions(container);
-					repaired = true;
-					try (Tx tx = db.tx()) {
-						new NodeDeletionGraphFieldContainerFix().repair(container);
-						tx.success();
+					try {
+						repaired = new NodeDeletionGraphFieldContainerFix().repair(container);
 					} catch (Exception e) {
-						repaired = false;
 						log.error("Error while repairing inconsistency", e);
 						throw e;
 					}
@@ -112,6 +111,33 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 					+ "} does not have next GraphFieldContainer and is not DRAFT for a Node"),
 				uuid,
 				MEDIUM);
+		}
+
+		// GFC must have a language
+		if (container.getLanguageTag() == null) {
+			InconsistencyInfo info = new InconsistencyInfo().setDescription("GraphFielContainer {" + version + "} has no language set")
+				.setElementUuid(uuid).setSeverity(MEDIUM);
+			if (attemptRepair) {
+				if (container.hasNextVersion()) {
+					NodeGraphFieldContainer next = container.getNextVersions().iterator().next();
+					if (next != null) {
+						String tag = next.getLanguageTag();
+						if (tag != null) {
+							container.setLanguageTag(tag);
+							info.setRepairAction(RepairAction.RECOVER).setRepaired(true);
+						}
+					}
+				} else if (container.hasPreviousVersion()) {
+					NodeGraphFieldContainer prev = container.getPreviousVersion();
+					if (prev != null) {
+						String tag = prev.getLanguageTag();
+						if (tag != null) {
+							container.setLanguageTag(tag);
+							info.setRepairAction(RepairAction.RECOVER).setRepaired(true);
+						}
+					}
+				}
+			}
 		}
 	}
 
