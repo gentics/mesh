@@ -29,27 +29,32 @@ public abstract class AbstractChange implements Change {
 
 	@Override
 	public void apply() {
-		if (applyInTx()) {
-			TransactionalGraph graph = db.rawTx();
-			setGraph(graph);
-			try {
-				actualApply();
-			} catch (Throwable e) {
-				log.error("Invoking rollback due to error");
-				graph.rollback();
-				throw e;
-			} finally {
-				graph.shutdown();
-			}
-		} else {
-			actualApply();
+		applyOutsideTx();
+		TransactionalGraph graph = db.rawTx();
+		setGraph(graph);
+		try {
+			applyInTx();
+		} catch (Throwable e) {
+			log.error("Invoking rollback due to error", e);
+			graph.rollback();
+			throw e;
+		} finally {
+			graph.shutdown();
 		}
 	}
 
-	protected abstract void actualApply();
+	/**
+	 * You may override this method to apply code outside of the transaction (e.g. for schema changes)
+	 */
+	public void applyOutsideTx() {
+		// Noop
+	}
 
-	protected boolean applyInTx() {
-		return true;
+	/**
+	 * You may override this method to apply code within a transaction.
+	 */
+	public void applyInTx() {
+
 	}
 
 	@Override
@@ -125,7 +130,7 @@ public abstract class AbstractChange implements Change {
 	public String randomUUID() {
 		final UUID uuid = UUID_GENERATOR.generate();
 		String randomUuid = (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4) + digits(uuid
-				.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4) + digits(uuid.getLeastSignificantBits(), 12));
+			.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4) + digits(uuid.getLeastSignificantBits(), 12));
 		return randomUuid;
 	}
 

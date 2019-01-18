@@ -20,7 +20,7 @@ public class ReindexAllToFixFailedMigrations extends AbstractChange {
 	}
 
 	@Override
-	public void actualApply() {
+	public void applyInTx() {
 
 	}
 

@@ -151,7 +151,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	@Override
-	public void actualApply() {
+	public void applyInTx() {
 		log.info("Start converting numbers in nodes.");
 		convertViaSchema(SCHEMA_CONTAINER_VERSION_CLASS, HAS_SCHEMA_CONTAINER_VERSION);
 		log.info("Start converting numbers in micro-nodes.");

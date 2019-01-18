@@ -18,7 +18,7 @@ public class ChangeRemoveSearchQueueNodes extends AbstractChange {
 	}
 
 	@Override
-	public void actualApply() {
+	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex searchQueueRoot = meshRoot.getVertices(OUT, "HAS_SEARCH_QUEUE_ROOT").iterator().next();
 

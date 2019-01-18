@@ -6,8 +6,9 @@ import java.io.IOException;
 import com.gentics.mesh.changelog.AbstractChange;
 
 public class ReindexDatabase extends AbstractChange {
+
 	@Override
-	public void actualApply() {
+	public void applyOutsideTx() {
 		// Move old config files away which will no longer work with orientdb 3.0.x
 		moveOldConfig("default-distributed-db-config.json");
 		moveOldConfig("hazelcast.xml");
@@ -29,11 +30,6 @@ public class ReindexDatabase extends AbstractChange {
 				throw new RuntimeException("Failed to move {" + oldConf + "} to {" + newConf + "}");
 			}
 		}
-	}
-
-	@Override
-	protected boolean applyInTx() {
-		return false;
 	}
 
 	@Override
