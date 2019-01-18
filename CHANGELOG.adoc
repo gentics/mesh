@@ -32,12 +32,12 @@ icon:plus[] Consistency Checks: Additional consistency checks and repair actions
 
 icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
 
-icon:check[] Image: Resizing images will now use the balanced quality setting. This helps with images that suffered from visible aliasing.
+icon:check[] Image: Resizing images will now use the balanced quality setting. This helps with images that suffered from visible aliasing. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.
 
 [[v0.29.1]]
 == 0.29.1 (16.01.2019)
 
-CAUTION: Because of a change in the image cache, the change below might not apply when an image is already in the cache. To make sure, that the changes take effect the cache in `data/binaryImageCache/` must be cleared.
+CAUTION: Because of a change in the image cache, the change below might not apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.
 
 icon:plus[] Core: Performance of the deletion process has been increased.
 
