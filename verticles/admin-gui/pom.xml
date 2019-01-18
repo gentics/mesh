@@ -15,7 +15,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<frontend.maven.plugin.downloadRoot>http://nodejs.org/dist/</frontend.maven.plugin.downloadRoot>
+		<projectRoot>${project.basedir}/../..</projectRoot>
 	</properties>
 
 	<dependencyManagement>
@@ -35,6 +35,13 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-admin-ui</artifactId>
 			<version>${mesh.admin-ui.version}</version>
+			<classifier>dist</classifier>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-admin-ui2</artifactId>
+			<version>${mesh.admin-ui2.version}</version>
 			<classifier>dist</classifier>
 			<type>jar</type>
 		</dependency>
