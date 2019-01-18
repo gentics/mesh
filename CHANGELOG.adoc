@@ -11,7 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.22.10]]
-== 0.22.10 (TBD)
+== 0.22.10 (18.01.2019)
 
 icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
 
