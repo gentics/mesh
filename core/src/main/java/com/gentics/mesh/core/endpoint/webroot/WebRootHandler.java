@@ -141,20 +141,22 @@ public class WebRootHandler {
 
 	}
 
-	public void handleUpdateCreatePath(InternalActionContext ac, HttpMethod method) {
-		String path = ac.getParameter("param0");
-		final String decodedPath = "/" + path;
+	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method) {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		String path = rc.request().path().substring(
+			rc.mountPoint().length()
+		);
 		String uuid = db.tx(() -> {
 
 			// Load all nodes for the given path
-			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
+			Path nodePath = webrootService.findByProjectPath(ac, path);
 			if (nodePath.isPrefixMismatch()) {
-				throw error(NOT_FOUND, "webroot_error_prefix_invalid", decodedPath, ac.getBranch().getPathPrefix());
+				throw error(NOT_FOUND, "webroot_error_prefix_invalid", decodeSegment(path), ac.getBranch().getPathPrefix());
 			}
 
 			// Check whether path could be resolved at all
 			if (nodePath.getResolvedPath() == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", nodePath.getTargetPath());
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
 			}
 
 			PathSegment lastSegment = nodePath.getLast();
