@@ -222,6 +222,27 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testPathWithSlash() throws Exception {
+		String newName = "2015/2016";
+		String uuid = tx(() -> folder("2015").getUuid());
+
+		NodeResponse before = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+		NodeUpdateRequest nodeUpdateRequest = before.toRequest();
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField(newName));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		NodeResponse after = call(() -> client().findNodeByUuid(PROJECT_NAME, tx(() -> folder("2015").getUuid()),
+			new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+		assertEquals("/News/" + URIUtils.encodeSegment(newName), after.getPath());
+
+		String[] path = new String[] { "News", newName };
+		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+			new NodeParametersImpl().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
+		assertEquals(uuid, response.getNodeResponse().getUuid());
+		assertEquals("/News/" + URIUtils.encodeSegment(newName), response.getNodeResponse().getPath());
+	}
+
+	@Test
 	public void testReadFolderWithBogusPath() throws Exception {
 		String path = "/blub";
 		call(() -> client().webroot(PROJECT_NAME, path), NOT_FOUND, "node_not_found_for_path", path);
