@@ -15,6 +15,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.FieldCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.GraphFieldContainerCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.GroupCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.KoflCleanup;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.MicronodeCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.MicroschemaContainerCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.NodeCheck;
@@ -44,6 +45,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	private Database db;
 
 	private static List<ConsistencyCheck> checks = Arrays.asList(
+		new KoflCleanup(),
 		new GroupCheck(),
 		new MicroschemaContainerCheck(),
 		new NodeCheck(),

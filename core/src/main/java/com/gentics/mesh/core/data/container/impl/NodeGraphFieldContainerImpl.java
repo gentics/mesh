@@ -30,7 +30,6 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -469,7 +468,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
-		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		return in(HAS_VERSION).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 	}
 
 	@Override

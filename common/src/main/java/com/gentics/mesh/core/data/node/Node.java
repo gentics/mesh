@@ -196,10 +196,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Return a list of all initial graph field containers for the node (in any release).
 	 *
 	 * @return
-	 * @deprecated A new method should be used since loading lists is expensive
 	 */
-	@Deprecated
-	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
+	Iterable<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
 	 * Return a list of graph field containers of given type for the node in the given release.

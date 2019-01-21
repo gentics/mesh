@@ -13,7 +13,12 @@ import io.vertx.core.logging.LoggerFactory;
 public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractConsistencyCheck.class);
-	private static final long BATCH_SIZE = 10000L;
+	private static final long BATCH_SIZE = 4000L;
+
+	@Override
+	public long getBatchSize() {
+		return BATCH_SIZE;
+	}
 
 	/**
 	 * Loads the elements of the given type from the graph and processes them using the given action.
@@ -38,7 +43,7 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 		while (it.hasNext()) {
 			T element = it.next();
 			action.accept(element, result);
-			if (count != 0 && count % BATCH_SIZE == 0) {
+			if (count != 0 && count % getBatchSize() == 0) {
 				if (attemptRepair) {
 					tx.getGraph().commit();
 				}

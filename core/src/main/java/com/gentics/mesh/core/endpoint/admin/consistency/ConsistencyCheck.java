@@ -122,4 +122,10 @@ public interface ConsistencyCheck {
 	 * @return
 	 */
 	String getName();
+
+	/**
+	 * Return the batch size used for the check repair tasks.
+	 * @return
+	 */
+	long getBatchSize();
 }
