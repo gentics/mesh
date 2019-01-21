@@ -25,6 +25,7 @@ import java.util.Map;
 
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -637,6 +638,33 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			MeshBinaryResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName));
 			assertNotNull(downloadResponse);
 			byte[] bytes = downloadResponse.getBytes();
+			assertEquals(size, bytes.length);
+			assertNotNull("The first byte of the response could not be loaded.", bytes[0]);
+			assertNotNull("The last byte of the response could not be loaded.", bytes[size - 1]);
+			assertEquals(contentType, downloadResponse.getContentType());
+			assertEquals(fileName, downloadResponse.getFilename());
+		}
+	}
+
+
+	@Test
+	public void testFlowableDownload() throws IOException {
+		String contentType = "image/png";
+		String fieldName = "image";
+		String fileName = "somefile.png";
+		Node node = folder("news");
+
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", fieldName);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			int size = uploadImage(node, "en", fieldName, fileName, contentType);
+
+			MeshBinaryResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName));
+			assertNotNull(downloadResponse);
+			byte[] bytes = downloadResponse.getFlowable().reduce(ArrayUtils::addAll).blockingGet();
 			assertEquals(size, bytes.length);
 			assertNotNull("The first byte of the response could not be loaded.", bytes[0]);
 			assertNotNull("The last byte of the response could not be loaded.", bytes[size - 1]);
