@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface UserClientMethods {
 
@@ -62,16 +63,15 @@ public interface UserClientMethods {
 
 	/**
 	 * Delete the user.
-	 * 
-	 * @param uuid
-	 *            User uuid
+	 *
+	 * @param uuid User uuid
 	 * @return
 	 */
-	MeshRequest<Void> deleteUser(String uuid);
+	MeshRequest<EmptyResponse> deleteUser(String uuid);
 
 	/**
 	 * Find users that were assigned to a specific group.
-	 * 
+	 *
 	 * @param groupUuid
 	 * @param parameters
 	 * @return

@@ -3,11 +3,9 @@ package com.gentics.mesh.rest;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshRestRequestUtil;
+import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
+import com.gentics.mesh.rest.client.MeshRequest;
 
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -16,20 +14,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO Replace this with generic way of adding request/response hooks
+// This way, the auth provider can add and set headers on its own on each request
 public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	private String token;
-	private Single<GenericMessageResponse> loginRequest;
 
 	public JWTAuthentication() {
 	}
 
 	@Override
-	public Completable addAuthenticationInformation(HttpClientRequest request) {
+	public Completable addAuthenticationInformation(MeshRequest<?> request) {
 		// TODO: request new Token when old one expires
 		if (token != null) {
-			request.headers().add(HttpHeaders.COOKIE, "mesh.token=" + token);
-			request.headers().add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+			request.setHeader("Cookie", "mesh.token=" + token);
+			request.setHeader("Authorization", "Bearer " + token);
 		}
 		return Completable.complete();
 	}
@@ -40,26 +39,26 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 			return Collections.emptyMap();
 		}
 		Map<String, String> headers = new HashMap<>(2);
-		headers.put(HttpHeaders.COOKIE.toString(), "mesh.token=" + token);
-		headers.put(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + token);
+		headers.put("Cookie", "mesh.token=" + token);
+		headers.put("Authorization", "Bearer " + token);
 		return headers;
 	}
 
 	@Override
-	public Single<GenericMessageResponse> login(MeshRestClient meshRestClient) {
+	public Single<GenericMessageResponse> login(AbstractMeshRestHttpClient meshRestClient) {
 		return Single.defer(() -> {
 			LoginRequest loginRequest = new LoginRequest();
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
-			return MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, meshRestClient, null, false).toSingle();
+
+			return meshRestClient.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest).toSingle();
 		}).doOnSuccess(response -> token = response.getToken())
 		.map(ignore -> new GenericMessageResponse("OK"));
 	}
 
 	@Override
-	public Single<GenericMessageResponse> logout(MeshRestClient meshRestClient) {
+	public Single<GenericMessageResponse> logout(AbstractMeshRestHttpClient meshRestClient) {
 		token = null;
-		loginRequest = null;
 		// No need call any endpoint in JWT
 		return Single.just(new GenericMessageResponse("OK"));
 	}

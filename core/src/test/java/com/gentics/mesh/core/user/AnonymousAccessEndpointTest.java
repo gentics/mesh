@@ -4,13 +4,12 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import com.gentics.mesh.rest.client.MeshResponse2;
+import com.gentics.mesh.rest.client.MeshResponse;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
@@ -18,7 +17,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -31,7 +29,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		UserResponse response = call(() -> client().me());
 		assertEquals(MeshJWTAuthHandler.ANONYMOUS_USERNAME, response.getUsername());
 
-		MeshResponse2<UserResponse> rawResponse = client().me().getResponse().blockingGet();
+		MeshResponse<UserResponse> rawResponse = client().me().getResponse().blockingGet();
 		assertThat(rawResponse.getCookies()).as("Anonymous access should not set any cookie").isEmpty();
 
 		String uuid = db().tx(() -> content().getUuid());

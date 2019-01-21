@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface SchemaClientMethods {
 
@@ -56,12 +57,11 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Delete the given schema
-	 * 
-	 * @param uuid
-	 *            Schema uuid
+	 *
+	 * @param uuid Schema uuid
 	 * @return
 	 */
-	MeshRequest<Void> deleteSchema(String uuid);
+	MeshRequest<EmptyResponse> deleteSchema(String uuid);
 
 	/**
 	 * Load multiple schemas.
@@ -104,13 +104,11 @@ public interface SchemaClientMethods {
 	/**
 	 * Unassign a schema from the project
 	 *
-	 * @param projectName
-	 *            project name
-	 * @param schemaUuid
-	 *            schema uuid
+	 * @param projectName project name
+	 * @param schemaUuid  schema uuid
 	 * @return
 	 */
-	MeshRequest<Void> unassignSchemaFromProject(String projectName, String schemaUuid);
+	MeshRequest<EmptyResponse> unassignSchemaFromProject(String projectName, String schemaUuid);
 
 	/**
 	 * Find all schemas assigned to the project
@@ -135,14 +133,12 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Unassign a microschema from the project
-	 * 
-	 * @param projectName
-	 *            project name
-	 * @param microschemaUuid
-	 *            microschema uuid
+	 *
+	 * @param projectName     project name
+	 * @param microschemaUuid microschema uuid
 	 * @return
 	 */
-	MeshRequest<Void> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
+	MeshRequest<EmptyResponse> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
 
 	/**
 	 * Find all microschemas assigned to the project

@@ -123,7 +123,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
 			nodeCreateRequest.setSchemaName("binary_content");
 			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, image, "image/jpeg"));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer.getBytes(), image, "image/jpeg"));
 		}
 		String query = getESText("geosearch.es");
 		NodeListResponse result = call(() -> client().searchNodes(PROJECT_NAME, query));

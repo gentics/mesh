@@ -18,8 +18,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -41,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.rest.client.MeshResponse2;
+import com.gentics.mesh.rest.client.MeshResponse;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -71,7 +69,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -271,7 +268,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Check whether new cookies are generated when using an API key
 		MeshRequest<UserResponse> userRequest = client().findUserByUuid(uuid);
-		MeshResponse2<UserResponse> userResponse = userRequest.getResponse().blockingGet();
+		MeshResponse<UserResponse> userResponse = userRequest.getResponse().blockingGet();
 		assertThat(userResponse.getCookies()).as("Requests using the api key should not yield a new cookie").isEmpty();
 
 		// Now invalidate the api key by generating a new one
@@ -1218,7 +1215,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
 
-			Void future = client().deleteUser(uuid).blockingGet();
+			client().deleteUser(uuid).blockingAwait();
 
 			try (Tx tx2 = tx()) {
 				User loadedUser = boot().userRoot().findByUuid(uuid);
@@ -1329,7 +1326,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setUsername(name);
 		request.setPassword("bla");
 
-		MeshResponse2<UserResponse> response = client().createUser(request).getResponse().blockingGet();
+		MeshResponse<UserResponse> response = client().createUser(request).getResponse().blockingGet();
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
@@ -1349,7 +1346,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		MeshRequest<UserResponse> request = client().createUser(userRequest);
 		request.setHeader(HOST.toString(), "jotschi.de:" + port());
-		MeshResponse2<UserResponse> response = request.getResponse().blockingGet();
+		MeshResponse<UserResponse> response = request.getResponse().blockingGet();
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);

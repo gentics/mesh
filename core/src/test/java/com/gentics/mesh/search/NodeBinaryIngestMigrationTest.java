@@ -27,7 +27,7 @@ public class NodeBinaryIngestMigrationTest extends AbstractMeshTest {
 	private void uploadIngestableNode() {
 		NodeResponse node = createBinaryContent().blockingGet();
 		client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), node.getLanguage(), node.getVersion(),
-			"binary", Buffer.buffer("This is a text"), "text.txt", "text/plain").blockingAwait();
+			"binary", Buffer.buffer("This is a text").getBytes(), "text.txt", "text/plain").blockingAwait();
 	}
 
 	private void migrateSchema() {

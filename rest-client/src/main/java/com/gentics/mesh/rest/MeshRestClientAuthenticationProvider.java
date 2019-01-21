@@ -2,8 +2,8 @@ package com.gentics.mesh.rest;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 
-import com.gentics.mesh.rest.client.MeshRestClient;
-import io.vertx.core.http.HttpClientRequest;
+import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
+import com.gentics.mesh.rest.client.MeshRequest;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
@@ -16,26 +16,26 @@ public interface MeshRestClientAuthenticationProvider {
 	 * @param username
 	 * @param password
 	 */
-	public void setLogin(String username, String password);
+	void setLogin(String username, String password);
 	
 	/**
 	 * Modifies the provided request by adding authentication information.
 	 * @param request
-	 * @return 
+	 * @return
 	 */
-	public Completable addAuthenticationInformation(HttpClientRequest request);
+	Completable addAuthenticationInformation(MeshRequest<?> request);
 
 	/**
 	 * Logs the user in with the credentials that were set with {@link setLogin}
 	 * @return A future that completes when the login has completed.
 	 */
-	public Single<GenericMessageResponse> login(MeshRestClient client);
+	Single<GenericMessageResponse> login(AbstractMeshRestHttpClient client);
 
 	/**
 	 * Logs out the user.
 	 * @return A future that completes when the logout has completed.
 	 */
-	public Single<GenericMessageResponse> logout(MeshRestClient client);
+	Single<GenericMessageResponse> logout(AbstractMeshRestHttpClient client);
 
 	/**
 	 * Gets authentication information as http headers.

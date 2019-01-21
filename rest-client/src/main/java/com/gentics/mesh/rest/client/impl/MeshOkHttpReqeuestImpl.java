@@ -2,14 +2,12 @@ package com.gentics.mesh.rest.client.impl;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshResponse2;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
-import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
-import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -19,11 +17,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Okio;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	private final OkHttpClient client;
@@ -32,19 +32,29 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	private final String method;
 	private final String url;
 	private final Map<String, String> headers;
-	private final RequestBody body;
+	private final RequestBody requestBody;
 
-	private MeshOkHttpReqeuestImpl(OkHttpClient client, Class<? extends T> resultClass, String method, String url, Map<String, String> headers, RequestBody body) {
+	private MeshOkHttpReqeuestImpl(OkHttpClient client, Class<? extends T> resultClass, String method, String url, Map<String, String> headers, RequestBody requestBody) {
 		this.client = client;
 		this.resultClass = resultClass;
 		this.method = method;
 		this.url = url;
 		this.headers = headers;
-		this.body = body;
+		this.requestBody = requestBody;
 	}
 
-	public static <T> MeshOkHttpReqeuestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, byte[] bodyData, String contentType) {
-		return new MeshOkHttpReqeuestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get(contentType), bodyData));
+	public static <T> MeshOkHttpReqeuestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
+		return new MeshOkHttpReqeuestImpl<>(client, classOfT, method, url, headers, new RequestBody() {
+			@Override
+			public MediaType contentType() {
+				return MediaType.get(contentType);
+			}
+
+			@Override
+			public void writeTo(BufferedSink sink) throws IOException {
+				sink.writeAll(Okio.source(data));
+			}
+		});
 	}
 
 	public static <T> MeshOkHttpReqeuestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String json) {
@@ -62,17 +72,7 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public void setHeaders(Map<String, String> headers) {
-		headers.putAll(headers);
-	}
-
-	@Override
-	public MeshResponse<T> invoke() {
-		throw new RuntimeException("Cannot invoke with OkHttp client");
-	}
-
-	@Override
-	public HttpClientRequest getRequest() {
-		throw new RuntimeException("Cannot modify request with OkHttp client");
+		this.headers.putAll(headers);
 	}
 
 	private Request createRequest() {
@@ -81,7 +81,7 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 			.headers(Headers.of(headers));
 
 		if (!method.equalsIgnoreCase("get")) {
-			builder = builder.method(method, body);
+			builder = builder.method(method, requestBody);
 		}
 
 		return builder.build();
@@ -120,32 +120,29 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	}
 
 	@Override
-	public Maybe<T> toMaybe() {
-		return getOkResponse().flatMapMaybe(response ->
-			mapResponse(response)
-				.map(Maybe::just)
-				.orElse(Maybe.empty())
-		);
+	public Single<T> toSingle() {
+		return getOkResponse().map(this::mapResponse);
 	}
 
-	private Optional<T> mapResponse(Response response) throws IOException, MeshRestClientMessageException {
-		String body = response.body().string();
+	private T mapResponse(Response response) throws IOException, MeshRestClientMessageException {
 		if (!response.isSuccessful()) {
 			throw new MeshRestClientMessageException(
 				response.code(),
 				response.message(),
-				JsonUtil.readValue(body, GenericMessageResponse.class),
+				JsonUtil.readValue(response.body().string(), GenericMessageResponse.class),
 				HttpMethod.valueOf(method.toUpperCase()),
 				url
 			);
 		} else {
 			String contentType = response.header("Content-Type");
-			if (body.length() == 0) {
-				return Optional.empty();
+			if (resultClass.isAssignableFrom(EmptyResponse.class)) {
+				return (T) EmptyResponse.getInstance();
+			} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
+				return (T) new OkHttpBinaryResponse(response);
 			} else if (contentType != null && contentType.startsWith("application/json")) {
-				return Optional.of(JsonUtil.readValue(body, resultClass));
+				return JsonUtil.readValue(response.body().string(), resultClass);
 			} else if (resultClass.isAssignableFrom(String.class)) {
-				return Optional.of((T) body);
+				return (T) response.body().string();
 			} else {
 				throw new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}");
 			}
@@ -154,8 +151,9 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public T blockingGet() {
-		try (Response response = client.newCall(createRequest()).execute()) {
-			return mapResponse(response).orElse(null);
+		try {
+			Response response = client.newCall(createRequest()).execute();
+			return mapResponse(response);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -171,8 +169,8 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	}
 
 	@Override
-	public Single<MeshResponse2<T>> getResponse() {
-		return getOkResponse().map(response -> new MeshResponse2<T>() {
+	public Single<MeshResponse<T>> getResponse() {
+		return getOkResponse().map(response -> new MeshResponse<T>() {
 			@Override
 			public Map<String, List<String>> getHeaders() {
 				return response.headers().toMultimap();

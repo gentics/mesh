@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.rest.client.MeshResponse;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -25,14 +24,6 @@ public final class MeshAssert {
 	private static final Integer CI_TIMEOUT_SECONDS = 200;
 
 	private static final Integer DEV_TIMEOUT_SECONDS = 10000;
-
-	public static void assertSuccess(MeshResponse<?> future) {
-		if (future.cause() != null) {
-			future.cause().printStackTrace();
-		}
-		assertTrue("The future failed with error {" + (future.cause() == null ? "Unknown error" : future.cause().getMessage()) + "}",
-				future.succeeded());
-	}
 
 	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws Exception {
 		Object element = root.findByUuid(uuid);
@@ -67,22 +58,6 @@ public final class MeshAssert {
 			for (int j = 0; j < trace.length; j++) {
 				System.err.println("\tat " + trace[j]);
 			}
-		}
-	}
-
-	public static void latchFor(MeshResponse<?> future) {
-		CountDownLatch latch = new CountDownLatch(1);
-		future.setHandler(rh -> {
-			latch.countDown();
-		});
-		try {
-			if (!latch.await(getTimeout(), TimeUnit.SECONDS)) {
-				printAllStackTraces();
-				fail("The timeout of the latch was reached.");
-			}
-
-		} catch (UnknownHostException | InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 

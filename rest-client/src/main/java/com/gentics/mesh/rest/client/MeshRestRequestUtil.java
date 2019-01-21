@@ -3,14 +3,9 @@ package com.gentics.mesh.rest.client;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
-import com.gentics.mesh.rest.client.handler.ResponseHandler;
-import com.gentics.mesh.rest.client.handler.impl.ModelResponseHandler;
-import com.gentics.mesh.rest.client.impl.MeshHttpRequestImpl;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -46,24 +41,26 @@ public final class MeshRestRequestUtil {
 	 */
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
 			MeshRestClient meshRestClient, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess, String accepts) {
-		String uri = meshRestClient.getBaseUri() + path;
-		ResponseHandler<T> handler = new ModelResponseHandler<T>(classOfT, method, uri);
-
-		HttpClientRequest request = meshRestClient.getClient().request(method, uri, handler);
-
-		// Instruct the mesh auth handler to disable anonymous access handling even if it is enabled on the server
-		if (disableAnonymousAccess) {
-			request.putHeader(MeshHeaders.ANONYMOUS_AUTHENTICATION, "disable");
-		}
-		// Let the response handler fail when an error ocures
-		request.exceptionHandler(e -> {
-			handler.getFuture().fail(e);
-		});
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking {" + method.name() + "} request to {" + uri + "}");
-		}
-
-		return new MeshHttpRequestImpl<T>(request, handler, bodyData, contentType, authentication, accepts);
+//		String uri = meshRestClient.getBaseUri() + path;
+//		ResponseHandler<T> handler = new ModelResponseHandler<T>(classOfT, method, uri);
+//
+//		HttpClientRequest request = meshRestClient.getClient().request(method, uri, handler);
+//
+//		// Instruct the mesh auth handler to disable anonymous access handling even if it is enabled on the server
+//		if (disableAnonymousAccess) {
+//			request.putHeader(MeshHeaders.ANONYMOUS_AUTHENTICATION, "disable");
+//		}
+//		// Let the response handler fail when an error ocures
+//		request.exceptionHandler(e -> {
+//			handler.getFuture().fail(e);
+//		});
+//		if (log.isDebugEnabled()) {
+//			log.debug("Invoking {" + method.name() + "} request to {" + uri + "}");
+//		}
+//
+//		return new MeshHttpRequestImpl<T>(request, handler, bodyData, contentType, authentication, accepts);
+		// TODO implement
+		throw new RuntimeException("Not implemeneted");
 	}
 
 	/**

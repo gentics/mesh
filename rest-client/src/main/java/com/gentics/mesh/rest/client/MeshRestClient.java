@@ -2,7 +2,7 @@ package com.gentics.mesh.rest.client;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.rest.JWTAuthentication;
-import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.AdminPluginClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
@@ -27,9 +27,6 @@ import com.gentics.mesh.rest.client.method.UserClientMethods;
 import com.gentics.mesh.rest.client.method.UtilityClientMethods;
 import com.gentics.mesh.rest.client.method.WebRootClientMethods;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
@@ -49,12 +46,10 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 *            Server port
 	 * @param ssl
 	 *            Flag which is used to toggle ssl mode
-	 * @param vertx
-	 *            Vert.x instance to be used in combination with the vertx http client
 	 * @return
 	 */
-	static MeshRestClient create(String host, int port, boolean ssl, Vertx vertx) {
-		return new MeshRestHttpClientImpl(host, port, ssl, vertx);
+	static MeshRestClient create(String host, int port, boolean ssl) {
+		return new MeshRestOkHttpClientImpl(host, port, ssl);
 	}
 
 	/**
@@ -62,20 +57,11 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * 
 	 * @param host
 	 *            Server host
-	 * @param vertx
-	 *            Vertx instance to be used in combination with the vertx http client
 	 * @return
 	 */
-	static MeshRestClient create(String host, Vertx vertx) {
-		return new MeshRestHttpClientImpl(host, vertx);
+	static MeshRestClient create(String host) {
+		return new MeshRestOkHttpClientImpl(host);
 	}
-
-	/**
-	 * Return the underlying vertx http client.
-	 * 
-	 * @return
-	 */
-	HttpClient getClient();
 
 	/**
 	 * Set the login that is used to authenticate the requests.
@@ -135,13 +121,6 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return Fluent API
 	 */
 	MeshRestClient setBaseUri(String uri);
-
-	/**
-	 * Returns the used vertx instance.
-	 * 
-	 * @return
-	 */
-	Vertx vertx();
 
 	/**
 	 * Return the mesh version.

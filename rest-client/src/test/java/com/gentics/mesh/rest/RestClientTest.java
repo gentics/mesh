@@ -11,13 +11,11 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
-import io.vertx.core.Vertx;
-
 public class RestClientTest {
 
 	@Test
 	public void testRestClient() {
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, false, Vertx.vertx());
+		MeshRestClient client = MeshRestClient.create("localhost", 8080, false);
 		client.close();
 	}
 

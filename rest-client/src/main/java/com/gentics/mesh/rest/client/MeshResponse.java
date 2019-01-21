@@ -1,63 +1,65 @@
 package com.gentics.mesh.rest.client;
 
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.reactivex.core.Future;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-/**
- * @deprecated Used in Vert.x client. Use OkHttp client instead.
- */
-@Deprecated
-public class MeshResponse<T> extends Future<T> {
+public interface MeshResponse<T> {
+	/**
+	 * Retrieve the response headers
+	 * @return A map of all response headers
+	 */
+	Map<String, List<String>> getHeaders();
 
-	private HttpClientResponse rawResponse;
-
-	private String bodyJson;
-
-	public MeshResponse(io.vertx.core.Future<T> delegate) {
-		super(delegate);
-	}
-
-	public static <T> MeshResponse<T> create() {
-		return new MeshResponse<T>(io.vertx.core.Future.future());
+	/**
+	 * Retrieve a header from the response.
+	 * @param name The name of the header
+	 * @return The value of the header
+	 */
+	default List<String> getHeaders(String name) {
+		List<String> headers = getHeaders().get(name);
+		return headers == null
+			? Collections.emptyList()
+			: headers;
 	}
 
 	/**
-	 * Get the raw response.
-	 * 
-	 * @return
+	 * Retrieve a header from the response.
+	 * @param name The name of the header
+	 * @return The value of the first header with the given name
 	 */
-	public HttpClientResponse getRawResponse() {
-		return rawResponse;
+	default Optional<String> getHeader(String name) {
+		List<String> headers = getHeaders(name);
+		return headers.size() == 0
+			? Optional.empty()
+			: Optional.of(headers.get(0));
 	}
 
 	/**
-	 * Set the raw response.
-	 * 
-	 * @param response
+	 * Retrieve the Set-Cookie headers.
+	 * @return A list of Set-Cookie directives
 	 */
-	public void setRawResponse(HttpClientResponse response) {
-		this.rawResponse = response;
+	default List<String> getCookies() {
+		return getHeaders("Set-Cookie");
 	}
 
 	/**
-	 * Set the body JSON string.
-	 * 
-	 * @param json
-	 *            JSON String
-	 * @return
+	 * Retrieves the status code of the response
+	 * @return The status code
 	 */
-	public MeshResponse<T> setBodyJson(String json) {
-		this.bodyJson = json;
-		return this;
-	}
+	int getStatusCode();
 
 	/**
-	 * Return the body JSON string.
-	 * 
-	 * @return JSON String or null if no body has been set
+	 * Retrieves the entire response body. Blocks until the entire body is received.
+	 * Use with caution when receiving large responses, because the entire body is stored in memory.
+	 * @return The entire response body
 	 */
-	public String getBodyJson() {
-		return bodyJson;
-	}
+	String getBodyAsString();
 
+	/**
+	 * Retrieves the entire response body.
+	 * @return The body as the specified type
+	 */
+	T getBody();
 }

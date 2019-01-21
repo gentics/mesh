@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,9 +75,9 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 			call(() -> client().publishNode(PROJECT_NAME, node.getUuid()));
 			// 2. Download the data using the REST API
-			NodeDownloadResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary",
+			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary",
 				new VersioningParametersImpl().setVersion("published")));
-			assertEquals(binaryLen, response.getBuffer().length());
+			assertEquals(binaryLen, response.getBytes().length);
 		}
 	}
 
@@ -231,8 +232,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 2. Download the data using the REST API
-			NodeDownloadResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
-			assertEquals(binaryLen, response.getBuffer().length());
+			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
+			assertEquals(binaryLen, response.getBytes().length);
 		}
 	}
 
@@ -259,7 +260,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		// Upload the image
 		NodeResponse node2 = call(
-			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.jpg", "image/jpeg"));
+			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer.getBytes(), "test.jpg", "image/jpeg"));
 
 		// Update the stored focalpoint
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
@@ -301,7 +302,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
 		io.reactivex.functions.Function<String, ObservableSource<NodeResponse>> uploadBinary = (fieldName) -> client()
-			.updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer,
+			.updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer.getBytes(),
 				"blume.jpg", "image/jpeg")
 			.toObservable().doOnSubscribe((e) -> System.out.println("Requesting " + fieldName));
 
@@ -312,7 +313,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		imageFields.flatMap(uploadBinary).ignoreElements().blockingAwait();
 
 		// Download them again and make sure they are the same image
-		io.reactivex.functions.Function<String, ObservableSource<NodeDownloadResponse>> downloadBinary = (fieldName) -> client()
+		io.reactivex.functions.Function<String, ObservableSource<MeshBinaryResponse>> downloadBinary = (fieldName) -> client()
 			.downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), fieldName).toObservable();
 
 		Consumer<String> assertSum = (sum) -> assertEquals("Checksum did not match", blumeSum, sum);
@@ -324,7 +325,11 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		assertEquals("#737042", response.getFields().getBinaryField("image1").getDominantColor());
 		assertEquals("#737042", response.getFields().getBinaryField("image2").getDominantColor());
 
-		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.blockingGet()).map(e -> assertSum)
+		imageFields.flatMap(downloadBinary)
+			.map(responseBody -> Buffer.buffer(responseBody.getBytes()))
+			.map(FileUtils::hash)
+			.map(e -> e.blockingGet())
+			.map(e -> assertSum)
 			.ignoreElements().blockingAwait();
 	}
 

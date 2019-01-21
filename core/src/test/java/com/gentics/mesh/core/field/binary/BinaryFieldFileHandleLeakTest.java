@@ -185,7 +185,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 				Buffer buffer = Buffer.buffer("Testbuffer" + i);
 				NodeResponse response = atomicResponse.get();
 				atomicResponse.set(call(() -> client().updateNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response
-					.getVersion(), fieldName, buffer, fileName, contentType)));
+					.getVersion(), fieldName, buffer.getBytes(), fileName, contentType)));
 			}
 		});
 	}

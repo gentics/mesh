@@ -11,24 +11,6 @@ import java.util.Map;
 public interface MeshRequest<T> {
 
 	/**
-	 * Invoke the request and return the async response.
-	 *
-	 * @deprecated Dependent on Vert.x - will be removed in a later version
-	 * @return
-	 */
-	@Deprecated
-	MeshResponse<T> invoke();
-
-	/**
-	 * Return the raw request. The request can be altered before {@link #invoke()} is called or {@link #toSingle()} is subscribed.
-	 *
-	 * @deprecated Dependent on Vert.x - will be removed in a later version
-	 * @return
-	 */
-	@Deprecated
-	HttpClientRequest getRequest();
-
-	/**
 	 * Converts the request to a completable. When subscribed, the request is invoked. When the response is received, onComplete or onError is called.
 	 * 
 	 * @return An RxJava Completable
@@ -42,16 +24,16 @@ public interface MeshRequest<T> {
 	 *
 	 * @return An RxJava single
 	 */
-	Maybe<T> toMaybe();
+	default Maybe<T> toMaybe() {
+		return toSingle().toMaybe();
+	}
 
 	/**
 	 * Converts the request to a single. When subscribed, the request is invoked. When the response is received, onSuccess or onError is called.
 	 *
 	 * @return An RxJava single
 	 */
-	default Single<T> toSingle() {
-		return toMaybe().toSingle();
-	}
+	Single<T> toSingle();
 
 	/**
 	 * Converts the request to an observable. When subscribed, the request is invoked. When the response is received, onNext or onError is called.
@@ -92,5 +74,5 @@ public interface MeshRequest<T> {
 	/**
 	 * Gets the response with additional information.
 	 */
-	Single<MeshResponse2<T>> getResponse();
+	Single<MeshResponse<T>> getResponse();
 }
