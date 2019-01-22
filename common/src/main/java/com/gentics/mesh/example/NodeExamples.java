@@ -37,6 +37,7 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.FormParameter;
 
+import com.gentics.mesh.core.rest.common.RestResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -309,6 +310,11 @@ public class NodeExamples extends AbstractExamples {
 		binaryParameter.setType(ParamType.FILE);
 		parameters.put("binary", Arrays.asList(binaryParameter));
 		return parameters;
+	}
+
+	public RestResponse createVersionsList() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

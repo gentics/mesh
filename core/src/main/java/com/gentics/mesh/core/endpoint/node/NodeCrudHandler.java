@@ -489,4 +489,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
+
+	/* Version Handler */
+
+	public void handleListVersions(InternalActionContext ac, String uuid) {
+
+	}
+
+	public void handlePurgeVersions(InternalActionContext ac, String uuid) {
+
+	}
+
+	public void handlePurgeVersion(InternalActionContext ac, String uuid, String version) {
+		
+	}
 }

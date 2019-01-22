@@ -83,6 +83,52 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addLanguageHandlers();
 		addNavigationHandlers();
 		addPublishHandlers();
+		addVersioningHandlers();
+	}
+
+	private void addVersioningHandlers() {
+
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:nodeUuid/versions");
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Returns a list of versions.");
+		endpoint.displayName("Versions");
+		endpoint.exampleResponse(OK, nodeExamples.createVersionsList(), "Loaded navigation.");
+		endpoint.addQueryParameters(NodeParametersImpl.class);
+		endpoint.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("nodeUuid");
+			crudHandler.handleListVersions(ac, uuid);
+		});
+
+		InternalEndpointRoute endpoint2 = createRoute();
+		endpoint2.path("/:nodeUuid/versions");
+		endpoint2.method(DELETE);
+		endpoint2.produces(APPLICATION_JSON);
+		endpoint2.description("Purge all versions of the node.");
+		endpoint2.displayName("Versions");
+		endpoint2.addQueryParameters(NodeParametersImpl.class);
+		endpoint2.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("nodeUuid");
+			crudHandler.handlePurgeVersions(ac, uuid);
+		});
+
+		InternalEndpointRoute endpoint3 = createRoute();
+		endpoint3.path("/:nodeUuid/versions/:version");
+		endpoint3.method(DELETE);
+		endpoint3.produces(APPLICATION_JSON);
+		endpoint3.description("Purge the given version of the node.");
+		endpoint3.displayName("Versions");
+		endpoint3.addQueryParameters(NodeParametersImpl.class);
+		endpoint3.handler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("nodeUuid");
+			String version = ac.getParameter("version");
+			crudHandler.handlePurgeVersion(ac, uuid, version);
+		});
+		
 	}
 
 	public Resource getResource() {

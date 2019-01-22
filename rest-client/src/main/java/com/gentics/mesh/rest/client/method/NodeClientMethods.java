@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -7,6 +8,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -298,5 +300,12 @@ public interface NodeClientMethods {
 	 * @return Mesh request which can be invoked
 	 */
 	MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
+
+	
+	MeshRequest<NodeVersionsResponse> listNodeVersions(String projectName, String nodeUuid, ParameterProvider...parameters);
+	
+	MeshRequest<Void> purgeNodeVersions(String projectName, String nodeUuid, ParameterProvider... parameters);
+	
+	MeshRequest<Void> purgeNodeVersion(String projectName, String nodeUuid, String version, ParameterProvider... parameters);
 
 }

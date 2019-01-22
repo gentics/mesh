@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -240,6 +241,30 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(parentNodeUuid, "parentNodeUuid must not be null");
 		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/nodes/" + parentNodeUuid + "/children" + getQuery(parameters),
 			NodeListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<NodeVersionsResponse> listNodeVersions(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/versions" + getQuery(parameters),
+			NodeVersionsResponse.class);
+	}
+
+	@Override
+	public MeshRequest<Void> purgeNodeVersions(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/versions" + getQuery(parameters),
+			Void.class);
+	}
+
+	@Override
+	public MeshRequest<Void> purgeNodeVersion(String projectName, String nodeUuid, String version, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/versions/" + version + getQuery(parameters),
+			Void.class);
 	}
 
 	@Override
