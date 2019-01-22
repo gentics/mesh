@@ -22,7 +22,7 @@ public class NodeContentLanguageMigration extends AbstractChange {
 	}
 
 	@Override
-	public void actualApply() {
+	public void applyInTx() {
 		long count = 0;
 		Iterable<Vertex> it = getGraph().getVertices("@class", "NodeGraphFieldContainerImpl");
 		for (Vertex nodeContainer : it) {
