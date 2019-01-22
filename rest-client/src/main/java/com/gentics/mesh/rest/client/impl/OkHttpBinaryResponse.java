@@ -3,23 +3,24 @@ package com.gentics.mesh.rest.client.impl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import okhttp3.Response;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Supplier;
+
+import static com.gentics.mesh.rest.client.impl.Util.lazily;
 
 public class OkHttpBinaryResponse implements MeshBinaryResponse {
 	private final Response response;
+	private final Supplier<byte[]> bodyBytes;
 
 	public OkHttpBinaryResponse(Response response) {
 		this.response = response;
+
+		bodyBytes = lazily(() -> response.body().bytes());
 	}
 
 	@Override
 	public byte[] getBytes() {
-		try {
-			return response.body().bytes();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		return bodyBytes.get();
 	}
 
 	@Override

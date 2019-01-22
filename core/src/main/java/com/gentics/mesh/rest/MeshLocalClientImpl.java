@@ -52,14 +52,12 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -107,6 +105,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
 import com.gentics.mesh.search.index.AdminIndexHandler;
@@ -531,16 +530,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
-		LocalActionContextImpl<WebRootResponse> ac = createContext(WebRootResponse.class, parameters);
+	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
+		LocalActionContextImpl<MeshWebrootResponse> ac = createContext(MeshWebrootResponse.class, parameters);
 		ac.setProject(projectName);
 		// webrootHandler.handleGetPath(rc);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
-		LocalActionContextImpl<WebRootResponse> ac = createContext(WebRootResponse.class, parameters);
+	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
+		LocalActionContextImpl<MeshWebrootResponse> ac = createContext(MeshWebrootResponse.class, parameters);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}

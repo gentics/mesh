@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.reactivex.Observable;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -59,7 +60,6 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -2048,7 +2048,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testRootNodeBreadcrumb() {
-		WebRootResponse node = client().webroot(PROJECT_NAME, "/").toSingle().blockingGet();
+		MeshWebrootResponse node = client().webroot(PROJECT_NAME, "/").toSingle().blockingGet();
 		List<NodeReference> breadcrumb = node.getNodeResponse().getBreadcrumb();
 		assertEquals(1, breadcrumb.size());
 		assertEquals(node.getNodeResponse().getUuid(), breadcrumb.get(0).getUuid());

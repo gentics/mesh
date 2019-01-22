@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -14,7 +15,6 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -180,7 +180,7 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 		NodeResponse response = call(() -> client().webrootUpdate(PROJECT_NAME, path, nodeUpdateRequest));
 		System.out.println(response.toJson());
 
-		WebRootResponse checkResponse = call(() -> client().webroot(PROJECT_NAME, "/News/2015/new-page.html"));
+		MeshWebrootResponse checkResponse = call(() -> client().webroot(PROJECT_NAME, "/News/2015/new-page.html"));
 		assertEquals("The same node (uuid) should have been renamed", response.getUuid(), checkResponse.getNodeResponse().getUuid());
 		assertEquals("The same node (lang) should have been renamed", response.getLanguage(), checkResponse.getNodeResponse().getLanguage());
 	}
@@ -198,7 +198,7 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 		NodeResponse response = call(() -> client().webrootUpdate(PROJECT_NAME, path, nodeUpdateRequest));
 		System.out.println(response.toJson());
 
-		WebRootResponse checkResponse = call(() -> client().webroot(PROJECT_NAME, "/News/2015/new-page.nl.html"));
+		MeshWebrootResponse checkResponse = call(() -> client().webroot(PROJECT_NAME, "/News/2015/new-page.nl.html"));
 		assertEquals("The same node (uuid) should have been renamed", response.getUuid(), checkResponse.getNodeResponse().getUuid());
 		assertEquals("nl", checkResponse.getNodeResponse().getLanguage());
 	}

@@ -24,14 +24,12 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -82,6 +80,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.util.URIUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.http.WebSocket;
@@ -698,7 +697,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
+	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
 		if (!path.startsWith("/")) {
@@ -708,23 +707,16 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
-//		Objects.requireNonNull(projectName, "projectName must not be null");
-//		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
-//
-//		String path = Arrays.stream(pathSegments)
-//			.filter(segment -> segment != null && !segment.isEmpty())
-//			.map(URIUtils::encodeSegment)
-//			.collect(Collectors.joining("/", "/", ""));
-//
-//		String requestUri = getBaseUri() + "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters);
-//		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
-//		HttpClientRequest request = getClient().request(GET, requestUri, handler);
-//
-//		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "*/*");
-		// TODO Implement
-		throw new RuntimeException("Not implemented");
+	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
 
+		String path = Arrays.stream(pathSegments)
+			.filter(segment -> segment != null && !segment.isEmpty())
+			.map(URIUtils::encodeSegment)
+			.collect(Collectors.joining("/", "/", ""));
+
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/webroot" + path + getQuery(parameters), MeshWebrootResponse.class);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.vertx.core.http.HttpMethod;
@@ -139,6 +140,8 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 				return (T) EmptyResponse.getInstance();
 			} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
 				return (T) new OkHttpBinaryResponse(response);
+			} else if (resultClass.isAssignableFrom(MeshWebrootResponse.class)) {
+				return (T) new OkHttpWebrootResponse(response);
 			} else if (contentType != null && contentType.startsWith("application/json")) {
 				return JsonUtil.readValue(response.body().string(), resultClass);
 			} else if (resultClass.isAssignableFrom(String.class)) {
