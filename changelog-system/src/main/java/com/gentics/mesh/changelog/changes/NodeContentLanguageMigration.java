@@ -38,7 +38,8 @@ public class NodeContentLanguageMigration extends AbstractChange {
 	private void migrateContainer(Vertex nodeContainer) {
 		Iterator<Edge> it = nodeContainer.getEdges(OUT, "HAS_LANGUAGE").iterator();
 		if (!it.hasNext()) {
-			throw new RuntimeException("Node content {" + nodeContainer.getId() + "} has no language linked to it.");
+			// We skip containers which have no language set. Those need to be cleaned using the consistency check.
+			return;
 		}
 		Edge languageEdge = it.next();
 		String languageTag = languageEdge

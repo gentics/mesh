@@ -38,6 +38,14 @@ public interface BinaryStorage {
 	Flowable<Buffer> read(String uuid);
 
 	/**
+	 * Read the entire binary data which is identified by the given binary uuid in the same thread blockingly.
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	Buffer readAllSync(String uuid);
+
+	/**
 	 * Return the local path to the binary if possible. Some storage implementations may only allow stream handling.
 	 * 
 	 * @param uuid

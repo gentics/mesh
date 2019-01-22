@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.syncleus.ferma.FramedGraph;
 
@@ -30,21 +31,26 @@ public class NodeDeletionGraphFieldContainerFix {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeDeletionGraphFieldContainerFix.class);
 
-	public void repair(NodeGraphFieldContainer container) {
+	public boolean repair(NodeGraphFieldContainer container) {
 
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		// Pick the first project we find to fetch the initial branchUuid
 		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();
 		String branchUuid = project.getInitialBranch().getUuid();
 
-		SchemaContainer schemaContainer = container.getSchemaContainerVersion().getSchemaContainer();
+		SchemaContainerVersion version = container.getSchemaContainerVersion();
+		if (version == null) {
+			log.error("Container {" + container.getUuid() + "} has no schema version linked to it.");
+			return false;
+		}
+		SchemaContainer schemaContainer = version.getSchemaContainer();
 		// 1. Find the initial version to check whether the whole version history is still intact
 		NodeGraphFieldContainer initial = findInitial(container);
 
 		if (initial == null) {
 			// The container has no previous version or is not the initial version so we can just delete it.
 			container.remove();
-			return;
+			return true;
 		}
 		NodeGraphFieldContainer latest = findLatest(container);
 		NodeGraphFieldContainer published = null;
@@ -100,6 +106,7 @@ public class NodeDeletionGraphFieldContainerFix {
 
 		BulkActionContext bac = MeshInternal.get().searchQueue().createBulkContext();
 		node.delete(bac);
+		return true;
 	}
 
 	private NodeGraphFieldContainer findDraft(NodeGraphFieldContainer latest) {

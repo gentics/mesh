@@ -46,6 +46,9 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 			}
 			count++;
 		}
+		if (attemptRepair) {
+			tx.getGraph().commit();
+		}
 		log.info("Processed a total of {" + count + "} " + clazz.getSimpleName() + " elements.");
 		return result;
 	}

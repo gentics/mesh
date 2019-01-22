@@ -220,8 +220,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				initOptionalLanguages(configuration);
 				// Only execute the changelog if there are any elements in the graph
 				invokeChangelog();
-				// Update graph indices and vertex types (This may take some time)
-				DatabaseHelper.init(db);
 			}
 			return false;
 		}
@@ -555,6 +553,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (!cls.applyChanges(SYNC_INDEX_ACTION)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
+
+		// Update graph indices and vertex types (This may take some time)
+		DatabaseHelper.init(db);
+
 		// Now run the high level changelog entries
 		highlevelChangelogSystem.apply(meshRoot);
 

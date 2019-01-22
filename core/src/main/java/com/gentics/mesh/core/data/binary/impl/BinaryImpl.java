@@ -15,7 +15,6 @@ import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -42,20 +41,9 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public Flowable<String> getBase64Stream() {
-		//TODO use stream instead to optimize the binary handling
-//		Flowable.using(() -> {
-//			Base64InputStream bins = new Base64InputStream(RxUtil.toInputStream(getStream(), Mesh.rxVertx()), true, 0, null);
-//			return bins;
-//		});
-		return getStream().reduce((a, b) -> a.appendBuffer(b)).map(buffer -> {
-			return BASE64.encodeToString(buffer.getBytes());
-		}).toFlowable();
-	}
-
-	@Override
-	public Single<String> getBase64Content() {
-		return getBase64Stream().reduce(String::concat).toSingle("");
+	public String getBase64ContentSync() {
+		Buffer buffer = MeshInternal.get().binaryStorage().readAllSync(getUuid());
+		return BASE64.encodeToString(buffer.getBytes());
 	}
 
 	@Override

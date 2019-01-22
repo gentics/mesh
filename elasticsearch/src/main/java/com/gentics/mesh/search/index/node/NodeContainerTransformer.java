@@ -205,7 +205,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						// Only add the base64 content if we can actually process it and if it can be processed
 						// Images, Videos etc can't be processed by the ingest plugin
 						if (searchProvider.hasIngestPipelinePlugin() && binaryField.isIngestableDocument()) {
-							binaryFieldInfo.put("data", binary.getBase64Content().blockingGet());
+							binaryFieldInfo.put("data", binary.getBase64ContentSync());
 						}
 					}
 
