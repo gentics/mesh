@@ -3,6 +3,7 @@ package com.gentics.mesh.rest.client.impl;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import io.vertx.core.http.HttpMethod;
 import okhttp3.OkHttpClient;
 
@@ -20,17 +21,13 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	private final OkHttpClient client;
 	private static OkHttpClient defaultClient;
 
-	public MeshRestOkHttpClientImpl(String host) {
-		this(host, DEFAULT_PORT, false);
+	public MeshRestOkHttpClientImpl(MeshRestClientConfig config) {
+		this(config, defaultClient());
 	}
 
-	public MeshRestOkHttpClientImpl(String host, int port, boolean ssl) {
-		this(host, port, ssl, defaultClient());
-	}
-
-	public MeshRestOkHttpClientImpl(String host, int port, boolean ssl, OkHttpClient client) {
-		String scheme = ssl ? "https" : "http";
-		origin = scheme + "://" + host + ":" + port;
+	public MeshRestOkHttpClientImpl(MeshRestClientConfig config, OkHttpClient client) {
+		String scheme = config.isSsl() ? "https" : "http";
+		origin = scheme + "://" + config.getHost()+ ":" + config.getPort();
 		this.client = client;
 	}
 

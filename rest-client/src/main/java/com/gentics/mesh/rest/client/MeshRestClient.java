@@ -39,7 +39,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 
 	/**
 	 * Create a new mesh rest client.
-	 * 
+	 *
 	 * @param host
 	 *            Server host
 	 * @param port
@@ -49,7 +49,12 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return
 	 */
 	static MeshRestClient create(String host, int port, boolean ssl) {
-		return new MeshRestOkHttpClientImpl(host, port, ssl);
+		return create(new MeshRestClientConfig.Builder()
+			.setHost(host)
+			.setPort(port)
+			.setSsl(ssl)
+			.build()
+		);
 	}
 
 	/**
@@ -60,7 +65,16 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return
 	 */
 	static MeshRestClient create(String host) {
-		return new MeshRestOkHttpClientImpl(host);
+		return create(new MeshRestClientConfig.Builder().setHost(host).build());
+	}
+
+	/**
+	 * Create a new mesh rest client.
+	 * @param config Client configuration
+	 * @return
+	 */
+	static MeshRestClient create(MeshRestClientConfig config) {
+		return new MeshRestOkHttpClientImpl(config);
 	}
 
 	/**
