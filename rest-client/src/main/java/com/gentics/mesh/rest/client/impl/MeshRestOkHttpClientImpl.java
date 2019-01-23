@@ -38,6 +38,7 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 				.connectTimeout(Duration.ofMinutes(1))
 				.writeTimeout(Duration.ofMinutes(1))
 				.readTimeout(Duration.ofMinutes(1))
+				.pingInterval(Duration.ofSeconds(1))
 				.build();
 		}
 		return defaultClient;
@@ -79,9 +80,7 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	private String getUrl(String path) {
-		String scheme = config.isSsl() ? "https" : "http";
-		String origin = scheme + "://" + config.getHost() + ":" + config.getPort();
-		return origin + config.getBaseUri() + path;
+		return config.getBaseUrl() + path;
 	}
 
 	@Override

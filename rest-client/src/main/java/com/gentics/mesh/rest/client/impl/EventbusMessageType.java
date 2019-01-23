@@ -5,11 +5,21 @@ public enum EventbusMessageType {
 	PUBLISH("publish"),
 	RECEIVE("receive"),
 	REGISTER("register"),
-	UNREGISTER("unregister");
+	UNREGISTER("unregister"),
+	PING("ping");
 
 	public final String type;
 
 	EventbusMessageType(String type) {
 		this.type = type;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	@Override
+	public String toString() {
+		return type;
 	}
 }

@@ -1,10 +1,17 @@
 package com.gentics.mesh.rest.client;
 
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public class EventbusEvent {
 	private final String address;
 	private final Object body;
+
+	public EventbusEvent(String rawText) throws JSONException {
+		JSONObject parsed = new JSONObject(rawText);
+		address = parsed.getString("address");
+		body = parsed.get("body");
+	}
 
 	public EventbusEvent(String address, Object body) {
 		this.address = address;

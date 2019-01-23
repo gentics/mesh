@@ -17,10 +17,28 @@ public final class Util {
 	 * @see com.gentics.mesh.rest.client.MeshWebsocket
 	 *
 	 * @param type
+	 * @return
+	 */
+	public static String eventbusMessage(EventbusMessageType type) {
+		try {
+			return new JSONObject()
+				.put("type", type.type)
+				.toString();
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Creates a Vert.x event bus message to be send over a websocket.
+	 *
+	 * @see com.gentics.mesh.rest.client.MeshWebsocket
+	 *
+	 * @param type
 	 * @param address
 	 * @return
 	 */
-	public static String eventBusMessage(EventbusMessageType type, String address) {
+	public static String eventbusMessage(EventbusMessageType type, String address) {
 		try {
 			return new JSONObject()
 				.put("type", type.type)
@@ -41,7 +59,7 @@ public final class Util {
 	 * @param body
 	 * @return
 	 */
-	public static String eventBusMessage(EventbusMessageType type, String address, String body) {
+	public static String eventbusMessage(EventbusMessageType type, String address, Object body) {
 		try {
 			return new JSONObject()
 				.put("type", type.type)

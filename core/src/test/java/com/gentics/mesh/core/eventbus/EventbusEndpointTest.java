@@ -62,7 +62,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			MeshAssertions.assertThat(event.getBodyAsJson().getString("test")).isEqualTo("").isEqualTo("someValue");
+			MeshAssertions.assertThat(event.getBodyAsJson().getString("test")).isEqualTo("someValue");
 			async.complete();
 		});
 
@@ -81,7 +81,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 			JSONObject body = event.getBodyAsJson();
 			context.assertNotNull(body.getString("uuid"));
 			context.assertEquals("content", body.getString("schemaName"));
-			context.assertNull(body.getString("languageTag"));
+			context.assertFalse(body.has("languageTag"));
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));
@@ -95,10 +95,10 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			JSONObject received = event.getBodyAsJson();
-			context.assertNotNull(received.getJSONObject("body").getString("uuid"));
-			context.assertEquals("content", received.getJSONObject("body").getString("schemaName"));
-			context.assertEquals("en", received.getJSONObject("body").getString("languageTag"));
+			JSONObject body = event.getBodyAsJson();
+			context.assertNotNull(body.getString("uuid"));
+			context.assertEquals("content", body.getString("schemaName"));
+			context.assertEquals("en", body.getString("languageTag"));
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
@@ -113,9 +113,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			JSONObject received = event.getBodyAsJson();
-			assertNotNull(received.getJSONObject("body").getString("uuid"));
-			assertEquals("content", received.getJSONObject("body").getString("schemaName"));
+			JSONObject body = event.getBodyAsJson();
+			assertNotNull(body.getString("uuid"));
+			assertEquals("content", body.getString("schemaName"));
 			async.complete();
 		});
 

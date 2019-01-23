@@ -41,7 +41,7 @@ public final class MeshRestRequestUtil {
 	 */
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
 			MeshRestClient meshRestClient, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess, String accepts) {
-//		String uri = meshRestClient.getBaseUri() + path;
+//		String uri = meshRestClient.getBasePath() + path;
 //		ResponseHandler<T> handler = new ModelResponseHandler<T>(classOfT, method, uri);
 //
 //		HttpClientRequest request = meshRestClient.getClient().request(method, uri, handler);
