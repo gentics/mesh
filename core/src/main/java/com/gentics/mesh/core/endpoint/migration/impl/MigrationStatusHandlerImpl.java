@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.migration.impl;
 
-import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 
@@ -94,7 +94,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
 		JsonObject result = new JsonObject().put("type", "completed");
-		vertx.eventBus().publish(MESH_MIGRATION, result);
+		vertx.eventBus().publish(MESH_MIGRATION.address, result);
 		job.setStopTimestamp();
 		commit();
 		return this;
@@ -115,7 +115,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		setStatus(FAILED);
 		log.error("Error handling migration", error);
 
-		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", status.name()));
+		vertx.eventBus().publish(MESH_MIGRATION.address, new JsonObject().put("type", status.name()));
 		job.setStopTimestamp();
 		job.setError(error);
 		commit();

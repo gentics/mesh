@@ -4,9 +4,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import com.gentics.mesh.MeshEvent;
 import org.testcontainers.containers.output.OutputFrame;
-
-import com.gentics.mesh.Events;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -38,7 +37,7 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 	public void accept(OutputFrame frame) {
 		if (frame != null) {
 			String utf8String = frame.getUtf8String();
-			if (utf8String.contains(Events.STARTUP_EVENT_ADDRESS)) {
+			if (utf8String.contains(MeshEvent.STARTUP.address)) {
 				log.info("Startup message seen. Releasing lock");
 				if (startupAction != null) {
 					startupAction.run();

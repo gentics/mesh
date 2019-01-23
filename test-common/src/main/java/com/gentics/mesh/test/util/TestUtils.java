@@ -1,6 +1,6 @@
 package com.gentics.mesh.test.util;
 
-import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 
 import java.io.IOException;

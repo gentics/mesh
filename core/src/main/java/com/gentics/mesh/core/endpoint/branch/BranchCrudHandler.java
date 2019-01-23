@@ -18,9 +18,9 @@ import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.MeshEvent;
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.Events;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -137,7 +137,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			tuple.v2().processSync();
 
 			// 2. Invoke migrations which will populate the created index
-			Events.triggerJobWorker();
+			MeshEvent.triggerJobWorker();
 
 			return tuple.v1();
 
@@ -191,7 +191,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				return getMicroschemaVersions(branch);
 			});
 
-			Events.triggerJobWorker();
+			MeshEvent.triggerJobWorker();
 			return model;
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -293,7 +293,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			return message(ac, "schema_migration_invoked");
 		}, model -> {
 			// Trigger job worker after jobs have been queued
-			Events.triggerJobWorker();
+			MeshEvent.triggerJobWorker();
 			ac.send(model, OK);
 		});
 	}

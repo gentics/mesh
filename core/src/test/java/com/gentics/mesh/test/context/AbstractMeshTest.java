@@ -30,7 +30,7 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.gentics.mesh.Events;
+import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -355,13 +355,13 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 */
 	protected JobListResponse triggerAndWaitForJob(String jobUuid, MigrationStatus status) {
 		waitForJob(() -> {
-			Events.triggerJobWorker();
+			MeshEvent.triggerJobWorker();
 		}, jobUuid, status);
 		return call(() -> client().findJobs());
 	}
 
 	protected void triggerAndWaitForAllJobs(MigrationStatus expectedStatus) {
-		Events.triggerJobWorker();
+		MeshEvent.triggerJobWorker();
 
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
@@ -471,6 +471,17 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		});
 		code.run();
 		latch.await(2000, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * Wait until the given event has been received.
+	 *
+	 * @param event
+	 * @param code
+	 * @throws TimeoutException
+	 */
+	protected void waitForEvent(MeshEvent event, Action code) throws Exception {
+		waitForEvent(event.address, code);
 	}
 
 	public ElasticSearchProvider getProvider() {

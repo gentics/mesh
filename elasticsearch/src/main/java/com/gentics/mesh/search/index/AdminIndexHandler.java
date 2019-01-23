@@ -10,7 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Events;
+import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -72,7 +72,7 @@ public class AdminIndexHandler {
 	}
 
 	private void triggerSync(InternalActionContext ac) {
-		Single<Message<JsonObject>> reply = Mesh.mesh().getRxVertx().eventBus().rxSend(Events.INDEX_SYNC_WORKER_ADDRESS, null);
+		Single<Message<JsonObject>> reply = Mesh.mesh().getRxVertx().eventBus().rxSend(MeshEvent.INDEX_SYNC_WORKER_ADDRESS.address, null);
 		reply.subscribe(msg -> {
 			JsonObject info = msg.body();
 			String status = info.getString("status");

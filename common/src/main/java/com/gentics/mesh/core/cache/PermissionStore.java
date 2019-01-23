@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.cache;
 
-import static com.gentics.mesh.Events.EVENT_CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.MeshEvent.CLEAR_PERMISSION_STORE;
 
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +43,7 @@ public final class PermissionStore {
 	 * Register the event handler which can be used to invalidate the LRU cache.
 	 */
 	public static void registerEventHandler() {
-		Mesh.vertx().eventBus().consumer(EVENT_CLEAR_PERMISSION_STORE, e -> {
+		Mesh.vertx().eventBus().consumer(CLEAR_PERMISSION_STORE.address, e -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Clearing permission store due to received event from {" + e.address() + "}");
 			}
@@ -75,7 +75,7 @@ public final class PermissionStore {
 			// Send the event to inform other to purge the stored permissions
 			Vertx vertx = Mesh.vertx();
 			if (vertx != null) {
-				vertx.eventBus().publish(EVENT_CLEAR_PERMISSION_STORE, null);
+				vertx.eventBus().publish(CLEAR_PERMISSION_STORE.address, null);
 			} else {
 				log.error("Can't distribute cache clear event. Maybe Vert.x is stopping / starting right now");
 			}

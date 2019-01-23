@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_USER_CREATED;
-import static com.gentics.mesh.Events.EVENT_USER_DELETED;
-import static com.gentics.mesh.Events.EVENT_USER_UPDATED;
+import static com.gentics.mesh.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.MeshEvent.USER_UPDATED;
 
 import java.util.Objects;
 import java.util.Set;
@@ -51,7 +51,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 */
 	String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_USER_CREATED, EVENT_USER_UPDATED, EVENT_USER_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, USER_CREATED.address, USER_UPDATED.address, USER_DELETED.address);
 
 	@Override
 	default TypeInfo getTypeInfo() {

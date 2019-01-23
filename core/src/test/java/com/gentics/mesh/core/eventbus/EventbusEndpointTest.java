@@ -1,9 +1,9 @@
 
 package com.gentics.mesh.core.eventbus;
 
-import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
-import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
-import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -62,7 +62,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testExternalEventbusMessage(TestContext context) throws Exception {
 
 		Async async = context.async();
-		String allowedAddress = MESH_MIGRATION;
+		String allowedAddress = MESH_MIGRATION.address;
 
 		// Register
 		JsonObject msg = new JsonObject().put("type", "register").put("address", allowedAddress);
@@ -89,7 +89,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		Async async = context.async();
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_DELETED);
+		JsonObject msg = new JsonObject().put("type", "register").put("address", NODE_DELETED);
 		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
 
 		// Handle msgs
@@ -109,7 +109,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		Async async = context.async();
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_DELETED);
+		JsonObject msg = new JsonObject().put("type", "register").put("address", NODE_DELETED);
 		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
 
 		// Handle msgs
@@ -130,7 +130,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		Async async = context.async();
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_UPDATED);
+		JsonObject msg = new JsonObject().put("type", "register").put("address", NODE_UPDATED);
 		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
 
 		// Handle msgs

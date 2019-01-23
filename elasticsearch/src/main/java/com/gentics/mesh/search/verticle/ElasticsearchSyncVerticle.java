@@ -1,13 +1,13 @@
 package com.gentics.mesh.search.verticle;
 
-import static com.gentics.mesh.Events.INDEX_SYNC_WORKER_ADDRESS;
+import static com.gentics.mesh.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 
 import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Events;
+import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -41,7 +41,7 @@ public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
 	 * Send the index sync event which will trigger the index sync job.
 	 */
 	public static void invokeSync() {
-		Mesh.mesh().getVertx().eventBus().send(INDEX_SYNC_WORKER_ADDRESS, null);
+		Mesh.mesh().getVertx().eventBus().send(INDEX_SYNC_WORKER_ADDRESS.address, null);
 	}
 
 	@Inject
@@ -51,7 +51,7 @@ public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
 	}
 
 	public String getJobAdress() {
-		return INDEX_SYNC_WORKER_ADDRESS;
+		return INDEX_SYNC_WORKER_ADDRESS.address;
 	}
 
 	@Override
@@ -71,10 +71,10 @@ public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
 			.andThen(syncIndices())
 			.andThen(provider.refreshIndex()).doOnComplete(() -> {
 				log.info("Sync completed");
-				vertx.eventBus().publish(Events.INDEX_SYNC_EVENT, new JsonObject().put("status", "completed"));
+				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "completed"));
 			}).doOnError(error -> {
 				log.error("Sync failed", error);
-				vertx.eventBus().publish(Events.INDEX_SYNC_EVENT, new JsonObject().put("status", "failed"));
+				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "failed"));
 			});
 	}
 

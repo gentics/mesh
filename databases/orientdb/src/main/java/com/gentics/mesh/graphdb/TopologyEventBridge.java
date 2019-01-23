@@ -1,9 +1,9 @@
 package com.gentics.mesh.graphdb;
 
-import static com.gentics.mesh.Events.EVENT_CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINING;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_LEFT;
+import static com.gentics.mesh.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_JOINING;
+import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_LEFT;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +42,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			log.debug("Node {" + nodeName + "} is joining the cluster.");
 		}
 		if (Mesh.isVertxReady()) {
-			getEventBus().send(EVENT_CLUSTER_NODE_JOINING, nodeName);
+			getEventBus().send(CLUSTER_NODE_JOINING.address, nodeName);
 		}
 		String currentVersion = Mesh.getPlainVersion();
 		if (!nodeName.contains("@")) {
@@ -62,7 +62,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			log.debug("Node {" + iNode + "} joined the cluster.");
 		}
 		if (Mesh.isVertxReady()) {
-			getEventBus().send(EVENT_CLUSTER_NODE_JOINED, iNode);
+			getEventBus().send(CLUSTER_NODE_JOINED.address, iNode);
 		}
 	}
 
@@ -73,7 +73,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		}
 //		db.removeNode(iNode);
 		if (Mesh.isVertxReady()) {
-			getEventBus().send(EVENT_CLUSTER_NODE_LEFT, iNode);
+			getEventBus().send(CLUSTER_NODE_LEFT.address, iNode);
 		}
 	}
 
@@ -85,7 +85,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			statusInfo.put("node", iNode);
 			statusInfo.put("database", iDatabaseName);
 			statusInfo.put("status", iNewStatus.name());
-			getEventBus().send(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, statusInfo);
+			getEventBus().send(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		}
 		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(db.getNodeName())) {
 			nodeJoinLatch.countDown();

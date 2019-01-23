@@ -1,6 +1,6 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
+import static com.gentics.mesh.MeshEvent.INDEX_SYNC;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -138,7 +138,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		tx(() -> user().addGroup(groups().get("admin")));
 		searchProvider().refreshIndex().blockingAwait();
 
-		waitForEvent(INDEX_SYNC_EVENT, () -> {
+		waitForEvent(INDEX_SYNC, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
 			assertThat(message).matches("search_admin_index_sync_invoked");
 		});

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
+import static com.gentics.mesh.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.MeshEvent.SCHEMA_UPDATED;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +25,7 @@ public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaRespons
 	 */
 	String TYPE = "schemaContainer";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_SCHEMA_CREATED, EVENT_SCHEMA_UPDATED, EVENT_SCHEMA_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, SCHEMA_CREATED.address, SCHEMA_UPDATED.address, SCHEMA_DELETED.address);
 
 	/**
 	 * Compose the index name for the schema index.

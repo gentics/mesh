@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_ROLE_CREATED;
-import static com.gentics.mesh.Events.EVENT_ROLE_DELETED;
-import static com.gentics.mesh.Events.EVENT_ROLE_UPDATED;
+import static com.gentics.mesh.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.MeshEvent.ROLE_UPDATED;
 
 import java.util.Objects;
 import java.util.Set;
@@ -25,7 +25,7 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 */
 	String TYPE = "role";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_ROLE_CREATED, EVENT_ROLE_UPDATED, EVENT_ROLE_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, ROLE_CREATED.address, ROLE_UPDATED.address, ROLE_DELETED.address);
 
 	@Override
 	default TypeInfo getTypeInfo() {

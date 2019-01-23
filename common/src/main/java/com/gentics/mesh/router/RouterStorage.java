@@ -1,7 +1,7 @@
 package com.gentics.mesh.router;
 
-import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
-import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
+import static com.gentics.mesh.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -115,7 +115,7 @@ public class RouterStorage {
 	private void registerEventbusHandlers() {
 		ProjectsRouter projectsRouter = rootRouter.apiRouter().projectsRouter();
 		EventBus eb = Mesh.vertx().eventBus();
-		eb.consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
+		eb.consumer(PROJECT_CREATED.address, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
 
 			// Check whether this is a local message. We only need to react on foreign messages.
@@ -139,7 +139,7 @@ public class RouterStorage {
 			}
 		});
 
-		eb.consumer(EVENT_PROJECT_UPDATED, (Message<JsonObject> rh) -> {
+		eb.consumer(PROJECT_UPDATED.address, (Message<JsonObject> rh) -> {
 			Database database = db.get();
 
 			try (Tx tx = database.tx()) {

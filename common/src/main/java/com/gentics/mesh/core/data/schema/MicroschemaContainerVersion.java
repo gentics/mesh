@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_CREATED;
-import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_UPDATED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
+import static com.gentics.mesh.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.MeshEvent.MICROSCHEMA_UPDATED;
+import static com.gentics.mesh.MeshEvent.SCHEMA_DELETED;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -22,7 +22,7 @@ public interface MicroschemaContainerVersion extends
 
 	static final String TYPE = "microschemaVersion";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_MICROSCHEMA_CREATED, EVENT_MICROSCHEMA_UPDATED, EVENT_SCHEMA_DELETED);
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, MICROSCHEMA_CREATED.address, MICROSCHEMA_UPDATED.address, SCHEMA_DELETED.address);
 
 	@Override
 	default TypeInfo getTypeInfo() {

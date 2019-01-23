@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
-import static com.gentics.mesh.Events.EVENT_PROJECT_DELETED;
-import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
+import static com.gentics.mesh.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.MeshEvent.PROJECT_UPDATED;
 
 import java.util.Objects;
 
@@ -34,7 +34,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 */
 	String TYPE = "project";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_PROJECT_CREATED, EVENT_PROJECT_UPDATED, EVENT_PROJECT_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, PROJECT_CREATED.address, PROJECT_UPDATED.address, PROJECT_DELETED.address);
 
 	@Override
 	default TypeInfo getTypeInfo() {

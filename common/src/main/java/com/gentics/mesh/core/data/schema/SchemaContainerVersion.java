@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
+import static com.gentics.mesh.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.MeshEvent.SCHEMA_UPDATED;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
@@ -25,7 +25,7 @@ public interface SchemaContainerVersion
 
 	static final String TYPE = "schemaVersion";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_SCHEMA_CREATED, EVENT_SCHEMA_UPDATED, EVENT_SCHEMA_DELETED);
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, SCHEMA_CREATED.address, SCHEMA_UPDATED.address, SCHEMA_DELETED.address);
 
 	@Override
 	default TypeInfo getTypeInfo() {

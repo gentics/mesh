@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
