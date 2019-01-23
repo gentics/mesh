@@ -122,21 +122,6 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	MeshRestClient setAuthenticationProvider(JWTAuthentication authentication);
 
 	/**
-	 * Get the base URI path to the Mesh-API. If the base URI is not set, the DEFAULT_BASE_URI is returned.
-	 *
-	 * @return the base URI
-	 */
-	String getBaseUri();
-
-	/**
-	 * Set the base path to the Mesh API used for all request paths.
-	 * 
-	 * @param uri
-	 * @return Fluent API
-	 */
-	MeshRestClient setBaseUri(String uri);
-
-	/**
 	 * Return the mesh version.
 	 * 
 	 * @return

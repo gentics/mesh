@@ -46,51 +46,31 @@ public final class TestUtils {
 	 * @throws Exception
 	 */
 	public static CountDownLatch latchForMigrationCompleted(MeshRestClient client) throws Exception {
-		// Construct latch in order to wait until the migration completed event was received
-		CountDownLatch latch = new CountDownLatch(1);
-		CountDownLatch registerLatch = new CountDownLatch(1);
-		client.eventbus(ws -> {
-			// Register to migration events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
-			ws.writeFinalTextFrame(msg.encode());
-
-			// Handle migration events
-			ws.handler(buff -> {
-				String str = buff.toString();
-				JsonObject received = new JsonObject(str);
-				JsonObject rec = received.getJsonObject("body");
-				log.debug("Migration event:" + rec.getString("type"));
-				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
-					latch.countDown();
-				}
-			});
-			registerLatch.countDown();
-
-		});
-
-		failingLatch(registerLatch);
-		return latch;
-	}
-
-	public static CompletableFuture<Void> latchForEvent(MeshRestClient client, String event) throws Exception {
-		// Construct latch in order to wait until the migration completed event was received
-		CompletableFuture<Void> latch = new CompletableFuture<>();
-		CountDownLatch registerLatch = new CountDownLatch(1);
-		client.eventbus(ws -> {
-			// Register to events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", event);
-			ws.writeFinalTextFrame(msg.encode());
-
-			// Handle the event
-			ws.handler(buff -> {
-				latch.complete(null);
-			});
-			registerLatch.countDown();
-
-		});
-
-		failingLatch(registerLatch);
-		return latch;
+//		// Construct latch in order to wait until the migration completed event was received
+//		CountDownLatch latch = new CountDownLatch(1);
+//		CountDownLatch registerLatch = new CountDownLatch(1);
+//		client.eventbus(ws -> {
+//			// Register to migration events
+//			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
+//			ws.writeFinalTextFrame(msg.encode());
+//
+//			// Handle migration events
+//			ws.handler(buff -> {
+//				String str = buff.toString();
+//				JsonObject received = new JsonObject(str);
+//				JsonObject rec = received.getJsonObject("body");
+//				log.debug("Migration event:" + rec.getString("type"));
+//				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
+//					latch.countDown();
+//				}
+//			});
+//			registerLatch.countDown();
+//
+//		});
+//
+//		failingLatch(registerLatch);
+//		return latch;
+		throw new RuntimeException("Not implemented");
 	}
 
 	public static void runAndWait(Runnable runnable) {

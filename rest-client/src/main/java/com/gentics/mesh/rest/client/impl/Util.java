@@ -1,9 +1,56 @@
 package com.gentics.mesh.rest.client.impl;
 
+import com.gentics.mesh.MeshEvent;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public final class Util {
 	private Util() {
+	}
+
+	/**
+	 * Creates a Vert.x event bus message to be send over a websocket.
+	 *
+	 * @see com.gentics.mesh.rest.client.MeshWebsocket
+	 *
+	 * @param type
+	 * @param address
+	 * @return
+	 */
+	public static String eventBusMessage(EventbusMessageType type, String address) {
+		try {
+			return new JSONObject()
+				.put("type", type.type)
+				.put("address", address)
+				.toString();
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Creates a Vert.x event bus message to be send over a websocket.
+	 *
+	 * @see com.gentics.mesh.rest.client.MeshWebsocket
+	 *
+	 * @param type
+	 * @param address
+	 * @param body
+	 * @return
+	 */
+	public static String eventBusMessage(EventbusMessageType type, String address, String body) {
+		try {
+			return new JSONObject()
+				.put("type", type.type)
+				.put("address", address)
+				.put("body", body)
+				.toString();
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -31,6 +78,12 @@ public final class Util {
 				return value;
 			}
 		};
+	}
+
+	public static String[] toAddresses(MeshEvent... events) {
+		return Stream.of(events)
+			.map(MeshEvent::getAddress)
+			.toArray(String[]::new);
 	}
 
 	interface WrappedSupplier<T> {

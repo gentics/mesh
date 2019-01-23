@@ -5,6 +5,7 @@ import java.util.Objects;
 
 public class MeshRestClientConfig {
 	private final String host;
+	private final String baseUri;
 	private final int port;
 	private final boolean ssl;
 	private final Duration websocketReconnectInterval;
@@ -17,6 +18,7 @@ public class MeshRestClientConfig {
 		this.ssl = builder.ssl;
 		this.websocketReconnectInterval = builder.websocketReconnectInterval;
 		this.websocketPingInterval = builder.websocketPingInterval;
+		this.baseUri = builder.baseUri;
 	}
 
 	public String getHost() {
@@ -39,8 +41,13 @@ public class MeshRestClientConfig {
 		return websocketPingInterval;
 	}
 
+	public String getBaseUri() {
+		return baseUri;
+	}
+
 	public static class Builder {
 		private String host;
+		private String baseUri = "/api/v1";
 		private int port = 8080;
 		private boolean ssl = false;
 		private Duration websocketReconnectInterval = Duration.ofSeconds(5);
@@ -114,6 +121,19 @@ public class MeshRestClientConfig {
 		 */
 		public Builder setWebsocketPingInterval(Duration websocketPingInterval) {
 			this.websocketPingInterval = Objects.requireNonNull(websocketPingInterval);
+			return this;
+		}
+
+		/**
+		 * Sets the base uri that is prepended to all paths when making requests to mesh.
+		 *
+		 * <p>Default: "/api/v1"</p>
+		 *
+		 * @param baseUri
+		 * @return
+		 */
+		public Builder setBaseUri(String baseUri) {
+			this.baseUri = Objects.requireNonNull(baseUri);
 			return this;
 		}
 	}

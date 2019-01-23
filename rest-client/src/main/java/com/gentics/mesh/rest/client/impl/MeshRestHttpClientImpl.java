@@ -82,8 +82,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.util.URIUtils;
-import io.vertx.core.Handler;
-import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 
 import java.io.ByteArrayInputStream;
@@ -1148,21 +1146,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<String> resolveLinks(String body, ParameterProvider... parameters) {
 		Objects.requireNonNull(body, "body must not be null");
 		return handleRequest(POST, "/utilities/linkResolver" + getQuery(parameters), String.class, body);
-	}
-
-	@Override
-	public void eventbus(Handler<WebSocket> wsConnect, Handler<Throwable> failureHandler) {
-//		String token = getAuthentication().getToken();
-//		if (token != null) {
-//			MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-//			headers.set("Authorization", "Bearer " + token);
-//			getClient().websocket(getBaseUri() + "/eventbus/websocket", headers, wsConnect, failureHandler);
-//		} else {
-//			getClient().websocket(getBaseUri() + "/eventbus/websocket", wsConnect, failureHandler);
-//		}
-
-		// TODO Implement
-		throw new RuntimeException("Not implemented");
 	}
 
 	@Override

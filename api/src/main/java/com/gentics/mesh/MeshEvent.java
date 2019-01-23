@@ -278,4 +278,7 @@ public enum MeshEvent {
 		return events;
 	}
 
+	public String getAddress() {
+		return address;
+	}
 }

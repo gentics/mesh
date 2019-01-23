@@ -10,11 +10,10 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
+import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.rest.client.MeshWebsocket;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -37,18 +35,13 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class EventbusEndpointTest extends AbstractMeshTest {
 
-	private WebSocket ws;
+	private MeshWebsocket ws;
 
 	@Before
 	public void setupEventbus() throws Exception {
-		CompletableFuture<WebSocket> fut = new CompletableFuture<>();
-		client().eventbus(ws -> {
-			fut.complete(ws);
-		}, fh -> {
-			fh.printStackTrace();
-			fail("Could not connect to eventbus.");
-		});
-		ws = fut.get(4, TimeUnit.SECONDS);
+		ws = client().eventbus();
+		// Wait for initial connection
+		ws.connections().blockingFirst();
 	}
 
 	@After
@@ -65,40 +58,30 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		String allowedAddress = MESH_MIGRATION.address;
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", allowedAddress);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(allowedAddress);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			System.out.println("msg:" + str);
-			JsonObject received = new JsonObject(str);
-			JsonObject rec = received.getJsonObject("body");
-			String value = rec.getString("test");
-			assertEquals("someValue", value);
+		ws.events().firstOrError().subscribe(event -> {
+			MeshAssertions.assertThat(event.getBodyAsJson().getString("test")).isEqualTo("").isEqualTo("someValue");
 			async.complete();
 		});
 
 		Thread.sleep(1000);
 		Mesh.vertx().eventBus().send(allowedAddress, new JsonObject().put("test", "someValue"));
-
 	}
 
 	@Test(timeout = 4_000)
 	public void testNodeDeleteEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", NODE_DELETED);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(NODE_DELETED);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			context.assertNotNull(received.getJsonObject("body").getString("uuid"));
-			context.assertEquals("content", received.getJsonObject("body").getString("schemaName"));
-			context.assertNull(received.getJsonObject("body").getString("languageTag"));
+		ws.events().firstOrError().subscribe(event -> {
+			JSONObject body = event.getBodyAsJson();
+			context.assertNotNull(body.getString("uuid"));
+			context.assertEquals("content", body.getString("schemaName"));
+			context.assertNull(body.getString("languageTag"));
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));
@@ -108,18 +91,14 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testNodeDeleteLanguageEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", NODE_DELETED);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(NODE_DELETED);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			System.out.println(received.encodePrettily());
-			context.assertNotNull(received.getJsonObject("body").getString("uuid"));
-			context.assertEquals("content", received.getJsonObject("body").getString("schemaName"));
-			context.assertEquals("en", received.getJsonObject("body").getString("languageTag"));
+		ws.events().firstOrError().subscribe(event -> {
+			JSONObject received = event.getBodyAsJson();
+			context.assertNotNull(received.getJSONObject("body").getString("uuid"));
+			context.assertEquals("content", received.getJSONObject("body").getString("schemaName"));
+			context.assertEquals("en", received.getJSONObject("body").getString("languageTag"));
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
@@ -130,15 +109,13 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		Async async = context.async();
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", NODE_UPDATED);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(NODE_UPDATED);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			assertNotNull(received.getJsonObject("body").getString("uuid"));
-			assertEquals("content", received.getJsonObject("body").getString("schemaName"));
+		ws.events().firstOrError().subscribe(event -> {
+			JSONObject received = event.getBodyAsJson();
+			assertNotNull(received.getJSONObject("body").getString("uuid"));
+			assertEquals("content", received.getJSONObject("body").getString("schemaName"));
 			async.complete();
 		});
 
@@ -151,51 +128,22 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		NodeResponse response2 = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 		assertNotEquals(response.getVersion(), response2.getVersion());
-
 	}
 
 	@Test
 	public void testCustomEventHandling(TestContext context) {
 		Async asyncRec = context.async();
 
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", "custom.myEvent");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents("custom.myEvent");
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			String body = received.getString("body");
+		ws.events().firstOrError().subscribe(event -> {
+			String body = event.getBodyAsString();
 			assertEquals("someText", body);
 			asyncRec.complete();
 		});
 
 		// Send msg
-		msg = new JsonObject().put("type", "publish").put("address", "custom.myEvent").put("body", "someText");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.publishEvent("custom.myEvent", "someText");
 	}
-
-	@Test(timeout = 4_000)
-	public void testRegisterToEventbus(TestContext context) throws Exception {
-		Async asyncRec = context.async();
-
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", "custom.address");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
-
-		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			Object rec = received.getValue("body");
-			System.out.println("Handler:" + rec.toString());
-			asyncRec.complete();
-		});
-
-		// Send msg
-		msg = new JsonObject().put("type", "publish").put("address", "custom.address").put("body", "someText");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
-	}
-
 }

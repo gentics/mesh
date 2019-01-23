@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.MeshWebsocket;
 import io.vertx.core.http.HttpMethod;
 import okhttp3.OkHttpClient;
 
@@ -17,8 +18,8 @@ import java.util.Map;
  */
 public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
-	private final String origin;
 	private final OkHttpClient client;
+	private final MeshRestClientConfig config;
 	private static OkHttpClient defaultClient;
 
 	public MeshRestOkHttpClientImpl(MeshRestClientConfig config) {
@@ -26,9 +27,8 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	public MeshRestOkHttpClientImpl(MeshRestClientConfig config, OkHttpClient client) {
-		String scheme = config.isSsl() ? "https" : "http";
-		origin = scheme + "://" + config.getHost()+ ":" + config.getPort();
 		this.client = client;
+		this.config = config;
 	}
 
 	private static OkHttpClient defaultClient() {
@@ -63,6 +63,11 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 		return MeshOkHttpReqeuestImpl.JsonRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, jsonBodyData);
 	}
 
+	@Override
+	public MeshWebsocket eventbus() {
+		return new OkHttpWebsocket(client, config);
+	}
+
 	private Map<String, String> createHeaders() {
 		Map<String, String> headers = new HashMap<>();
 		if (disableAnonymousAccess) {
@@ -74,7 +79,9 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	private String getUrl(String path) {
-		return origin + getBaseUri() + path;
+		String scheme = config.isSsl() ? "https" : "http";
+		String origin = scheme + "://" + config.getHost() + ":" + config.getPort();
+		return origin + config.getBaseUri() + path;
 	}
 
 	@Override

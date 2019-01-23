@@ -455,30 +455,31 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	 * @return
 	 */
 	public static CountDownLatch waitForMigration(MeshRestClient client) {
-		// Construct latch in order to wait until the migration completed event
-		// was received
-		CountDownLatch latch = new CountDownLatch(1);
-		client.eventbus(ws -> {
-			// Register to migration events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
-			ws.writeFinalTextFrame(msg.encode());
-
-			// Handle migration events
-			ws.handler(buff -> {
-				String str = buff.toString();
-				JsonObject received = new JsonObject(str);
-				JsonObject rec = received.getJsonObject("body");
-				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
-					try {
-						latch.countDown();
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-			});
-
-		});
-		return latch;
+//		// Construct latch in order to wait until the migration completed event
+//		// was received
+//		CountDownLatch latch = new CountDownLatch(1);
+//		client.eventbus(ws -> {
+//			// Register to migration events
+//			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
+//			ws.writeFinalTextFrame(msg.encode());
+//
+//			// Handle migration events
+//			ws.handler(buff -> {
+//				String str = buff.toString();
+//				JsonObject received = new JsonObject(str);
+//				JsonObject rec = received.getJsonObject("body");
+//				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
+//					try {
+//						latch.countDown();
+//					} catch (Exception e) {
+//						throw new RuntimeException(e);
+//					}
+//				}
+//			});
+//
+//		});
+//		return latch;
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Test

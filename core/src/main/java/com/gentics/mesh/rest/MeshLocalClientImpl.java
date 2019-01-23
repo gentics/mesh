@@ -106,6 +106,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
 import com.gentics.mesh.search.index.AdminIndexHandler;
@@ -1145,8 +1146,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public void eventbus(Handler<WebSocket> wsConnect, Handler<Throwable> failureHandler) {
-		// TODO Auto-generated method stub
+	public MeshWebsocket eventbus() {
+		return null;
 	}
 
 	@Override
@@ -1474,16 +1475,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<ConsistencyCheckResponse> repairConsistency() {
 		return null;
-	}
-
-	@Override
-	public String getBaseUri() {
-		return DEFAULT_BASEURI;
-	}
-
-	@Override
-	public MeshRestClient setBaseUri(String uri) {
-		return this;
 	}
 
 	@Override
