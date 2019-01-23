@@ -51,10 +51,6 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNavigationResponse(), "Loaded navigation.");
-		endpoint.handler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String path = ac.getParameter("param0");
-			handler.handleGetPath(ac, path);
-		});
+		endpoint.handler(rc -> handler.handleGetPath(rc));
 	}
 }

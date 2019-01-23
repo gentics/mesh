@@ -1,12 +1,11 @@
 package com.gentics.mesh.core.data.service;
 
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
+import static com.gentics.mesh.util.URIUtils.decodeSegment;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Stack;
+import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -77,10 +76,11 @@ public class WebRootServiceImpl implements WebRootService {
 		// Prepare the stack which we use for resolving
 		String sanitizedPath = path.replaceAll("^/+", "");
 		String[] elements = sanitizedPath.split("\\/");
-		List<String> list = Arrays.asList(elements);
 
-		Collections.reverse(list);
-		stack.addAll(list);
+		IntStream.iterate(elements.length - 1, i -> i - 1)
+			.limit(elements.length)
+			.mapToObj(i -> decodeSegment(elements[i]))
+			.forEach(stack::add);
 
 		Object clone = stack.clone();
 		if (clone instanceof Stack) {

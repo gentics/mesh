@@ -75,7 +75,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 
 		endpoint.description("Update or create a node for the given path.");
 		endpoint.handler(rc -> {
-			handler.handleUpdateCreatePath(wrap(rc), POST);
+			handler.handleUpdateCreatePath(rc, POST);
 		});
 	}
 

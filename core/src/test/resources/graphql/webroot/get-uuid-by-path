@@ -1,0 +1,6 @@
+query getUuid($path: String) {
+    node(path: $path) {
+        uuid
+    }
+}
+# [$.errors=<is-undefined>]
