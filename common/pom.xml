@@ -20,7 +20,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.syncleus.ferma</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>ferma</artifactId>
 			<exclusions>
 				<exclusion>
