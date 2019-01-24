@@ -5,12 +5,14 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.io.IOException;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -45,6 +47,12 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid), NOT_FOUND, "project_not_found", NEW_PROJECT_NAME);
+	}
+
+	@Test
+	public void testRestoreInClustereMode() {
+		Mesh.mesh().getOptions().getClusterOptions().setEnabled(true);
+		call(() -> client().invokeRestore(), SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode");
 	}
 
 	@Test

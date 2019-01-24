@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static java.util.Comparator.comparing;
 
 import java.io.File;
@@ -83,6 +84,11 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleRestore(InternalActionContext ac) {
+		MeshOptions config = Mesh.mesh().getOptions();
+		if (config.getClusterOptions() != null && config.getClusterOptions().isEnabled()) {
+			ac.fail(error(SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode"));
+			return;
+		}
 		db.asyncTx(() -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
