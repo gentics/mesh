@@ -22,7 +22,6 @@ import com.syncleus.ferma.tx.Tx;
 public class AdminEndpointBackupTest extends AbstractMeshTest {
 
 	@Test
-	@Ignore("Currently does not work with ODB3")
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
 

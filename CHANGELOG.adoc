@@ -28,6 +28,7 @@ title: Changelog
 
 icon:check[] Core: Fixed a bug that caused nodes with a slash in their segment field to not be found via webroot.
 
+icon:check[] Restore: A `ClassCastException` has been fixed which could be observed directly after a backup restore operation.
 
 [[v0.29.2]]
 == 0.29.2 (18.01.2019)

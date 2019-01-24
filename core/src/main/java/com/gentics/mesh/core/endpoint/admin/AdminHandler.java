@@ -98,6 +98,8 @@ public class AdminHandler extends AbstractHandler {
 			}
 			db.restoreGraph(latestFile.getAbsolutePath());
 
+			// FIXME: Fix for PrjHub #10569 - ClassCastException
+			db.reindex();
 			// Now clear the cached references and cached permissions
 			MeshRootImpl.clearReferences();
 			PermissionStore.invalidate(false);
