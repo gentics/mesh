@@ -119,7 +119,7 @@ public final class ClientHelper {
 				if (cause instanceof MeshRestClientMessageException) {
 					error = (MeshRestClientMessageException) e.getCause();
 				} else {
-					throw new RuntimeException(cause);
+					throw (RuntimeException)e;
 				}
 			} else {
 				error = (MeshRestClientMessageException) e;

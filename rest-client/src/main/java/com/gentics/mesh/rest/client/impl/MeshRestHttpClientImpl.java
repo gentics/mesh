@@ -1199,8 +1199,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 	@Override
 	public MeshRequest<String> getRAML() {
-		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, this, authentication, disableAnonymousAccess,
-			APPLICATION_YAML_UTF8);
+		MeshRequest<String> request = prepareRequest(GET, "/raml", String.class);
+		request.setHeader("Accept", APPLICATION_YAML_UTF8);
+		return request;
 	}
 
 	@Override

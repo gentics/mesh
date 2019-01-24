@@ -48,6 +48,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testDeleteLastLanguageFromNode() throws Exception {
+		grantAdminRole();
 		Node node = folder("news");
 		String branchName = "newBranch";
 

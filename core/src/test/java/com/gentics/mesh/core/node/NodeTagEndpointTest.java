@@ -186,6 +186,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTaggingAcrossMultipleBranches() throws Exception {
+		grantAdminRole();
 		String branchOne = "BranchV1";
 		String branchTwo = "BranchV2";
 

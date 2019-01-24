@@ -133,6 +133,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftInBranch() throws Exception {
+		grantAdminRole();
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
