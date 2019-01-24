@@ -147,7 +147,7 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	private String stripOrigin(String url) {
 		URI uri = URI.create(url);
 		String query = uri.getQuery();
-		return uri.getPath() + (query.length() == 0
+		return uri.getPath() + (query == null || query.length() == 0
 			? ""
 			: "?" + query);
 	}

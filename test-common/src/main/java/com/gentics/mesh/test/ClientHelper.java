@@ -115,7 +115,12 @@ public final class ClientHelper {
 		} catch (RuntimeException | MeshRestClientMessageException e) {
 			MeshRestClientMessageException error;
 			if (e instanceof RuntimeException) {
-				error = (MeshRestClientMessageException) e.getCause();
+				Throwable cause = e.getCause();
+				if (cause instanceof MeshRestClientMessageException) {
+					error = (MeshRestClientMessageException) e.getCause();
+				} else {
+					throw new RuntimeException(cause);
+				}
 			} else {
 				error = (MeshRestClientMessageException) e;
 			}
