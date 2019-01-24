@@ -100,17 +100,14 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "fieldLabel");
 		listOfChanges.getChanges().add(change);
 
-		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+		// 2. Invoke migration
+		waitForLatestJob(() -> {
+			call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
+			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
+			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
+					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+		});
 
-		// 3. Invoke migration
-		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
-		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
-		call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
-				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
-
-		// 4. Latch for completion
-		failingLatch(latch);
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", beforeVersion.getNextChange());
 			assertNotNull("The container should now have a new version", beforeVersion.getNextVersion());

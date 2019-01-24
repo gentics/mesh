@@ -23,6 +23,7 @@ import okio.Okio;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -91,17 +92,6 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	private Single<Response> getOkResponse() {
 		return Single.create(sub -> {
 			Call call = client.newCall(createRequest());
-			sub.setDisposable(new Disposable() {
-				@Override
-				public void dispose() {
-					call.cancel();
-				}
-
-				@Override
-				public boolean isDisposed() {
-					return call.isCanceled();
-				}
-			});
 			call.enqueue(new Callback() {
 				@Override
 				public void onFailure(Call call, IOException e) {
@@ -114,6 +104,8 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 				public void onResponse(Call call, Response response) throws IOException {
 					if (!sub.isDisposed()) {
 						sub.onSuccess(response);
+					} else {
+						response.close();
 					}
 				}
 			});
@@ -132,7 +124,7 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 				response.message(),
 				JsonUtil.readValue(response.body().string(), GenericMessageResponse.class),
 				HttpMethod.valueOf(method.toUpperCase()),
-				url
+				stripOrigin(url)
 			);
 		} else {
 			String contentType = response.header("Content-Type");
@@ -150,6 +142,14 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 				throw new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}");
 			}
 		}
+	}
+
+	private String stripOrigin(String url) {
+		URI uri = URI.create(url);
+		String query = uri.getQuery();
+		return uri.getPath() + (query.length() == 0
+			? ""
+			: "?" + query);
 	}
 
 	@Override
@@ -200,7 +200,10 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 
 			@Override
 			public T getBody() {
-				return JsonUtil.readValue(getBodyAsString(), resultClass);
+				String body = getBodyAsString();
+				return body.length() == 0
+					? null
+					: JsonUtil.readValue(getBodyAsString(), resultClass);
 			}
 		});
 	}

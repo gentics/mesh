@@ -488,7 +488,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 		String json = tx(() -> schemaContainer("content").getLatestVersion().getJson());
 
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		int nJobs = 20;
 		Observable.range(0, nJobs)
 			.flatMapCompletable(i -> {
@@ -496,7 +495,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 				request.setName("newname" + i);
 				return client().updateSchema(uuid, request).toCompletable();
 			}).blockingAwait();
-		failingLatch(latch);
 	}
 
 	@Test

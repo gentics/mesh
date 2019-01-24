@@ -190,14 +190,14 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		String branchTwo = "BranchV2";
 
 		// 1. Create branch v1
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		try (Tx tx = tx()) {
-			BranchCreateRequest request = new BranchCreateRequest();
-			request.setName(branchOne);
-			BranchResponse branchResponse = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(branchResponse).as("Branch Response").isNotNull().hasName(branchOne).isActive().isNotMigrated();
-		}
-		failingLatch(latch);
+		waitForLatestJob(() -> {
+			try (Tx tx = tx()) {
+				BranchCreateRequest request = new BranchCreateRequest();
+				request.setName(branchOne);
+				BranchResponse branchResponse = call(() -> client().createBranch(PROJECT_NAME, request));
+				assertThat(branchResponse).as("Branch Response").isNotNull().hasName(branchOne).isActive().isNotMigrated();
+			}
+		});
 
 		// 2. Tag a node in branch v1 with tag "red"
 		try (Tx tx = tx()) {
@@ -231,15 +231,15 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		// 3. Create branch v2
-		latch = TestUtils.latchForMigrationCompleted(client());
-		try (Tx tx = tx()) {
-			BranchCreateRequest request = new BranchCreateRequest();
-			request.setName(branchTwo);
-			BranchResponse branchResponse = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(branchResponse).as("Branch Response").isNotNull().hasName(branchTwo).isActive().isNotMigrated();
-		}
+		waitForLatestJob(() -> {
+			try (Tx tx = tx()) {
+				BranchCreateRequest request = new BranchCreateRequest();
+				request.setName(branchTwo);
+				BranchResponse branchResponse = call(() -> client().createBranch(PROJECT_NAME, request));
+				assertThat(branchResponse).as("Branch Response").isNotNull().hasName(branchTwo).isActive().isNotMigrated();
+			}
+		});
 
-		failingLatch(latch);
 		// 4. Tag a node in branch v2 with tag "blue"
 		try (Tx tx = tx()) {
 			Node node = content();

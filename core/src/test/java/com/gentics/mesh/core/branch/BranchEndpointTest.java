@@ -264,11 +264,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		String branchName = "New Branch";
 		request.setName(branchName);
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		waitForJobs(() -> {
 			call(() -> client().createBranch(PROJECT_NAME, request));
 		}, COMPLETED, 1);
-		failingLatch(latch);
 		call(() -> client().createBranch(PROJECT_NAME, request), CONFLICT, "branch_conflicting_name", branchName);
 	}
 
@@ -278,16 +276,13 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String newProjectName = "otherproject";
 
 		// 1. Create a new branch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
 		waitForJobs(() -> {
 			call(() -> client().createBranch(PROJECT_NAME, request));
 		}, COMPLETED, 1);
-		failingLatch(latch);
 
 		// 2. Create a new project and branch and use the same name. This is allowed and should not raise any error.
-		latch = TestUtils.latchForMigrationCompleted(client());
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName(newProjectName);
 		createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -295,7 +290,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		waitForJobs(() -> {
 			call(() -> client().createBranch(newProjectName, request));
 		}, COMPLETED, 1);
-		failingLatch(latch);
 	}
 
 	@Override

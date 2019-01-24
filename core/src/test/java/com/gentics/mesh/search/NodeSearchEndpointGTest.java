@@ -179,12 +179,10 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
 		// Create a new branch and migrate the nodes
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		String branchName = "newbranch";
 		BranchCreateRequest createBranch = new BranchCreateRequest();
 		createBranch.setName(branchName);
-		call(() -> client().createBranch(PROJECT_NAME, createBranch));
-		failingLatch(latch);
+		waitForLatestJob(() -> call(() -> client().createBranch(PROJECT_NAME, createBranch)));
 
 		// Assert that the node can be found within the publish index within the new branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),

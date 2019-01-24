@@ -83,12 +83,14 @@ public final class Util {
 	public static <T> Supplier<T> lazily(WrappedSupplier<T> supplier) {
 		return new Supplier<T>() {
 			T value;
+			boolean supplied = false;
 
 			@Override
-			public T get() {
-				if (value == null) {
+			public synchronized T get() {
+				if (!supplied) {
 					try {
 						value = supplier.get();
+						supplied = true;
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}

@@ -263,6 +263,10 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		return null;
 	}
 
+	protected void waitForLatestJob(Runnable action) {
+		waitForLatestJob(action, MigrationStatus.COMPLETED);
+	}
+
 	protected void waitForLatestJob(Runnable action, MigrationStatus status) {
 		// Load a status just before the action
 		JobListResponse before = call(() -> client().findJobs());

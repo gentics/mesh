@@ -110,7 +110,7 @@ public final class ClientHelper {
 	public static <T> MeshRestClientMessageException call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey,
 		String... i18nParams) {
 		try {
-			handler.handle().toSingle().blockingGet();
+			handler.handle().blockingGet();
 			fail("We expected the future to have failed but it succeeded.");
 		} catch (RuntimeException | MeshRestClientMessageException e) {
 			MeshRestClientMessageException error;

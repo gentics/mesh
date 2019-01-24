@@ -4,11 +4,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.test.util.TestUtils.latchForMigrationCompleted;
 import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.After;
@@ -90,26 +86,22 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 	@Override
 	@Ignore
 	public void testDocumentUpdate() throws Exception {
-		CountDownLatch latch = latchForMigrationCompleted(client());
 
 		// 1. Create a new schema
 		final String schemaName = "newschemaname";
 		SchemaResponse schema = createSchema(schemaName);
 
-		// 2. Setup latch for migration/schema update
+		// 2. Migrate Schema
 		String newSchemaName = "updatedschemaname";
-		updateSchema(schema.getUuid(), newSchemaName);
+		waitForLatestJob(() -> updateSchema(schema.getUuid(), newSchemaName));
 
-		// 3. Wait for migration to complete
-		failingLatch(latch);
-
-		// 4. Search for the original schema
+		// 3. Search for the original schema
 		SchemaListResponse response = client()
 			.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals("The schema with the old name {" + schemaName + "} was found but it should not have been since we updated it.", 0,
 			response.getData().size());
 
-		// 5. Search for the updated schema
+		// 4. Search for the updated schema
 		response = client().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals("The schema with the updated name was not found.", 1, response.getData().size());
 	}
