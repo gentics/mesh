@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
@@ -61,18 +62,6 @@ public class JobEndpointTest extends AbstractMeshTest {
 		assertThat(job.getProperties()).containsKey("schemaName");
 		assertThat(job.getProperties()).containsKey("schemaUuid");
 		assertThat(jobList.getData()).hasSize(2);
-	}
-
-	@Test
-	public void testPeriodicProcessing() {
-		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
-		tx(() -> group().addRole(roles().get("admin")));
-		assertEquals(QUEUED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
-
-		// Wait the initial startup delay and after that the periodic delay
-		TestUtils.sleep(30_000 + 30_000);
-
-		assertEquals(FAILED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
 	}
 
 	@Test
