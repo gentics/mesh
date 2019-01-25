@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
@@ -64,6 +65,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore("Periodic job processing has been deactivated")
 	public void testPeriodicProcessing() {
 		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
 		tx(() -> group().addRole(roles().get("admin")));
