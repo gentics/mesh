@@ -24,9 +24,11 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.29.3]]
-== 0.29.3 (TBD)
+== 0.29.3 (25.01.2019)
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.14
+
+icon:check[] Core: The job processing will no longer be invoked in an interval in order to reduce cluster operation contention. Instead the `/api/v1/admin/processJobs` endpoint can be used to manually trigger job processing.
 
 icon:check[] Core: Fixed a bug that caused nodes with a slash in their segment field to not be found via webroot.
 
