@@ -21,14 +21,14 @@ final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 node("docker") {
 	stage("Setup Build Environment") {
 		checkout scm
-		sh "docker pull registry.gentics.com/jenkins-slave-mesh"
-		sh "cd .jenkins && docker build -t registry.gentics.com/jenkins-slave-mesh ."
-		sh "cd .jenkins && docker push registry.gentics.com/jenkins-slave-mesh"
+		sh "docker pull registry.gentics.com/jenkins-slave-mesh-openjdk8"
+		sh "cd .jenkins && docker build -t registry.gentics.com/jenkins-slave-mesh-openjdk8 ."
+		sh "cd .jenkins && docker push registry.gentics.com/jenkins-slave-mesh-openjdk8"
 
 		podTemplate(containers: [
 			containerTemplate(alwaysPullImage: true, args: '${computer.jnlpmac} ${computer.name}',
 				command: '',
-				image: 'registry.gentics.com/jenkins-slave-mesh',
+				image: 'registry.gentics.com/jenkins-slave-mesh-openjdk8',
 				name: 'jnlp',
 				privileged: false,
 				ttyEnabled: true,
@@ -51,7 +51,7 @@ node("docker") {
 				inheritFrom: '',
 				instanceCap: 10,
 				label: 'mesh',
-				name: 'jenkins-slave-mesh',
+				name: 'jenkins-slave-mesh-openjdk8',
 				namespace: 'default', 
 				nodeSelector: 'jenkins_mesh_worker=true',
 				serviceAccount: 'jenkins',
