@@ -25,11 +25,11 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
 # Install Java 8
 RUN mkdir -p /usr/lib/jvm/ && \
    cd /usr/lib/jvm/ && \
-   wget -nv -O jdk-8-x64.tar.gz "https://filebox.apa-it.at/index.php/s/p3yUKk7Rju96eyc/download" && \
+   wget -nv -O jdk-8-x64.tar.gz "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u202b08.tar.gz" && \
    tar xfz jdk-8-x64.tar.gz && \
    rm *.gz && \
-   mv jdk1.8.0_151 java-8-oracle
-ENV JAVA_1_8_HOME /usr/lib/jvm/java-8-oracle
+   mv jdk8u202-b08/ java-8
+ENV JAVA_1_8_HOME /usr/lib/jvm/java-8
 
 # Install Java 10
 #RUN mkdir -p /usr/lib/jvm/ && \
