@@ -166,7 +166,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				json.put("name", name);
 			}
 			json.put("origin", Mesh.mesh().getOptions().getNodeName());
-			json.put("uuid", getUuid());
+			json.put("uuid", uuid);
 			Mesh.vertx().eventBus().publish(address, json);
 			if (log.isDebugEnabled()) {
 				log.debug("Deleted event sent {" + address + "}");
