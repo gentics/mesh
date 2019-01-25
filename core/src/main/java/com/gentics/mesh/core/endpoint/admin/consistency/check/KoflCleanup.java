@@ -27,7 +27,7 @@ public class KoflCleanup extends AbstractConsistencyCheck {
 
 	@Override
 	public long getBatchSize() {
-		return 300L;
+		return 10L;
 	}
 
 	@Override
@@ -39,14 +39,12 @@ public class KoflCleanup extends AbstractConsistencyCheck {
 
 	private void purgeNodeVersions(Tx tx, NodeImpl node, ConsistencyCheckResult result, boolean attemptRepair) {
 		Iterable<? extends NodeGraphFieldContainer> initials = node.getAllInitialGraphFieldContainers();
-		// BulkActionContext bac = MeshInternal.get().searchQueue().createBulkContext();
 		if (attemptRepair) {
 			for (NodeGraphFieldContainer initial : initials) {
-				purgeVersion(tx, 0L, null, initial, initial, false);
+				Long counter = 0L;
+				purgeVersion(tx, counter, null, initial, initial, false);
 			}
 		}
-		// bac.process();
-
 	}
 
 	/**
@@ -63,7 +61,7 @@ public class KoflCleanup extends AbstractConsistencyCheck {
 	 * @param previousRemoved
 	 *            Flag which indicated whether the previous version has been removed
 	 */
-	private void purgeVersion(Tx tx, long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
+	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
 		boolean previousRemoved) {
 		List<? extends NodeGraphFieldContainer> nextVersions = Lists.newArrayList(version.getNextVersions());
 
@@ -83,7 +81,8 @@ public class KoflCleanup extends AbstractConsistencyCheck {
 				lastRemaining.setNextVersion(version);
 				txCounter++;
 			}
-			if (txCounter % getBatchSize() == 0) {
+			if (txCounter % getBatchSize() == 0 && txCounter != 0) {
+				log.info("Comitting batch - Elements handled {" + txCounter + "}");
 				tx.getGraph().commit();
 			}
 			// Update the reference since this version is now the last remaining because it was not removed
