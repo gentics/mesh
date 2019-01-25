@@ -65,19 +65,6 @@ public class JobEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Ignore("Periodic job processing has been deactivated")
-	public void testPeriodicProcessing() {
-		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
-		tx(() -> group().addRole(roles().get("admin")));
-		assertEquals(QUEUED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
-
-		// Wait the initial startup delay and after that the periodic delay
-		TestUtils.sleep(30_000 + 30_000);
-
-		assertEquals(FAILED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
-	}
-
-	@Test
 	public void testDeleteFailedJob() {
 
 		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
