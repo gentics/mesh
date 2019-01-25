@@ -23,8 +23,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.router.RouterStorage;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
+import io.reactivex.functions.Consumer;
+import io.vertx.core.Future;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -76,6 +83,28 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
+
+	private static <T> Maybe<T> fromFuture(Consumer<Future<T>> consumer) {
+		return Maybe.create(sub -> {
+			Future<T> future = Future.future();
+			future.setHandler(result -> {
+				if (result.succeeded()) {
+					if (result.result() == null) {
+						sub.onComplete();
+					} else {
+						sub.onSuccess(result.result());
+					}
+				} else {
+					sub.onError(result.cause());
+				}
+			});
+			consumer.accept(future);
+		});
+	}
+
+	private static <T> Completable fromFutureCompletable(Consumer<Future<T>> consumer) {
+		return fromFuture(consumer).ignoreElement();
+	}
 
 	@Override
 	public MeshTestContext getTestContext() {
@@ -544,5 +573,21 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		request.setSchemaName("binary_content");
 		request.setParentNodeUuid(parentUuid);
 		return client().createNode(PROJECT_NAME, request).toSingle();
+	}
+
+	protected Completable stopRestVerticle() {
+		return ((BootstrapInitializerImpl) boot()).loader.get().unloadVerticles();
+	}
+
+	protected Completable startRestVerticle() {
+		return Completable.fromAction(() -> {
+			CoreVerticleLoader loader = ((BootstrapInitializerImpl) boot()).loader.get();
+			loader.loadVerticles();
+			RouterStorage.addProject(TestDataProvider.PROJECT_NAME);
+		});
+	}
+
+	protected Completable restartRestVerticle() {
+		return stopRestVerticle().andThen(startRestVerticle());
 	}
 }

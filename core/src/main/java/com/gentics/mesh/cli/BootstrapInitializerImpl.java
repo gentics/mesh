@@ -434,7 +434,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Load the verticles
-		loader.get().loadVerticles(configuration);
+		loader.get().loadVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}

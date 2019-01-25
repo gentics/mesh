@@ -4,8 +4,9 @@ import com.gentics.mesh.rest.client.EventbusEvent;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
-import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import okhttp3.OkHttpClient;
@@ -33,12 +34,13 @@ public class OkHttpWebsocket implements MeshWebsocket {
 	private static final Object connectionDummy = new Object();
 
 	private final Subject<EventbusEvent> events = PublishSubject.create();
-	private final Subject<Object> connections = BehaviorSubject.create(); // To always get the latest connection event
+	private final Subject<Object> connections = PublishSubject.create();
 	private final Subject<Throwable> errors = PublishSubject.create();
 	private final Set<String> registeredEventAddresses = Collections.synchronizedSet(new HashSet<>());
 
 	private WebSocket currentConnection;
 	private AtomicBoolean connected = new AtomicBoolean(false);
+	private Disposable pingInterval;
 
 	public OkHttpWebsocket(OkHttpClient client, MeshRestClientConfig config) {
 		this.client = client;
@@ -100,7 +102,7 @@ public class OkHttpWebsocket implements MeshWebsocket {
 	}
 
 	private void startPings() {
-		Observable.interval(config.getWebsocketReconnectInterval().toMillis(), TimeUnit.MILLISECONDS)
+		pingInterval = Observable.interval(config.getWebsocketReconnectInterval().toMillis(), TimeUnit.MILLISECONDS)
 			.subscribe(ignore -> send(eventbusMessage(EventbusMessageType.PING)));
 	}
 
@@ -117,6 +119,7 @@ public class OkHttpWebsocket implements MeshWebsocket {
 		events.onComplete();
 		connections.onComplete();
 		errors.onComplete();
+		pingInterval.dispose();
 	}
 
 	@Override
@@ -152,7 +155,16 @@ public class OkHttpWebsocket implements MeshWebsocket {
 
 	@Override
 	public Observable<Object> connections() {
-		return connections;
+		return connections
+			// If already connected, emit the connectionDummy once. Similar to BehaviourSubject, but this does not
+			// emit an event if the socket is disconnected.
+			.startWith(Maybe.create(sub -> {
+				if (connected.get()) {
+					sub.onSuccess(connectionDummy);
+				} else {
+					sub.onComplete();
+				}
+			}).toObservable());
 	}
 
 	@Override

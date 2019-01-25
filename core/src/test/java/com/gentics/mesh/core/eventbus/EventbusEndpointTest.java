@@ -11,8 +11,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.util.RxUtil;
+import io.reactivex.Completable;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -146,4 +149,39 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		// Send msg
 		ws.publishEvent("custom.myEvent", "someText");
 	}
+
+	@Test
+	public void testAutoReconnect(TestContext context) {
+		Async nodesCreated = context.strictAsync(2);
+		Async connections = context.strictAsync(2);
+		Async errors = context.async();
+
+		ws.registerEvents(MeshEvent.NODE_CREATED);
+		ws.events().subscribe(event -> nodesCreated.countDown(), context::fail);
+
+		ws.connections()
+			.doOnNext(ignore -> connections.countDown())
+			// Skip initial connection
+			.skip(1)
+			.subscribe(ignore -> createBinaryContent().subscribe());
+
+		ws.errors().take(1).subscribe(ignore -> errors.complete());
+
+		createBinaryContent().toCompletable()
+			.andThen(stopRestVerticle())
+			.andThen(verifyStoppedRestVerticle())
+			.andThen(startRestVerticle())
+			.subscribe(() -> {}, context::fail);
+	}
+
+	/**
+	 * Verifies that the rest verticle is actually stopped.
+	 * @return
+	 */
+	private Completable verifyStoppedRestVerticle() {
+		return client().me()
+			.toCompletable()
+			.compose(RxUtil::flip);
+	}
+
 }

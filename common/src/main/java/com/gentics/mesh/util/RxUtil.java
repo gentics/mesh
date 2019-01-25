@@ -7,6 +7,7 @@ import java.io.PipedOutputStream;
 import java.util.function.Function;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -91,4 +92,19 @@ public final class RxUtil {
 			.doOnCancel(file::close);
 	}
 
+	/**
+	 * Flips a completable. Emits an error when the source has completed, and completes when the source emits an error.
+	 * @param source
+	 * @return
+	 */
+	public static CompletableSource flip(Completable source) {
+		return source.toObservable().materialize()
+			.map(notificiation -> {
+				if (notificiation.isOnError()) {
+					return notificiation;
+				} else {
+					throw new RuntimeException("Completable has succeeded");
+				}
+			}).ignoreElements();
+	}
 }

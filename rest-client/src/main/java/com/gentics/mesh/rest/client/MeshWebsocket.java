@@ -72,6 +72,7 @@ public interface MeshWebsocket {
 	 * that emits a dummy Object whenever the client connects or reconnects to mesh. Multiple subscriptions will not affect the websocket in any way.
 	 *
 	 * <p>This is useful when the websocket connection is unstable and and reconnects are expected.</p>
+	 * <p>If the socket is connected, a subscription to this </p>
 	 */
 	Observable<Object> connections();
 
