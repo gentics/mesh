@@ -26,6 +26,8 @@ title: Changelog
 [[v0.29.3]]
 == 0.29.3 (TBD)
 
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.14
+
 icon:check[] Core: Fixed a bug that caused nodes with a slash in their segment field to not be found via webroot.
 
 icon:check[] Restore: A `ClassCastException` has been fixed which could be observed directly after a backup restore operation.
