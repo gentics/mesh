@@ -25,7 +25,7 @@ public class RestructureTags extends AbstractChange {
 	}
 
 	@Override
-	public void actualApply() {
+	public void applyInTx() {
 		Vertex root = getMeshRootVertex();
 		Vertex tagFamilyRoot = root.getVertices(OUT, "HAS_TAGFAMILY_ROOT").iterator().next();
 		// Iterate over all tag families

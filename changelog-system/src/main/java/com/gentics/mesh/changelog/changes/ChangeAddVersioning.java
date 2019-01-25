@@ -31,7 +31,7 @@ public class ChangeAddVersioning extends AbstractChange {
 	}
 
 	@Override
-	public void actualApply() {
+	public void applyInTx() {
 		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
 		Vertex admin = findAdmin();

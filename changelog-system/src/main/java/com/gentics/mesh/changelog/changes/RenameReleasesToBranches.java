@@ -21,11 +21,14 @@ public class RenameReleasesToBranches extends AbstractChange {
 	}
 
 	@Override
-	public void actualApply() {
+	public void applyOutsideTx() {
 		getDb().addVertexType("BranchImpl", "MeshVertexImpl");
 		getDb().addVertexType("BranchRootImpl", "MeshVertexImpl");
 		getDb().addVertexType("BranchMigrationJobImpl", "MeshVertexImpl");
+	}
 
+	@Override
+	public void applyInTx() {
 		migrateVertices("ReleaseImpl", "BranchImpl");
 		migrateVertices("ReleaseRootImpl", "BranchRootImpl");
 		migrateVertices("ReleaseMigrationJobImpl", "BranchMigrationJobImpl");
@@ -79,8 +82,9 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 			if (update) {
 				n++;
-				if (n % 100 == 0) {
+				if (n % 1000 == 0) {
 					log.info("Migrated {" + n + "} edges");
+					getGraph().commit();
 				}
 			}
 		}
@@ -128,8 +132,9 @@ public class RenameReleasesToBranches extends AbstractChange {
 			toV.setProperty("ferma_type", to);
 			fromV.remove();
 			count++;
-			if (count % 100 == 0) {
+			if (count % 1000 == 0) {
 				log.info("Migrated {" + count + "} vertices.");
+				getGraph().commit();
 			}
 		}
 		log.info("Migrated total of {" + count + "} vertices from {" + from + "} to {" + to + "}");

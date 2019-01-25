@@ -7,18 +7,8 @@ import com.gentics.mesh.changelog.AbstractChange;
 public class ReindexDatabase extends AbstractChange {
 
 	@Override
-	public void actualApply() {
-		try {
-			getDb().initConfigurationFiles();
-		} catch (IOException e) {
-			throw new RuntimeException("Error while generating new configuration files", e);
-		}
+	public void applyOutsideTx() {
 		getDb().reindex();
-	}
-
-	@Override
-	protected boolean applyInTx() {
-		return false;
 	}
 
 	@Override
