@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest.client.impl;
 
-public class EmptyResponse {
+public final class EmptyResponse {
 	private EmptyResponse() {
 
 	}
