@@ -41,6 +41,8 @@ icon:plus[] Changelog: The changelog execution performance has been increased.
 
 icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
 
+icon:check[] Restore: An error will be returned when `/api/v1/admin/graphdb/restore` is being invoked in clustered mode. Restoring the database is not possible in this mode.
+
 icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
 
 icon:check[] Image: Resizing images will now use the balanced quality setting. This helps with images that suffered from visible aliasing. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.

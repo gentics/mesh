@@ -329,6 +329,8 @@ The endpoint will utilize the latest backup found in the backup directory.
 
 NOTE: Invoking the `backup`/`restore` endpoints will block all execution and request processing.
 
+NOTE: The restore operation can't be executed on Mesh instances which have clustering enabled.
+
 If you already run Gentics Mesh in a cluster you can start a dedicated backup instance which can run the backup process without interference of the other nodes.
 
 Take a look at our link:https://github.com/gentics/mesh-compose/tree/clustering#online-backup[docker-compose example] for a documented setup.
