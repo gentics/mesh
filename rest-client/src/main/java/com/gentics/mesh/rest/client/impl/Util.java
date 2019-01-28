@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -51,10 +52,11 @@ public final class Util {
 	 * @return
 	 */
 	public static String eventbusMessage(EventbusMessageType type, String address, Object body) {
+		JsonNode jsonBody = JsonUtil.getMapper().valueToTree(body);
 		return JsonUtil.getMapper().createObjectNode()
 			.put("type", type.type)
 			.put("address", address)
-			.put("body", JsonUtil.toJson(body))
+			.set("body", jsonBody)
 			.toString();
 	}
 

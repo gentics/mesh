@@ -36,7 +36,8 @@ public class NodeParametersTest {
 		assertEquals("The method did not return a fluent API", params, params.setResolveLinks(LinkType.FULL));
 		assertEquals("The parameter should have been changed.", LinkType.FULL, params.getResolveLinks());
 
-		assertEquals("expandAll=true&expand=ä,b,c&resolveLinks=full", params.getQueryParameters());
+		assertEquals("expand=ä,b,c&resolveLinks=full&expandAll=true", params.getQueryParameters());
 	}
+
 
 }

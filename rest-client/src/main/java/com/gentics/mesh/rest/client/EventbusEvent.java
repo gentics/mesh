@@ -20,7 +20,7 @@ public class EventbusEvent {
 	 */
 	public EventbusEvent(String rawText) throws IOException {
 		ObjectNode parsed = (ObjectNode) JsonUtil.getMapper().readTree(rawText);
-		address = parsed.get("address").asText();
+		address = parsed.get("address").textValue();
 		body = parsed.get("body");
 	}
 
@@ -46,7 +46,7 @@ public class EventbusEvent {
 	 */
 	public String getBodyAsString() {
 		if (body.isTextual()) {
-			return body.asText();
+			return body.textValue();
 		} else {
 			return null;
 		}

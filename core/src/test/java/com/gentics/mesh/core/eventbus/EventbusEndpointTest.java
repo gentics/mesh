@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.MeshEvent;
@@ -33,8 +34,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import java.util.concurrent.TimeUnit;
 
 @RunWith(VertxUnitRunner.class)
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -67,7 +66,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			MeshAssertions.assertThat(event.getBodyAsJson().get("test").asText()).isEqualTo("someValue");
+			MeshAssertions.assertThat(event.getBodyAsJson().get("test").textValue()).isEqualTo("someValue");
 			async.complete();
 		});
 
@@ -84,8 +83,8 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
 			ObjectNode body = event.getBodyAsJson();
-			context.assertNotNull(body.get("uuid").asText());
-			context.assertEquals("content", body.get("schemaName").asText());
+			context.assertNotNull(body.get("uuid").textValue());
+			context.assertEquals("content", body.get("schemaName").textValue());
 			context.assertFalse(body.has("languageTag"));
 			async.complete();
 		});
@@ -101,9 +100,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
 			ObjectNode body = event.getBodyAsJson();
-			context.assertNotNull(body.get("uuid").asText());
-			context.assertEquals("content", body.get("schemaName").asText());
-			context.assertEquals("en", body.get("languageTag").asText());
+			context.assertNotNull(body.get("uuid").textValue());
+			context.assertEquals("content", body.get("schemaName").textValue());
+			context.assertEquals("en", body.get("languageTag").textValue());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
@@ -119,8 +118,8 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
 			ObjectNode body = event.getBodyAsJson();
-			assertNotNull(body.get("uuid").asText());
-			assertEquals("content", body.get("schemaName").asText());
+			assertNotNull(body.get("uuid").textValue());
+			assertEquals("content", body.get("schemaName").textValue());
 			async.complete();
 		});
 
@@ -177,14 +176,12 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testHeartbeat(TestContext context) {
+	public void testHeartbeat() throws InterruptedException {
 		// Simply tests if the connections has no errors for 10 seconds.
-		Async async = context.async();
 
-		ws.errors().subscribe(context::fail);
+		ws.errors().subscribe(ignore -> fail());
 
-		Completable.complete().delay(10, TimeUnit.SECONDS)
-			.subscribe(async::complete);
+		Thread.sleep(10000);
 	}
 
 	/**
