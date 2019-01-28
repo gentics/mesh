@@ -15,6 +15,8 @@ public interface NodeBinaryFieldClientMethods {
 
 	/**
 	 * Update the binary field for the node with the given nodeUuid in the given project using the provided data.
+	 *
+	 * @deprecated File could be very large which takes a lot of memory. Use {@link #updateNodeBinaryField(String, String, String, String, String, InputStream, long, String, String, ParameterProvider...)} instead.
 	 * 
 	 * @param projectName
 	 *            Name of the project which contains the node
@@ -32,6 +34,7 @@ public interface NodeBinaryFieldClientMethods {
 	 * @param contentType
 	 * @return
 	 */
+	@Deprecated
 	MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
 			String fieldKey, byte[] fileData, String fileName, String contentType, ParameterProvider... parameters);
 
