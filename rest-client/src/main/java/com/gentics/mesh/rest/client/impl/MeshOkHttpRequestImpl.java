@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.client.impl;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -124,29 +125,47 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	private T mapResponse(Response response) throws IOException, MeshRestClientMessageException {
-		if (!response.isSuccessful()) {
-			throw new MeshRestClientMessageException(
-				response.code(),
-				response.message(),
-				response.body().string(),
-				HttpMethod.valueOf(method.toUpperCase()),
-				stripOrigin(url)
-			);
+		throwOnError(response);
+
+		String contentType = response.header("Content-Type");
+		if (resultClass.isAssignableFrom(EmptyResponse.class)) {
+			return (T) EmptyResponse.getInstance();
+		} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
+			return (T) new OkHttpBinaryResponse(response);
+		} else if (resultClass.isAssignableFrom(MeshWebrootResponse.class)) {
+			return (T) new OkHttpWebrootResponse(response);
+		} else if (contentType != null && contentType.startsWith("application/json")) {
+			return JsonUtil.readValue(response.body().string(), resultClass);
+		} else if (resultClass.isAssignableFrom(String.class)) {
+			return (T) response.body().string();
 		} else {
-			String contentType = response.header("Content-Type");
-			if (resultClass.isAssignableFrom(EmptyResponse.class)) {
-				return (T) EmptyResponse.getInstance();
-			} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
-				return (T) new OkHttpBinaryResponse(response);
-			} else if (resultClass.isAssignableFrom(MeshWebrootResponse.class)) {
-				return (T) new OkHttpWebrootResponse(response);
-			} else if (contentType != null && contentType.startsWith("application/json")) {
-				return JsonUtil.readValue(response.body().string(), resultClass);
-			} else if (resultClass.isAssignableFrom(String.class)) {
-				return (T) response.body().string();
-			} else {
-				throw new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}");
+			throw new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}");
+		}
+	}
+
+	private void throwOnError(Response response) throws IOException, MeshRestClientMessageException {
+		if (!response.isSuccessful()) {
+			String body = response.body().string();
+			MeshRestClientMessageException err;
+			try {
+				err = new MeshRestClientMessageException(
+					response.code(),
+					response.message(),
+					JsonUtil.readValue(body, GenericMessageResponse.class),
+					HttpMethod.valueOf(method.toUpperCase()),
+					stripOrigin(url)
+				);
+			} catch (GenericRestException e) {
+				err = new MeshRestClientMessageException(
+					response.code(),
+					response.message(),
+					body,
+					HttpMethod.valueOf(method.toUpperCase()),
+					stripOrigin(url)
+				);
 			}
+			response.close();
+			throw err;
 		}
 	}
 
@@ -171,8 +190,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	@Override
 	public void blockingAwait() {
 		try {
-			client.newCall(createRequest()).execute().close();
-		} catch (IOException e) {
+			Response response = client.newCall(createRequest()).execute();
+			throwOnError(response);
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
