@@ -1140,7 +1140,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<String> resolveLinks(String body, ParameterProvider... parameters) {
 		Objects.requireNonNull(body, "body must not be null");
-		return handleRequest(POST, "/utilities/linkResolver" + getQuery(parameters), String.class, body);
+		return handleTextRequest(POST, "/utilities/linkResolver" + getQuery(parameters), String.class, body);
 	}
 
 	@Override

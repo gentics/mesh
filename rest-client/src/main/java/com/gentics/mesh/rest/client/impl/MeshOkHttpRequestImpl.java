@@ -65,7 +65,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> PlainTextRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String text) {
+	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String text) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
 	}
 

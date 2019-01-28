@@ -68,6 +68,11 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	@Override
+	public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data) {
+		return MeshOkHttpRequestImpl.TextRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, data);
+	}
+
+	@Override
 	public MeshWebsocket eventbus() {
 		return new OkHttpWebsocket(client, config);
 	}

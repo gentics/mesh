@@ -98,6 +98,17 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @param method
 	 * @param path
 	 * @param classOfT
+	 * @param data
+	 * @return
+	 */
+	abstract public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data);
+
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 *
+	 * @param method
+	 * @param path
+	 * @param classOfT
 	 * @param jsonBodyData
 	 * @return
 	 */
