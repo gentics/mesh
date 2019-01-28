@@ -50,7 +50,7 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testRestoreInClustereMode() {
+	public void testRestoreInClusterMode() {
 		Mesh.mesh().getOptions().getClusterOptions().setEnabled(true);
 		call(() -> client().invokeRestore(), SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode");
 	}
