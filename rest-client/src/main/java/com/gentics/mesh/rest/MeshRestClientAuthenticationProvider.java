@@ -26,7 +26,7 @@ public interface MeshRestClientAuthenticationProvider {
 	Completable addAuthenticationInformation(MeshRequest<?> request);
 
 	/**
-	 * Logs the user in with the credentials that were set with {@link setLogin}
+	 * Logs the user in with the credentials that were set with {@link #setLogin(String, String)}
 	 * @return A future that completes when the login has completed.
 	 */
 	Single<GenericMessageResponse> login(AbstractMeshRestHttpClient client);

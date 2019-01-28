@@ -3,7 +3,10 @@ package com.gentics.mesh.parameter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.handler.ActionContext;
 
-import io.vertx.core.MultiMap;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.gentics.mesh.util.HttpQueryUtils.toMap;
 
 /**
  * Abstract class for parameter provider implementations.
@@ -11,19 +14,19 @@ import io.vertx.core.MultiMap;
 @GenerateDocumentation
 public abstract class AbstractParameters implements ParameterProvider {
 
-	protected MultiMap parameters;
+	protected Map<String, String> parameters;
 
 	public AbstractParameters(ActionContext ac) {
-		this(ac.getParameters());
+		this(toMap(ac.getParameters()));
 		validate();
 	}
 
-	public AbstractParameters(MultiMap parameters) {
+	public AbstractParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
 	}
 
 	public AbstractParameters() {
-		this(MultiMap.caseInsensitiveMultiMap());
+		this(new HashMap<>());
 	}
 
 	/**
@@ -39,13 +42,13 @@ public abstract class AbstractParameters implements ParameterProvider {
 	}
 
 	@Override
-	public MultiMap getParameters() {
+	public Map<String, String> getParameters() {
 		return parameters;
 	}
 
 	@Override
 	public void setParameter(String name, String value) {
-		parameters.set(name, value);
+		parameters.put(name, value);
 	}
 
 	@Override

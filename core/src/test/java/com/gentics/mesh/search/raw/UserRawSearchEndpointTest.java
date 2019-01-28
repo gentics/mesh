@@ -6,14 +6,13 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class UserRawSearchEndpointTest extends AbstractMeshTest {
@@ -25,7 +24,7 @@ public class UserRawSearchEndpointTest extends AbstractMeshTest {
 
 		String json = getESText("userWildcard.es");
 
-		JsonObject response = call(() -> client().searchUsersRaw(json));
+		JSONObject response = call(() -> client().searchUsersRaw(json));
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", userResponse.getUuid(), "The correct element was not found.");
 	}

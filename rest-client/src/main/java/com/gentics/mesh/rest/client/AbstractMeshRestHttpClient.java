@@ -4,10 +4,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.JWTAuthentication;
+import com.gentics.mesh.rest.client.impl.HttpMethod;
 import io.reactivex.Single;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.io.InputStream;
 
@@ -15,8 +13,6 @@ import java.io.InputStream;
  * Abstract class for mesh REST clients.
  */
 public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
-
-	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestHttpClient.class);
 
 	public static final int DEFAULT_PORT = 8080;
 

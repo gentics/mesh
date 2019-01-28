@@ -108,19 +108,16 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
-import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Single;
-import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
-import io.vertx.core.http.WebSocket;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
@@ -861,8 +858,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchNodesRaw(String json, ParameterProvider... parameters) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class, parameters);
+	public MeshRequest<JSONObject> searchNodesRaw(String json, ParameterProvider... parameters) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class, parameters);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -873,8 +870,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchUsersRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchUsersRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -885,8 +882,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchGroupsRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchGroupsRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -898,8 +895,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchRolesRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchRolesRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -911,8 +908,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchProjectsRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchProjectsRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -923,8 +920,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagsRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchTagsRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -935,8 +932,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagFamiliesRaw(String projectName, String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchTagFamiliesRaw(String projectName, String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -947,8 +944,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchSchemasRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchSchemasRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -959,8 +956,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchMicroschemasRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchMicroschemasRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1368,8 +1365,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchNodesRaw(String projectName, String json, ParameterProvider... parameters) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class, parameters);
+	public MeshRequest<JSONObject> searchNodesRaw(String projectName, String json, ParameterProvider... parameters) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class, parameters);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1380,8 +1377,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagsRaw(String projectName, String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchTagsRaw(String projectName, String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1392,8 +1389,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagFamiliesRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<JSONObject> searchTagFamiliesRaw(String json) {
+		LocalActionContextImpl<JSONObject> ac = createContext(JSONObject.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

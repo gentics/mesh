@@ -7,14 +7,13 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import java.io.IOException;
 
 import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class RoleRawSearchEndpointTest extends AbstractMeshTest {
@@ -26,7 +25,7 @@ public class RoleRawSearchEndpointTest extends AbstractMeshTest {
 
 		String query = getSimpleTermQuery("name.raw", roleName);
 
-		JsonObject response = call(() -> client().searchRolesRaw(query));
+		JSONObject response = call(() -> client().searchRolesRaw(query));
 		assertThat(response).has("responses[0].hits.hits[0]._id", role.getUuid(), "The correct element was not found.");
 	}
 }

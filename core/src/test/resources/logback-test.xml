@@ -32,7 +32,6 @@
 	<logger name="com.gentics.mesh.search.index.AbstractSearchHandler" level="DEBUG" />
 	
 	<logger name="com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler" level="DEBUG"/>
-	<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
 	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
 	<logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/>
 	

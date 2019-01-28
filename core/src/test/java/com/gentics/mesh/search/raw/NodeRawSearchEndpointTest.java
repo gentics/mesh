@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import java.util.Arrays;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -21,8 +22,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
 public class NodeRawSearchEndpointTest extends AbstractMeshTest {
@@ -63,10 +62,10 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteProject(projectUuid()));
 
 		// search in old project
-		JsonObject response = call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue)));
+		JSONObject response = call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue)));
 		assertThat(response).has("responses[0].hits.total", "2", "Not exactly two item was found.");
-		String uuid1 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
-		String uuid2 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");
+		String uuid1 = response.getJSONArray("responses").getJSONObject(0).getJSONObject("hits").getJSONArray("hits").getJSONObject(0).getString("_id");
+		String uuid2 = response.getJSONArray("responses").getJSONObject(0).getJSONObject("hits").getJSONArray("hits").getJSONObject(1).getString("_id");
 		assertThat(Arrays.asList(uuid1, uuid2)).containsExactlyInAnyOrder(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
 
 	}

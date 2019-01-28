@@ -13,8 +13,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
-
-import io.vertx.core.json.JsonObject;
+import org.codehaus.jettison.json.JSONObject;
 
 public interface SearchClientMethods {
 
@@ -35,7 +34,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchNodesRaw(String json, ParameterProvider... parameters);
+	MeshRequest<JSONObject> searchNodesRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search for nodes in the project.
@@ -57,7 +56,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchNodesRaw(String projectName, String json, ParameterProvider... parameters);
+	MeshRequest<JSONObject> searchNodesRaw(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search users.
@@ -75,7 +74,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchUsersRaw(String json);
+	MeshRequest<JSONObject> searchUsersRaw(String json);
 
 	/**
 	 * Search groups.
@@ -93,7 +92,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchGroupsRaw(String json);
+	MeshRequest<JSONObject> searchGroupsRaw(String json);
 
 	/**
 	 * Search roles.
@@ -111,7 +110,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchRolesRaw(String json);
+	MeshRequest<JSONObject> searchRolesRaw(String json);
 
 	/**
 	 * Search projects.
@@ -129,7 +128,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchProjectsRaw(String json);
+	MeshRequest<JSONObject> searchProjectsRaw(String json);
 
 	/**
 	 * Search tags.
@@ -147,7 +146,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchTagsRaw(String json);
+	MeshRequest<JSONObject> searchTagsRaw(String json);
 
 	/**
 	 * Search tags in project
@@ -168,7 +167,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchTagsRaw(String projectName, String json);
+	MeshRequest<JSONObject> searchTagsRaw(String projectName, String json);
 
 	/**
 	 * Search tag families.
@@ -185,7 +184,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchTagFamiliesRaw(String json);
+	MeshRequest<JSONObject> searchTagFamiliesRaw(String json);
 
 	/**
 	 * Search tag families in project.
@@ -204,7 +203,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchTagFamiliesRaw(String projectName, String json);
+	MeshRequest<JSONObject> searchTagFamiliesRaw(String projectName, String json);
 
 	/**
 	 * Search schemas.
@@ -222,7 +221,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchSchemasRaw(String json);
+	MeshRequest<JSONObject> searchSchemasRaw(String json);
 
 	/**
 	 * Search microschemas.
@@ -241,7 +240,7 @@ public interface SearchClientMethods {
 	 *            Elasticsearch search request
 	 * @return
 	 */
-	MeshRequest<JsonObject> searchMicroschemasRaw(String json);
+	MeshRequest<JSONObject> searchMicroschemasRaw(String json);
 
 	/**
 	 * Clear all search indices by removing and re-creating them.

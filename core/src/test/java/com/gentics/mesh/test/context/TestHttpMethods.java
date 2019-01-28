@@ -31,7 +31,7 @@ public interface TestHttpMethods extends TestHelperMethods {
 
 		if (params != null) {
 			for (ParameterProvider param : params) {
-				for (Entry<String, String> entry : param.getParameters()) {
+				for (Entry<String, String> entry : param.getParameters().entrySet()) {
 					url.addQueryParameter(entry.getKey(), entry.getValue());
 				}
 			}

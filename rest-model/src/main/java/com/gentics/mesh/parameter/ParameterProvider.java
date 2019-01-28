@@ -6,8 +6,6 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.BooleanUtils;
 import org.raml.model.parameter.QueryParameter;
 
-import io.vertx.core.MultiMap;
-
 public interface ParameterProvider {
 
 	/**
@@ -42,7 +40,7 @@ public interface ParameterProvider {
 	 */
 	String getParameter(String name);
 
-	MultiMap getParameters();
+	Map<String, String> getParameters();
 
 	/**
 	 * Convert the provides object to a string representation.
@@ -77,8 +75,8 @@ public interface ParameterProvider {
 	 */
 	default String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
-		MultiMap params = getParameters();
-		for (Entry<String, String> entry : params.entries()) {
+		Map<String, String> params = getParameters();
+		for (Entry<String, String> entry : params.entrySet()) {
 			String value = entry.getValue();
 			if (value != null) {
 				if (query.length() != 0) {

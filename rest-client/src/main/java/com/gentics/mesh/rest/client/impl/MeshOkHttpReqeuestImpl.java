@@ -8,8 +8,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.reactivex.Single;
-import io.reactivex.disposables.Disposable;
-import io.vertx.core.http.HttpMethod;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;

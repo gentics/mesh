@@ -240,7 +240,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		assertEquals("/News/" + URIUtils.encodeSegment(newName), after.getPath());
 
 		String[] path = new String[] { "News", newName };
-		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 			new NodeParametersImpl().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
 		assertEquals(uuid, response.getNodeResponse().getUuid());
 		assertEquals("/News/" + URIUtils.encodeSegment(newName), response.getNodeResponse().getPath());

@@ -7,13 +7,12 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 
 import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
 public class TagRawSearchEndpointTest extends AbstractMeshTest {
@@ -25,7 +24,7 @@ public class TagRawSearchEndpointTest extends AbstractMeshTest {
 		TagResponse tag = createTag(PROJECT_NAME, tx(() -> tagFamily("colors").getUuid()), tagName);
 
 		String query = getSimpleTermQuery("name.raw", tagName);
-		JsonObject response = call(() -> client().searchTagsRaw(query));
+		JSONObject response = call(() -> client().searchTagsRaw(query));
 		assertThat(response).has("responses[0].hits.hits[0]._id", tag.getUuid(), "The correct element was not found.");
 
 	}

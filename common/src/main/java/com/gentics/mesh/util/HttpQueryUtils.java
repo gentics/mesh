@@ -6,8 +6,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import io.vertx.core.MultiMap;
 
 public final class HttpQueryUtils {
 
@@ -36,5 +38,20 @@ public final class HttpQueryUtils {
 
 		}
 		return queryPairs;
+	}
+
+	/**
+	 * Converts a Vert.x multimap to a java map. If multiple entries with the same name are found, the last entry will
+	 * be used.
+	 *
+	 * @param map
+	 * @return
+	 */
+	public static Map<String, String> toMap(MultiMap map) {
+		return map.entries().stream().collect(Collectors.toMap(
+			Map.Entry::getKey,
+			Map.Entry::getValue,
+			(a, b) -> b
+		));
 	}
 }

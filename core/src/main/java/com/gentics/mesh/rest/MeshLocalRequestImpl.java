@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest.client.impl;
+package com.gentics.mesh.rest;
 
 import com.gentics.mesh.rest.client.MeshResponse;
 import io.reactivex.Maybe;

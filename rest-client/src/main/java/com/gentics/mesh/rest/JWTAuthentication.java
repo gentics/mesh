@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
 
-import io.vertx.core.http.HttpMethod;
+import com.gentics.mesh.rest.client.impl.HttpMethod;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 

@@ -5,7 +5,6 @@ import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebsocket;
-import io.vertx.core.http.HttpMethod;
 import okhttp3.OkHttpClient;
 
 import java.io.InputStream;
