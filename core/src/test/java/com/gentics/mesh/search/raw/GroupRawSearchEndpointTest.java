@@ -5,7 +5,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertNotNull;
 
-import org.codehaus.jettison.json.JSONObject;
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import com.gentics.mesh.test.TestSize;
@@ -22,7 +22,7 @@ public class GroupRawSearchEndpointTest extends AbstractMeshTest {
 
 		String query = getSimpleTermQuery("uuid", uuid);
 
-		JSONObject response = call(() -> client().searchGroupsRaw(query));
+		JsonObject response = new JsonObject(call(() -> client().searchGroupsRaw(query)).toString());
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", uuid, "The correct element was not found.");
 	}

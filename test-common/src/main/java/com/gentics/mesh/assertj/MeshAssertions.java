@@ -72,7 +72,6 @@ import com.gentics.mesh.search.TrackingSearchProvider;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.codehaus.jettison.json.JSONObject;
 
 public class MeshAssertions extends Assertions {
 
@@ -122,10 +121,6 @@ public class MeshAssertions extends Assertions {
 
 	public static JsonObjectAssert assertThat(JsonObject actual) {
 		return new JsonObjectAssert(actual);
-	}
-
-	public static JsonObjectAssert assertThat(JSONObject actual) {
-		return new JsonObjectAssert(new JsonObject(actual.toString()));
 	}
 
 	public static MicronodeResponseAssert assertThat(MicronodeResponse actual) {

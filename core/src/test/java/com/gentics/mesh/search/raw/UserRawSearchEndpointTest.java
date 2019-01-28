@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import org.codehaus.jettison.json.JSONObject;
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -24,7 +24,7 @@ public class UserRawSearchEndpointTest extends AbstractMeshTest {
 
 		String json = getESText("userWildcard.es");
 
-		JSONObject response = call(() -> client().searchUsersRaw(json));
+		JsonObject response = new JsonObject(call(() -> client().searchUsersRaw(json)).toString());
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", userResponse.getUuid(), "The correct element was not found.");
 	}

@@ -1,15 +1,17 @@
 package com.gentics.mesh.rest.client;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gentics.mesh.json.JsonUtil;
+
+import java.io.IOException;
 
 public class EventbusEvent {
 	private final String address;
 	private final Object body;
 
-	public EventbusEvent(String rawText) throws JSONException {
-		JSONObject parsed = new JSONObject(rawText);
-		address = parsed.getString("address");
+	public EventbusEvent(String rawText) throws IOException {
+		ObjectNode parsed = (ObjectNode) JsonUtil.getMapper().readTree(rawText);
+		address = parsed.get("address").asText();
 		body = parsed.get("body");
 	}
 
@@ -34,9 +36,9 @@ public class EventbusEvent {
 		}
 	}
 
-	public JSONObject getBodyAsJson() {
-		if (body instanceof JSONObject) {
-			return (JSONObject) body;
+	public ObjectNode getBodyAsJson() {
+		if (body instanceof ObjectNode) {
+			return (ObjectNode) body;
 		} else {
 			return null;
 		}

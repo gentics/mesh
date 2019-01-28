@@ -22,10 +22,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.vertx.core.json.JsonObject;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -41,6 +37,8 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -109,7 +107,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		updateRequest.setElasticsearch(new JsonObject());
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
-		assertTrue("The options should be empty", new JSONObject().equals(response3.getElasticsearch()));
+		assertTrue("The options should be empty", new JsonObject().equals(response3.getElasticsearch()));
 		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response2.getVersion(), response3
 			.getVersion());
 		assertThat(response3.getUrlFields()).containsOnly("text");
@@ -166,7 +164,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testCustomAnalyzerAndQuery() throws IOException, JSONException {
+	public void testCustomAnalyzerAndQuery() throws IOException {
 
 		// 1. Create schema
 		SchemaCreateRequest schema = new SchemaCreateRequest();
@@ -203,36 +201,36 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		}
 		// 3. Invoke search
 		String searchQuery = getText("/elasticsearch/custom/customSearchQuery.es");
-		JSONObject searchResult = call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery));
-		System.out.println(searchResult.toString(2));
+		JsonObject searchResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery)).toString());
+		System.out.println(searchResult.encodePrettily());
 
 		String query = "Content t";
-		JSONObject autocompleteQuery = new JSONObject(getText("/elasticsearch/custom/autocompleteQuery.es"));
-		autocompleteQuery.getJSONObject("query").getJSONObject("match").getJSONObject("fields.content.auto").put("query", query);
-		JSONObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.toString(2)));
-		System.out.println(autocompleteResult.toString(2));
+		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/custom/autocompleteQuery.es"));
+		autocompleteQuery.getJsonObject("query").getJsonObject("match").getJsonObject("fields.content.auto").put("query", query);
+		JsonObject autocompleteResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily())).toString());
+		System.out.println(autocompleteResult.encodePrettily());
 		System.out.println("------------------------------");
-		System.out.println(new JSONObject(parseResult(autocompleteResult, query)).toString(2));
+		System.out.println(new JsonObject(parseResult(autocompleteResult, query)).encodePrettily());
 
 	}
 
 	final static String REGEX = "%ha%(.*?)%he%";
 	final static Pattern HL_PATTERN = Pattern.compile(REGEX);
 
-	private Map<String, Object> parseResult(JSONObject result, String query) throws JSONException {
+	private Map<String, Object> parseResult(JsonObject result, String query) {
 		List<String> partials = Arrays.asList(query.split(" "));
 		Map<String, Object> map = new HashMap<>();
-		JSONArray hits = result
-			.getJSONArray("responses")
-			.getJSONObject(0)
-			.getJSONObject("hits")
-			.getJSONArray("hits");
+		JsonArray hits = result
+			.getJsonArray("responses")
+			.getJsonObject(0)
+			.getJsonObject("hits")
+			.getJsonArray("hits");
 
-		for (int i = 0; i < hits.length(); i++) {
-			JSONObject hit = hits.getJSONObject(i);
-			JSONArray highlights = hit.getJSONObject("highlight").getJSONArray("fields.content.auto");
+		for (int i = 0; i < hits.size(); i++) {
+			JsonObject hit = hits.getJsonObject(i);
+			JsonArray highlights = hit.getJsonObject("highlight").getJsonArray("fields.content.auto");
 			Set<String> foundTokens = new HashSet<>();
-			for (int e = 0; e < highlights.length(); e++) {
+			for (int e = 0; e < highlights.size(); e++) {
 				String firstHighlight = highlights.getString(e);
 				// Remove all HTML
 				firstHighlight = firstHighlight.replaceAll("<[^>]+>", "");
@@ -253,7 +251,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 	/**
 	 * Construct autocompletion options from the found tokens and the initial set of partials.
-	 * 
+	 *
 	 * @param map
 	 * @param foundTokens
 	 * @param partials

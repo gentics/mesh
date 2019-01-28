@@ -1,8 +1,7 @@
 package com.gentics.mesh.rest.client.impl;
 
 import com.gentics.mesh.MeshEvent;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import com.gentics.mesh.json.JsonUtil;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -20,13 +19,9 @@ public final class Util {
 	 * @return
 	 */
 	public static String eventbusMessage(EventbusMessageType type) {
-		try {
-			return new JSONObject()
-				.put("type", type.type)
-				.toString();
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
+		return JsonUtil.getMapper().createObjectNode()
+			.put("type", type.type)
+			.toString();
 	}
 
 	/**
@@ -39,14 +34,10 @@ public final class Util {
 	 * @return
 	 */
 	public static String eventbusMessage(EventbusMessageType type, String address) {
-		try {
-			return new JSONObject()
-				.put("type", type.type)
-				.put("address", address)
-				.toString();
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
+		return JsonUtil.getMapper().createObjectNode()
+			.put("type", type.type)
+			.put("address", address)
+			.toString();
 	}
 
 	/**
@@ -60,15 +51,11 @@ public final class Util {
 	 * @return
 	 */
 	public static String eventbusMessage(EventbusMessageType type, String address, Object body) {
-		try {
-			return new JSONObject()
-				.put("type", type.type)
-				.put("address", address)
-				.put("body", body)
-				.toString();
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
+		return JsonUtil.getMapper().createObjectNode()
+			.put("type", type.type)
+			.put("address", address)
+			.put("body", JsonUtil.toJson(body))
+			.toString();
 	}
 
 	/**

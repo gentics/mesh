@@ -15,8 +15,8 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
-import org.codehaus.jettison.json.JSONException;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -69,7 +69,7 @@ public class OkHttpWebsocket implements MeshWebsocket {
 			public void onMessage(WebSocket webSocket, String text) {
 				try {
 					events.onNext(new EventbusEvent(text));
-				} catch (JSONException e) {
+				} catch (IOException e) {
 					errors.onNext(new Exception("Could not parse message from mesh", e));
 				}
 			}

@@ -11,12 +11,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.util.RxUtil;
 import io.reactivex.Completable;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +65,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			MeshAssertions.assertThat(event.getBodyAsJson().getString("test")).isEqualTo("someValue");
+			MeshAssertions.assertThat(event.getBodyAsJson().get("test").asText()).isEqualTo("someValue");
 			async.complete();
 		});
 
@@ -81,9 +81,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			JSONObject body = event.getBodyAsJson();
-			context.assertNotNull(body.getString("uuid"));
-			context.assertEquals("content", body.getString("schemaName"));
+			ObjectNode body = event.getBodyAsJson();
+			context.assertNotNull(body.get("uuid").asText());
+			context.assertEquals("content", body.get("schemaName").asText());
 			context.assertFalse(body.has("languageTag"));
 			async.complete();
 		});
@@ -98,17 +98,17 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			JSONObject body = event.getBodyAsJson();
-			context.assertNotNull(body.getString("uuid"));
-			context.assertEquals("content", body.getString("schemaName"));
-			context.assertEquals("en", body.getString("languageTag"));
+			ObjectNode body = event.getBodyAsJson();
+			context.assertNotNull(body.get("uuid").asText());
+			context.assertEquals("content", body.get("schemaName").asText());
+			context.assertEquals("en", body.get("languageTag").asText());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
 	}
 
 	@Test(timeout = 4_000)
-	public void testNodeUpdateEvent(TestContext context) throws Exception {
+	public void testNodeUpdateEvent(TestContext context) {
 		Async async = context.async();
 
 		// Register
@@ -116,9 +116,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			JSONObject body = event.getBodyAsJson();
-			assertNotNull(body.getString("uuid"));
-			assertEquals("content", body.getString("schemaName"));
+			ObjectNode body = event.getBodyAsJson();
+			assertNotNull(body.get("uuid").asText());
+			assertEquals("content", body.get("schemaName").asText());
 			async.complete();
 		});
 

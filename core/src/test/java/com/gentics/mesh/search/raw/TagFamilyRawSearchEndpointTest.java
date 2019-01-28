@@ -7,7 +7,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertNotNull;
 
-import org.codehaus.jettison.json.JSONObject;
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -26,7 +26,7 @@ public class TagFamilyRawSearchEndpointTest extends AbstractMeshTest {
 
 		String query = getSimpleTermQuery("name.raw", tagFamilyName);
 
-		JSONObject response = call(() -> client().searchTagFamiliesRaw(query));
+		JsonObject response = new JsonObject(call(() -> client().searchTagFamiliesRaw(query)).toString());
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", tagFamily.getUuid(), "The correct element was not found.");
 	}
