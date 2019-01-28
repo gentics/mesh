@@ -23,6 +23,13 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.29.4]]
+== 0.29.4 (28.01.2019)
+
+icon:check[] Restore: A check has been added which will disable the restore operation while running in clustered mode.
+
+icon:check[] Demo: The demo has been fixed. Previously some of the demo files we were missing.
+
 [[v0.29.3]]
 == 0.29.3 (25.01.2019)
 
@@ -33,6 +40,8 @@ icon:check[] Core: The job processing will no longer be invoked in an interval i
 icon:check[] Core: Fixed a bug that caused nodes with a slash in their segment field to not be found via webroot.
 
 icon:check[] Restore: A `ClassCastException` has been fixed which could be observed directly after a backup restore operation.
+
+icon:check[] Changelog: The automatic backup of orientdb configurations which was executed during the 0.29.0 update has been removed.
 
 [[v0.29.2]]
 == 0.29.2 (18.01.2019)
