@@ -63,7 +63,7 @@ Usage:
     client.login().toCompletable().blockingAwait();
 
     NodeListResponse nodes = client.findNodes("demo", new NodeParametersImpl().setLanguages("en")).blockingGet();
-    for(NodeResponse nodeResponse : nodes.getData()) {
+    for (NodeResponse nodeResponse : nodes.getData()) {
         System.out.println(nodeResponse.getUuid());
         System.out.println(nodeResponse.getFields().getStringField("name").getString());
     }
