@@ -58,7 +58,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testExternalEventbusMessage(TestContext context) throws Exception {
 
 		Async async = context.async();
-		String allowedAddress = MESH_MIGRATION.address;
+		MeshEvent allowedAddress = MESH_MIGRATION;
 
 		// Register
 		ws.registerEvents(allowedAddress);
@@ -70,7 +70,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		});
 
 		Thread.sleep(1000);
-		Mesh.vertx().eventBus().send(allowedAddress, new JsonObject().put("test", "someValue"));
+		Mesh.vertx().eventBus().send(allowedAddress.address, new JsonObject().put("test", "someValue"));
 	}
 
 	@Test(timeout = 4_000)

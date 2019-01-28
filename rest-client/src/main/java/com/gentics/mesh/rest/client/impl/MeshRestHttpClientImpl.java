@@ -89,6 +89,7 @@ import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Vector;
 import java.util.stream.Collectors;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
@@ -998,11 +999,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey, byte[] fileData, String fileName, String contentType, ParameterProvider... parameters) {
-		return updateNodeBinaryField(projectName, nodeUuid, languageTag, version, fieldKey, new ByteArrayInputStream(fileData), fileData.length, fileName, contentType, parameters);
-	}
-
-	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 														   InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
@@ -1045,11 +1041,12 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
 
-		SequenceInputStream completeStream = new SequenceInputStream(
-			new SequenceInputStream(
-				prefix,
-				fileData
-			), suffix);
+		Vector<InputStream> streams = new Vector<>(Arrays.asList(
+			prefix,
+			fileData,
+			suffix
+		));
+		SequenceInputStream completeStream = new SequenceInputStream(streams.elements());
 
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
 			NodeResponse.class, completeStream, fileSize, bodyContentType);

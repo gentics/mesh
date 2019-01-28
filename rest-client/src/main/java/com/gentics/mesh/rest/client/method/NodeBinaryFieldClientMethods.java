@@ -14,31 +14,6 @@ import java.io.InputStream;
 public interface NodeBinaryFieldClientMethods {
 
 	/**
-	 * Update the binary field for the node with the given nodeUuid in the given project using the provided data.
-	 *
-	 * @deprecated File could be very large which takes a lot of memory. Use {@link #updateNodeBinaryField(String, String, String, String, String, InputStream, long, String, String, ParameterProvider...)} instead.
-	 * 
-	 * @param projectName
-	 *            Name of the project which contains the node
-	 * @param nodeUuid
-	 *            Uuid of the node
-	 * @param languageTag
-	 *            Language tag of the node
-	 * @param nodeVersion
-	 *            Node version
-	 * @param fieldKey
-	 *            Key of the field which holds the binary data
-	 * @param fileData
-	 *            Buffer that serves the binary data
-	 * @param fileName
-	 * @param contentType
-	 * @return
-	 */
-	@Deprecated
-	MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
-			String fieldKey, byte[] fileData, String fileName, String contentType, ParameterProvider... parameters);
-
-	/**
 	 * Update the binary field for the node with the given nodeUuid in the given project using the provided input stream.
 	 *
 	 * This reads the entire stream and closes it after the content has been read.

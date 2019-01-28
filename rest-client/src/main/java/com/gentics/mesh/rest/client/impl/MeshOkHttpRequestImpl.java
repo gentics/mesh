@@ -25,7 +25,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
+public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private final OkHttpClient client;
 	private final Class<? extends T> resultClass;
 
@@ -34,7 +34,7 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 	private final Map<String, String> headers;
 	private final RequestBody requestBody;
 
-	private MeshOkHttpReqeuestImpl(OkHttpClient client, Class<? extends T> resultClass, String method, String url, Map<String, String> headers, RequestBody requestBody) {
+	private MeshOkHttpRequestImpl(OkHttpClient client, Class<? extends T> resultClass, String method, String url, Map<String, String> headers, RequestBody requestBody) {
 		this.client = client;
 		this.resultClass = resultClass;
 		this.method = method;
@@ -43,8 +43,8 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 		this.requestBody = requestBody;
 	}
 
-	public static <T> MeshOkHttpReqeuestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
-		return new MeshOkHttpReqeuestImpl<>(client, classOfT, method, url, headers, new RequestBody() {
+	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
+		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, new RequestBody() {
 			@Override
 			public MediaType contentType() {
 				return MediaType.get(contentType);
@@ -52,17 +52,25 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 
 			@Override
 			public void writeTo(BufferedSink sink) throws IOException {
-				sink.writeAll(Okio.source(data));
+				try {
+					sink.writeAll(Okio.source(data));
+				} finally {
+					data.close();
+				}
 			}
 		});
 	}
 
-	public static <T> MeshOkHttpReqeuestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String json) {
-		return new MeshOkHttpReqeuestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
+	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String json) {
+		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 	}
 
-	public static <T> MeshOkHttpReqeuestImpl<T> EmptyRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT) {
-		return new MeshOkHttpReqeuestImpl<>(client, classOfT, method, url, headers, RequestBody.create(null, ""));
+	public static <T> MeshOkHttpRequestImpl<T> PlainTextRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String text) {
+		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
+	}
+
+	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT) {
+		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(null, ""));
 	}
 
 	@Override
@@ -120,7 +128,7 @@ public class MeshOkHttpReqeuestImpl<T> implements MeshRequest<T> {
 			throw new MeshRestClientMessageException(
 				response.code(),
 				response.message(),
-				JsonUtil.readValue(response.body().string(), GenericMessageResponse.class),
+				response.body().string(),
 				HttpMethod.valueOf(method.toUpperCase()),
 				stripOrigin(url)
 			);

@@ -6,7 +6,7 @@ import io.reactivex.Observable;
 import static com.gentics.mesh.rest.client.impl.Util.toAddresses;
 
 /**
- * An open websocket to mesh.
+ * An open websocket to the mesh eventbus.
  */
 public interface MeshWebsocket {
 

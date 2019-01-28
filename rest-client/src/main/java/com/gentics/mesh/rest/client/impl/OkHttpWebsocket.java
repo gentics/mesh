@@ -116,10 +116,10 @@ public class OkHttpWebsocket implements MeshWebsocket {
 
 	@Override
 	public void close() {
+		pingInterval.dispose();
 		events.onComplete();
 		connections.onComplete();
 		errors.onComplete();
-		pingInterval.dispose();
 	}
 
 	@Override

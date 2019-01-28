@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.client.impl;
 
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import io.reactivex.Flowable;
 import okhttp3.Response;
 
 import java.io.InputStream;
@@ -19,8 +20,9 @@ public class OkHttpBinaryResponse implements MeshBinaryResponse {
 	}
 
 	@Override
-	public byte[] getBytes() {
-		return bodyBytes.get();
+	public Flowable<byte[]> getFlowable() {
+		// TODO IMPLEMENT non-blockingly
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override

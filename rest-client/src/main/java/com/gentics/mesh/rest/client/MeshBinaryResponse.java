@@ -10,12 +10,6 @@ public interface MeshBinaryResponse {
 	int FLOWABLE_BUFFER_SIZE = 8192;
 
 	/**
-	 * Retrieve all bytes of the response body blockingly.
-	 * @return
-	 */
-	byte[] getBytes();
-
-	/**
 	 * Retrieve a blocking input stream of the response body.
 	 * @return
 	 */

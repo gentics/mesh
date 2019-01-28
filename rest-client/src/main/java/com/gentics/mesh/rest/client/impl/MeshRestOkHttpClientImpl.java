@@ -45,7 +45,7 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
 	@Override
 	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData, long fileSize, String contentType) {
-		return MeshOkHttpReqeuestImpl.BinaryRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, bodyData, fileSize, contentType);
+		return MeshOkHttpRequestImpl.BinaryRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, bodyData, fileSize, contentType);
 	}
 
 	@Override
@@ -55,12 +55,12 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
 	@Override
 	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
-		return MeshOkHttpReqeuestImpl.EmptyRequest(client, method.name(), getUrl(path), createHeaders(), classOfT);
+		return MeshOkHttpRequestImpl.EmptyRequest(client, method.name(), getUrl(path), createHeaders(), classOfT);
 	}
 
 	@Override
 	public <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
-		return MeshOkHttpReqeuestImpl.JsonRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, jsonBodyData);
+		return MeshOkHttpRequestImpl.JsonRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, jsonBodyData);
 	}
 
 	@Override
@@ -84,6 +84,6 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
 	@Override
 	public void close() {
-		// TODO close default client?
+		// We don't close the client becuase of reassons.
 	}
 }
