@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,6 +119,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.ext.web.FileUpload;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
@@ -1039,7 +1041,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
-	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 		byte[] fileData, String fileName, String contentType, ParameterProvider... parameters) {
 
@@ -1103,7 +1104,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion, String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
-		return null;
+		try {
+			return updateNodeBinaryField(projectName, nodeUuid, languageTag, nodeVersion, fieldKey, IOUtils.toByteArray(fileData), fileName, contentType, parameters);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

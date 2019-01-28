@@ -11,6 +11,8 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import io.vertx.core.buffer.Buffer;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -26,8 +28,9 @@ public class NodeBinaryIngestMigrationTest extends AbstractMeshTest {
 
 	private void uploadIngestableNode() {
 		NodeResponse node = createBinaryContent().blockingGet();
+		Buffer buffer = Buffer.buffer("This is a text");
 		client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), node.getLanguage(), node.getVersion(),
-			"binary", Buffer.buffer("This is a text").getBytes(), "text.txt", "text/plain").blockingAwait();
+			"binary", new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "text.txt", "text/plain").blockingAwait();
 	}
 
 	private void migrateSchema() {

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Base64;
@@ -123,7 +124,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
 			nodeCreateRequest.setSchemaName("binary_content");
 			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer.getBytes(), image, "image/jpeg"));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()), buffer.length(), image, "image/jpeg"));
 		}
 		String query = getESText("geosearch.es");
 		NodeListResponse result = call(() -> client().searchNodes(PROJECT_NAME, query));

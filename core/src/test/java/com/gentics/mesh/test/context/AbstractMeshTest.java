@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -484,7 +485,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	protected int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		String uuid = node.getUuid();
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer.getBytes(),
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			filename, contentType));
 		assertNotNull(response);
 		return buffer.length();

@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,17 +92,17 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		String uuid = tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer.getBytes(),
+		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			"filename.txt", "application/binary"));
 
 		assertThat(responseA.getVersion()).doesNotMatch(version.toString());
 
 		// Upload again - A conflict should be detected since we provide the original outdated version
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer.getBytes(), "filename.txt",
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"), CONFLICT, "node_error_conflict_detected");
 
 		// Now use the correct version and verify that the upload succeeds
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion(), FIELD_NAME, buffer.getBytes(), "filename.txt",
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"));
 
 	}
@@ -114,7 +115,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
 			VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer.getBytes(), "filename.txt",
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 				"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
@@ -140,7 +141,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		String uuid = tx(() -> folder("2015").getUuid());
 		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer.getBytes(), filename, "application/binary"));
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), filename, "application/binary"));
 
 		NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		String oldVersion = firstResponse.getVersion();
@@ -187,7 +188,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
 			VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer.getBytes(), "filename.txt",
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 				"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
@@ -207,7 +208,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		// 1. Upload a binary field
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer.getBytes(), "filename.txt",
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"));
 
 		NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
@@ -232,7 +233,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
 		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", buffer.getBytes(), fileName,
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
 			"application/binary"));
 
 		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals(
@@ -269,13 +270,13 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
 		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", buffer.getBytes(), fileName,
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary", new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
 			"image/svg"));
 
 		MeshBinaryResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", "binary",
 			new ImageManipulationParametersImpl().setWidth(100)));
 
-		byte[] downloadBytes = download.getBytes();
+		byte[] downloadBytes = IOUtils.toByteArray(download.getStream());
 
 		assertThat(downloadBytes).containsExactly(inputBytes);
 	}
@@ -295,7 +296,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		String uuid = tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		VersionNumber version = tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer.getBytes(), "filename.txt",
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"));
 	}
 

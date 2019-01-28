@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.imageio.ImageIO;
 
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -193,8 +195,10 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			version = node.getGraphFieldContainer("en").getVersion();
 			tx.success();
 		}
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image", Buffer.buffer(
-			"I am not an image").getBytes(), "test.txt", "text/plain"));
+		Buffer buffer = Buffer.buffer("I am not an image");
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image",
+			new ByteArrayInputStream(buffer.getBytes()),
+			buffer.length(), "test.txt", "text/plain"));
 
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,
@@ -315,7 +319,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);
-		Mesh.vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(download.getBytes()), rh -> {
+		byte[] bytes = IOUtils.toByteArray(download.getStream());
+		Mesh.vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(bytes), rh -> {
 			assertTrue(rh.succeeded());
 			latch.countDown();
 		});
