@@ -72,7 +72,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 				input = input.concat("Hallo");
 			}
 			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			MeshInternal.get().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = binary.getBase64ContentSync();
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}
@@ -83,7 +83,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			String input = " ";
 			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			MeshInternal.get().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = binary.getBase64ContentSync();
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}

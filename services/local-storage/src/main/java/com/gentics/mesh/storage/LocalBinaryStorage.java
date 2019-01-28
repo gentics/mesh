@@ -52,14 +52,15 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			}
 
 			File targetFile = new File(uploadFolder, uuid + ".bin");
-			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).flatMapCompletable(file -> {
-				return stream
-					.map(io.vertx.reactivex.core.buffer.Buffer::new)
-					.doOnNext(file::write)
-					.doOnComplete(file::flush)
-					.doOnTerminate(file::close)
-					.ignoreElements();
-			});
+
+			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).flatMapCompletable(file -> stream
+				.map(io.vertx.reactivex.core.buffer.Buffer::new)
+				.doOnNext(file::write)
+				.ignoreElements()
+				.andThen(file.rxFlush())
+				.andThen(file.rxClose())
+				.doOnError(err -> file.close())
+			);
 		});
 	}
 
