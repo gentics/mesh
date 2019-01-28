@@ -34,6 +34,8 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+import java.util.concurrent.TimeUnit;
+
 @RunWith(VertxUnitRunner.class)
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class EventbusEndpointTest extends AbstractMeshTest {
@@ -172,6 +174,17 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 			.andThen(verifyStoppedRestVerticle())
 			.andThen(startRestVerticle())
 			.subscribe(() -> {}, context::fail);
+	}
+
+	@Test
+	public void testHeartbeat(TestContext context) {
+		// Simply tests if the connections has no errors for 10 seconds.
+		Async async = context.async();
+
+		ws.errors().subscribe(context::fail);
+
+		Completable.complete().delay(10, TimeUnit.SECONDS)
+			.subscribe(async::complete);
 	}
 
 	/**
