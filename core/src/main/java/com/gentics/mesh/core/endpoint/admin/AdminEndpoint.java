@@ -59,8 +59,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addRestoreHandler();
 		addClusterStatusHandler();
 		addConsistencyCheckHandler();
-		// addImportHandler();
-		// addExportHandler();
+		addImportHandler();
+		addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
 		addJobHandler();
