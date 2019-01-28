@@ -30,6 +30,11 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 		this.config = config;
 	}
 
+	/**
+	 * We need a long timeout per default since some requests take a long time. For all tests a 1 minute timeout
+	 * works fine.
+	 * @return
+	 */
 	private static OkHttpClient defaultClient() {
 		if (defaultClient == null) {
 			defaultClient = new OkHttpClient.Builder()
@@ -37,7 +42,6 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 				.connectTimeout(Duration.ofMinutes(1))
 				.writeTimeout(Duration.ofMinutes(1))
 				.readTimeout(Duration.ofMinutes(1))
-				.pingInterval(Duration.ofSeconds(1))
 				.build();
 		}
 		return defaultClient;
@@ -84,6 +88,8 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
 	@Override
 	public void close() {
-		// We don't close the client becuase of reassons.
+		// We don't close the client because it is either
+		// * The default client. This cannot be closed because other instances might use it.
+		// * A user provided client. The user could use the client somewhere else, so we should not close it here.
 	}
 }

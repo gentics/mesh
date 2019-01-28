@@ -11,18 +11,9 @@ import static com.gentics.mesh.rest.client.impl.Util.lazily;
 
 public class OkHttpBinaryResponse implements MeshBinaryResponse {
 	private final Response response;
-	private final Supplier<byte[]> bodyBytes;
 
 	public OkHttpBinaryResponse(Response response) {
 		this.response = response;
-
-		bodyBytes = lazily(() -> response.body().bytes());
-	}
-
-	@Override
-	public Flowable<byte[]> getFlowable() {
-		// TODO IMPLEMENT non-blockingly
-		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
