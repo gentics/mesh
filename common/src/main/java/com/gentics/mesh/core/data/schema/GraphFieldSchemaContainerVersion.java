@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -139,7 +139,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @param batch
 	 * @return The created schema container version
 	 */
-	SCV applyChanges(InternalActionContext ac, SearchQueueBatch batch);
+	SCV applyChanges(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
@@ -149,7 +149,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @param batch
 	 * @return The created schema container version
 	 */
-	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch);
+	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch);
 
 	/**
 	 * Return the parent schema container of the version.

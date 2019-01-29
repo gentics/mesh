@@ -32,7 +32,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -100,7 +100,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
-			Tuple<SearchQueueBatch, String> info = db.tx(tx -> {
+			Tuple<EventQueueBatch, String> info = db.tx(tx -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -136,7 +136,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				}
 
 				// 3. Apply the found changes to the schema
-				SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = searchQueue.create();
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				// Check whether the assigned branches of the schema should also directly be updated.
@@ -224,8 +224,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return schema.transformToRest(ac, 0);
 			}
 
-			Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Tuple<EventQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
+				EventQueueBatch batch = searchQueue.create();
 
 				// Assign the schema to the project
 				root.addSchemaContainer(ac.getUser(), schema);
@@ -285,8 +285,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		utils.asyncTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Tuple<EventQueueBatch, String> info = db.tx(() -> {
+				EventQueueBatch batch = searchQueue.create();
 				SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
 				return Tuple.tuple(batch, newVersion.getVersion());
 			});

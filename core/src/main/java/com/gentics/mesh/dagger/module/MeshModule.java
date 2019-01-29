@@ -7,7 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
@@ -82,7 +82,7 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public static SearchQueue searchQueue(Provider<SearchQueueBatch> provider) {
+	public static SearchQueue searchQueue(Provider<EventQueueBatch> provider) {
 		return new SearchQueueImpl(provider);
 	}
 

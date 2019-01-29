@@ -3,7 +3,7 @@ package com.gentics.mesh.context.impl;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
@@ -23,9 +23,9 @@ public class BulkActionContextImpl implements BulkActionContext {
 	private final AtomicLong batchCounter = new AtomicLong(1);
 	private final AtomicLong elementCounter = new AtomicLong(0);
 
-	private SearchQueueBatch batch;
+	private EventQueueBatch batch;
 
-	public BulkActionContextImpl(SearchQueueBatch batch) {
+	public BulkActionContextImpl(EventQueueBatch batch) {
 		this.batch = batch;
 	}
 
@@ -57,7 +57,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 	}
 
 	@Override
-	public SearchQueueBatch batch() {
+	public EventQueueBatch batch() {
 		return batch;
 	}
 

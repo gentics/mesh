@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -83,8 +83,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			}
 			User user = ac.getUser();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Tuple<EventQueueBatch, String> info = db.tx(() -> {
+				EventQueueBatch batch = searchQueue.create();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				if (updateParams.getUpdateAssignedBranches()) {
@@ -147,7 +147,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		utils.asyncTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = searchQueue.create();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).processSync();

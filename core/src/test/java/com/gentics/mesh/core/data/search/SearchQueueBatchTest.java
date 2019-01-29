@@ -13,7 +13,7 @@ public class SearchQueueBatchTest extends AbstractMeshTest {
 
 	@Test
 	public void testDependency() {
-		SearchQueueBatch batch = meshDagger().searchQueue().create();
+		EventQueueBatch batch = meshDagger().searchQueue().create();
 		System.out.println(batch);
 		batch = meshDagger().searchQueue().create();
 		System.out.println(batch);

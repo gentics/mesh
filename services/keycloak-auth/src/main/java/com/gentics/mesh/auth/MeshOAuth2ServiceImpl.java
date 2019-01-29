@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
@@ -198,7 +198,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
 		String currentTokenId = userInfo.getString("jti");
 
-		SearchQueueBatch batch = searchQueue.create();
+		EventQueueBatch batch = searchQueue.create();
 		MeshAuthUser authUser = db.tx(() -> {
 			UserRoot root = boot.userRoot();
 			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
@@ -238,7 +238,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param admin
 	 * @param userInfo
 	 */
-	protected void syncUser(SearchQueueBatch batch, MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
+	protected void syncUser(EventQueueBatch batch, MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
 		String givenName = userInfo.getString("given_name");
 		if (givenName == null) {
 			log.warn("Did not find given_name property in OAuth2 principle.");

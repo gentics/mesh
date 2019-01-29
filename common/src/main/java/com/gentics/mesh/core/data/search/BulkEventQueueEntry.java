@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.EntryContext;
 import io.reactivex.Observable;
 
-public interface BulkSearchQueueEntry<T extends EntryContext> extends SearchQueueEntry<T> {
+public interface BulkEventQueueEntry<T extends EntryContext> extends SearchQueueEntry<T> {
 	/**
 	 * Process the entry and generate bulk entries.
 	 *

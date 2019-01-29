@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -136,8 +136,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 				// Prepare the sets for revoke and grant actions
-				Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
+				Tuple<EventQueueBatch, String> tuple = db.tx(() -> {
+					EventQueueBatch batch = searchQueue.create();
 					Set<GraphPermission> permissionsToGrant = new HashSet<>();
 					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 

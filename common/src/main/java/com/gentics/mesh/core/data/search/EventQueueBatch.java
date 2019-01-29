@@ -19,10 +19,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import io.reactivex.Completable;
 
 /**
- * A batch of search queue entries. Usually a batch groups those elements that need to be updated in order to sync the search index with the graph database
- * changes.
+ * A batch of event queue entries. 
  */
-public interface SearchQueueBatch {
+public interface EventQueueBatch {
 
 	/**
 	 * Add an entry to the list which includes index creation information.
@@ -33,7 +32,7 @@ public interface SearchQueueBatch {
 	 *            Class of the elements that are stored in the index. This value is used to determine the correct index handler when creating the index
 	 * @return Fluent API
 	 */
-	SearchQueueBatch createIndex(String indexName, Class<?> elementClass);
+	EventQueueBatch createIndex(String indexName, Class<?> elementClass);
 
 	/**
 	 * Queue an drop index action.
@@ -41,7 +40,7 @@ public interface SearchQueueBatch {
 	 * @param indexName
 	 * @return Fluent API
 	 */
-	SearchQueueBatch dropIndex(String indexName);
+	EventQueueBatch dropIndex(String indexName);
 
 	/**
 	 * Add a new node index to the search database and construct the index name using the provided values. See
@@ -53,7 +52,7 @@ public interface SearchQueueBatch {
 	 * @param type
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch addNodeIndex(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+	default EventQueueBatch addNodeIndex(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
 		return createNodeIndex(project.getUuid(), branch.getUuid(), version.getUuid(), type, version.getSchema());
 	}
 
@@ -68,7 +67,7 @@ public interface SearchQueueBatch {
 	 * @param type
 	 * @return Fluent API
 	 */
-	SearchQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema);
+	EventQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema);
 
 	/**
 	 * Add the tag family index to the search database. See {@link TagFamilyEntry#composeIndexName(String)} for details.
@@ -76,7 +75,7 @@ public interface SearchQueueBatch {
 	 * @param projectUuid
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch createTagFamilyIndex(String projectUuid) {
+	default EventQueueBatch createTagFamilyIndex(String projectUuid) {
 		return createIndex(TagFamily.composeIndexName(projectUuid), TagFamily.class);
 	}
 
@@ -86,7 +85,7 @@ public interface SearchQueueBatch {
 	 * @param projectUuid
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch createTagIndex(String projectUuid) {
+	default EventQueueBatch createTagIndex(String projectUuid) {
 		return createIndex(Tag.composeIndexName(projectUuid), Tag.class);
 	}
 
@@ -99,7 +98,7 @@ public interface SearchQueueBatch {
 	 *            Flag which indicates whether related elements should also be stored
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch store(IndexableElement element, boolean addRelatedEntries) {
+	default EventQueueBatch store(IndexableElement element, boolean addRelatedEntries) {
 		return store(element, new GenericEntryContextImpl(), addRelatedEntries);
 	}
 
@@ -111,7 +110,7 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries);
+	EventQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries);
 
 	/**
 	 * Move the node from the old index and store it in the new index.
@@ -122,7 +121,7 @@ public interface SearchQueueBatch {
 	 * @param type
 	 * @return Fluent API
 	 */
-	SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type);
+	EventQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type);
 
 	/**
 	 * Delete the given element from the its index.
@@ -132,7 +131,7 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries);
+	EventQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries);
 
 	/**
 	 * Add an entry to this batch.
@@ -140,7 +139,7 @@ public interface SearchQueueBatch {
 	 * @param entry
 	 * @return Added entry
 	 */
-	BulkSearchQueueEntry<?> addEntry(BulkSearchQueueEntry<?> entry);
+	BulkEventQueueEntry<?> addEntry(BulkEventQueueEntry<?> entry);
 
 	/**
 	 * Add an entry to this batch.
@@ -165,26 +164,6 @@ public interface SearchQueueBatch {
 	String getBatchId();
 
 	/**
-	 * Process this batch by invoking process on all batch entries.
-	 * 
-	 * @return
-	 */
-	Completable processAsync();
-
-	/**
-	 * Process this batch blocking and fail if the given timeout was exceeded.
-	 * 
-	 * @param timeout
-	 * @param unit
-	 */
-	void processSync(long timeout, TimeUnit unit);
-
-	/**
-	 * Process this batch and block until it finishes. Apply a default timeout on this operation.
-	 */
-	void processSync();
-
-	/**
 	 * Print debug output which contains information about all entries of the batch.
 	 */
 	void printDebug();
@@ -196,7 +175,7 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch delete(IndexableElement element, boolean addRelatedEntries) {
+	default EventQueueBatch delete(IndexableElement element, boolean addRelatedEntries) {
 		return delete(element, new GenericEntryContextImpl(), addRelatedEntries);
 	}
 
@@ -207,7 +186,7 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch delete(Tag tag, boolean addRelatedEntries);
+	EventQueueBatch delete(Tag tag, boolean addRelatedEntries);
 
 	/**
 	 * Add an store entry for the given node. The index handler will automatically handle all languages of the found containers.
@@ -219,7 +198,7 @@ public interface SearchQueueBatch {
 	 *            Whether to also add related elements (e.g: child nodes)
 	 * @return Fluent API
 	 */
-	SearchQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedElements);
+	EventQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedElements);
 
 	/**
 	 * Add a store entry which just contains the node element information. This will effectively store all documents of the node (eg. all branches, all
@@ -229,7 +208,7 @@ public interface SearchQueueBatch {
 	 * @param node
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch store(Node node) {
+	default EventQueueBatch store(Node node) {
 		return store(node, null, null, false);
 	}
 
@@ -242,11 +221,11 @@ public interface SearchQueueBatch {
 	 * @param branchUuid
 	 * @return Fluent API
 	 */
-	default SearchQueueBatch store(Node node, String branchUuid) {
+	default EventQueueBatch store(Node node, String branchUuid) {
 		return store(node, branchUuid, null, false);
 	}
 
-	SearchQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements);
+	EventQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements);
 
 	/**
 	 * Add an delete entry to the batch.
@@ -260,7 +239,7 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedEntries);
+	EventQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedEntries);
 
 	/**
 	 * Store the tag family in the search index.
@@ -269,7 +248,7 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch delete(TagFamily tagFammily, boolean addRelatedEntries);
+	EventQueueBatch delete(TagFamily tagFammily, boolean addRelatedEntries);
 
 	/**
 	 * Clear all entries.
@@ -282,7 +261,7 @@ public interface SearchQueueBatch {
 	 * @param element
 	 * @return Fluent API
 	 */
-	SearchQueueBatch updatePermissions(IndexableElement element);
+	EventQueueBatch updatePermissions(IndexableElement element);
 
 	/**
 	 * Return the current size of the batch.
@@ -293,5 +272,14 @@ public interface SearchQueueBatch {
 	 * Adds all entries from another batch to this batch
 	 * @param otherBatch
 	 */
-	void addAll(SearchQueueBatch otherBatch);
+	void addAll(EventQueueBatch otherBatch);
+
+	/** - - - - - - - - - - - - - - - - - **/
+	
+	/**
+	 * Dispatch events for all entries in the batch.
+	 */
+	void dispatch();
+
+	void updated(IndexableElement updateElement);
 }

@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -618,7 +618,7 @@ public interface TestHelperMethods {
 		return getTestContext().getVertx();
 	}
 
-	default public SearchQueueBatch createBatch() {
+	default public EventQueueBatch createBatch() {
 		return MeshInternal.get().searchQueue().create();
 	}
 

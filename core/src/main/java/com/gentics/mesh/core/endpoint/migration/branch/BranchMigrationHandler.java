@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
@@ -72,7 +72,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		// Iterate over all nodes of the project and migrate them to the new branch
 		Project project = oldBranch.getProject();
 		List<Exception> errorsDetected = new ArrayList<>();
-		SearchQueueBatch sqb = null;
+		EventQueueBatch sqb = null;
 		for (Node node : project.getNodeRoot().findAll()) {
 			// Create a new SQB to handle the ES update
 			if (sqb == null) {
@@ -132,7 +132,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	 * @param newBranc
 	 * @param errorsDetected
 	 */
-	private void migrateNode(Node node, SearchQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(Node node, EventQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
 

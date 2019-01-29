@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
@@ -175,7 +175,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Diff the source (graph) with the sink (ES index) and create {@link SearchQueueBatch} objects add, delete or update entries.
+	 * Diff the source (graph) with the sink (ES index) and create {@link EventQueueBatch} objects add, delete or update entries.
 	 * 
 	 * @param indexName
 	 * @param projectUuid
@@ -215,7 +215,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			metric.incUpdate(needUpdate.size());
 
 			// 4. Create the SQB's
-			SearchQueueBatch storeBatch = searchQueue.create();
+			EventQueueBatch storeBatch = searchQueue.create();
 			for (String uuid : needInsertionInES) {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setProjectUuid(projectUuid);
@@ -223,7 +223,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				entry.setOnProcessAction(metric::decInsert);
 				storeBatch.addEntry(entry);
 			}
-			SearchQueueBatch removalBatch = searchQueue.create();
+			EventQueueBatch removalBatch = searchQueue.create();
 			for (String uuid : needRemovalInES) {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setProjectUuid(projectUuid);
@@ -231,7 +231,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				entry.setOnProcessAction(metric::decDelete);
 				removalBatch.addEntry(entry);
 			}
-			SearchQueueBatch updateBatch = searchQueue.create();
+			EventQueueBatch updateBatch = searchQueue.create();
 			for (String uuid : needUpdate) {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setProjectUuid(projectUuid);

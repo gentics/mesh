@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 
 /**
  * @see SearchQueue
@@ -15,16 +15,16 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 public class SearchQueueImpl implements SearchQueue {
 
 	@Inject
-	public Provider<SearchQueueBatch> batchProvider;
+	public Provider<EventQueueBatch> batchProvider;
 
 	@Inject
-	public SearchQueueImpl(Provider<SearchQueueBatch> provider) {
+	public SearchQueueImpl(Provider<EventQueueBatch> provider) {
 		this.batchProvider = provider;
 	}
 
 	@Override
-	public SearchQueueBatch create() {
-		SearchQueueBatch batch = batchProvider.get();
+	public EventQueueBatch create() {
+		EventQueueBatch batch = batchProvider.get();
 		return batch;
 	}
 

@@ -22,11 +22,11 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.search.BulkSearchQueueEntry;
+import com.gentics.mesh.core.data.search.BulkEventQueueEntry;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.SeperateSearchQueueEntry;
@@ -56,47 +56,29 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * @see SearchQueueBatch
+ * @see EventQueueBatch
  */
-public class SearchQueueBatchImpl implements SearchQueueBatch {
+public class EventQueueBatchImpl implements EventQueueBatch {
+
+	private static final Logger log = LoggerFactory.getLogger(EventQueueBatchImpl.class);
 
 	private String batchId;
-	private List<BulkSearchQueueEntry<?>> bulkEntries = new ArrayList<>();
+	private List<BulkEventQueueEntry<?>> bulkEntries = new ArrayList<>();
 	private List<SeperateSearchQueueEntry<?>> seperateEntries = new ArrayList<>();
 
-	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
-
-	@Inject
-	IndexHandlerRegistry registry;
-
-	@Inject
-	NodeIndexHandler nodeContainerIndexHandler;
-
-	@Inject
-	TagFamilyIndexHandler tagfamilyIndexHandler;
-
-	@Inject
-	TagIndexHandler tagIndexHandler;
-
-	@Inject
-	DropIndexHandler commonHandler;
-
-	@Inject
-	SearchProvider searchProvider;
-
-	@Inject
-	public SearchQueueBatchImpl() {
+	public EventQueueBatchImpl() {
 	}
 
 	@Override
-	public SearchQueueBatch createIndex(String indexName, Class<?> elementClass) {
+	public EventQueueBatch createIndex(String indexName, Class<?> elementClass) {
 		CreateIndexEntry entry = new CreateIndexEntryImpl(registry.getForClass(elementClass), indexName);
 		addEntry(entry);
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema) {
+	public EventQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid,
+			ContainerType type, Schema schema) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, versionUuid, type);
 		CreateIndexEntry entry = new CreateIndexEntryImpl(nodeContainerIndexHandler, indexName);
 		entry.setSchema(schema);
@@ -106,14 +88,14 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch dropIndex(String indexName) {
+	public EventQueueBatch dropIndex(String indexName) {
 		DropIndexEntry entry = new DropIndexEntryImpl(commonHandler, indexName);
 		addEntry(entry);
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedElements) {
+	public EventQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedElements) {
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
 		context.setBranchUuid(branchUuid);
@@ -123,7 +105,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type) {
+	public EventQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer,
+			String branchUuid, ContainerType type) {
 		MoveEntryContext context = new MoveEntryContextImpl();
 		context.setContainerType(type);
 		context.setBranchUuid(branchUuid);
@@ -135,7 +118,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements) {
+	public EventQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type,
+			boolean addRelatedElements) {
 		Node node = container.getParentNode();
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
@@ -148,8 +132,9 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch delete(Tag tag, boolean addRelatedEntries) {
-		// We need to add the project uuid to the context because the index handler for tags will not be able to
+	public EventQueueBatch delete(Tag tag, boolean addRelatedEntries) {
+		// We need to add the project uuid to the context because the index handler for
+		// tags will not be able to
 		// determine the project uuid once the tag has been removed from the graph.
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setProjectUuid(tag.getProject().getUuid());
@@ -158,9 +143,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch delete(TagFamily tagFymily, boolean addRelatedEntries) {
-		// We need to add the project uuid to the context because the index handler for tagfamilies will not be able to
-		// determine the project uuid once the tagfamily has been removed from the graph.
+	public EventQueueBatch delete(TagFamily tagFymily, boolean addRelatedEntries) {
+		// We need to add the project uuid to the context because the index handler for
+		// tagfamilies will not be able to
+		// determine the project uuid once the tagfamily has been removed from the
+		// graph.
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setProjectUuid(tagFymily.getProject().getUuid());
 		delete((IndexableElement) tagFymily, context, addRelatedEntries);
@@ -168,7 +155,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedEntries) {
+	public EventQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type,
+			boolean addRelatedEntries) {
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
 		context.setProjectUuid(container.getParentNode().getProject().getUuid());
@@ -180,8 +168,9 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
-		UpdateDocumentEntryImpl entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context, STORE_ACTION);
+	public EventQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
+		UpdateDocumentEntryImpl entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context,
+				STORE_ACTION);
 		addEntry(entry);
 
 		if (addRelatedEntries) {
@@ -194,8 +183,9 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
-		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context, DELETE_ACTION);
+	public EventQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
+		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context,
+				DELETE_ACTION);
 		addEntry(entry);
 
 		if (addRelatedEntries) {
@@ -208,20 +198,20 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch updatePermissions(IndexableElement element) {
+	public EventQueueBatch updatePermissions(IndexableElement element) {
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		Project project = element.getProject();
 		if (project != null) {
 			context.setProjectUuid(project.getUuid());
 		}
 		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context,
-			SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
+				SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
 		addEntry(entry);
 		return this;
 	}
 
 	@Override
-	public BulkSearchQueueEntry<?> addEntry(BulkSearchQueueEntry<?> entry) {
+	public BulkEventQueueEntry<?> addEntry(BulkEventQueueEntry<?> entry) {
 		bulkEntries.add(entry);
 		return entry;
 	}
@@ -234,9 +224,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public List<? extends SearchQueueEntry> getEntries() {
-		List<SearchQueueEntry<? extends EntryContext>> entries = Stream.concat(
-			bulkEntries.stream(),
-			seperateEntries.stream()).collect(Collectors.toList());
+		List<SearchQueueEntry<? extends EntryContext>> entries = Stream
+				.concat(bulkEntries.stream(), seperateEntries.stream()).collect(Collectors.toList());
 
 		if (log.isDebugEnabled()) {
 			for (SearchQueueEntry entry : entries) {
@@ -260,69 +249,6 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public Completable processAsync() {
-		if (!searchProvider.isActive()) {
-			return Completable.create(s -> {
-				clear();
-				s.onComplete();
-			});
-		}
-		return Completable.defer(() -> {
-			Completable obs = Completable.complete();
-
-			if (!seperateEntries.isEmpty()) {
-				List<Completable> seperateEntryList = seperateEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
-				obs = Completable.concat(Flowable.fromIterable(seperateEntryList), 1);
-			}
-			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
-			if (!bulkEntries.isEmpty()) {
-				Observable<BulkEntry> bulks = Observable.fromIterable(bulkEntries)
-					.flatMap(BulkSearchQueueEntry::process);
-
-				AtomicLong counter = new AtomicLong();
-				Completable bulkProcessing = bulks
-					.buffer(bulkLimit)
-					.flatMapCompletable(bulk -> searchProvider.processBulk(bulk).doOnComplete(() -> {
-						log.debug("Bulk completed {" + counter.incrementAndGet() + "}");
-					}));
-				obs = obs.andThen(bulkProcessing);
-			}
-
-			return obs.andThen(searchProvider.refreshIndex()).doOnComplete(() -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Handled all search queue items.");
-				}
-				// Clear the batch entries so that the GC can claim the memory
-				clear();
-			}).doOnError(error -> {
-				log.error("Error while processing batch {" + batchId + "}");
-				if (log.isDebugEnabled()) {
-					printDebug();
-				}
-				clear();
-			});
-		});
-	}
-
-	@Override
-	public void processSync(long timeout, TimeUnit unit) {
-		if (searchProvider.isActive()) {
-			if (!processAsync().blockingAwait(timeout, unit)) {
-				throw error(INTERNAL_SERVER_ERROR,
-					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
-						+ "} exceeded.");
-			}
-		} else {
-			clear();
-		}
-	}
-
-	@Override
-	public void processSync() {
-		processSync(120, TimeUnit.SECONDS);
-	}
-
-	@Override
 	public void clear() {
 		bulkEntries.clear();
 		seperateEntries.clear();
@@ -334,14 +260,30 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public void addAll(SearchQueueBatch otherBatch) {
-		if (otherBatch instanceof SearchQueueBatchImpl) {
-			SearchQueueBatchImpl batch = (SearchQueueBatchImpl) otherBatch;
+	public void addAll(EventQueueBatch otherBatch) {
+		if (otherBatch instanceof EventQueueBatchImpl) {
+			EventQueueBatchImpl batch = (EventQueueBatchImpl) otherBatch;
 			bulkEntries.addAll(batch.bulkEntries);
 			seperateEntries.addAll(batch.seperateEntries);
 		} else {
 			throw new RuntimeException("Cannot mix SearchQueueBatch instances");
 		}
 	}
+	
+	
+	@Override
+	public void dispatch() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
+	@Override
+	public void updated(IndexableElement updateElement) {
+		updateElement.onUpdated();
+	}
+	
+	
+	
 
 }

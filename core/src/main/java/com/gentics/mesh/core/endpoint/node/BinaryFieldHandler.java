@@ -36,7 +36,7 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -256,7 +256,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			SearchQueueBatch batch = searchQueue.create();
+			EventQueueBatch batch = searchQueue.create();
 			// Create a new node version field container to store the upload
 			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(), latestDraftVersion, true);
 
@@ -403,8 +403,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 				parameters.validate();
 
 				// Update the binary field with the new information
-				SearchQueueBatch sqb = db.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch sqb = db.tx(() -> {
+					EventQueueBatch batch = searchQueue.create();
 					Branch branch = ac.getBranch();
 
 					// Create a new node version field container to store the upload

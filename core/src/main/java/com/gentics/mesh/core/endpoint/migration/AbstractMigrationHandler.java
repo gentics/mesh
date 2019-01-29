@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -142,16 +142,16 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	@ParametersAreNonnullByDefault
-	protected <T> List<Exception> migrateLoop(Iterable<T> containers, MigrationStatusHandler status, TriConsumer<SearchQueueBatch, T, List<Exception>> migrator) {
+	protected <T> List<Exception> migrateLoop(Iterable<T> containers, MigrationStatusHandler status, TriConsumer<EventQueueBatch, T, List<Exception>> migrator) {
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
-		SearchQueueBatch sqb = searchQueue.create();
+		EventQueueBatch sqb = searchQueue.create();
 		for (T container : containers) {
 			try {
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
 				// This prevents adding partial entries from failed migrations.
-				SearchQueueBatch containerBatch = searchQueue.create();
+				EventQueueBatch containerBatch = searchQueue.create();
 				db.tx(() -> {
 					migrator.accept(containerBatch, container, errorsDetected);
 				});

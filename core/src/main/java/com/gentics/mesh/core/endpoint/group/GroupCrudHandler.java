@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -86,7 +86,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			// Handle idempotency
-			Tuple<Group, SearchQueueBatch> tuple;
+			Tuple<Group, EventQueueBatch> tuple;
 			if (group.hasRole(role)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
@@ -94,7 +94,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				tuple = Tuple.tuple(group, searchQueue.create());
 			} else {
 				tuple = db.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
+					EventQueueBatch batch = searchQueue.create();
 					group.addRole(role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
@@ -127,7 +127,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = searchQueue.create();
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
@@ -175,7 +175,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			ResultInfo info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = searchQueue.create();
 				group.addUser(user);
 				batch.store(group, true);
 				GroupResponse model = group.transformToRestSync(ac, 0);
@@ -204,7 +204,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = searchQueue.create();
 				batch.store(group, true);
 				batch.store(user, false);
 				group.removeUser(user);

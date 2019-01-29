@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.EntryContext;
@@ -17,9 +17,9 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.syncleus.ferma.tx.Tx;
 
-public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAssert, SearchQueueBatch> {
+public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAssert, EventQueueBatch> {
 
-	public SearchQueueBatchAssert(SearchQueueBatch actual) {
+	public SearchQueueBatchAssert(EventQueueBatch actual) {
 		super(actual, SearchQueueBatchAssert.class);
 	}
 

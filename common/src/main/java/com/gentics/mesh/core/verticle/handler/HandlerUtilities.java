@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -91,7 +91,7 @@ public class HandlerUtilities {
 				name = ((NamedElement) element).getName();
 			}
 
-			database.tx(() -> {
+			EventQueueBatch batch = database.tx(() -> {
 				BulkActionContext bac = searchQueue.createBulkContext();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
@@ -100,7 +100,8 @@ public class HandlerUtilities {
 				} else {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}
-			}).processSync();
+			});
+			batch.dispatch();
 			element.onDeleted(uuid, name);
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
 			return (RM) null;
@@ -151,27 +152,27 @@ public class HandlerUtilities {
 			// Check whether we need to update a found element or whether we need to create a new one.
 			if (element != null) {
 				final T updateElement = element;
-				Tuple<Boolean, SearchQueueBatch> tuple = database.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
+				Tuple<Boolean, EventQueueBatch> tuple = database.tx(() -> {
+					EventQueueBatch batch = searchQueue.create();
 					boolean updated = updateElement.update(ac, batch);
 					return Tuple.tuple(updated, batch);
 				});
 
-				SearchQueueBatch b = tuple.v2();
+				EventQueueBatch b = tuple.v2();
 				Boolean isUpdated = tuple.v1();
 				RM model = updateElement.transformToRestSync(ac, 0);
 				info = new ResultInfo(model, b);
 				if (isUpdated) {
-					updateElement.onUpdated();
+					b.updated(updateElement);
 				}
 			} else {
-				Tuple<T, SearchQueueBatch> tuple = database.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
+				Tuple<T, EventQueueBatch> tuple = database.tx(() -> {
+					EventQueueBatch batch = searchQueue.create();
 					created.set(true);
 					return Tuple.tuple(root.create(ac, batch, uuid), batch);
 				});
 
-				SearchQueueBatch b = tuple.v2();
+				EventQueueBatch b = tuple.v2();
 				T createdElement = tuple.v1();
 				RM model = createdElement.transformToRestSync(ac, 0);
 				String path = createdElement.getAPIPath(ac);
@@ -184,7 +185,7 @@ public class HandlerUtilities {
 			// 3. The updating transaction has succeeded. Now lets store it in the index
 			final ResultInfo info2 = info;
 			return database.tx(() -> {
-				info2.getBatch().processSync();
+				info2.getBatch().dispatch();
 				return info2.getModel();
 			});
 		}, model -> ac.send(model, created.get() ? CREATED : OK));

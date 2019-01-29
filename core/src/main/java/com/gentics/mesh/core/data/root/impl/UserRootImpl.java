@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -140,7 +140,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public User create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		MeshAuthUser requestUser = ac.getUser();
 

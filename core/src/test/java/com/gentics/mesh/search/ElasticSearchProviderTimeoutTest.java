@@ -58,7 +58,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		options.setTimeout(500L).setUrl(null);
 		options.setUrl("http://localhost:" + server.actualPort());
 		provider.stop();
-		provider.start(false);
+		provider.start();
 	}
 
 	@Test

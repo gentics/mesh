@@ -36,7 +36,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.SortOrder;
@@ -442,7 +442,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(subFolder).as("subFolder").hasOnlyChildren(newBranch, subSubFolder);
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newBranch);
 
-			SearchQueueBatch batch = createBatch();
+			EventQueueBatch batch = createBatch();
 			// 5. reverse folders in new branch
 			subSubFolder.moveTo(mockActionContext(), folder, batch);
 			subFolder.moveTo(mockActionContext(), subSubFolder, batch);

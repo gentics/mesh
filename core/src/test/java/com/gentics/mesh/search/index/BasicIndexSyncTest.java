@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -245,7 +245,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(() -> {
 			Project project = boot().projectRoot().findByName("project_2");
 			BulkActionContextImpl context = Mockito.mock(BulkActionContextImpl.class);
-			Mockito.when(context.batch()).thenReturn(Mockito.mock(SearchQueueBatch.class));
+			Mockito.when(context.batch()).thenReturn(Mockito.mock(EventQueueBatch.class));
 			project.delete(context);
 		});
 		// Assert that the deletion was detected

@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -503,7 +503,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		model.getChanges().addAll(new SchemaComparator().diff(schema, updatedSchema));
 
 		InternalActionContext ac = mockActionContext();
-		SearchQueueBatch batch = createBatch();
+		EventQueueBatch batch = createBatch();
 		schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 	}
 
@@ -543,7 +543,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		model.getChanges().addAll(new MicroschemaComparator().diff(microschema, updatedMicroschema));
 
 		InternalActionContext ac = mockActionContext();
-		SearchQueueBatch batch = createBatch();
+		EventQueueBatch batch = createBatch();
 		microschemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 	}
 }

@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -157,7 +157,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node targetNode = nodeRoot.loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = searchQueue.create();
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
 			}).processSync();
@@ -273,8 +273,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-			Tuple<Node, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Tuple<Node, EventQueueBatch> tuple = db.tx(() -> {
+				EventQueueBatch batch = searchQueue.create();
 				node.addTag(tag, branch);
 				batch.store(node, branch.getUuid(), PUBLISHED, false);
 				batch.store(node, branch.getUuid(), DRAFT, false);
@@ -306,7 +306,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = searchQueue.create();
 				batch.store(node, branch.getUuid(), PUBLISHED, false);
 				batch.store(node, branch.getUuid(), DRAFT, false);
 				node.removeTag(tag, branch);
@@ -345,7 +345,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			SearchQueueBatch sqb = db.tx(() -> {
+			EventQueueBatch sqb = db.tx(() -> {
 				BulkActionContext bac = searchQueue.createBulkContext();
 				node.publish(ac, bac);
 				return bac.batch();
@@ -407,7 +407,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			SearchQueueBatch sqb = db.tx(() -> {
+			EventQueueBatch sqb = db.tx(() -> {
 				BulkActionContext bac = searchQueue.createBulkContext();
 				node.publish(ac, bac, languageTag);
 				return bac.batch();
@@ -479,8 +479,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
-			Tuple<TransformablePage<? extends Tag>, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Tuple<TransformablePage<? extends Tag>, EventQueueBatch> tuple = db.tx(() -> {
+				EventQueueBatch batch = searchQueue.create();
 				TransformablePage<? extends Tag> tags = node.updateTags(ac, batch);
 				return Tuple.tuple(tags, batch);
 			});

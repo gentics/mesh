@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -404,6 +404,6 @@ public interface Branch
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 }

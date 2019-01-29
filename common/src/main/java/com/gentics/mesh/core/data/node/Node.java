@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -450,7 +450,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param targetNode
 	 * @param batch
 	 */
-	void moveTo(InternalActionContext ac, Node targetNode, SearchQueueBatch batch);
+	void moveTo(InternalActionContext ac, Node targetNode, EventQueueBatch batch);
 
 	/**
 	 * Transform the node into a node reference rest model.
@@ -693,7 +693,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 
 	/**
-	 * Delete the node. Please use {@link #deleteFromBranch(Branch, SearchQueueBatch)} if you want to delete the node just from a specific branch.
+	 * Delete the node. Please use {@link #deleteFromBranch(Branch, EventQueueBatch)} if you want to delete the node just from a specific branch.
 	 * 
 	 * @param bac
 	 * @param ignoreChecks
@@ -709,7 +709,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 */
 	// TODO Remove this method
-	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Update the tags of the node using the provides list of tag references.
@@ -718,7 +718,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param list
 	 * @return
 	 */
-	void updateTags(InternalActionContext ac, SearchQueueBatch batch, List<TagReference> list);
+	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
 
 	
 	/**

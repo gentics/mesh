@@ -32,7 +32,7 @@ import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -109,7 +109,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public Branch create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Branch create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Database db = MeshInternal.get().database();
 
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);

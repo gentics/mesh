@@ -12,7 +12,7 @@ public interface SearchQueue {
 	 * 
 	 * @return Created batch
 	 */
-	SearchQueueBatch create();
+	EventQueueBatch create();
 
 	/**
 	 * Create a new bulk action context which holds a fresh search queue batch.

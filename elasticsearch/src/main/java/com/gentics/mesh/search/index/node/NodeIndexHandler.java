@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
@@ -284,7 +284,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String branchUuid = branch.getUuid();
 
 			// 4. Create the SQB's
-			SearchQueueBatch storeBatch = searchQueue.create();
+			EventQueueBatch storeBatch = searchQueue.create();
 			for (String uuidLang : needInsertionInES) {
 				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
 				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
@@ -298,7 +298,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				entry.setOnProcessAction(metric::decInsert);
 				storeBatch.addEntry(entry);
 			}
-			SearchQueueBatch removalBatch = searchQueue.create();
+			EventQueueBatch removalBatch = searchQueue.create();
 			for (String uuidLang : needRemovalInES) {
 				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
 				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
@@ -312,7 +312,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				entry.setOnProcessAction(metric::decDelete);
 				removalBatch.addEntry(entry);
 			}
-			SearchQueueBatch updateBatch = searchQueue.create();
+			EventQueueBatch updateBatch = searchQueue.create();
 			for (String uuidLang : needUpdate) {
 				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
 				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);

@@ -1,6 +1,6 @@
 package com.gentics.mesh.context;
 
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 
 public interface BulkActionContext {
 
@@ -29,7 +29,7 @@ public interface BulkActionContext {
 	 * 
 	 * @return
 	 */
-	SearchQueueBatch batch();
+	EventQueueBatch batch();
 
 	/**
 	 * Add a drop index entry to the batch.

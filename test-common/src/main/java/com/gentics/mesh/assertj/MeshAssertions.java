@@ -45,7 +45,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -83,7 +83,7 @@ public class MeshAssertions extends Assertions {
 		return new NodeResponseAssert(actual);
 	}
 
-	public static SearchQueueBatchAssert assertThat(SearchQueueBatch actual) {
+	public static SearchQueueBatchAssert assertThat(EventQueueBatch actual) {
 		return new SearchQueueBatchAssert(actual);
 	}
 

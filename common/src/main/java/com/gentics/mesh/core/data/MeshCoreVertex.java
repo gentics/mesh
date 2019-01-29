@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -28,7 +28,7 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 *            Batch to which entries will be added in order to update the search index.
 	 * @return true if the element was updated. Otherwise false
 	 */
-	boolean update(InternalActionContext ac, SearchQueueBatch batch);
+	boolean update(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Return the type info of the element.

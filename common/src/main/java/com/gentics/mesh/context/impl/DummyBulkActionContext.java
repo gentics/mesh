@@ -1,7 +1,7 @@
 package com.gentics.mesh.context.impl;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 
 public class DummyBulkActionContext implements BulkActionContext {
 
@@ -21,7 +21,7 @@ public class DummyBulkActionContext implements BulkActionContext {
 	}
 
 	@Override
-	public SearchQueueBatch batch() {
+	public EventQueueBatch batch() {
 		return new DummySearchQueueBatch();
 	}
 

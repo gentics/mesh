@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -165,7 +165,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Project create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		// TODO also create a default object schema for the project. Move this

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -288,7 +288,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Context which is used to load information needed for the object creation
 	 * @param batch
 	 */
-	default T create(InternalActionContext ac, SearchQueueBatch batch) {
+	default T create(InternalActionContext ac, EventQueueBatch batch) {
 		return create(ac, batch, null);
 	}
 
@@ -301,7 +301,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param uuid
 	 *            optional uuid to create the object with a given uuid (null to create a random uuid)
 	 */
-	T create(InternalActionContext ac, SearchQueueBatch batch, String uuid);
+	T create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Add the given item to the this root vertex.

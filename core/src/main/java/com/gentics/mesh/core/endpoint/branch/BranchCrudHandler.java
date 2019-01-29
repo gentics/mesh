@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
@@ -116,8 +116,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
-			Tuple<Single<BranchInfoSchemaList>, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Tuple<Single<BranchInfoSchemaList>, EventQueueBatch> tuple = db.tx(() -> {
+				EventQueueBatch batch = searchQueue.create();
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
@@ -390,8 +390,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		db.asyncTx(() -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
 
-			Tuple<TransformablePage<? extends Tag>, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Tuple<TransformablePage<? extends Tag>, EventQueueBatch> tuple = db.tx(() -> {
+				EventQueueBatch batch = searchQueue.create();
 				TransformablePage<? extends Tag> tags = branch.updateTags(ac, batch);
 				return Tuple.tuple(tags, batch);
 			});

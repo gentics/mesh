@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -74,21 +75,14 @@ public class ElasticSearchProvider implements SearchProvider {
 		this.options = options;
 	}
 
-	@Override
-	public void start() {
-		start(true);
-	}
-
 	/**
 	 * Start the provider by creating the REST client and checking the server status.
-	 * 
-	 * @param waitForCluster
 	 */
-	public void start(boolean waitForCluster) {
+	@Override
+	public void start() {
 		log.debug("Creating elasticsearch provider.");
 
 		ElasticSearchOptions searchOptions = getOptions();
-		long start = System.currentTimeMillis();
 
 		if (searchOptions.isStartEmbedded()) {
 			try {
@@ -112,13 +106,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			client = new SearchClient(proto, url.getHost(), port);
 
-			if (waitForCluster) {
-				waitForCluster(client, searchOptions.getStartupTimeout());
-				if (log.isDebugEnabled()) {
-					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
-				}
-				hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
-			}
+			hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
 		} catch (MalformedURLException e) {
 			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
 		}

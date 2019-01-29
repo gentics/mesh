@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
@@ -39,7 +39,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		Project project = newBranch.getProject();
 
 		// Add the needed indices and mappings
-		SearchQueueBatch indexCreationBatch = MeshInternal.get().searchQueue().create();
+		EventQueueBatch indexCreationBatch = MeshInternal.get().searchQueue().create();
 		for (SchemaContainerVersion schemaVersion : newBranch.findActiveSchemaVersions()) {
 			SchemaModel schema = schemaVersion.getSchema();
 			indexCreationBatch.createNodeIndex(project.getUuid(), newBranchUuid, schemaVersion.getUuid(), PUBLISHED, schema);

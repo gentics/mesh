@@ -10,8 +10,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.search.BulkSearchQueueEntry;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.BulkEventQueueEntry;
+import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SeperateSearchQueueEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
@@ -23,50 +23,50 @@ import io.reactivex.Completable;
  * Dummy search queue batch which can be used to avoid creation of unwanted batch entries. This is useful if a drop index is more efficient then removing each
  * entry individually. (e.g.: project deletion)
  */
-public class DummySearchQueueBatch implements SearchQueueBatch {
+public class DummySearchQueueBatch implements EventQueueBatch {
 
 	@Override
-	public SearchQueueBatch createIndex(String indexName, Class<?> elementClass) {
+	public EventQueueBatch createIndex(String indexName, Class<?> elementClass) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch dropIndex(String indexName) {
+	public EventQueueBatch dropIndex(String indexName) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema) {
+	public EventQueueBatch createNodeIndex(String projectUuid, String branchUuid, String versionUuid, ContainerType type, Schema schema) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedEntries) {
+	public EventQueueBatch store(Node node, String branchUuid, ContainerType type, boolean addRelatedEntries) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
+	public EventQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type) {
+	public EventQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String branchUuid, ContainerType type) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch updatePermissions(IndexableElement element) {
+	public EventQueueBatch updatePermissions(IndexableElement element) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
+	public EventQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
 		return this;
 	}
 
 	@Override
-	public BulkSearchQueueEntry<?> addEntry(BulkSearchQueueEntry<?> entry) {
+	public BulkEventQueueEntry<?> addEntry(BulkEventQueueEntry<?> entry) {
 		return null;
 	}
 
@@ -106,22 +106,22 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedEntries) {
+	public EventQueueBatch delete(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedEntries) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements) {
+	public EventQueueBatch store(NodeGraphFieldContainer container, String branchUuid, ContainerType type, boolean addRelatedElements) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch delete(Tag element, boolean addRelatedEntries) {
+	public EventQueueBatch delete(Tag element, boolean addRelatedEntries) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch delete(TagFamily tagFymily, boolean addRelatedEntries) {
+	public EventQueueBatch delete(TagFamily tagFymily, boolean addRelatedEntries) {
 		return this;
 	}
 
@@ -135,6 +135,6 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public void addAll(SearchQueueBatch otherBatch) {
+	public void addAll(EventQueueBatch otherBatch) {
 	}
 }
