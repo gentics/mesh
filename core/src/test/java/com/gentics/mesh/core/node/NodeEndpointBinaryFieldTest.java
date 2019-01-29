@@ -17,7 +17,10 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.util.VersionNumber;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -236,6 +239,36 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
 			assertEquals(binaryLen, IOUtils.toByteArray(response.getStream()).length);
 		}
+	}
+
+	@Test
+	public void testDownloadBinaryFieldRange() throws IOException {
+
+		String contentType = "plain/text";
+		String data = "Hello World!";
+
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+		Node node = prepareSchema();
+		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
+		String uuid = tx(() -> node.getUuid());
+
+		// 1. Upload some binary data
+		Buffer buffer = Buffer.buffer(data);
+
+		ByteArrayInputStream stream = new ByteArrayInputStream(buffer.getBytes());
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), "binary", stream, buffer.length(), fileName, contentType));
+
+		// 2. Download the data using the REST API
+		MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 0, 4));
+		String decoded = new String(IOUtils.toByteArray(response.getStream()));
+		assertEquals("Hello", decoded);
+
+		// 2. Download the data using the REST API
+		response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 6, 10));
+		decoded = new String(IOUtils.toByteArray(response.getStream()));
+		assertEquals("World", decoded);
+
 	}
 
 	/**

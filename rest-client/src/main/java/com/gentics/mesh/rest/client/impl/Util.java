@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.json.JsonUtil;
 
+import java.security.InvalidParameterException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -93,6 +94,17 @@ public final class Util {
 		return Stream.of(events)
 			.map(MeshEvent::getAddress)
 			.toArray(String[]::new);
+	}
+
+	/**
+	 * Tests if the given value is positive. Throws an InvalidParameterException if not.
+	 * @param value
+	 * @param name
+	 */
+	public static void requireNonNegative(long value, String name) {
+		if (value < 0) {
+			throw new InvalidParameterException(String.format("Parameter %s must not be negative. Given value: %d", name, value));
+		}
 	}
 
 	interface WrappedSupplier<T> {

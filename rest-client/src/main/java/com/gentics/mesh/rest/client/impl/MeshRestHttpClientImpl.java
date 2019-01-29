@@ -87,6 +87,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Vector;
@@ -1061,6 +1062,23 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters);
 
 		return prepareRequest(GET, path, MeshBinaryResponse.class);
+	}
+
+	@Override
+	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from, long to, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Util.requireNonNegative(from, "from");
+		Util.requireNonNegative(to, "to");
+		if (to < from) {
+			throw new InvalidParameterException(String.format("Parameter to must be equal or greater then from. Given values: %d-%d", from, to));
+		}
+
+		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters);
+
+		MeshRequest<MeshBinaryResponse> request = prepareRequest(GET, path, MeshBinaryResponse.class);
+		request.setHeader("Range", String.format("bytes=%d-%d", from, to));
+		return request;
 	}
 
 	@Override

@@ -51,6 +51,21 @@ public interface NodeBinaryFieldClientMethods {
 														ParameterProvider... parameters);
 
 	/**
+	 * Download a part of the binary field of the given node in the given project.
+	 *
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param languageTag
+	 * @param fieldKey
+	 * @param from Start byte of the range (inclusive)
+	 * @param to End byte of the range (inclusive)
+	 * @param parameters
+	 * @return Mesh request which provides a download response that contains a reference to the byte buffer with the binary data
+	 */
+	MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+														long from, long to, ParameterProvider... parameters);
+
+	/**
 	 * Transform the binary field of the given node in the given project
 	 * 
 	 * @param projectName
