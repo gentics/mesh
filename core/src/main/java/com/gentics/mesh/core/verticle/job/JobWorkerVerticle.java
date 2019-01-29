@@ -36,10 +36,6 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	private Database db;
 
-	private Long periodicTimerId;
-
-	private long timerId;
-
 	@Inject
 	public JobWorkerVerticle(Database db, Lazy<BootstrapInitializer> boot) {
 		this.db = db;
@@ -54,26 +50,6 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 	@Override
 	public String getLockName() {
 		return GLOBAL_JOB_LOCK_NAME;
-	}
-
-	@Override
-	public void start() throws Exception {
-		super.start();
-		// The verticle has been deployed. Now wait a few seconds and schedule the periodic execution of jobs
-		timerId = vertx.setTimer(30_000, rh -> {
-			periodicTimerId = vertx.setPeriodic(15_000, th -> {
-				invokeJobAction(null);
-			});
-		});
-	}
-
-	@Override
-	public void stop() throws Exception {
-		vertx.cancelTimer(timerId);
-		if (periodicTimerId != null) {
-			vertx.cancelTimer(periodicTimerId);
-		}
-		super.stop();
 	}
 
 	@Override

@@ -28,7 +28,7 @@ public class ServerRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
 		options.setAdminPassword("admin");
-		// options.getStorageOptions().setStartServer(true);
+		options.getStorageOptions().setStartServer(true);
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
