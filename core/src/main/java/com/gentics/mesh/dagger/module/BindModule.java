@@ -4,10 +4,10 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
-import com.gentics.mesh.core.data.search.impl.EventQueueBatchImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 

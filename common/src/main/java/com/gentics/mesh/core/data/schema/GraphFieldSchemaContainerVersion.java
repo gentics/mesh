@@ -8,10 +8,10 @@ import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.VersionUtil;
 
 /**

@@ -32,8 +32,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
@@ -45,6 +43,7 @@ import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -87,8 +86,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public AttachmentIngestConfigProvider ingestConfigProvider;
 
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
-		super(searchProvider, db, boot, searchQueue);
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+		super(searchProvider, db, boot);
 	}
 
 	@Override
@@ -284,7 +283,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String branchUuid = branch.getUuid();
 
 			// 4. Create the SQB's
-			EventQueueBatch storeBatch = searchQueue.create();
+			EventQueueBatch storeBatch = EventQueueBatch.create();
 			for (String uuidLang : needInsertionInES) {
 				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
 				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
@@ -298,7 +297,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				entry.setOnProcessAction(metric::decInsert);
 				storeBatch.addEntry(entry);
 			}
-			EventQueueBatch removalBatch = searchQueue.create();
+			EventQueueBatch removalBatch = EventQueueBatch.create();
 			for (String uuidLang : needRemovalInES) {
 				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
 				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
@@ -312,7 +311,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				entry.setOnProcessAction(metric::decDelete);
 				removalBatch.addEntry(entry);
 			}
-			EventQueueBatch updateBatch = searchQueue.create();
+			EventQueueBatch updateBatch = EventQueueBatch.create();
 			for (String uuidLang : needUpdate) {
 				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
 				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
@@ -328,7 +327,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// 5. Process the SQB's
-			return Completable.mergeArray(removalBatch.processAsync(), storeBatch.processAsync(), updateBatch.processAsync());
+			return Completable.mergeArray(removalBatch.dispatch(), storeBatch.dispatch(), updateBatch.dispatch());
 
 		}
 

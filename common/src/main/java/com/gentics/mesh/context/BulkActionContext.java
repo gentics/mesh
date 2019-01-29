@@ -1,8 +1,20 @@
 package com.gentics.mesh.context;
 
-import com.gentics.mesh.core.data.search.EventQueueBatch;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.data.IndexableElement;
+import com.gentics.mesh.core.data.impl.TagFamilyImpl;
+import com.gentics.mesh.event.EventQueueBatch;
 
 public interface BulkActionContext {
+
+	/**
+	 * Create a new context.
+	 * 
+	 * @return
+	 */
+	static BulkActionContext create() {
+		return new BulkActionContextImpl();
+	}
 
 	/**
 	 * Increment the counter which tracks deleted elements.
@@ -31,11 +43,13 @@ public interface BulkActionContext {
 	 */
 	EventQueueBatch batch();
 
-	/**
-	 * Add a drop index entry to the batch.
-	 * 
-	 * @param composeIndexName
-	 */
-	void dropIndex(String composeIndexName);
+//	/**
+//	 * Add a drop index entry to the batch.
+//	 * 
+//	 * @param composeIndexName
+//	 */
+//	void dropIndex(String composeIndexName);
+
+	void delete(IndexableElement element, boolean b);
 
 }

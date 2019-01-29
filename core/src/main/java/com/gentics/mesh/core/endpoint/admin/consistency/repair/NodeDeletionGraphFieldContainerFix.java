@@ -104,7 +104,7 @@ public class NodeDeletionGraphFieldContainerFix {
 		initialEdge.setBranchUuid(branchUuid);
 		initialEdge.setType(INITIAL);
 
-		BulkActionContext bac = MeshInternal.get().searchQueue().createBulkContext();
+		BulkActionContext bac = BulkActionContext.create();
 		node.delete(bac);
 		return true;
 	}

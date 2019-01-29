@@ -45,7 +45,6 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -68,6 +67,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.search.TrackingSearchProvider;
 
 import io.vertx.core.json.JsonArray;

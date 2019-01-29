@@ -18,8 +18,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
@@ -27,6 +25,7 @@ import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
@@ -64,13 +63,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected BootstrapInitializer boot;
 
-	protected SearchQueue searchQueue;
-
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	/**
@@ -215,7 +211,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			metric.incUpdate(needUpdate.size());
 
 			// 4. Create the SQB's
-			EventQueueBatch storeBatch = searchQueue.create();
+			EventQueueBatch storeBatch = EventQueueBatch.create();
 			for (String uuid : needInsertionInES) {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setProjectUuid(projectUuid);
@@ -223,7 +219,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				entry.setOnProcessAction(metric::decInsert);
 				storeBatch.addEntry(entry);
 			}
-			EventQueueBatch removalBatch = searchQueue.create();
+			EventQueueBatch removalBatch = EventQueueBatch.create();
 			for (String uuid : needRemovalInES) {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setProjectUuid(projectUuid);
@@ -231,7 +227,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				entry.setOnProcessAction(metric::decDelete);
 				removalBatch.addEntry(entry);
 			}
-			EventQueueBatch updateBatch = searchQueue.create();
+			EventQueueBatch updateBatch = EventQueueBatch.create();
 			for (String uuid : needUpdate) {
 				GenericEntryContext context = new GenericEntryContextImpl();
 				context.setProjectUuid(projectUuid);
@@ -241,7 +237,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			}
 
 			// 5. Process the SQB's
-			return Completable.mergeArray(removalBatch.processAsync(), storeBatch.processAsync(), updateBatch.processAsync());
+			return Completable.mergeArray(removalBatch.dispatch(), storeBatch.dispatch(), updateBatch.dispatch());
 
 		}
 	}

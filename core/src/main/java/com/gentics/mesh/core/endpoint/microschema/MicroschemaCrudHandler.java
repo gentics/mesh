@@ -25,14 +25,14 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -47,15 +47,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-		HandlerUtilities utils) {
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -84,7 +80,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			User user = ac.getUser();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			Tuple<EventQueueBatch, String> info = db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = EventQueueBatch.create();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				if (updateParams.getUpdateAssignedBranches()) {
@@ -107,7 +103,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				return Tuple.tuple(batch, createdVersion.getVersion());
 			});
 
-			info.v1().processSync();
+			info.v1().dispatch();
 			if (updateParams.getUpdateAssignedBranches()) {
 				MeshEvent.triggerJobWorker();
 				return message(ac, "schema_updated_migration_invoked", name, info.v2());
@@ -147,10 +143,10 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		utils.asyncTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = new EventQueueBatchImpl();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
-			}).processSync();
+			}).dispatch();
 			return message(ac, "migration_invoked", schema.getName());
 		}, model -> ac.send(model, OK));
 

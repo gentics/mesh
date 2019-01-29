@@ -24,19 +24,17 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -47,6 +45,7 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -87,8 +86,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private BinaryFieldResponseHandler binaryFieldResponseHandler;
 
-	private SearchQueue searchQueue;
-
 	private BinaryStorage binaryStorage;
 
 	private BinaryProcessorRegistry binaryProcessorRegistry;
@@ -97,7 +94,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 	public BinaryFieldHandler(ImageManipulator imageManipulator,
 		Database db,
 		Lazy<BootstrapInitializer> boot,
-		SearchQueue searchQueue,
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
 		BinaryProcessorRegistry binaryProcessorRegistry) {
@@ -105,7 +101,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
@@ -256,7 +251,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			EventQueueBatch batch = searchQueue.create();
+			EventQueueBatch batch = EventQueueBatch.create();
 			// Create a new node version field container to store the upload
 			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(), latestDraftVersion, true);
 
@@ -299,7 +294,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 
-			return batch.store(node, branch.getUuid(), DRAFT, false).processAsync().andThen(node.transformToRest(ac, 0));
+			return batch.store(node, branch.getUuid(), DRAFT, false).dispatch().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -404,7 +399,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 				// Update the binary field with the new information
 				EventQueueBatch sqb = db.tx(() -> {
-					EventQueueBatch batch = searchQueue.create();
+					EventQueueBatch batch = EventQueueBatch.create();
 					Branch branch = ac.getBranch();
 
 					// Create a new node version field container to store the upload
@@ -470,7 +465,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					return batch;
 				});
 				// Finally update the search index and return the updated node
-				return sqb.processAsync().andThen(node.transformToRest(ac, 0));
+				return sqb.dispatch().andThen(node.transformToRest(ac, 0));
 			} catch (GenericRestException e) {
 				throw e;
 			} catch (Exception e) {

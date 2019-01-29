@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.script.ScriptEngine;
+
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
@@ -13,12 +15,11 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
@@ -40,13 +41,10 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected Database db;
 
-	protected SearchQueue searchQueue;
-
 	protected BinaryFieldHandler binaryFieldHandler;
 
-	public AbstractMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler binaryFieldHandler) {
+	public AbstractMigrationHandler(Database db, BinaryFieldHandler binaryFieldHandler) {
 		this.db = db;
-		this.searchQueue = searchQueue;
 		this.binaryFieldHandler = binaryFieldHandler;
 	}
 
@@ -146,12 +144,12 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
-		EventQueueBatch sqb = searchQueue.create();
+		EventQueueBatch sqb = EventQueueBatch.create();
 		for (T container : containers) {
 			try {
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
 				// This prevents adding partial entries from failed migrations.
-				EventQueueBatch containerBatch = searchQueue.create();
+				EventQueueBatch containerBatch = EventQueueBatch.create();
 				db.tx(() -> {
 					migrator.accept(containerBatch, container, errorsDetected);
 				});
@@ -169,7 +167,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				// Process the batch and reset it
 				log.info("Syncing batch with size: " + sqb.size());
 				db.tx(() -> {
-					sqb.processSync();
+					sqb.dispatch();
 					sqb.clear();
 				});
 			}
@@ -177,7 +175,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		if (sqb.size() > 0) {
 			log.info("Syncing last batch with size: " + sqb.size());
 			db.tx(() -> {
-				sqb.processSync();
+				sqb.dispatch();
 			});
 		}
 

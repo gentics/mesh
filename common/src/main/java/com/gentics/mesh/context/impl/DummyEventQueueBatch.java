@@ -11,11 +11,11 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.BulkEventQueueEntry;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SeperateSearchQueueEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
 
@@ -23,7 +23,7 @@ import io.reactivex.Completable;
  * Dummy search queue batch which can be used to avoid creation of unwanted batch entries. This is useful if a drop index is more efficient then removing each
  * entry individually. (e.g.: project deletion)
  */
-public class DummySearchQueueBatch implements EventQueueBatch {
+public class DummyEventQueueBatch implements EventQueueBatch {
 
 	@Override
 	public EventQueueBatch createIndex(String indexName, Class<?> elementClass) {
@@ -85,6 +85,7 @@ public class DummySearchQueueBatch implements EventQueueBatch {
 		return null;
 	}
 
+/**
 	@Override
 	public Completable processAsync() {
 		return Completable.complete();
@@ -99,6 +100,7 @@ public class DummySearchQueueBatch implements EventQueueBatch {
 	public void processSync() {
 
 	}
+**/
 
 	@Override
 	public void printDebug() {
@@ -136,5 +138,17 @@ public class DummySearchQueueBatch implements EventQueueBatch {
 
 	@Override
 	public void addAll(EventQueueBatch otherBatch) {
+	}
+
+	@Override
+	public Completable dispatch() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void updated(IndexableElement updateElement) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -37,8 +37,6 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
@@ -48,6 +46,8 @@ import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
 import com.gentics.mesh.util.Tuple;
@@ -64,14 +64,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 	private static final Logger log = LoggerFactory.getLogger(BranchCrudHandler.class);
 
-	private SearchQueue searchQueue;
-
 	private BootstrapInitializer boot;
 
 	@Inject
-	public BranchCrudHandler(Database db, SearchQueue searchQueue, HandlerUtilities utils, BootstrapInitializer boot) {
+	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot) {
 		super(db, utils);
-		this.searchQueue = searchQueue;
 		this.boot = boot;
 	}
 
@@ -117,7 +114,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
 			Tuple<Single<BranchInfoSchemaList>, EventQueueBatch> tuple = db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = new EventQueueBatchImpl();
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
@@ -133,8 +130,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				return Tuple.tuple(getSchemaVersionsInfo(branch), batch);
 			});
 
-			// 1. Process batch and create need indices
-			tuple.v2().processSync();
+			// 1. Dispatch the event batch which will invoke the ES sync.
+			tuple.v2().dispatch();
 
 			// 2. Invoke migrations which will populate the created index
 			MeshEvent.triggerJobWorker();
@@ -391,12 +388,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
 
 			Tuple<TransformablePage<? extends Tag>, EventQueueBatch> tuple = db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = EventQueueBatch.create();
 				TransformablePage<? extends Tag> tags = branch.updateTags(ac, batch);
 				return Tuple.tuple(tags, batch);
 			});
 
-			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
+			return tuple.v2().dispatch().andThen(tuple.v1().transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 }

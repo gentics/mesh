@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
@@ -25,6 +24,8 @@ import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
@@ -35,7 +36,6 @@ import io.vertx.core.logging.LoggerFactory;
 public class NodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationJobImpl.class);
-	private static final int MIGRATION_ATTEMPT_COUNT = 3;
 
 	public static void init(Database database) {
 		database.addVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
@@ -52,10 +52,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 		SchemaModel newSchema = toVersion.getSchema();
 
 		// New indices need to be created
-		EventQueueBatch batch = MeshInternal.get().searchQueue().create();
+		EventQueueBatch batch = new EventQueueBatchImpl();
 		batch.createNodeIndex(project.getUuid(), branch.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
 		batch.createNodeIndex(project.getUuid(), branch.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
-		batch.processSync();
+		batch.dispatch();
 	}
 
 	protected Completable processTask() {

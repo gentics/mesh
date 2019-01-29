@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -68,6 +67,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -619,11 +619,11 @@ public interface TestHelperMethods {
 	}
 
 	default public EventQueueBatch createBatch() {
-		return MeshInternal.get().searchQueue().create();
+		return EventQueueBatch.create();
 	}
 
 	default public BulkActionContext createBulkContext() {
-		return MeshInternal.get().searchQueue().createBulkContext();
+		return BulkActionContext.create();
 	}
 
 	default public Map<String, User> users() {

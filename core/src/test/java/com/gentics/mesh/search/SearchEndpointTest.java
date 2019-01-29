@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
@@ -23,7 +23,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();
-			EventQueueBatch batch = MeshInternal.get().searchQueue().create();
+			EventQueueBatch batch = new EventQueueBatchImpl();
 			for (int i = 0; i < 10; i++) {
 				String branchUuid = project().getLatestBranch().getUuid();
 				batch.store(node, branchUuid, DRAFT, true);

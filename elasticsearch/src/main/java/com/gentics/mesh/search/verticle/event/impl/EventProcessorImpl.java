@@ -48,66 +48,66 @@ public class EventProcessorImpl {
 	
 	
 	
-	@Override
-	public Completable processAsync() {
-		if (!searchProvider.isActive()) {
-			return Completable.create(s -> {
-				clear();
-				s.onComplete();
-			});
-		}
-		return Completable.defer(() -> {
-			Completable obs = Completable.complete();
-
-			if (!seperateEntries.isEmpty()) {
-				List<Completable> seperateEntryList = seperateEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
-				obs = Completable.concat(Flowable.fromIterable(seperateEntryList), 1);
-			}
-			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
-			if (!bulkEntries.isEmpty()) {
-				Observable<BulkEntry> bulks = Observable.fromIterable(bulkEntries)
-					.flatMap(BulkEventQueueEntry::process);
-
-				AtomicLong counter = new AtomicLong();
-				Completable bulkProcessing = bulks
-					.buffer(bulkLimit)
-					.flatMapCompletable(bulk -> searchProvider.processBulk(bulk).doOnComplete(() -> {
-						log.debug("Bulk completed {" + counter.incrementAndGet() + "}");
-					}));
-				obs = obs.andThen(bulkProcessing);
-			}
-
-			return obs.andThen(searchProvider.refreshIndex()).doOnComplete(() -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Handled all search queue items.");
-				}
-				// Clear the batch entries so that the GC can claim the memory
-				clear();
-			}).doOnError(error -> {
-				log.error("Error while processing batch {" + batchId + "}");
-				if (log.isDebugEnabled()) {
-					printDebug();
-				}
-				clear();
-			});
-		});
-	}
-
-	@Override
-	public void processSync(long timeout, TimeUnit unit) {
-		if (searchProvider.isActive()) {
-			if (!processAsync().blockingAwait(timeout, unit)) {
-				throw error(INTERNAL_SERVER_ERROR,
-					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
-						+ "} exceeded.");
-			}
-		} else {
-			clear();
-		}
-	}
-
-	@Override
-	public void processSync() {
-		processSync(120, TimeUnit.SECONDS);
-	}
+//	@Override
+//	public Completable processAsync() {
+//		if (!searchProvider.isActive()) {
+//			return Completable.create(s -> {
+//				clear();
+//				s.onComplete();
+//			});
+//		}
+//		return Completable.defer(() -> {
+//			Completable obs = Completable.complete();
+//
+//			if (!seperateEntries.isEmpty()) {
+//				List<Completable> seperateEntryList = seperateEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
+//				obs = Completable.concat(Flowable.fromIterable(seperateEntryList), 1);
+//			}
+//			int bulkLimit = Mesh.mesh().getOptions().getSearchOptions().getBulkLimit();
+//			if (!bulkEntries.isEmpty()) {
+//				Observable<BulkEntry> bulks = Observable.fromIterable(bulkEntries)
+//					.flatMap(BulkEventQueueEntry::process);
+//
+//				AtomicLong counter = new AtomicLong();
+//				Completable bulkProcessing = bulks
+//					.buffer(bulkLimit)
+//					.flatMapCompletable(bulk -> searchProvider.processBulk(bulk).doOnComplete(() -> {
+//						log.debug("Bulk completed {" + counter.incrementAndGet() + "}");
+//					}));
+//				obs = obs.andThen(bulkProcessing);
+//			}
+//
+//			return obs.andThen(searchProvider.refreshIndex()).doOnComplete(() -> {
+//				if (log.isDebugEnabled()) {
+//					log.debug("Handled all search queue items.");
+//				}
+//				// Clear the batch entries so that the GC can claim the memory
+//				clear();
+//			}).doOnError(error -> {
+//				log.error("Error while processing batch {" + batchId + "}");
+//				if (log.isDebugEnabled()) {
+//					printDebug();
+//				}
+//				clear();
+//			});
+//		});
+//	}
+//
+//	@Override
+//	public void processSync(long timeout, TimeUnit unit) {
+//		if (searchProvider.isActive()) {
+//			if (!processAsync().blockingAwait(timeout, unit)) {
+//				throw error(INTERNAL_SERVER_ERROR,
+//					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
+//						+ "} exceeded.");
+//			}
+//		} else {
+//			clear();
+//		}
+//	}
+//
+//	@Override
+//	public void processSync() {
+//		processSync(120, TimeUnit.SECONDS);
+//	}
 }

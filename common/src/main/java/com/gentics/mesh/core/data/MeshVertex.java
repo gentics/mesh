@@ -5,7 +5,7 @@ import java.util.Set;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
@@ -28,10 +28,10 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
 	 * 
-	 * @param context
+	 * @param bac
 	 *            Deletion context which keeps track of the deletion process
 	 */
-	void delete(BulkActionContext context);
+	void delete(BulkActionContext bac);
 
 	/**
 	 * Invoke deletion without any given bulk action context.

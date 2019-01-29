@@ -24,10 +24,9 @@ import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -51,11 +50,9 @@ public class HandlerUtilities {
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
 	private Database database;
-	private SearchQueue searchQueue;
 
 	@Inject
-	public HandlerUtilities(Database database, SearchQueue searchQueue) {
-		this.searchQueue = searchQueue;
+	public HandlerUtilities(Database database) {
 		this.database = database;
 	}
 
@@ -92,7 +89,7 @@ public class HandlerUtilities {
 			}
 
 			EventQueueBatch batch = database.tx(() -> {
-				BulkActionContext bac = searchQueue.createBulkContext();
+				BulkActionContext bac = BulkActionContext.create();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
 					element.delete(bac);
@@ -153,7 +150,7 @@ public class HandlerUtilities {
 			if (element != null) {
 				final T updateElement = element;
 				Tuple<Boolean, EventQueueBatch> tuple = database.tx(() -> {
-					EventQueueBatch batch = searchQueue.create();
+					EventQueueBatch batch = EventQueueBatch.create();
 					boolean updated = updateElement.update(ac, batch);
 					return Tuple.tuple(updated, batch);
 				});
@@ -163,11 +160,13 @@ public class HandlerUtilities {
 				RM model = updateElement.transformToRestSync(ac, 0);
 				info = new ResultInfo(model, b);
 				if (isUpdated) {
-					b.updated(updateElement);
+					if (updateElement instanceof IndexableElement) {
+						b.updated((IndexableElement) updateElement);
+					}
 				}
 			} else {
 				Tuple<T, EventQueueBatch> tuple = database.tx(() -> {
-					EventQueueBatch batch = searchQueue.create();
+					EventQueueBatch batch = EventQueueBatch.create();
 					created.set(true);
 					return Tuple.tuple(root.create(ac, batch, uuid), batch);
 				});

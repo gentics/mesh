@@ -22,20 +22,19 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
@@ -43,13 +42,10 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	private BootstrapInitializer boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, SearchQueue searchQueue) {
+	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -137,7 +133,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 				// Prepare the sets for revoke and grant actions
 				Tuple<EventQueueBatch, String> tuple = db.tx(() -> {
-					EventQueueBatch batch = searchQueue.create();
+					EventQueueBatch batch = EventQueueBatch.create();
 					Set<GraphPermission> permissionsToGrant = new HashSet<>();
 					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 
@@ -163,10 +159,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					return Tuple.tuple(batch, role.getName());
 				});
 
-				tuple.v1().processSync();
 				String name = tuple.v2();
-				return Single.just(message(ac, "role_updated_permission", name));
-
+				return tuple.v1().dispatch().andThen(Single.just(message(ac, "role_updated_permission", name)));
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

@@ -18,11 +18,10 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Completable;
@@ -36,8 +35,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandler.class);
 
 	@Inject
-	public BranchMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler) {
-		super(db, searchQueue, nodeFieldAPIHandler);
+	public BranchMigrationHandler(Database db, BinaryFieldHandler nodeFieldAPIHandler) {
+		super(db, nodeFieldAPIHandler);
 	}
 
 	/**
@@ -76,7 +75,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		for (Node node : project.getNodeRoot().findAll()) {
 			// Create a new SQB to handle the ES update
 			if (sqb == null) {
-				sqb = searchQueue.create();
+				sqb = EventQueueBatch.create();
 			}
 			migrateNode(node, sqb, oldBranch, newBranch, errorsDetected);
 			if (status != null) {
@@ -92,13 +91,13 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			if (count % 500 == 0) {
 				// Process the batch and reset it
 				log.info("Syncing batch with size: " + sqb.size());
-				sqb.processSync();
+				sqb.dispatch();
 				sqb = null;
 			}
 		}
 		if (sqb != null) {
 			log.info("Syncing last batch with size: " + sqb.size());
-			sqb.processSync();
+			sqb.dispatch();
 			sqb = null;
 		}
 

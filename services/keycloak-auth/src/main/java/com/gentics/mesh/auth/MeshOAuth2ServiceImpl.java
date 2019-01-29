@@ -26,11 +26,10 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -72,14 +71,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	protected OAuth2Auth oauth2Provider;
 	protected Database db;
 	protected BootstrapInitializer boot;
-	protected SearchQueue searchQueue;
 
 	@Inject
-	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx, SearchQueue searchQueue) {
+	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx) {
 		this.db = db;
 		this.boot = boot;
 		this.options = meshOptions.getAuthenticationOptions().getOauth2();
-		this.searchQueue = searchQueue;
 		if (options == null || !options.isEnabled()) {
 			return;
 		}
@@ -198,7 +195,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
 		String currentTokenId = userInfo.getString("jti");
 
-		EventQueueBatch batch = searchQueue.create();
+		EventQueueBatch batch = EventQueueBatch.create();
 		MeshAuthUser authUser = db.tx(() -> {
 			UserRoot root = boot.userRoot();
 			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
@@ -225,7 +222,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			}
 			return user;
 		});
-		batch.processSync();
+		batch.dispatch();
 		return authUser;
 
 	}

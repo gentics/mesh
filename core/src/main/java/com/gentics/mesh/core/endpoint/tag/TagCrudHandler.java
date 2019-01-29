@@ -12,12 +12,11 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -28,15 +27,12 @@ import com.gentics.mesh.util.ResultInfo;
  */
 public class TagCrudHandler extends AbstractHandler {
 
-	private SearchQueue searchQueue;
-
 	private Database db;
 
 	private HandlerUtilities utils;
 
 	@Inject
-	public TagCrudHandler(SearchQueue searchQueue, Database db, HandlerUtilities utils) {
-		this.searchQueue = searchQueue;
+	public TagCrudHandler(Database db, HandlerUtilities utils) {
 		this.db = db;
 		this.utils = utils;
 	}
@@ -100,7 +96,7 @@ public class TagCrudHandler extends AbstractHandler {
 		utils.asyncTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = EventQueueBatch.create();
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);
 				String path = tag.getAPIPath(ac);
@@ -112,7 +108,7 @@ public class TagCrudHandler extends AbstractHandler {
 			String path = info.getProperty("path");
 			ac.setLocation(path);
 			// TODO don't wait forever in order to prevent locking the thread
-			info.getBatch().processSync();
+			info.getBatch().dispatch();
 			return info.getModel();
 		}, model -> ac.send(model, CREATED));
 

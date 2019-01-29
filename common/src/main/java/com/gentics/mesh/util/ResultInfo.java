@@ -3,8 +3,8 @@ package com.gentics.mesh.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Result container which can be used to return information from within a transaction handler.

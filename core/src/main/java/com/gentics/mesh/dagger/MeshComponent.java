@@ -9,7 +9,6 @@ import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
@@ -56,8 +55,6 @@ public interface MeshComponent {
 	Database database();
 
 	EndpointRegistry endpointRegistry();
-
-	SearchQueue searchQueue();
 
 	SearchProvider searchProvider();
 

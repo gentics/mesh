@@ -1,9 +1,10 @@
 package com.gentics.mesh.context.impl;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
@@ -25,8 +26,8 @@ public class BulkActionContextImpl implements BulkActionContext {
 
 	private EventQueueBatch batch;
 
-	public BulkActionContextImpl(EventQueueBatch batch) {
-		this.batch = batch;
+	public BulkActionContextImpl() {
+		this.batch = EventQueueBatch.create();
 	}
 
 	@Override
@@ -43,7 +44,8 @@ public class BulkActionContextImpl implements BulkActionContext {
 	public void process(boolean force) {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
-			batch.processSync();
+			// TODO can we run the dispatch process in the background? Async?
+			batch.dispatch().blockingAwait(5, TimeUnit.SECONDS);
 			Tx.getActive().getGraph().commit();
 			// Reset the counter back to zero
 			elementCounter.set(0);

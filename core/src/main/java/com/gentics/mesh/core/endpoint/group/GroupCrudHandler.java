@@ -17,20 +17,19 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * Handler for group specific request methods.
@@ -41,13 +40,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue, HandlerUtilities utils) {
+	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -91,10 +87,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				if (log.isDebugEnabled()) {
 					log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
 				}
-				tuple = Tuple.tuple(group, searchQueue.create());
+				tuple = Tuple.tuple(group, EventQueueBatch.create());
 			} else {
 				tuple = db.tx(() -> {
-					EventQueueBatch batch = searchQueue.create();
+					EventQueueBatch batch = EventQueueBatch.create();
 					group.addRole(role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
@@ -103,7 +99,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					return Tuple.tuple(group, batch);
 				});
 			}
-			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
+			return tuple.v2().dispatch().andThen(tuple.v1().transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -127,14 +123,14 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			return db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = EventQueueBatch.create();
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
 				// No need to update users as well. Those documents are not affected by this modification
 				batch.store(group, false);
 				return batch;
-			}).processAsync().andThen(Single.just(Optional.empty()));
+			}).dispatch().andThen(Single.just(Optional.empty()));
 
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
@@ -175,13 +171,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			ResultInfo info = db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = EventQueueBatch.create();
 				group.addUser(user);
 				batch.store(group, true);
 				GroupResponse model = group.transformToRestSync(ac, 0);
 				return new ResultInfo(model, batch);
 			});
-			return info.getBatch().processAsync().andThen(Single.just(info.getModel()));
+			return info.getBatch().dispatch().andThen(Single.just(info.getModel()));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -204,13 +200,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 			return db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = EventQueueBatch.create();
 				batch.store(group, true);
 				batch.store(user, false);
 				group.removeUser(user);
 				return batch;
-			}).processAsync().toSingleDefault(Optional.empty());
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+			}).dispatch().andThen(Single.just(Optional.empty()));
+		}).subscribe((empty) -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 }

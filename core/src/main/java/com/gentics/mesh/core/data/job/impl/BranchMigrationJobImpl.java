@@ -10,13 +10,14 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
@@ -39,13 +40,13 @@ public class BranchMigrationJobImpl extends JobImpl {
 		Project project = newBranch.getProject();
 
 		// Add the needed indices and mappings
-		EventQueueBatch indexCreationBatch = MeshInternal.get().searchQueue().create();
+		EventQueueBatch indexCreationBatch = new EventQueueBatchImpl();
 		for (SchemaContainerVersion schemaVersion : newBranch.findActiveSchemaVersions()) {
 			SchemaModel schema = schemaVersion.getSchema();
 			indexCreationBatch.createNodeIndex(project.getUuid(), newBranchUuid, schemaVersion.getUuid(), PUBLISHED, schema);
 			indexCreationBatch.createNodeIndex(project.getUuid(), newBranchUuid, schemaVersion.getUuid(), DRAFT, schema);
 		}
-		indexCreationBatch.processSync();
+		indexCreationBatch.dispatch();
 	}
 
 	@Override

@@ -31,8 +31,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -42,6 +40,8 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -56,15 +56,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
+	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
 			HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -136,7 +133,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				}
 
 				// 3. Apply the found changes to the schema
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = new EventQueueBatchImpl();
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				// Check whether the assigned branches of the schema should also directly be updated.
@@ -161,7 +158,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return Tuple.tuple(batch, createdVersion.getVersion());
 			});
 
-			info.v1().processSync();
+			info.v1().dispatch();
 			if (updateParams.getUpdateAssignedBranches()) {
 				MeshEvent.triggerJobWorker();
 				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
@@ -225,7 +222,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			}
 
 			Tuple<EventQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = new EventQueueBatchImpl();
 
 				// Assign the schema to the project
 				root.addSchemaContainer(ac.getUser(), schema);
@@ -235,8 +232,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
 				return Tuple.tuple(batch, schema.transformToRest(ac, 0));
 			});
-			tuple.v1().processSync();
-			return tuple.v2();
+			return tuple.v1().dispatch().andThen(tuple.v2());
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -286,11 +282,11 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		utils.asyncTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			Tuple<EventQueueBatch, String> info = db.tx(() -> {
-				EventQueueBatch batch = searchQueue.create();
+				EventQueueBatch batch = new EventQueueBatchImpl();
 				SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
 				return Tuple.tuple(batch, newVersion.getVersion());
 			});
-			info.v1().processSync();
+			info.v1().dispatch();
 			return message(ac, "schema_changes_applied", schema.getName(), info.v2());
 		}, model -> ac.send(model, OK));
 

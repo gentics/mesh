@@ -1,14 +1,10 @@
 package com.gentics.mesh.dagger.module;
 
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.EventQueueBatch;
-import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.HttpServerConfig;
@@ -78,12 +74,6 @@ public class MeshModule {
 			throw new RuntimeException(message);
 		}
 		return database;
-	}
-
-	@Provides
-	@Singleton
-	public static SearchQueue searchQueue(Provider<EventQueueBatch> provider) {
-		return new SearchQueueImpl(provider);
 	}
 
 	@Provides
