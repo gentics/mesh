@@ -261,17 +261,19 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		ByteArrayInputStream stream = new ByteArrayInputStream(buffer.getBytes());
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), "binary", stream, buffer.length(), fileName, contentType));
 
-		// 2. Download the data using the REST API
 		MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 0, 4));
 		String decoded = new String(IOUtils.toByteArray(response.getStream()));
 		assertEquals("Hello", decoded);
 		response.close();
 
-		// 2. Download the data using the REST API
 		response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 6, 10));
 		decoded = new String(IOUtils.toByteArray(response.getStream()));
 		assertEquals("World", decoded);
+		response.close();
 
+		response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 0, 4));
+		decoded = new String(IOUtils.toByteArray(response.getStream()));
+		assertEquals("Hello", decoded);
 		response.close();
 	}
 
