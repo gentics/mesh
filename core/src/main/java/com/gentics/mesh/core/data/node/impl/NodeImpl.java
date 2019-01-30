@@ -46,7 +46,6 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -55,7 +54,6 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -101,7 +99,11 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.DeletedMeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.node.CreatedNodeMeshEventModel;
+import com.gentics.mesh.event.node.DeletedNodeMeshEventModel;
+import com.gentics.mesh.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.gentics.mesh.handler.ActionContext;
@@ -134,7 +136,6 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -1118,7 +1119,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String branchUuid = branch.getUuid();
 		PublishParameters parameters = ac.getPublishParameters();
 
-		bac.batch().store(this, branchUuid, ContainerType.PUBLISHED, false);
+		// .store(this, branchUuid, ContainerType.PUBLISHED, false);
+		bac.batch().add(onUpdated());
 
 		// Handle recursion
 		if (parameters.isRecursive()) {
@@ -1141,7 +1143,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> publish(c.getLanguageTag(), branch, ac.getUser()));
-		bac.batch().store(this, branchUuid, PUBLISHED, false);
+		bac.batch().add(onUpdated(branchUuid, PUBLISHED));
 		assertPublishConsistency(ac, branch);
 
 		// Handle recursion after publishing the current node.
@@ -1178,7 +1180,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Remove the published node from the index
 		for (NodeGraphFieldContainer container : publishedContainers) {
-			bac.batch().delete(container, branchUuid, PUBLISHED, false);
+			bac.add(container.onDeleted(branchUuid, PUBLISHED));
 		}
 		bac.process();
 	}
@@ -1241,7 +1243,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		publish(draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
-		bac.batch().store(this, branch.getUuid(), PUBLISHED, false);
+		bac.add(onUpdated(branchUuid, PUBLISHED));
 	}
 
 	@Override
@@ -1257,8 +1259,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED).remove();
 		assertPublishConsistency(ac, branch);
 
-		// 3. Invoke a delete on the document since it must be removed from the published index
-		bac.batch().delete(published, branchUuid, PUBLISHED, false);
+		// 3. Invoke an event so that the published element is removed
+		bac.add(published.onDeleted(branchUuid, PUBLISHED));
 		bac.process();
 	}
 
@@ -1616,7 +1618,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-			batch.store(latestDraftVersion, branch.getUuid(), DRAFT, false);
+			batch.add(onUpdated());
 			return true;
 		} else {
 			String version = requestModel.getVersion();
@@ -1686,7 +1688,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 				latestDraftVersion = newDraftVersion;
-				batch.store(newDraftVersion, branch.getUuid(), DRAFT, false);
+				batch.add(onUpdated());
 				return true;
 			}
 		}
@@ -1695,7 +1697,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		batch.store(this);
+		batch.add(onUpdated());
 		List<Tag> tags = getTagsToSet(ac, batch);
 		Branch branch = ac.getBranch();
 		User user = ac.getUser();
@@ -1706,7 +1708,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
-		batch.store(this);
+		batch.add(onUpdated());
 		List<Tag> tags = getTagsToSet(list, ac, batch);
 		Branch branch = ac.getBranch();
 		removeAllTags(branch);
@@ -1746,14 +1748,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		getGraphFieldContainers(branchUuid, PUBLISHED).stream().forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
-		batch.store(this, branchUuid, PUBLISHED, false);
 
 		// Update draft graph field containers
 		getGraphFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
-		batch.store(this, branchUuid, DRAFT, false);
-
+		batch.add(onUpdated());
 		assertPublishConsistency(ac, branch);
 	}
 
@@ -2058,47 +2058,43 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void onUpdated() {
-		String address = getTypeInfo().getOnUpdatedAddress();
-		if (address != null) {
-			JsonObject json = new JsonObject();
-			if (this instanceof NamedElement) {
-				json.put("name", ((NamedElement) this).getName());
-			}
-			json.put("schemaName", getSchemaContainer().getName());
-			json.put("schemaUuid", getSchemaContainer().getUuid());
-			json.put("uuid", getUuid());
-			Mesh.vertx().eventBus().publish(address, json);
-			if (log.isDebugEnabled()) {
-				log.debug("Updated event sent {" + address + "}");
-			}
-		}
+	public CreatedNodeMeshEventModel onCreated(String branchUuid) {
+		CreatedNodeMeshEventModel event = new CreatedNodeMeshEventModel();
+		event.setBranchUuid(branchUuid);
+		event.setUuid(getUuid());
+		return event;
 	}
 
 	@Override
-	public void onDeleted(String uuid, String name) {
+	public UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
+		UpdatedNodeMeshEventModel event = new UpdatedNodeMeshEventModel();
+		event.setAddress(getTypeInfo().getOnUpdatedAddress());
+		event.setUuid(getUuid());
+		SchemaContainer container = getSchemaContainer();
+		if (container != null) {
+			event.setSchemaName(container.getName());
+			event.setSchemaUuid(container.getUuid());
+		}
+		event.setBranchUuid(branchUuid);
+		return event;
+	}
+
+	@Override
+	public DeletedMeshEventModel onDeleted() {
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
 	}
 
 	@Override
-	public void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag) {
-		String address = getTypeInfo().getOnDeletedAddress();
-		if (address != null) {
-			JsonObject json = new JsonObject();
-			if (this instanceof NamedElement) {
-				json.put("name", name);
-			}
-			if (languageTag != null) {
-				json.put("languageTag", languageTag);
-			}
-			json.put("schemaName", schema.getName());
-			json.put("schemaUuid", schema.getUuid());
-			json.put("uuid", uuid);
-			Mesh.vertx().eventBus().publish(address, json);
-			if (log.isDebugEnabled()) {
-				log.debug("Deleted event sent {" + address + "}");
-			}
+	public DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String languageTag) {
+		DeletedNodeMeshEventModel event = new DeletedNodeMeshEventModel();
+		event.setAddress(getTypeInfo().getOnDeletedAddress());
+		event.setLanguageTag(languageTag);
+		if (schema != null) {
+			event.setSchemaName(schema.getName());
+			event.setSchemaUuid(schema.getUuid());
 		}
+		event.setUuid(uuid);
+		return event;
 	}
 
 	@Override

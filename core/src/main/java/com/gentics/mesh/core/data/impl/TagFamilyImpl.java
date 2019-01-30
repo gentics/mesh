@@ -14,13 +14,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -29,13 +26,11 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -151,7 +146,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 		addTag(newTag);
 
-		batch.store(newTag, true);
+		batch.add(newTag.onCreated());
 		return newTag;
 	}
 
@@ -192,7 +187,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		// Delete all the tags of the tag root
 		for (Tag tag : findAll()) {
 			tag.delete(bac);
-			bac.delete(tag, false);
 		}
 		// Now delete the tag root element
 		getElement().remove();
@@ -215,7 +209,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 		if (!getName().equals(newName)) {
 			this.setName(newName);
-			batch.store(this, true);
+			batch.add(onUpdated());
 			return true;
 		} else {
 			return false;
@@ -231,30 +225,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			}
 		}
 		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	@Override
-	public void handleRelatedEntries(HandleElementAction action) {
-		for (Tag tag : findAll()) {
-			GenericEntryContextImpl context = new GenericEntryContextImpl();
-			context.setProjectUuid(tag.getProject().getUuid());
-			action.call(tag, context);
-
-			// To prevent nodes from being handled multiple times
-			HashSet<String> handledNodes = new HashSet<>();
-
-			for (Branch branch : tag.getProject().getBranchRoot().findAll()) {
-				for (Node node : tag.getNodes(branch)) {
-					if (!handledNodes.contains(node.getUuid())) {
-						handledNodes.add(node.getUuid());
-						GenericEntryContextImpl nodeContext = new GenericEntryContextImpl();
-						context.setBranchUuid(branch.getUuid());
-						context.setProjectUuid(node.getProject().getUuid());
-						action.call(node, nodeContext);
-					}
-				}
-			}
-		}
 	}
 
 	@Override

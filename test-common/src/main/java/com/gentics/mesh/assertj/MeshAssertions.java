@@ -33,7 +33,7 @@ import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.SchemaCreateRequestAssert;
 import com.gentics.mesh.assertj.impl.SchemaResponseAssert;
-import com.gentics.mesh.assertj.impl.SearchQueueBatchAssert;
+import com.gentics.mesh.assertj.impl.EventQueueBatchAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagListResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
@@ -83,8 +83,8 @@ public class MeshAssertions extends Assertions {
 		return new NodeResponseAssert(actual);
 	}
 
-	public static SearchQueueBatchAssert assertThat(EventQueueBatch actual) {
-		return new SearchQueueBatchAssert(actual);
+	public static EventQueueBatchAssert assertThat(EventQueueBatch actual) {
+		return new EventQueueBatchAssert(actual);
 	}
 
 	public static GroupResponseAssert assertThat(GroupResponse actual) {

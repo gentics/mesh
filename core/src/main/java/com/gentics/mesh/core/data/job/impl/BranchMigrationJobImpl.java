@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.job.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -43,8 +41,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		EventQueueBatch indexCreationBatch = new EventQueueBatchImpl();
 		for (SchemaContainerVersion schemaVersion : newBranch.findActiveSchemaVersions()) {
 			SchemaModel schema = schemaVersion.getSchema();
-			indexCreationBatch.createNodeIndex(project.getUuid(), newBranchUuid, schemaVersion.getUuid(), PUBLISHED, schema);
-			indexCreationBatch.createNodeIndex(project.getUuid(), newBranchUuid, schemaVersion.getUuid(), DRAFT, schema);
+			// TODO fire - schema migration prepare event
 		}
 		indexCreationBatch.dispatch();
 	}

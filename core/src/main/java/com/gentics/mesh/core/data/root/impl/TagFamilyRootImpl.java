@@ -129,7 +129,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		addTagFamily(tagFamily);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
 
-		batch.store(tagFamily, true);
+		batch.add(tagFamily.onCreated());
 		return tagFamily;
 	}
 

@@ -12,7 +12,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -41,7 +40,7 @@ import io.reactivex.Single;
  *            Graph vertex version type
  */
 public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>>
-		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV>, IndexableElement {
+		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV> {
 
 	/**
 	 * Return the class that is used to construct new containers.
@@ -131,7 +130,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public void delete(BulkActionContext bac) {
 		// TODO should all references be updated to a new fallback schema?
-		bac.batch().delete(this, true);
+		bac.add(onDeleted());
 		getElement().remove();
 		// TODO delete versions and nodes as well
 	}

@@ -228,8 +228,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				root.addSchemaContainer(ac.getUser(), schema);
 				String branchUuid = project.getLatestBranch().getUuid();
 				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
-				batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
-				batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
+				batch.add(schema.onUpdated());
 				return Tuple.tuple(batch, schema.transformToRest(ac, 0));
 			});
 			return tuple.v1().dispatch().andThen(tuple.v2());

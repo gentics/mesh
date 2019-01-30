@@ -210,7 +210,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		getSchemaContainer().setLatestVersion(nextVersion);
 
 		// Update the search index
-		batch.store(getSchemaContainer(), true);
+		batch.add(getSchemaContainer().onUpdated());
 		return nextVersion;
 	}
 

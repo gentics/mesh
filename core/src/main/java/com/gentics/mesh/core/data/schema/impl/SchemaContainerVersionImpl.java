@@ -18,15 +18,15 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -39,6 +39,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.CreatedMeshEventModel;
+import com.gentics.mesh.event.UpdatedMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -191,13 +193,13 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void onCreated() {
-		getSchemaContainer().onCreated();
+	public CreatedMeshEventModel onCreated() {
+		return getSchemaContainer().onCreated();
 	}
 
 	@Override
-	public void onUpdated() {
-		getSchemaContainer().onUpdated();
+	public UpdatedMeshEventModel onUpdated() {
+		return getSchemaContainer().onUpdated();
 	}
 
 }

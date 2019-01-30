@@ -256,7 +256,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			user.setEmailAddress(email);
 		}
-		batch.store(user, false);
+		batch.add(user.onUpdated());
 
 		try {
 			JsonObject mappingInfo = executeMapperScript(userInfo);
@@ -268,7 +268,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				if (role == null) {
 					role = roleRoot.create(roleName, admin);
 					admin.addCRUDPermissionOnRole(roleRoot, CREATE_PERM, role);
-					batch.store(role, false);
+					batch.add(role.onUpdated());
 				}
 				// The group<->role assignment must be done manually. We don't want to enforce this here.
 			}
@@ -281,7 +281,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				// We should not touch other groups if not needed.
 				// Otherwise the permission store and index sync gets a lot of work.
 				group.removeUser(user);
-				batch.store(group, false);
+				batch.add(group.onUpdated());
 			}
 
 			// Now create the groups and assign the user to the listed groups
@@ -294,7 +294,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				}
 				// Ensure that the user is part of the group
 				group.addUser(user);
-				batch.store(group, false);
+				batch.add(group.onUpdated());
 			}
 		} catch (Exception e) {
 			log.error("Error while executing mapping script. Ignoring mapping script.", e);

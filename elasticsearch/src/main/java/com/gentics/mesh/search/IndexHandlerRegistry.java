@@ -6,8 +6,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -81,7 +81,7 @@ public class IndexHandlerRegistry {
 	 * @param element
 	 * @return
 	 */
-	public IndexHandler<?> getForClass(IndexableElement element) {
+	public IndexHandler<?> getForClass(MeshElement element) {
 		Class<?> clazzOfElement = element.getClass();
 		return getForClass(clazzOfElement);
 	}

@@ -13,14 +13,12 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -32,7 +30,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -144,16 +141,18 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public void delete(BulkActionContext bac) {
+		String uuid = getUuid();
+		String name = getName();
 		if (log.isDebugEnabled()) {
-			log.debug("Deleting tag {" + getName() + "}");
+			log.debug("Deleting tag {" + uuid + ":" + name + "}");
 		}
-		bac.batch().delete(this, true);
+		bac.batch().add(onDeleted());
 
 		// Nodes which used this tag must be updated in the search index for all branches
 		for (Branch branch : getProject().getBranchRoot().findAll()) {
 			String branchUuid = branch.getUuid();
 			for (Node node : getNodes(branch)) {
-				bac.batch().store(node, branchUuid);
+				bac.batch().add(node.onUpdated(branchUuid));
 			}
 		}
 		getElement().remove();
@@ -215,29 +214,13 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				setEditor(ac.getUser());
 				setLastEditedTimestamp();
 				setName(newTagName);
-				batch.store(getTagFamily(), false);
-				batch.store(this, true);
+				batch.add(getTagFamily().onUpdated());
+				batch.add(onUpdated());
 				return true;
 			}
 		}
 		return false;
 
-	}
-
-	@Override
-	public void handleRelatedEntries(HandleElementAction action) {
-		// Locate all nodes that use the tag across all branches and update these nodes
-		for (Branch branch : getProject().getBranchRoot().findAll()) {
-			for (Node node : getNodes(branch)) {
-				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					GenericEntryContextImpl context = new GenericEntryContextImpl();
-					context.setContainerType(type);
-					context.setBranchUuid(branch.getUuid());
-					context.setProjectUuid(node.getProject().getUuid());
-					action.call(node, context);
-				}
-			}
-		}
 	}
 
 	@Override

@@ -22,7 +22,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * projects via the {@link TagFamilyRootImpl} class.
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
-		IndexableElement, RootVertex<Tag> {
+		RootVertex<Tag> {
 
 	/**
 	 * Type Value: {@value #TYPE}

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -18,9 +17,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -83,23 +80,12 @@ public class HandlerUtilities {
 
 			// Load the name and uuid of the element. We need this info after deletion.
 			String elementUuid = element.getUuid();
-			String name = null;
-			if (element instanceof NamedElement) {
-				name = ((NamedElement) element).getName();
-			}
-
 			EventQueueBatch batch = database.tx(() -> {
 				BulkActionContext bac = BulkActionContext.create();
-				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
-				if (element instanceof IndexableElement) {
-					element.delete(bac);
-					return bac.batch();
-				} else {
-					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
-				}
+				element.delete(bac);
+				return bac.batch();
 			});
 			batch.dispatch();
-			element.onDeleted(uuid, name);
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
 			return (RM) null;
 		}, model -> ac.send(NO_CONTENT));
@@ -160,9 +146,7 @@ public class HandlerUtilities {
 				RM model = updateElement.transformToRestSync(ac, 0);
 				info = new ResultInfo(model, b);
 				if (isUpdated) {
-					if (updateElement instanceof IndexableElement) {
-						b.updated((IndexableElement) updateElement);
-					}
+					b.add(updateElement.onUpdated());
 				}
 			} else {
 				Tuple<T, EventQueueBatch> tuple = database.tx(() -> {

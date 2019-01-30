@@ -19,6 +19,9 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.event.node.CreatedNodeMeshEventModel;
+import com.gentics.mesh.event.node.DeletedNodeMeshEventModel;
+import com.gentics.mesh.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -104,7 +107,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		id.append(languageTag);
 		return id.toString();
 	}
-
 
 	/**
 	 * Return the document id for the container.
@@ -421,4 +423,30 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
 
+	/**
+	 * Create the specific delete event
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	DeletedNodeMeshEventModel onDeleted(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific create event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	CreatedNodeMeshEventModel onCreated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific update event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
 }

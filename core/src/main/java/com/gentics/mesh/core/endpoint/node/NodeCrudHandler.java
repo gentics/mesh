@@ -274,8 +274,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tuple<Node, EventQueueBatch> tuple = db.tx(() -> {
 				EventQueueBatch batch = new EventQueueBatchImpl();
 				node.addTag(tag, branch);
-				batch.store(node, branch.getUuid(), PUBLISHED, false);
-				batch.store(node, branch.getUuid(), DRAFT, false);
+				batch.add(node.onUpdated(branch.getUuid()));
 				return Tuple.tuple(node, batch);
 			});
 			return tuple.v2().dispatch().andThen(tuple.v1().transformToRest(ac, 0));
@@ -305,8 +304,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			return db.tx(() -> {
 				EventQueueBatch batch = new EventQueueBatchImpl();
-				batch.store(node, branch.getUuid(), PUBLISHED, false);
-				batch.store(node, branch.getUuid(), DRAFT, false);
+				batch.add(node.onUpdated());
 				node.removeTag(tag, branch);
 				return batch;
 			}).dispatch().andThen(Single.just(Optional.empty()));

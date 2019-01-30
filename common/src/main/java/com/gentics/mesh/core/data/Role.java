@@ -18,7 +18,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * Graph domain model interface for a role.
  */
-public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference>, UserTrackingVertex, IndexableElement {
+public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference>, UserTrackingVertex {
 
 	/**
 	 * Type Value: {@value #TYPE}

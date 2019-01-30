@@ -1,9 +1,8 @@
 package com.gentics.mesh.context;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
-import com.gentics.mesh.core.data.IndexableElement;
-import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.MeshEventModel;
 
 public interface BulkActionContext {
 
@@ -43,13 +42,12 @@ public interface BulkActionContext {
 	 */
 	EventQueueBatch batch();
 
-//	/**
-//	 * Add a drop index entry to the batch.
-//	 * 
-//	 * @param composeIndexName
-//	 */
-//	void dropIndex(String composeIndexName);
-
-	void delete(IndexableElement element, boolean b);
+	/**
+	 * Shortcut for {@link #batch()#add(MeshEventModel)}
+	 * @param event
+	 */
+	default void add(MeshEventModel event) {
+		batch().add(event);
+	}
 
 }

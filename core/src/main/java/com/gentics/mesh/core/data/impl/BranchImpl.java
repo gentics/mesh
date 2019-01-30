@@ -56,6 +56,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.CreatedMeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -514,10 +515,11 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public void onCreated() {
-		super.onCreated();
+	public CreatedMeshEventModel onCreated() {
+		CreatedMeshEventModel event = super.onCreated();
 		// TODO make this configurable via query parameter. It should be possible to postpone the migration.
 		MeshEvent.triggerJobWorker();
+		return event;
 	}
 
 	@Override

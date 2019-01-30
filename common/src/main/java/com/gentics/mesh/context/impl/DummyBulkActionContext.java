@@ -25,9 +25,9 @@ public class DummyBulkActionContext implements BulkActionContext {
 		return new DummyEventQueueBatch();
 	}
 
-	@Override
-	public void dropIndex(String composeIndexName) {
-
-	}
+//	@Override
+//	public void dropIndex(String composeIndexName) {
+//
+//	}
 
 }

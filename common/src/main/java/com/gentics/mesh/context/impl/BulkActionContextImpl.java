@@ -53,10 +53,10 @@ public class BulkActionContextImpl implements BulkActionContext {
 		}
 	}
 
-	@Override
-	public void dropIndex(String composeIndexName) {
-		batch.dropIndex(composeIndexName);
-	}
+//	@Override
+//	public void dropIndex(String composeIndexName) {
+//		batch.dropIndex(composeIndexName);
+//	}
 
 	@Override
 	public EventQueueBatch batch() {

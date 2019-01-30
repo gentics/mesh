@@ -33,6 +33,8 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.CreatedMeshEventModel;
+import com.gentics.mesh.event.UpdatedMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -44,8 +46,8 @@ import com.syncleus.ferma.VertexFrame;
 import io.reactivex.Single;
 
 public class MicroschemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
-		implements MicroschemaContainerVersion {
+	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
+	implements MicroschemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
@@ -65,15 +67,19 @@ public class MicroschemaContainerVersionImpl extends
 	@SuppressWarnings("unchecked")
 	public TraversalResult<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		Iterator<? extends NodeGraphFieldContainer> it = in(HAS_MICROSCHEMA_CONTAINER).copySplit((a) -> a.in(HAS_FIELD).mark().inE(
+			HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
+				GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+			.back(),
+			(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(
 				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-						GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).back(), (a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(
-								HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-										GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).back()).fairMerge()
-				// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
-				// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
-				.transform(v -> v)
-				// when calling dedup we use the the id of the vertex instead of the whole object to save memory
-				.dedup(VertexFrame::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
+					GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+				.back())
+			.fairMerge()
+			// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
+			// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
+			.transform(v -> v)
+			// when calling dedup we use the the id of the vertex instead of the whole object to save memory
+			.dedup(VertexFrame::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
 		return new TraversalResult<>(() -> it);
 	}
 
@@ -105,7 +111,7 @@ public class MicroschemaContainerVersionImpl extends
 	public MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
-		
+
 		// Load the microschema and add/overwrite some properties
 		MicroschemaResponse microschema = JsonUtil.readValue(getJson(), MicroschemaResponse.class);
 		// TODO apply fields filtering here
@@ -180,13 +186,13 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void onCreated() {
-		getSchemaContainer().onCreated();
+	public CreatedMeshEventModel onCreated() {
+		return getSchemaContainer().onCreated();
 	}
 
 	@Override
-	public void onUpdated() {
-		getSchemaContainer().onUpdated();
+	public UpdatedMeshEventModel onUpdated() {
+		return getSchemaContainer().onUpdated();
 	}
 
 }

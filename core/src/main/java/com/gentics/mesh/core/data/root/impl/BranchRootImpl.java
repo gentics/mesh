@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
@@ -15,7 +13,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -30,6 +27,7 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -51,7 +49,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Project getProject() {
-		return in(HAS_BRANCH_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return in(HAS_BRANCH_ROOT).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
@@ -157,11 +155,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		User creator = branch.getCreator();
 		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(creator, branch);
 		assignSchemas(creator, baseBranch, branch, true);
-		// A new branch was created - We also need to create new indices for the nodes within the branch
-		for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-			batch.addNodeIndex(project, branch, version, DRAFT);
-			batch.addNodeIndex(project, branch, version, PUBLISHED);
-		}
+
+		batch.add(branch.onCreated());
 
 		return branch;
 	}

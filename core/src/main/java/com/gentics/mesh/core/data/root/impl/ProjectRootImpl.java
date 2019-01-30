@@ -211,21 +211,12 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		creator.addPermissionsOnRole(this, CREATE_PERM, initialBranch);
 
 		// Store the project in the index
-		batch.store(project, true);
+		batch.add(project.onCreated());
 
 		String branchUuid = initialBranch.getUuid();
-		String projectUuid = project.getUuid();
 
-		// 1. Create needed indices
-		batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
-		batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
-		batch.createTagIndex(projectUuid);
-		batch.createTagFamilyIndex(projectUuid);
-
-		// 3. Add created basenode to SQB
-		// NodeGraphFieldContainer baseNodeFieldContainer =
-		// project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
-		batch.store(project.getBaseNode(), branchUuid, ContainerType.DRAFT, false);
+		// Add event for created basenode
+		batch.add(project.getBaseNode().onUpdated(branchUuid, ContainerType.DRAFT));
 
 		return project;
 

@@ -20,6 +20,9 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.CreatedMeshEventModel;
+import com.gentics.mesh.event.DeletedMeshEventModel;
+import com.gentics.mesh.event.UpdatedMeshEventModel;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -124,24 +127,26 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public void onUpdated() {
-		String address = getTypeInfo().getOnUpdatedAddress();
-		if (address != null) {
-			JsonObject json = new JsonObject();
-			if (this instanceof NamedElement) {
-				json.put("name", ((NamedElement) this).getName());
-			}
-			json.put("origin", Mesh.mesh().getOptions().getNodeName());
-			json.put("uuid", getUuid());
-			Mesh.vertx().eventBus().publish(address, json);
-			if (log.isDebugEnabled()) {
-				log.debug("Updated event sent {" + address + "}");
-			}
+	public UpdatedMeshEventModel onUpdated() {
+		UpdatedMeshEventModel event = new UpdatedMeshEventModel();
+		event.setAddress(getTypeInfo().getOnUpdatedAddress());
+
+		JsonObject json = new JsonObject();
+		if (this instanceof NamedElement) {
+			json.put("name", ((NamedElement) this).getName());
 		}
+		json.put("origin", Mesh.mesh().getOptions().getNodeName());
+		json.put("uuid", getUuid());
+		// Mesh.vertx().eventBus().publish(address, json);
+		// if (log.isDebugEnabled()) {
+		// log.debug("Updated event sent {" + address + "}");
+		// }
+		return event;
 	}
 
 	@Override
-	public void onCreated() {
+	public CreatedMeshEventModel onCreated() {
+		CreatedMeshEventModel event = new CreatedMeshEventModel();
 		String address = getTypeInfo().getOnCreatedAddress();
 		if (address != null) {
 			JsonObject json = new JsonObject();
@@ -155,23 +160,19 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				log.debug("Created event sent {" + address + "}");
 			}
 		}
+		return event;
 	}
 
 	@Override
-	public void onDeleted(String uuid, String name) {
-		String address = getTypeInfo().getOnDeletedAddress();
-		if (address != null) {
-			JsonObject json = new JsonObject();
-			if (this instanceof NamedElement) {
-				json.put("name", name);
-			}
-			json.put("origin", Mesh.mesh().getOptions().getNodeName());
-			json.put("uuid", uuid);
-			Mesh.vertx().eventBus().publish(address, json);
-			if (log.isDebugEnabled()) {
-				log.debug("Deleted event sent {" + address + "}");
-			}
+	public DeletedMeshEventModel onDeleted() {
+		DeletedMeshEventModel event = new DeletedMeshEventModel();
+		event.setAddress(getTypeInfo().getOnDeletedAddress());
+		if (this instanceof NamedElement) {
+			event.setName(((NamedElement) this).getName());
 		}
+		event.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		event.setUuid(getUuid());
+		return event;
 	}
 
 	@Override

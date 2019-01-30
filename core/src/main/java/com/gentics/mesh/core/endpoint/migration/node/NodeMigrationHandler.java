@@ -242,9 +242,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
 		// Ensure the search index is updated accordingly
-		sqb.move(container, migrated, branchUuid, DRAFT);
+		sqb.add(container.onUpdated(branchUuid, DRAFT));
 		if (publish) {
-			sqb.move(container, migrated, branchUuid, PUBLISHED);
+			sqb.add(container.onUpdated(branchUuid, PUBLISHED));
 		}
 	}
 
@@ -283,7 +283,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		node.setPublished(migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
-		sqb.store(migrated, branchUuid, PUBLISHED, false);
+		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
 		return migrated.getVersion();
 	}
 

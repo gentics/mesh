@@ -16,7 +16,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex, IndexableElement {
+public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex {
 
 	/**
 	 * Type Value: {@value #TYPE}

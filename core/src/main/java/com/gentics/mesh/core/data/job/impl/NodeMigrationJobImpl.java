@@ -53,8 +53,8 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 		// New indices need to be created
 		EventQueueBatch batch = new EventQueueBatchImpl();
-		batch.createNodeIndex(project.getUuid(), branch.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
-		batch.createNodeIndex(project.getUuid(), branch.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
+		//TODO add migration prepare event
+		
 		batch.dispatch();
 	}
 

@@ -19,7 +19,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -179,7 +178,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void delete(BulkActionContext bac) {
 		// TODO don't allow deletion of the admin group
-		bac.batch().delete(this, true);
+		bac.batch().add(onDeleted());
 
 		Set<? extends User> affectedUsers = getUsers().stream().collect(Collectors.toSet());
 		getElement().remove();
@@ -207,7 +206,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 
 			setName(requestModel.getName());
-			batch.store(this, true);
+			batch.add(onUpdated());
 			return true;
 		} else {
 			return false;
@@ -223,15 +222,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 		}
 		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	@Override
-	public void handleRelatedEntries(HandleElementAction action) {
-		for (User user : getUsers()) {
-			// We need to store users as well since users list their groups -
-			// See {@link UserTransformer#toDocument(User)}
-			action.call(user, null);
-		}
 	}
 
 	@Override

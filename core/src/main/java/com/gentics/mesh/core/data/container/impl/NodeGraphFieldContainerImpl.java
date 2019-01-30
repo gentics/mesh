@@ -72,6 +72,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.node.CreatedNodeMeshEventModel;
+import com.gentics.mesh.event.node.DeletedNodeMeshEventModel;
+import com.gentics.mesh.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
@@ -177,7 +180,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			String branchUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				bac.batch().delete(this, branchUuid, type, false);
+				bac.batch().add(onDeleted(branchUuid, type));
 			}
 		});
 		getElement().remove();
@@ -189,9 +192,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
 
-		bac.batch().delete(this, branchUuid, DRAFT, false);
+		bac.batch().add(onDeleted(branchUuid, DRAFT));
 		if (isPublished(branchUuid)) {
-			bac.batch().delete(this, branchUuid, PUBLISHED, false);
+			bac.batch().add(onDeleted(branchUuid, PUBLISHED));
 		}
 		// Remove the edge between the node and the container that matches the branch
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(e -> e.traversal().has(
@@ -271,7 +274,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
 
-					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+						"node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
 						conflictingContainer.getLanguageTag());
 				}
 			}
@@ -374,8 +378,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
 						+ "}");
 				}
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag()
-					, conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+					conflictI18n, segmentFieldName, segment);
 			} else {
 				edge.setSegmentInfo(segmentInfo);
 				return true;
@@ -695,4 +699,25 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return nodePath;
 	}
 
+	public DeletedNodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
+		DeletedNodeMeshEventModel event = new DeletedNodeMeshEventModel();
+		event.setType(type.getHumanCode());
+		event.setUuid(getParentNode(branchUuid).getUuid());
+		event.setLanguageTag(getLanguageTag());
+		return event;
+	}
+
+	@Override
+	public UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
+		UpdatedNodeMeshEventModel event = new UpdatedNodeMeshEventModel();
+		event.setBranchUuid(branchUuid);
+		return event;
+	}
+
+	@Override
+	public CreatedNodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
+		CreatedNodeMeshEventModel event = new CreatedNodeMeshEventModel();
+		return event;
+	}
+	
 }

@@ -163,7 +163,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					}
 					draftEdge.setUrlFieldInfo(container.getUrlFieldValues());
 				});
-				batch.store(node, newBranch.getUuid(), DRAFT, false);
+				batch.add(node.onUpdated(newBranch.getUuid(), DRAFT));
 
 				node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
 					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
@@ -178,7 +178,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					}
 					publishEdge.setUrlFieldInfo(container.getUrlFieldValues());
 				});
-				batch.store(node, newBranch.getUuid(), PUBLISHED, false);
+				batch.add(node.onUpdated(newBranch.getUuid(), PUBLISHED));
 
 				// migrate tags
 				node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));

@@ -95,7 +95,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
 					// No need to update users as well. Those documents are not affected by this modification
-					batch.store(group, false);
+					batch.add(group.onUpdated());
 					return Tuple.tuple(group, batch);
 				});
 			}
@@ -127,8 +127,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
-				// No need to update users as well. Those documents are not affected by this modification
-				batch.store(group, false);
+				batch.add(group.onUpdated());
+				//TODO add role update?
 				return batch;
 			}).dispatch().andThen(Single.just(Optional.empty()));
 
@@ -173,7 +173,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			ResultInfo info = db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
 				group.addUser(user);
-				batch.store(group, true);
+				batch.add(group.onUpdated());
+				//TODO add user update event?
 				GroupResponse model = group.transformToRestSync(ac, 0);
 				return new ResultInfo(model, batch);
 			});
@@ -201,8 +202,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 			return db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
-				batch.store(group, true);
-				batch.store(user, false);
+				batch.add(group.onUpdated());
+				batch.add(user.onUpdated());
 				group.removeUser(user);
 				return batch;
 			}).dispatch().andThen(Single.just(Optional.empty()));

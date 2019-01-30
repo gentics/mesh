@@ -484,7 +484,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		bac.add(onDeleted(getUuid(), name););
+		bac.add(onDeleted());
 		getElement().remove();
 		bac.process();
 		PermissionStore.invalidate();
@@ -580,7 +580,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (modified) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
-			batch.store(this, true);
+			batch.add(onUpdated());
 		}
 		return modified;
 	}

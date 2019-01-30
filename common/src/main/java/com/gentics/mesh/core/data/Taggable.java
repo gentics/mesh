@@ -83,8 +83,8 @@ public interface Taggable {
 					if (user.hasPermission(tagFamily, CREATE_PERM)) {
 						tag = tagFamily.create(tagReference.getName(), project, user);
 						user.addCRUDPermissionOnRole(tagFamily, CREATE_PERM, tag);
-						batch.store(tag, false);
-						batch.store(tagFamily, false);
+						batch.add(tag.onCreated());
+						batch.add(tagFamily.onUpdated());
 					} else {
 						throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(), tagReference
 							.getName());

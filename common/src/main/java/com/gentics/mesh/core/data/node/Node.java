@@ -17,7 +17,6 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -37,6 +36,9 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.node.CreatedNodeMeshEventModel;
+import com.gentics.mesh.event.node.DeletedNodeMeshEventModel;
+import com.gentics.mesh.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.LinkType;
@@ -55,7 +57,7 @@ import io.reactivex.Single;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, IndexableElement, Taggable {
+public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable {
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -155,8 +157,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type);
 
 	/**
-	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will
-	 * be the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
+	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
+	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
 	 * container will be a clone of the last draft and will have the next version number.
 	 * 
 	 * @param languageTag
@@ -426,6 +428,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Tests if the node has at least one content that is published.
+	 * 
 	 * @param branchUuid
 	 */
 	default boolean hasPublishedContent(String branchUuid) {
@@ -713,6 +716,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Update the tags of the node using the provides list of tag references.
+	 * 
 	 * @param ac
 	 * @param batch
 	 * @param list
@@ -720,7 +724,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
 
-	
 	/**
 	 * Return a map with language tags and resolved link types
 	 * 
@@ -740,14 +743,41 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	TraversalResult<? extends Node> getBreadcrumbNodes(InternalActionContext ac);
 
 	/**
-	 * Handle the node specific on deleted event.
+	 * Create the node specific delete event.
 	 * 
 	 * @param uuid
 	 * @param name
 	 * @param schema
 	 * @param languageTag
+	 * @return Created event
 	 */
-	void onDeleted(String uuid, String name, SchemaContainer schema, String languageTag);
+	DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String languageTag);
+
+	/**
+	 * Create the node specific update event.
+	 * 
+	 * @param branchUuid
+	 * @return Created event
+	 */
+	UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the node specific update event.
+	 * 
+	 * @param branchUuid
+	 * @return Created event
+	 */
+	default UpdatedNodeMeshEventModel onUpdated(String branchUuid) {
+		return onUpdated(branchUuid, null);
+	}
+
+	/**
+	 * Create the node specific create event.
+	 * 
+	 * @param branchUuid
+	 * @return Created event
+	 */
+	CreatedNodeMeshEventModel onCreated(String branchUuid);
 
 	/**
 	 * Get an existing edge.
@@ -778,12 +808,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	boolean isBaseNode();
 
 	/**
-	 * Check whether the node is visible in the given branch (that means has at
-	 * least one DRAFT graphfieldcontainer in the branch)
+	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
 	 * 
 	 * @param branchUuid
 	 *            branch uuid
 	 * @return true if the node is visible in the branch
 	 */
 	boolean isVisibleInBranch(String branchUuid);
+
 }

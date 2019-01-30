@@ -74,7 +74,7 @@ public class SchemaContainerImpl extends
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends NodeImpl> it = getNodes().iterator();
 		if (!it.hasNext()) {
-			bac.batch().delete(this, true);
+			bac.add(onDeleted());
 			for(SchemaContainerVersion v : findAll()) {
 				v.delete(bac);
 			}

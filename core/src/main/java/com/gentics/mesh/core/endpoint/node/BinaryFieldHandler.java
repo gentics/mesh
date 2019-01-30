@@ -294,7 +294,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 
-			return batch.store(node, branch.getUuid(), DRAFT, false).dispatch().andThen(node.transformToRest(ac, 0));
+			return batch.add(node.onUpdated(branch.getUuid(), DRAFT)).dispatch().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -461,7 +461,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 					// TODO should we rename the image, if the extension is wrong?
 					field.getBinary().setImageHeight(result.getImageInfo().getHeight());
 					field.getBinary().setImageWidth(result.getImageInfo().getWidth());
-					batch.store(newDraftVersion, node.getProject().getBranchRoot().getLatestBranch().getUuid(), DRAFT, false);
+					String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
+					batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
 					return batch;
 				});
 				// Finally update the search index and return the updated node

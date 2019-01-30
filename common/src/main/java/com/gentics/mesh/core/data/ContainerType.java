@@ -8,17 +8,17 @@ public enum ContainerType {
 	/**
 	 * Edge to Initial Version
 	 */
-	INITIAL("I"),
+	INITIAL("I", "initial"),
 
 	/**
 	 * Edge to Draft Version
 	 */
-	DRAFT("D"),
+	DRAFT("D", "draft"),
 
 	/**
 	 * Edge to Published Version
 	 */
-	PUBLISHED("P");
+	PUBLISHED("P", "published");
 
 	/**
 	 * Edge code
@@ -26,13 +26,21 @@ public enum ContainerType {
 	protected String code;
 
 	/**
+	 * Human readable code
+	 */
+	protected String humanCode;
+
+	/**
 	 * Create an instance
 	 * 
 	 * @param code
-	 *            code
+	 *            Edge code
+	 * @param humanCode
+	 *            Human readable code
 	 */
-	private ContainerType(String code) {
+	private ContainerType(String code, String humanCode) {
 		this.code = code;
+		this.humanCode = humanCode;
 	}
 
 	/**
@@ -88,6 +96,15 @@ public enum ContainerType {
 	 */
 	public String getShortName() {
 		return name().toLowerCase();
+	}
+
+	/**
+	 * Return the human readble code
+	 * 
+	 * @return
+	 */
+	public String getHumanCode() {
+		return humanCode;
 	}
 
 }

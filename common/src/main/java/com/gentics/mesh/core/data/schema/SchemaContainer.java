@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -17,8 +16,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 /**
  * A schema container is a graph element which stores the JSON schema data.
  */
-public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, SchemaContainer, SchemaContainerVersion>,
-		IndexableElement {
+public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, SchemaContainer, SchemaContainerVersion> {
 
 	/**
 	 * Type Value: {@value #TYPE}

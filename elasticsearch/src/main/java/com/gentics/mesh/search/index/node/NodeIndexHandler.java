@@ -295,7 +295,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				context.setSchemaContainerVersionUuid(versionUuid);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
 				entry.setOnProcessAction(metric::decInsert);
-				storeBatch.addEntry(entry);
+//				storeBatch.addEntry(entry);
 			}
 			EventQueueBatch removalBatch = EventQueueBatch.create();
 			for (String uuidLang : needRemovalInES) {
@@ -309,7 +309,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				context.setLanguageTag(lang);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, DELETE_ACTION);
 				entry.setOnProcessAction(metric::decDelete);
-				removalBatch.addEntry(entry);
+//				removalBatch.addEntry(entry);
 			}
 			EventQueueBatch updateBatch = EventQueueBatch.create();
 			for (String uuidLang : needUpdate) {
@@ -323,7 +323,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				context.setLanguageTag(lang);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
 				entry.setOnProcessAction(metric::decUpdate);
-				updateBatch.addEntry(entry);
+//				updateBatch.addEntry(entry);
 			}
 
 			// 5. Process the SQB's

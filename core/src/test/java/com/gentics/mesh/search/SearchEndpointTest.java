@@ -26,7 +26,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 			EventQueueBatch batch = new EventQueueBatchImpl();
 			for (int i = 0; i < 10; i++) {
 				String branchUuid = project().getLatestBranch().getUuid();
-				batch.store(node, branchUuid, DRAFT, true);
+				batch.add(node.onUpdated(branchUuid, DRAFT));
 			}
 
 			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");

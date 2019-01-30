@@ -217,7 +217,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				context.setProjectUuid(projectUuid);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
 				entry.setOnProcessAction(metric::decInsert);
-				storeBatch.addEntry(entry);
+				//storeBatch.addEntry(entry);
 			}
 			EventQueueBatch removalBatch = EventQueueBatch.create();
 			for (String uuid : needRemovalInES) {
@@ -225,7 +225,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				context.setProjectUuid(projectUuid);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, DELETE_ACTION);
 				entry.setOnProcessAction(metric::decDelete);
-				removalBatch.addEntry(entry);
+				//removalBatch.addEntry(entry);
 			}
 			EventQueueBatch updateBatch = EventQueueBatch.create();
 			for (String uuid : needUpdate) {
@@ -233,7 +233,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				context.setProjectUuid(projectUuid);
 				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
 				entry.setOnProcessAction(metric::decUpdate);
-				updateBatch.addEntry(entry);
+				//updateBatch.addEntry(entry);
 			}
 
 			// 5. Process the SQB's

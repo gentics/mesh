@@ -156,9 +156,9 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
 		// Ensure the search index is updated accordingly
-		sqb.store(node, branchUuid, DRAFT, false);
+		sqb.add(node.onUpdated(branchUuid, DRAFT));
 		if (publish) {
-			sqb.store(node, branchUuid, PUBLISHED, false);
+			sqb.add(node.onUpdated(branchUuid, PUBLISHED));
 		}
 	}
 
@@ -243,7 +243,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		node.setPublished(migrated, branchUuid);
 
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
-		sqb.store(migrated, branchUuid, PUBLISHED, false);
+		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
 		return migrated.getVersion();
 
 	}

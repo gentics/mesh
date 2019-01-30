@@ -10,7 +10,6 @@ import java.util.Set;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -168,16 +167,15 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
-		if (this instanceof IndexableElement) {
-			// Check whether the action affects read permissions. We only need to update the document in the index if the action affects those perms
-			boolean grantReads = permissionsToGrant.contains(READ_PERM) || permissionsToGrant.contains(READ_PUBLISHED_PERM);
-			boolean revokesRead = permissionsToRevoke.contains(READ_PERM) || permissionsToRevoke.contains(READ_PUBLISHED_PERM);
-			if (grantReads || revokesRead) {
-				batch.updatePermissions((IndexableElement) this);
-			}
+		// Check whether the action affects read permissions. We only need to update the document in the index if the action affects those perms
+		boolean grantReads = permissionsToGrant.contains(READ_PERM) || permissionsToGrant.contains(READ_PUBLISHED_PERM);
+		boolean revokesRead = permissionsToRevoke.contains(READ_PERM) || permissionsToRevoke.contains(READ_PUBLISHED_PERM);
+		if (grantReads || revokesRead) {
+			// .updatePermissions((IndexableElement) this);
+			// batch.add();
 		}
 	}
 
@@ -188,7 +186,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		FramedGraph fg = Tx.getActive().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
-					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
 		Vertex vertexForId = fg.getVertex(id);
@@ -203,7 +201,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		}
 		return (Vertex) vertex;
 	}
-	
+
 	@Override
 	public String getElementVersion() {
 		Vertex vertex = getElement();
