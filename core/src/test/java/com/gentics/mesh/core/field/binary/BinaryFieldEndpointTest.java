@@ -277,6 +277,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			new ImageManipulationParametersImpl().setWidth(100)));
 
 		byte[] downloadBytes = IOUtils.toByteArray(download.getStream());
+		download.close();
 
 		assertThat(downloadBytes).containsExactly(inputBytes);
 	}

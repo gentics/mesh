@@ -65,7 +65,6 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
 		}
-
 	}
 
 	@Test
@@ -320,6 +319,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);
 		byte[] bytes = IOUtils.toByteArray(download.getStream());
+		download.close();
 		Mesh.vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(bytes), rh -> {
 			assertTrue(rh.succeeded());
 			latch.countDown();

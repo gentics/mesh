@@ -413,6 +413,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		MeshBinaryResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary"));
 		assertNotNull(downloadResponse);
 		byte[] bytes = IOUtils.toByteArray(downloadResponse.getStream());
+		downloadResponse.close();
 		assertNotNull(bytes[0]);
 		assertNotNull(bytes[binaryLen - 1]);
 		assertEquals(binaryLen, bytes.length);
@@ -641,6 +642,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			MeshBinaryResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName));
 			assertNotNull(downloadResponse);
 			byte[] bytes = IOUtils.toByteArray(downloadResponse.getStream());
+			downloadResponse.close();
 			assertEquals(size, bytes.length);
 			assertNotNull("The first byte of the response could not be loaded.", bytes[0]);
 			assertNotNull("The last byte of the response could not be loaded.", bytes[size - 1]);

@@ -82,6 +82,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary",
 				new VersioningParametersImpl().setVersion("published")));
 			assertEquals(binaryLen, IOUtils.toByteArray(response.getStream()).length);
+			response.close();
 		}
 	}
 
@@ -238,6 +239,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			// 2. Download the data using the REST API
 			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
 			assertEquals(binaryLen, IOUtils.toByteArray(response.getStream()).length);
+			response.close();
 		}
 	}
 
@@ -263,6 +265,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 0, 4));
 		String decoded = new String(IOUtils.toByteArray(response.getStream()));
 		assertEquals("Hello", decoded);
+		response.close();
 
 		// 2. Download the data using the REST API
 		response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 6, 10));
@@ -361,7 +364,11 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		assertEquals("#737042", response.getFields().getBinaryField("image2").getDominantColor());
 
 		imageFields.flatMap(downloadBinary)
-			.map(responseBody -> Buffer.buffer(IOUtils.toByteArray(responseBody.getStream())))
+			.map(responseBody -> {
+				Buffer body = Buffer.buffer(IOUtils.toByteArray(responseBody.getStream()));
+				responseBody.close();
+				return body;
+			})
 			.map(FileUtils::hash)
 			.map(e -> e.blockingGet())
 			.map(e -> assertSum)
