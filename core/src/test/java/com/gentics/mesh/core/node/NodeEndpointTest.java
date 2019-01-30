@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -1565,6 +1566,17 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodeByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
+	}
+
+	@Test
+	public void testFindOrCreateNode() throws Exception {
+		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
+
+		NodeResponse node = client().findNodeByUuid(PROJECT_NAME, uuid).toSingle()
+			.compose(onErrorCodeResumeNext(404, createBinaryContent(uuid)))
+			.blockingGet();
+
+		assertThat(node).hasUuid(uuid);
 	}
 
 	// Update

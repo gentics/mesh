@@ -269,6 +269,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		decoded = new String(IOUtils.toByteArray(response.getStream()));
 		assertEquals("World", decoded);
 
+		response.close();
 	}
 
 	/**

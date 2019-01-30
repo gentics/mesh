@@ -576,6 +576,16 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		return client().createNode(PROJECT_NAME, request).toSingle();
 	}
 
+	protected Single<NodeResponse> createBinaryContent(String uuid) {
+		String parentUuid = client().findProjects().blockingGet().getData().get(0).getRootNode().getUuid();
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setParentNodeUuid("uuid");
+		request.setSchemaName("binary_content");
+		request.setParentNodeUuid(parentUuid);
+		return client().createNode(uuid, PROJECT_NAME, request).toSingle();
+	}
+
 	protected Completable stopRestVerticle() {
 		return ((BootstrapInitializerImpl) boot()).loader.get().unloadVerticles();
 	}
