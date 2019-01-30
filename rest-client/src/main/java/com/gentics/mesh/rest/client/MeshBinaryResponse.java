@@ -2,21 +2,24 @@ package com.gentics.mesh.rest.client;
 
 import io.reactivex.Flowable;
 
+import java.io.Closeable;
 import java.io.InputStream;
 import java.util.Arrays;
 
-public interface MeshBinaryResponse {
+public interface MeshBinaryResponse extends Closeable {
 
 	int FLOWABLE_BUFFER_SIZE = 8192;
 
 	/**
-	 * Retrieve a blocking input stream of the response body.
+	 * Retrieve a blocking input stream of the response body. This object must be closed after the stream has been read.
 	 * @return
 	 */
 	InputStream getStream();
 
 	/**
-	 * Retrieve a Flowable which emits byte chunks.
+	 * Retrieve a Flowable which emits byte chunks. The response is closed when all bytes have been read.
+	 * It is advised to not use close or the auto closable manually when working with this Flowable, since the bytes
+	 * could be emitted asynchronously.
 	 * @return
 	 */
 	default Flowable<byte[]> getFlowable() {

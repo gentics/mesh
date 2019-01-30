@@ -37,6 +37,15 @@ public final class MeshRestClientUtil {
 		return value -> set.contains(value);
 	}
 
+	/**
+	 * If an HTTP error with the given code occurs, the given function will be called and this single will switch to
+	 * the result of the function.
+	 *
+	 * @param code
+	 * @param mapper
+	 * @param <T>
+	 * @return
+	 */
 	public static <T> SingleTransformer<T, T> onErrorCodeResumeNext(int code, Function<MeshRestClientMessageException, Single<T>> mapper) {
 		return upstream -> upstream.onErrorResumeNext(err ->
 			hasErrorCode(code).test(err)
@@ -45,6 +54,14 @@ public final class MeshRestClientUtil {
 		);
 	}
 
+	/**
+	 * If an HTTP error with the given code occurs, this single will switch to given single.
+	 *
+	 * @param code
+	 * @param other
+	 * @param <T>
+	 * @return
+	 */
 	public static <T> SingleTransformer<T, T> onErrorCodeResumeNext(int code, Single<T> other) {
 		return upstream -> upstream.onErrorResumeNext(err ->
 			hasErrorCode(code).test(err)
@@ -53,12 +70,28 @@ public final class MeshRestClientUtil {
 		);
 	}
 
+	/**
+	 * A predicate to check if an error is an HTTP error with the given status code.
+	 *
+	 * @param code
+	 * @param <T>
+	 * @return
+	 */
 	public static <T extends Throwable> Predicate<T> hasErrorCode(int code) {
 		return thr -> unpackErrorTo(thr, MeshRestClientMessageException.class)
 			.map(err -> err.getStatusCode() == code)
 			.orElse(false);
 	}
 
+	/**
+	 * Unpacks a runtime error until a certain error class has been found.
+	 * Returns an empty optional if the class could not be found or if the chain of causes is cyclic.
+	 *
+	 * @param err
+	 * @param clazz
+	 * @param <T>
+	 * @return
+	 */
 	private static <T> Optional<T> unpackErrorTo(Throwable err, Class<T> clazz) {
 		HashSet<Object> alreadyChecked = new HashSet<>();
 		while (err != null) {
