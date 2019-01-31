@@ -35,8 +35,10 @@ public class JobTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
 			Job job = root.enqueueBranchMigration(user(), initialBranch());
-			assertEquals("The creator of the job was not correct", user().getUuid(), job.getCreator().getUuid());
-			assertNotNull("The creation timestamp was not set.", job.getCreationTimestamp());
+			// Disabled in order to apply to contention fix
+			assertNull("The creator should not be set.",job.getCreator());
+			//assertEquals("The creator of the job was not correct", user().getUuid(), job.getCreator().getUuid());
+			//assertNotNull("The creation timestamp was not set.", job.getCreationTimestamp());
 			assertNotNull("The uuid of the job was not set.", job.getUuid());
 			assertEquals("The job branch information did not match.", initialBranchUuid(), job.getBranch().getUuid());
 			assertEquals("The job type did not match.", MigrationType.branch, job.getType());
@@ -64,7 +66,7 @@ public class JobTest extends AbstractMeshTest {
 			assertEquals(job.getErrorDetail(), response.getErrorDetail());
 			assertEquals(job.getType(), response.getType());
 			assertEquals(job.getCreationDate(), response.getCreated());
-			assertEquals(user().getUuid(), response.getCreator().getUuid());
+			//assertEquals(user().getUuid(), response.getCreator().getUuid());
 		}
 	}
 
