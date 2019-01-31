@@ -3,12 +3,17 @@ package com.gentics.mesh.event.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.MeshEventModel;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
+import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.eventbus.EventBus;
 
 /**
  * @see EventQueueBatch
@@ -236,7 +241,20 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 
 	@Override
 	public Completable dispatch() {
-		return Completable.complete();
+		EventBus eventbus = Mesh.rxVertx().eventBus();
+		// TODO buffer event dispatching?
+		return Observable.fromIterable(getEntries()).flatMapCompletable(entry -> {
+			String address = entry.getAddress();
+			if (log.isDebugEnabled()) {
+				log.debug("Created event sent {}", address);
+			}
+			String json = JsonUtil.toJson(entry);
+			//if (log.isTraceEnabled()) {
+				log.info("Dispatching event '{}' with payload:\n{}", address, json);
+			//}
+			eventbus.publish(address, json);
+			return Completable.complete();
+		});
 	}
 
 }

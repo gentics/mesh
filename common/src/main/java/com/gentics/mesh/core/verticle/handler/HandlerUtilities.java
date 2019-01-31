@@ -168,7 +168,7 @@ public class HandlerUtilities {
 			// 3. The updating transaction has succeeded. Now lets store it in the index
 			final ResultInfo info2 = info;
 			return database.tx(() -> {
-				info2.getBatch().dispatch();
+				info2.getBatch().dispatch().blockingAwait();
 				return info2.getModel();
 			});
 		}, model -> ac.send(model, created.get() ? CREATED : OK));

@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -630,6 +631,20 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setNodeReference(userNodeReference);
 
 		call(() -> client().updateUser(userUuid, updateRequest), BAD_REQUEST, "user_incomplete_node_reference");
+	}
+
+	@Test
+	public void testCreateUser() {
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(groupUuid());
+		newUser.setPassword("test1234");
+
+		UserResponse response = call(() -> client().createUser(newUser));
+		assertEquals("new_user", response.getUsername());
+		assertNotNull(response.getUuid());
+		assertThat(response.getGroups()).hasSize(1);
+		assertEquals(groupUuid(), response.getGroups().get(0).getUuid());
 	}
 
 	@Test
