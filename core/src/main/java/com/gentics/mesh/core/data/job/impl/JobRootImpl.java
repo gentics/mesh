@@ -96,7 +96,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(MigrationType.schema);
-		job.setCreated(creator);
+		//job.setCreated(creator);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
@@ -114,7 +114,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		MicroschemaContainerVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(MigrationType.microschema);
-		job.setCreated(creator);
+		//job.setCreated(creator);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
@@ -131,7 +131,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		job.setCreated(creator);
+		//job.setCreated(creator);
 		job.setType(MigrationType.branch);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
@@ -148,7 +148,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		job.setCreated(creator);
+		//job.setCreated(creator);
 		job.setType(MigrationType.branch);
 		job.setStatus(QUEUED);
 		job.setBranch(branch);

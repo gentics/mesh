@@ -23,6 +23,13 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.29.5]]
+== 0.29.5 (31.01.2019)
+
+icon:check[] Clustering: Creation of edges which lead to higher contention in the graph have been removed from job's. Job's will currently no longer reference the creator.
+
+icon:check[] Search: An error which was thrown by outdated branch schema assignments has been suppressed. A warning will be logged instead.
+
 [[v0.29.4]]
 == 0.29.4 (28.01.2019)
 

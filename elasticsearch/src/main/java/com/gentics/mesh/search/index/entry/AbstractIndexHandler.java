@@ -340,7 +340,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					log.debug("Index name {" + idx + "}");
 				}
 			}
-			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
+			log.warn("Entry references an unknown index: {}", indexName);
+			return Completable.complete();
 		}
 	}
 
