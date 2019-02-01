@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -558,7 +559,7 @@ public interface TestHelperMethods {
 		String uuid = tx(() -> node.getUuid());
 
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
+		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName, contentType,
 			new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
@@ -575,7 +576,7 @@ public interface TestHelperMethods {
 		Buffer buffer = Buffer.buffer(bytes);
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 
-		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName, buffer, fileName,
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
 			contentType));
 	}
 

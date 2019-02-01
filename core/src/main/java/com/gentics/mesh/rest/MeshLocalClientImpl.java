@@ -1,12 +1,15 @@
 package com.gentics.mesh.rest;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -51,14 +54,12 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -103,22 +104,22 @@ import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Single;
-import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.WebSocket;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
@@ -247,16 +248,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteNode(String projectName, String uuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
+	public MeshRequest<EmptyResponse> deleteNode(String projectName, String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<Void> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
+	public MeshRequest<EmptyResponse> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
 		ac.setQuery("?lang=" + languageTag);
 		// TODO set project
@@ -297,8 +298,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
+	public MeshRequest<EmptyResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleRemoveTag(ac, nodeUuid, tagUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -306,8 +307,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
+	public MeshRequest<EmptyResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleMove(ac, nodeUuid, targetFolderUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -355,8 +356,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		ac.setProject(projectName);
 		tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -429,8 +430,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteProject(String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteProject(String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		projectCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -444,8 +445,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> unassignSchemaFromProject(String projectName, String schemaUuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> unassignSchemaFromProject(String projectName, String schemaUuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		schemaCrudHandler.handleRemoveSchemaFromProject(ac, schemaUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -465,8 +466,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> unassignMicroschemaFromProject(String projectName, String microschemaUuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> unassignMicroschemaFromProject(String projectName, String microschemaUuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		microschemaCrudHandler.handleRemoveMicroschemaFromProject(ac, microschemaUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -504,8 +505,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteTagFamily(String projectName, String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteTagFamily(String projectName, String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -529,16 +530,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
-		LocalActionContextImpl<WebRootResponse> ac = createContext(WebRootResponse.class, parameters);
+	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
+		LocalActionContextImpl<MeshWebrootResponse> ac = createContext(MeshWebrootResponse.class, parameters);
 		ac.setProject(projectName);
 		// webrootHandler.handleGetPath(rc);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
-		LocalActionContextImpl<WebRootResponse> ac = createContext(WebRootResponse.class, parameters);
+	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
+		LocalActionContextImpl<MeshWebrootResponse> ac = createContext(MeshWebrootResponse.class, parameters);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -607,8 +608,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteSchema(String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteSchema(String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		schemaCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -674,8 +675,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteGroup(String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteGroup(String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		groupCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -688,8 +689,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> removeUserFromGroup(String groupUuid, String userUuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> removeUserFromGroup(String groupUuid, String userUuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		groupCrudHandler.handleRemoveUserFromGroup(ac, groupUuid, userUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -702,8 +703,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> removeRoleFromGroup(String groupUuid, String roleUuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> removeRoleFromGroup(String groupUuid, String roleUuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		groupCrudHandler.handleRemoveRoleFromGroup(ac, groupUuid, roleUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -747,8 +748,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteUser(String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteUser(String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		userCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -798,8 +799,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteRole(String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteRole(String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		roleCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -859,8 +860,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchNodesRaw(String json, ParameterProvider... parameters) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class, parameters);
+	public MeshRequest<ObjectNode> searchNodesRaw(String json, ParameterProvider... parameters) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class, parameters);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -871,8 +872,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchUsersRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchUsersRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -883,8 +884,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchGroupsRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchGroupsRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -896,8 +897,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchRolesRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchRolesRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -909,8 +910,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchProjectsRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchProjectsRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -921,8 +922,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagsRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchTagsRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -933,8 +934,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagFamiliesRaw(String projectName, String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -945,8 +946,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchSchemasRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchSchemasRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -957,8 +958,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchMicroschemasRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1021,8 +1022,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteMicroschema(String uuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> deleteMicroschema(String uuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1040,9 +1041,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
-	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-		Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
+		byte[] fileData, String fileName, String contentType, ParameterProvider... parameters) {
 
 		Vertx vertx = Mesh.vertx();
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
@@ -1055,7 +1055,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		Runnable task = () -> {
 
 			File tmpFile = new File(System.getProperty("java.io.tmpdir"), UUIDUtil.randomUUID() + ".upload");
-			vertx.fileSystem().writeFileBlocking(tmpFile.getAbsolutePath(), fileData);
+			vertx.fileSystem().writeFileBlocking(tmpFile.getAbsolutePath(), Buffer.buffer(fileData));
 			ac.getFileUploads().add(new FileUpload() {
 
 				@Override
@@ -1065,7 +1065,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 				@Override
 				public long size() {
-					return fileData.length();
+					return fileData.length;
 				}
 
 				@Override
@@ -1103,10 +1103,24 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-		ParameterProvider... parameters) {
+	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion, String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+		try {
+			return updateNodeBinaryField(projectName, nodeUuid, languageTag, nodeVersion, fieldKey, IOUtils.toByteArray(fileData), fileName, contentType, parameters);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+															   ParameterProvider... parameters) {
 		// LocalActionContextImpl<NodeResponse> ac = createContext();
 		// return new MeshLocalRequestImpl<>( ac.getFuture());
+		return null;
+	}
+
+	@Override
+	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from, long to, ParameterProvider... parameters) {
 		return null;
 	}
 
@@ -1139,13 +1153,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public void eventbus(Handler<WebSocket> wsConnect, Handler<Throwable> failureHandler) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public HttpClient getClient() {
-		// TODO Auto-generated method stub
+	public MeshWebsocket eventbus() {
 		return null;
 	}
 
@@ -1214,16 +1222,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
+	public MeshRequest<EmptyResponse> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
+	public MeshRequest<EmptyResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -1339,8 +1347,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> removeTagFromBranch(String projectName, String branchUuid, String tagUuid) {
-		LocalActionContextImpl<Void> ac = createContext(Void.class);
+	public MeshRequest<EmptyResponse> removeTagFromBranch(String projectName, String branchUuid, String tagUuid) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		ac.setProject(projectName);
 		branchCrudHandler.handleRemoveTag(ac, branchUuid, tagUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -1367,8 +1375,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchNodesRaw(String projectName, String json, ParameterProvider... parameters) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class, parameters);
+	public MeshRequest<ObjectNode> searchNodesRaw(String projectName, String json, ParameterProvider... parameters) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class, parameters);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1379,8 +1387,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagsRaw(String projectName, String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1391,8 +1399,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> searchTagFamiliesRaw(String json) {
-		LocalActionContextImpl<JsonObject> ac = createContext(JsonObject.class);
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json) {
+		LocalActionContextImpl<ObjectNode> ac = createContext(ObjectNode.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1477,16 +1485,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public String getBaseUri() {
-		return DEFAULT_BASEURI;
-	}
-
-	@Override
-	public MeshRestClient setBaseUri(String uri) {
-		return this;
-	}
-
-	@Override
 	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
 		return null;
 	}
@@ -1497,12 +1495,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteJob(String uuid) {
+	public MeshRequest<EmptyResponse> deleteJob(String uuid) {
 		return null;
 	}
 
 	@Override
-	public MeshRequest<Void> resetJob(String uuid) {
+	public MeshRequest<EmptyResponse> resetJob(String uuid) {
 		return null;
 	}
 
@@ -1552,11 +1550,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public JWTAuthentication getAuthentication() {
 		return null;
-	}
-
-	@Override
-	public Vertx vertx() {
-		return Mesh.vertx();
 	}
 
 }

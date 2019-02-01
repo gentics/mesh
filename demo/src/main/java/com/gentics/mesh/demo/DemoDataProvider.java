@@ -56,7 +56,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -262,24 +261,6 @@ public class DemoDataProvider {
 		}
 	}
 
-	private void latchFor(MeshResponse<?> future) {
-		CountDownLatch latch = new CountDownLatch(1);
-		future.setHandler(rh -> {
-			latch.countDown();
-		});
-		try {
-			if (!latch.await(35, TimeUnit.SECONDS)) {
-				throw new RuntimeException("Timeout reached");
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-
-		if (future.failed()) {
-			throw new RuntimeException(future.cause());
-		}
-	}
-
 	/**
 	 * Load roles JSON file and add those roles to the graph.
 	 * 
@@ -413,7 +394,7 @@ public class DemoDataProvider {
 
 				NodeResponse resp = call(
 					() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image",
-						fileData, filenName, contentType));
+						fileData.getBytes(), filenName, contentType));
 
 				Float fpx = binNode.getFloat("fpx");
 				Float fpy = binNode.getFloat("fpy");

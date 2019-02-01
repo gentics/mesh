@@ -8,16 +8,14 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -36,12 +34,12 @@ import static org.junit.Assert.fail;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.reactivex.Observable;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -63,7 +61,6 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -82,7 +79,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -946,92 +942,61 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Ignore("Disabled until custom 404 handler has been added")
 	public void testReadNodeWithBogusProject() {
-		MeshResponse<NodeResponse> future = client().findNodeByUuid("BOGUS", "someUuuid").invoke();
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "project_not_found", "BOGUS");
+		call(() -> client().findNodeByUuid("BOGUS", "someUuuid"), BAD_REQUEST, "project_not_found", "BOGUS");
 	}
 
 	@Test
-	@Ignore("Disabled since test is unstable - CL-246")
 	public void testCreateUpdateReadDeleteMultithreaded() throws Exception {
 
 		Logger log = LoggerFactory.getLogger(NodeEndpointTest.class);
 
 		int nJobs = 200;
+		long nNodesFound;
+		String uuid;
+
 		try (Tx tx = tx()) {
-			CountDownLatch latch = new CountDownLatch(nJobs);
-
 			Node parentNode = folder("news");
-			String uuid = parentNode.getUuid();
+			uuid = parentNode.getUuid();
 
-			long nNodesFound = meshRoot().getNodeRoot().computeCount();
+			nNodesFound = meshRoot().getNodeRoot().computeCount();
+		}
 
-			NodeCreateRequest createRequest = new NodeCreateRequest();
-			createRequest.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
-			createRequest.setLanguage("en");
-			createRequest.getFields().put("title", FieldUtil.createStringField("some title"));
-			createRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			createRequest.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-			createRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			createRequest.setParentNodeUuid(uuid);
+		Function<Long, NodeCreateRequest> createRequest = nr -> {
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
+			request.setLanguage("en");
+			request.getFields().put("title", FieldUtil.createStringField("some title"));
+			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			request.getFields().put("slug", FieldUtil.createStringField("new-page" + nr + ".html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.setParentNodeUuid(uuid);
+			return request;
+		};
 
-			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
-			updateRequest.setLanguage("en");
-			updateRequest.getFields().put("teaser", FieldUtil.createStringField("UPDATED"));
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		updateRequest.setLanguage("en");
+		updateRequest.getFields().put("teaser", FieldUtil.createStringField("UPDATED"));
 
-			// Create various nodes and update them directly after creation. Ensure that update was successful.
-			for (int i = 0; i < nJobs; i++) {
+		// Creates, updates, reads and then deletes a node every 25 milliseconds.
+		Observable.intervalRange(0, nJobs, 0, 25, TimeUnit.MILLISECONDS)
+			.flatMapSingle(i -> {
 				log.info("Invoking createNode REST call for job {" + i + "}");
-				MeshResponse<NodeResponse> createFuture = client().createNode(PROJECT_NAME, createRequest).invoke();
+				return client().createNode(PROJECT_NAME, createRequest.apply(i)).toSingle();
+			}).flatMapSingle(node -> {
+				log.info("Created {" + node.getUuid() + "}");
+				return client().updateNode(PROJECT_NAME, node.getUuid(), updateRequest).toSingle();
+			}).flatMapSingle(node -> {
+				log.info("Updated {" + node.getUuid() + "}");
+				return client().findNodeByUuid(PROJECT_NAME, node.getUuid()).toSingle();
+			}).flatMapCompletable(node -> {
+				log.info("Read {" + node.getUuid() + "}");
+				return client().deleteNode(PROJECT_NAME, node.getUuid()).toCompletable()
+					.doOnComplete(() -> log.info("Deleted {" + node.getUuid() + "}"));
+			}).blockingAwait();
 
-				createFuture.setHandler(rh -> {
-					if (rh.failed()) {
-						fail(rh.cause().getMessage());
-					} else {
-						log.info("Created {" + rh.result().getUuid() + "}");
-						NodeResponse response = rh.result();
-						MeshResponse<NodeResponse> updateFuture = client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest).invoke();
-						updateFuture.setHandler(uh -> {
-							if (uh.failed()) {
-								fail(uh.cause().getMessage());
-							} else {
-								log.info("Updated {" + uh.result().getUuid() + "}");
-								MeshResponse<NodeResponse> readFuture = client().findNodeByUuid(PROJECT_NAME, uh.result().getUuid(),
-									new VersioningParametersImpl().draft()).invoke();
-								readFuture.setHandler(rf -> {
-									if (rh.failed()) {
-										fail(rh.cause().getMessage());
-									} else {
-										log.info("Read {" + rf.result().getUuid() + "}");
-										MeshResponse<Void> deleteFuture = client().deleteNode(PROJECT_NAME, rf.result().getUuid()).invoke();
-										deleteFuture.setHandler(df -> {
-											if (df.failed()) {
-												fail(df.cause().getMessage());
-											} else {
-												log.info("Deleted {" + rf.result().getUuid() + "}");
-												latch.countDown();
-											}
-										});
-									}
-
-								});
-
-							}
-						});
-					}
-				});
-				Thread.sleep(250);
-				log.info("Invoked call create requests.");
-			}
-
-			failingLatch(latch);
-
+		try (Tx tx = tx()) {
 			long nNodesFoundAfterRest = meshRoot().getNodeRoot().findAll().count();
 			assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
-			// for (Future<NodeResponse> future : set) {
-			// latchFor(future);
-			// assertSuccess(future);
-			// }
 		}
 	}
 
@@ -1050,7 +1015,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		String fUuid = uuid;
 
-		validateCreation(i -> {
+		validateCreation(nJobs, i -> {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			request.setLanguage("en");
@@ -1060,7 +1025,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
 			request.setParentNodeUuid(fUuid);
 			return client().createNode(PROJECT_NAME, request);
-		}, nJobs);
+		});
 	}
 
 	@Test
@@ -1080,27 +1045,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		parameters.setLanguages("en", "de");
 
 		int nJobs = 5;
-		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		// Trx.enableDebug();
-		// Trx.setBarrier(barrier);
-		Set<MeshResponse<NodeResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
+		awaitConcurrentRequests(nJobs, i -> {
 			System.out.println(version.getFullVersion());
 			request.setVersion(version.getFullVersion());
 			request.getFields().put("name", FieldUtil.createStringField(newName + ":" + i));
-			set.add(client().updateNode(PROJECT_NAME, uuid, request, parameters).invoke());
-			// version = version.nextDraft();
-			// VersionNumber currentVersion = tx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
-			// System.out.println("CurrentVersion: " + currentVersion.getFullVersion());
-		}
-
-		for (MeshResponse<NodeResponse> response : set) {
-			latchFor(response);
-			assertSuccess(response);
-		}
-		// Trx.disableDebug();
-		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
-
+			return client().updateNode(PROJECT_NAME, uuid, request, parameters);
+		});
 	}
 
 	@Test
@@ -1618,6 +1568,17 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
+	@Test
+	public void testFindOrCreateNode() throws Exception {
+		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
+
+		NodeResponse node = client().findNodeByUuid(PROJECT_NAME, uuid).toSingle()
+			.compose(onErrorCodeResumeNext(404, createBinaryContent(uuid)))
+			.blockingGet();
+
+		assertThat(node).hasUuid(uuid);
+	}
+
 	// Update
 
 	@Test
@@ -2099,7 +2060,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testRootNodeBreadcrumb() {
-		WebRootResponse node = client().webroot(PROJECT_NAME, "/").toSingle().blockingGet();
+		MeshWebrootResponse node = client().webroot(PROJECT_NAME, "/").toSingle().blockingGet();
 		List<NodeReference> breadcrumb = node.getNodeResponse().getBreadcrumb();
 		assertEquals(1, breadcrumb.size());
 		assertEquals(node.getNodeResponse().getUuid(), breadcrumb.get(0).getUuid());

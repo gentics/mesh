@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface ProjectClientMethods {
 
@@ -84,10 +85,9 @@ public interface ProjectClientMethods {
 
 	/**
 	 * Delete the project.
-	 * 
-	 * @param uuid
-	 *            Uuid of the project
+	 *
+	 * @param uuid Uuid of the project
 	 * @return
 	 */
-	MeshRequest<Void> deleteProject(String uuid);
+	MeshRequest<EmptyResponse> deleteProject(String uuid);
 }

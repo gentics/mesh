@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
-import static com.gentics.mesh.Events.EVENT_GROUP_DELETED;
-import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
+import static com.gentics.mesh.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.MeshEvent.GROUP_DELETED;
+import static com.gentics.mesh.MeshEvent.GROUP_UPDATED;
 
 import java.util.Objects;
 
@@ -23,7 +23,7 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 */
 	String TYPE = "group";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_GROUP_CREATED, EVENT_GROUP_UPDATED, EVENT_GROUP_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, GROUP_CREATED.address, GROUP_UPDATED.address, GROUP_DELETED.address);
 
 	@Override
 	default TypeInfo getTypeInfo() {

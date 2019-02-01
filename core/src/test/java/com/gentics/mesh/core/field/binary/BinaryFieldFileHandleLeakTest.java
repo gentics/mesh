@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.io.ByteArrayInputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
@@ -185,7 +186,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 				Buffer buffer = Buffer.buffer("Testbuffer" + i);
 				NodeResponse response = atomicResponse.get();
 				atomicResponse.set(call(() -> client().updateNodeBinaryField(PROJECT_NAME, response.getUuid(), response.getLanguage(), response
-					.getVersion(), fieldName, buffer, fileName, contentType)));
+					.getVersion(), fieldName, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName, contentType)));
 			}
 		});
 	}

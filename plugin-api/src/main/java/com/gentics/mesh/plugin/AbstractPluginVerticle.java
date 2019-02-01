@@ -14,7 +14,6 @@ import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
@@ -169,7 +168,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 		MeshOptions options = Mesh.mesh().getOptions();
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
-		adminClient = new MeshRestHttpClientImpl(host, port, false, vertx);
+		adminClient = MeshRestClient.create(host, port, false);
 	}
 
 	/**

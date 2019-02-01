@@ -1,9 +1,9 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.Events.EVENT_CLEAR_PERMISSION_STORE;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_LEFT;
+import static com.gentics.mesh.MeshEvent.CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_LEFT;
 import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.ONLINE;
 
 import java.util.Map;
@@ -51,17 +51,17 @@ public class DistributedEventManager {
 		EventBus eb = Mesh.mesh().getVertx().eventBus();
 
 		// Register for events which indicate that the cluster topology changes
-		eb.consumer(EVENT_CLUSTER_NODE_JOINED, handler -> {
+		eb.consumer(CLUSTER_NODE_JOINED.address, handler -> {
 			log.info("Received node joined event. Updating content structure information");
 			handleClusterTopologyUpdate(handler);
 		});
-		eb.consumer(EVENT_CLUSTER_NODE_LEFT, handler -> {
+		eb.consumer(CLUSTER_NODE_LEFT.address, handler -> {
 			log.info("Received node left event. Updating content structure information");
 			handleClusterTopologyUpdate(handler);
 		});
 
 		// Register for events which are send whenever the permission store must be invalidated.
-		eb.consumer(EVENT_CLEAR_PERMISSION_STORE, handler -> {
+		eb.consumer(CLEAR_PERMISSION_STORE.address, handler -> {
 			log.debug("Received permissionstore clear event");
 			PermissionStore.invalidate(false);
 		});
@@ -78,7 +78,7 @@ public class DistributedEventManager {
 			handleClusterTopologyUpdate(handler);
 		});
 
-		eb.consumer(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, (Message<JsonObject> handler) -> {
+		eb.consumer(CLUSTER_DATABASE_CHANGE_STATUS.address, (Message<JsonObject> handler) -> {
 			JsonObject info = handler.body();
 			String node = info.getString("node");
 			String db = info.getString("database");

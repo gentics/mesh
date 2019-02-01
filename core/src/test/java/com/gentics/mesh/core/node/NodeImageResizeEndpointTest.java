@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
@@ -20,6 +21,8 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -55,14 +58,13 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 2. Resize image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
-		NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image", params));
+		MeshBinaryResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image", params));
 
 		// 3. Validate resize
 		try (Tx tx = tx()) {
 			Node node = folder("news");
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
 		}
-
 	}
 
 	@Test
@@ -90,7 +92,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth()).setHeight(102);
-			NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
+			MeshBinaryResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
 
 			assertNotNull(node.getLatestDraftFieldContainer(english()));
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
@@ -116,7 +118,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		assertNotEquals("The version number should have changed.", version, newNumber);
 
 		// 4. Download the image
-		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
+		MeshBinaryResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
 
 		// 5. Validate the resized image
 		validateResizeImage(result, null, params, 100, 118);
@@ -146,7 +148,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		assertNotEquals("The version number should have changed.", version, newNumber);
 
 		// 4. Download the image
-		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
+		MeshBinaryResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
 
 		// 5. Validate the resized image
 		validateResizeImage(result, null, params, 100, 200);
@@ -192,8 +194,10 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			version = node.getGraphFieldContainer("en").getVersion();
 			tx.success();
 		}
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image", Buffer.buffer(
-			"I am not an image"), "test.txt", "text/plain"));
+		Buffer buffer = Buffer.buffer("I am not an image");
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image",
+			new ByteArrayInputStream(buffer.getBytes()),
+			buffer.length(), "test.txt", "text/plain"));
 
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,
@@ -304,17 +308,19 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		assertNotEquals("The version number should have changed.", version, newNumber);
 
 		// 4. Download the image
-		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
+		MeshBinaryResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
 
 		// 5. Validate the filename
 		assertEquals("blume.jpg", result.getFilename());
 	}
 
-	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
+	private void validateResizeImage(MeshBinaryResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
 		int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);
-		Mesh.vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), download.getBuffer(), rh -> {
+		byte[] bytes = IOUtils.toByteArray(download.getStream());
+		download.close();
+		Mesh.vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(bytes), rh -> {
 			assertTrue(rh.succeeded());
 			latch.countDown();
 		});

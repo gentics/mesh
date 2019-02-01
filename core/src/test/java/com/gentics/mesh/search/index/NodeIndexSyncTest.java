@@ -6,9 +6,9 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.gentics.mesh.MeshEvent;
 import org.junit.Test;
 
-import com.gentics.mesh.Events;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -54,7 +54,7 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		// Now clear all data
 		searchProvider().clear().blockingAwait();
 
-		waitForEvent(Events.INDEX_SYNC_EVENT, () -> {
+		waitForEvent(MeshEvent.INDEX_SYNC, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
 			assertThat(message).matches("search_admin_index_sync_invoked");
 		});

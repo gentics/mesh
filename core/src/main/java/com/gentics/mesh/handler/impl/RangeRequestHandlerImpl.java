@@ -141,9 +141,9 @@ public class RangeRequestHandlerImpl implements RangeRequestHandler {
 			request.response().setStatusCode(PARTIAL_CONTENT.code());
 
 			final Long finalOffset = offset;
-			final Long finalEnd = end;
+			final Long finalLength = end + 1 - offset;
 
-			request.response().sendFile(file, finalOffset, finalEnd + 1);
+			request.response().sendFile(file, finalOffset, finalLength);
 		} else {
 			// Return the full file
 			request.response().sendFile(file, res2 -> {

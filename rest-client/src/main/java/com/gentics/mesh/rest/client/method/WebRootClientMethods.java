@@ -3,9 +3,9 @@ package com.gentics.mesh.rest.client.method;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 
 public interface WebRootClientMethods {
 
@@ -20,7 +20,7 @@ public interface WebRootClientMethods {
 	 *            optional request parameters
 	 * @return request which can return the WebRootResponse
 	 */
-	MeshRequest<WebRootResponse> webroot(String projectName, String path, ParameterProvider... parameters);
+	MeshRequest<MeshWebrootResponse> webroot(String projectName, String path, ParameterProvider... parameters);
 
 	/**
 	 * Return the node that was found within the given path of the project.
@@ -33,7 +33,7 @@ public interface WebRootClientMethods {
 	 *            optional request parameters
 	 * @return request which can return the WebRootResponse
 	 */
-	MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters);
+	MeshRequest<MeshWebrootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters);
 
 	/**
 	 * Invoke an update for the webroot path.

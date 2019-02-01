@@ -1,7 +1,11 @@
 package com.gentics.mesh.test.util;
 
-import static com.gentics.mesh.Events.MESH_MIGRATION;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
+import com.gentics.mesh.core.rest.common.ListResponse;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,25 +15,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import com.gentics.mesh.core.rest.common.ListResponse;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import org.apache.commons.io.IOUtils;
-
-import com.gentics.mesh.rest.client.MeshRestClient;
-
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public final class TestUtils {
 
@@ -38,60 +29,6 @@ public final class TestUtils {
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
-
-	/**
-	 * Construct a latch which will release when the migration has finished.
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	public static CountDownLatch latchForMigrationCompleted(MeshRestClient client) throws Exception {
-		// Construct latch in order to wait until the migration completed event was received
-		CountDownLatch latch = new CountDownLatch(1);
-		CountDownLatch registerLatch = new CountDownLatch(1);
-		client.eventbus(ws -> {
-			// Register to migration events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
-			ws.writeFinalTextFrame(msg.encode());
-
-			// Handle migration events
-			ws.handler(buff -> {
-				String str = buff.toString();
-				JsonObject received = new JsonObject(str);
-				JsonObject rec = received.getJsonObject("body");
-				log.debug("Migration event:" + rec.getString("type"));
-				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
-					latch.countDown();
-				}
-			});
-			registerLatch.countDown();
-
-		});
-
-		failingLatch(registerLatch);
-		return latch;
-	}
-
-	public static CompletableFuture<Void> latchForEvent(MeshRestClient client, String event) throws Exception {
-		// Construct latch in order to wait until the migration completed event was received
-		CompletableFuture<Void> latch = new CompletableFuture<>();
-		CountDownLatch registerLatch = new CountDownLatch(1);
-		client.eventbus(ws -> {
-			// Register to events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", event);
-			ws.writeFinalTextFrame(msg.encode());
-
-			// Handle the event
-			ws.handler(buff -> {
-				latch.complete(null);
-			});
-			registerLatch.countDown();
-
-		});
-
-		failingLatch(registerLatch);
-		return latch;
-	}
 
 	public static void runAndWait(Runnable runnable) {
 

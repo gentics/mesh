@@ -1,16 +1,16 @@
 package com.gentics.mesh.parameter.client;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.parameter.ParameterProvider;
 
-import io.vertx.core.MultiMap;
 
 public abstract class AbstractParameters implements ParameterProvider {
 
-	protected MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
+	protected Map<String, String> parameters = new HashMap<>();
 
 	@Override
 	public String getParameter(String name) {
@@ -18,13 +18,13 @@ public abstract class AbstractParameters implements ParameterProvider {
 	}
 
 	@Override
-	public MultiMap getParameters() {
+	public Map<String, String> getParameters() {
 		return parameters;
 	}
 
 	@Override
 	public void setParameter(String name, String value) {
-		parameters.set(name, value);
+		parameters.put(name, value);
 	}
 
 	@Override

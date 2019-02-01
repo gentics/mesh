@@ -7,12 +7,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateFutures;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -24,9 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -49,7 +44,6 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -460,7 +454,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setName("renamed role");
 
 		int nJobs = 5;
-		awaitConcurrentRequests(i -> client().updateRole(role().getUuid(), request), nJobs);
+		awaitConcurrentRequests(nJobs, i -> client().updateRole(role().getUuid(), request));
 	}
 
 	@Test
@@ -473,7 +467,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		int nJobs = 10;
 		String uuid = role().getUuid();
-		awaitConcurrentRequests(i -> client().findRoleByUuid(uuid), nJobs);
+		awaitConcurrentRequests(nJobs, i -> client().findRoleByUuid(uuid));
 	}
 
 	@Test
@@ -487,41 +481,34 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	@Override
-	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
 
 		Single<GenericMessageResponse> future = client().login();
 		future.blockingGet();
 
 		int nJobs = 20;
-		// CyclicBarrier barrier = prepareBarrier(1);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
+
+		awaitConcurrentRequests(nJobs, i -> {
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName("new_role_" + i);
-			set.add(client().createRole(request).invoke());
-		}
-		validateFutures(set);
+
+			return client().createRole(request);
+		});
 	}
 
 	@Test
 	@Override
-	@Ignore("disabled due to instability")
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
+		String uuid;
 		try (Tx tx = tx()) {
-			Single<GenericMessageResponse> observable = client().login();
-			observable.blockingGet();
-
-			int nJobs = 400;
-			Set<MeshResponse<RoleResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findRoleByUuid(role().getUuid()).invoke());
-			}
-			for (MeshResponse<RoleResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			uuid = role().getUuid();
 		}
+
+		Single<GenericMessageResponse> observable = client().login();
+		observable.blockingGet();
+
+		int nJobs = 400;
+		awaitConcurrentRequests(nJobs, i -> client().findRoleByUuid(uuid));
 	}
 
 }

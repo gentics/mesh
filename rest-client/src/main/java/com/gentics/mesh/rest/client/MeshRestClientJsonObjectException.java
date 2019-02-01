@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest.client;
 
-import io.vertx.core.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class MeshRestClientJsonObjectException extends Exception {
 
@@ -11,13 +11,13 @@ public class MeshRestClientJsonObjectException extends Exception {
 	 */
 	private int statusCode;
 
-	private JsonObject responseInfo;
+	private ObjectNode responseInfo;
 
 	public MeshRestClientJsonObjectException(int statusCode, String statusMessage) {
 		this(statusCode, statusMessage, null);
 	}
 
-	public MeshRestClientJsonObjectException(int statusCode, String statusMessage, JsonObject responseInfo) {
+	public MeshRestClientJsonObjectException(int statusCode, String statusMessage, ObjectNode responseInfo) {
 		super(statusMessage);
 		this.statusCode = statusCode;
 		this.responseInfo = responseInfo;
@@ -27,7 +27,7 @@ public class MeshRestClientJsonObjectException extends Exception {
 		return statusCode;
 	}
 
-	public JsonObject getResponseInfo() {
+	public ObjectNode getResponseInfo() {
 		return responseInfo;
 	}
 

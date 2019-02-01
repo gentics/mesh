@@ -134,7 +134,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void stop() {
 		// // TODO let other nodes know we are stopping the instance?
 		// if (options.getClusterOptions().isEnabled()) {
-		// Mesh.vertx().eventBus().publish(Events.EVENT_CLUSTER_NODE_LEAVING, new JsonObject().put("node", getNodeName()));
+		// Mesh.vertx().eventBus().publish(MeshEvent.CLUSTER_NODE_LEAVING, new JsonObject().put("node", getNodeName()));
 		// try {
 		// Thread.sleep(2000);
 		// } catch (InterruptedException e) {
@@ -461,9 +461,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void registerEventHandlers() {
-		// Mesh.vertx().eventBus().consumer(Events.EVENT_CLUSTER_NODE_LEAVING, (Message<JsonObject> rh) -> {
+		// Mesh.vertx().eventBus().consumer(MeshEvent.CLUSTER_NODE_LEAVING, (Message<JsonObject> rh) -> {
 		// String nodeName = rh.body().getString("node");
-		// log.info("Received {" + Events.EVENT_CLUSTER_NODE_LEAVING + "} for node {" + nodeName + "}. Removing node from config.");
+		// log.info("Received {" + MeshEvent.CLUSTER_NODE_LEAVING + "} for node {" + nodeName + "}. Removing node from config.");
 		// removeNode(nodeName);
 		// });
 	}

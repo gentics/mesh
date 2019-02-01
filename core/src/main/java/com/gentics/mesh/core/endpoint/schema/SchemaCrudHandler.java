@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Events;
+import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -163,7 +163,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			info.v1().processSync();
 			if (updateParams.getUpdateAssignedBranches()) {
-				Events.triggerJobWorker();
+				MeshEvent.triggerJobWorker();
 				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
 			} else {
 				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());

@@ -3,11 +3,11 @@ package com.gentics.mesh.rest.client.impl;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.client.MeshRequest;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpMethod;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.MeshWebsocket;
 import okhttp3.OkHttpClient;
 
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,53 +17,64 @@ import java.util.Map;
  */
 public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
-	private final String origin;
 	private final OkHttpClient client;
+	private final MeshRestClientConfig config;
+	private static OkHttpClient defaultClient;
 
-	public MeshRestOkHttpClientImpl(String host, Vertx vertx) {
-		super(host, vertx);
-		origin = "http://" + host;
-		this.client = createClient();
+	public MeshRestOkHttpClientImpl(MeshRestClientConfig config) {
+		this(config, defaultClient());
 	}
 
-	public MeshRestOkHttpClientImpl(String host, int port, boolean ssl, Vertx vertx) {
-		this(host, port, ssl, vertx, createClient());
-	}
-
-	public MeshRestOkHttpClientImpl(String host, int port, boolean ssl, Vertx vertx, OkHttpClient client) {
-		super(host, port, ssl, vertx);
-		String scheme = ssl ? "https" : "http";
-		origin = scheme + "://" + host + ":" + port;
+	public MeshRestOkHttpClientImpl(MeshRestClientConfig config, OkHttpClient client) {
 		this.client = client;
+		this.config = config;
 	}
 
-	private static OkHttpClient createClient() {
-		return new OkHttpClient.Builder()
-			.callTimeout(Duration.ofMinutes(1))
-			.connectTimeout(Duration.ofMinutes(1))
-			.writeTimeout(Duration.ofMinutes(1))
-			.readTimeout(Duration.ofMinutes(1))
-			.build();
+	/**
+	 * We need a long timeout per default since some requests take a long time. For all tests a 1 minute timeout
+	 * works fine.
+	 * @return
+	 */
+	private static OkHttpClient defaultClient() {
+		if (defaultClient == null) {
+			defaultClient = new OkHttpClient.Builder()
+				.callTimeout(Duration.ofMinutes(1))
+				.connectTimeout(Duration.ofMinutes(1))
+				.writeTimeout(Duration.ofMinutes(1))
+				.readTimeout(Duration.ofMinutes(1))
+				.build();
+		}
+		return defaultClient;
 	}
 
 	@Override
-	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {
-		return MeshOkHttpReqeuestImpl.BinaryRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, bodyData.getBytes(), contentType);
+	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData, long fileSize, String contentType) {
+		return MeshOkHttpRequestImpl.BinaryRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, bodyData, fileSize, contentType);
 	}
 
 	@Override
-	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
+	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
 		return handleRequest(method, path, classOfT, restModel.toJson());
 	}
 
 	@Override
-	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
-		return MeshOkHttpReqeuestImpl.EmptyRequest(client, method.name(), getUrl(path), createHeaders(), classOfT);
+	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
+		return MeshOkHttpRequestImpl.EmptyRequest(client, method.name(), getUrl(path), createHeaders(), classOfT);
 	}
 
 	@Override
-	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
-		return MeshOkHttpReqeuestImpl.JsonRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, jsonBodyData);
+	public <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
+		return MeshOkHttpRequestImpl.JsonRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, jsonBodyData);
+	}
+
+	@Override
+	public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data) {
+		return MeshOkHttpRequestImpl.TextRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, data);
+	}
+
+	@Override
+	public MeshWebsocket eventbus() {
+		return new OkHttpWebsocket(client, config);
 	}
 
 	private Map<String, String> createHeaders() {
@@ -77,6 +88,13 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	private String getUrl(String path) {
-		return origin + getBaseUri() + path;
+		return config.getBaseUrl() + path;
+	}
+
+	@Override
+	public void close() {
+		// We don't close the client because it is either
+		// * The default client. This cannot be closed because other instances might use it.
+		// * A user provided client. The user could use the client somewhere else, so we should not close it here.
 	}
 }

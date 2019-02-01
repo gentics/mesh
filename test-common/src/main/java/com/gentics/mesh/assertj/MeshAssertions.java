@@ -2,6 +2,7 @@ package com.gentics.mesh.assertj;
 
 import java.awt.image.BufferedImage;
 
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import org.assertj.core.api.Assertions;
 
 import com.gentics.mesh.assertj.impl.BufferedImageAssert;
@@ -57,7 +58,6 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -199,7 +199,7 @@ public class MeshAssertions extends Assertions {
 		return new JobListResponseAssert(actual);
 	}
 
-	public static WebRootResponseAssert assertThat(WebRootResponse actual) {
+	public static WebRootResponseAssert assertThat(MeshWebrootResponse actual) {
 		return new WebRootResponseAssert(actual);
 	}
 

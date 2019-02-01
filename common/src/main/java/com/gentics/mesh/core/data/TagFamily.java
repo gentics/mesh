@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_CREATED;
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_DELETED;
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_UPDATED;
+import static com.gentics.mesh.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.MeshEvent.TAG_FAMILY_UPDATED;
 import java.util.Objects;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -29,7 +29,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 */
 	String TYPE = "tagFamily";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_FAMILY_CREATED, EVENT_TAG_FAMILY_UPDATED, EVENT_TAG_FAMILY_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, TAG_FAMILY_CREATED.address, TAG_FAMILY_UPDATED.address, TAG_FAMILY_DELETED.address);
 
 	/**
 	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.

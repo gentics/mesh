@@ -58,19 +58,13 @@ Usage:
 
 [source,java]
 ----
-	MeshRestClient client = MeshRestClient.create("localhost", 8080, false, vertx);
-	client.setLogin("username", "password");
-	client.login().toCompletable().blockingAwait();
+    MeshRestClient client = MeshRestClient.create("localhost", 8080, false);
+    client.setLogin("username", "password");
+    client.login().toCompletable().blockingAwait();
 
-	client.findNodes("demo", new NodeParametersImpl().setLanguages("en")).setHandler(rh -> {
-		if (rh.succeeded()) {
-			NodeListResponse list = rh.result();
-			for(NodeResponse nodeResponse : list.getData()) {
-				System.out.println(nodeResponse.getUuid());
-				System.out.println(nodeResponse.getFields().getStringField("name").getString());
-			}
-		} else {
-			rh.cause().printStackTrace();
-		}
-	});
+    NodeListResponse nodes = client.findNodes("demo", new NodeParametersImpl().setLanguages("en")).blockingGet();
+    for (NodeResponse nodeResponse : nodes.getData()) {
+        System.out.println(nodeResponse.getUuid());
+        System.out.println(nodeResponse.getFields().getStringField("name").getString());
+    }
 ----

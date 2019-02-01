@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
+
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -40,7 +41,7 @@ public final class MeshTestHelper {
 		}
 	}
 
-	public static void validateCreation(Function<Integer, MeshRequest<? extends AbstractResponse>> creator, int count) {
+	public static void validateCreation(int count, Function<Integer, MeshRequest<? extends AbstractResponse>> creator) {
 		List<String> uuids = Observable.range(0, count)
 			.flatMapSingle(i -> creator.apply(i).toSingle())
 			.map(AbstractResponse::getUuid)
@@ -49,7 +50,7 @@ public final class MeshTestHelper {
 		validateCreation(uuids);
 	}
 
-	public static void awaitConcurrentRequests(Function<Integer, MeshRequest<?>> creator, int count) {
+	public static void awaitConcurrentRequests(int count, Function<Integer, MeshRequest<?>> creator) {
 		Observable.range(0, count)
 			.flatMapCompletable(i -> creator.apply(i).toCompletable())
 			.blockingAwait();

@@ -10,9 +10,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.MeshEvent;
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.Events;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.job.Job;
@@ -144,7 +144,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			Events.triggerJobWorker();
+			MeshEvent.triggerJobWorker();
 			return message(ac, "job_processing_invoked");
 		}, (model) -> ac.send(model, OK));
 	}

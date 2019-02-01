@@ -1,13 +1,9 @@
 package com.gentics.mesh.core.webroot;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.callETag;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
-import static com.gentics.mesh.util.ETag.extract;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -19,17 +15,14 @@ import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class WebRootEndpointETagTest extends AbstractMeshTest {
@@ -51,10 +44,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 			// 3. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
-			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")).invoke();
-			latchFor(response);
-			assertSuccess(response);
-			String etag = extract(response.getRawResponse().getHeader(ETAG));
+			String etag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")));
 			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
 
 			params.setHeight(103);
@@ -87,12 +77,8 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
-			MeshResponse<WebRootResponse> response = client()
-				.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL))
-				.invoke();
 
-			latchFor(response);
-			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+			String etag = callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertNotNull(etag);
 
 			// Check whether 304 is returned for correct etag
@@ -116,14 +102,12 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		MeshResponse<WebRootResponse> response = client()
-			.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke();
-		latchFor(response);
+		String responseTag = callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
 			Node node = content("news_2015");
 			String etag = node.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getRawResponse().getHeader(ETAG)));
+			assertEquals(etag, responseTag);
 
 			// Check whether 304 is returned for correct etag
 			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),

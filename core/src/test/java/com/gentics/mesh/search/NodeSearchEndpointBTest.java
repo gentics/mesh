@@ -133,6 +133,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftInBranch() throws Exception {
+		grantAdminRole();
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
@@ -141,11 +142,9 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 				new VersioningParametersImpl().draft()));
 
 		// 1. Create a new branch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		BranchCreateRequest createBranch = new BranchCreateRequest();
 		createBranch.setName("newbranch");
-		call(() -> client().createBranch(PROJECT_NAME, createBranch));
-		failingLatch(latch);
+		waitForLatestJob(() -> call(() -> client().createBranch(PROJECT_NAME, createBranch)));
 
 		// 2. Search within the newly create branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),

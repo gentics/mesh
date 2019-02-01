@@ -6,14 +6,13 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertNotNull;
 
+import io.vertx.core.json.JsonObject;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
 public class SchemaRawSearchEndpointTest extends AbstractMeshTest {
@@ -25,7 +24,7 @@ public class SchemaRawSearchEndpointTest extends AbstractMeshTest {
 
 		String query = getSimpleTermQuery("name.raw", name);
 
-		JsonObject response = call(() -> client().searchSchemasRaw(query));
+		JsonObject response = new JsonObject(call(() -> client().searchSchemasRaw(query)).toString());
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", schema.getUuid(), "The correct element was not found.");
 

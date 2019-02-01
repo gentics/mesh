@@ -48,12 +48,13 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testDeleteLastLanguageFromNode() throws Exception {
+		grantAdminRole();
 		Node node = folder("news");
 		String branchName = "newBranch";
 
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName(branchName)));
-		failingLatch(latch);
+		waitForLatestJob(() -> {
+			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName(branchName)));
+		});
 
 		Set<String> childrenUuids = new HashSet<>();
 		try (Tx tx = tx()) {

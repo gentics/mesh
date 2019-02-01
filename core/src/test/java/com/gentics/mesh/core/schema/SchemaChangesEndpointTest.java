@@ -1,13 +1,11 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
@@ -18,8 +16,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -221,7 +217,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange("content", "boolean");
 		listOfChanges.getChanges().add(change);
 
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		// Trigger migration
 		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
 		assertThat(status).matches("schema_changes_applied", "content");
@@ -232,8 +227,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
-		// Wait for event
-		failingLatch(latch);
+
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 			assertNotNull("The container should now have a new version", currentVersion.getNextVersion());
@@ -264,9 +258,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		MeshInternal.get().serverSchemaStorage().clear();
 
-		// 3. Setup eventbus bridged latch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
 		// 4. Update the schema server side -> 2.0
 		try (Tx tx = tx()) {
 			GenericMessageResponse status = call(() -> client().updateSchema(schemaContainer.getUuid(), request,
@@ -279,7 +270,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, project().getLatestBranch().getUuid(),
 						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
-			failingLatch(latch);
 		}
 
 		// Add the updated schema to the client store
@@ -382,10 +372,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("content");
 		listOfChanges.getChanges().add(change);
 
-		// 3. Setup eventbus bridged latch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
-		// 4. Invoke migration
+		// 3. Invoke migration
 		try (Tx tx = tx()) {
 			assertNull("The schema should not yet have any changes", schemaContainer.getLatestVersion().getNextChange());
 		}
@@ -397,8 +384,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
-		// 5. Wait for migration to finish
-		failingLatch(latch);
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 
@@ -420,9 +405,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "label1234");
 		listOfChanges.getChanges().add(change);
 
-		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
 		// 3. Invoke migration
 		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
 		assertThat(status).matches("schema_changes_applied", "content");
@@ -432,8 +414,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
-		// 4. Latch for completion
-		failingLatch(latch);
+
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
@@ -447,38 +428,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
 
 		}
-	}
-
-	/**
-	 * Construct a latch which will unlatch when the migration has finished.
-	 * 
-	 * @return
-	 */
-	public static CountDownLatch waitForMigration(MeshRestClient client) {
-		// Construct latch in order to wait until the migration completed event
-		// was received
-		CountDownLatch latch = new CountDownLatch(1);
-		client.eventbus(ws -> {
-			// Register to migration events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
-			ws.writeFinalTextFrame(msg.encode());
-
-			// Handle migration events
-			ws.handler(buff -> {
-				String str = buff.toString();
-				JsonObject received = new JsonObject(str);
-				JsonObject rec = received.getJsonObject("body");
-				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
-					try {
-						latch.countDown();
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-			});
-
-		});
-		return latch;
 	}
 
 	@Test
@@ -502,20 +451,16 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null);
 			listOfChanges.getChanges().add(change);
 
-			// 2. Setup eventbus bridged latch
-			CountDownLatch latch = waitForMigration(client());
 
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));
 			assertThat(status).matches("schema_changes_applied", "content");
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
 
-			// 3. Invoke migration
+			// 2. Invoke migration
 			waitForJobs(() -> {
 				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, branchUuid,
 						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
-			// 4. Latch for completion
-			latch.await(10, TimeUnit.SECONDS);
 
 			try (Tx tx = tx()) {
 				assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
@@ -677,18 +622,15 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			tx.success();
 		}
 
-		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		// 3. Update the schema server side
+		// 2. Update the schema server side
 		call(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 
-		// 4. assign the new schema version to the initial branch
+		// 3. assign the new schema version to the initial branch
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
-		failingLatch(latch);
 
 		// node must be migrated for initial branch
 		try (Tx tx = tx()) {

@@ -54,7 +54,6 @@ import io.vertx.ext.web.Router;
 /**
  * Central REST API Verticle which will provide all core REST API Endpoints
  */
-@Singleton
 public class RestAPIVerticle extends AbstractVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractInternalEndpoint.class);

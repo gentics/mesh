@@ -29,7 +29,7 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Verify that the global node search would find both nodes in both projects.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -63,7 +63,7 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteProject(projectUuid()));
 
 		// search in old project
-		JsonObject response = call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue)));
+		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue))).toString());
 		assertThat(response).has("responses[0].hits.total", "2", "Not exactly two item was found.");
 		String uuid1 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
 		String uuid2 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");

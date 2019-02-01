@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -187,9 +186,7 @@ public class NodeEndpointETagReferenceTest extends AbstractMeshTest {
 	}
 
 	private Single<String> getEtag(NodeResponse node) {
-		return Single.defer(() -> {
-			MeshResponse<NodeResponse> response = client().findNodeByUuid(PROJECT_NAME, node.getUuid()).invoke();
-			return response.rxSetHandler().map(ignore -> response.getRawResponse().getHeader(ETAG));
-		});
+		return client().findNodeByUuid(PROJECT_NAME, node.getUuid()).getResponse()
+			.map(response -> response.getHeader(ETAG).orElse(null));
 	}
 }

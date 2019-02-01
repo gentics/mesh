@@ -201,13 +201,13 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		}
 		// 3. Invoke search
 		String searchQuery = getText("/elasticsearch/custom/customSearchQuery.es");
-		JsonObject searchResult = call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery));
+		JsonObject searchResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery)).toString());
 		System.out.println(searchResult.encodePrettily());
 
 		String query = "Content t";
 		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/custom/autocompleteQuery.es"));
 		autocompleteQuery.getJsonObject("query").getJsonObject("match").getJsonObject("fields.content.auto").put("query", query);
-		JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily()));
+		JsonObject autocompleteResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily())).toString());
 		System.out.println(autocompleteResult.encodePrettily());
 		System.out.println("------------------------------");
 		System.out.println(new JsonObject(parseResult(autocompleteResult, query)).encodePrettily());
@@ -251,7 +251,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 	/**
 	 * Construct autocompletion options from the found tokens and the initial set of partials.
-	 * 
+	 *
 	 * @param map
 	 * @param foundTokens
 	 * @param partials

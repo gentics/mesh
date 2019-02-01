@@ -1,11 +1,14 @@
 package com.gentics.mesh.query.impl;
 
+import static com.gentics.mesh.util.HttpQueryUtils.splitQuery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+
+import java.util.Map;
 
 public class PagingParametersTest {
 
@@ -17,9 +20,18 @@ public class PagingParametersTest {
 		assertEquals("The default page is one but the method did not return one.", 1, params.getPage());
 		assertNull(params.getPerPage());
 
-		assertEquals("page=1&sortBy=uuid", params.getQueryParameters());
-		params.setPerPage(25L);
-		assertEquals("page=1&sortBy=uuid&perPage=25", params.getQueryParameters());
+		Map<String, String> paramMap = splitQuery(params.getQueryParameters());
 
+		assertEquals(2, paramMap.size());
+		assertEquals("1", paramMap.get("page"));
+		assertEquals("uuid", paramMap.get("sortBy"));
+
+		params.setPerPage(25L);
+		paramMap = splitQuery(params.getQueryParameters());
+
+		assertEquals(3, paramMap.size());
+		assertEquals("1", paramMap.get("page"));
+		assertEquals("uuid", paramMap.get("sortBy"));
+		assertEquals("25", paramMap.get("perPage"));
 	}
 }

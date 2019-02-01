@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_BRANCH_CREATED;
-import static com.gentics.mesh.Events.EVENT_BRANCH_DELETED;
-import static com.gentics.mesh.Events.EVENT_BRANCH_UPDATED;
+import static com.gentics.mesh.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.MeshEvent.BRANCH_UPDATED;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ public interface Branch
 	 */
 	String TYPE = "branch";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_BRANCH_CREATED, EVENT_BRANCH_UPDATED, EVENT_BRANCH_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, BRANCH_CREATED.address, BRANCH_UPDATED.address, BRANCH_DELETED.address);
 
 	@Override
 	default TypeInfo getTypeInfo() {

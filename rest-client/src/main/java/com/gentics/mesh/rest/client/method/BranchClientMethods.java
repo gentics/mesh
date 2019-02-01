@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 /**
  * Interface for branch specific rest API methods
@@ -172,16 +173,13 @@ public interface BranchClientMethods {
 
 	/**
 	 * Remove a tag with the given tagUuid from the branch with the given branchUuid.
-	 * 
-	 * @param projectName
-	 *            Name of the project which contains the branch
-	 * @param branchUuid
-	 *            Uuid of the branch
-	 * @param tagUuid
-	 *            Uuid of the tag
+	 *
+	 * @param projectName Name of the project which contains the branch
+	 * @param branchUuid  Uuid of the branch
+	 * @param tagUuid     Uuid of the tag
 	 * @return Mesh request which can be invoked
 	 */
-	MeshRequest<Void> removeTagFromBranch(String projectName, String branchUuid, String tagUuid);
+	MeshRequest<EmptyResponse> removeTagFromBranch(String projectName, String branchUuid, String tagUuid);
 
 	/**
 	 * Load multiple tags that were assigned to a given branch.
