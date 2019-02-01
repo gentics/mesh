@@ -29,7 +29,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		assemble();
 
 		eventhandler.getHandledEvents()
-			.forEach(event -> vertx.eventBus().<MeshEventModel>consumer(event, message -> requests.onNext(new MessageEvent(event, message.body()))));
+			.forEach(event -> vertx.eventBus().<MeshEventModel>consumer(event.address, message ->
+				requests.onNext(new MessageEvent(event, message.body()))
+			));
 	}
 
 	@Override

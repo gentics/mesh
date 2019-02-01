@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.verticle;
 
+import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -26,9 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
-import static com.gentics.mesh.Events.EVENT_ROLE_CREATED;
-import static com.gentics.mesh.Events.EVENT_USER_CREATED;
+import static com.gentics.mesh.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.MeshEvent.USER_CREATED;
 
 public class Eventhandler {
 	private final BootstrapInitializer boot;
@@ -38,7 +39,7 @@ public class Eventhandler {
 	private final RoleTransformer roleTransformer;
 	private final MeshOptions options;
 
-	private final Map<String, Function<MeshEventModel, List<ElasticSearchRequest>>> handlers = new HashMap<>();
+	private final Map<MeshEvent, Function<MeshEventModel, List<ElasticSearchRequest>>> handlers = new HashMap<>();
 
 	@Inject
 	public Eventhandler(BootstrapInitializer boot, Database db, UserTransformer userTransformer, GroupTransformer groupTransformer, RoleTransformer roleTransformer, MeshOptions options) {
@@ -53,15 +54,15 @@ public class Eventhandler {
 	}
 
 	private void addHandlers() {
-		addCreateHandler(EVENT_USER_CREATED, userTransformer, boot.userRoot(), User.composeIndexName());
-		addCreateHandler(EVENT_GROUP_CREATED, groupTransformer, boot.groupRoot(), Group.composeIndexName());
-		addCreateHandler(EVENT_ROLE_CREATED, roleTransformer, boot.roleRoot(), Role.composeIndexName());
+		addCreateHandler(USER_CREATED, userTransformer, boot.userRoot(), User.composeIndexName());
+		addCreateHandler(GROUP_CREATED, groupTransformer, boot.groupRoot(), Group.composeIndexName());
+		addCreateHandler(ROLE_CREATED, roleTransformer, boot.roleRoot(), Role.composeIndexName());
 
-		addCreateHandler(EVENT_GROUP_CREATED, groupTransformer, boot.groupRoot(), Group.composeIndexName());
-		addCreateHandler(EVENT_GROUP_CREATED, groupTransformer, boot.groupRoot(), Group.composeIndexName());
+//		addCreateHandler(GROUP_CREATED, groupTransformer, boot.groupRoot(), Group.composeIndexName());
+//		addCreateHandler(GROUP_CREATED, groupTransformer, boot.groupRoot(), Group.composeIndexName());
 	}
 
-	private <T> void addHandler(String event, Class<T> clazz, Function<T, List<ElasticSearchRequest>> generator) {
+	private <T> void addHandler(MeshEvent event, Class<T> clazz, Function<T, List<ElasticSearchRequest>> generator) {
 		handlers.put(event, msg -> {
 			if (msg.getClass().isAssignableFrom(clazz)) {
 				return generator.apply((T) msg);
@@ -71,7 +72,7 @@ public class Eventhandler {
 		});
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel, T>> void addCreateHandler(String event, Transformer<T> transformer, RootVertex<T> root, String indexName) {
+	private <T extends MeshCoreVertex<? extends RestModel, T>> void addCreateHandler(MeshEvent event, Transformer<T> transformer, RootVertex<T> root, String indexName) {
 		addHandler(event, CreatedMeshEventModel.class, createGenerator(transformer, root, indexName));
 	}
 
@@ -93,7 +94,7 @@ public class Eventhandler {
 		return handlers.get(messageEvent.event).apply(messageEvent.message);
 	}
 
-	public Collection<String> getHandledEvents() {
+	public Collection<MeshEvent> getHandledEvents() {
 		return handlers.keySet();
 	}
 }
