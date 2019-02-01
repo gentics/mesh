@@ -30,6 +30,11 @@ icon:check[] Java Rest Client: The OkHttp implementation has replaced the Vert.x
 
 icon:check[] Core: Fixed a bug that caused too long responses on binary range requests.
 
+[[v0.29.6]]
+== 0.29.6 (01.02.2019)
+
+icon:plus[] Core: The way editor references are stored has been refactored to increase performance and reduce contention during database operations. A changelog entry will be invoked which migrates the data.
+
 [[v0.29.5]]
 == 0.29.5 (31.01.2019)
 
