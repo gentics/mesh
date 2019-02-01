@@ -12,12 +12,10 @@ public class DummyBulkActionContext implements BulkActionContext {
 
 	@Override
 	public void process() {
-
 	}
 
 	@Override
 	public void process(boolean force) {
-
 	}
 
 	@Override
@@ -25,9 +23,8 @@ public class DummyBulkActionContext implements BulkActionContext {
 		return new DummyEventQueueBatch();
 	}
 
-//	@Override
-//	public void dropIndex(String composeIndexName) {
-//
-//	}
+	@Override
+	public void setRootCause(String type, String uuid, String action) {
+	}
 
 }

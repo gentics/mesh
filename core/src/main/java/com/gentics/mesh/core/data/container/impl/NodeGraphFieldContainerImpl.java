@@ -723,12 +723,24 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return event;
 	}
 
+	/**
+	 * Add common event information to the given event.
+	 * 
+	 * @param event
+	 * @param branchUuid
+	 * @param type
+	 */
 	private void fillCommonEventInfo(AbstractNodeMeshEventModel event, String branchUuid, ContainerType type) {
 		event.setUuid(getParentNode(branchUuid).getUuid());
 		event.setBranchUuid(branchUuid);
 		event.setLanguageTag(getLanguageTag());
 		if (type != null) {
 			event.setType(type.getHumanCode());
+		}
+		SchemaContainerVersion version = getSchemaContainerVersion();
+		if (version != null) {
+			event.setSchemaName(version.getName());
+			event.setSchemaUuid(version.getSchemaContainer().getUuid());
 		}
 	}
 

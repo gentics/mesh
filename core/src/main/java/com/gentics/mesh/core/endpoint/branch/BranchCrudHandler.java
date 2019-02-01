@@ -114,7 +114,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
 			Tuple<Single<BranchInfoSchemaList>, EventQueueBatch> tuple = db.tx(() -> {
-				EventQueueBatch batch = new EventQueueBatchImpl();
+				EventQueueBatch batch = EventQueueBatch.create();
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {

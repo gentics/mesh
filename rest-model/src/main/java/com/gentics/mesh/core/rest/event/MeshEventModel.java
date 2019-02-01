@@ -34,7 +34,22 @@ public interface MeshEventModel extends RestModel {
 	 */
 	String getAddress();
 
+	/**
+	 * Returns the event cause info which contains information about the root action which lead to the creation of this event.
+	 * 
+	 * @return
+	 */
+	EventCauseInfo getCause();
+
+	/**
+	 * Set the cause info for the event.
+	 * 
+	 * @param cause
+	 */
+	void setCause(EventCauseInfo cause);
+
 	static MeshEventModel fromMessage(Message<String> message) {
 		return null;
 	}
+
 }

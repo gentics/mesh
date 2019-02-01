@@ -38,7 +38,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		Project project = newBranch.getProject();
 
 		// Add the needed indices and mappings
-		EventQueueBatch indexCreationBatch = new EventQueueBatchImpl();
+		EventQueueBatch indexCreationBatch = EventQueueBatch.create();
 		for (SchemaContainerVersion schemaVersion : newBranch.findActiveSchemaVersions()) {
 			SchemaModel schema = schemaVersion.getSchema();
 			// TODO fire - schema migration prepare event

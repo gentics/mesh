@@ -79,7 +79,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			}
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
-				BulkActionContext bac = new BulkActionContextImpl();
+				BulkActionContext bac = BulkActionContext.create();
 				node.deleteFromBranch(ac, ac.getBranch(), bac, false);
 				return bac.batch();
 			}).dispatch().blockingAwait();
@@ -146,7 +146,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node targetNode = nodeRoot.loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 			db.tx(() -> {
-				EventQueueBatch batch = new EventQueueBatchImpl();
+				EventQueueBatch batch = EventQueueBatch.create();
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
 			}).dispatch();
@@ -263,7 +263,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Tuple<Node, EventQueueBatch> tuple = db.tx(() -> {
-				EventQueueBatch batch = new EventQueueBatchImpl();
+				EventQueueBatch batch = EventQueueBatch.create();
 				node.addTag(tag, branch);
 				batch.add(node.onUpdated(branch.getUuid()));
 				return Tuple.tuple(node, batch);
@@ -294,7 +294,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			return db.tx(() -> {
-				EventQueueBatch batch = new EventQueueBatchImpl();
+				EventQueueBatch batch = EventQueueBatch.create();
 				batch.add(node.onUpdated());
 				node.removeTag(tag, branch);
 				return batch;
@@ -354,7 +354,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			BulkActionContext bac = new BulkActionContextImpl();
+			BulkActionContext bac = BulkActionContext.create();
 			node.takeOffline(ac, bac);
 			return bac.batch().dispatch().andThen(Single.just(Optional.empty()));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
@@ -395,7 +395,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			EventQueueBatch sqb = db.tx(() -> {
-				BulkActionContext bac = new BulkActionContextImpl();
+				BulkActionContext bac = BulkActionContext.create();
 				node.publish(ac, bac, languageTag);
 				return bac.batch();
 			});
@@ -467,7 +467,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 			Tuple<TransformablePage<? extends Tag>, EventQueueBatch> tuple = db.tx(() -> {
-				EventQueueBatch batch = new EventQueueBatchImpl();
+				EventQueueBatch batch = EventQueueBatch.create();
 				TransformablePage<? extends Tag> tags = node.updateTags(ac, batch);
 				return Tuple.tuple(tags, batch);
 			});

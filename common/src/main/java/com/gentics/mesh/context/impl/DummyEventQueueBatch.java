@@ -2,8 +2,9 @@ package com.gentics.mesh.context.impl;
 
 import java.util.List;
 
-import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
 
@@ -109,7 +110,6 @@ public class DummyEventQueueBatch implements EventQueueBatch {
 
 	@Override
 	public String getBatchId() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -120,7 +120,16 @@ public class DummyEventQueueBatch implements EventQueueBatch {
 
 	@Override
 	public List<MeshEventModel> getEntries() {
-		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setRootCause(String type, String uuid, String action) {
+
+	}
+
+	@Override
+	public EventCauseInfo getCause() {
 		return null;
 	}
 

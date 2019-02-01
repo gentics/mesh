@@ -143,7 +143,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		utils.asyncTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				EventQueueBatch batch = new EventQueueBatchImpl();
+				EventQueueBatch batch = EventQueueBatch.create();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).dispatch();

@@ -44,10 +44,22 @@ public interface BulkActionContext {
 
 	/**
 	 * Shortcut for {@link #batch()#add(MeshEventModel)}
+	 * 
 	 * @param event
 	 */
 	default void add(MeshEventModel event) {
 		batch().add(event);
+	}
+
+	/**
+	 * Set the root cause of the action being invoked.
+	 * 
+	 * @param type
+	 * @param element
+	 * @param action
+	 */
+	default void setRootCause(String type, String uuid, String action) {
+		batch().setRootCause(type, uuid, action);
 	}
 
 }

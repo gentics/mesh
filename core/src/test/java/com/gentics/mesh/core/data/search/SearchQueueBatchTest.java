@@ -15,9 +15,9 @@ public class SearchQueueBatchTest extends AbstractMeshTest {
 
 	@Test
 	public void testDependency() {
-		EventQueueBatch batch = new EventQueueBatchImpl();
+		EventQueueBatch batch = EventQueueBatch.create();
 		System.out.println(batch);
-		batch = new EventQueueBatchImpl();
+		batch = EventQueueBatch.create();
 		System.out.println(batch);
 		batch.add(new UpdatedMeshEventModel());
 	}

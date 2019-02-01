@@ -2074,7 +2074,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		event.setAddress(getTypeInfo().getOnUpdatedAddress());
 		fillCommonEventInfo(event);
 		event.setBranchUuid(branchUuid);
-		event.setType(type.getHumanCode());
+		if (type != null) {
+			event.setType(type.getHumanCode());
+		}
 		return event;
 	}
 
@@ -2106,7 +2108,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			event.setSchemaUuid(container.getUuid());
 		}
 	}
-	
+
 	@Override
 	public Single<NodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		return MeshInternal.get().database().asyncTx(() -> {

@@ -1,14 +1,26 @@
 package com.gentics.mesh.core.rest.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public abstract class AbstractMeshEventModel implements MeshEventModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Uuid of the referenced element.")
 	private String uuid;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the referenced element.")
 	private String name;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the mesh node from which the event originates.")
 	private String origin;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Some events will be caused by another action. This object contains information about the cause of the event.")
+	private EventCauseInfo cause;
 
 	@JsonIgnore
 	private String address;
@@ -45,6 +57,16 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 
 	public String getAddress() {
 		return address;
+	}
+
+	@Override
+	public EventCauseInfo getCause() {
+		return cause;
+	}
+
+	@Override
+	public void setCause(EventCauseInfo cause) {
+		this.cause = cause;
 	}
 
 }

@@ -82,6 +82,7 @@ public class HandlerUtilities {
 			String elementUuid = element.getUuid();
 			EventQueueBatch batch = database.tx(() -> {
 				BulkActionContext bac = BulkActionContext.create();
+				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, "delete");
 				element.delete(bac);
 				return bac.batch();
 			});

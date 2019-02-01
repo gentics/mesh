@@ -197,7 +197,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			log.debug("Deleting project {" + getName() + "}");
 		}
 
-		String uuid = getUuid();
 		// Remove the nodes in the project hierarchy
 		Node base = getBaseNode();
 		base.deleteFully(bac, true);
@@ -227,8 +226,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		getVertex().remove();
 
 		bac.process(true);
-
-		bac.batch().dispatch();
 	}
 
 	@Override

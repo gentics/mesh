@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
@@ -52,7 +51,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		SchemaModel newSchema = toVersion.getSchema();
 
 		// New indices need to be created
-		EventQueueBatch batch = new EventQueueBatchImpl();
+		EventQueueBatch batch = EventQueueBatch.create();
 		//TODO add migration prepare event
 		
 		batch.dispatch();

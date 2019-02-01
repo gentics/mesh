@@ -43,10 +43,10 @@ public class CoreVerticleLoader {
 	public JobWorkerVerticle jobWorkerVerticle;
 
 	@Inject
-	public ElasticsearchSyncVerticle indexSyncVerticle;
+	public Provider<ElasticsearchSyncVerticle> indexSyncVerticle;
 
 	@Inject
-	public ElasticsearchProcessVerticle elasticsearchProcessVerticle;
+	public Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticle;
 
 	@Inject
 	public MeshOptions configuration;
@@ -116,8 +116,10 @@ public class CoreVerticleLoader {
 	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
-		verticles.add(indexSyncVerticle);
-		verticles.add(elasticsearchProcessVerticle);
+		if (configuration.getSearchOptions().getUrl() != null) {
+			verticles.add(indexSyncVerticle.get());
+			verticles.add(elasticsearchProcessVerticle.get());
+		}
 		return verticles;
 	}
 

@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.eventbus.EventBus;
@@ -25,7 +27,10 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 
 	private List<MeshEventModel> bulkEntries = new ArrayList<>();
 
+	private EventCauseInfo cause;
+
 	public EventQueueBatchImpl() {
+	
 	}
 
 	@Override
@@ -234,6 +239,11 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 	//
 
 	@Override
+	public void setRootCause(String type, String uuid, String action) {
+		this.cause = new EventCauseInfo(type, uuid, action);
+	}
+
+	@Override
 	public String getBatchId() {
 		return batchId;
 	}
@@ -248,12 +258,17 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 				log.debug("Created event sent {}", address);
 			}
 			String json = JsonUtil.toJson(entry);
-			//if (log.isTraceEnabled()) {
-				log.info("Dispatching event '{}' with payload:\n{}", address, json);
-			//}
-			eventbus.publish(address, json);
+			// if (log.isTraceEnabled()) {
+			log.info("Dispatching event '{}' with payload:\n{}", address, json);
+			// }
+			eventbus.publish(address, new JsonObject(json));
 			return Completable.complete();
 		});
+	}
+
+	@Override
+	public EventCauseInfo getCause() {
+		return cause;
 	}
 
 }

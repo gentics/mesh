@@ -47,16 +47,12 @@ public class BulkActionContextImpl implements BulkActionContext {
 			// TODO can we run the dispatch process in the background? Async?
 			batch.dispatch().blockingAwait(5, TimeUnit.SECONDS);
 			Tx.getActive().getGraph().commit();
+			batch().dispatch().blockingAwait();
 			// Reset the counter back to zero
 			elementCounter.set(0);
 			batchCounter.incrementAndGet();
 		}
 	}
-
-//	@Override
-//	public void dropIndex(String composeIndexName) {
-//		batch.dropIndex(composeIndexName);
-//	}
 
 	@Override
 	public EventQueueBatch batch() {
