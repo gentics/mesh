@@ -2117,4 +2117,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public boolean isVisibleInBranch(String branchUuid) {
 		return getGraphFieldContainersIt(branchUuid, ContainerType.DRAFT).iterator().hasNext();
 	}
+
+
 }
