@@ -24,7 +24,7 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.29.6]]
-== 0.29.6 (TBD)
+== 0.29.6 (01.02.2019)
 
 icon:plus[] Core: The way editor references are stored has been refactored to increase performance and reduce contention during database operations. A changelog entry will be invoked which migrates the data.
 
