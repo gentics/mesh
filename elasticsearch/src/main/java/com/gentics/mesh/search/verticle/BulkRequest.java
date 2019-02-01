@@ -1,6 +1,8 @@
 package com.gentics.mesh.search.verticle;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import io.reactivex.Completable;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,8 +19,8 @@ public class BulkRequest implements Bulkable {
 	}
 
 	@Override
-	public Completable execute() {
-		return null;
+	public Completable execute(ElasticsearchClient<JsonObject> client) {
+		return client.processBulk(actions).async().toCompletable();
 	}
 
 	@Override
