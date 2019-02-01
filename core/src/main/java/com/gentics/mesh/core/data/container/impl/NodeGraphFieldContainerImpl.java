@@ -72,6 +72,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.node.AbstractNodeMeshEventModel;
 import com.gentics.mesh.event.node.CreatedNodeMeshEventModel;
 import com.gentics.mesh.event.node.DeletedNodeMeshEventModel;
 import com.gentics.mesh.event.node.UpdatedNodeMeshEventModel;
@@ -701,23 +702,34 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public DeletedNodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
 		DeletedNodeMeshEventModel event = new DeletedNodeMeshEventModel();
-		event.setType(type.getHumanCode());
-		event.setUuid(getParentNode(branchUuid).getUuid());
-		event.setLanguageTag(getLanguageTag());
+		event.setAddress(Node.TYPE_INFO.getOnDeletedAddress());
+		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
 
 	@Override
 	public UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
 		UpdatedNodeMeshEventModel event = new UpdatedNodeMeshEventModel();
-		event.setBranchUuid(branchUuid);
+		event.setAddress(Node.TYPE_INFO.getOnUpdatedAddress());
+		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
 
 	@Override
 	public CreatedNodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
 		CreatedNodeMeshEventModel event = new CreatedNodeMeshEventModel();
+		event.setAddress(Node.TYPE_INFO.getOnCreatedAddress());
+		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
-	
+
+	private void fillCommonEventInfo(AbstractNodeMeshEventModel event, String branchUuid, ContainerType type) {
+		event.setUuid(getParentNode(branchUuid).getUuid());
+		event.setBranchUuid(branchUuid);
+		event.setLanguageTag(getLanguageTag());
+		if (type != null) {
+			event.setType(type.getHumanCode());
+		}
+	}
+
 }

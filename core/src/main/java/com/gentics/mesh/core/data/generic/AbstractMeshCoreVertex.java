@@ -130,17 +130,11 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	public UpdatedMeshEventModel onUpdated() {
 		UpdatedMeshEventModel event = new UpdatedMeshEventModel();
 		event.setAddress(getTypeInfo().getOnUpdatedAddress());
-
-		JsonObject json = new JsonObject();
 		if (this instanceof NamedElement) {
-			json.put("name", ((NamedElement) this).getName());
+			event.setName(((NamedElement) this).getName());
 		}
-		json.put("origin", Mesh.mesh().getOptions().getNodeName());
-		json.put("uuid", getUuid());
-		// Mesh.vertx().eventBus().publish(address, json);
-		// if (log.isDebugEnabled()) {
-		// log.debug("Updated event sent {" + address + "}");
-		// }
+		event.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		event.setUuid(getUuid());
 		return event;
 	}
 
@@ -148,7 +142,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	public CreatedMeshEventModel onCreated() {
 		CreatedMeshEventModel event = new CreatedMeshEventModel();
 		event.setAddress(getTypeInfo().getOnCreatedAddress());
-
 		if (this instanceof NamedElement) {
 			event.setName(((NamedElement) this).getName());
 		}

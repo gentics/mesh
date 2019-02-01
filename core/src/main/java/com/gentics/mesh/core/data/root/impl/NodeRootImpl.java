@@ -256,7 +256,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 		NodeGraphFieldContainer container = node.createGraphFieldContainer(language.getLanguageTag(), branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
-		
+
 		batch.add(node.onCreated(branch.getUuid()));
 
 		// Check for webroot input data consistency (PUT on webroot)

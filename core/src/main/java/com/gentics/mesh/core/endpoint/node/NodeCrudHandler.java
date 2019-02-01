@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -34,7 +32,6 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -80,16 +77,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 			}
-			String name = node.getDisplayName(ac);
-			SchemaContainer schema = node.getSchemaContainer();
-
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				BulkActionContext bac = new BulkActionContextImpl();
 				node.deleteFromBranch(ac, ac.getBranch(), bac, false);
 				return bac.batch();
-			}).dispatch();
-			node.onDeleted(uuid, name, schema, null);
+			}).dispatch().blockingAwait();
 
 			return null;
 		}, m -> ac.send(NO_CONTENT));
@@ -114,15 +107,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
-			String name = node.getDisplayName(ac);
-			SchemaContainer schema = node.getSchemaContainer();
 			// Create the batch first since we can't delete the container and access it later in batch creation
-			db.tx(() -> {
-				BulkActionContext bac = new BulkActionContextImpl();
+			EventQueueBatch batch = db.tx(() -> {
+				BulkActionContext bac = BulkActionContext.create();
 				node.deleteLanguageContainer(ac, ac.getBranch(), languageTag, bac, true);
 				return bac.batch();
-			}).dispatch();
-			node.onDeleted(uuid, name, schema, languageTag);
+			});
+			batch.dispatch().blockingAwait();
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}

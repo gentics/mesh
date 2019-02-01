@@ -101,6 +101,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.DeletedMeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.node.AbstractNodeMeshEventModel;
 import com.gentics.mesh.event.node.CreatedNodeMeshEventModel;
 import com.gentics.mesh.event.node.DeletedNodeMeshEventModel;
 import com.gentics.mesh.event.node.UpdatedNodeMeshEventModel;
@@ -1399,7 +1400,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteFromBranch(InternalActionContext ac, Branch branch, BulkActionContext context, boolean ignoreChecks) {
+	public void deleteFromBranch(InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks) {
 
 		DeleteParameters parameters = ac.getDeleteParameters();
 
@@ -1410,17 +1411,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!parameters.isRecursive()) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
 			}
-			child.deleteFromBranch(ac, branch, context, ignoreChecks);
+			child.deleteFromBranch(ac, branch, bac, ignoreChecks);
 		}
 
 		// 2. Delete all language containers
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(branch, DRAFT)) {
-			deleteLanguageContainer(ac, branch, container.getLanguageTag(), context, false);
+			deleteLanguageContainer(ac, branch, container.getLanguageTag(), bac, false);
 		}
+		bac.add(onDeleted(getUuid(), getDisplayName(ac), getSchemaContainer(), null, null, null));
 
 		// 3. Now check if the node has no more field containers in any branch. We can delete it in those cases
 		if (getGraphFieldContainerCount() == 0) {
-			delete(context);
+			delete(bac);
 		} else {
 			// Otherwise we need to remove the "parent" edge for the branch
 			// first remove the "parent" edge (because the node itself will
@@ -1758,13 +1760,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, Branch branch, String languageTag, BulkActionContext context,
+	public void deleteLanguageContainer(InternalActionContext ac, Branch branch, String languageTag, BulkActionContext bac,
 		boolean failForLastContainer) {
 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, branch, PUBLISHED);
 		if (container != null) {
-			takeOffline(ac, context, branch, languageTag);
+			takeOffline(ac, bac, branch, languageTag);
 		}
 
 		// 2. Load the draft container and remove it from the branch
@@ -1772,7 +1774,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", languageTag);
 		}
-		container.deleteFromBranch(branch, context);
+		container.deleteFromBranch(branch, bac);
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
 		// starting with the old draft, delete all GFC that have no next and are not draft (for other branches)
@@ -1780,7 +1782,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		while (dangling != null && !dangling.isDraft() && !dangling.hasNextVersion()) {
 			NodeGraphFieldContainer toDelete = dangling;
 			dangling = toDelete.getPreviousVersion();
-			toDelete.delete(context);
+			toDelete.delete(bac);
 		}
 
 		NodeGraphFieldContainer initial = getGraphFieldContainer(languageTag, branch, INITIAL);
@@ -1797,7 +1799,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
 				dangling = toDelete.getNextVersions().iterator().next();
-				toDelete.delete(context, false);
+				toDelete.delete(bac, false);
 			}
 		}
 
@@ -1813,7 +1815,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			// Also delete the node and children
 			if (parameters.isRecursive() && wasLastContainer) {
-				deleteFromBranch(ac, branch, context, false);
+				deleteFromBranch(ac, branch, bac, false);
 			}
 		}
 
@@ -2060,8 +2062,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public CreatedNodeMeshEventModel onCreated(String branchUuid) {
 		CreatedNodeMeshEventModel event = new CreatedNodeMeshEventModel();
+		event.setAddress(getTypeInfo().getOnCreatedAddress());
+		fillCommonEventInfo(event);
 		event.setBranchUuid(branchUuid);
-		event.setUuid(getUuid());
 		return event;
 	}
 
@@ -2069,13 +2072,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
 		UpdatedNodeMeshEventModel event = new UpdatedNodeMeshEventModel();
 		event.setAddress(getTypeInfo().getOnUpdatedAddress());
-		event.setUuid(getUuid());
-		SchemaContainer container = getSchemaContainer();
-		if (container != null) {
-			event.setSchemaName(container.getName());
-			event.setSchemaUuid(container.getUuid());
-		}
+		fillCommonEventInfo(event);
 		event.setBranchUuid(branchUuid);
+		event.setType(type.getHumanCode());
 		return event;
 	}
 
@@ -2085,18 +2084,29 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String languageTag) {
+	public DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag) {
 		DeletedNodeMeshEventModel event = new DeletedNodeMeshEventModel();
 		event.setAddress(getTypeInfo().getOnDeletedAddress());
+		event.setUuid(uuid);
 		event.setLanguageTag(languageTag);
+		event.setType(type);
+		event.setBranchUuid(branchUuid);
 		if (schema != null) {
 			event.setSchemaName(schema.getName());
 			event.setSchemaUuid(schema.getUuid());
 		}
-		event.setUuid(uuid);
 		return event;
 	}
 
+	private void fillCommonEventInfo(AbstractNodeMeshEventModel event) {
+		event.setUuid(getUuid());
+		SchemaContainer container = getSchemaContainer();
+		if (container != null) {
+			event.setSchemaName(container.getName());
+			event.setSchemaUuid(container.getUuid());
+		}
+	}
+	
 	@Override
 	public Single<NodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		return MeshInternal.get().database().asyncTx(() -> {

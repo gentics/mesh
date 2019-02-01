@@ -748,10 +748,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param uuid
 	 * @param name
 	 * @param schema
+	 * @param branchUuid
+	 * @param type
 	 * @param languageTag
 	 * @return Created event
 	 */
-	DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String languageTag);
+	DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag);
 
 	/**
 	 * Create the node specific update event.
