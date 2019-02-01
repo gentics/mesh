@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;

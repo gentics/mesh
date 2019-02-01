@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.MeshEvent.MICROSCHEMA_CREATED;
-import static com.gentics.mesh.MeshEvent.MICROSCHEMA_DELETED;
-import static com.gentics.mesh.MeshEvent.MICROSCHEMA_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
 import java.util.Objects;
 
 import com.gentics.mesh.core.TypeInfo;

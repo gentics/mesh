@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.USER_CREATED;
-import static com.gentics.mesh.MeshEvent.USER_DELETED;
-import static com.gentics.mesh.MeshEvent.USER_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
 import java.util.Objects;
 import java.util.Set;

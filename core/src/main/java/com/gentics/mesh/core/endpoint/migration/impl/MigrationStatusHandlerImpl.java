@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.migration.impl;
 
-import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
+import static com.gentics.mesh.core.rest.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 

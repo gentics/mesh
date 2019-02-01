@@ -18,7 +18,7 @@ import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;

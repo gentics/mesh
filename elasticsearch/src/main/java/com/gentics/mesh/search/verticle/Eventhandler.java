@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.verticle;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -9,8 +9,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.CreatedMeshEventModel;
-import com.gentics.mesh.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.group.GroupTransformer;
@@ -27,9 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.gentics.mesh.MeshEvent.GROUP_CREATED;
-import static com.gentics.mesh.MeshEvent.ROLE_CREATED;
-import static com.gentics.mesh.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 
 public class Eventhandler {
 	private final BootstrapInitializer boot;

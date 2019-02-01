@@ -11,7 +11,7 @@ import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.syncleus.ferma.tx.Tx;
 
 public class EventQueueBatchAssert extends AbstractAssert<EventQueueBatchAssert, EventQueueBatch> {

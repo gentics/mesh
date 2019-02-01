@@ -4,9 +4,8 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.UpdatedMeshEventModel;
+import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;

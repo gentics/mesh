@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.BRANCH_CREATED;
-import static com.gentics.mesh.MeshEvent.BRANCH_DELETED;
-import static com.gentics.mesh.MeshEvent.BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
 import java.util.List;
 

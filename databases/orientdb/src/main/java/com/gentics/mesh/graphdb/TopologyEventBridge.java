@@ -1,9 +1,9 @@
 package com.gentics.mesh.graphdb;
 
-import static com.gentics.mesh.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_JOINING;
-import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_LEFT;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINING;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

@@ -5,11 +5,10 @@ import java.util.List;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
 import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

@@ -10,7 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;

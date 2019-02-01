@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.MeshEvent.SCHEMA_CREATED;
-import static com.gentics.mesh.MeshEvent.SCHEMA_DELETED;
-import static com.gentics.mesh.MeshEvent.SCHEMA_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
 import java.util.Iterator;
 import java.util.stream.Stream;

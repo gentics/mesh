@@ -1,25 +1,25 @@
 package com.gentics.mesh.search.verticle;
 
-import com.gentics.elasticsearch.client.ElasticsearchClient;
-import com.gentics.mesh.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.search.impl.SearchClient;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.json.JsonObject;
 
 import javax.inject.Inject;
 
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private final Eventhandler eventhandler;
-	private final ElasticsearchClient<JsonObject> elasticSearchClient;
+	private final SearchClient elasticSearchClient;
 
 	private Subject<MessageEvent> requests = PublishSubject.create();
 
 	@Inject
-	public ElasticsearchProcessVerticle(Eventhandler eventhandler, ElasticsearchClient<JsonObject> elasticSearchClient) {
+	public ElasticsearchProcessVerticle(Eventhandler eventhandler, SearchClient elasticSearchClient) {
 		this.eventhandler = eventhandler;
 		this.elasticSearchClient = elasticSearchClient;
 	}
@@ -29,8 +29,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		assemble();
 
 		eventhandler.getHandledEvents()
-			.forEach(event -> vertx.eventBus().<MeshEventModel>consumer(event.address, message ->
-				requests.onNext(new MessageEvent(event, message.body()))
+			.forEach(event -> vertx.eventBus().<String>consumer(event.address, message ->
+				requests.onNext(new MessageEvent(event, MeshEventModel.fromMessage(message)))
 			));
 	}
 

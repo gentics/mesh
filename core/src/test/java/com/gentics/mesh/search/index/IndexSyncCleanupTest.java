@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.MeshEvent.INDEX_SYNC;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;

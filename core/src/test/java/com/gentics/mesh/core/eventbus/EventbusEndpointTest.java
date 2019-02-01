@@ -1,9 +1,9 @@
 
 package com.gentics.mesh.core.eventbus;
 
-import static com.gentics.mesh.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.util.RxUtil;

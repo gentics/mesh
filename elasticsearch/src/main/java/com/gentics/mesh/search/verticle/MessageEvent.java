@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.verticle;
 
-import com.gentics.mesh.MeshEvent;
-import com.gentics.mesh.event.MeshEventModel;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 
 public class MessageEvent {
 	public final MeshEventModel message;

@@ -9,8 +9,12 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
+import com.gentics.mesh.search.impl.SearchClient;
 import dagger.Module;
 import dagger.Provides;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 @Module
 public class SearchProviderModule {
@@ -34,6 +38,25 @@ public class SearchProviderModule {
 			searchProvider = elasticsearchProvider;
 		}
 		return searchProvider;
+	}
+
+	@Provides
+	public static SearchClient searchClientProvider(MeshOptions options) {
+		URL url;
+		try {
+			url = new URL(options.getSearchOptions().getUrl());
+		} catch (MalformedURLException e) {
+			throw new RuntimeException("Invalid search provider url", e);
+		}
+		int port = url.getPort();
+		String proto = url.getProtocol();
+		if ("http".equals(proto) && port == -1) {
+			port = 80;
+		}
+		if ("https".equals(proto) && port == -1) {
+			port = 443;
+		}
+		return new SearchClient(proto, url.getHost(), port);
 	}
 
 }

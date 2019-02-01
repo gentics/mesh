@@ -13,6 +13,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.RestAPIVerticle;
+import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 
 import io.reactivex.Completable;
@@ -43,6 +44,9 @@ public class CoreVerticleLoader {
 
 	@Inject
 	public ElasticsearchSyncVerticle indexSyncVerticle;
+
+	@Inject
+	public ElasticsearchProcessVerticle elasticsearchProcessVerticle;
 
 	@Inject
 	public MeshOptions configuration;
@@ -113,6 +117,7 @@ public class CoreVerticleLoader {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
 		verticles.add(indexSyncVerticle);
+		verticles.add(elasticsearchProcessVerticle);
 		return verticles;
 	}
 

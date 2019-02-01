@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.ROLE_CREATED;
-import static com.gentics.mesh.MeshEvent.ROLE_DELETED;
-import static com.gentics.mesh.MeshEvent.ROLE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 
 import java.util.Objects;
 import java.util.Set;

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.MeshEvent.MICROSCHEMA_CREATED;
-import static com.gentics.mesh.MeshEvent.MICROSCHEMA_UPDATED;
-import static com.gentics.mesh.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;

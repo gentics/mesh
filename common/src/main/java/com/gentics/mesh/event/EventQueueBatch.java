@@ -2,6 +2,7 @@ package com.gentics.mesh.event;
 
 import java.util.List;
 
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 
 import io.reactivex.Completable;

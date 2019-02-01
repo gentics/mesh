@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.node;
 
-import static com.gentics.mesh.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 
 import java.util.Arrays;
@@ -36,9 +36,9 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.node.CreatedNodeMeshEventModel;
-import com.gentics.mesh.event.node.DeletedNodeMeshEventModel;
-import com.gentics.mesh.event.node.UpdatedNodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.CreatedNodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.DeletedNodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.LinkType;

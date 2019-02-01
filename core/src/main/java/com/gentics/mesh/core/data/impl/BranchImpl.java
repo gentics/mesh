@@ -20,7 +20,7 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -56,7 +56,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.event.CreatedMeshEventModel;
+import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.GenericParameters;

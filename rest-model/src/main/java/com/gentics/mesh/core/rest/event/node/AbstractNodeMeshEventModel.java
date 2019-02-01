@@ -1,6 +1,6 @@
-package com.gentics.mesh.event.node;
+package com.gentics.mesh.core.rest.event.node;
 
-import com.gentics.mesh.event.AbstractMeshEventModel;
+import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 
 public abstract class AbstractNodeMeshEventModel extends AbstractMeshEventModel {
 

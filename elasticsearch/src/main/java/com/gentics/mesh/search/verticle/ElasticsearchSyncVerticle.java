@@ -1,13 +1,13 @@
 package com.gentics.mesh.search.verticle;
 
-import static com.gentics.mesh.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 
 import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.search.IndexHandlerRegistry;

@@ -1,8 +1,12 @@
-package com.gentics.mesh;
+package com.gentics.mesh.core.rest;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
+import com.gentics.mesh.core.rest.event.DeletedMeshEventModel;
+import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
 import io.vertx.core.eventbus.EventBus;
 
 /**
@@ -10,145 +14,147 @@ import io.vertx.core.eventbus.EventBus;
  */
 public enum MeshEvent {
 
-	MESH_MIGRATION("mesh.migration"),
+	MESH_MIGRATION("mesh.migration", null),
 
 	/**
 	 * Event which is send once the mesh instance is fully started and ready to accept requests.
 	 */
-	STARTUP("mesh.startup-complete"),
+	STARTUP("mesh.startup-complete", null),
 
 	/**
 	 * Address for handler which will process registered job.
 	 */
-	JOB_WORKER_ADDRESS("job.worker"),
+	JOB_WORKER_ADDRESS("job.worker", null),
 
 	/**
 	 * Event which is send once a new node is joining the cluster.
 	 */
-	CLUSTER_NODE_JOINING("mesh.cluster.node.joining"),
+	CLUSTER_NODE_JOINING("mesh.cluster.node.joining", null),
 
 	/**
 	 * Event which is send once a node finished joining the cluster.
 	 */
-	CLUSTER_NODE_JOINED("mesh.cluster.node.joined"),
+	CLUSTER_NODE_JOINED("mesh.cluster.node.joined", null),
 
 	/**
 	 * Event which is send once a node is about to leave the cluster.
 	 */
-	CLUSTER_NODE_LEAVING("mesh.cluster.node.leaving"),
+	CLUSTER_NODE_LEAVING("mesh.cluster.node.leaving", null),
 
 	/**
 	 * Event which is send once a node left the cluster.
 	 */
-	CLUSTER_NODE_LEFT("mesh.cluster.node.left"),
+	CLUSTER_NODE_LEFT("mesh.cluster.node.left", null),
 
 	/**
 	 * Event which is send once the database status (offline, online, not_available, backup, synchronizing) changes.
 	 */
-	CLUSTER_DATABASE_CHANGE_STATUS("mesh.cluster.db.status"),
+	CLUSTER_DATABASE_CHANGE_STATUS("mesh.cluster.db.status", null),
 
 	/**
 	 * Event which is send to update the permission stores.
 	 */
-	CLEAR_PERMISSION_STORE("mesh.clear-permission-store"),
+	CLEAR_PERMISSION_STORE("mesh.clear-permission-store", null),
 
 	/* User */
 
-	USER_CREATED("mesh.user.created"),
+	USER_CREATED("mesh.user.created", CreatedMeshEventModel.class),
 
-	USER_UPDATED("mesh.user.updated"),
+	USER_UPDATED("mesh.user.updated", UpdatedMeshEventModel.class),
 
-	USER_DELETED("mesh.user.deleted"),
+	USER_DELETED("mesh.user.deleted", DeletedMeshEventModel.class),
 
 	/* Group */
 
-	GROUP_CREATED("mesh.group.created"),
+	GROUP_CREATED("mesh.group.created", null),
 
-	GROUP_UPDATED("mesh.group.updated"),
+	GROUP_UPDATED("mesh.group.updated", null),
 
-	GROUP_DELETED("mesh.group.deleted"),
+	GROUP_DELETED("mesh.group.deleted", null),
 
 	/* Role */
 
-	ROLE_CREATED("mesh.role.created"),
+	ROLE_CREATED("mesh.role.created", null),
 
-	ROLE_UPDATED("mesh.role.updated"),
+	ROLE_UPDATED("mesh.role.updated", null),
 
-	ROLE_DELETED("mesh.role.deleted"),
+	ROLE_DELETED("mesh.role.deleted", null),
 
 	/* Tag */
 
-	TAG_CREATED("mesh.tag.created"),
+	TAG_CREATED("mesh.tag.created", null),
 
-	TAG_UPDATED("mesh.tag.updated"),
+	TAG_UPDATED("mesh.tag.updated", null),
 
-	TAG_DELETED("mesh.tag.deleted"),
+	TAG_DELETED("mesh.tag.deleted", null),
 
 	/* Tag Family */
 
-	TAG_FAMILY_CREATED("mesh.tagfamily.created"),
+	TAG_FAMILY_CREATED("mesh.tagfamily.created", null),
 
-	TAG_FAMILY_UPDATED("mesh.tagfamily.updated"),
+	TAG_FAMILY_UPDATED("mesh.tagfamily.updated", null),
 
-	TAG_FAMILY_DELETED("mesh.tagfamily.deleted"),
+	TAG_FAMILY_DELETED("mesh.tagfamily.deleted", null),
 
 	/* Project */
 
-	PROJECT_CREATED("mesh.project.created"),
+	PROJECT_CREATED("mesh.project.created", null),
 
-	PROJECT_UPDATED("mesh.project.updated"),
+	PROJECT_UPDATED("mesh.project.updated", null),
 
-	PROJECT_DELETED("mesh.project.deleted"),
+	PROJECT_DELETED("mesh.project.deleted", null),
 
 	/* Node */
 
-	NODE_CREATED("mesh.node.created"),
+	NODE_CREATED("mesh.node.created", null),
 
-	NODE_UPDATED("mesh.node.updated"),
+	NODE_UPDATED("mesh.node.updated", null),
 
-	NODE_DELETED("mesh.node.deleted"),
+	NODE_DELETED("mesh.node.deleted", null),
 
 	/* Schema */
 
-	SCHEMA_CREATED("mesh.schema.created"),
+	SCHEMA_CREATED("mesh.schema.created", null),
 
-	SCHEMA_UPDATED("mesh.schema.updated"),
+	SCHEMA_UPDATED("mesh.schema.updated", null),
 
-	SCHEMA_DELETED("mesh.schema.deleted"),
+	SCHEMA_DELETED("mesh.schema.deleted", null),
 
 	/* Microschema */
 
-	MICROSCHEMA_CREATED("mesh.microschema.created"),
+	MICROSCHEMA_CREATED("mesh.microschema.created", null),
 
-	MICROSCHEMA_UPDATED("mesh.microschema.updated"),
+	MICROSCHEMA_UPDATED("mesh.microschema.updated", null),
 
-	MICROSCHEMA_DELETED("mesh.microschema.deleted"),
+	MICROSCHEMA_DELETED("mesh.microschema.deleted", null),
 
 	/* Branch */
 
-	BRANCH_CREATED("mesh.branch.created"),
+	BRANCH_CREATED("mesh.branch.created", null),
 
-	BRANCH_UPDATED("mesh.branch.updated"),
+	BRANCH_UPDATED("mesh.branch.updated", null),
 
-	BRANCH_DELETED("mesh.branch.deleted"),
+	BRANCH_DELETED("mesh.branch.deleted", null),
 
 	/* Search index related */
 
 	/**
 	 * Address for the handler which will process index sync requests.
 	 */
-	INDEX_SYNC_WORKER_ADDRESS("index-sync.worker"),
+	INDEX_SYNC_WORKER_ADDRESS("index-sync.worker", null),
 
 	/**
 	 * Address to which index sync results will be published (failed, succeeded)
 	 */
-	INDEX_SYNC("mesh.search.index.sync");
+	INDEX_SYNC("mesh.search.index.sync", null);
 
 
 	public final String address;
+	public final Class bodyModel;
 
-	MeshEvent(String address) {
+	MeshEvent(String address, Class bodyModel) {
 		this.address = address;
+		this.bodyModel = bodyModel;
 	}
 
 	@Override

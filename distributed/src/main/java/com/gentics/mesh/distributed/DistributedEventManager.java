@@ -1,9 +1,9 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.MeshEvent.CLEAR_PERMISSION_STORE;
-import static com.gentics.mesh.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_LEFT;
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.ONLINE;
 
 import java.util.Map;

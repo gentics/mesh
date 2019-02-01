@@ -1,6 +1,9 @@
-package com.gentics.mesh.event;
+package com.gentics.mesh.core.rest.event;
 
-public interface MeshEventModel {
+import com.gentics.mesh.core.rest.common.RestModel;
+import io.vertx.core.eventbus.Message;
+
+public interface MeshEventModel extends RestModel {
 
 	/**
 	 * Return the uuid of the element which the element references
@@ -31,4 +34,7 @@ public interface MeshEventModel {
 	 */
 	String getAddress();
 
+	static MeshEventModel fromMessage(Message<String> message) {
+		return null;
+	}
 }

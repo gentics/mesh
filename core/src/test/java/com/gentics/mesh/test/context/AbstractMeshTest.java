@@ -38,7 +38,7 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;

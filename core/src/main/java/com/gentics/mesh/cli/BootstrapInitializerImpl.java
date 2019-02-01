@@ -1,6 +1,6 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.MeshEvent.STARTUP;
+import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;

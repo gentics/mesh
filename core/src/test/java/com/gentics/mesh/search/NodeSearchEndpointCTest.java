@@ -1,6 +1,6 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.MeshEvent.INDEX_SYNC;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;

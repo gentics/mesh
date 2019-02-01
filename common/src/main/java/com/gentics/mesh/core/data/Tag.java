@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.TAG_CREATED;
-import static com.gentics.mesh.MeshEvent.TAG_DELETED;
-import static com.gentics.mesh.MeshEvent.TAG_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 
 import java.util.List;
 import java.util.Objects;

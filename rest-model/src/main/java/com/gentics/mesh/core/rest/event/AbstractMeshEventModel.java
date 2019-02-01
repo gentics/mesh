@@ -1,4 +1,4 @@
-package com.gentics.mesh.event;
+package com.gentics.mesh.core.rest.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

@@ -6,7 +6,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
