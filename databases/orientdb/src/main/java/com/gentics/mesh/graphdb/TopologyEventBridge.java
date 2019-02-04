@@ -44,16 +44,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (Mesh.isVertxReady()) {
 			getEventBus().send(EVENT_CLUSTER_NODE_JOINING, nodeName);
 		}
-		String currentVersion = Mesh.getPlainVersion();
-		if (!nodeName.contains("@")) {
-			log.error("Node with name {" + nodeName + "} does not contain version information in the name. Rejecting request to join for that node.");
-			return false;
-		}
-		int idx = nodeName.indexOf("@");
-		String nodeVersion = nodeName.substring(idx + 1);
-		// nodeVersion.replaceAll("-", ".");
-		// TODO validate that the joining node uses the same mesh version as our node. Otherwise the join should be denied.
-		return currentVersion.equals(nodeVersion);
+		return true;
 	}
 
 	@Override
@@ -71,7 +62,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + iNode + "} left the cluster");
 		}
-//		db.removeNode(iNode);
+		// db.removeNode(iNode);
 		if (Mesh.isVertxReady()) {
 			getEventBus().send(EVENT_CLUSTER_NODE_LEFT, iNode);
 		}

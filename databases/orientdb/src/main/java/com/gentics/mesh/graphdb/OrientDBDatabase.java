@@ -380,18 +380,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 		StringBuilder nameBuilder = new StringBuilder();
 		String nodeName = options.getNodeName();
 		nameBuilder.append(nodeName);
-		nameBuilder.append("@");
-		nameBuilder.append(meshVersion);
 
 		// Sanitize the name
 		String name = nameBuilder.toString();
 		name = name.replaceAll(" ", "_");
 		name = name.replaceAll("\\.", "-");
 		return name;
-	}
-
-	public String getClusterName() {
-		return options.getClusterOptions().getClusterName();
 	}
 
 	private void writeOrientBackupConfig(File configFile) throws IOException {
