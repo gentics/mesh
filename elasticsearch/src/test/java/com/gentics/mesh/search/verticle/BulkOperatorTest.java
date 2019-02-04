@@ -1,7 +1,10 @@
 package com.gentics.mesh.search.verticle;
 
-import io.reactivex.Flowable;
-import io.reactivex.subscribers.TestSubscriber;
+import com.gentics.mesh.search.verticle.request.BulkRequest;
+import com.gentics.mesh.search.verticle.request.Bulkable;
+import com.gentics.mesh.search.verticle.request.ElasticSearchRequest;
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
 import io.vertx.core.Vertx;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,17 +34,17 @@ public class BulkOperatorTest {
 	 * @param amounts
 	 * @return
 	 */
-	private Flowable<ElasticSearchRequest> createAlternatingRequests(int ...amounts) {
-		return Flowable.range(0, amounts.length)
+	private Observable<ElasticSearchRequest> createAlternatingRequests(int ...amounts) {
+		return Observable.range(0, amounts.length)
 			.flatMap(i -> i % 2 == 0
-				? Flowable.just(nonBulkable).repeat(amounts[i])
-				: Flowable.just(bulkable).repeat(amounts[i])
+				? Observable.just(nonBulkable).repeat(amounts[i])
+				: Observable.just(bulkable).repeat(amounts[i])
 			);
 	}
 
-	private Flowable<ElasticSearchRequest> createNotCompletedAlternatingRequests(int ...amounts) {
-		return Flowable.merge(
-			Flowable.never(),
+	private Observable<ElasticSearchRequest> createNotCompletedAlternatingRequests(int ...amounts) {
+		return Observable.merge(
+			Observable.never(),
 			createAlternatingRequests(amounts)
 		);
 	}
@@ -72,7 +75,7 @@ public class BulkOperatorTest {
 
 	@Test
 	public void testTimeBasedFlushing() throws InterruptedException {
-		TestSubscriber<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
+		TestObserver<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
 			.lift(bulkOperator)
 			.test();
 
@@ -83,7 +86,7 @@ public class BulkOperatorTest {
 
 	@Test
 	public void testManualFlushing() {
-		TestSubscriber<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
+		TestObserver<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
 			.lift(bulkOperator)
 			.test();
 

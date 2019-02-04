@@ -55,6 +55,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			}
 		}
 
+		waitForSearch();
+
 		String json = getESText("userWildcard.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json, new PagingParametersImpl(2, 25L)));
@@ -72,6 +74,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
+		waitForSearch();
+
 		String json = "someBogusInput";
 		call(() -> client().searchUsers(json), BAD_REQUEST, "search_query_not_parsable");
 	}
@@ -82,6 +86,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		try (Tx tx = tx()) {
 			createUser(username);
 		}
+
+		waitForSearch();
 
 		String json = getESText("userBogusName.es");
 
@@ -97,6 +103,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("username.raw", username)));
 		assertEquals(1, list.getData().size());
 	}
@@ -109,6 +117,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			updateRequest.setLastname(impossibleName);
 			call(() -> client().updateUser(user().getUuid(), updateRequest));
 		}
+
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("lastname.raw", impossibleName)));
 		assertNotNull(list);
 		assertFalse("The user with the name {" + impossibleName + "} could not be found using a simple term query.", list.getData().isEmpty());
@@ -124,6 +135,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			updateRequest.setLastname(impossibleName);
 			call(() -> client().updateUser(user().getUuid(), updateRequest));
 		}
+
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleWildCardQuery("lastname.raw", "*" + impossibleName + "*")));
 		assertNotNull(list);
 		assertFalse(list.getData().isEmpty());
@@ -139,6 +153,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			updateRequest.setLastname(impossibleName);
 			call(() -> client().updateUser(user().getUuid(), updateRequest));
 		}
+
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleWildCardQuery("lastname.raw", "*" + impossibleName.toLowerCase() + "*")));
 
 		assertNotNull(list);
@@ -158,6 +175,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		request.setGroupUuid(db().tx(() -> group().getUuid()));
 
 		call(() -> client().createUser(request));
+
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleWildCardQuery("emailaddress", "*")));
 		assertEquals("We expected to see one result.", 1, list.getData().size());
 	}
@@ -170,6 +190,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		try (Tx tx = tx()) {
 			createUser(username);
 		}
+
+		waitForSearch();
 
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())));
 		assertEquals("We expected to see one result.", 1, list.getData().size());
@@ -188,6 +210,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		call(() -> client().createUser(request));
 
+		waitForSearch();
+
 		UserListResponse searchResponse = client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())).blockingGet();
 		assertEquals("We expected to see one result.", 1, searchResponse.getData().size());
 	}
@@ -199,14 +223,20 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		String groupName = group.getName();
 		String username = "extrauser42a";
 
+		System.out.println("gROUP: " + group.getUuid());
+
 		// 2. Create a new user
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);
 		request.setPassword("test1234");
 		UserResponse user = call(() -> client().createUser(request));
 
+
 		// 3. Assign the previously created user to the group
 		call(() -> client().addUserToGroup(group.getUuid(), user.getUuid()));
+
+
+		waitForSearch();
 
 		// Check whether the user index was updated
 		UserListResponse response = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())));
@@ -233,6 +263,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		call(() -> client().removeUserFromGroup(group.getUuid(), userUuid));
 
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())));
 		assertEquals(0, list.getData().size());
 
@@ -254,6 +286,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		String userUuid = user.getUuid();
 		call(() -> client().deleteUser(userUuid));
 
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase())));
 		assertEquals(0, list.getData().size());
 	}
@@ -266,6 +300,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		try (Tx tx = tx()) {
 			createUser(username);
 		}
+
+		waitForSearch();
 
 		UserListResponse list = call(
 			() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0L)));
@@ -282,6 +318,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			call(() -> client().deleteUser(user.getUuid()));
 		}
 
+		waitForSearch();
+
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("username", userName)));
 		assertEquals(0, list.getData().size());
 	}
@@ -295,6 +333,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			UserResponse user = createUser(userName);
 			user = updateUser(user.getUuid(), newUserName);
 		}
+
+		waitForSearch();
 
 		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("username.raw", userName)));
 		assertEquals(0, list.getData().size());

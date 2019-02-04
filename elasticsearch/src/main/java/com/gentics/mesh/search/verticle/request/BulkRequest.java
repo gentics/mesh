@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.verticle;
+package com.gentics.mesh.search.verticle.request;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import io.reactivex.Completable;

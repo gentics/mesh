@@ -71,19 +71,19 @@ public enum MeshEvent {
 
 	/* Group */
 
-	GROUP_CREATED("mesh.group.created", null),
+	GROUP_CREATED("mesh.group.created", CreatedMeshEventModel.class),
 
-	GROUP_UPDATED("mesh.group.updated", null),
+	GROUP_UPDATED("mesh.group.updated", UpdatedMeshEventModel.class),
 
-	GROUP_DELETED("mesh.group.deleted", null),
+	GROUP_DELETED("mesh.group.deleted", DeletedMeshEventModel.class),
 
 	/* Role */
 
-	ROLE_CREATED("mesh.role.created", null),
+	ROLE_CREATED("mesh.role.created", CreatedMeshEventModel.class),
 
-	ROLE_UPDATED("mesh.role.updated", null),
+	ROLE_UPDATED("mesh.role.updated", UpdatedMeshEventModel.class),
 
-	ROLE_DELETED("mesh.role.deleted", null),
+	ROLE_DELETED("mesh.role.deleted", DeletedMeshEventModel.class),
 
 	/* Tag */
 

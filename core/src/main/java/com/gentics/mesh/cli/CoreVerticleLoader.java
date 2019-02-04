@@ -16,6 +16,7 @@ import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.AbstractVerticle;
@@ -46,7 +47,7 @@ public class CoreVerticleLoader {
 	public Provider<ElasticsearchSyncVerticle> indexSyncVerticle;
 
 	@Inject
-	public Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticle;
+	public Lazy<ElasticsearchProcessVerticle> elasticsearchProcessVerticle;
 
 	@Inject
 	public MeshOptions configuration;

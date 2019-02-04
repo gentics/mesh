@@ -608,8 +608,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * Flushes the search request queue and waits until all requests have been sent successfully.
 	 */
 	protected void waitForSearch() {
-		ElasticsearchProcessVerticle verticle = ((BootstrapInitializerImpl) boot()).loader.get().elasticsearchProcessVerticle;
-		verticle.flush();
+		ElasticsearchProcessVerticle verticle = ((BootstrapInitializerImpl) boot()).loader.get().elasticsearchProcessVerticle.get();
 		if (verticle.isIdle()) {
 			verticle.refresh().blockingAwait();
 			return;

@@ -580,7 +580,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (modified) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
-			batch.add(onUpdated());
 		}
 		return modified;
 	}

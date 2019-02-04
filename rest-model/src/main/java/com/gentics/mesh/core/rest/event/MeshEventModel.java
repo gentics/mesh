@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 public interface MeshEventModel extends RestModel {
 
@@ -55,12 +56,13 @@ public interface MeshEventModel extends RestModel {
 	 * @param message
 	 * @return
 	 */
-	static MeshEventModel fromMessage(Message<String> message) {
+	static MeshEventModel fromMessage(Message<JsonObject> message) {
 		String address = message.address();
 		MeshEvent event = MeshEvent.fromAddress(address)
 			.orElseThrow(() -> new RuntimeException(String.format("No event found for address %s", address)));
 
-		return (MeshEventModel) JsonUtil.readValue(message.body(), event.bodyModel);
+		// TODO Find better way to deserialize
+		return (MeshEventModel) JsonUtil.readValue(message.body().toString(), event.bodyModel);
 	}
 
 }
