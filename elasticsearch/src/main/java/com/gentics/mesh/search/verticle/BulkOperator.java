@@ -83,7 +83,7 @@ public class BulkOperator implements FlowableOperator<ElasticSearchRequest, Elas
 				}
 			}
 
-
+			@Override
 			public void flush() {
 				cancelTimer();
 				if (!bulkableRequests.isEmpty()) {
@@ -91,6 +91,11 @@ public class BulkOperator implements FlowableOperator<ElasticSearchRequest, Elas
 					bulkableRequests.clear();
 					observer.onNext(request);
 				}
+			}
+
+			@Override
+			public boolean bulking() {
+				return timer != null;
 			}
 
 			@Override
@@ -116,7 +121,20 @@ public class BulkOperator implements FlowableOperator<ElasticSearchRequest, Elas
 		}
 	}
 
+	/**
+	 * Tests if there are requests that are currently held back and waiting to be bulked.
+	 * @return
+	 */
+	public boolean bulking() {
+		if (subscriber != null) {
+			return subscriber.bulking();
+		} else {
+			return false;
+		}
+	}
+
 	interface FlushSubscriber<T> extends Subscriber<T> {
 		void flush();
+		boolean bulking();
 	}
 }

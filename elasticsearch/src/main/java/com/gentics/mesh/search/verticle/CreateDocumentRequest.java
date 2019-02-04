@@ -30,7 +30,7 @@ public class CreateDocumentRequest implements Bulkable {
 			new JsonObject()
 				.put("index", new JsonObject()
 					.put("_index", index)
-					.put("_type", "_doc")
+					.put("_type", SearchProvider.DEFAULT_TYPE)
 					.put("_id", id)
 				).encode(),
 			doc.encode()

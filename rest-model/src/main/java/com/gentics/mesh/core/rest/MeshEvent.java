@@ -2,6 +2,11 @@ package com.gentics.mesh.core.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
@@ -146,11 +151,36 @@ public enum MeshEvent {
 	/**
 	 * Address to which index sync results will be published (failed, succeeded)
 	 */
-	INDEX_SYNC("mesh.search.index.sync", null);
+	INDEX_SYNC("mesh.search.index.sync", null),
 
+	/**
+	 * Event that is emitted when the search verticle has been working and is now idle.
+	 */
+	SEARCH_IDLE("mesh.search.process.idle", null);
 
 	public final String address;
 	public final Class bodyModel;
+
+	private static final Map<String, MeshEvent> events = createEventMap();
+
+	/**
+	 * Gets the event with the given address.
+	 * Returns an empty optional if the address is invalid.
+	 *
+	 * @param address
+	 * @return
+	 */
+	public static Optional<MeshEvent> fromAddress(String address) {
+		return Optional.ofNullable(events.get(address));
+	}
+
+	private static Map<String, MeshEvent> createEventMap() {
+		return Stream.of(values())
+			.collect(Collectors.toMap(
+				MeshEvent::getAddress,
+				Function.identity()
+			));
+	}
 
 	MeshEvent(String address, Class bodyModel) {
 		this.address = address;

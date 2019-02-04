@@ -36,6 +36,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
+		waitForSearch();
+
 		String json = getESText("userWildcard.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
