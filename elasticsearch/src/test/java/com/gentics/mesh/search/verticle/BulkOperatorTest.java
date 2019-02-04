@@ -24,12 +24,26 @@ public class BulkOperatorTest {
 		bulkOperator = new BulkOperator(Vertx.vertx(), Duration.ofMillis(bulkTime), 1000);
 	}
 
+	/**
+	 * Creates a flowable that emits certain amounts of requests.
+	 * The first number is the amount of non bulkable requests, the second the number of bulkable requests.
+	 *
+	 * @param amounts
+	 * @return
+	 */
 	private Flowable<ElasticSearchRequest> createAlternatingRequests(int ...amounts) {
 		return Flowable.range(0, amounts.length)
 			.flatMap(i -> i % 2 == 0
 				? Flowable.just(nonBulkable).repeat(amounts[i])
 				: Flowable.just(bulkable).repeat(amounts[i])
 			);
+	}
+
+	private Flowable<ElasticSearchRequest> createNotCompletedAlternatingRequests(int ...amounts) {
+		return Flowable.merge(
+			Flowable.never(),
+			createAlternatingRequests(amounts)
+		);
 	}
 
 	@Test
@@ -58,14 +72,33 @@ public class BulkOperatorTest {
 
 	@Test
 	public void testTimeBasedFlushing() throws InterruptedException {
-		TestSubscriber<ElasticSearchRequest> test = Flowable.merge(
-			Flowable.never(),
-			createAlternatingRequests(1, 3)
-		).lift(bulkOperator)
+		TestSubscriber<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
+			.lift(bulkOperator)
 			.test();
 
 		test.assertValueCount(1);
 		test.await(bulkTime * 2, TimeUnit.MILLISECONDS);
 		test.assertValueCount(2);
+	}
+
+	@Test
+	public void testManualFlushing() {
+		TestSubscriber<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
+			.lift(bulkOperator)
+			.test();
+
+		test.assertValueCount(1);
+		test.assertValueAt(0, this::isNonBulkRequest);
+		bulkOperator.flush();
+		test.assertValueCount(2);
+		test.assertValueAt(1, this::isBulkRequest);
+	}
+
+	private boolean isBulkRequest(ElasticSearchRequest request) {
+		return request instanceof BulkRequest;
+	}
+
+	private boolean isNonBulkRequest(ElasticSearchRequest request) {
+		return request == nonBulkable;
 	}
 }

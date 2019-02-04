@@ -1,20 +1,23 @@
 package com.gentics.mesh.search.verticle;
 
 import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.impl.SearchClient;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
+	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessVerticle.class);
 
 	private final Eventhandler eventhandler;
 	private final SearchClient elasticSearchClient;
+	private final BulkOperator bulker;
 
 	private Subject<MessageEvent> requests = PublishSubject.create();
 
@@ -22,6 +25,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	public ElasticsearchProcessVerticle(Eventhandler eventhandler, SearchClient elasticSearchClient) {
 		this.eventhandler = eventhandler;
 		this.elasticSearchClient = elasticSearchClient;
+		bulker = new BulkOperator(vertx);
 	}
 
 	@Override
@@ -39,12 +43,20 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		requests.onComplete();
 	}
 
+	/**
+	 * Flushes the buffer of elastic search requests and dispatches all pending requests.
+	 */
+	public void flush() {
+		bulker.flush();
+	}
+
 	private void assemble() {
 		requests.toFlowable(BackpressureStrategy.MISSING)
 			.onBackpressureBuffer(1000)
 			.concatMap(this::generateRequests)
-			.lift(new BulkOperator(vertx))
-			.concatMap(request -> request.execute(elasticSearchClient).toFlowable())
+			.lift(bulker)
+			.concatMap(request -> request.execute(elasticSearchClient).toFlowable()
+				.doOnSubscribe(ignore -> log.trace("Sending request to ElasticSearch: " + request)))
 			.subscribe();
 	}
 

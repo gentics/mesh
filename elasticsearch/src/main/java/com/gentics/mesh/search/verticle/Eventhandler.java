@@ -16,8 +16,11 @@ import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.role.RoleTransformer;
 import com.gentics.mesh.search.index.user.UserTransformer;
+import com.syncleus.ferma.tx.TxAction;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 import java.security.InvalidParameterException;
@@ -32,6 +35,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 
 public class Eventhandler {
+	private static final Logger log = LoggerFactory.getLogger(Eventhandler.class);
+
 	private final BootstrapInitializer boot;
 	private final Database db;
 	private final UserTransformer userTransformer;
@@ -78,7 +83,8 @@ public class Eventhandler {
 
 	private <T extends MeshCoreVertex<? extends RestModel, T>> Function<CreatedMeshEventModel, List<ElasticSearchRequest>> createGenerator(Transformer<T> transformer, RootVertex<T> root, String indexName) {
 		return event -> {
-			JsonObject document = transformer.toDocument(root.findByUuid(event.getUuid()));
+			JsonObject document = db.tx((TxAction<JsonObject>) tx -> transformer.toDocument(root.findByUuid(event.getUuid())));
+			log.trace(String.format("Transforming document with uuid {%s} with transformer {%s}", event.getUuid(), transformer.getClass().getSimpleName()));
 			return Collections.singletonList(new CreateDocumentRequest(prefixIndexName(indexName), event.getUuid(), document));
 		};
 	}

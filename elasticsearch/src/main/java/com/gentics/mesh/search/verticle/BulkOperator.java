@@ -2,17 +2,34 @@ package com.gentics.mesh.search.verticle;
 
 import io.reactivex.FlowableOperator;
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * An operator for Observables that bulks elastic search requests together.
+ * This will emit all non-bulkable requests immediately.
+ * Bulkable requests will be held back and bundled together. The bundled request will be emitted when one of the
+ * following happens:
+ * <ul>
+ *     <li>The bulk timer has reached its limit</li>
+ *     <li>The request amount limit is reached</li>
+ *     <li>The flush method is called</li>
+ *     <li>The upstream has emitted a complete notification</li>
+ * </ul>
+ */
 public class BulkOperator implements FlowableOperator<ElasticSearchRequest, ElasticSearchRequest> {
+	private static final Logger log = LoggerFactory.getLogger(BulkOperator.class);
+
 	private final Vertx vertx;
 	private final long bulkTime;
 	private final int requestLimit;
+	private FlushSubscriber<ElasticSearchRequest> subscriber;
 
 	public BulkOperator(Vertx vertx) {
 		this(vertx, Duration.ofSeconds(10), 1000);
@@ -26,10 +43,11 @@ public class BulkOperator implements FlowableOperator<ElasticSearchRequest, Elas
 
 	@Override
 	public Subscriber<? super ElasticSearchRequest> apply(Subscriber<? super ElasticSearchRequest> observer) throws Exception {
-		return new Subscriber<ElasticSearchRequest>() {
+		log.warn("More than one observer for the same operator detected. Flush will only work for the newest observer.");
+		subscriber = new FlushSubscriber<ElasticSearchRequest>() {
 			private Long timer;
 			Subscription sub;
-			List<Bulkable> bulkableRequests = new ArrayList<>(requestLimit);
+			Queue<Bulkable> bulkableRequests = new ConcurrentLinkedQueue<>();
 
 			@Override
 			public void onSubscribe(Subscription s) {
@@ -45,17 +63,17 @@ public class BulkOperator implements FlowableOperator<ElasticSearchRequest, Elas
 					}
 					bulkableRequests.add((Bulkable) elasticSearchRequest);
 					if (bulkableRequests.size() >= requestLimit) {
-						flushBulk();
+						flush();
 					}
 				} else {
-					flushBulk();
+					flush();
 					observer.onNext(elasticSearchRequest);
 				}
 			}
 
 			private void resetTimer() {
 				cancelTimer();
-				timer = vertx.setTimer(bulkTime, l -> flushBulk());
+				timer = vertx.setTimer(bulkTime, l -> flush());
 			}
 
 			private void cancelTimer() {
@@ -65,7 +83,8 @@ public class BulkOperator implements FlowableOperator<ElasticSearchRequest, Elas
 				}
 			}
 
-			private void flushBulk() {
+
+			public void flush() {
 				cancelTimer();
 				if (!bulkableRequests.isEmpty()) {
 					BulkRequest request = new BulkRequest(bulkableRequests);
@@ -81,9 +100,23 @@ public class BulkOperator implements FlowableOperator<ElasticSearchRequest, Elas
 
 			@Override
 			public void onComplete() {
-				flushBulk();
+				flush();
 				observer.onComplete();
 			}
 		};
+		return subscriber;
+	}
+
+	/**
+	 * Bundles the bulkable requests and flushes a single {@link BulkRequest} if there is at least one bulkable request.
+	 */
+	public void flush() {
+		if (subscriber != null) {
+			subscriber.flush();
+		}
+	}
+
+	interface FlushSubscriber<T> extends Subscriber<T> {
+		void flush();
 	}
 }

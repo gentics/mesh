@@ -4,6 +4,7 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +13,7 @@ public class BulkRequest implements Bulkable {
 
 	private final String actions;
 
-	public BulkRequest(List<Bulkable> requests) {
+	public BulkRequest(Collection<Bulkable> requests) {
 		actions = requests.stream()
 			.flatMap(bulkable -> bulkable.toBulkActions().stream())
 			.collect(Collectors.joining("\n"));
@@ -20,11 +21,16 @@ public class BulkRequest implements Bulkable {
 
 	@Override
 	public Completable execute(ElasticsearchClient<JsonObject> client) {
-		return client.processBulk(actions).async().toCompletable();
+		return client.processBulk(actions + "\n").async().toCompletable();
 	}
 
 	@Override
 	public List<String> toBulkActions() {
 		return Collections.singletonList(actions);
+	}
+
+	@Override
+	public String toString() {
+		return actions;
 	}
 }
