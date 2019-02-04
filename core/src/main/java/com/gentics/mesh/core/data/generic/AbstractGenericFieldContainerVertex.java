@@ -67,7 +67,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	/**
 	 * Optionally creates a new field container for the given container type and language.
 	 * 
-	 * @param language
+	 * @param languageTag
 	 *            Language of the field container
 	 * @param classOfU
 	 *            Container implementation class to be used for element creation

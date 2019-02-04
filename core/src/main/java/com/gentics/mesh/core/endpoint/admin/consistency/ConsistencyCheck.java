@@ -28,7 +28,7 @@ public interface ConsistencyCheck {
 	 * @param vertex
 	 * @param edgeLabel
 	 * @param clazz
-	 * @param response
+	 * @param result
 	 * @param severity
 	 * @param edges
 	 */
@@ -60,7 +60,7 @@ public interface ConsistencyCheck {
 	 * @param vertex
 	 * @param edgeLabel
 	 * @param clazz
-	 * @param response
+	 * @param result
 	 * @param severity
 	 * @param edges
 	 */
