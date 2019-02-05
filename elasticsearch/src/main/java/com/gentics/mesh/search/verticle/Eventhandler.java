@@ -20,8 +20,7 @@ import com.gentics.mesh.search.index.role.RoleTransformer;
 import com.gentics.mesh.search.index.user.UserTransformer;
 import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
 import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
-import com.gentics.mesh.search.verticle.request.ElasticSearchRequest;
-import com.gentics.mesh.search.verticle.request.UpdateDocumentRequest;
+import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import com.gentics.mesh.util.Tuple;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonObject;
@@ -67,7 +66,7 @@ public class Eventhandler {
 	private final RoleTransformer roleTransformer;
 	private final MeshOptions options;
 
-	private final Map<MeshEvent, Function<MeshEventModel, List<ElasticSearchRequest>>> handlers = new HashMap<>();
+	private final Map<MeshEvent, Function<MeshEventModel, List<ElasticsearchRequest>>> handlers = new HashMap<>();
 	// TODO Replace tuple with more semantic class
 	private final List<VertexTransformer> transformers = new ArrayList<>();
 
@@ -111,7 +110,7 @@ public class Eventhandler {
 
 	}
 
-	private <T> void addHandler(MeshEvent event, Class<T> clazz, Function<T, List<ElasticSearchRequest>> generator) {
+	private <T> void addHandler(MeshEvent event, Class<T> clazz, Function<T, List<ElasticsearchRequest>> generator) {
 		handlers.put(event, msg -> {
 			if (msg.getClass().isAssignableFrom(clazz)) {
 				return generator.apply((T) msg);
@@ -124,7 +123,7 @@ public class Eventhandler {
 	private <T extends MeshCoreVertex<? extends RestModel, T>> void addCreateHandler(MeshEvent event, Transformer<T> transformer, RootVertex<T> root, String indexName) {
 		addHandler(event, CreatedMeshEventModel.class, eventModel ->
 			getDocument(transformer, root, eventModel.getUuid())
-				.map(document -> Collections.singletonList((ElasticSearchRequest) new CreateDocumentRequest(prefixIndexName(indexName), eventModel.getUuid(), document)))
+				.map(document -> Collections.singletonList((ElasticsearchRequest) new CreateDocumentRequest(prefixIndexName(indexName), eventModel.getUuid(), document)))
 				.orElse(Collections.emptyList())
 		);
 	}
@@ -133,7 +132,7 @@ public class Eventhandler {
 		addHandler(event, UpdatedMeshEventModel.class, eventModel ->
 			getDocument(transformer, root, eventModel.getUuid())
 				// TODO Maybe use UpdateDocumentRequest? Create is more resilient because it basically is an upsert
-				.map(document -> Collections.singletonList((ElasticSearchRequest) new CreateDocumentRequest(prefixIndexName(indexName), eventModel.getUuid(), document)))
+				.map(document -> Collections.singletonList((ElasticsearchRequest) new CreateDocumentRequest(prefixIndexName(indexName), eventModel.getUuid(), document)))
 				.orElse(Collections.emptyList())
 		);
 	}
@@ -176,14 +175,14 @@ public class Eventhandler {
 	}
 
 	/**
-	 * Handles an event from mesh. Creates elastic search document from the data of the graph and creates a list
+	 * Handles an event from mesh. Creates elasticsearch document from the data of the graph and creates a list
 	 * of requests that represent the data that was changed during the event.
 	 *
 	 * @param messageEvent
 	 * @return
 	 * @throws Exception
 	 */
-	public List<ElasticSearchRequest> handle(MessageEvent messageEvent) throws Exception {
+	public List<ElasticsearchRequest> handle(MessageEvent messageEvent) throws Exception {
 		return handlers.get(messageEvent.event).apply(messageEvent.message);
 	}
 

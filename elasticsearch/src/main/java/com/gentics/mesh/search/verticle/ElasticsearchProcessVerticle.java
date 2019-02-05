@@ -3,7 +3,7 @@ package com.gentics.mesh.search.verticle;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.search.impl.SearchClient;
-import com.gentics.mesh.search.verticle.request.ElasticSearchRequest;
+import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -46,7 +46,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	@Override
 	public void start() {
-		log.trace("Initializing ElasticSearch process verticle");
+		log.trace("Initializing Elasticsearch process verticle");
 		assemble();
 
 		vertxHandlers = eventhandler.getHandledEvents()
@@ -73,7 +73,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	}
 
 	/**
-	 * Flushes the buffer of elastic search requests and dispatches all pending requests.
+	 * Flushes the buffer of Elasticsearch requests and dispatches all pending requests.
 	 */
 	public Completable flush() {
 		return Completable.defer(() -> {
@@ -85,17 +85,17 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	}
 
 	/**
-	 * Refreshes the ElasticSearch indices so that all changes are readable
+	 * Refreshes the Elasticsearch indices so that all changes are readable
 	 * @return
 	 */
 	public Completable refresh() {
 		return elasticSearchClient.refresh().async()
 			.doOnSuccess(response -> {
 				if (log.isTraceEnabled()) {
-					log.trace("Refreshing response from ElasticSearch:\n" + response.encodePrettily());
+					log.trace("Refreshing response from Elasticsearch:\n" + response.encodePrettily());
 				}
 			}).toCompletable()
-			.doOnSubscribe(ignore -> log.trace("Refreshing all ElasticSearch indices..."));
+			.doOnSubscribe(ignore -> log.trace("Refreshing all Elasticsearch indices..."));
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.doOnNext(ignore -> pendingRequests.incrementAndGet())
 			.concatMap(request ->
 				request.execute(elasticSearchClient).andThen(Observable.just(request))
-					.doOnSubscribe(ignore -> log.trace("Sending request to ElasticSearch:\n" + request)),
+					.doOnSubscribe(ignore -> log.trace("Sending request to Elasticsearch:\n" + request)),
 				1
 			)
 			.subscribe(request -> {
@@ -136,9 +136,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			});
 	}
 
-	private Flowable<ElasticSearchRequest> generateRequests(MessageEvent messageEvent) {
+	private Flowable<ElasticsearchRequest> generateRequests(MessageEvent messageEvent) {
 		try {
-			List<ElasticSearchRequest> esRequests = this.eventhandler.handle(messageEvent);
+			List<ElasticsearchRequest> esRequests = this.eventhandler.handle(messageEvent);
 			pendingTransformations.decrementAndGet();
 			return Flowable.fromIterable(esRequests);
 		} catch (Exception e) {

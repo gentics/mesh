@@ -2,7 +2,7 @@ package com.gentics.mesh.search.verticle;
 
 import com.gentics.mesh.search.verticle.request.BulkRequest;
 import com.gentics.mesh.search.verticle.request.Bulkable;
-import com.gentics.mesh.search.verticle.request.ElasticSearchRequest;
+import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 import io.vertx.core.Vertx;
@@ -15,14 +15,14 @@ import java.util.concurrent.TimeUnit;
 import static org.mockito.Mockito.mock;
 
 public class BulkOperatorTest {
-	private ElasticSearchRequest nonBulkable;
+	private ElasticsearchRequest nonBulkable;
 	private Bulkable bulkable;
 	private BulkOperator bulkOperator;
 	private static final int bulkTime = 50;
 
 	@Before
 	public void setUp() throws Exception {
-		nonBulkable = mock(ElasticSearchRequest.class);
+		nonBulkable = mock(ElasticsearchRequest.class);
 		bulkable = mock(Bulkable.class);
 		bulkOperator = new BulkOperator(Vertx.vertx(), Duration.ofMillis(bulkTime), 1000);
 	}
@@ -34,7 +34,7 @@ public class BulkOperatorTest {
 	 * @param amounts
 	 * @return
 	 */
-	private Observable<ElasticSearchRequest> createAlternatingRequests(int ...amounts) {
+	private Observable<ElasticsearchRequest> createAlternatingRequests(int ...amounts) {
 		return Observable.range(0, amounts.length)
 			.flatMap(i -> i % 2 == 0
 				? Observable.just(nonBulkable).repeat(amounts[i])
@@ -42,7 +42,7 @@ public class BulkOperatorTest {
 			);
 	}
 
-	private Observable<ElasticSearchRequest> createNotCompletedAlternatingRequests(int ...amounts) {
+	private Observable<ElasticsearchRequest> createNotCompletedAlternatingRequests(int ...amounts) {
 		return Observable.merge(
 			Observable.never(),
 			createAlternatingRequests(amounts)
@@ -75,7 +75,7 @@ public class BulkOperatorTest {
 
 	@Test
 	public void testTimeBasedFlushing() throws InterruptedException {
-		TestObserver<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
+		TestObserver<ElasticsearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
 			.lift(bulkOperator)
 			.test();
 
@@ -86,7 +86,7 @@ public class BulkOperatorTest {
 
 	@Test
 	public void testManualFlushing() {
-		TestObserver<ElasticSearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
+		TestObserver<ElasticsearchRequest> test = createNotCompletedAlternatingRequests(1, 3)
 			.lift(bulkOperator)
 			.test();
 
@@ -97,11 +97,11 @@ public class BulkOperatorTest {
 		test.assertValueAt(1, this::isBulkRequest);
 	}
 
-	private boolean isBulkRequest(ElasticSearchRequest request) {
+	private boolean isBulkRequest(ElasticsearchRequest request) {
 		return request instanceof BulkRequest;
 	}
 
-	private boolean isNonBulkRequest(ElasticSearchRequest request) {
+	private boolean isNonBulkRequest(ElasticsearchRequest request) {
 		return request == nonBulkable;
 	}
 }

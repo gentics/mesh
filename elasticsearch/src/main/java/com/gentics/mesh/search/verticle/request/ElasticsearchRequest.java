@@ -4,6 +4,6 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
 
-public interface ElasticSearchRequest {
+public interface ElasticsearchRequest {
 	Completable execute(ElasticsearchClient<JsonObject> client);
 }

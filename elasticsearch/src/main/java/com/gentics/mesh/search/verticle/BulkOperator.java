@@ -2,7 +2,7 @@ package com.gentics.mesh.search.verticle;
 
 import com.gentics.mesh.search.verticle.request.BulkRequest;
 import com.gentics.mesh.search.verticle.request.Bulkable;
-import com.gentics.mesh.search.verticle.request.ElasticSearchRequest;
+import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import io.reactivex.ObservableOperator;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -26,13 +26,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *     <li>The upstream has emitted a complete notification</li>
  * </ul>
  */
-public class BulkOperator implements ObservableOperator<ElasticSearchRequest, ElasticSearchRequest> {
+public class BulkOperator implements ObservableOperator<ElasticsearchRequest, ElasticsearchRequest> {
 	private static final Logger log = LoggerFactory.getLogger(BulkOperator.class);
 
 	private final Vertx vertx;
 	private final long bulkTime;
 	private final int requestLimit;
-	private FlushSubscriber<ElasticSearchRequest> subscriber;
+	private FlushSubscriber<ElasticsearchRequest> subscriber;
 
 	public BulkOperator(Vertx vertx) {
 		this(vertx, Duration.ofSeconds(10), 1000);
@@ -45,9 +45,9 @@ public class BulkOperator implements ObservableOperator<ElasticSearchRequest, El
 	}
 
 	@Override
-	public Observer<? super ElasticSearchRequest> apply(Observer<? super ElasticSearchRequest> observer) throws Exception {
+	public Observer<? super ElasticsearchRequest> apply(Observer<? super ElasticsearchRequest> observer) throws Exception {
 		log.warn("More than one observer for the same operator detected. Flush will only work for the newest observer.");
-		subscriber = new FlushSubscriber<ElasticSearchRequest>() {
+		subscriber = new FlushSubscriber<ElasticsearchRequest>() {
 			private Long timer;
 			Disposable sub;
 			Queue<Bulkable> bulkableRequests = new ConcurrentLinkedQueue<>();
@@ -59,7 +59,7 @@ public class BulkOperator implements ObservableOperator<ElasticSearchRequest, El
 			}
 
 			@Override
-			public void onNext(ElasticSearchRequest elasticSearchRequest) {
+			public void onNext(ElasticsearchRequest elasticSearchRequest) {
 				if (elasticSearchRequest instanceof Bulkable) {
 					if (bulkableRequests.isEmpty()) {
 						resetTimer();

@@ -27,7 +27,7 @@ public class BulkRequest implements Bulkable {
 		return client.processBulk(actions + "\n").async()
 			.doOnSuccess(response -> {
 				if (log.isTraceEnabled()) {
-					log.trace("Response from ElasticSearch:\n" + response.encodePrettily());
+					log.trace("Response from Elasticsearch:\n" + response.encodePrettily());
 				}
 			})
 			.toCompletable();
