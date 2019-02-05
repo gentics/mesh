@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 
@@ -40,6 +41,9 @@ public class CoreVerticleLoader {
 
 	@Inject
 	public ElasticsearchSyncVerticle indexSyncVerticle;
+
+	@Inject
+	public MeshOptions meshOptions;
 
 	@Inject
 	public CoreVerticleLoader() {
@@ -100,7 +104,11 @@ public class CoreVerticleLoader {
 	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
-		verticles.add(indexSyncVerticle);
+		// Only deploy search sync verticle if we actually have a configured ES
+		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		if (searchOptions != null && searchOptions.getUrl() != null) {
+			verticles.add(indexSyncVerticle);
+		}
 		return verticles;
 	}
 

@@ -23,6 +23,13 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.29.7]]
+== 0.29.6 (05.02.2019)
+
+icon:check[] Clustering: The default write `writeQuorum` has been set to `majority` to increase cluster stability. A `writeQuorum` of `1` can cause synchronization issues.
+
+icon:check[] Elasticsearch: The Elasticsearch synchronization verticle will no longer be deployed when no Elasticsearch has been configured.
+
 [[v0.29.6]]
 == 0.29.6 (01.02.2019)
 
