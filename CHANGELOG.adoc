@@ -21,7 +21,13 @@ title: Changelog
 
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
-* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
+"elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+
+[[v0.29.9]]
+== 0.29.9 (07.02.2019)
+
+icon:check[] Clustering: Cluster stability has been increased by reducing concurrent create/update requests.
 
 [[v0.29.8]]
 == 0.29.8 (05.02.2019)
