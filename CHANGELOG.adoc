@@ -21,7 +21,25 @@ title: Changelog
 
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
-* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
+"elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+
+[[v0.29.9]]
+== 0.29.9 (07.02.2019)
+
+icon:check[] Clustering: Cluster stability has been increased by reducing concurrent create/update requests.
+
+[[v0.29.8]]
+== 0.29.8 (05.02.2019)
+
+icon:check[] Clustering: The mesh version will no longer be appended  to the node name used for OrientDB clustering. It is recommended to sanitize the `data/graphdb/storage/distributed-db-config.json` file and remove/rename entries which reference older mesh nodes. Only the active nodes should be listed in the file.
+
+[[v0.29.7]]
+== 0.29.7 (05.02.2019)
+
+icon:check[] Clustering: The default write `writeQuorum` has been set to `majority` to increase cluster stability. A `writeQuorum` of `1` can cause synchronization issues.
+
+icon:check[] Elasticsearch: The Elasticsearch synchronization verticle will no longer be deployed when no Elasticsearch has been configured.
 
 [[v0.30.0]]
 == 0.30.0 (TBD)

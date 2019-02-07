@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -52,11 +54,13 @@ public class HandlerUtilities {
 
 	private Database database;
 	private SearchQueue searchQueue;
+	private final MeshOptions meshOptions;
 
 	@Inject
-	public HandlerUtilities(Database database, SearchQueue searchQueue) {
+	public HandlerUtilities(Database database, SearchQueue searchQueue, MeshOptions meshOptions) {
 		this.searchQueue = searchQueue;
 		this.database = database;
+		this.meshOptions = meshOptions;
 	}
 
 	/**
@@ -122,6 +126,8 @@ public class HandlerUtilities {
 		createOrUpdateElement(ac, uuid, handler);
 	}
 
+	private static Semaphore tempLock = new Semaphore(1);
+
 	/**
 	 * Either create or update an element with the given uuid.
 	 * 
@@ -133,61 +139,80 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
+
+		boolean clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
+
+		if (clustered) {
+			try {
+				tempLock.acquire();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		AtomicBoolean created = new AtomicBoolean(false);
 		asyncTx(ac, (tx) -> {
-			RootVertex<T> root = handler.handle();
+			try {
+				RootVertex<T> root = handler.handle();
 
-			// 1. Load the element from the root element using the given uuid (if not null)
-			T element = null;
-			if (uuid != null) {
-				if (!UUIDUtil.isUUID(uuid)) {
-					throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+				// 1. Load the element from the root element using the given uuid (if not null)
+				T element = null;
+				if (uuid != null) {
+					if (!UUIDUtil.isUUID(uuid)) {
+						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+					}
+					element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
 				}
-				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
-			}
 
-			ResultInfo info = null;
+				ResultInfo info = null;
 
-			// Check whether we need to update a found element or whether we need to create a new one.
-			if (element != null) {
-				final T updateElement = element;
-				Tuple<Boolean, SearchQueueBatch> tuple = database.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
-					boolean updated = updateElement.update(ac, batch);
-					return Tuple.tuple(updated, batch);
-				});
+				// Check whether we need to update a found element or whether we need to create a new one.
+				if (element != null) {
+					final T updateElement = element;
+					Tuple<Boolean, SearchQueueBatch> tuple = database.tx(() -> {
+						SearchQueueBatch batch = searchQueue.create();
+						boolean updated = updateElement.update(ac, batch);
+						return Tuple.tuple(updated, batch);
+					});
 
-				SearchQueueBatch b = tuple.v2();
-				Boolean isUpdated = tuple.v1();
-				RM model = updateElement.transformToRestSync(ac, 0);
-				info = new ResultInfo(model, b);
-				if (isUpdated) {
-					updateElement.onUpdated();
+					SearchQueueBatch b = tuple.v2();
+					Boolean isUpdated = tuple.v1();
+					RM model = updateElement.transformToRestSync(ac, 0);
+					info = new ResultInfo(model, b);
+					if (isUpdated) {
+						updateElement.onUpdated();
+					}
+				} else {
+					Tuple<T, SearchQueueBatch> tuple = database.tx(() -> {
+						SearchQueueBatch batch = searchQueue.create();
+						created.set(true);
+						return Tuple.tuple(root.create(ac, batch, uuid), batch);
+					});
+
+					SearchQueueBatch b = tuple.v2();
+					T createdElement = tuple.v1();
+					RM model = createdElement.transformToRestSync(ac, 0);
+					String path = createdElement.getAPIPath(ac);
+					info = new ResultInfo(model, b);
+					info.setProperty("path", path);
+					createdElement.onCreated();
+					ac.setLocation(path);
 				}
-			} else {
-				Tuple<T, SearchQueueBatch> tuple = database.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
-					created.set(true);
-					return Tuple.tuple(root.create(ac, batch, uuid), batch);
+
+				// 3. The updating transaction has succeeded. Now lets store it in the index
+				final ResultInfo info2 = info;
+				return database.tx(() -> {
+					info2.getBatch().processSync();
+					return info2.getModel();
 				});
-
-				SearchQueueBatch b = tuple.v2();
-				T createdElement = tuple.v1();
-				RM model = createdElement.transformToRestSync(ac, 0);
-				String path = createdElement.getAPIPath(ac);
-				info = new ResultInfo(model, b);
-				info.setProperty("path", path);
-				createdElement.onCreated();
-				ac.setLocation(path);
+			} finally {
+				if (clustered) {
+					tempLock.release();
+				}
 			}
-
-			// 3. The updating transaction has succeeded. Now lets store it in the index
-			final ResultInfo info2 = info;
-			return database.tx(() -> {
-				info2.getBatch().processSync();
-				return info2.getModel();
-			});
-		}, model -> ac.send(model, created.get() ? CREATED : OK));
+		}, model -> {
+			ac.send(model, created.get() ? CREATED : OK);
+		});
 	}
 
 	/**
