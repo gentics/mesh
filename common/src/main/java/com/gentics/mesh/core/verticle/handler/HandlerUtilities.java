@@ -140,7 +140,9 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
 
-		if (meshOptions.getClusterOptions().isEnabled()) {
+		boolean clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
+
+		if (clustered) {
 			try {
 				tempLock.acquire();
 			} catch (InterruptedException e) {
@@ -204,7 +206,7 @@ public class HandlerUtilities {
 					return info2.getModel();
 				});
 			} finally {
-				if (meshOptions.getClusterOptions().isEnabled()) {
+				if (clustered) {
 					tempLock.release();
 				}
 			}
