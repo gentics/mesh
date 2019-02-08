@@ -24,6 +24,11 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.29.10]]
+== 0.29.10 (TBD)
+
+icon:check[] GraphQL: Fixed a bug when loading a node via path. When the node itself did not exist, the query would return its parent node.
+
 [[v0.29.9]]
 == 0.29.9 (07.02.2019)
 

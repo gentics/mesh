@@ -1,0 +1,7 @@
+{
+	# [$.data.node=<is-null>]
+	node(path:"/Neuigkeiten/non-existent") {
+		uuid
+	}
+}
+# [$.errors=<is-undefined>]

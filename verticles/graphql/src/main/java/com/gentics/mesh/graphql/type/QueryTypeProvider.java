@@ -188,9 +188,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		if (path != null) {
 			GraphQLContext gc = env.getContext();
 			Path pathResult = webrootService.findByProjectPath(gc, path);
-			if (pathResult.getLast() == null) {
+
+			if (pathResult.getLast() == null || !pathResult.isFullyResolved()) {
 				return null;
 			}
+
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
