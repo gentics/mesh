@@ -54,13 +54,13 @@ public class HandlerUtilities {
 
 	private Database database;
 	private SearchQueue searchQueue;
-	private final MeshOptions meshOptions;
+	private final boolean clustered;
 
 	@Inject
 	public HandlerUtilities(Database database, SearchQueue searchQueue, MeshOptions meshOptions) {
 		this.searchQueue = searchQueue;
 		this.database = database;
-		this.meshOptions = meshOptions;
+		this.clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
 	}
 
 	/**
@@ -84,30 +84,37 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
+
+		lockClusterWrites();
+
 		asyncTx(ac, (tx) -> {
-			RootVertex<T> root = handler.handle();
-			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+			try {
+				RootVertex<T> root = handler.handle();
+				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
-			// Load the name and uuid of the element. We need this info after deletion.
-			String elementUuid = element.getUuid();
-			String name = null;
-			if (element instanceof NamedElement) {
-				name = ((NamedElement) element).getName();
-			}
-
-			database.tx(() -> {
-				BulkActionContext bac = searchQueue.createBulkContext();
-				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
-				if (element instanceof IndexableElement) {
-					element.delete(bac);
-					return bac.batch();
-				} else {
-					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
+				// Load the name and uuid of the element. We need this info after deletion.
+				String elementUuid = element.getUuid();
+				String name = null;
+				if (element instanceof NamedElement) {
+					name = ((NamedElement) element).getName();
 				}
-			}).processSync();
-			element.onDeleted(uuid, name);
-			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			return (RM) null;
+
+				database.tx(() -> {
+					BulkActionContext bac = searchQueue.createBulkContext();
+					// Check whether the element is indexable. Indexable elements must also be purged from the search index.
+					if (element instanceof IndexableElement) {
+						element.delete(bac);
+						return bac.batch();
+					} else {
+						throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
+					}
+				}).processSync();
+				element.onDeleted(uuid, name);
+				log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
+				return (RM) null;
+			} finally {
+				unlockClusterWrites();
+			}
 		}, model -> ac.send(NO_CONTENT));
 	}
 
@@ -126,7 +133,29 @@ public class HandlerUtilities {
 		createOrUpdateElement(ac, uuid, handler);
 	}
 
-	private static Semaphore tempLock = new Semaphore(1);
+	private static Semaphore writeLock = new Semaphore(1);
+
+	/**
+	 * Locks writes if in clustered mode. Use this to prevent concurrent write transactions.
+	 */
+	public void lockClusterWrites() {
+		if (clustered) {
+			try {
+				writeLock.acquire();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	/**
+	 * Releases the lock that was acquired in {@link #lockClusterWrites()}.
+	 */
+	public void unlockClusterWrites() {
+		if (clustered) {
+			writeLock.release();
+		}
+	}
 
 	/**
 	 * Either create or update an element with the given uuid.
@@ -140,15 +169,7 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
 
-		boolean clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
-
-		if (clustered) {
-			try {
-				tempLock.acquire();
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
+		lockClusterWrites();
 
 		AtomicBoolean created = new AtomicBoolean(false);
 		asyncTx(ac, (tx) -> {
@@ -206,9 +227,7 @@ public class HandlerUtilities {
 					return info2.getModel();
 				});
 			} finally {
-				if (clustered) {
-					tempLock.release();
-				}
+				unlockClusterWrites();
 			}
 		}, model -> {
 			ac.send(model, created.get() ? CREATED : OK);

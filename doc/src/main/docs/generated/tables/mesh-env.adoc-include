@@ -5,4 +5,151 @@
 | Description 
 
 
+| *MESH_AUTH_OAUTH2_SERVER_CONF_CONFIDENTIAL_PORT*
+| Override the configured OAuth2 confidential port.
+
+| *MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SERVER_URL*
+| Override the configured OAuth2 server URL.
+
+| *MESH_HTTP_CORS_ENABLE*
+| Override the configured CORS enable flag.
+
+| *MESH_GRAPH_STARTSERVER*
+| Override the graph database server flag.
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured SSL enable flag.
+
+| *MESH_CLUSTER_NETWORK_HOST*
+| Override the cluster network host.
+
+| *MESH_LOCK_PATH*
+| Path to the mesh lock file.
+
+| *MESH_PLUGIN_DIR*
+| Override the configured plugin directory.
+
+| *MESH_VERTX_WORKER_POOL_SIZE*
+| Override the configured Vert.x worker pool size.
+
+| *MESH_HTTP_SSL_CERT_PATH*
+| Override the configured SSL enable flag.
+
+| *MESH_HTTP_HOST*
+| Override the configured http server host which is used to bind to.
+
+| *MESH_AUTH_TOKEN_EXP*
+| Override the configured JWT expiration time.
+
+| *MESH_IMAGE_MAX_HEIGHT*
+| Override the max height for image resize operations.
+
+| *MESH_CLUSTER_VERTX_PORT*
+| Override the vert.x eventbus server port.
+
+| *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
+| Override the configured CORS allowed credentials flag.
+
+| *MESH_ELASTICSEARCH_STARTUP_TIMEOUT*
+| Override the configured elasticsearch server timeout.
+
+| *MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH*
+| Override the configured OAuth2 mapper script path.
+
+| *MESH_LANGUAGES_FILE_PATH*
+| Override the path to the optional languages file
+
+| *MESH_ELASTICSEARCH_PREFIX*
+| Override the configured elasticsearch prefix.
+
+| *MESH_HTTP_PORT*
+| Override the configured server http port.
+
+| *MESH_AUTH_KEYSTORE_PASS*
+| Override the configured keystore password.
+
+| *MESH_GRAPH_EXPORT_DIRECTORY*
+| Override the graph database export directory.
+
+| *MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE*
+| Override the configured OAuth2 server resource name.
+
+| *MESH_BINARY_UPLOAD_LIMIT*
+| Override the configured binary byte upload limit.
+
+| *MESH_HTTP_SSL_KEY_PATH*
+| Override the configured SSL enable flag.
+
+| *MESH_TEMP_DIR*
+| Override the configured temp directory.
+
+| *MESH_ELASTICSEARCH_URL*
+| Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
+
+| *MESH_BINARY_DIR*
+| Override the configured binary data directory.
+
+| *MESH_UPDATECHECK*
+| Override the configured updatecheck flag.
+
+| *MESH_ELASTICSEARCH_START_EMBEDDED*
+| Override the start embedded elasticsearch server flag.
+
+| *MESH_AUTH_JWT_ALGO*
+| Override the configured algorithm which is used to sign the JWT.
+
+| *MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED*
+| Override the configured OAuth2 server SSL-required flag.
+
+| *MESH_GRAPH_BACKUP_DIRECTORY*
+| Override the graph database backup directory.
+
+| *MESH_HTTP_CORS_ORIGIN_PATTERN*
+| Override the configured CORS allowed origin pattern.
+
+| *MESH_DEFAULT_LANG*
+| Override the configured default language.
+
+| *MESH_CLUSTER_NAME*
+| Override the cluster name.
+
+| *MESH_AUTH_OAUTH2_SERVER_CONF_REALM*
+| Override the configured OAuth2 server realm.
+
+| *MESH_ELASTICSEARCH_TIMEOUT*
+| Override the configured elasticsearch server timeout.
+
+| *MESH_IMAGE_MAX_WIDTH*
+| Override the max width for image resize operations.
+
+| *MESH_VERTX_EVENT_POOL_SIZE*
+| Override the configured Vert.x event pool size.
+
+| *MESH_AUTH_ANONYMOUS_ENABLED*
+| Override the configured anonymous enabled flag.
+
+| *MESH_CLUSTER_INIT*
+| Enable or disable the initial cluster database setup. This is useful for testing.
+
+| *MESH_BINARY_UPLOAD_TEMP_DIR*
+| Override the configured upload temporary directory.
+
+| *MESH_GRAPH_DB_DIRECTORY*
+| Override the graph database storage directory.
+
+| *MESH_AUTH_OAUTH2_MAPPER_SCRIPT_DEV_MODE*
+| Override the configured OAuth2 mapper script development mode flag.
+
+| *MESH_NODE_NAME*
+| Override the configured node name.
+
+| *MESH_CLUSTER_ENABLED*
+| Override cluster enabled flag.
+
+| *MESH_AUTH_OAUTH2_ENABLED*
+| Override the configured OAuth2 enabled flag.
+
+| *MESH_AUTH_KEYSTORE_PATH*
+| Override the configured keystore path.
+
 |======
