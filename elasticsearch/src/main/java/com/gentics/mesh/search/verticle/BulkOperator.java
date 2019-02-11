@@ -72,7 +72,6 @@ public class BulkOperator implements ObservableOperator<ElasticsearchRequest, El
 					flush();
 					observer.onNext(elasticSearchRequest);
 				}
-				log.trace("Requesting more requests...");
 			}
 
 			private void resetTimer() {

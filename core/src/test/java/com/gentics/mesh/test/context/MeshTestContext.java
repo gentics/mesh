@@ -4,7 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import io.vertx.core.eventbus.MessageConsumer;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -68,6 +74,10 @@ public class MeshTestContext extends TestWatcher {
 
 	private List<String> deploymentIds = new ArrayList<>();
 
+	private CountDownLatch idleLatch;
+	private MessageConsumer<Object> idleConsumer;
+
+
 	@Override
 	protected void starting(Description description) {
 		try {
@@ -87,6 +97,7 @@ public class MeshTestContext extends TestWatcher {
 				setupData();
 				if (settings.useElasticsearch()) {
 					setupIndexHandlers();
+					listenToSearchIdleEvent();
 				}
 				if (settings.startServer()) {
 					setupRestEndpoints(settings);
@@ -119,6 +130,7 @@ public class MeshTestContext extends TestWatcher {
 				}
 				if (settings.useElasticsearch()) {
 					meshDagger.searchProvider().clear().blockingAwait();
+					idleConsumer.unregister();
 				} else {
 					meshDagger.trackingSearchProvider().clear();
 				}
@@ -414,4 +426,26 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
+	private void listenToSearchIdleEvent() {
+		idleConsumer = vertx.eventBus().consumer(MeshEvent.SEARCH_IDLE.address, handler -> {
+			if (idleLatch != null) {
+				idleLatch.countDown();
+			}
+		});
+	}
+
+	/**
+	 * Waits until all requests have been sent successfully.
+	 */
+	public void waitForSearchIdleEvent() {
+		Objects.requireNonNull(idleConsumer, "Call #listenToSearchIdleEvent first");
+		ElasticsearchProcessVerticle verticle = ((BootstrapInitializerImpl) meshDagger.boot()).loader.get().elasticsearchProcessVerticle.get();
+		try {
+			idleLatch = new CountDownLatch(1);
+			idleLatch.await(5, TimeUnit.SECONDS);
+			verticle.refresh().blockingAwait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

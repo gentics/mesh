@@ -27,6 +27,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 			createGroup(groupName + i);
 		}
 
+		testContext.waitForSearchIdleEvent();
+
 		GroupListResponse response = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName + 8)));
 		assertEquals(1, response.getData()
 				.size());
@@ -36,6 +38,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 	public void testBogusQuery() {
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
+
+		testContext.waitForSearchIdleEvent();
 
 		// 1. Search with bogus query
 		call(() -> client().searchGroups("HudriWudri"), BAD_REQUEST, "search_query_not_parsable");
@@ -53,6 +57,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
+		testContext.waitForSearchIdleEvent();
+
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData()
@@ -64,6 +70,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 	public void testSearchByName() throws InterruptedException, JSONException {
 		String groupName = "test-grou  %!p42a";
 		String uuid = createGroup(groupName).getUuid();
+
+		testContext.waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(1);
@@ -80,6 +88,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
+		testContext.waitForSearchIdleEvent();
+
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);
 	}
@@ -92,6 +102,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
+
+		testContext.waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);

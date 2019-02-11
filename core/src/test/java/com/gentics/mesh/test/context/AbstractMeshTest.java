@@ -28,13 +28,11 @@ import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.vertx.core.Future;
-import io.vertx.core.eventbus.MessageConsumer;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -604,31 +602,4 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		return stopRestVerticle().andThen(startRestVerticle());
 	}
 
-	/**
-	 * Flushes the search request queue and waits until all requests have been sent successfully.
-	 */
-	protected void waitForSearch() {
-		ElasticsearchProcessVerticle verticle = ((BootstrapInitializerImpl) boot()).loader.get().elasticsearchProcessVerticle.get();
-		if (verticle.isIdle()) {
-			verticle.refresh().blockingAwait();
-			return;
-		}
-		CountDownLatch latch = new CountDownLatch(1);
-		MessageConsumer<Object> consumer = vertx().eventBus().consumer(MeshEvent.SEARCH_IDLE.address, handler -> {
-			latch.countDown();
-		});
-		if (verticle.isIdle()) {
-			consumer.unregister();
-			verticle.refresh().blockingAwait();
-			return;
-		} else {
-			try {
-				latch.await(2000, TimeUnit.SECONDS);
-				consumer.unregister();
-				verticle.refresh().blockingAwait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }
