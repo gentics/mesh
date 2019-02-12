@@ -9,8 +9,6 @@ import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.reactivex.Completable;
-import io.reactivex.Observable;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -262,8 +260,8 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 			log.info("Dispatching event '{}' with payload:\n{}", address, json);
 			// }
 			eventbus.publish(address, new JsonObject(json));
-
 		});
+		getEntries().clear();
 	}
 
 	@Override

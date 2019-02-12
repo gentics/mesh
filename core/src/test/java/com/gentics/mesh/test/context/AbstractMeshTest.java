@@ -17,8 +17,10 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -67,6 +69,7 @@ import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Predicate;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
@@ -85,7 +88,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	private OkHttpClient httpClient;
 
-	private List<CompletableFuture<JsonObject>> futures = new ArrayList<>();
+	private Map<CompletableFuture<JsonObject>, MeshEvent> futures = new HashMap<>();
 
 	@Rule
 	@ClassRule
@@ -620,19 +623,20 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @param event
 	 * @param e
 	 */
-	public CompletableFuture<JsonObject> expectEvent(MeshEvent event, Consumer<JsonObject> asserter) {
+	public CompletableFuture<JsonObject> expectEvents(MeshEvent event, Predicate<JsonObject> asserter) {
 		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
 		vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
-			JsonObject json = mh.body();
-			System.out.println(json);
 			try {
-				asserter.accept(json);
-				fut.complete(json);
+				JsonObject json = mh.body();
+				// Only complete the future if the event is accepted.
+				if (asserter.test(json)) {
+					fut.complete(json);
+				}
 			} catch (Throwable e) {
 				fut.completeExceptionally(e);
 			}
 		});
-		futures.add(fut);
+		futures.put(fut, event);
 		return fut;
 	}
 
@@ -642,8 +646,13 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @throws Exception
 	 */
 	public void waitForEvents() throws Exception {
-		for (CompletableFuture<JsonObject> fut : futures) {
-			fut.get(1, TimeUnit.SECONDS);
+		for (Entry<CompletableFuture<JsonObject>, MeshEvent> entry : futures.entrySet()) {
+			MeshEvent event = entry.getValue();
+			try {
+				entry.getKey().get(1, TimeUnit.SECONDS);
+			} catch (TimeoutException e) {
+				throw new RuntimeException("Did not receive event for {" + event.getAddress() + "}", e);
+			}
 		}
 	}
 

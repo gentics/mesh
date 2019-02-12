@@ -7,6 +7,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -35,11 +39,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
-import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -81,8 +82,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
+import io.reactivex.Observable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -145,21 +145,27 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
-		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
-		vertx().eventBus().consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> rh) -> {
-			fut.complete(rh.body());
+		expectEvents(PROJECT_CREATED, event -> {
+			assertEquals(name, event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
+		});
+
+		// Base node of the project
+		expectEvents(NODE_CREATED, event -> {
+			assertEquals(name, event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
 		});
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
+
+		waitForEvents();
 
 		// Verify that the new routes have been created
 		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
 			.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
-
-		JsonObject eventInfo = fut.get(10, TimeUnit.SECONDS);
-		assertEquals(name, eventInfo.getString("name"));
-		assertEquals(restProject.getUuid(), eventInfo.getString("uuid"));
 
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
@@ -470,7 +476,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 
 		try (Tx tx = tx()) {
-			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", null, null, null, user(),
+				schemaContainer("folder").getLatestVersion());
 			tx.success();
 		}
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
@@ -624,8 +631,27 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			}
 		}
 
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		System.out.println("BASE:" + baseNodeUuid);
+
+		expectEvents(PROJECT_DELETED, event -> {
+			assertEquals("Project name in event did not match.", PROJECT_NAME, event.getString("name"));
+			assertEquals("Project uuid did not match up. ", projectUuid(), event.getString("uuid"));
+			return true;
+		});
+
+		expectEvents(NODE_DELETED, event -> {
+			if (baseNodeUuid.equals(event.getString("uuid"))) {
+				assertEquals("Content uuid did not match up.", baseNodeUuid, event.getString("uuid"));
+				return true;
+			}
+			return false;
+		});
+
 		// 2. Delete the project
 		call(() -> client().deleteProject(uuid));
+
+		waitForEvents();
 
 		// 3. Assert that the indices have been dropped and the project has been
 		// deleted from the project index
@@ -656,7 +682,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName(), DELETE_PERM.getRestPerm().getName());
+		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName(),
+			DELETE_PERM.getRestPerm().getName());
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
@@ -704,7 +731,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 100;
 		long nProjectsBefore = meshRoot().getProjectRoot().computeCount();
-
 
 		validateCreation(nJobs, i -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();

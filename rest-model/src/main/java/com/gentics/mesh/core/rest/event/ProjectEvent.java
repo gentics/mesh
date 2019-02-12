@@ -5,7 +5,7 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 /**
  * Event which contains project information.
  */
-public interface ProjectEvent {
+public interface ProjectEvent extends MeshEventModel {
 
 	ProjectReference getProject();
 

@@ -1,6 +1,5 @@
 package com.gentics.mesh.context.impl;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.context.BulkActionContext;

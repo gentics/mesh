@@ -181,7 +181,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			String branchUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				bac.batch().add(onDeleted(branchUuid, type));
+				bac.add(onDeleted(branchUuid, type));
 			}
 		});
 		getElement().remove();
@@ -394,7 +394,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public Node getParentNode(String branchUuid) {
 		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).inV().nextOrDefaultExplicit(NodeImpl.class, null);
+			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**
