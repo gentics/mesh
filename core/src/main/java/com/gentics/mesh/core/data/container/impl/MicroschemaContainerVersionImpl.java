@@ -27,14 +27,13 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
-import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -186,12 +185,12 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public CreatedMeshEventModel onCreated() {
+	public MeshEventModel onCreated() {
 		return getSchemaContainer().onCreated();
 	}
 
 	@Override
-	public UpdatedMeshEventModel onUpdated() {
+	public MeshEventModel onUpdated() {
 		return getSchemaContainer().onUpdated();
 	}
 

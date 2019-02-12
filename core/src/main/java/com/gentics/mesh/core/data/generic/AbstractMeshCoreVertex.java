@@ -127,38 +127,30 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public UpdatedMeshEventModel onUpdated() {
+	public MeshEventModel onUpdated() {
 		UpdatedMeshEventModel event = new UpdatedMeshEventModel();
 		event.setAddress(getTypeInfo().getOnUpdatedAddress());
-		if (this instanceof NamedElement) {
-			event.setName(((NamedElement) this).getName());
-		}
-		event.setOrigin(Mesh.mesh().getOptions().getNodeName());
-		event.setUuid(getUuid());
+		fillEventInfo(event);
 		return event;
 	}
 
 	@Override
-	public CreatedMeshEventModel onCreated() {
+	public MeshEventModel onCreated() {
 		CreatedMeshEventModel event = new CreatedMeshEventModel();
 		event.setAddress(getTypeInfo().getOnCreatedAddress());
-		if (this instanceof NamedElement) {
-			event.setName(((NamedElement) this).getName());
-		}
-		event.setOrigin(Mesh.mesh().getOptions().getNodeName());
-		event.setUuid(getUuid());
+		fillEventInfo(event);
 		return event;
 	}
 
 	@Override
-	public DeletedMeshEventModel onDeleted() {
+	public MeshEventModel onDeleted() {
 		DeletedMeshEventModel event = new DeletedMeshEventModel();
+		event.setAddress(getTypeInfo().getOnDeletedAddress());
 		fillEventInfo(event);
 		return event;
 	}
 
 	protected void fillEventInfo(MeshEventModel event) {
-		event.setAddress(getTypeInfo().getOnDeletedAddress());
 		if (this instanceof NamedElement) {
 			event.setName(((NamedElement) this).getName());
 		}

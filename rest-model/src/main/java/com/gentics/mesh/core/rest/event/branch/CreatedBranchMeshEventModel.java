@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.rest.event.branch;
 
-import com.gentics.mesh.core.rest.event.AbstractCreatedMeshProjectEventModel;
+import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 
-public class CreatedBranchMeshEventModel extends AbstractCreatedMeshProjectEventModel {
+public class CreatedBranchMeshEventModel extends AbstractProjectEventModel {
 
+	public CreatedBranchMeshEventModel() {
+	}
 }

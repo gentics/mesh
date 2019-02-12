@@ -5,10 +5,8 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
-import com.gentics.mesh.core.rest.event.DeletedMeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -69,18 +67,18 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	/**
 	 * Method which is being invoked once the element has been created.
 	 */
-	CreatedMeshEventModel onCreated();
+	MeshEventModel onCreated();
 
 	/**
 	 * Method which is being invoked once the element has been updated.
 	 * @return Created event
 	 */
-	UpdatedMeshEventModel onUpdated();
+	MeshEventModel onUpdated();
 
 	/**
 	 * Method which is being invoked once the element has been deleted.
 	 * @return Created event
 	 */
-	DeletedMeshEventModel onDeleted();
+	MeshEventModel onDeleted();
 
 }

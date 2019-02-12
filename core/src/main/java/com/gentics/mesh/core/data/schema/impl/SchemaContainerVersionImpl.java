@@ -33,14 +33,13 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
-import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -193,12 +192,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public CreatedMeshEventModel onCreated() {
+	public MeshEventModel onCreated() {
 		return getSchemaContainer().onCreated();
 	}
 
 	@Override
-	public UpdatedMeshEventModel onUpdated() {
+	public MeshEventModel onUpdated() {
 		return getSchemaContainer().onUpdated();
 	}
 
