@@ -223,8 +223,6 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		String groupName = group.getName();
 		String username = "extrauser42a";
 
-		System.out.println("gROUP: " + group.getUuid());
-
 		// 2. Create a new user
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);

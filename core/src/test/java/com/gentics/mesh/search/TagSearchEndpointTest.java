@@ -26,6 +26,8 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
+		testContext.waitForSearchIdleEvent();
+
 		TagListResponse list = call(() -> client().searchTags(getSimpleTermQuery("name.raw", tagName)));
 		assertEquals(1, list.getData().size());
 	}
@@ -44,6 +46,8 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 			assertEquals("The tag name was not updated as expected.", newName + "2", tag("red").getName());
 		}
 
+		testContext.waitForSearchIdleEvent();
+
 		TagListResponse list = call(() -> client().searchTags(getSimpleTermQuery("name.raw", newName + "2")));
 		assertEquals(1, list.getData().size());
 	}
@@ -59,12 +63,16 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 		String uuid = db().tx(() -> tag("red").getUuid());
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 
+		testContext.waitForSearchIdleEvent();
+
 		// 1. Verify that the tag is indexed
 		TagListResponse list = call(() -> client().searchTags(getSimpleTermQuery("name.raw", name)));
 		assertEquals("The tag with name {" + name + "} and uuid {" + uuid + "} could not be found in the search index.", 1, list.getData().size());
 
 		// 2. Delete the tag
 		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamilyUuid, uuid));
+
+		testContext.waitForSearchIdleEvent();
 
 		// 3. Search again and verify that the document was removed from the index
 		list = call(() -> client().searchTags(getSimpleTermQuery("fields.name", name)));

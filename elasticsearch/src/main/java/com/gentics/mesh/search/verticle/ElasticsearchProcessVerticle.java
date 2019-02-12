@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.search.impl.SearchClient;
+import com.gentics.mesh.search.verticle.eventhandler.MainEventhandler;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessVerticle.class);
 
-	private final Eventhandler eventhandler;
+	private final MainEventhandler mainEventhandler;
 	private final SearchClient elasticSearchClient;
 	private BulkOperator bulker;
 
@@ -39,8 +40,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
 
 	@Inject
-	public ElasticsearchProcessVerticle(Eventhandler eventhandler, SearchClient elasticSearchClient) {
-		this.eventhandler = eventhandler;
+	public ElasticsearchProcessVerticle(MainEventhandler mainEventhandler, SearchClient elasticSearchClient) {
+		this.mainEventhandler = mainEventhandler;
 		this.elasticSearchClient = elasticSearchClient;
 	}
 
@@ -49,7 +50,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		log.trace("Initializing Elasticsearch process verticle");
 		assemble();
 
-		vertxHandlers = eventhandler.getHandledEvents()
+		vertxHandlers = mainEventhandler.handledEvents()
 			.stream()
 			.map(event -> vertx.eventBus().<JsonObject>consumer(event.address, message -> {
 				pendingTransformations.incrementAndGet();
@@ -138,7 +139,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private Flowable<ElasticsearchRequest> generateRequests(MessageEvent messageEvent) {
 		try {
-			List<ElasticsearchRequest> esRequests = this.eventhandler.handle(messageEvent);
+			List<ElasticsearchRequest> esRequests = this.mainEventhandler.handle(messageEvent);
 			pendingTransformations.decrementAndGet();
 			return Flowable.fromIterable(esRequests);
 		} catch (Exception e) {
