@@ -24,8 +24,10 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[v0.29.11]]
-== 0.29.11 (TBD)
+[[v0.30.0]]
+== 0.30.0 (12.02.2019)
+
+CAUTION: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a OkHttpClient implementation.
 
 icon:check[] GraphQL: Fixed a bug when loading a node via path. When the node itself did not exist, the query would return its parent node.
 
