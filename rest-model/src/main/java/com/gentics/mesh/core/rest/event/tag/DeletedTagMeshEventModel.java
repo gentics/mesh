@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.event.tag;
 
-public class DeletedTagMeshEventModel {
+import com.gentics.mesh.core.rest.event.AbstractDeletedMeshProjectEventModel;
+
+public class DeletedTagMeshEventModel extends AbstractDeletedMeshProjectEventModel {
 
 }

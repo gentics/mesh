@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.event.branch;
 
-public class UpdatedBranchMeshEventModel {
+import com.gentics.mesh.core.rest.event.AbstractUpdatedMeshProjectEventModel;
+
+public class UpdatedBranchMeshEventModel extends AbstractUpdatedMeshProjectEventModel {
 
 }

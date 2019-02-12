@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.event.branch;
 
-public class DeletedBranchMeshEventModel {
+import com.gentics.mesh.core.rest.event.AbstractDeletedMeshProjectEventModel;
+
+public class DeletedBranchMeshEventModel extends AbstractDeletedMeshProjectEventModel {
 
 }

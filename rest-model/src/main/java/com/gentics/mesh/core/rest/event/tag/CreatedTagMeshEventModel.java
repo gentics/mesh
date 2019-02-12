@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.event.tag;
 
-import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
+import com.gentics.mesh.core.rest.event.AbstractCreatedMeshProjectEventModel;
 
-public class CreatedTagMeshEventModel extends CreatedMeshEventModel {
+public class CreatedTagMeshEventModel extends AbstractCreatedMeshProjectEventModel {
 
 }
