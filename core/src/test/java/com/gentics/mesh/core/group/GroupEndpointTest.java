@@ -64,7 +64,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
 
-		expectEvents(GROUP_CREATED, event -> {
+		expectEvents(GROUP_CREATED, 1, event -> {
 			assertEquals("test12345", event.getString("name"));
 			assertNotNull(event.getString("uuid"));
 			return true;

@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -621,11 +622,15 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * Add an expectation of an event.
 	 * 
 	 * @param event
-	 * @param e
+	 * @param expectedCount
+	 * @param asserter
+	 * @return
 	 */
-	public CompletableFuture<JsonObject> expectEvents(MeshEvent event, Predicate<JsonObject> asserter) {
+	public CompletableFuture<JsonObject> expectEvents(MeshEvent event, int expectedCount, Predicate<JsonObject> asserter) {
 		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
+		AtomicInteger counter = new AtomicInteger(0);
 		vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
+			counter.incrementAndGet();
 			try {
 				JsonObject json = mh.body();
 				// Only complete the future if the event is accepted.
@@ -637,6 +642,11 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 			}
 		});
 		futures.put(fut, event);
+		CompletableFuture<Integer> count = CompletableFuture.supplyAsync(() -> {
+			return counter.get();
+		});
+		// futures.put(count, event);
+		// TODO assert event count
 		return fut;
 	}
 

@@ -145,14 +145,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
-		expectEvents(PROJECT_CREATED, event -> {
+		expectEvents(PROJECT_CREATED, 1, event -> {
 			assertEquals(name, event.getString("name"));
 			assertNotNull(event.getString("uuid"));
 			return true;
 		});
 
 		// Base node of the project
-		expectEvents(NODE_CREATED, event -> {
+		expectEvents(NODE_CREATED, 1, event -> {
 			assertEquals(name, event.getString("name"));
 			assertNotNull(event.getString("uuid"));
 			return true;
@@ -634,13 +634,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		System.out.println("BASE:" + baseNodeUuid);
 
-		expectEvents(PROJECT_DELETED, event -> {
+		expectEvents(PROJECT_DELETED, 1, event -> {
 			assertEquals("Project name in event did not match.", PROJECT_NAME, event.getString("name"));
 			assertEquals("Project uuid did not match up. ", projectUuid(), event.getString("uuid"));
 			return true;
 		});
 
-		expectEvents(NODE_DELETED, event -> {
+		expectEvents(NODE_DELETED, 1, event -> {
 			if (baseNodeUuid.equals(event.getString("uuid"))) {
 				assertEquals("Content uuid did not match up.", baseNodeUuid, event.getString("uuid"));
 				return true;
