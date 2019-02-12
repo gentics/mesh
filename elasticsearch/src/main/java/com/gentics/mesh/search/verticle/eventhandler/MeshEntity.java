@@ -1,33 +1,33 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.search.index.Transformer;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 public class MeshEntity<T extends MeshCoreVertex<? extends RestModel, T>> {
 	private final Transformer<T> transformer;
-	private final RootVertex<T> rootVertex;
 	private final MeshEvent createEvent;
 	private final MeshEvent updateEvent;
 	private final MeshEvent deleteEvent;
+	private final EventVertexMapper<T> eventVertexMapper;
 
-	public MeshEntity(Transformer<T> transformer, RootVertex<T> rootVertex, MeshEvent createEvent, MeshEvent updateEvent, MeshEvent deleteEvent) {
+	public MeshEntity(Transformer<T> transformer, MeshEvent createEvent, MeshEvent updateEvent, MeshEvent deleteEvent, EventVertexMapper<T> eventVertexMapper) {
 		this.transformer = transformer;
-		this.rootVertex = rootVertex;
 		this.createEvent = createEvent;
 		this.updateEvent = updateEvent;
 		this.deleteEvent = deleteEvent;
+		this.eventVertexMapper = eventVertexMapper;
 	}
 
 	public Transformer<T> getTransformer() {
 		return transformer;
-	}
-
-	public RootVertex<T> getRootVertex() {
-		return rootVertex;
 	}
 
 	public MeshEvent getCreateEvent() {
@@ -42,7 +42,19 @@ public class MeshEntity<T extends MeshCoreVertex<? extends RestModel, T>> {
 		return deleteEvent;
 	}
 
+	public List<MeshEvent> allEvents() {
+		return Arrays.asList(createEvent, updateEvent, deleteEvent);
+	}
+
 	public JsonObject transform(T element) {
 		return transformer.toDocument(element);
+	}
+
+	public Optional<T> getElement(MeshEventModel event) {
+		return eventVertexMapper.apply(event);
+	}
+
+	public Optional<JsonObject> getDocument(MeshEventModel event) {
+		return getElement(event).map(transformer::toDocument);
 	}
 }

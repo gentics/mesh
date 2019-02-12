@@ -11,7 +11,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -32,14 +31,14 @@ public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Arrays.asList(entity.getCreateEvent(), entity.getUpdateEvent(), entity.getDeleteEvent());
+		return entity.allEvents();
 	}
 
 	@Override
 	public List<ElasticsearchRequest> handle(MessageEvent eventModel) {
 		MeshEvent event = eventModel.event;
 		if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
-			return helper.getDocument(entity, eventModel.message.getUuid())
+			return helper.getDb().tx(() -> entity.getDocument(eventModel.message))
 				.map(document -> Collections.singletonList((ElasticsearchRequest) new CreateDocumentRequest(
 					helper.prefixIndexName(indexName),
 					eventModel.message.getUuid(),

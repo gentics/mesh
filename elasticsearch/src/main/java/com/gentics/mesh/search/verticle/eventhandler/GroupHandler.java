@@ -13,12 +13,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
 
 @Singleton
 public class GroupHandler implements EventHandler {
@@ -44,10 +46,11 @@ public class GroupHandler implements EventHandler {
 		if (event == GROUP_CREATED || event == GROUP_UPDATED) {
 			return helper.getDb().tx(() -> {
 				// We also need to update all users of the group
-				Group group = boot.groupRoot().findByUuid(messageEvent.message.getUuid());
+				Optional<Group> groupOptional = entities.group.getElement(messageEvent.message);
+
 				return Stream.concat(
-					Stream.of(entities.createRequest(group)),
-					group.getUsers().stream().map(entities::createRequest)
+					toStream(groupOptional).map(entities::createRequest),
+					toStream(groupOptional).flatMap(group -> group.getUsers().stream()).map(entities::createRequest)
 				).collect(Collectors.toList());
 			});
 		} else if (event == GROUP_DELETED) {

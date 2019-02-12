@@ -8,6 +8,9 @@ public class EventCauseInfo implements RestModel {
 	private String uuid;
 	private String action;
 
+	public EventCauseInfo() {
+	}
+
 	public EventCauseInfo(String elementType, String elementUuid, String action) {
 		this.type = elementType;
 		this.uuid = elementUuid;
