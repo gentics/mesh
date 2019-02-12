@@ -9,13 +9,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -130,52 +129,52 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	@Parameters(name = "query={0},version={2}")
 	public static Collection<Object[]> paramData() {
-		Collection<List<Object>> testData = new Vector<>();
-
-		testData.add(Arrays.asList("full-query", true, "draft"));
-		testData.add(Arrays.asList("role-user-group-query", true, "draft"));
-		testData.add(Arrays.asList("group-query", true, "draft"));
-		testData.add(Arrays.asList("schema-query", true, "draft"));
-		// testData.add(Arrays.asList("schema-projects-query", true, "draft"));
-		testData.add(Arrays.asList("microschema-query", true, "draft"));
-		testData.add(Arrays.asList("paging-query", true, "draft"));
-		testData.add(Arrays.asList("tagFamily-query", true, "draft"));
-		testData.add(Arrays.asList("node-query", true, "draft"));
-		testData.add(Arrays.asList("node-tag-query", true, "draft"));
-		testData.add(Arrays.asList("nodes-query", true, "draft"));
-		testData.add(Arrays.asList("node-breadcrumb-query", true, "draft"));
-		testData.add(Arrays.asList("node-language-fallback-query", true, "draft"));
-		testData.add(Arrays.asList("node-languages-query", true, "draft"));
-		testData.add(Arrays.asList("node-not-found-webroot-query", true, "draft"));
-		testData.add(Arrays.asList("node-webroot-query", true, "draft"));
-		testData.add(Arrays.asList("node-webroot-urlfield-query", true, "draft"));
-		testData.add(Arrays.asList("node-relations-query", true, "draft"));
-		testData.add(Arrays.asList("node-fields-query", true, "draft"));
-		testData.add(Arrays.asList("node-fields-no-microschema-query", false, "draft"));
-		testData.add(Arrays.asList("node/link/webroot", true, "draft"));
-		testData.add(Arrays.asList("node/link/children", true, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse));;
-		testData.add(Arrays.asList("node/link/webroot-language", true, "draft"));
-		testData.add(Arrays.asList("node/link/reference", true, "draft"));
-		testData.add(Arrays.asList("node-field-list-path-query", true, "draft"));
-		testData.add(Arrays.asList("project-query", true, "draft"));
-		testData.add(Arrays.asList("tag-query", true, "draft"));
-		testData.add(Arrays.asList("branch-query", true, "draft"));
-		testData.add(Arrays.asList("user-query", true, "draft"));
-		testData.add(Arrays.asList("mesh-query", true, "draft"));
-		testData.add(Arrays.asList("microschema-projects-query", true, "draft"));
-		testData.add(Arrays.asList("node-version-published-query", true, "published"));
-		testData.add(Arrays.asList("filtering/children", true, "draft"));
-		testData.add(Arrays.asList("filtering/nodes", true, "draft"));
-		testData.add(Arrays.asList("filtering/nodes-en", true, "draft"));
-		testData.add(Arrays.asList("filtering/nodes-jp", true, "draft"));
-		testData.add(Arrays.asList("filtering/nodes-creator-editor", true, "draft"));
-		testData.add(Arrays.asList("filtering/users", true, "draft"));
-		testData.add(Arrays.asList("filtering/groups", true, "draft"));
-		testData.add(Arrays.asList("filtering/roles", true, "draft"));
-		testData.add(Arrays.asList("node/breadcrumb-root", true, "draft"));
-
+		return Stream.of(
+			Arrays.asList("full-query", true, "draft"),
+			Arrays.asList("role-user-group-query", true, "draft"),
+			Arrays.asList("group-query", true, "draft"),
+			Arrays.asList("schema-query", true, "draft"),
+			// Arrays.asList("schema-projects-query", true, "draft"),
+			Arrays.asList("microschema-query", true, "draft"),
+			Arrays.asList("paging-query", true, "draft"),
+			Arrays.asList("tagFamily-query", true, "draft"),
+			Arrays.asList("node-query", true, "draft"),
+			Arrays.asList("node-tag-query", true, "draft"),
+			Arrays.asList("nodes-query", true, "draft"),
+			Arrays.asList("nodes-query-by-uuids", true, "draft"),
+			Arrays.asList("node-breadcrumb-query", true, "draft"),
+			Arrays.asList("node-language-fallback-query", true, "draft"),
+			Arrays.asList("node-languages-query", true, "draft"),
+			Arrays.asList("node-not-found-webroot-query", true, "draft"),
+			Arrays.asList("node-webroot-query", true, "draft"),
+			Arrays.asList("node-webroot-urlfield-query", true, "draft"),
+			Arrays.asList("node-relations-query", true, "draft"),
+			Arrays.asList("node-fields-query", true, "draft"),
+			Arrays.asList("node-fields-no-microschema-query", false, "draft"),
+			Arrays.asList("node/link/webroot", true, "draft"),
+			Arrays.asList("node/link/children", true, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
+			Arrays.asList("node/link/webroot-language", true, "draft"),
+			Arrays.asList("node/link/reference", true, "draft"),
+			Arrays.asList("node-field-list-path-query", true, "draft"),
+			Arrays.asList("project-query", true, "draft"),
+			Arrays.asList("tag-query", true, "draft"),
+			Arrays.asList("branch-query", true, "draft"),
+			Arrays.asList("user-query", true, "draft"),
+			Arrays.asList("mesh-query", true, "draft"),
+			Arrays.asList("microschema-projects-query", true, "draft"),
+			Arrays.asList("node-version-published-query", true, "published"),
+			Arrays.asList("filtering/children", true, "draft"),
+			Arrays.asList("filtering/nodes", true, "draft"),
+			Arrays.asList("filtering/nodes-en", true, "draft"),
+			Arrays.asList("filtering/nodes-jp", true, "draft"),
+			Arrays.asList("filtering/nodes-creator-editor", true, "draft"),
+			Arrays.asList("filtering/users", true, "draft"),
+			Arrays.asList("filtering/groups", true, "draft"),
+			Arrays.asList("filtering/roles", true, "draft"),
+			Arrays.asList("node/breadcrumb-root", true, "draft")
+		)
 		// Make sure all testData entries have four parts.
-		return testData.stream().map(data -> data.toArray(new Object[4])).collect(Collectors.toList());
+		.map(data -> data.toArray(new Object[4])).collect(Collectors.toList());
 	}
 
 	@Test

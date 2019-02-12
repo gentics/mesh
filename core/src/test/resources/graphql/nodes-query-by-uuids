@@ -1,0 +1,17 @@
+{
+	nodes(uuids: [ "4b1346a2163a4ff89346a2163a9ff883", "not-a-uuid", "43ee8f9ff71e4016ae8f9ff71e10161c", "4b1346a2163a4ff89346a2163a9ff883" ]) {
+		# One of the UUIDs is invalid, so we only want three nodes in the result. The duplicate node should appear
+		# in the result.
+		# [$.data.nodes.totalCount=3]
+		totalCount
+
+		elements {
+			# [$.data.nodes.elements[0].uuid=4b1346a2163a4ff89346a2163a9ff883]
+			# [$.data.nodes.elements[1].uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
+			# [$.data.nodes.elements[2].uuid=4b1346a2163a4ff89346a2163a9ff883]
+			uuid
+		}
+	}
+}
+# [$.errors[0].type=DataFetchingException]
+# [$.errors[1]=<is-undefined>]
