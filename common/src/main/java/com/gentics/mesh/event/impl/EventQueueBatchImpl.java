@@ -11,10 +11,10 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.eventbus.EventBus;
 
 /**
  * @see EventQueueBatch
@@ -30,7 +30,7 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 	private EventCauseInfo cause;
 
 	public EventQueueBatchImpl() {
-	
+
 	}
 
 	@Override
@@ -249,10 +249,10 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 	}
 
 	@Override
-	public Completable dispatch() {
-		EventBus eventbus = Mesh.rxVertx().eventBus();
+	public void dispatch() {
+		EventBus eventbus = Mesh.vertx().eventBus();
 		// TODO buffer event dispatching?
-		return Observable.fromIterable(getEntries()).flatMapCompletable(entry -> {
+		getEntries().forEach(entry -> {
 			String address = entry.getAddress();
 			if (log.isDebugEnabled()) {
 				log.debug("Created event sent {}", address);
@@ -262,7 +262,7 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 			log.info("Dispatching event '{}' with payload:\n{}", address, json);
 			// }
 			eventbus.publish(address, new JsonObject(json));
-			return Completable.complete();
+
 		});
 	}
 

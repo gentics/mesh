@@ -236,8 +236,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				//updateBatch.addEntry(entry);
 			}
 
-			// 5. Process the SQB's
-			return Completable.mergeArray(removalBatch.dispatch(), storeBatch.dispatch(), updateBatch.dispatch());
+			removalBatch.dispatch(); 
+			storeBatch.dispatch();
+			updateBatch.dispatch();
+			//TODO refactor method
+			return Completable.complete();
 
 		}
 	}

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.event;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
+
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
@@ -16,12 +17,27 @@ public interface MeshEventModel extends RestModel {
 	String getUuid();
 
 	/**
+	 * Set the uuid of the element.
+	 * 
+	 * @param uuid
+	 * 
+	 */
+	void setUuid(String uuid);
+
+	/**
 	 * Return the mesh cluster node from which this event originated.
 	 * 
 	 * @return
 	 */
 
 	String getOrigin();
+
+	/**
+	 * Set the mesh cluster node from which the event originates.
+	 * 
+	 * @param origin
+	 */
+	void setOrigin(String origin);
 
 	/**
 	 * Return the name of the referenced element.
@@ -31,11 +47,25 @@ public interface MeshEventModel extends RestModel {
 	String getName();
 
 	/**
+	 * Set the name of the referenced element.
+	 * 
+	 * @param name
+	 */
+	void setName(String name);
+
+	/**
 	 * Return the address of the event.
 	 * 
 	 * @return
 	 */
 	String getAddress();
+
+	/**
+	 * Set the address of the event.
+	 * 
+	 * @param address
+	 */
+	void setAddress(String address);
 
 	/**
 	 * Returns the event cause info which contains information about the root action which lead to the creation of this event.
@@ -53,6 +83,7 @@ public interface MeshEventModel extends RestModel {
 
 	/**
 	 * Gets the body of an eventbus message as a POJO.
+	 * 
 	 * @param message
 	 * @return
 	 */

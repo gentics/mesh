@@ -114,8 +114,8 @@ public class DummyEventQueueBatch implements EventQueueBatch {
 	}
 
 	@Override
-	public Completable dispatch() {
-		return Completable.complete();
+	public void dispatch() {
+
 	}
 
 	@Override

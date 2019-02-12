@@ -19,10 +19,11 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
 import com.gentics.mesh.core.rest.event.DeletedMeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -152,13 +153,17 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	@Override
 	public DeletedMeshEventModel onDeleted() {
 		DeletedMeshEventModel event = new DeletedMeshEventModel();
+		fillEventInfo(event);
+		return event;
+	}
+
+	protected void fillEventInfo(MeshEventModel event) {
 		event.setAddress(getTypeInfo().getOnDeletedAddress());
 		if (this instanceof NamedElement) {
 			event.setName(((NamedElement) this).getName());
 		}
 		event.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		event.setUuid(getUuid());
-		return event;
 	}
 
 	@Override

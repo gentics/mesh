@@ -31,6 +31,9 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.rest.event.DeletedMeshEventModel;
+import com.gentics.mesh.core.rest.event.tagfamily.DeletedTagFamilyMeshEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -300,6 +303,16 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		// Set the tag family for the tag
 		tag.setTagFamily(this);
 		return tag;
+	}
+
+	@Override
+	public DeletedTagFamilyMeshEventModel onDeleted() {
+		DeletedTagFamilyMeshEventModel event = new DeletedTagFamilyMeshEventModel();
+		fillEventInfo(event);
+		Project project = getProject();
+		ProjectReference reference = project.transformToReference();
+		event.setProject(reference);
+		return event;
 	}
 
 }

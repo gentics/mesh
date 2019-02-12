@@ -74,22 +74,24 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-		asyncTx(ac, (tx) -> {
+		EventQueueBatch batch = database.tx(() -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
 			// Load the name and uuid of the element. We need this info after deletion.
 			String elementUuid = element.getUuid();
-			EventQueueBatch batch = database.tx(() -> {
+			EventQueueBatch b = database.tx(() -> {
 				BulkActionContext bac = BulkActionContext.create();
 				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, "delete");
 				element.delete(bac);
 				return bac.batch();
 			});
-			batch.dispatch();
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			return (RM) null;
-		}, model -> ac.send(NO_CONTENT));
+			return b;
+		});
+
+		batch.dispatch();
+		ac.send(NO_CONTENT);
 	}
 
 	/**
@@ -169,7 +171,7 @@ public class HandlerUtilities {
 			// 3. The updating transaction has succeeded. Now lets store it in the index
 			final ResultInfo info2 = info;
 			return database.tx(() -> {
-				info2.getBatch().dispatch().blockingAwait();
+				info2.getBatch().dispatch();
 				return info2.getModel();
 			});
 		}, model -> ac.send(model, created.get() ? CREATED : OK));
@@ -240,18 +242,21 @@ public class HandlerUtilities {
 	 * @param action
 	 *            Action which will be invoked once the handler has finished
 	 */
+	@Deprecated
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		async(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
+	@Deprecated
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action, boolean order) {
 		async(ac, () -> {
 			return database.tx(handler);
 		}, action, order);
 	}
 
+	@Deprecated
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction0 handler, Consumer<RM> action) {
 		async(ac, () -> {
 			database.tx(handler);
@@ -259,12 +264,14 @@ public class HandlerUtilities {
 		}, action);
 	}
 
+	@Deprecated
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
 		async(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
+	@Deprecated
 	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction2 handler, Consumer<RM> action) {
 		async(ac, () -> {
 			database.tx(handler);
@@ -272,6 +279,7 @@ public class HandlerUtilities {
 		}, action);
 	}
 
+	@Deprecated
 	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
 		async(ac, handler, action, false);
 	}
@@ -283,6 +291,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
+	@Deprecated
 	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action, boolean order) {
 		Mesh.vertx().executeBlocking(bc -> {
 			try {

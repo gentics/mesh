@@ -326,8 +326,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 //				updateBatch.addEntry(entry);
 			}
 
-			// 5. Process the SQB's
-			return Completable.mergeArray(removalBatch.dispatch(), storeBatch.dispatch(), updateBatch.dispatch());
+			removalBatch.dispatch();
+			storeBatch.dispatch();
+			updateBatch.dispatch();
+			// TODO refactor this
+			return Completable.complete();
 
 		}
 

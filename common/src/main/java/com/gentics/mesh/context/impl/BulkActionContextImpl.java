@@ -45,9 +45,8 @@ public class BulkActionContextImpl implements BulkActionContext {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
 			// TODO can we run the dispatch process in the background? Async?
-			batch.dispatch().blockingAwait(5, TimeUnit.SECONDS);
 			Tx.getActive().getGraph().commit();
-			batch().dispatch().blockingAwait();
+			batch().dispatch();
 			// Reset the counter back to zero
 			elementCounter.set(0);
 			batchCounter.incrementAndGet();

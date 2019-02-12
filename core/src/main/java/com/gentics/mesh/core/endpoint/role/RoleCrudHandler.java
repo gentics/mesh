@@ -113,6 +113,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
+		
 		db.asyncTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -160,7 +161,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				});
 
 				String name = tuple.v2();
-				return tuple.v1().dispatch().andThen(Single.just(message(ac, "role_updated_permission", name)));
+				tuple.v1().dispatch();
+				return Single.just(message(ac, "role_updated_permission", name));
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

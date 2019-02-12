@@ -30,7 +30,7 @@ public interface EventQueueBatch {
 	/**
 	 * Dispatch events for all entries in the batch.
 	 */
-	Completable dispatch();
+	void dispatch();
 
 	/**
 	 * Create a new event queue batch.

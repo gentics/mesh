@@ -15,7 +15,6 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -30,6 +29,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -39,7 +39,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -229,7 +228,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				batch.add(schema.onUpdated());
 				return Tuple.tuple(batch, schema.transformToRest(ac, 0));
 			});
-			return tuple.v1().dispatch().andThen(tuple.v2());
+			tuple.v1().dispatch();
+			return tuple.v2();
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}

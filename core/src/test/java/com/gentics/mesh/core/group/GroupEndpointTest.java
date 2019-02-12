@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -53,13 +53,10 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.reactivex.Observable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
-
-	private static final Logger log = LoggerFactory.getLogger(GroupEndpointTest.class);
 
 	@Test
 	@Override
@@ -67,8 +64,15 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
 
+		expectEvent(GROUP_CREATED, event -> {
+			assertEquals("test12345", event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+		});
+
 		GroupResponse restGroup = call(() -> client().createGroup(request));
 		assertThat(restGroup).matches(request);
+
+		waitForEvents();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);

@@ -294,7 +294,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 
-			return batch.add(node.onUpdated(branch.getUuid(), DRAFT)).dispatch().andThen(node.transformToRest(ac, 0));
+			batch.add(node.onUpdated(branch.getUuid(), DRAFT)).dispatch();
+			return node.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -466,7 +467,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 					return batch;
 				});
 				// Finally update the search index and return the updated node
-				return sqb.dispatch().andThen(node.transformToRest(ac, 0));
+				sqb.dispatch();
+				return node.transformToRest(ac, 0);
 			} catch (GenericRestException e) {
 				throw e;
 			} catch (Exception e) {

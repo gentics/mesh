@@ -99,7 +99,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					return Tuple.tuple(group, batch);
 				});
 			}
-			return tuple.v2().dispatch().andThen(tuple.v1().transformToRest(ac, 0));
+			tuple.v2().dispatch();
+			return tuple.v1().transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -122,7 +123,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			return db.tx(() -> {
+			db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
@@ -130,7 +131,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				batch.add(group.onUpdated());
 				//TODO add role update?
 				return batch;
-			}).dispatch().andThen(Single.just(Optional.empty()));
+			}).dispatch();
+			return Single.just(Optional.empty());
 
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
@@ -178,7 +180,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				GroupResponse model = group.transformToRestSync(ac, 0);
 				return new ResultInfo(model, batch);
 			});
-			return info.getBatch().dispatch().andThen(Single.just(info.getModel()));
+			info.getBatch().dispatch();
+			return Single.just(info.getModel());
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -200,13 +203,14 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			return db.tx(() -> {
+			db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
 				batch.add(group.onUpdated());
 				batch.add(user.onUpdated());
 				group.removeUser(user);
 				return batch;
-			}).dispatch().andThen(Single.just(Optional.empty()));
+			}).dispatch();
+			return Single.just(Optional.empty());
 		}).subscribe((empty) -> ac.send(NO_CONTENT), ac::fail);
 	}
 

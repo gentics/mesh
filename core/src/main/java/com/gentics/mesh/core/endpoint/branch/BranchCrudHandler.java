@@ -393,7 +393,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				return Tuple.tuple(tags, batch);
 			});
 
-			return tuple.v2().dispatch().andThen(tuple.v1().transformToRest(ac, 0));
+			tuple.v2().dispatch();
+			return tuple.v1().transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 }

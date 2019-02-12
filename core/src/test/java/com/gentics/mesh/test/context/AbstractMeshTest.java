@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLET
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -16,29 +17,23 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.cli.CoreVerticleLoader;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.router.RouterStorage;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
-import io.reactivex.functions.Consumer;
-import io.vertx.core.Future;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -48,24 +43,33 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.ProjectsRouter;
+import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -80,6 +84,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	}
 
 	private OkHttpClient httpClient;
+
+	private List<CompletableFuture<JsonObject>> futures = new ArrayList<>();
 
 	@Rule
 	@ClassRule
@@ -110,6 +116,11 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;
+	}
+
+	@After
+	public void clearLatches() {
+		futures.clear();
 	}
 
 	@After
@@ -485,7 +496,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	protected int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		String uuid = node.getUuid();
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
+			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			filename, contentType));
 		assertNotNull(response);
 		return buffer.length();
@@ -600,6 +612,39 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	protected Completable restartRestVerticle() {
 		return stopRestVerticle().andThen(startRestVerticle());
+	}
+
+	/**
+	 * Add an expectation of an event.
+	 * 
+	 * @param event
+	 * @param e
+	 */
+	public CompletableFuture<JsonObject> expectEvent(MeshEvent event, Consumer<JsonObject> asserter) {
+		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
+		vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
+			JsonObject json = mh.body();
+			System.out.println(json);
+			try {
+				asserter.accept(json);
+				fut.complete(json);
+			} catch (Throwable e) {
+				fut.completeExceptionally(e);
+			}
+		});
+		futures.add(fut);
+		return fut;
+	}
+
+	/**
+	 * Await all futures.
+	 * 
+	 * @throws Exception
+	 */
+	public void waitForEvents() throws Exception {
+		for (CompletableFuture<JsonObject> fut : futures) {
+			fut.get(1, TimeUnit.SECONDS);
+		}
 	}
 
 }

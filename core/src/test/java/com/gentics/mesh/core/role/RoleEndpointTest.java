@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestSize.PROJECT;
@@ -60,7 +63,15 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
+		expectEvent(ROLE_CREATED, event -> {
+			assertEquals("new_role", event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+		});
+
 		RoleResponse restRole = call(() -> client().createRole(request));
+
+		waitForEvents();
+
 		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 
@@ -150,7 +161,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
+			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid(),
+				CREATE_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -319,15 +331,18 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		String extraRoleUuid;
-		try (Tx tx = tx()) {
+		String extraRoleUuid = tx(() -> {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
-			extraRoleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, UPDATE_PERM);
-			tx.success();
-		}
+			return extraRole.getUuid();
+		});
+
+		expectEvent(ROLE_UPDATED, event -> {
+			assertEquals("renamed role", event.getString("name"));
+			assertEquals(extraRoleUuid, event.getString("uuid"));
+		});
 
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
@@ -335,6 +350,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleResponse restRole = call(() -> client().updateRole(extraRoleUuid, request));
 		assertEquals(request.getName(), restRole.getName());
 		assertEquals(extraRoleUuid, restRole.getUuid());
+
+		waitForEvents();
 
 		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
@@ -409,18 +426,25 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String extraRoleUuid;
-		try (Tx tx = tx()) {
+
+		String extraRoleUuid = tx(() -> {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
-			extraRoleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, DELETE_PERM);
-			tx.success();
-		}
+			return extraRole.getUuid();
+		});
+
+		expectEvent(ROLE_DELETED, event -> {
+			assertEquals("extra role", event.getString("name"));
+			assertEquals(extraRoleUuid, event.getString("uuid"));
+		});
 
 		trackingSearchProvider().clear().blockingAwait();
 		call(() -> client().deleteRole(extraRoleUuid));
+
+		waitForEvents();
+
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 1, 0, 0);
