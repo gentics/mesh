@@ -143,7 +143,6 @@ public class HandlerUtilities {
 					boolean updated = updateElement.update(ac, batch);
 					return Tuple.tuple(updated, batch);
 				});
-
 				EventQueueBatch b = tuple.v2();
 				Boolean isUpdated = tuple.v1();
 				RM model = updateElement.transformToRestSync(ac, 0);
@@ -168,12 +167,8 @@ public class HandlerUtilities {
 				ac.setLocation(path);
 			}
 
-			// 3. The updating transaction has succeeded. Now lets store it in the index
-			final ResultInfo info2 = info;
-			return database.tx(() -> {
-				info2.getBatch().dispatch();
-				return info2.getModel();
-			});
+			info.getBatch().dispatch();
+			return info.getModel();
 		}, model -> ac.send(model, created.get() ? CREATED : OK));
 	}
 

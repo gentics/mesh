@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -54,6 +55,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
@@ -535,7 +537,16 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName(newName);
 		assertThat(trackingSearchProvider()).hasNoStoreEvents();
+
+		expectEvents(PROJECT_UPDATED, 1, event -> {
+			assertEquals(newName, event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
+		});
+
 		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
+
+		waitForEvents();
 
 		// Assert that the routerstorage was updates
 		assertTrue("The new project router should have been added", RouterStorage.hasProject(newName));
