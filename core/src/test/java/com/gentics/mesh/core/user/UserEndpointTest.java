@@ -6,6 +6,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
@@ -40,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.rest.client.MeshResponse;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -70,6 +72,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -514,14 +517,24 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdate() throws Exception {
 		String oldName = tx(() -> user().getUsername());
+		String newName = "dummy_user_changed";
 		String uuid = tx(() -> user().getUuid());
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
 		updateRequest.setFirstname("Tony Awesome");
 		updateRequest.setLastname("Epic Stark");
-		updateRequest.setUsername("dummy_user_changed");
+		updateRequest.setUsername(newName);
+
+		expectEvents(USER_UPDATED, 1, event -> {
+			assertEquals(newName, event.getString("name"));
+			assertEquals(uuid, event.getString("uuid"));
+			return true;
+		});
+
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
+
+		waitForEvents();
 
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -530,12 +543,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldName));
-			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
+			User reloadedUser = boot().userRoot().findByUsername(newName);
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
 			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
-			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+			assertEquals(newName, reloadedUser.getUsername());
 		}
 	}
 
@@ -634,13 +647,22 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testCreateUser() {
+	public void testCreateUser() throws Exception {
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
 		newUser.setGroupUuid(groupUuid());
 		newUser.setPassword("test1234");
 
+		expectEvents(USER_CREATED, 1, event -> {
+			assertEquals("new_user", event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
+		});
+
 		UserResponse response = call(() -> client().createUser(newUser));
+
+		waitForEvents();
+
 		assertEquals("new_user", response.getUsername());
 		assertNotNull(response.getUuid());
 		assertThat(response.getGroups()).hasSize(1);
@@ -1230,7 +1252,15 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
 
-			client().deleteUser(uuid).blockingAwait();
+			expectEvents(USER_DELETED, 1, event -> {
+				assertEquals("new_user", event.getString("name"));
+				assertEquals(uuid, event.getString("uuid"));
+				return true;
+			});
+
+			call(() -> client().deleteUser(uuid));
+
+			waitForEvents();
 
 			try (Tx tx2 = tx()) {
 				User loadedUser = boot().userRoot().findByUuid(uuid);

@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -189,6 +191,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
+		final String newName = "new Name";
+
 		Tag tag = tag("vehicle");
 		String tagUuid = tx(() -> tag.getUuid());
 
@@ -210,7 +214,6 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertEquals(tagName, restName);
 
 			// 2. Update the tag
-			final String newName = "new Name";
 			tagUpdateRequest.setName(newName);
 			assertEquals(newName, tagUpdateRequest.getName());
 
@@ -220,7 +223,21 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
+		expectEvents(TAG_UPDATED, 1, event -> {
+			assertEquals(newName, event.getString("name"));
+			assertEquals(tagUuid, event.getString("uuid"));
+
+			JsonObject tagFamily = event.getJsonObject("tagFamily");
+			assertNotNull(tagFamily);
+			assertEquals("basic", tagFamily.getString("name"));
+			assertEquals(parentTagFamilyUuid, tagFamily.getString("uuid"));
+			return true;
+		});
+
 		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
+
+		waitForEvents();
+
 		try (Tx tx = tx()) {
 			assertThat(tag2).matches(tag);
 			assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeDocumentId(tag2.getUuid()));
@@ -312,19 +329,34 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String projectUuid = db().tx(() -> project().getUuid());
-		String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
+		final String projectUuid = db().tx(() -> project().getUuid());
+		final String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
+		final Tag tag = tag("vehicle");
+		final TagFamily parentTagFamily = tagFamily("basic");
+		final String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
+		final String tagUuid = tx(() -> tag.getUuid());
+
+		expectEvents(TAG_DELETED, 1, event -> {
+			assertEquals("Vehicle", event.getString("name"));
+			assertEquals(tagUuid, event.getString("uuid"));
+
+			JsonObject tagFamily = event.getJsonObject("tagFamily");
+			assertNotNull(tagFamily);
+			assertEquals("basic", tagFamily.getString("name"));
+			assertEquals(parentTagFamilyUuid, tagFamily.getString("uuid"));
+			return true;
+		});
+
+		// TODO assert for node updated events?
+
+		List<? extends Node> nodes = tx(() -> tag.getNodes(project().getLatestBranch()).list());
+
+		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
+
+		waitForEvents();
 
 		try (Tx tx = tx()) {
-			Tag tag = tag("vehicle");
-			TagFamily parentTagFamily = tagFamily("basic");
-
-			List<? extends Node> nodes = tag.getNodes(project().getLatestBranch()).list();
-
-			String uuid = tag.getUuid();
-			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
-
-			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(uuid));
+			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
@@ -333,8 +365,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 1, 0, 0);
 
-			tag = boot().tagRoot().findByUuid(uuid);
-			assertNull("The tag should have been deleted", tag);
+			Tag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
+			assertNull("The tag should have been deleted", reloadedTag);
 
 			Project project = boot().projectRoot().findByName(PROJECT_NAME);
 			assertNotNull(project);

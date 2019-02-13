@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
@@ -252,7 +254,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertEquals("The response did not contain the correct amount of items", perPage, listResponse.getData().size());
 		assertEquals(3, listResponse.getMetainfo().getCurrentPage());
 		assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
-				totalPages, listResponse.getMetainfo().getPageCount());
+			totalPages, listResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, listResponse.getMetainfo().getPerPage().longValue());
 		assertEquals(totalGroups, listResponse.getMetainfo().getTotalCount());
 
@@ -266,7 +268,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		// Verify that extra group is not part of the response
 		List<GroupResponse> filteredUserList = allGroups.parallelStream().filter(restGroup -> restGroup.getName().equals(extraGroupName))
-				.collect(Collectors.toList());
+			.collect(Collectors.toList());
 		assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 		call(() -> client().findGroups(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -331,7 +333,17 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
+
+		expectEvents(GROUP_UPDATED, 1, event -> {
+			assertEquals(name, event.getString("name"));
+			assertEquals(groupUuid, event.getString("uuid"));
+			return true;
+		});
+
 		GroupResponse restGroup = call(() -> client().updateGroup(groupUuid, request));
+
+		waitForEvents();
+
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
@@ -417,7 +429,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			}
 
 			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000L),
-					new RolePermissionParametersImpl().setRoleUuid(role().getUuid()) };
+				new RolePermissionParametersImpl().setRoleUuid(role().getUuid()) };
 
 			int readCount = 100;
 			for (int i = 0; i < readCount; i++) {
@@ -443,8 +455,20 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Override
 	public void testDeleteByUUID() throws Exception {
 
-		call(() -> client().deleteGroup(groupUuid()));
-		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), groupUuid());
+		String name = tx(() -> group().getName());
+		String uuid = groupUuid();
+
+		expectEvents(GROUP_DELETED, 1, event -> {
+			assertEquals(name, event.getString("name"));
+			assertEquals(uuid, event.getString("uuid"));
+			return true;
+		});
+
+		call(() -> client().deleteGroup(uuid));
+
+		waitForEvents();
+
+		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 1, 0, 0);
 

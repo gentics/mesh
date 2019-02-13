@@ -5,10 +5,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -34,10 +34,10 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -369,28 +369,36 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	@Override
-	public void testUpdate() throws UnknownHostException, InterruptedException {
+	public void testUpdate() throws Exception {
+		String name = tx(() -> tagFamily("basic").getName());
+		String uuid = tx(() -> tagFamily("basic").getUuid());
+
+		TagFamilyResponse readTagResponse = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid));
+		assertNotNull("The name of the tag should be loaded.", name);
+		String restName = readTagResponse.getName();
+		assertNotNull("The tag name must be set.", restName);
+		assertEquals(name, restName);
+
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("new Name");
+
+		expectEvents(TAG_FAMILY_UPDATED, 1, event -> {
+			assertEquals("new Name", event.getString("name"));
+			assertEquals(uuid, event.getString("uuid"));
+			JsonObject project = event.getJsonObject("project");
+			assertNotNull("The project reference is missing", project);
+			assertEquals("The project name does not match.", PROJECT_NAME, project.getString("name"));
+			assertEquals("The project uuid does not match.", projectUuid(), project.getString("uuid"));
+			return true;
+		});
+
+		TagFamilyResponse tagFamily2 = call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request));
+
+		waitForEvents();
+
+		// 4. read the tag again and verify that it was changed
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tagFamily("basic");
-			String uuid = tagFamily.getUuid();
-			String name = tagFamily.getName();
-
-			// 1. Read the current tagfamily
-			TagFamilyResponse readTagResponse = client().findTagFamilyByUuid(PROJECT_NAME, uuid).blockingGet();
-			assertNotNull("The name of the tag should be loaded.", name);
-			String restName = readTagResponse.getName();
-			assertNotNull("The tag name must be set.", restName);
-			assertEquals(name, restName);
-
-			// 2. Update the tagfamily
-			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-			request.setName("new Name");
-
-			// 3. Send the request to the server
-			TagFamilyResponse tagFamily2 = call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request));
 			assertThat(tagFamily2).matches(tagFamily("basic"));
-
-			// 4. read the tag again and verify that it was changed
 			TagFamilyResponse reloadedTagFamily = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid));
 			assertEquals(request.getName(), reloadedTagFamily.getName());
 			assertThat(reloadedTagFamily).matches(tagFamily("basic"));
