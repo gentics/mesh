@@ -1,6 +1,8 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -29,14 +31,18 @@ public class MainEventhandler implements EventHandler {
 
 	private final MeshHelper helper;
 	private final GroupHandler groupHandler;
+	private final TagHandler tagHandler;
+	private final TagFamilyHandler tagFamilyHandler;
 	private final MeshEntities entities;
 
 	private final Map<MeshEvent, EventHandler> handlers;
 
 	@Inject
-	public MainEventhandler(MeshHelper helper, GroupHandler groupHandler, MeshEntities entities) {
+	public MainEventhandler(MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities) {
 		this.helper = helper;
 		this.groupHandler = groupHandler;
+		this.tagHandler = tagHandler;
+		this.tagFamilyHandler = tagFamilyHandler;
 		this.entities = entities;
 
 		handlers = createHandlers();
@@ -44,10 +50,14 @@ public class MainEventhandler implements EventHandler {
 
 	private Map<MeshEvent, EventHandler> createHandlers() {
 		return Stream.of(
+			new SimpleEventHandler<>(helper, entities.schema, SchemaContainer.composeIndexName()),
+			new SimpleEventHandler<>(helper, entities.microschema, MicroschemaContainer.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.user, User.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.role, Role.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.project, Project.composeIndexName()),
-			groupHandler
+			groupHandler,
+			tagHandler,
+			tagFamilyHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
 	}
 

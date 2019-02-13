@@ -1,8 +1,6 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.search.index.Transformer;
 import io.vertx.core.json.JsonObject;
@@ -11,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class MeshEntity<T extends MeshCoreVertex<? extends RestModel, T>> {
+public class MeshEntity<T> {
 	private final Transformer<T> transformer;
 	private final MeshEvent createEvent;
 	private final MeshEvent updateEvent;
