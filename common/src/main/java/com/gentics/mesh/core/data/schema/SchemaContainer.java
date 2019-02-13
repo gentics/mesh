@@ -23,7 +23,7 @@ public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaRespons
 	 */
 	String TYPE = "schemaContainer";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, SCHEMA_CREATED.address, SCHEMA_UPDATED.address, SCHEMA_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 
 	/**
 	 * Compose the index name for the schema index.

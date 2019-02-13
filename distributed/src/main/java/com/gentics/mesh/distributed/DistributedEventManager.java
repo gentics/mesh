@@ -67,13 +67,13 @@ public class DistributedEventManager {
 		});
 
 		// React on project creates
-		eb.consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnCreated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project create event");
 			handleClusterTopologyUpdate(handler);
 		});
 
 		// React on project updates
-		eb.consumer(Project.TYPE_INFO.getOnUpdatedAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnUpdated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project update event.");
 			handleClusterTopologyUpdate(handler);
 		});

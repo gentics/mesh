@@ -54,18 +54,18 @@ public interface MeshEventModel extends RestModel {
 	void setName(String name);
 
 	/**
-	 * Return the address of the event.
+	 * Return the event to which the model belongs.
 	 * 
 	 * @return
 	 */
-	String getAddress();
+	MeshEvent getEvent();
 
 	/**
-	 * Set the address of the event.
+	 * Set the event to which the model belongs.
 	 * 
 	 * @param address
 	 */
-	void setAddress(String address);
+	void setEvent(MeshEvent event);
 
 	/**
 	 * Returns the event cause info which contains information about the root action which lead to the creation of this event.

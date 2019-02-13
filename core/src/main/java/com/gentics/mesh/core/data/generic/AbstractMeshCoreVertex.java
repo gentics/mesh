@@ -127,7 +127,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	@Override
 	public MeshEventModel onUpdated() {
 		MeshEventModel event = new MeshEventModelImpl();
-		event.setAddress(getTypeInfo().getOnUpdatedAddress());
+		event.setEvent(getTypeInfo().getOnUpdated());
 		fillEventInfo(event);
 		return event;
 	}
@@ -135,7 +135,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	@Override
 	public MeshEventModel onCreated() {
 		MeshEventModel event = new MeshEventModelImpl();
-		event.setAddress(getTypeInfo().getOnCreatedAddress());
+		event.setEvent(getTypeInfo().getOnCreated());
 		fillEventInfo(event);
 		return event;
 	}
@@ -143,7 +143,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	@Override
 	public MeshEventModel onDeleted() {
 		MeshEventModel event = new MeshEventModelImpl();
-		event.setAddress(getTypeInfo().getOnDeletedAddress());
+		event.setEvent(getTypeInfo().getOnDeleted());
 		fillEventInfo(event);
 		return event;
 	}

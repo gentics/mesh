@@ -29,7 +29,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 */
 	String TYPE = "tagFamily";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, TAG_FAMILY_CREATED.address, TAG_FAMILY_UPDATED.address, TAG_FAMILY_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
 
 	/**
 	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.

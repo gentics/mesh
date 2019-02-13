@@ -33,7 +33,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 */
 	String TYPE = "project";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, PROJECT_CREATED.address, PROJECT_UPDATED.address, PROJECT_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

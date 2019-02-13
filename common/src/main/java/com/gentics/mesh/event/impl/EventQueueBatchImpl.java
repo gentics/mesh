@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -251,15 +252,15 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 		EventBus eventbus = Mesh.vertx().eventBus();
 		// TODO buffer event dispatching?
 		getEntries().forEach(entry -> {
-			String address = entry.getAddress();
+			MeshEvent event = entry.getEvent();
 			if (log.isDebugEnabled()) {
-				log.debug("Created event sent {}", address);
+				log.debug("Created event sent {}", event);
 			}
 			String json = JsonUtil.toJson(entry);
 			// if (log.isTraceEnabled()) {
-			log.info("Dispatching event '{}' with payload:\n{}", address, json);
+			log.info("Dispatching event '{}' with payload:\n{}", event, json);
 			// }
-			eventbus.publish(address, new JsonObject(json));
+			eventbus.publish(event.getAddress(), new JsonObject(json));
 		});
 		getEntries().clear();
 	}

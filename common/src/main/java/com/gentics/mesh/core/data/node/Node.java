@@ -64,7 +64,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	String BRANCH_UUID_KEY = "branchUuid";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, NODE_CREATED.address, NODE_UPDATED.address, NODE_DELETED.address);
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, NODE_CREATED, NODE_UPDATED, NODE_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

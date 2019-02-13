@@ -1,18 +1,27 @@
 package com.gentics.mesh.core.rest.event.node;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class NodeMeshEventModel extends AbstractProjectEventModel {
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Return the type of the node (e.g. draft/published)")
 	private String type;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Return the branch to which the node belongs.")
 	private String branchUuid;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String languageTag;
 
-	private String schemaName;
-
-	private String schemaUuid;
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Schema reference of the node.")
+	private SchemaReference schema;
 
 	public NodeMeshEventModel() {
 	}
@@ -51,20 +60,11 @@ public class NodeMeshEventModel extends AbstractProjectEventModel {
 		this.languageTag = languageTag;
 	}
 
-	public String getSchemaUuid() {
-		return schemaUuid;
+	public SchemaReference getSchema() {
+		return schema;
 	}
 
-	public void setSchemaUuid(String uuid) {
-		this.schemaUuid = uuid;
+	public void setSchema(SchemaReference schema) {
+		this.schema = schema;
 	}
-
-	public String getSchemaName() {
-		return schemaName;
-	}
-
-	public void setSchemaName(String name) {
-		schemaName = name;
-	}
-
 }

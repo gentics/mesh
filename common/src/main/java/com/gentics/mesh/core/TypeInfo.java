@@ -1,20 +1,22 @@
 package com.gentics.mesh.core;
 
+import com.gentics.mesh.core.rest.MeshEvent;
+
 /**
  * Container for type specific meta information.
  */
 public class TypeInfo {
 
 	private String type;
-	private String onCreatedAddress;
-	private String onUpdatedAddress;
-	private String onDeletedAddress;
+	private MeshEvent onCreated;
+	private MeshEvent onUpdated;
+	private MeshEvent onDeleted;
 
-	public TypeInfo(String type, String onCreatedAddress, String onUpdatedAddress, String onDeletedAddress) {
+	public TypeInfo(String type, MeshEvent onCreated, MeshEvent onUpdated, MeshEvent onDeleted) {
 		this.type = type;
-		this.onCreatedAddress = onCreatedAddress;
-		this.onUpdatedAddress = onUpdatedAddress;
-		this.onDeletedAddress = onDeletedAddress;
+		this.onCreated = onCreated;
+		this.onUpdated = onUpdated;
+		this.onDeleted = onDeleted;
 	}
 
 	/**
@@ -27,29 +29,29 @@ public class TypeInfo {
 	}
 
 	/**
-	 * Return the onCreated eventbus address.
+	 * Return the onCreated eventbus event.
 	 * 
 	 * @return
 	 */
-	public String getOnCreatedAddress() {
-		return onCreatedAddress;
+	public MeshEvent getOnCreated() {
+		return onCreated;
 	}
 
 	/**
-	 * Return the onDeleted eventbus address.
+	 * Return the onDeleted eventbus event.
 	 * 
 	 * @return
 	 */
-	public String getOnDeletedAddress() {
-		return onDeletedAddress;
+	public MeshEvent getOnDeleted() {
+		return onDeleted;
 	}
 
 	/**
-	 * Return the onUpdated eventbus address.
+	 * Return the onUpdated eventbus event.
 	 * 
 	 * @return
 	 */
-	public String getOnUpdatedAddress() {
-		return onUpdatedAddress;
+	public MeshEvent getOnUpdated() {
+		return onUpdated;
 	}
 }

@@ -25,7 +25,7 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 */
 	String TYPE = "role";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, ROLE_CREATED.address, ROLE_UPDATED.address, ROLE_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

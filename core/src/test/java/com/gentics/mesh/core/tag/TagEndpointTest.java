@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -53,6 +54,8 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
+import io.vertx.core.json.JsonObject;
+
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
@@ -75,7 +78,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertNull(restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			assertEquals("The response did not contain the correct amount of items. We only have nine basic tags in the test data.", nBasicTags,
-					restResponse.getData().size());
+				restResponse.getData().size());
 
 			final long perPage = 4;
 			// Extra Tags + permitted tag
@@ -85,7 +88,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			for (int page = 1; page <= totalPages; page++) {
 				final int currentPage = page;
 				TagListResponse tagPage = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(currentPage,
-						perPage)));
+					perPage)));
 				restResponse = tagPage;
 				long expectedItemsCount = perPage;
 				// The last page should only list 5 items
@@ -95,9 +98,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 				assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
-						.getCurrentPage());
+					.getCurrentPage());
 				assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
-						+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
+					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
 				assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
 
 				allTags.addAll(restResponse.getData());
@@ -106,22 +109,22 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			// Verify that the no_perm_tag is not part of the response
 			List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID)).collect(
-					Collectors.toList());
+				Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(-1, perPage)), BAD_REQUEST,
-					"error_page_parameter_must_be_positive", "-1");
+				"error_page_parameter_must_be_positive", "-1");
 
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(0, perPage)), BAD_REQUEST,
-					"error_page_parameter_must_be_positive", "0");
+				"error_page_parameter_must_be_positive", "0");
 
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(1, -1L)), BAD_REQUEST,
-					"error_pagesize_parameter", "-1");
+				"error_pagesize_parameter", "-1");
 
 			long currentPerPage = 25L;
 			totalPages = (int) Math.ceil(totalTags / (double) currentPerPage);
 			TagListResponse tagList = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(4242,
-					currentPerPage)));
+				currentPerPage)));
 			assertEquals(0, tagList.getData().size());
 			assertEquals(4242, tagList.getMetainfo().getCurrentPage());
 			assertEquals(currentPerPage, tagList.getMetainfo().getPerPage().longValue());
@@ -160,7 +163,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagResponse response = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid, new RolePermissionParametersImpl()
-					.setRoleUuid(role().getUuid())));
+				.setRoleUuid(role().getUuid())));
 			assertThat(response.getRolePerms()).as("Role perms").hasPerm(CREATE, READ, UPDATE, DELETE);
 		}
 	}
@@ -179,7 +182,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
-		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -227,13 +231,13 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
+						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
 			assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
-					.getUuid()));
+				.getUuid()));
 			assertThat(trackingSearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
@@ -295,7 +299,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			// Create an tag update request
 			TagUpdateRequest request = new TagUpdateRequest();
 			request.setName("new Name");
-			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid, UPDATE_PERM.getRestPerm().getName());
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid,
+				UPDATE_PERM.getRestPerm().getName());
 
 			// read the tag again and verify that it was not changed
 			TagResponse loadedTag = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).blockingGet();
@@ -324,7 +329,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+					schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 1, 0, 0);
 
@@ -349,7 +354,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			TagFamily parentTagFamily = tagFamily("basic");
-			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
+			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid,
+				DELETE_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {
@@ -376,15 +382,30 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	@Override
-	public void testCreate() {
+	public void testCreate() throws Exception {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setName("SomeName");
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 		String projectUuid = db().tx(() -> project().getUuid());
 
 		trackingSearchProvider().clear().blockingAwait();
+
+		expectEvents(TAG_CREATED, 1, event -> {
+			assertEquals("SomeName", event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+
+			JsonObject tagFamily = event.getJsonObject("tagFamily");
+			assertNotNull(tagFamily);
+			assertEquals("colors", tagFamily.getString("name"));
+			assertEquals(parentTagFamilyUuid, tagFamily.getString("uuid"));
+			return true;
+		});
+
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getName());
+
+		waitForEvents();
+
 		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 		try (Tx tx = tx()) {
@@ -408,7 +429,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
-		call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm", tagRootUuid, CREATE_PERM.getRestPerm().getName());
+		call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm", tagRootUuid,
+			CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -448,7 +470,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tagFamilyName = tagFamily.getName();
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 			call(() -> client().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest), CONFLICT,
-					"tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
+				"tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 		}
 	}
 
@@ -562,7 +584,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
-		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 
 	}
 

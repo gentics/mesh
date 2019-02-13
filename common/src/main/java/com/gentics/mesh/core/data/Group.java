@@ -23,7 +23,7 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 */
 	String TYPE = "group";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, GROUP_CREATED.address, GROUP_UPDATED.address, GROUP_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

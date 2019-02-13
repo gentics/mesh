@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.event;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.MeshEvent;
 
 public abstract class AbstractMeshEventModel implements MeshEventModel {
 
@@ -23,7 +24,7 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 	private EventCauseInfo cause;
 
 	@JsonIgnore
-	private String address;
+	private MeshEvent event;
 
 	@Override
 	public String getUuid() {
@@ -51,12 +52,13 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 		this.origin = origin;
 	}
 
-	public void setAddress(String address) {
-		this.address = address;
+	@Override
+	public MeshEvent getEvent() {
+		return event;
 	}
 
-	public String getAddress() {
-		return address;
+	public void setEvent(MeshEvent event) {
+		this.event = event;
 	}
 
 	@Override

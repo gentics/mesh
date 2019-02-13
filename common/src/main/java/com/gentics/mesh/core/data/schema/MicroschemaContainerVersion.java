@@ -22,7 +22,7 @@ public interface MicroschemaContainerVersion extends
 
 	static final String TYPE = "microschemaVersion";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, MICROSCHEMA_CREATED.address, MICROSCHEMA_UPDATED.address, SCHEMA_DELETED.address);
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, SCHEMA_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

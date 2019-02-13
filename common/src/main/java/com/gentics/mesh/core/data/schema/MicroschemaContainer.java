@@ -20,7 +20,7 @@ public interface MicroschemaContainer extends
 	 */
 	String TYPE = "microschema";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, MICROSCHEMA_CREATED.address, MICROSCHEMA_UPDATED.address, MICROSCHEMA_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, MICROSCHEMA_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

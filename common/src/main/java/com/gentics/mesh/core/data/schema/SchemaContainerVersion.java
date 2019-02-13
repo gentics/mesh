@@ -25,7 +25,7 @@ public interface SchemaContainerVersion
 
 	static final String TYPE = "schemaVersion";
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, SCHEMA_CREATED.address, SCHEMA_UPDATED.address, SCHEMA_DELETED.address);
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -308,24 +309,30 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public TagFamilyMeshEventModel onDeleted() {
-		TagFamilyMeshEventModel event = new TagFamilyMeshEventModel();
-		event.setAddress(getTypeInfo().getOnDeletedAddress());
-		fillEventInfo(event);
-		Project project = getProject();
-		ProjectReference reference = project.transformToReference();
-		event.setProject(reference);
-		return event;
-	}
-	
-	@Override
 	public TagFamilyMeshEventModel onCreated() {
+		return createEvent(getTypeInfo().getOnCreated());
+	}
+
+	@Override
+	public TagFamilyMeshEventModel onUpdated() {
+		return createEvent(getTypeInfo().getOnUpdated());
+	}
+
+	@Override
+	public TagFamilyMeshEventModel onDeleted() {
+		return createEvent(getTypeInfo().getOnDeleted());
+	}
+
+	private TagFamilyMeshEventModel createEvent(MeshEvent type) {
 		TagFamilyMeshEventModel event = new TagFamilyMeshEventModel();
-		event.setAddress(getTypeInfo().getOnCreatedAddress());
+		event.setEvent(type);
 		fillEventInfo(event);
+
+		// .project
 		Project project = getProject();
 		ProjectReference reference = project.transformToReference();
 		event.setProject(reference);
+
 		return event;
 	}
 

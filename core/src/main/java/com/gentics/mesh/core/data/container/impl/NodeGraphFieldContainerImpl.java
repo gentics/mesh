@@ -699,7 +699,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public NodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setAddress(Node.TYPE_INFO.getOnDeletedAddress());
+		event.setEvent(Node.TYPE_INFO.getOnDeleted());
 		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
@@ -707,7 +707,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setAddress(Node.TYPE_INFO.getOnUpdatedAddress());
+		event.setEvent(Node.TYPE_INFO.getOnUpdated());
 		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
@@ -715,7 +715,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public NodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setAddress(Node.TYPE_INFO.getOnCreatedAddress());
+		event.setEvent(Node.TYPE_INFO.getOnCreated());
 		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
@@ -736,8 +736,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 		SchemaContainerVersion version = getSchemaContainerVersion();
 		if (version != null) {
-			event.setSchemaName(version.getName());
-			event.setSchemaUuid(version.getSchemaContainer().getUuid());
+			event.setSchema(version.transformToReference());
 		}
 	}
 

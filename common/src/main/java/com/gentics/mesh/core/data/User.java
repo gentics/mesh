@@ -51,7 +51,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 */
 	String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, USER_CREATED.address, USER_UPDATED.address, USER_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, USER_CREATED, USER_UPDATED, USER_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

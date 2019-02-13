@@ -50,7 +50,7 @@ public interface Branch
 	 */
 	String TYPE = "branch";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, BRANCH_CREATED.address, BRANCH_UPDATED.address, BRANCH_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(TYPE, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

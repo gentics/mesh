@@ -2059,7 +2059,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeMeshEventModel onCreated(String branchUuid) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setAddress(getTypeInfo().getOnCreatedAddress());
+		event.setEvent(getTypeInfo().getOnCreated());
 		fillCommonEventInfo(event);
 		event.setBranchUuid(branchUuid);
 		return event;
@@ -2068,7 +2068,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setAddress(getTypeInfo().getOnUpdatedAddress());
+		event.setEvent(getTypeInfo().getOnUpdated());
 		fillCommonEventInfo(event);
 		event.setBranchUuid(branchUuid);
 		if (type != null) {
@@ -2085,14 +2085,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setAddress(getTypeInfo().getOnDeletedAddress());
+		event.setEvent(getTypeInfo().getOnDeleted());
 		event.setUuid(uuid);
 		event.setLanguageTag(languageTag);
 		event.setType(type);
 		event.setBranchUuid(branchUuid);
 		if (schema != null) {
-			event.setSchemaName(schema.getName());
-			event.setSchemaUuid(schema.getUuid());
+			event.setSchema(schema.transformToReference());
 		}
 		return event;
 	}
@@ -2101,8 +2100,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		event.setUuid(getUuid());
 		SchemaContainer container = getSchemaContainer();
 		if (container != null) {
-			event.setSchemaName(container.getName());
-			event.setSchemaUuid(container.getUuid());
+			event.setSchema(container.transformToReference());
 		}
 	}
 
