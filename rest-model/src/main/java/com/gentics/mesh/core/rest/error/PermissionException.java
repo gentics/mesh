@@ -15,7 +15,7 @@ public class PermissionException extends AbstractUnavailableException {
 	public static final String i18nKey = "graphql_error_missing_perm";
 
 	public PermissionException(String elementType, String elementId) {
-		super(null, i18nKey, elementId, elementType);
+		super(null, i18nKey, elementType, elementId);
 	}
 
 	@Override

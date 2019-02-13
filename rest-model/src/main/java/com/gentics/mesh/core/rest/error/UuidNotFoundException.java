@@ -13,7 +13,7 @@ public class UuidNotFoundException extends AbstractUnavailableException {
 
 	private static final long serialVersionUID = -4473062775278276226L;
 
-	private static final String TYPE = "not_found";
+	private static final String TYPE = "uuid_not_found";
 	private static final String i18nKey = "object_not_found_for_uuid";
 
 	public UuidNotFoundException(String elementType, String elementId) {

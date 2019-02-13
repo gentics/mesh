@@ -54,6 +54,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.core.rest.error.UuidNotFoundException;
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
@@ -211,7 +212,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				Throwable error = null;
 
 				if (node.getRight() == null) {
-					error = new Exception(String.format("Node with UUID \"%s\" not found", node.getLeft()));
+					error = new UuidNotFoundException("node", node.getLeft());
 				} else {
 					// The node was found, check the permissions.
 					try {

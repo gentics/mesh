@@ -13,5 +13,8 @@
 		}
 	}
 }
-# [$.errors[0].type=DataFetchingException]
-# [$.errors[1]=<is-undefined>]
+# [$.errors.length()=1]
+# [$.errors[0].message=object_not_found_for_uuid]
+# [$.errors[0].type=uuid_not_found]
+# [$.errors[0].elementId=not-a-uuid]
+# [$.errors[0].elementType=node]

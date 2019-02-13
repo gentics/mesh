@@ -28,7 +28,7 @@ public abstract class AbstractUnavailableException extends AbstractRestException
 	 * @param elementId The ID of the unavailable object
 	 */
 	public AbstractUnavailableException(String i18nMessage, String elementType, String elementId) {
-		this(null, i18nMessage, elementId, elementType);
+		this(null, i18nMessage, elementType, elementId);
 	}
 
 	/**
