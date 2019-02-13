@@ -26,8 +26,8 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.toListWithMulti
  * Call {@link #handle(MessageEvent)} to map an event to a list of elastic search requests.
  */
 @Singleton
-public class MainEventhandler implements EventHandler {
-	private static final Logger log = LoggerFactory.getLogger(MainEventhandler.class);
+public class MainEventHandler implements EventHandler {
+	private static final Logger log = LoggerFactory.getLogger(MainEventHandler.class);
 
 	private final MeshHelper helper;
 	private final GroupHandler groupHandler;
@@ -38,7 +38,7 @@ public class MainEventhandler implements EventHandler {
 	private final Map<MeshEvent, EventHandler> handlers;
 
 	@Inject
-	public MainEventhandler(MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities) {
+	public MainEventHandler(MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities) {
 		this.helper = helper;
 		this.groupHandler = groupHandler;
 		this.tagHandler = tagHandler;

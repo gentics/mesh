@@ -45,7 +45,7 @@ public class BulkOperator implements ObservableOperator<ElasticsearchRequest, El
 	}
 
 	@Override
-	public Observer<? super ElasticsearchRequest> apply(Observer<? super ElasticsearchRequest> observer) throws Exception {
+	public Observer<? super ElasticsearchRequest> apply(Observer<? super ElasticsearchRequest> observer) {
 		log.warn("More than one observer for the same operator detected. Flush will only work for the newest observer.");
 		subscriber = new FlushSubscriber<ElasticsearchRequest>() {
 			private Long timer;
