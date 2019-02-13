@@ -172,7 +172,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
 		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated group.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -221,7 +221,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Create a new group.");
 		endpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group"));
 		endpoint.exampleResponse(CREATED, groupExamples.getGroupResponse1("New group"), "Created group.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
 		});
 

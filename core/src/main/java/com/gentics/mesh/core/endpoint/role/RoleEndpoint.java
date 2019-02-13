@@ -111,7 +111,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
 		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated role.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -159,7 +159,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role"));
 		endpoint.exampleResponse(CREATED, roleExamples.getRoleResponse1("New role"), "Created role.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});

@@ -172,7 +172,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(CREATED, microschemaExamples.getGeolocationMicroschemaResponse(), "Created microschema.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
 		});
 

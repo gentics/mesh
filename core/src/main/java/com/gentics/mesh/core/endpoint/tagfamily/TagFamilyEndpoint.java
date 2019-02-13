@@ -88,7 +88,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Update the specified tag");
 		endpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
 		endpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
@@ -236,7 +236,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
 		endpoint.exampleResponse(CREATED, tagFamilyExamples.getTagFamilyResponse("Colors"), "Created tag family.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			tagFamilyCrudHandler.handleCreate(ac);
 		});
@@ -252,7 +252,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
 		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
 			tagFamilyCrudHandler.handleUpdate(ac, uuid);

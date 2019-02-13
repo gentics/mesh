@@ -91,7 +91,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
 		endpoint.exampleResponse(CREATED, schemaExamples.getSchemaResponse(), "Created schema.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});

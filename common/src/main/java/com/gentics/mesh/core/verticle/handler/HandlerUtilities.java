@@ -121,7 +121,7 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
 		AtomicBoolean created = new AtomicBoolean(false);
-		asyncTx(ac, (tx) -> {
+		ResultInfo result = database.tx(tx -> {
 			RootVertex<T> root = handler.handle();
 
 			// 1. Load the element from the root element using the given uuid (if not null)
@@ -132,8 +132,6 @@ public class HandlerUtilities {
 				}
 				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
 			}
-
-			ResultInfo info = null;
 
 			// Check whether we need to update a found element or whether we need to create a new one.
 			if (element != null) {
@@ -146,30 +144,31 @@ public class HandlerUtilities {
 				EventQueueBatch b = tuple.v2();
 				Boolean isUpdated = tuple.v1();
 				RM model = updateElement.transformToRestSync(ac, 0);
-				info = new ResultInfo(model, b);
+				ResultInfo info = new ResultInfo(model, b);
 				if (isUpdated) {
 					b.add(updateElement.onUpdated());
 				}
+				return info;
 			} else {
 				Tuple<T, EventQueueBatch> tuple = database.tx(() -> {
 					EventQueueBatch batch = EventQueueBatch.create();
 					created.set(true);
 					return Tuple.tuple(root.create(ac, batch, uuid), batch);
 				});
-
 				EventQueueBatch b = tuple.v2();
 				T createdElement = tuple.v1();
 				RM model = createdElement.transformToRestSync(ac, 0);
 				String path = createdElement.getAPIPath(ac);
-				info = new ResultInfo(model, b);
+				ResultInfo info = new ResultInfo(model, b);
 				info.setProperty("path", path);
 				createdElement.onCreated();
 				ac.setLocation(path);
+				return info;
 			}
+		});
 
-			info.getBatch().dispatch();
-			return info.getModel();
-		}, model -> ac.send(model, created.get() ? CREATED : OK));
+		result.getBatch().dispatch();
+		ac.send(result.getModel(), created.get() ? CREATED : OK);
 	}
 
 	/**

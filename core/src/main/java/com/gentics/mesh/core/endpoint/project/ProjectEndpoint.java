@@ -60,7 +60,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		updateEndpoint.produces(APPLICATION_JSON);
 		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
 		updateEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
-		updateEndpoint.handler(rc -> {
+		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -78,7 +78,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project"));
 		endpoint.exampleResponse(CREATED, projectExamples.getProjectResponse("New Project"), "Created project.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});
