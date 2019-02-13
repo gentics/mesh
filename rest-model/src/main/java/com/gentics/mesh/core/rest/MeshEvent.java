@@ -156,9 +156,15 @@ public enum MeshEvent {
 	INDEX_SYNC("mesh.search.index.sync", null),
 
 	/**
+	 * Emitted when an index clear is requested.
+	 */
+	INDEX_CLEAR_REQUEST("mesh.search.index.clear.request", null),
+
+	/**
 	 * Event that is emitted when the search verticle has been working and is now idle.
 	 */
 	SEARCH_IDLE("mesh.search.process.idle", null);
+
 
 	public final String address;
 	public final Class bodyModel;
