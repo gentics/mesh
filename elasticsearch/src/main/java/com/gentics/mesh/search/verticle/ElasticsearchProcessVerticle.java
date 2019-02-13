@@ -3,7 +3,7 @@ package com.gentics.mesh.search.verticle;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.search.impl.SearchClient;
-import com.gentics.mesh.search.verticle.eventhandler.MainEventhandler;
+import com.gentics.mesh.search.verticle.eventhandler.MainEventHandler;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessVerticle.class);
 
-	private final MainEventhandler mainEventhandler;
+	private final MainEventHandler mainEventhandler;
 	private final SearchClient elasticSearchClient;
 	private BulkOperator bulker;
 
@@ -40,7 +40,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
 
 	@Inject
-	public ElasticsearchProcessVerticle(MainEventhandler mainEventhandler, SearchClient elasticSearchClient) {
+	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchClient elasticSearchClient) {
 		this.mainEventhandler = mainEventhandler;
 		this.elasticSearchClient = elasticSearchClient;
 	}

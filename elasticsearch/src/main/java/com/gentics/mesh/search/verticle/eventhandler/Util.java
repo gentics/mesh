@@ -14,7 +14,7 @@ public final class Util {
 
 	public static <V, K> Collector<V, ?, Map<K, V>> toListWithMultipleKeys(Function<V, Collection<K>> keyMapper) {
 		return Collector.of(HashMap::new,
-			(map, item) -> keyMapper.apply(item).stream().forEach(key -> map.put(key, item)),
+			(map, item) -> keyMapper.apply(item).forEach(key -> map.put(key, item)),
 			(m1, m2) -> {
 				m1.putAll(m2);
 				return m1;
