@@ -18,10 +18,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.Errors;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.event.node.CreatedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.DeletedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -430,7 +428,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param type
 	 * @return
 	 */
-	DeletedNodeMeshEventModel onDeleted(String branchUuid, ContainerType type);
+	NodeMeshEventModel onDeleted(String branchUuid, ContainerType type);
 
 	/**
 	 * Create the specific create event.
@@ -439,7 +437,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param type
 	 * @return
 	 */
-	CreatedNodeMeshEventModel onCreated(String branchUuid, ContainerType type);
+	NodeMeshEventModel onCreated(String branchUuid, ContainerType type);
 
 	/**
 	 * Create the specific update event.
@@ -448,5 +446,5 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param type
 	 * @return
 	 */
-	UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
+	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
 }

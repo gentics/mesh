@@ -3,13 +3,13 @@ package com.gentics.mesh.core.rest.event.tag;
 import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 
-public class DeletedTagMeshEventModel extends AbstractProjectEventModel {
+public class TagMeshEventModel extends AbstractProjectEventModel {
 
 	private TagFamilyReference tagFamily;
 
-	public DeletedTagMeshEventModel() {
+	public TagMeshEventModel() {
 	}
-
+	
 	public TagFamilyReference getTagFamily() {
 		return tagFamily;
 	}

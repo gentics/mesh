@@ -25,14 +25,13 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
-import com.gentics.mesh.core.rest.event.DeletedMeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -826,19 +825,19 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public CreatedMeshEventModel onCreated() {
+			public MeshEventModel onCreated() {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public UpdatedMeshEventModel onUpdated() {
+			public MeshEventModelImpl onUpdated() {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public DeletedMeshEventModel onDeleted() {
+			public MeshEventModel onDeleted() {
 				// TODO Auto-generated method stub
 				return null;
 			}

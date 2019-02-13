@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.event.node;
 
-import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
+import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 
-public abstract class AbstractNodeMeshEventModel extends AbstractMeshEventModel {
+public class NodeMeshEventModel extends AbstractProjectEventModel {
 
 	private String type;
 
@@ -13,6 +13,9 @@ public abstract class AbstractNodeMeshEventModel extends AbstractMeshEventModel 
 	private String schemaName;
 
 	private String schemaUuid;
+
+	public NodeMeshEventModel() {
+	}
 
 	/**
 	 * Type of the node that has been deleted (e.g. published or draft)

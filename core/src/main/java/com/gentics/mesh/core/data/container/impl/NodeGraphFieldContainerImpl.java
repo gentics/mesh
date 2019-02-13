@@ -65,6 +65,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.error.NameConflictException;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -72,10 +73,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.core.rest.event.node.AbstractNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.CreatedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.DeletedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
@@ -700,24 +697,24 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return nodePath;
 	}
 
-	public DeletedNodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
-		DeletedNodeMeshEventModel event = new DeletedNodeMeshEventModel();
+	public NodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setAddress(Node.TYPE_INFO.getOnDeletedAddress());
 		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
 
 	@Override
-	public UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
-		UpdatedNodeMeshEventModel event = new UpdatedNodeMeshEventModel();
+	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setAddress(Node.TYPE_INFO.getOnUpdatedAddress());
 		fillCommonEventInfo(event, branchUuid, type);
 		return event;
 	}
 
 	@Override
-	public CreatedNodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
-		CreatedNodeMeshEventModel event = new CreatedNodeMeshEventModel();
+	public NodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setAddress(Node.TYPE_INFO.getOnCreatedAddress());
 		fillCommonEventInfo(event, branchUuid, type);
 		return event;
@@ -730,7 +727,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @param branchUuid
 	 * @param type
 	 */
-	private void fillCommonEventInfo(AbstractNodeMeshEventModel event, String branchUuid, ContainerType type) {
+	private void fillCommonEventInfo(NodeMeshEventModel event, String branchUuid, ContainerType type) {
 		event.setUuid(getParentNode(branchUuid).getUuid());
 		event.setBranchUuid(branchUuid);
 		event.setLanguageTag(getLanguageTag());

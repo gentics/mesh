@@ -81,6 +81,8 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -99,12 +101,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.core.rest.event.DeletedMeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.core.rest.event.node.AbstractNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.CreatedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.DeletedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.gentics.mesh.handler.ActionContext;
@@ -2060,8 +2057,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public CreatedNodeMeshEventModel onCreated(String branchUuid) {
-		CreatedNodeMeshEventModel event = new CreatedNodeMeshEventModel();
+	public NodeMeshEventModel onCreated(String branchUuid) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setAddress(getTypeInfo().getOnCreatedAddress());
 		fillCommonEventInfo(event);
 		event.setBranchUuid(branchUuid);
@@ -2069,8 +2066,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
-		UpdatedNodeMeshEventModel event = new UpdatedNodeMeshEventModel();
+	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setAddress(getTypeInfo().getOnUpdatedAddress());
 		fillCommonEventInfo(event);
 		event.setBranchUuid(branchUuid);
@@ -2081,13 +2078,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public DeletedMeshEventModel onDeleted() {
+	public MeshEventModel onDeleted() {
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
 	}
 
 	@Override
-	public DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag) {
-		DeletedNodeMeshEventModel event = new DeletedNodeMeshEventModel();
+	public NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setAddress(getTypeInfo().getOnDeletedAddress());
 		event.setUuid(uuid);
 		event.setLanguageTag(languageTag);
@@ -2100,7 +2097,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return event;
 	}
 
-	private void fillCommonEventInfo(AbstractNodeMeshEventModel event) {
+	private void fillCommonEventInfo(NodeMeshEventModel event) {
 		event.setUuid(getUuid());
 		SchemaContainer container = getSchemaContainer();
 		if (container != null) {

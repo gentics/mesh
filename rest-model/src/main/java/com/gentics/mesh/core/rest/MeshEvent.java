@@ -9,9 +9,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.event.CreatedMeshEventModel;
-import com.gentics.mesh.core.rest.event.DeletedMeshEventModel;
-import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
+import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
+import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
+
 import io.vertx.core.eventbus.EventBus;
 
 /**
@@ -63,83 +65,83 @@ public enum MeshEvent {
 
 	/* User */
 
-	USER_CREATED("mesh.user.created", CreatedMeshEventModel.class),
+	USER_CREATED("mesh.user.created", MeshEventModelImpl.class),
 
-	USER_UPDATED("mesh.user.updated", UpdatedMeshEventModel.class),
+	USER_UPDATED("mesh.user.updated", MeshEventModelImpl.class),
 
-	USER_DELETED("mesh.user.deleted", DeletedMeshEventModel.class),
+	USER_DELETED("mesh.user.deleted", MeshEventModelImpl.class),
 
 	/* Group */
 
-	GROUP_CREATED("mesh.group.created", CreatedMeshEventModel.class),
+	GROUP_CREATED("mesh.group.created", MeshEventModelImpl.class),
 
-	GROUP_UPDATED("mesh.group.updated", UpdatedMeshEventModel.class),
+	GROUP_UPDATED("mesh.group.updated", MeshEventModelImpl.class),
 
-	GROUP_DELETED("mesh.group.deleted", DeletedMeshEventModel.class),
+	GROUP_DELETED("mesh.group.deleted", MeshEventModelImpl.class),
 
 	/* Role */
 
-	ROLE_CREATED("mesh.role.created", CreatedMeshEventModel.class),
+	ROLE_CREATED("mesh.role.created", MeshEventModelImpl.class),
 
-	ROLE_UPDATED("mesh.role.updated", UpdatedMeshEventModel.class),
+	ROLE_UPDATED("mesh.role.updated", MeshEventModelImpl.class),
 
-	ROLE_DELETED("mesh.role.deleted", DeletedMeshEventModel.class),
+	ROLE_DELETED("mesh.role.deleted", MeshEventModelImpl.class),
 
 	/* Tag */
 
-	TAG_CREATED("mesh.tag.created", null),
+	TAG_CREATED("mesh.tag.created", TagMeshEventModel.class),
 
-	TAG_UPDATED("mesh.tag.updated", null),
+	TAG_UPDATED("mesh.tag.updated", TagMeshEventModel.class),
 
-	TAG_DELETED("mesh.tag.deleted", null),
+	TAG_DELETED("mesh.tag.deleted", TagMeshEventModel.class),
 
 	/* Tag Family */
 
-	TAG_FAMILY_CREATED("mesh.tagfamily.created", null),
+	TAG_FAMILY_CREATED("mesh.tagfamily.created", TagFamilyMeshEventModel.class),
 
-	TAG_FAMILY_UPDATED("mesh.tagfamily.updated", null),
+	TAG_FAMILY_UPDATED("mesh.tagfamily.updated", TagFamilyMeshEventModel.class),
 
-	TAG_FAMILY_DELETED("mesh.tagfamily.deleted", null),
+	TAG_FAMILY_DELETED("mesh.tagfamily.deleted", TagFamilyMeshEventModel.class),
 
 	/* Project */
 
-	PROJECT_CREATED("mesh.project.created", null),
+	PROJECT_CREATED("mesh.project.created", MeshEventModelImpl.class),
 
-	PROJECT_UPDATED("mesh.project.updated", null),
+	PROJECT_UPDATED("mesh.project.updated", MeshEventModelImpl.class),
 
-	PROJECT_DELETED("mesh.project.deleted", null),
+	PROJECT_DELETED("mesh.project.deleted", MeshEventModelImpl.class),
 
 	/* Node */
 
-	NODE_CREATED("mesh.node.created", null),
+	NODE_CREATED("mesh.node.created", NodeMeshEventModel.class),
 
-	NODE_UPDATED("mesh.node.updated", null),
+	NODE_UPDATED("mesh.node.updated", NodeMeshEventModel.class),
 
-	NODE_DELETED("mesh.node.deleted", null),
+	NODE_DELETED("mesh.node.deleted", NodeMeshEventModel.class),
 
 	/* Schema */
 
-	SCHEMA_CREATED("mesh.schema.created", null),
+	SCHEMA_CREATED("mesh.schema.created", MeshEventModelImpl.class),
 
-	SCHEMA_UPDATED("mesh.schema.updated", null),
+	SCHEMA_UPDATED("mesh.schema.updated", MeshEventModelImpl.class),
 
-	SCHEMA_DELETED("mesh.schema.deleted", null),
+	SCHEMA_DELETED("mesh.schema.deleted", MeshEventModelImpl.class),
 
 	/* Microschema */
 
-	MICROSCHEMA_CREATED("mesh.microschema.created", null),
+	MICROSCHEMA_CREATED("mesh.microschema.created", MeshEventModelImpl.class),
 
-	MICROSCHEMA_UPDATED("mesh.microschema.updated", null),
+	MICROSCHEMA_UPDATED("mesh.microschema.updated", MeshEventModelImpl.class),
 
-	MICROSCHEMA_DELETED("mesh.microschema.deleted", null),
+	MICROSCHEMA_DELETED("mesh.microschema.deleted", MeshEventModelImpl.class),
 
 	/* Branch */
 
-	BRANCH_CREATED("mesh.branch.created", null),
+	BRANCH_CREATED("mesh.branch.created", MeshEventModelImpl.class),
 
-	BRANCH_UPDATED("mesh.branch.updated", null),
+	BRANCH_UPDATED("mesh.branch.updated", MeshEventModelImpl.class),
 
-	BRANCH_DELETED("mesh.branch.deleted", null),
+	BRANCH_DELETED("mesh.branch.deleted", MeshEventModelImpl.class),
 
 	/* Search index related */
 

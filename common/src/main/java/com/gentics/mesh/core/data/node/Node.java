@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.node;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -36,9 +37,6 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.core.rest.event.node.CreatedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.DeletedNodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.UpdatedNodeMeshEventModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.LinkType;
@@ -753,7 +751,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * @return Created event
 	 */
-	DeletedNodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag);
+	NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag);
 
 	/**
 	 * Create the node specific update event.
@@ -761,7 +759,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return Created event
 	 */
-	UpdatedNodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
+	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
 
 	/**
 	 * Create the node specific update event.
@@ -769,7 +767,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return Created event
 	 */
-	default UpdatedNodeMeshEventModel onUpdated(String branchUuid) {
+	default NodeMeshEventModel onUpdated(String branchUuid) {
 		return onUpdated(branchUuid, null);
 	}
 
@@ -779,7 +777,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return Created event
 	 */
-	CreatedNodeMeshEventModel onCreated(String branchUuid);
+	NodeMeshEventModel onCreated(String branchUuid);
 
 	/**
 	 * Get an existing edge.

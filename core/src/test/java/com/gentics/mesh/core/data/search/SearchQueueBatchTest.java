@@ -4,8 +4,8 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.core.rest.event.UpdatedMeshEventModel;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -19,6 +19,6 @@ public class SearchQueueBatchTest extends AbstractMeshTest {
 		System.out.println(batch);
 		batch = EventQueueBatch.create();
 		System.out.println(batch);
-		batch.add(new UpdatedMeshEventModel());
+		batch.add(new MeshEventModelImpl());
 	}
 }

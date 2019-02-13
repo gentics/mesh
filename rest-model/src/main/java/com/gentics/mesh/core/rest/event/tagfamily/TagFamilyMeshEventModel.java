@@ -2,8 +2,9 @@ package com.gentics.mesh.core.rest.event.tagfamily;
 
 import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 
-public class UpdatedTagFamilyEventModel extends AbstractProjectEventModel {
+public class TagFamilyMeshEventModel extends AbstractProjectEventModel {
 
-	public UpdatedTagFamilyEventModel() {
+	public TagFamilyMeshEventModel() {
 	}
+
 }
