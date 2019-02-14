@@ -67,7 +67,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readMicroschemas.produces(APPLICATION_JSON);
 		readMicroschemas.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
 		readMicroschemas.addQueryParameters(PagingParametersImpl.class);
-		readMicroschemas.handler(rc -> {
+		readMicroschemas.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("branchUuid");
 			crudHandler.handleGetMicroschemaVersions(ac, uuid);
@@ -84,7 +84,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readSchemas.addQueryParameters(PagingParametersImpl.class);
 		readSchemas.produces(APPLICATION_JSON);
 		readSchemas.exampleResponse(OK, branchExamples.createSchemaReferenceList(), "Loaded schema list.");
-		readSchemas.handler(rc -> {
+		readSchemas.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("branchUuid");
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleGetSchemaVersions(ac, uuid);
@@ -99,7 +99,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the branch.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = rc.request().getParam("branchUuid");
 			crudHandler.handleMigrateRemainingNodes(ac, branchUuid);
@@ -114,7 +114,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the branch.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = rc.request().getParam("branchUuid");
 			crudHandler.handleMigrateRemainingMicronodes(ac, branchUuid);
@@ -144,7 +144,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", true), "Loaded branch.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -162,7 +162,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
@@ -178,7 +178,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addSchema.produces(APPLICATION_JSON);
 		addSchema.exampleRequest(branchExamples.createSchemaReferenceList());
 		addSchema.exampleResponse(OK, branchExamples.createSchemaReferenceList(), "Updated schema list.");
-		addSchema.handler(rc -> {
+		addSchema.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleAssignSchemaVersion(ac, uuid);
@@ -193,7 +193,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addMicroschema.produces(APPLICATION_JSON);
 		addMicroschema.exampleRequest(microschemaExamples.createMicroschemaReferenceList());
 		addMicroschema.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "Updated microschema list.");
-		addMicroschema.handler(rc -> {
+		addMicroschema.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
 			crudHandler.handleAssignMicroschemaVersion(ac, uuid);
@@ -206,7 +206,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		setLatest.method(POST);
 		setLatest.produces(APPLICATION_JSON);
 		setLatest.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", true), "Latest branch");
-		setLatest.handler(rc -> {
+		setLatest.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
 			crudHandler.handleSetLatest(ac, uuid);
@@ -237,7 +237,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		getTags.produces(APPLICATION_JSON);
 		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the branch.");
 		getTags.description("Return a list of all tags which tag the branch.");
-		getTags.handler(rc -> {
+		getTags.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");
 			crudHandler.readTags(ac, branchUuid);
@@ -251,7 +251,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.description("Update the list of assigned tags");
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
 		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
-		bulkUpdate.handler(rc -> {
+		bulkUpdate.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");
 			crudHandler.handleBulkTagUpdate(ac, branchUuid);
@@ -265,7 +265,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", false), "Updated branch.");
 		addTag.description("Assign the given tag to the branch.");
-		addTag.handler(rc -> {
+		addTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");
 			String tagUuid = ac.getParameter("tagUuid");
@@ -280,7 +280,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the branch.");
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
-		removeTag.handler(rc -> {
+		removeTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");
 			String tagUuid = ac.getParameter("tagUuid");

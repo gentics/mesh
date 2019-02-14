@@ -75,7 +75,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Schema changes have been applied.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
@@ -108,7 +108,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		diffEndpoint.exampleRequest(schemaExamples.getSchemaResponse());
 		diffEndpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(),
 			"List of schema changes that were detected by comparing the posted schema and the current version.");
-		diffEndpoint.handler(rc -> {
+		diffEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDiff(ac, uuid);
@@ -147,7 +147,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Delete the schema with the given uuid.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -164,7 +164,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.produces(APPLICATION_JSON);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("schemaUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -182,7 +182,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});

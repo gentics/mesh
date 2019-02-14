@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -32,9 +31,8 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
-import com.syncleus.ferma.tx.TxAction2;
 
-import io.vertx.core.AsyncResult;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -74,7 +72,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-		EventQueueBatch batch = database.tx(() -> {
+		syncTx(ac, () -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
@@ -87,11 +85,8 @@ public class HandlerUtilities {
 				return bac.batch();
 			});
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			return b;
-		});
-
-		batch.dispatch();
-		ac.send(NO_CONTENT);
+			b.dispatch();
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -120,55 +115,60 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
+
 		AtomicBoolean created = new AtomicBoolean(false);
-		ResultInfo result = database.tx(tx -> {
-			RootVertex<T> root = handler.handle();
+		try {
+			ResultInfo result = database.tx(tx -> {
+				RootVertex<T> root = handler.handle();
 
-			// 1. Load the element from the root element using the given uuid (if not null)
-			T element = null;
-			if (uuid != null) {
-				if (!UUIDUtil.isUUID(uuid)) {
-					throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+				// 1. Load the element from the root element using the given uuid (if not null)
+				T element = null;
+				if (uuid != null) {
+					if (!UUIDUtil.isUUID(uuid)) {
+						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+					}
+					element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
 				}
-				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
-			}
 
-			// Check whether we need to update a found element or whether we need to create a new one.
-			if (element != null) {
-				final T updateElement = element;
-				Tuple<Boolean, EventQueueBatch> tuple = database.tx(() -> {
-					EventQueueBatch batch = EventQueueBatch.create();
-					boolean updated = updateElement.update(ac, batch);
-					return Tuple.tuple(updated, batch);
-				});
-				EventQueueBatch b = tuple.v2();
-				Boolean isUpdated = tuple.v1();
-				RM model = updateElement.transformToRestSync(ac, 0);
-				ResultInfo info = new ResultInfo(model, b);
-				if (isUpdated) {
-					b.add(updateElement.onUpdated());
+				// Check whether we need to update a found element or whether we need to create a new one.
+				if (element != null) {
+					final T updateElement = element;
+					Tuple<Boolean, EventQueueBatch> tuple = database.tx(() -> {
+						EventQueueBatch batch = EventQueueBatch.create();
+						boolean updated = updateElement.update(ac, batch);
+						return Tuple.tuple(updated, batch);
+					});
+					EventQueueBatch b = tuple.v2();
+					Boolean isUpdated = tuple.v1();
+					RM model = updateElement.transformToRestSync(ac, 0);
+					ResultInfo info = new ResultInfo(model, b);
+					if (isUpdated) {
+						b.add(updateElement.onUpdated());
+					}
+					return info;
+				} else {
+					Tuple<T, EventQueueBatch> tuple = database.tx(() -> {
+						EventQueueBatch batch = EventQueueBatch.create();
+						created.set(true);
+						return Tuple.tuple(root.create(ac, batch, uuid), batch);
+					});
+					EventQueueBatch b = tuple.v2();
+					T createdElement = tuple.v1();
+					RM model = createdElement.transformToRestSync(ac, 0);
+					String path = createdElement.getAPIPath(ac);
+					ResultInfo info = new ResultInfo(model, b);
+					info.setProperty("path", path);
+					createdElement.onCreated();
+					ac.setLocation(path);
+					return info;
 				}
-				return info;
-			} else {
-				Tuple<T, EventQueueBatch> tuple = database.tx(() -> {
-					EventQueueBatch batch = EventQueueBatch.create();
-					created.set(true);
-					return Tuple.tuple(root.create(ac, batch, uuid), batch);
-				});
-				EventQueueBatch b = tuple.v2();
-				T createdElement = tuple.v1();
-				RM model = createdElement.transformToRestSync(ac, 0);
-				String path = createdElement.getAPIPath(ac);
-				ResultInfo info = new ResultInfo(model, b);
-				info.setProperty("path", path);
-				createdElement.onCreated();
-				ac.setLocation(path);
-				return info;
-			}
-		});
+			});
 
-		result.getBatch().dispatch();
-		ac.send(result.getModel(), created.get() ? CREATED : OK);
+			result.getBatch().dispatch();
+			ac.send(result.getModel(), created.get() ? CREATED : OK);
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
 	}
 
 	/**
@@ -184,7 +184,8 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler, GraphPermission perm) {
-		asyncTx(ac, (tx) -> {
+
+		syncTx(ac, tx -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, perm);
 
@@ -197,8 +198,7 @@ public class HandlerUtilities {
 				}
 			}
 			return element.transformToRestSync(ac, 0);
-		}, (model) -> ac.send(model, OK));
-
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -209,7 +209,8 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
-		asyncTx(ac, (tx) -> {
+
+		rxSyncTx(ac, tx -> {
 			RootVertex<T> root = handler.handle();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
@@ -223,83 +224,36 @@ public class HandlerUtilities {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRest(ac, 0).blockingGet();
-		}, (e) -> ac.send(e, OK));
+			return page.transformToRest(ac, 0);
+
+		}, m -> ac.send(m, OK));
 	}
 
-	/**
-	 * Asynchronously execute the handler within a scope of a no tx transaction.
-	 * 
-	 * @param ac
-	 * @param handler
-	 *            Handler which will be executed within a worker thread
-	 * @param action
-	 *            Action which will be invoked once the handler has finished
-	 */
-	@Deprecated
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action);
+	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
+		try {
+			RM model = database.tx(handler);
+			action.accept(model);
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
 	}
 
-	@Deprecated
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action, boolean order) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action, order);
+	public <RM extends RestModel> void rxSyncTx(InternalActionContext ac, TxAction<Single<RM>> handler, Consumer<RM> action) {
+		try {
+			Single<RM> model = database.tx(handler);
+			model.subscribe(action::accept, ac::fail);
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
 	}
 
-	@Deprecated
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction0 handler, Consumer<RM> action) {
-		async(ac, () -> {
+	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
+		try {
 			database.tx(handler);
-			return null;
-		}, action);
-	}
-
-	@Deprecated
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action);
-	}
-
-	@Deprecated
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction2 handler, Consumer<RM> action) {
-		async(ac, () -> {
-			database.tx(handler);
-			return null;
-		}, action);
-	}
-
-	@Deprecated
-	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
-		async(ac, handler, action, false);
-	}
-
-	/**
-	 * Asynchronously execute the handler.
-	 * 
-	 * @param ac
-	 * @param handler
-	 * @param action
-	 */
-	@Deprecated
-	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action, boolean order) {
-		Mesh.vertx().executeBlocking(bc -> {
-			try {
-				bc.complete(handler.handle());
-			} catch (Exception e) {
-				bc.fail(e);
-			}
-		}, order, (AsyncResult<RM> rh) -> {
-			if (rh.failed()) {
-				ac.fail(rh.cause());
-			} else {
-				action.accept(rh.result());
-			}
-		});
+			action.run();
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
 	}
 
 }

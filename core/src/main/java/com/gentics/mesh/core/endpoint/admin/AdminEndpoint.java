@@ -230,7 +230,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		invokeJobWorker.description("Invoke the processing of remaining jobs.");
 		invokeJobWorker.produces(APPLICATION_JSON);
 		invokeJobWorker.exampleResponse(OK, miscExamples.createMessageResponse(), "Response message.");
-		invokeJobWorker.handler(rc -> {
+		invokeJobWorker.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			jobHandler.handleInvokeJobWorker(ac);
 		});
@@ -241,7 +241,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJobList.description("List all currently queued jobs.");
 		readJobList.produces(APPLICATION_JSON);
 		readJobList.exampleResponse(OK, jobExamples.createJobList(), "List of jobs.");
-		readJobList.handler(rc -> {
+		readJobList.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			jobHandler.handleReadList(ac);
 		});
@@ -253,7 +253,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJob.produces(APPLICATION_JSON);
 		readJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		readJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
-		readJob.handler(rc -> {
+		readJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleRead(ac, uuid);
@@ -264,7 +264,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deleteJob.method(DELETE);
 		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
 		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
-		deleteJob.handler(rc -> {
+		deleteJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleDelete(ac, uuid);
@@ -275,7 +275,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
 		resetJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
-		resetJob.handler(rc -> {
+		resetJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleResetJob(ac, uuid);

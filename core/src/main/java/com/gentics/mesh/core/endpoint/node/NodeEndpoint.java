@@ -214,7 +214,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
 		endpoint.addQueryParameters(GenericParametersImpl.class);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleReadChildren(ac, uuid);
@@ -320,7 +320,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.addQueryParameters(GenericParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -341,7 +341,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(NodeParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
@@ -400,7 +400,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getEndpoint.produces(APPLICATION_JSON);
 		getEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		getEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		getEndpoint.handler(rc -> {
+		getEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleGetPublishStatus(ac, uuid);
@@ -415,7 +415,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		putEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		putEndpoint.addQueryParameters(PublishParametersImpl.class);
-		putEndpoint.handler(rc -> {
+		putEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handlePublish(ac, uuid);
@@ -430,7 +430,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
 		deleteEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		deleteEndpoint.addQueryParameters(PublishParametersImpl.class);
-		deleteEndpoint.handler(rc -> {
+		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleTakeOffline(ac, uuid);
@@ -447,7 +447,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getLanguageRoute.produces(APPLICATION_JSON);
 		getLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
 		getLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
-		getLanguageRoute.handler(rc -> {
+		getLanguageRoute.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
@@ -463,7 +463,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Updated publish status.");
 		putLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		putLanguageRoute.produces(APPLICATION_JSON);
-		putLanguageRoute.handler(rc -> {
+		putLanguageRoute.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
@@ -478,7 +478,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteLanguageRoute.exampleResponse(NO_CONTENT, "Node language was taken offline.");
 		deleteLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		deleteLanguageRoute.produces(APPLICATION_JSON);
-		deleteLanguageRoute.handler(rc -> {
+		deleteLanguageRoute.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");

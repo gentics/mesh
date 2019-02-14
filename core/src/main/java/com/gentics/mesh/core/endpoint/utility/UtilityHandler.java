@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -41,13 +42,16 @@ public class UtilityHandler extends AbstractHandler {
 
 	private MicroschemaContainerIndexHandler microschemaIndexHandler;
 
+	private HandlerUtilities utils;
+
 	@Inject
 	public UtilityHandler(Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandler nodeIndexHandler,
-			MicroschemaContainerIndexHandler microschemaIndexHandler) {
+		MicroschemaContainerIndexHandler microschemaIndexHandler, HandlerUtilities utils) {
 		this.db = db;
 		this.linkReplacer = linkReplacer;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.microschemaIndexHandler = microschemaIndexHandler;
+		this.utils = utils;
 	}
 
 	/**
@@ -56,15 +60,16 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleResolveLinks(InternalActionContext ac) {
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
+			
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {
 				projectName = "project";
 			}
 
-			return Single.just(linkReplacer.replace(ac, null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
-					ac.getNodeParameters().getLanguageList()));
-		}).subscribe(body -> ac.send(body, OK, "text/plain"), ac::fail);
+			return linkReplacer.replace(ac, null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
+				ac.getNodeParameters().getLanguageList());
+		}, body -> ac.send(body, OK, "text/plain"));
 	}
 
 	/**

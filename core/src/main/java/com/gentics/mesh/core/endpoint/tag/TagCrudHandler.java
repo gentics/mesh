@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -57,14 +56,14 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx -> {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
 			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(),
-					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
+				ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 			return page.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -93,8 +92,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.asyncTx(ac, () -> {
-			Database db = MeshInternal.get().database();
+		utils.syncTx(ac, tx -> {
 			ResultInfo info = db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
@@ -107,7 +105,6 @@ public class TagCrudHandler extends AbstractHandler {
 
 			String path = info.getProperty("path");
 			ac.setLocation(path);
-			// TODO don't wait forever in order to prevent locking the thread
 			info.getBatch().dispatch();
 			return info.getModel();
 		}, model -> ac.send(model, CREATED));

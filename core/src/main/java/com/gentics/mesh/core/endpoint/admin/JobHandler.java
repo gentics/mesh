@@ -50,7 +50,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		utils.asyncTx(ac, (tx) -> {
+		utils.rxSyncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -67,14 +67,15 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRest(ac, 0).blockingGet();
-		}, (e) -> ac.send(e, OK));
+			return page.transformToRest(ac, 0);
+		}, e -> ac.send(e, OK));
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.asyncTx(ac, (tx) -> {
+
+		utils.syncTx(ac, () -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -88,14 +89,14 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 				}
 			});
 			log.info("Deleted job {" + uuid + "}");
-			return (JobResponse) null;
-		}, model -> ac.send(NO_CONTENT));
+		}, () -> ac.send(NO_CONTENT));
+
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -108,7 +109,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			} else {
 				return job.transformToRestSync(ac, 0);
 			}
-		}, (model) -> ac.send(model, OK));
+		}, model -> ac.send(model, OK));
 	}
 
 	@Override
@@ -123,7 +124,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param uuid
 	 */
 	public void handleResetJob(InternalActionContext ac, String uuid) {
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -131,7 +132,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			Job job = root.loadObjectByUuidNoPerm(uuid, true);
 			job.resetJob();
 			return job.transformToRestSync(ac, 0);
-		}, (model) -> ac.send(model, OK));
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -140,12 +141,12 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param ac
 	 */
 	public void handleInvokeJobWorker(InternalActionContext ac) {
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			MeshEvent.triggerJobWorker();
 			return message(ac, "job_processing_invoked");
-		}, (model) -> ac.send(model, OK));
+		}, model -> ac.send(model, OK));
 	}
 }

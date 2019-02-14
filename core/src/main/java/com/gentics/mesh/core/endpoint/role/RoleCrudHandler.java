@@ -32,7 +32,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -70,7 +69,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -91,8 +90,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			}
 			// 2. Add not granted permissions
 			response.setOthers(false);
-			return Single.just(response);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return response;
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -113,8 +112,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
+
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -162,8 +161,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 				String name = tuple.v2();
 				tuple.v1().dispatch();
-				return Single.just(message(ac, "role_updated_permission", name));
+				return message(ac, "role_updated_permission", name);
 			});
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 }

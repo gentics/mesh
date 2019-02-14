@@ -11,7 +11,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -30,7 +29,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -45,7 +43,6 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.reactivex.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
 
@@ -55,7 +52,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
-			HandlerUtilities utils) {
+		HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
@@ -73,7 +70,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		GenericMessageResponse message = db.tx(tx1 -> {
+		utils.syncTx(ac, tx1 -> {
 
 			// 1. Load the schema container with update permissions
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
@@ -162,8 +159,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			} else {
 				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());
 			}
-		});
-		ac.send(message, OK);
+		}, message -> ac.send(message, OK));
 	}
 
 	/**
@@ -177,7 +173,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
@@ -205,7 +201,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
@@ -215,22 +211,20 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			SchemaContainerRoot root = project.getSchemaContainerRoot();
 			if (root.contains(schema)) {
 				// Schema has already been assigned. No need to create indices
-				return schema.transformToRest(ac, 0);
+				return schema.transformToRestSync(ac, 0);
 			}
 
-			Tuple<EventQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
+			Tuple<EventQueueBatch, SchemaResponse> tuple = db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
 
 				// Assign the schema to the project
 				root.addSchemaContainer(ac.getUser(), schema);
-				String branchUuid = project.getLatestBranch().getUuid();
-				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
 				batch.add(schema.onUpdated());
-				return Tuple.tuple(batch, schema.transformToRest(ac, 0));
+				return Tuple.tuple(batch, schema.transformToRestSync(ac, 0));
 			});
 			tuple.v1().dispatch();
 			return tuple.v2();
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -244,7 +238,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
@@ -257,8 +251,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			db.tx(() -> {
 				project.getSchemaContainerRoot().removeSchemaContainer(schema);
 			});
-			return Single.just(Optional.empty());
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	public void handleGetSchemaChanges(InternalActionContext ac) {
@@ -276,7 +270,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			Tuple<EventQueueBatch, String> info = db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();

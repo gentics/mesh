@@ -107,7 +107,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		createTag.exampleRequest(tagExamples.createTagCreateRequest("red"));
 		createTag.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Created tag");
-		createTag.handler(rc -> {
+		createTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			tagCrudHandler.handleCreate(ac, tagFamilyUuid);
@@ -125,7 +125,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Loaded tag.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.produces(APPLICATION_JSON);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
@@ -141,7 +141,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
@@ -159,7 +159,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the tag from the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag was removed from the tag family");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
@@ -177,7 +177,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
@@ -193,7 +193,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag family was deleted.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
 			tagFamilyCrudHandler.handleDelete(ac, uuid);
@@ -208,7 +208,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.description("Read the tag family with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
 			tagFamilyCrudHandler.handleRead(ac, uuid);
@@ -221,7 +221,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.description("Load multiple tag families and return a paged list response.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.exampleResponse(OK, tagFamilyExamples.getTagFamilyListResponse(), "Loaded tag families.");
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			tagFamilyCrudHandler.handleReadList(ac);
 		});

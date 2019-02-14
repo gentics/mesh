@@ -14,8 +14,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.Optional;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -72,7 +70,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
@@ -84,8 +82,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return bac.batch();
 			}).dispatch();
 
-			return null;
-		}, m -> ac.send(NO_CONTENT));
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -101,7 +98,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 			Language language = MeshInternal.get().boot().meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
@@ -114,8 +111,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return bac.batch();
 			});
 			batch.dispatch();
-			return null;
-		}, m -> ac.send(NO_CONTENT));
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -132,7 +128,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(toUuid, "toUuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, () -> {
 			Project project = ac.getProject();
 
 			// TODO Add support for moving nodes across projects.
@@ -150,8 +146,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
 			}).dispatch();
-			return null;
-		}, m -> ac.send(NO_CONTENT));
+		}, () -> ac.send(NO_CONTENT));
 
 	}
 
@@ -166,10 +161,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToNavigation(ac);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -183,7 +178,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.rxSyncTx(ac, (tx) -> {
 			NodeParameters nodeParams = ac.getNodeParameters();
 			PagingParameters pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
@@ -200,7 +195,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRest(ac, 0).blockingGet();
+			return page.transformToRest(ac, 0);
 		}, model -> ac.send(model, OK));
 
 	}
@@ -222,7 +217,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			try {
 				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
@@ -238,7 +233,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			} catch (Exception e) {
 				throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 			}
-		}).subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
+		}, model -> ac.send((RestModel) model, OK));
 	}
 
 	/**
@@ -255,7 +250,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx -> {
 			Project project = ac.getProject();
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -275,7 +270,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			});
 			tuple.v2().dispatch();
 			return tuple.v1().transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -293,7 +288,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Project project = ac.getProject();
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -305,8 +300,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.removeTag(tag, branch);
 				return batch;
 			}).dispatch();
-			return Single.just(Optional.empty());
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -320,7 +314,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToPublishStatus(ac);
 		}, model -> ac.send(model, OK));
@@ -337,7 +331,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			EventQueueBatch sqb = db.tx(() -> {
 				BulkActionContext bac = BulkActionContext.create();
@@ -345,8 +339,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return bac.batch();
 			});
 			sqb.dispatch();
-			return Single.just(node.transformToPublishStatus(ac));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return node.transformToPublishStatus(ac);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -360,13 +354,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			BulkActionContext bac = BulkActionContext.create();
 			node.takeOffline(ac, bac);
 			bac.batch().dispatch();
-			return Single.just(Optional.empty());
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -382,7 +375,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToPublishStatus(ac, languageTag);
 		}, model -> ac.send(model, OK));
@@ -401,7 +394,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			EventQueueBatch sqb = db.tx(() -> {
 				BulkActionContext bac = BulkActionContext.create();
@@ -409,8 +402,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return bac.batch();
 			});
 			sqb.dispatch();
-			return Single.just(node.transformToPublishStatus(ac, languageTag));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return node.transformToPublishStatus(ac, languageTag);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -426,7 +419,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			db.tx(() -> {
 				BulkActionContext bac = BulkActionContext.create();
@@ -434,8 +427,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.takeOffline(ac, bac, branch, languageTag);
 				return bac.batch();
 			}).dispatch();
-			return Single.just(Optional.empty());
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -451,7 +443,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			RootVertex<Node> root = handler.handle();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);

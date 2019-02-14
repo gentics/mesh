@@ -64,7 +64,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(), "Found difference between both microschemas.");
 		endpoint.description(
 			"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDiff(ac, schemaUuid);
@@ -94,7 +94,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 			"Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema. Please note that this operation is non-blocking and will continue to run in the background.");
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Microschema migration was invoked.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
@@ -110,7 +110,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Loaded microschema.");
 		readOne.description("Read the microschema with the given uuid.");
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("microschemaUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -126,7 +126,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		readAll.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of miroschemas.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			crudHandler.handleReadList(wrap(rc));
 		});
 	}
@@ -139,7 +139,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was deleted.");
 		endpoint.description("Delete the microschema with the given uuid.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -157,7 +157,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
 		endpoint.description("Update the microschema with the given uuid.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleUpdate(ac, uuid);

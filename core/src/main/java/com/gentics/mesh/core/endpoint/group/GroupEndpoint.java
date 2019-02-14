@@ -65,7 +65,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readRoles.exampleResponse(OK, roleExamples.getRoleListResponse(), "List of roles which were assigned to the group.");
 		readRoles.addQueryParameters(PagingParametersImpl.class);
 		readRoles.addQueryParameters(RolePermissionParametersImpl.class);
-		readRoles.handler(rc -> {
+		readRoles.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupRolesList(ac, groupUuid);
@@ -79,7 +79,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
 		addRole.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Loaded role.");
-		addRole.handler(rc -> {
+		addRole.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
@@ -93,7 +93,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		removeRole.method(DELETE);
 		removeRole.description("Remove the given role from the group.");
 		removeRole.exampleResponse(NO_CONTENT, "Role was removed from the group.");
-		removeRole.produces(APPLICATION_JSON).handler(rc -> {
+		removeRole.produces(APPLICATION_JSON).blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
@@ -110,7 +110,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readUsers.exampleResponse(OK, userExamples.getUserListResponse(), "List of users which belong to the group.");
 		readUsers.description("Load a list of users which have been assigned to the group.");
 		readUsers.addQueryParameters(PagingParametersImpl.class);
-		readUsers.handler(rc -> {
+		readUsers.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupUserList(ac, groupUuid);
@@ -124,7 +124,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
 		addUser.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Updated group.");
-		addUser.handler(rc -> {
+		addUser.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
@@ -137,7 +137,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		removeUser.addUriParameter("userUuid", "Uuid of the user which should be removed from the group.", USER_WEBCLIENT_UUID);
 		removeUser.description("Remove the given user from the group.");
 		removeUser.exampleResponse(NO_CONTENT, "User was removed from the group.");
-		removeUser.handler(rc -> {
+		removeUser.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
@@ -153,7 +153,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		deleteGroup.method(DELETE);
 		deleteGroup.exampleResponse(NO_CONTENT, "Group was deleted.");
 		deleteGroup.produces(APPLICATION_JSON);
-		deleteGroup.handler(rc -> {
+		deleteGroup.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -190,7 +190,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readOne.exampleResponse(OK, groupExamples.getGroupResponse1("Admin Group"), "Loaded group.");
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(GenericParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleRead(ac, uuid);
@@ -208,7 +208,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			crudHandler.handleReadList(wrap(rc));
 		});
 	}

@@ -24,6 +24,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
@@ -47,11 +48,14 @@ public class AdminHandler extends AbstractHandler {
 
 	private BootstrapInitializer boot;
 
+	private HandlerUtilities utils;
+
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot) {
+	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, HandlerUtilities utils) {
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;
+		this.utils = utils;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -66,7 +70,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -74,8 +78,8 @@ public class AdminHandler extends AbstractHandler {
 			Mesh.mesh().setStatus(MeshStatus.BACKUP);
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
 			Mesh.mesh().setStatus(oldStatus);
-			return Single.just(message(ac, "backup_finished"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return message(ac, "backup_finished");
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -89,7 +93,8 @@ public class AdminHandler extends AbstractHandler {
 			ac.fail(error(SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode"));
 			return;
 		}
-		db.asyncTx(() -> {
+
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -112,8 +117,8 @@ public class AdminHandler extends AbstractHandler {
 			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
 			boot.initProjects();
 
-			return Single.just(message(ac, "restore_finished"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return message(ac, "restore_finished");
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -122,15 +127,15 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleExport(InternalActionContext ac) {
-		db.asyncTx((tx) -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			String exportDir = Mesh.mesh().getOptions().getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
 			db.exportGraph(exportDir);
-			return Single.just(message(ac, "export_finished"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return message(ac, "export_finished");
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -158,18 +163,18 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleClusterStatus(InternalActionContext ac) {
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 
 			MeshOptions options = Mesh.mesh().getOptions();
 			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
-				return Single.just(db.getClusterStatus());
+				return db.getClusterStatus();
 			} else {
 				throw error(BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
 			}
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 }

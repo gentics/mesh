@@ -63,7 +63,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionSetEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Permissions were set.");
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
-		permissionSetEndpoint.produces(APPLICATION_JSON).handler(rc -> {
+		permissionSetEndpoint.produces(APPLICATION_JSON).blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -80,7 +80,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionGetEndpoint.method(GET);
 		permissionGetEndpoint.produces(APPLICATION_JSON);
 		permissionGetEndpoint.exampleResponse(OK, roleExamples.getRolePermissionResponse(), "Loaded permissions.");
-		permissionGetEndpoint.handler(rc -> {
+		permissionGetEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -95,7 +95,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(DELETE);
 		endpoint.description("Delete the role with the given uuid");
 		endpoint.exampleResponse(NO_CONTENT, "Role was deleted.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -127,7 +127,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, roleExamples.getRoleResponse1("Admin Role"), "Loaded role.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleRead(ac, uuid);
@@ -144,7 +144,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		readAll.exampleResponse(OK, roleExamples.getRoleListResponse(), "Loaded list of roles.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});

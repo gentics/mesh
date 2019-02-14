@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.Optional;
-
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -27,7 +25,6 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -59,12 +56,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
 			return rolePage.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -78,7 +75,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			// Handle idempotency
@@ -100,8 +97,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 			}
 			tuple.v2().dispatch();
-			return tuple.v1().transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return tuple.v1().transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -118,7 +115,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			// TODO check whether the role is actually part of the group
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -129,12 +126,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
 				batch.add(group.onUpdated());
-				//TODO add role update?
+				// TODO add role update?
 				return batch;
 			}).dispatch();
-			return Single.just(Optional.empty());
 
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -169,20 +165,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			ResultInfo info = db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
 				group.addUser(user);
 				batch.add(group.onUpdated());
-				//TODO add user update event?
+				// TODO add user update event?
 				GroupResponse model = group.transformToRestSync(ac, 0);
 				return new ResultInfo(model, batch);
 			});
 			info.getBatch().dispatch();
-			return Single.just(info.getModel());
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return info.getModel();
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -199,7 +195,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
@@ -210,8 +206,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				group.removeUser(user);
 				return batch;
 			}).dispatch();
-			return Single.just(Optional.empty());
-		}).subscribe((empty) -> ac.send(NO_CONTENT), ac::fail);
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 }

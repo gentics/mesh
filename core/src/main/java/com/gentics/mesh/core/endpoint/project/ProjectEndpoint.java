@@ -93,7 +93,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, projectExamples.getProjectResponse("Project name"), "Loaded project.");
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("projectUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -111,7 +111,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		readAll.exampleResponse(OK, projectExamples.getProjectListResponse(), "Loaded project list.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
@@ -125,7 +125,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Delete the project and all attached nodes, tagfamiles and branches.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Project was deleted.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleDelete(ac, uuid);

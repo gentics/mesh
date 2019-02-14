@@ -16,6 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -45,12 +46,15 @@ public class AdminIndexHandler {
 
 	private IndexHandlerRegistry registry;
 
+	private HandlerUtilities utils;
+
 	@Inject
-	public AdminIndexHandler(Database db, SearchProvider searchProvider, ElasticsearchSyncVerticle syncVerticle, IndexHandlerRegistry registry) {
+	public AdminIndexHandler(Database db, SearchProvider searchProvider, ElasticsearchSyncVerticle syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.syncVerticle = syncVerticle;
 		this.registry = registry;
+		this.utils = utils;
 	}
 
 	public void handleStatus(InternalActionContext ac) {
