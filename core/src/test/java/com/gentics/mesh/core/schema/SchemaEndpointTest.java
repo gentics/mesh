@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -81,7 +84,17 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+
+		expectEvents(SCHEMA_CREATED, 1, event -> {
+			assertEquals(createRequest.getName(), event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
+		});
+
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
+
+		waitForEvents();
+
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 		assertThat(trackingSearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
@@ -270,10 +283,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 
 		call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion("5.0")), NOT_FOUND, "object_not_found_for_uuid_version",
-				uuid, "5.0");
+			uuid, "5.0");
 
 		call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion("sadgsdgasgd")), BAD_REQUEST, "error_illegal_version",
-				"sadgsdgasgd");
+			"sadgsdgasgd");
 	}
 
 	@Test
@@ -282,7 +295,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
 
 		SchemaResponse schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role()
-				.getUuid()))));
+			.getUuid()))));
 		assertNotNull(schema.getRolePerms());
 		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
 	}
@@ -300,7 +313,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(), READ_PERM.getRestPerm().getName());
+			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(),
+				READ_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -348,7 +362,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateWithReferencedMicroschema() {
 
 		SchemaUpdateRequest schemaUpdate = db().tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
-				SchemaUpdateRequest.class));
+			SchemaUpdateRequest.class));
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
 
 		// 1. Create the microschema
@@ -360,7 +374,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String microschemaUuid = microschemaResponse.getUuid();
 
 		List<MicroschemaResponse> filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(
-				microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
+			microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
 
 		assertThat(filteredList).isEmpty();
 
@@ -374,7 +388,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		tx(() -> group().removeRole(roles().get("admin")));
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(microschema -> microschema.getUuid().equals(
-				microschemaUuid)).collect(Collectors.toList());
+			microschemaUuid)).collect(Collectors.toList());
 		assertThat(filteredList).hasSize(1);
 
 	}
@@ -423,6 +437,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
+
 		call(() -> client().deleteSchema(uuid), BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
 		tx(() -> group().addRole(roles().get("admin")));
@@ -454,14 +469,22 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			return tx.getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
 		}));
 
-		// We should be able to execute the deletion now that all nodes are gone. 
+		expectEvents(SCHEMA_DELETED, 1, event -> {
+			assertEquals("content", event.getString("name"));
+			assertEquals(uuid, event.getString("uuid"));
+			return true;
+		});
+
+		// We should be able to execute the deletion now that all nodes are gone.
 		call(() -> client().deleteSchema(uuid));
+
+		waitForEvents();
 
 		try (Tx tx = tx()) {
 			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
 			assertFalse("The version of the schema container should have been deleted as well.", tx.getGraph().getVertices("uuid", versionUuid)
-					.iterator().hasNext());
+				.iterator().hasNext());
 			assertNull("The schema should have been deleted.", reloaded);
 		}
 	}
@@ -476,7 +499,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(), DELETE_PERM.getRestPerm().getName());
+			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(),
+				DELETE_PERM.getRestPerm().getName());
 			assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
 	}

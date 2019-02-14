@@ -14,6 +14,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -64,6 +67,7 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
@@ -697,47 +701,47 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return nodePath;
 	}
 
+	@Override
 	public NodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(Node.TYPE_INFO.getOnDeleted());
-		fillCommonEventInfo(event, branchUuid, type);
-		return event;
+		return createEvent(NODE_DELETED, branchUuid, type);
 	}
 
 	@Override
 	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(Node.TYPE_INFO.getOnUpdated());
-		fillCommonEventInfo(event, branchUuid, type);
-		return event;
+		return createEvent(NODE_UPDATED, branchUuid, type);
 	}
 
 	@Override
 	public NodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(Node.TYPE_INFO.getOnCreated());
-		fillCommonEventInfo(event, branchUuid, type);
-		return event;
+		return createEvent(NODE_CREATED, branchUuid, type);
 	}
 
 	/**
-	 * Add common event information to the given event.
+	 * Create a new node event.
 	 * 
 	 * @param event
+	 *            Type of the event
 	 * @param branchUuid
+	 *            Branch Uuid if known
 	 * @param type
+	 *            Type of the node content if known
+	 * @return Created model
 	 */
-	private void fillCommonEventInfo(NodeMeshEventModel event, String branchUuid, ContainerType type) {
-		event.setUuid(getParentNode(branchUuid).getUuid());
-		event.setBranchUuid(branchUuid);
-		event.setLanguageTag(getLanguageTag());
+	private NodeMeshEventModel createEvent(MeshEvent event, String branchUuid, ContainerType type) {
+		NodeMeshEventModel model = new NodeMeshEventModel();
+		model.setEvent(event);
+		String nodeUuid = getParentNode(branchUuid).getUuid();
+		model.setUuid(nodeUuid);
+		model.setBranchUuid(branchUuid);
+		model.setLanguageTag(getLanguageTag());
 		if (type != null) {
-			event.setType(type.getHumanCode());
+			model.setType(type.getHumanCode());
 		}
 		SchemaContainerVersion version = getSchemaContainerVersion();
 		if (version != null) {
-			event.setSchema(version.transformToReference());
+			model.setSchema(version.transformToReference());
 		}
+		return model;
 	}
 
 }

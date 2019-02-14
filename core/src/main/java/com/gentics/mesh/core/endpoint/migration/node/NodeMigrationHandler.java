@@ -242,9 +242,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
 		// Ensure the search index is updated accordingly
-		sqb.add(container.onUpdated(branchUuid, DRAFT));
+		sqb.add(migrated.onUpdated(branchUuid, DRAFT));
 		if (publish) {
-			sqb.add(container.onUpdated(branchUuid, PUBLISHED));
+			sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
 		}
 	}
 

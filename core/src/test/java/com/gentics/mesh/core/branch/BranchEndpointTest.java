@@ -4,6 +4,8 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -13,13 +15,14 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,16 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import io.reactivex.Observable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -46,6 +41,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -61,23 +57,30 @@ import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
+
+import io.reactivex.Observable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -173,10 +176,18 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
 
+		expectEvents(BRANCH_CREATED, 1, event -> {
+			assertEquals(branchName, event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
+		});
+
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
+
+		waitForEvents();
 
 		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME));
 		branches.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
@@ -211,7 +222,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
-		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", projectUuid() + "/" + PROJECT_NAME, CREATE_PERM.getRestPerm().getName());
+		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", projectUuid() + "/" + PROJECT_NAME,
+			CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -520,7 +532,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			role().revokePermissions(project().getInitialBranch(), READ_PERM);
 			tx.success();
 		}
-		call(() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(), READ_PERM.getRestPerm().getName());
+		call(() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
+			READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -586,27 +599,33 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdate() throws Exception {
 		String newName = "New Branch Name";
 		String anotherNewName = "Another New Branch Name";
-		try (Tx tx = tx()) {
 
-			// change name
-			BranchUpdateRequest request1 = new BranchUpdateRequest();
-			request1.setName(newName);
-			BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request1));
-			assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isActive();
+		expectEvents(BRANCH_UPDATED, 1, event -> {
+			assertEquals(newName, event.getString("name"));
+			assertEquals(initialBranchUuid(), event.getString("uuid"));
+			return true;
+		});
 
-			// change active
-			BranchUpdateRequest request2 = new BranchUpdateRequest();
-			// request2.setActive(false);
-			response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request2));
-			assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isInactive();
+		// change name
+		BranchUpdateRequest request1 = new BranchUpdateRequest();
+		request1.setName(newName);
+		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request1));
+		assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isActive();
 
-			// change active and name
-			BranchUpdateRequest request3 = new BranchUpdateRequest();
-			// request3.setActive(true);
-			request3.setName(anotherNewName);
-			response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request3));
-			assertThat(response).as("Updated Branch").isNotNull().hasName(anotherNewName).isActive();
-		}
+		waitForEvents();
+
+		// change active
+		BranchUpdateRequest request2 = new BranchUpdateRequest();
+		// request2.setActive(false);
+		response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request2));
+		assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isInactive();
+
+		// change active and name
+		BranchUpdateRequest request3 = new BranchUpdateRequest();
+		// request3.setActive(true);
+		request3.setName(anotherNewName);
+		response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request3));
+		assertThat(response).as("Updated Branch").isNotNull().hasName(anotherNewName).isActive();
 	}
 
 	@Test
@@ -631,7 +650,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request), FORBIDDEN, "error_missing_perm", initialBranchUuid(), UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
+			UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -749,7 +769,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
-		call(() -> client().setLatestBranch(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(), UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().setLatestBranch(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
+			UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -1101,7 +1122,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), new MicroschemaReferenceImpl().setName(schema
 				.getName()).setVersion(schema.getVersion())), BAD_REQUEST, "error_microschema_reference_not_found", schema.getName(), "-", schema
-				.getVersion());
+					.getVersion());
 		}
 	}
 
@@ -1224,7 +1245,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			request.setName("branch1");
 			call(() -> client().createBranch(PROJECT_NAME, request));
 		}, MigrationStatus.COMPLETED, 2);
-		NodeResponse originalNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
+		NodeResponse originalNode = call(
+			() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
 
 		assertThat(originalNode).hasSchemaVersion("folder", "1.0");
@@ -1259,8 +1281,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setContainer(true);
 
 		ParameterProvider[] parameters = immediate
-			? new ParameterProvider[]{}
-			: new ParameterProvider[]{new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)};
+			? new ParameterProvider[] {}
+			: new ParameterProvider[] { new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false) };
 
 		client().updateSchema(schema.getUuid(), request, parameters).toSingle().blockingGet();
 	}
