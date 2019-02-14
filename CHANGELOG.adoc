@@ -24,6 +24,12 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.30.1]]
+== 0.30.1 (TBD)
+
+icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper function.
+
+
 [[v0.30.0]]
 == 0.30.0 (12.02.2019)
 
