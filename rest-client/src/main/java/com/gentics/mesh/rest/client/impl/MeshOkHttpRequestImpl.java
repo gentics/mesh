@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private final OkHttpClient client;
@@ -200,6 +201,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	@Override
 	public Single<MeshResponse<T>> getResponse() {
 		return getOkResponse().map(response -> new MeshResponse<T>() {
+			Supplier<T> body = Util.lazily(() -> mapResponse(response));
+
 			@Override
 			public Map<String, List<String>> getHeaders() {
 				return response.headers().toMultimap();
@@ -226,10 +229,14 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 
 			@Override
 			public T getBody() {
-				String body = getBodyAsString();
-				return body.length() == 0
-					? null
-					: JsonUtil.readValue(getBodyAsString(), resultClass);
+				return getHeader("Content-Length")
+					.map(len -> {
+						if (Long.parseLong(len) > 0) {
+							return body.get();
+						} else {
+							return null;
+						}
+					}).orElse(null);
 			}
 		});
 	}
