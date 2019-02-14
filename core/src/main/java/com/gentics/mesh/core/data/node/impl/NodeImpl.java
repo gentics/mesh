@@ -2053,7 +2053,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 	@Override
@@ -2118,6 +2118,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public boolean isVisibleInBranch(String branchUuid) {
-		return getGraphFieldContainersIt(branchUuid, ContainerType.DRAFT).iterator().hasNext();
+		return getGraphFieldContainersIt(branchUuid, DRAFT).iterator().hasNext();
 	}
 }
