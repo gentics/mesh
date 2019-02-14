@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -1860,11 +1861,24 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (Tx tx = tx()) {
-			Node node = content("concorde");
-			String uuid = node.getUuid();
-			call(() -> client().deleteNode(PROJECT_NAME, uuid));
+		String uuid = tx(() -> content("concorde").getUuid());
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 
+		expectEvents(NODE_DELETED, 1, event -> {
+			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
+			assertNotNull(model.getUuid());
+			assertEquals(initialBranchUuid(), model.getBranchUuid());
+			assertEquals("content", model.getSchema().getName());
+			assertEquals(schemaUuid, model.getSchema().getUuid());
+			assertEquals("en", model.getLanguageTag());
+			return true;
+		});
+
+		call(() -> client().deleteNode(PROJECT_NAME, uuid));
+
+		waitForEvents();
+
+		try (Tx tx = tx()) {
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
 			assertThat(trackingSearchProvider()).hasEvents(0, 4, 0, 0);
