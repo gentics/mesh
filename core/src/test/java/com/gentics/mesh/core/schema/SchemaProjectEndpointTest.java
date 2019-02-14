@@ -118,18 +118,20 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	// Schema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
+		Project project = project();
+		SchemaContainer schema = schemaContainer("content");
+		String schemaUuid = tx(() -> schema.getUuid());
+
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
-			Project project = project();
 			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
+		}
 
-			call(() -> client().unassignSchemaFromProject(project.getName(), schema.getUuid()));
+		call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schemaUuid));
+		SchemaListResponse list = call(() -> client().findSchemas(PROJECT_NAME));
+		assertEquals("The removed schema should not be listed in the response", 0,
+			list.getData().stream().filter(s -> s.getUuid().equals(schemaUuid)).count());
 
-			SchemaListResponse list = call(() -> client().findSchemas(PROJECT_NAME));
-
-			// final String removedProjectName = project.getName();
-			assertEquals("The removed schema should not be listed in the response", 0,
-				list.getData().stream().filter(s -> s.getUuid().equals(schema.getUuid())).count());
+		try (Tx tx = tx()) {
 			assertFalse("The schema should no longer be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 		}
 	}
