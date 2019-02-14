@@ -1,6 +1,7 @@
 
 package com.gentics.mesh.core.eventbus;
 
+import static com.gentics.mesh.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
@@ -15,6 +16,7 @@ import static org.junit.Assert.fail;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.rest.client.MeshRestClientUtil;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.util.RxUtil;
 import io.reactivex.Completable;
@@ -173,6 +175,36 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 			.andThen(verifyStoppedRestVerticle())
 			.andThen(startRestVerticle())
 			.subscribe(() -> {}, context::fail);
+	}
+
+	@Test
+	public void testOneOfHelper(TestContext context) {
+		Async async = context.async(2);
+
+		// Register
+		ws.registerEvents(NODE_UPDATED);
+
+		// Handle msgs
+		ws.events().firstOrError().subscribe(event -> {
+			ObjectNode body = event.getBodyAsJson();
+			assertNotNull(body.get("uuid").textValue());
+			assertEquals("content", body.get("schemaName").textValue());
+			async.countDown();
+		});
+
+		ws.events().filter(MeshRestClientUtil.isOneOf(NODE_UPDATED)).subscribe(ignore -> async.countDown());
+		ws.events().filter(MeshRestClientUtil.isOneOf(NODE_CREATED))
+			.subscribe(ignore -> context.fail("No node should have been created"));
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.getFields().put("slug", FieldUtil.createStringField("blub"));
+		request.setVersion(response.getVersion());
+		request.setLanguage("en");
+		call(() -> client().updateNode(PROJECT_NAME, contentUuid(), request));
+
+		NodeResponse response2 = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
+		assertNotEquals(response.getVersion(), response2.getVersion());
 	}
 
 	@Test
