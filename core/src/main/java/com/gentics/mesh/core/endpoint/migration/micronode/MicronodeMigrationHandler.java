@@ -156,9 +156,9 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
 		// Ensure the search index is updated accordingly
-		sqb.add(node.onUpdated(branchUuid, DRAFT));
+		sqb.add(migrated.onUpdated(branchUuid, DRAFT));
 		if (publish) {
-			sqb.add(node.onUpdated(branchUuid, PUBLISHED));
+			sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
 		}
 	}
 

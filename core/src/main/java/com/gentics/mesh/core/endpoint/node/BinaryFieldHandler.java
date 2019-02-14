@@ -294,7 +294,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 
-			batch.add(node.onUpdated(branch.getUuid(), DRAFT)).dispatch();
+			batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT)).dispatch();
 			return node.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}

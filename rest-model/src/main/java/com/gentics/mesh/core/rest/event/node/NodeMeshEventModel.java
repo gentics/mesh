@@ -2,8 +2,10 @@ package com.gentics.mesh.core.rest.event.node;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
 public class NodeMeshEventModel extends AbstractProjectEventModel {
 
@@ -21,6 +23,7 @@ public class NodeMeshEventModel extends AbstractProjectEventModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Schema reference of the node.")
+	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	public NodeMeshEventModel() {

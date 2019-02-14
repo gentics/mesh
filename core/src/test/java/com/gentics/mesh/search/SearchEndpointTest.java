@@ -25,14 +25,16 @@ public class SearchEndpointTest extends AbstractMeshTest {
 			EventQueueBatch batch = EventQueueBatch.create();
 			for (int i = 0; i < 10; i++) {
 				String branchUuid = project().getLatestBranch().getUuid();
-				batch.add(node.onUpdated(branchUuid, DRAFT));
+				node.getDraftGraphFieldContainers().forEach(c -> {
+					batch.add(c.onUpdated(branchUuid, DRAFT));
+				});
 			}
 
 			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");
 
 			searchProvider().deleteDocument(Node.TYPE, documentId).blockingAwait();
 			assertTrue("The document with uuid {" + uuid + "} could still be found within the search index. Used document id {" + documentId + "}",
-					searchProvider().getDocument(Node.TYPE, documentId).blockingGet().isEmpty());
+				searchProvider().getDocument(Node.TYPE, documentId).blockingGet().isEmpty());
 		}
 	}
 

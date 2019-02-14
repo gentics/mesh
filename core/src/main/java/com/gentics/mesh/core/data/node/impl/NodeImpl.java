@@ -1140,8 +1140,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.isPublished(branchUuid)).collect(Collectors.toList());
 
 		// publish all unpublished containers and handle recursion
-		unpublishedContainers.stream().forEach(c -> publish(c.getLanguageTag(), branch, ac.getUser()));
-		bac.batch().add(onUpdated(branchUuid, PUBLISHED));
+		unpublishedContainers.stream().forEach(c -> {
+			NodeGraphFieldContainer newVersion = publish(c.getLanguageTag(), branch, ac.getUser());
+			bac.add(newVersion.onUpdated(branchUuid, PUBLISHED));
+		});
 		assertPublishConsistency(ac, branch);
 
 		// Handle recursion after publishing the current node.
@@ -1238,10 +1240,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// TODO check whether all required fields are filled, if not -> unable to publish
-
-		publish(draftVersion.getLanguageTag(), branch, ac.getUser());
+		NodeGraphFieldContainer publishedContainer = publish(draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
-		bac.add(onUpdated(branchUuid, PUBLISHED));
+		bac.add(publishedContainer.onUpdated(branchUuid, PUBLISHED));
 	}
 
 	@Override
@@ -1415,7 +1416,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(branch, DRAFT)) {
 			deleteLanguageContainer(ac, branch, container.getLanguageTag(), bac, false);
 		}
-		bac.add(onDeleted(getUuid(), getDisplayName(ac), getSchemaContainer(), null, null, null));
+		// bac.add(onDeleted(getUuid(), getDisplayName(ac), getSchemaContainer(), null, null, null));
 
 		// 3. Now check if the node has no more field containers in any branch. We can delete it in those cases
 		if (getGraphFieldContainerCount() == 0) {
@@ -1617,7 +1618,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-			batch.add(onUpdated());
+			batch.add(latestDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 			return true;
 		} else {
 			String version = requestModel.getVersion();
@@ -1687,7 +1688,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 				latestDraftVersion = newDraftVersion;
-				batch.add(onUpdated());
+				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 				return true;
 			}
 		}
@@ -2057,27 +2058,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeMeshEventModel onCreated(String branchUuid) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(getTypeInfo().getOnCreated());
-		fillCommonEventInfo(event);
-		event.setBranchUuid(branchUuid);
-		return event;
-	}
-
-	@Override
-	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(getTypeInfo().getOnUpdated());
-		fillCommonEventInfo(event);
-		event.setBranchUuid(branchUuid);
-		if (type != null) {
-			event.setType(type.getHumanCode());
-		}
-		return event;
-	}
-
-	@Override
 	public MeshEventModel onDeleted() {
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
 	}
@@ -2094,14 +2074,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			event.setSchema(schema.transformToReference());
 		}
 		return event;
-	}
-
-	private void fillCommonEventInfo(NodeMeshEventModel event) {
-		event.setUuid(getUuid());
-		SchemaContainer container = getSchemaContainer();
-		if (container != null) {
-			event.setSchema(container.transformToReference());
-		}
 	}
 
 	@Override

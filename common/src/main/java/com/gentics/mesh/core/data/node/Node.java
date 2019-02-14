@@ -754,32 +754,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag);
 
 	/**
-	 * Create the node specific update event.
-	 * 
-	 * @param branchUuid
-	 * @return Created event
-	 */
-	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
-
-	/**
-	 * Create the node specific update event.
-	 * 
-	 * @param branchUuid
-	 * @return Created event
-	 */
-	default NodeMeshEventModel onUpdated(String branchUuid) {
-		return onUpdated(branchUuid, null);
-	}
-
-	/**
-	 * Create the node specific create event.
-	 * 
-	 * @param branchUuid
-	 * @return Created event
-	 */
-	NodeMeshEventModel onCreated(String branchUuid);
-
-	/**
 	 * Get an existing edge.
 	 * 
 	 * @param languageTag

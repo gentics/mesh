@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -73,7 +75,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 
 		// 4. Assert migrated node
@@ -105,7 +107,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		});
 
 		try (Tx tx = tx()) {
@@ -117,25 +119,31 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateName() throws Exception {
-		String name = "new_name";
+		final String newName = "new_name";
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 		MicroschemaContainerVersion beforeVersion = tx(() -> microschemaContainers().get("vcard").getLatestVersion());
 
-		// 1. Setup new microschema
+		expectEvents(MICROSCHEMA_UPDATED, 1, event -> {
+			assertEquals(newName, event.getString("name"));
+			assertEquals(vcardUuid, event.getString("uuid"));
+			return true;
+		});
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-		request.setName(name);
+		request.setName(newName);
 		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
 
-		// 2. Invoke migration
+		waitForEvents();
+
+		// Invoke migration
 		waitForJobs(() -> {
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			assertEquals("The name of the microschema was not updated", name, beforeVersion.getNextVersion().getName());
+			assertEquals("The name of the microschema was not updated", newName, beforeVersion.getNextVersion().getName());
 		}
 	}
 

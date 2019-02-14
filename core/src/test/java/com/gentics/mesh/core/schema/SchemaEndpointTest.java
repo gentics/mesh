@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
@@ -20,11 +19,11 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -33,10 +32,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-import io.reactivex.Observable;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -66,8 +63,9 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
+
+import io.reactivex.Observable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {

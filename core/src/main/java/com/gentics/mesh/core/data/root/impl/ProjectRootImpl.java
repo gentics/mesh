@@ -71,7 +71,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion, String uuid) {
+	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion,
+		String uuid) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		if (uuid != null) {
 			project.setUuid(uuid);
@@ -197,6 +198,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String pathPrefix = requestModel.getPathPrefix();
 		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid);
 		Branch initialBranch = project.getInitialBranch();
+		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
@@ -211,10 +213,10 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		// Store the project in the index
 		batch.add(project.onCreated());
 
-		String branchUuid = initialBranch.getUuid();
-
 		// Add event for created basenode
-		batch.add(project.getBaseNode().onUpdated(branchUuid, ContainerType.DRAFT));
+		project.getBaseNode().getDraftGraphFieldContainers().forEach(c -> {
+			batch.add(c.onUpdated(branchUuid, ContainerType.DRAFT));
+		});
 
 		return project;
 

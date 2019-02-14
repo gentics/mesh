@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -257,7 +258,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		NodeGraphFieldContainer container = node.createGraphFieldContainer(language.getLanguageTag(), branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
 
-		batch.add(node.onCreated(branch.getUuid()));
+		batch.add(container.onCreated(branch.getUuid(), DRAFT));
 
 		// Check for webroot input data consistency (PUT on webroot)
 		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");

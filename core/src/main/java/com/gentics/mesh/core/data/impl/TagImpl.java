@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
@@ -31,7 +33,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -154,9 +155,13 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 		// Nodes which used this tag must be updated in the search index for all branches
 		for (Branch branch : getProject().getBranchRoot().findAll()) {
-			String branchUuid = branch.getUuid();
 			for (Node node : getNodes(branch)) {
-				bac.batch().add(node.onUpdated(branchUuid));
+				node.getGraphFieldContainers(branch, DRAFT).forEach(c -> {
+					bac.add(c.onUpdated(branch.getUuid(), DRAFT));
+				});
+				node.getGraphFieldContainers(branch, PUBLISHED).forEach(c -> {
+					bac.add(c.onUpdated(branch.getUuid(), PUBLISHED));
+				});
 			}
 		}
 		getElement().remove();

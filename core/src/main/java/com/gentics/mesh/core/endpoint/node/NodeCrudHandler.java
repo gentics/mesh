@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -263,7 +265,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tuple<Node, EventQueueBatch> tuple = db.tx(() -> {
 				EventQueueBatch batch = EventQueueBatch.create();
 				node.addTag(tag, branch);
-				batch.add(node.onUpdated(branch.getUuid()));
+				node.getGraphFieldContainers(branch, DRAFT).forEach(c -> {
+					batch.add(c.onUpdated(branch.getUuid(), DRAFT));
+				});
+				node.getGraphFieldContainers(branch, PUBLISHED).forEach(c -> {
+					batch.add(c.onUpdated(branch.getUuid(), PUBLISHED));
+				});
 				return Tuple.tuple(node, batch);
 			});
 			tuple.v2().dispatch();

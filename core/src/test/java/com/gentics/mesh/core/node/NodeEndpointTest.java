@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -24,6 +26,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.out;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -39,8 +42,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.rest.client.MeshWebrootResponse;
-import io.reactivex.Observable;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -56,6 +57,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -70,6 +72,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -79,6 +82,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -86,6 +90,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -231,6 +236,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testCreate() throws Exception {
 
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchemaName("content");
@@ -241,12 +247,23 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
-		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
-			assertThat(restNode).matches(request);
-			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
-		}
+		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
+
+		expectEvents(NODE_CREATED, 1, event -> {
+			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
+			assertNotNull(model.getUuid());
+			assertEquals(initialBranchUuid(), model.getBranchUuid());
+			assertEquals("content", model.getSchema().getName());
+			assertEquals(schemaUuid, model.getSchema().getUuid());
+			assertEquals("en", model.getLanguageTag());
+			return true;
+		});
+
+		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
+		waitForEvents();
+
+		assertThat(restNode).matches(request);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 
 	@Test
@@ -559,7 +576,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
-			call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid(), READ_PERM.getRestPerm().getName());
+			call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid(),
+				READ_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -890,7 +908,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Read the given node - It should still be readable
 			String uuid = tx(() -> node.getUuid());
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
+				READ_PERM.getRestPerm().getName());
 
 			// Verify also that the read nodes endpoint still finds all nodes
 			NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(),
@@ -925,7 +944,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// version=<default>
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 		// version=draft
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 		// version=published
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 		// version=<draftversion>
@@ -1068,7 +1088,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		int nJobs = 50;
 		try (Tx tx = tx()) {
 			Observable.range(0, nJobs)
-				.flatMapCompletable(i -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
+				.flatMapCompletable(
+					i -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
 				.blockingAwait();
 		}
 	}
@@ -1079,8 +1100,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		int nJobs = 200;
 		try (Tx tx = tx()) {
 			Observable.range(0, nJobs)
-				.flatMapCompletable(i ->
-					client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
+				.flatMapCompletable(
+					i -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
 				.blockingAwait();
 		}
 	}
@@ -1497,7 +1518,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 			node = parentNode.create(user(), version, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(), node.getProject().getLatestBranch(), user());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(),
+				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
 			englishContainer.createString("displayName").setString("displayName");
@@ -1553,7 +1575,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().revokePermissions(node, READ_PERM);
 			tx.success();
 		}
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 
 	}
 
@@ -1585,6 +1608,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdate() throws GenericRestException, Exception {
 		final String newSlug = "english renamed name";
+		final String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
@@ -1612,7 +1636,20 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 3. Invoke update
 		searchProvider().clear().blockingAwait();
+
+		expectEvents(NODE_UPDATED, 1, event -> {
+			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
+			assertEquals("Uuid in the event did not match up.", uuid, model.getUuid());
+			assertEquals("Branch uuid in the event did not match.", initialBranchUuid(), model.getBranchUuid());
+			assertEquals("Schema name in the event did not match up.", "content", model.getSchema().getName());
+			assertEquals("Schema uuid did not match up.", contentSchemaUuid, model.getSchema().getUuid());
+			assertEquals("Language tag in the event did not match up", "en", model.getLanguageTag());
+			return true;
+		});
+
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("en", "de")));
+		waitForEvents();
+
 		// Assert updater information
 		assertEquals("Dummy Firstname", restNode.getEditor().getFirstName());
 		assertEquals("Dummy Lastname", restNode.getEditor().getLastName());
@@ -1964,7 +2001,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parentRequest.setLanguage("en");
 			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			parentRequest.setParentNodeUuid(node.getUuid());
-			NodeResponse parentNode = call(() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+			NodeResponse parentNode = call(
+				() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			// create child in same branch
 			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
@@ -1981,7 +2019,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			childRequest.setParentNodeUuid(parentNode.getUuid());
 			call(() -> client().createNode(PROJECT_NAME, childRequest, new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND,
-					"object_not_found_for_uuid", parentNode.getUuid());
+				"object_not_found_for_uuid", parentNode.getUuid());
 
 			tx.success();
 		}
@@ -2003,7 +2041,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parentRequest.setLanguage("en");
 			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			parentRequest.setParentNodeUuid(node.getUuid());
-			NodeResponse parentNode = call(() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+			NodeResponse parentNode = call(
+				() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			// create child in same branch
 			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
@@ -2012,7 +2051,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
 			NodeResponse sameBranchChildResponse = call(
-					() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+				() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			// try to create node with same uuid in other branch with first node as parent
 			NodeCreateRequest childRequest = new NodeCreateRequest();
@@ -2021,7 +2060,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			childRequest.setParentNodeUuid(parentNode.getUuid());
 			call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
-					new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
+				new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
 
 			tx.success();
 		}

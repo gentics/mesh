@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -22,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -50,6 +51,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.syncleus.ferma.tx.Tx;
+
+import io.reactivex.Observable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -118,8 +121,17 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
+		expectEvents(MICROSCHEMA_CREATED, 1, event -> {
+			assertEquals("new_microschema_name", event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
+		});
+
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(request));
+
+		waitForEvents();
+
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		assertThat(microschemaResponse.getPermissions()).hasPerm(READ, CREATE, DELETE, UPDATE);
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
@@ -306,8 +318,16 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		String uuid = db().tx(() -> microschemaContainers().get("vcard").getUuid());
+
+		expectEvents(MICROSCHEMA_DELETED, 1, event -> {
+			assertEquals("vcard", event.getString("name"));
+			assertNotNull(event.getString("uuid"));
+			return true;
+		});
+
 		call(() -> client().deleteMicroschema(uuid));
 
+		waitForEvents();
 		// schema_delete_still_in_use
 
 		try (Tx tx = tx()) {
