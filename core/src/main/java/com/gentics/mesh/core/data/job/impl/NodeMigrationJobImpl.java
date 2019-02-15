@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMEA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -47,6 +48,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	public void prepare() {
 		EventQueueBatch batch = EventQueueBatch.create();
 		SchemaMigrationMeshEventModel event = new SchemaMigrationMeshEventModel();
+		event.setEvent(SCHEMEA_MIGRATION_START);
 
 		SchemaContainerVersion toVersion = getToSchemaVersion();
 		event.setToVersion(toVersion.transformToReference());

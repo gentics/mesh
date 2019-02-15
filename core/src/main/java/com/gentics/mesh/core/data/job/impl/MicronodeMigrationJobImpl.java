@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMEA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -12,6 +13,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.job.JobWarningList;
@@ -37,6 +39,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	public void prepare() {
 		EventQueueBatch batch = EventQueueBatch.create();
 		MicroschemaMigrationMeshEventModel event = new MicroschemaMigrationMeshEventModel();
+		event.setEvent(MICROSCHEMEA_MIGRATION_START);
 
 		MicroschemaContainerVersion toVersion = getToMicroschemaVersion();
 		event.setToVersion(toVersion.transformToReference());

@@ -1,6 +1,7 @@
 package com.gentics.mesh.event;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
@@ -61,6 +62,8 @@ public interface EventQueueBatch {
 	 *            API
 	 */
 	default EventQueueBatch add(MeshEventModel event) {
+		Objects.requireNonNull(event);
+		Objects.requireNonNull(event.getEvent(), "The event model does not contain the event info");
 		event.setCause(getCause());
 		getEntries().add(event);
 		return this;
