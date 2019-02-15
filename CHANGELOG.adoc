@@ -25,11 +25,13 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.30.1]]
-== 0.30.1 (TBD)
+== 0.30.1 (15.02.2019)
 
 icon:plus[] GraphQL: nodes can now be loaded via a list of UUIDs.
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.15
+
+icon:check[] Java Rest Client: Fixed a bug that occurred when calling `getResponse()` with `getBody()` on a binary response.
 
 icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper function.
 
