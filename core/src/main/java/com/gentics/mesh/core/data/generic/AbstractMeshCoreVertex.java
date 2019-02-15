@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -126,7 +126,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public MeshElementEventModel onUpdated() {
-		MeshElementEventModel event = new MeshEventModelImpl();
+		MeshElementEventModel event = new MeshElementEventModelImpl();
 		event.setEvent(getTypeInfo().getOnUpdated());
 		fillEventInfo(event);
 		return event;
@@ -134,7 +134,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public MeshElementEventModel onCreated() {
-		MeshElementEventModel event = new MeshEventModelImpl();
+		MeshElementEventModel event = new MeshElementEventModelImpl();
 		event.setEvent(getTypeInfo().getOnCreated());
 		fillEventInfo(event);
 		return event;
@@ -142,7 +142,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public MeshElementEventModel onDeleted() {
-		MeshElementEventModel event = new MeshEventModelImpl();
+		MeshElementEventModel event = new MeshElementEventModelImpl();
 		event.setEvent(getTypeInfo().getOnDeleted());
 		fillEventInfo(event);
 		return event;
