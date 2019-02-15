@@ -25,8 +25,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -825,19 +824,19 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public MeshEventModel onCreated() {
+			public MeshElementEventModel onCreated() {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public MeshEventModelImpl onUpdated() {
+			public MeshElementEventModel onUpdated() {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			public MeshEventModel onDeleted() {
+			public MeshElementEventModel onDeleted() {
 				// TODO Auto-generated method stub
 				return null;
 			}

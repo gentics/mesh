@@ -6,8 +6,6 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
-import io.reactivex.Completable;
-
 /**
  * Dummy search queue batch which can be used to avoid creation of unwanted batch entries. This is useful if a drop index is more efficient then removing each
  * entry individually. (e.g.: project deletion)

@@ -1,5 +1,11 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -7,13 +13,9 @@ import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
 import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 @ParametersAreNonnullByDefault
 public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>> implements EventHandler {

@@ -17,8 +17,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.util.VersionNumber;
 import org.apache.commons.io.IOUtils;
@@ -28,7 +26,6 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;

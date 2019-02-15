@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -730,7 +731,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private NodeMeshEventModel createEvent(MeshEvent event, String branchUuid, ContainerType type) {
 		NodeMeshEventModel model = new NodeMeshEventModel();
 		model.setEvent(event);
-		String nodeUuid = getParentNode(branchUuid).getUuid();
+		Node node = getParentNode(branchUuid);
+		String nodeUuid = node.getUuid();
 		model.setUuid(nodeUuid);
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(getLanguageTag());
@@ -741,6 +743,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
+		Project project = node.getProject();
+		model.setProject(project.transformToReference());
 		return model;
 	}
 

@@ -1,29 +1,14 @@
 package com.gentics.mesh.search.verticle.event.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.search.BulkEventQueueEntry;
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
 
 @Singleton
 public class EventProcessorImpl {

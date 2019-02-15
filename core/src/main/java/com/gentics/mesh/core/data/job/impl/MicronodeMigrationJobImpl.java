@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -12,9 +13,11 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
@@ -32,7 +35,20 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 	@Override
 	public void prepare() {
-		// NOP
+		EventQueueBatch batch = EventQueueBatch.create();
+		MicroschemaMigrationMeshEventModel event = new MicroschemaMigrationMeshEventModel();
+
+		MicroschemaContainerVersion toVersion = getToMicroschemaVersion();
+		event.setToVersion(toVersion.transformToReference());
+
+		MicroschemaContainerVersion fromVersion = getFromMicroschemaVersion();
+		event.setFromVersion(fromVersion.transformToReference());
+
+		Branch branch = getBranch();
+		Project project = branch.getProject();
+		event.setProject(project.transformToReference());
+		event.setBranch(branch.transformToReference());
+		batch.add(event).dispatch();
 	}
 
 	protected Completable processTask() {

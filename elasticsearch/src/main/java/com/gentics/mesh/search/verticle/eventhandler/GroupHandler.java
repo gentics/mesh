@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;

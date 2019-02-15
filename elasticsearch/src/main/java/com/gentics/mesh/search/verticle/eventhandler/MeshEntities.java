@@ -1,38 +1,5 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.core.rest.event.ProjectEvent;
-import com.gentics.mesh.search.index.group.GroupTransformer;
-import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
-import com.gentics.mesh.search.index.node.NodeContainerTransformer;
-import com.gentics.mesh.search.index.project.ProjectTransformer;
-import com.gentics.mesh.search.index.role.RoleTransformer;
-import com.gentics.mesh.search.index.schema.SchemaTransformer;
-import com.gentics.mesh.search.index.tag.TagTransformer;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyTransformer;
-import com.gentics.mesh.search.index.user.UserTransformer;
-import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import java.util.Optional;
-
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
@@ -60,6 +27,41 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
+
+import java.util.Optional;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.ProjectEvent;
+import com.gentics.mesh.search.index.group.GroupTransformer;
+import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
+import com.gentics.mesh.search.index.node.NodeContainerTransformer;
+import com.gentics.mesh.search.index.project.ProjectTransformer;
+import com.gentics.mesh.search.index.role.RoleTransformer;
+import com.gentics.mesh.search.index.schema.SchemaTransformer;
+import com.gentics.mesh.search.index.tag.TagTransformer;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyTransformer;
+import com.gentics.mesh.search.index.user.UserTransformer;
+import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class MeshEntities {
@@ -93,13 +95,13 @@ public class MeshEntities {
 		node = new MeshEntity<>(nodeTransformer, NODE_CREATED, NODE_UPDATED, NODE_DELETED, this::toNode);
 	}
 
-	private Optional<TagFamily> toTagFamily(MeshEventModel eventModel) {
+	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), eventModel.getUuid()));
 	}
 
-	private Optional<Tag> toTag(MeshEventModel eventModel) {
+	private Optional<Tag> toTag(MeshElementEventModel eventModel) {
 		return toTagFamily(eventModel)
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}

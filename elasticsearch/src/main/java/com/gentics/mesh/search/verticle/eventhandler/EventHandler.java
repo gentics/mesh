@@ -1,13 +1,13 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.search.verticle.MessageEvent;
+import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 
 public interface EventHandler {
 

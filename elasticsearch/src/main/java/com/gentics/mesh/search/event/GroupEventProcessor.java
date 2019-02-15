@@ -1,8 +1,5 @@
 package com.gentics.mesh.search.event;
 
-import com.gentics.mesh.core.data.HandleElementAction;
-import com.gentics.mesh.core.data.User;
-
 public class GroupEventProcessor implements EventProcessor {
 
 	@Override

@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -18,9 +17,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;

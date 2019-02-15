@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
+import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
@@ -22,6 +25,36 @@ import io.vertx.core.eventbus.EventBus;
 public enum MeshEvent {
 
 	MESH_MIGRATION("mesh.migration", null),
+
+	/**
+	 * Schema migration start event.
+	 */
+	SCHEMEA_MIGRATION_START("mesh.schema.migration.start", SchemaMigrationMeshEventModel.class),
+
+	/**
+	 * Schema migration finished event (contains status information)
+	 */
+	SCHEMEA_MIGRATION_FINISHED("mesh.schema.migration.finished", SchemaMigrationMeshEventModel.class),
+
+	/**
+	 * Microschema migration start event.
+	 */
+	MICROSCHEMEA_MIGRATION_START("mesh.microschema.migration.start", MicroschemaMigrationMeshEventModel.class),
+
+	/**
+	 * Microschema migration finished event.
+	 */
+	MICROSCHEMEA_MIGRATION_FINISHED("mesh.microschema.migration.finished", MicroschemaMigrationMeshEventModel.class),
+
+	/**
+	 * Branch migration start event.
+	 */
+	BRANCH_MIGRATION_START("mesh.branch.migration.start", BranchMigrationMeshEventModel.class),
+
+	/**
+	 * Branch migration finished event.
+	 */
+	BRANCH_MIGRATION_FINISHED("mesh.schema.migration.finished", BranchMigrationMeshEventModel.class),
 
 	/**
 	 * Event which is send once the mesh instance is fully started and ready to accept requests.
@@ -165,15 +198,13 @@ public enum MeshEvent {
 	 */
 	SEARCH_IDLE("mesh.search.process.idle", null);
 
-
 	public final String address;
 	public final Class bodyModel;
 
 	private static final Map<String, MeshEvent> events = createEventMap();
 
 	/**
-	 * Gets the event with the given address.
-	 * Returns an empty optional if the address is invalid.
+	 * Gets the event with the given address. Returns an empty optional if the address is invalid.
 	 *
 	 * @param address
 	 * @return
@@ -186,8 +217,7 @@ public enum MeshEvent {
 		return Stream.of(values())
 			.collect(Collectors.toMap(
 				MeshEvent::getAddress,
-				Function.identity()
-			));
+				Function.identity()));
 	}
 
 	MeshEvent(String address, Class bodyModel) {

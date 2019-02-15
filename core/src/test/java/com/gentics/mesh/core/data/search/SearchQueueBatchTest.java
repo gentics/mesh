@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 

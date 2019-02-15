@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -192,12 +192,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public MeshEventModel onCreated() {
+	public MeshElementEventModel onCreated() {
 		return getSchemaContainer().onCreated();
 	}
 
 	@Override
-	public MeshEventModel onUpdated() {
+	public MeshElementEventModel onUpdated() {
 		return getSchemaContainer().onUpdated();
 	}
 

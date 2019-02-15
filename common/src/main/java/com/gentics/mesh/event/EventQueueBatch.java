@@ -6,8 +6,6 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 
-import io.reactivex.Completable;
-
 /**
  * A batch of event queue entries.
  */

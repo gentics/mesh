@@ -1,13 +1,14 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.search.index.Transformer;
-import io.vertx.core.json.JsonObject;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.search.index.Transformer;
+
+import io.vertx.core.json.JsonObject;
 
 public class MeshEntity<T> {
 	private final Transformer<T> transformer;
@@ -48,11 +49,11 @@ public class MeshEntity<T> {
 		return transformer.toDocument(element);
 	}
 
-	public Optional<T> getElement(MeshEventModel event) {
+	public Optional<T> getElement(MeshElementEventModel event) {
 		return eventVertexMapper.apply(event);
 	}
 
-	public Optional<JsonObject> getDocument(MeshEventModel event) {
+	public Optional<JsonObject> getDocument(MeshElementEventModel event) {
 		return getElement(event).map(transformer::toDocument);
 	}
 }

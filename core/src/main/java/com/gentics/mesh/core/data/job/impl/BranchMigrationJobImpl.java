@@ -7,15 +7,13 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
@@ -33,17 +31,15 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	@Override
 	public void prepare() {
-		Branch newBranch = getBranch();
-		String newBranchUuid = newBranch.getUuid();
-		Project project = newBranch.getProject();
+		EventQueueBatch batch = EventQueueBatch.create();
+		BranchMigrationMeshEventModel event = new BranchMigrationMeshEventModel();
 
-		// Add the needed indices and mappings
-		EventQueueBatch indexCreationBatch = EventQueueBatch.create();
-		for (SchemaContainerVersion schemaVersion : newBranch.findActiveSchemaVersions()) {
-			SchemaModel schema = schemaVersion.getSchema();
-			// TODO fire - schema migration prepare event
-		}
-		indexCreationBatch.dispatch();
+		Branch newBranch = getBranch();
+		event.setBranch(newBranch.transformToReference());
+
+		Project project = newBranch.getProject();
+		event.setProject(project.transformToReference());
+		batch.add(event).dispatch();
 	}
 
 	@Override

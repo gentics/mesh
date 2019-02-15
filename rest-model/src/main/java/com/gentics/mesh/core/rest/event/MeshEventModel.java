@@ -10,26 +10,10 @@ import io.vertx.core.json.JsonObject;
 public interface MeshEventModel extends RestModel {
 
 	/**
-	 * Return the uuid of the element which the element references
-	 * 
-	 * @return
-	 */
-	String getUuid();
-
-	/**
-	 * Set the uuid of the element.
-	 * 
-	 * @param uuid
-	 * 
-	 */
-	void setUuid(String uuid);
-
-	/**
 	 * Return the mesh cluster node from which this event originated.
 	 * 
 	 * @return
 	 */
-
 	String getOrigin();
 
 	/**
@@ -38,20 +22,6 @@ public interface MeshEventModel extends RestModel {
 	 * @param origin
 	 */
 	void setOrigin(String origin);
-
-	/**
-	 * Return the name of the referenced element.
-	 * 
-	 * @return
-	 */
-	String getName();
-
-	/**
-	 * Set the name of the referenced element.
-	 * 
-	 * @param name
-	 */
-	void setName(String name);
 
 	/**
 	 * Return the event to which the model belongs.
@@ -68,7 +38,7 @@ public interface MeshEventModel extends RestModel {
 	void setEvent(MeshEvent event);
 
 	/**
-	 * Returns the event cause info which contains information about the root action which lead to the creation of this event.
+	 * Returns the event cause info which contains information about the root action which lead to the event.
 	 *
 	 * @return
 	 */
@@ -87,13 +57,13 @@ public interface MeshEventModel extends RestModel {
 	 * @param message
 	 * @return
 	 */
-	static MeshEventModel fromMessage(Message<JsonObject> message) {
+	static <T extends MeshEventModel> T fromMessage(Message<JsonObject> message) {
 		String address = message.address();
 		MeshEvent event = MeshEvent.fromAddress(address)
 			.orElseThrow(() -> new RuntimeException(String.format("No event found for address %s", address)));
 
 		// TODO Find better way to deserialize
-		return (MeshEventModel) JsonUtil.readValue(message.body().toString(), event.bodyModel);
+		return (T) JsonUtil.readValue(message.body().toString(), event.bodyModel);
 	}
 
 }

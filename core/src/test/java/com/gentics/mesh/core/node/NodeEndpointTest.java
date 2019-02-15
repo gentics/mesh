@@ -1645,6 +1645,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("Schema name in the event did not match up.", "content", model.getSchema().getName());
 			assertEquals("Schema uuid did not match up.", contentSchemaUuid, model.getSchema().getUuid());
 			assertEquals("Language tag in the event did not match up", "en", model.getLanguageTag());
+			assertEquals("Project name does not match up", PROJECT_NAME, model.getProject().getName());
+			assertEquals("Project uuid does not match up", projectUuid(), model.getProject().getUuid());
 			return true;
 		});
 
