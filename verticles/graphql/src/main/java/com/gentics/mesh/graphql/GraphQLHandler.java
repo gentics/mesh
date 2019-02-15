@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -111,8 +112,8 @@ public class GraphQLHandler {
 			JsonObject jsonError = new JsonObject();
 			if (error instanceof ExceptionWhileDataFetching) {
 				ExceptionWhileDataFetching dataError = (ExceptionWhileDataFetching) error;
-				if (dataError.getException() instanceof PermissionException) {
-					PermissionException restException = (PermissionException) dataError.getException();
+				if (dataError.getException() instanceof AbstractUnavailableException) {
+					AbstractUnavailableException restException = (AbstractUnavailableException) dataError.getException();
 					// TODO translate error
 					// TODO add i18n parameters
 					jsonError.put("message", restException.getI18nKey());
