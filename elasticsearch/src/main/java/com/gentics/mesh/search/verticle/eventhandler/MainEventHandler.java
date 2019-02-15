@@ -45,9 +45,10 @@ public class MainEventHandler implements EventHandler {
 	private final MeshEntities entities;
 
 	private final Map<MeshEvent, EventHandler> handlers;
+	private final NodeHandler nodeHandler;
 
 	@Inject
-	public MainEventHandler(ElasticsearchSyncVerticle elasticsearchSyncVerticle, ElasticSearchProvider elasticSearchProvider, MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities) {
+	public MainEventHandler(ElasticsearchSyncVerticle elasticsearchSyncVerticle, ElasticSearchProvider elasticSearchProvider, MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities, NodeHandler nodeHandler) {
 		this.elasticsearchSyncVerticle = elasticsearchSyncVerticle;
 		this.elasticSearchProvider = elasticSearchProvider;
 		this.helper = helper;
@@ -55,6 +56,7 @@ public class MainEventHandler implements EventHandler {
 		this.tagHandler = tagHandler;
 		this.tagFamilyHandler = tagFamilyHandler;
 		this.entities = entities;
+		this.nodeHandler = nodeHandler;
 
 		handlers = createHandlers();
 	}
@@ -70,7 +72,8 @@ public class MainEventHandler implements EventHandler {
 			new SimpleEventHandler<>(helper, entities.project, Project.composeIndexName()),
 			groupHandler,
 			tagHandler,
-			tagFamilyHandler
+			tagFamilyHandler,
+			nodeHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
 	}
 

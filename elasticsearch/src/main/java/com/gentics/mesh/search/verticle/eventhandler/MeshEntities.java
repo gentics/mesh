@@ -100,7 +100,8 @@ public class MeshEntities {
 	}
 
 	private Optional<Tag> toTag(MeshEventModel eventModel) {
-		throw new RuntimeException("Not implemented");
+		return toTagFamily(eventModel)
+			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
 	private Optional<NodeGraphFieldContainer> toNode(MeshEventModel eventModel) {
