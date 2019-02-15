@@ -29,7 +29,6 @@ title: Changelog
 
 icon:plus[] GraphQL: nodes can now be loaded via a list of UUIDs.
 
-
 icon:check[] Java Rest Client: Fixed a bug that occurred when calling `getResponse()` with `getBody()` on a binary response.
 
 icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper function.
