@@ -1,5 +1,22 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static graphql.Scalars.GraphQLLong;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLEnumType.newEnum;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Branch;
@@ -21,6 +38,8 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.search.SearchHandler;
+
+import graphql.ExceptionWhileDataFetching;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
@@ -29,23 +48,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static graphql.Scalars.GraphQLLong;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.GraphQLEnumType.newEnum;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 public abstract class AbstractTypeProvider {
 
@@ -168,6 +170,16 @@ public abstract class AbstractTypeProvider {
 	 */
 	public GraphQLArgument createUuidArg(String description) {
 		return newArgument().name("uuid").type(GraphQLString).description(description).build();
+	}
+
+	/**
+	 * Return a new argument for a list of uuids.
+	 *
+	 * @param description The new arguments description
+	 * @return A new argument for a list of uuids
+	 */
+	public GraphQLArgument createUuidsArg(String description) {
+		return newArgument().name("uuids").type(GraphQLList.list(GraphQLString)).description(description).build();
 	}
 
 	/**
@@ -294,7 +306,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<T>> rootProvider,
-		String pageTypeName, SearchHandler searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
+		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
 			.description(description)
