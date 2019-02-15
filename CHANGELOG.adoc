@@ -29,7 +29,7 @@ title: Changelog
 
 icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper function.
 
-icon:check[] Java Rest Client: Fixed a bug that occurred when calling getResponse() with getBody() on a binary response.
+icon:check[] Java Rest Client: Fixed a bug that occurred when calling `getResponse()` with `getBody()` on a binary response.
 
 [[v0.30.0]]
 == 0.30.0 (12.02.2019)
