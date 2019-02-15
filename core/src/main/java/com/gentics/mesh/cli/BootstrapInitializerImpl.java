@@ -342,10 +342,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initVertx(MeshOptions options, boolean isClustered) {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
-		//vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
-		//vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
-		vertxOptions.setWorkerPoolSize(1);
-		vertxOptions.setEventLoopPoolSize(1);
+		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
+		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
+//		vertxOptions.setWorkerPoolSize(1);
+//		vertxOptions.setEventLoopPoolSize(1);
 		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
 		vertxOptions.setPreferNativeTransport(true);
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
