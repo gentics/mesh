@@ -457,10 +457,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	protected List<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+	protected Iterable<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
 			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return edgeTraversal.toList();
+		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
+	}
+
+	protected Iterable<GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(ContainerType type) {
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
 	}
 
 	@Override
@@ -1114,7 +1119,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, Branch branch, BulkActionContext bac) {
-		String branchUuid = branch.getUuid();
 		PublishParameters parameters = ac.getPublishParameters();
 
 		// .store(this, branchUuid, ContainerType.PUBLISHED, false);
@@ -1174,7 +1178,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Remove the published edge for each found container
 		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
-		getGraphFieldContainerEdges(branchUuid, PUBLISHED).stream().forEach(EdgeFrame::remove);
+		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
 
 		assertPublishConsistency(ac, branch);
 
@@ -1387,6 +1391,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				child.deleteFully(bac, recursive);
 			}
 		}
+
+		// getGraphFieldContainerEdges(DRAFT).forEach(e -> {
+		// bac.add(e.getNodeContainer().onDeleted(e.getBranchUuid(), DRAFT));
+		// });
+		// getGraphFieldContainerEdges(PUBLISHED).forEach(e -> {
+		// bac.add(e.getNodeContainer().onDeleted(e.getBranchUuid(), PUBLISHED));
+		// });
 
 		for (NodeGraphFieldContainer container : getGraphFieldContainersIt(INITIAL)) {
 			container.delete(bac);

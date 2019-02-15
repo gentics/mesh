@@ -167,7 +167,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// Invoke common field removal operations
 		super.delete(bac);
 
-		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(bac, this);
 		}
@@ -175,8 +174,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
 			micronodeField.removeField(bac, this);
 		}
-
-		// We don't need to handle node fields since those are only edges and will automatically be removed
 
 		// Delete the container from all branches and types
 		getBranchTypes().forEach(tuple -> {
@@ -186,6 +183,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				bac.add(onDeleted(branchUuid, type));
 			}
 		});
+
+		// We don't need to handle node fields since those are only edges and will automatically be removed
 		getElement().remove();
 		bac.inc();
 	}
@@ -395,7 +394,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Node getParentNode(String branchUuid) {
-		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
+		return inE(HAS_FIELD_CONTAINER).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
@@ -734,6 +733,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		Node node = getParentNode(branchUuid);
 		String nodeUuid = node.getUuid();
 		model.setUuid(nodeUuid);
+		model.setName(getDisplayFieldValue());
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(getLanguageTag());
 		if (type != null) {

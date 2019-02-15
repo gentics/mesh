@@ -147,15 +147,15 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		expectEvents(PROJECT_CREATED, 1, event -> {
-			assertEquals(name, event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+			assertEquals("Name of project create event not set.", name, event.getString("name"));
+			assertNotNull("Uuid of project create event not set.", event.getString("uuid"));
 			return true;
 		});
 
 		// Base node of the project
 		expectEvents(NODE_CREATED, 1, event -> {
-			assertEquals(name, event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+			assertNull("No name should be set for the base node.", event.getString("name"));
+			assertNotNull("Uuid of base node creation event not set.", event.getString("uuid"));
 			return true;
 		});
 
