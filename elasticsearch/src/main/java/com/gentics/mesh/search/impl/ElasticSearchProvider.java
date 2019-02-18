@@ -378,20 +378,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulk(List<? extends BulkEntry> entries) {
-		if (entries.isEmpty()) {
-			return Completable.complete();
-		}
+	public Completable processBulk(String actions) {
 		long start = System.currentTimeMillis();
-
-		String bulkData = entries.stream()
-			.map(e -> e.toBulkString(installationPrefix()))
-			.collect(Collectors.joining("\n")) + "\n";
-		if (log.isTraceEnabled()) {
-			log.trace("Using bulk payload:");
-			log.trace(bulkData);
-		}
-		return client.processBulk(bulkData).async()
+		return client.processBulk(actions).async()
 			.doOnSuccess(response -> {
 				boolean errors = response.getBoolean("errors");
 				if (errors) {
@@ -414,6 +403,23 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 			}).toCompletable()
 			.compose(withTimeoutAndLog("Storing document batch.", true));
+	}
+
+	@Override
+	public Completable processBulk(List<? extends BulkEntry> entries) {
+		if (entries.isEmpty()) {
+			return Completable.complete();
+		}
+
+		String bulkData = entries.stream()
+			.map(e -> e.toBulkString(installationPrefix()))
+			.collect(Collectors.joining("\n")) + "\n";
+		if (log.isTraceEnabled()) {
+			log.trace("Using bulk payload:");
+			log.trace(bulkData);
+		}
+
+		return processBulk(bulkData);
 	}
 
 	@Override

@@ -7,17 +7,15 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
-import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
@@ -45,7 +43,7 @@ public class NodeHandler implements EventHandler {
 	}
 
 	@Override
-	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		MeshEvent event = messageEvent.event;
 		NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
 
@@ -58,7 +56,7 @@ public class NodeHandler implements EventHandler {
 		}
 	}
 
-	private Optional<ElasticsearchRequest> upsertNodes(NodeMeshEventModel message) {
+	private Optional<SearchRequest> upsertNodes(NodeMeshEventModel message) {
 		return helper.getDb().tx(() -> entities.node.getDocument(message))
 			.map(doc -> new CreateDocumentRequest(
 				helper.prefixIndexName(getIndexName(message)),
@@ -67,7 +65,7 @@ public class NodeHandler implements EventHandler {
 			));
 	}
 
-	private ElasticsearchRequest deleteNodes(NodeMeshEventModel message) {
+	private SearchRequest deleteNodes(NodeMeshEventModel message) {
 		return new DeleteDocumentRequest(
 			helper.prefixIndexName(getIndexName(message)),
 			NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag())

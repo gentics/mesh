@@ -26,7 +26,7 @@ import com.gentics.mesh.search.index.schema.SchemaTransformer;
 import com.gentics.mesh.search.index.tag.TagTransformer;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyTransformer;
 import com.gentics.mesh.search.index.user.UserTransformer;
-import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 

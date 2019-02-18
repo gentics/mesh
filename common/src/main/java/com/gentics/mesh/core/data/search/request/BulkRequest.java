@@ -1,8 +1,7 @@
-package com.gentics.mesh.search.verticle.request;
+package com.gentics.mesh.core.data.search.request;
 
-import com.gentics.elasticsearch.client.ElasticsearchClient;
+import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -23,14 +22,8 @@ public class BulkRequest implements Bulkable {
 	}
 
 	@Override
-	public Completable execute(ElasticsearchClient<JsonObject> client) {
-		return client.processBulk(actions + "\n").async()
-			.doOnSuccess(response -> {
-				if (log.isTraceEnabled()) {
-					log.trace("Response from Elasticsearch:\n" + response.encodePrettily());
-				}
-			})
-			.toCompletable();
+	public Completable execute(SearchProvider searchProvider) {
+		return searchProvider.processBulk(actions + "\n");
 	}
 
 	@Override

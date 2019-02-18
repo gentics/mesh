@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -16,7 +16,6 @@ import io.vertx.core.logging.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -78,7 +77,7 @@ public class MainEventHandler implements EventHandler {
 	}
 
 	@Override
-	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		return handlers.get(messageEvent.event).handle(messageEvent);
 	}
 

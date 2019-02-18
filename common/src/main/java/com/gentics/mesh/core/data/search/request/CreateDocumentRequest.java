@@ -1,6 +1,5 @@
-package com.gentics.mesh.search.verticle.request;
+package com.gentics.mesh.core.data.search.request;
 
-import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
@@ -20,8 +19,8 @@ public class CreateDocumentRequest implements Bulkable {
 	}
 
 	@Override
-	public Completable execute(ElasticsearchClient<JsonObject> client) {
-		return client.storeDocument(index, SearchProvider.DEFAULT_TYPE, id, doc).async().toCompletable();
+	public Completable execute(SearchProvider searchProvider) {
+		return searchProvider.storeDocument(index, id, doc);
 	}
 
 	@Override

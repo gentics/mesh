@@ -4,18 +4,15 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
@@ -40,7 +37,7 @@ public class TagFamilyHandler implements EventHandler {
 	}
 
 	@Override
-	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		MeshEvent event = messageEvent.event;
 		String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
 		if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {

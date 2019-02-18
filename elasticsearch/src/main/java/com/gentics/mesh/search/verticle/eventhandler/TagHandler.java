@@ -5,8 +5,8 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
 
 import javax.inject.Inject;
@@ -38,7 +38,7 @@ public class TagHandler implements EventHandler {
 	}
 
 	@Override
-	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		MeshEvent event = messageEvent.event;
 		String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
 

@@ -2,7 +2,7 @@ package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
 
 import java.util.Collection;
@@ -18,7 +18,7 @@ public interface EventHandler {
 	 * @param messageEvent
 	 * @return
 	 */
-	Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent);
+	Flowable<SearchRequest> handle(MessageEvent messageEvent);
 
 	/**
 	 * Gets collection of all events that can be handled by this class.
@@ -32,10 +32,10 @@ public interface EventHandler {
 	 * @param transformer The implementation for {@link #handle(MessageEvent)}
 	 * @return
 	 */
-	static EventHandler forEvent(MeshEvent event, Function<MessageEvent, Flowable<ElasticsearchRequest>> transformer) {
+	static EventHandler forEvent(MeshEvent event, Function<MessageEvent, Flowable<SearchRequest>> transformer) {
 		return new EventHandler() {
 			@Override
-			public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+			public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 				return transformer.apply(messageEvent);
 			}
 

@@ -10,9 +10,9 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.search.impl.SearchClient;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.MainEventHandler;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
@@ -31,7 +31,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessVerticle.class);
 
 	private final MainEventHandler mainEventhandler;
-	private final SearchClient elasticSearchClient;
+	private final SearchProvider searchProvider;
 	private BulkOperator bulker;
 
 	private Subject<MessageEvent> requests = PublishSubject.create();
@@ -42,9 +42,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
 
 	@Inject
-	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchClient elasticSearchClient) {
+	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchProvider searchProvider) {
 		this.mainEventhandler = mainEventhandler;
-		this.elasticSearchClient = elasticSearchClient;
+		this.searchProvider = searchProvider;
 	}
 
 	@Override
@@ -92,12 +92,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 * @return
 	 */
 	public Completable refresh() {
-		return elasticSearchClient.refresh().async()
-			.doOnSuccess(response -> {
-				if (log.isTraceEnabled()) {
-					log.trace("Refreshing response from Elasticsearch:\n" + response.encodePrettily());
-				}
-			}).toCompletable()
+		return searchProvider.refreshIndex()
 			.doOnSubscribe(ignore -> log.trace("Refreshing all Elasticsearch indices..."));
 	}
 
@@ -124,7 +119,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.lift(bulker)
 			.doOnNext(ignore -> pendingRequests.incrementAndGet())
 			.concatMap(request ->
-				request.execute(elasticSearchClient).andThen(Observable.just(request))
+				request.execute(searchProvider).andThen(Observable.just(request))
 					.doOnSubscribe(ignore -> log.trace("Sending request to Elasticsearch:\n" + request)),
 				1
 			)
@@ -139,7 +134,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			});
 	}
 
-	private Flowable<ElasticsearchRequest> generateRequests(MessageEvent messageEvent) {
+	private Flowable<SearchRequest> generateRequests(MessageEvent messageEvent) {
 		try {
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnComplete(pendingTransformations::decrementAndGet);

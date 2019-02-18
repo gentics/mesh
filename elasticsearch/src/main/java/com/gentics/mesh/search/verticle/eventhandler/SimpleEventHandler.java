@@ -1,8 +1,6 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -10,9 +8,9 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
-import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
@@ -40,7 +38,7 @@ public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>
 	}
 
 	@Override
-	public Flowable<ElasticsearchRequest> handle(MessageEvent eventModel) {
+	public Flowable<SearchRequest> handle(MessageEvent eventModel) {
 		MeshEvent event = eventModel.event;
 		if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
 			return toFlowable(helper.getDb().tx(() -> entity.getDocument(eventModel.message))

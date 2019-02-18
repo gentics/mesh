@@ -100,6 +100,14 @@ public interface SearchProvider {
 
 	/**
 	 * Process the bulk request.
+	 *
+	 * @param actions
+	 * @return
+	 */
+	Completable processBulk(String actions);
+
+	/**
+	 * Process the bulk request.
 	 * 
 	 * @param entries
 	 * @return

@@ -7,13 +7,10 @@ import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import dagger.Lazy;
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -49,46 +46,38 @@ public class SyncHandler implements EventHandler {
 		this.provider = provider;
 	}
 
-	private Completable syncIndices() {
-		return Observable.fromIterable(registry.get().getHandlers())
-			.flatMapCompletable(handler -> handler.init().andThen(handler.syncIndices()));
-	}
-
-	private Completable purgeOldIndices() {
-		List<IndexHandler<?>> handlers = registry.get().getHandlers();
-		Single<Set<String>> allIndices = provider.listIndices();
-		Observable<IndexHandler<?>> obs = Observable.fromIterable(handlers);
-
-		return allIndices.flatMapCompletable(indices -> {
-			return obs.flatMapCompletable(handler -> {
-				Set<String> unknownIndices = handler.filterUnknownIndices(indices);
-				return Observable.fromIterable(unknownIndices).flatMapCompletable(index -> {
-					log.info("Deleting unknown index {" + index + "}");
-					return provider.deleteIndex(index);
-				});
-			});
-		});
-	}
-
 	@Override
-	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
-		return Completable.fromAction(() -> {
+	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
+		return Flowable.concatArray(
+			purgeOldIndices(),
+			syncIndices()
+		).doOnSubscribe(ignore -> {
 			log.info("Processing index sync job.");
 			SyncMetric.reset();
-		})
-			.andThen(purgeOldIndices())
-			.andThen(syncIndices())
-			.andThen(provider.refreshIndex()).doOnComplete(() -> {
-				log.info("Sync completed");
-				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "completed"));
-			}).doOnError(error -> {
-				log.error("Sync failed", error);
-				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "failed"));
-			});
+		});
+		// TODO Publish event on sync finish
 	}
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
 		return Collections.singletonList(MeshEvent.INDEX_SYNC_WORKER_ADDRESS);
+	}
+
+	private Flowable<SearchRequest> syncIndices() {
+		return Flowable.fromIterable(registry.get().getHandlers())
+			.flatMapCompletable(handler -> handler.init().andThen(handler.syncIndices()));
+	}
+
+	private Flowable<SearchRequest> purgeOldIndices() {
+		List<IndexHandler<?>> handlers = registry.get().getHandlers();
+		Single<Set<String>> allIndices = provider.listIndices();
+		Flowable<IndexHandler<?>> obs = Flowable.fromIterable(handlers);
+
+		return allIndices.flatMapPublisher(indices -> obs.flatMap(handler -> {
+			Set<String> unknownIndices = handler.filterUnknownIndices(indices);
+			return Flowable.fromIterable(unknownIndices)
+				.map(index -> client -> provider.deleteIndex(index)
+				.doOnSubscribe(ignore -> log.info("Deleting unknown index {" + index + "}")));
+		}));
 	}
 }
