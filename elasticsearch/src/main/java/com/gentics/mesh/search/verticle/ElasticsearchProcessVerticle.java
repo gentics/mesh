@@ -141,9 +141,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private Flowable<ElasticsearchRequest> generateRequests(MessageEvent messageEvent) {
 		try {
-			List<ElasticsearchRequest> esRequests = this.mainEventhandler.handle(messageEvent);
-			pendingTransformations.decrementAndGet();
-			return Flowable.fromIterable(esRequests);
+			return this.mainEventhandler.handle(messageEvent)
+				.doOnComplete(pendingTransformations::decrementAndGet);
 		} catch (Exception e) {
 			// TODO Error handling
 			e.printStackTrace();

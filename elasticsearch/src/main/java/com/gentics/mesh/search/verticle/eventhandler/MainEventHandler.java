@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -63,7 +64,7 @@ public class MainEventHandler implements EventHandler {
 	private Map<MeshEvent, EventHandler> createHandlers() {
 		return Stream.of(
 			forEvent(INDEX_SYNC_WORKER_ADDRESS, event -> singletonList(client -> syncHandler.executeJob(null))),
-			forEvent(INDEX_CLEAR_REQUEST, event -> singletonList(client -> elasticSearchProvider.clear())),
+			forEvent(INDEX_CLEAR_REQUEST, event -> Flowable.just(client -> elasticSearchProvider.clear())),
 			new SimpleEventHandler<>(helper, entities.schema, SchemaContainer.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.microschema, MicroschemaContainer.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.user, User.composeIndexName()),
@@ -77,7 +78,7 @@ public class MainEventHandler implements EventHandler {
 	}
 
 	@Override
-	public List<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
 		return handlers.get(messageEvent.event).handle(messageEvent);
 	}
 

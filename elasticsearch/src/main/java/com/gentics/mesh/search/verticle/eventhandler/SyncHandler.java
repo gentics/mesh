@@ -1,37 +1,36 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
-
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetric;
-import com.gentics.mesh.verticle.AbstractJobVerticle;
-
+import com.gentics.mesh.search.verticle.MessageEvent;
+import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
+
 /**
  * Verticle which will execute the elasticsearch sync.
  */
-public class SyncHandler extends AbstractJobVerticle {
+public class SyncHandler implements EventHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SyncHandler.class);
-
-	public static final String GLOBAL_SYNC_LOCK_NAME = "mesh.internal.synclock";
 
 	private Lazy<IndexHandlerRegistry> registry;
 
@@ -48,34 +47,6 @@ public class SyncHandler extends AbstractJobVerticle {
 	public SyncHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider) {
 		this.registry = registry;
 		this.provider = provider;
-	}
-
-	public String getJobAdress() {
-		return INDEX_SYNC_WORKER_ADDRESS.address;
-	}
-
-	@Override
-	public String getLockName() {
-		return GLOBAL_SYNC_LOCK_NAME;
-	}
-
-	/**
-	 * Execute the index sync job.
-	 */
-	public Completable executeJob(Message<Object> message) {
-		return Completable.fromAction(() -> {
-			log.info("Processing index sync job.");
-			SyncMetric.reset();
-		})
-			.andThen(purgeOldIndices())
-			.andThen(syncIndices())
-			.andThen(provider.refreshIndex()).doOnComplete(() -> {
-				log.info("Sync completed");
-				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "completed"));
-			}).doOnError(error -> {
-				log.error("Sync failed", error);
-				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "failed"));
-			});
 	}
 
 	private Completable syncIndices() {
@@ -99,4 +70,25 @@ public class SyncHandler extends AbstractJobVerticle {
 		});
 	}
 
+	@Override
+	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+		return Completable.fromAction(() -> {
+			log.info("Processing index sync job.");
+			SyncMetric.reset();
+		})
+			.andThen(purgeOldIndices())
+			.andThen(syncIndices())
+			.andThen(provider.refreshIndex()).doOnComplete(() -> {
+				log.info("Sync completed");
+				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "completed"));
+			}).doOnError(error -> {
+				log.error("Sync failed", error);
+				vertx.eventBus().publish(MeshEvent.INDEX_SYNC.address, new JsonObject().put("status", "failed"));
+			});
+	}
+
+	@Override
+	public Collection<MeshEvent> handledEvents() {
+		return Collections.singletonList(MeshEvent.INDEX_SYNC_WORKER_ADDRESS);
+	}
 }

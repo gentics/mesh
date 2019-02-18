@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Util {
@@ -44,5 +46,15 @@ public final class Util {
 
 	public static <T> Stream<T> toStream(Optional<T> opt) {
 		return opt.map(Stream::of).orElse(Stream.empty());
+	}
+
+	public static <T> Collector<T, ?, Flowable<T>> toFlowable() {
+		return Collectors.collectingAndThen(Collectors.toList(), Flowable::fromIterable);
+	}
+
+	public static <T> Flowable<T> toFlowable(Optional<T> opt) {
+		return opt.isPresent()
+			? Flowable.just(opt.get())
+			: Flowable.empty();
 	}
 }

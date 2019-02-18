@@ -5,15 +5,13 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import io.reactivex.Flowable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
@@ -38,7 +36,7 @@ public class GroupHandler implements EventHandler {
 	}
 
 	@Override
-	public List<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
 		MeshEvent event = messageEvent.event;
 		if (event == GROUP_CREATED || event == GROUP_UPDATED) {
 			return helper.getDb().tx(() -> {
@@ -48,12 +46,12 @@ public class GroupHandler implements EventHandler {
 				return Stream.concat(
 					toStream(groupOptional).map(entities::createRequest),
 					toStream(groupOptional).flatMap(group -> group.getUsers().stream()).map(entities::createRequest)
-				).collect(Collectors.toList());
+				).collect(Util.toFlowable());
 			});
 		} else if (event == GROUP_DELETED) {
 			// TODO Update users that were part of that group.
 			// At the moment we cannot look up users that were in the group if the group is already deleted.
-			return Collections.singletonList(new DeleteDocumentRequest(helper.prefixIndexName(Group.composeIndexName()), messageEvent.message.getUuid()));
+			return Flowable.just(new DeleteDocumentRequest(helper.prefixIndexName(Group.composeIndexName()), messageEvent.message.getUuid()));
 		} else {
 			throw new RuntimeException("Unexpected event " + event.address);
 		}

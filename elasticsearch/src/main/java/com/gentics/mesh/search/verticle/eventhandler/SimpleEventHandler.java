@@ -14,8 +14,11 @@ import com.gentics.mesh.search.verticle.request.CreateDocumentRequest;
 import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 
+import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
 @ParametersAreNonnullByDefault
 public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>> implements EventHandler {
@@ -37,18 +40,17 @@ public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>
 	}
 
 	@Override
-	public List<ElasticsearchRequest> handle(MessageEvent eventModel) {
+	public Flowable<ElasticsearchRequest> handle(MessageEvent eventModel) {
 		MeshEvent event = eventModel.event;
 		if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
-			return helper.getDb().tx(() -> entity.getDocument(eventModel.message))
-				.map(document -> Collections.singletonList((ElasticsearchRequest) new CreateDocumentRequest(
+			return toFlowable(helper.getDb().tx(() -> entity.getDocument(eventModel.message))
+				.map(document -> new CreateDocumentRequest(
 					helper.prefixIndexName(indexName),
 					eventModel.message.getUuid(),
 					document
-				)))
-				.orElse(Collections.emptyList());
+				)));
 		} else if (event == entity.getDeleteEvent()) {
-			return Collections.singletonList(new DeleteDocumentRequest(
+			return Flowable.just(new DeleteDocumentRequest(
 				helper.prefixIndexName(indexName),
 				eventModel.message.getUuid()
 			));

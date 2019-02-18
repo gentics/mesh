@@ -7,15 +7,13 @@ import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.request.DeleteDocumentRequest;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
+import io.reactivex.Flowable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
@@ -40,7 +38,7 @@ public class TagHandler implements EventHandler {
 	}
 
 	@Override
-	public List<ElasticsearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<ElasticsearchRequest> handle(MessageEvent messageEvent) {
 		MeshEvent event = messageEvent.event;
 		String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
 
@@ -53,12 +51,12 @@ public class TagHandler implements EventHandler {
 				return Stream.concat(
 					toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
 					toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid))
-				).collect(Collectors.toList());
+				).collect(Util.toFlowable());
 			});
 		} else if (event == TAG_DELETED) {
 			// TODO Update related elements.
 			// At the moment we cannot look up related elements, because the element was already deleted.
-			return Collections.singletonList(new DeleteDocumentRequest(helper.prefixIndexName(Tag.composeIndexName(projectUuid)), messageEvent.message.getUuid()));
+			return Flowable.just(new DeleteDocumentRequest(helper.prefixIndexName(Tag.composeIndexName(projectUuid)), messageEvent.message.getUuid()));
 		} else {
 			throw new RuntimeException("Unexpected event " + event.address);
 		}
