@@ -36,11 +36,9 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
-import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 
@@ -91,7 +89,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
-			Tuple<EventQueueBatch, String> info = db.tx(tx -> {
+			String version = utils.eventAction(batch -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -127,7 +125,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				}
 
 				// 3. Apply the found changes to the schema
-				EventQueueBatch batch = EventQueueBatch.create();
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				// Check whether the assigned branches of the schema should also directly be updated.
@@ -149,15 +146,14 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						branch.assignSchemaVersion(user, createdVersion);
 					}
 				}
-				return Tuple.tuple(batch, createdVersion.getVersion());
+				return createdVersion.getVersion();
 			});
 
-			info.v1().dispatch();
 			if (updateParams.getUpdateAssignedBranches()) {
 				MeshEvent.triggerJobWorker();
-				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
+				return message(ac, "schema_updated_migration_invoked", schemaName, version);
 			} else {
-				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());
+				return message(ac, "schema_updated_migration_deferred", schemaName, version);
 			}
 		}, message -> ac.send(message, OK));
 	}
@@ -214,16 +210,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return schema.transformToRestSync(ac, 0);
 			}
 
-			Tuple<EventQueueBatch, SchemaResponse> tuple = db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
-
-				// Assign the schema to the project
+			// Assign the schema to the project
+			utils.eventAction(batch -> {
 				root.addSchemaContainer(ac.getUser(), schema);
 				batch.add(schema.onUpdated());
-				return Tuple.tuple(batch, schema.transformToRestSync(ac, 0));
 			});
-			tuple.v1().dispatch();
-			return tuple.v2();
+			return schema.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 
 	}
@@ -245,11 +237,16 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 
-			// TODO check whether schema is assigned to project
-
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			db.tx(() -> {
+
+			// No need to invoke the removal if the schema is not assigned
+			if (!project.getSchemaContainerRoot().contains(schema)) {
+				return;
+			}
+
+			utils.eventAction(batch -> {
 				project.getSchemaContainerRoot().removeSchemaContainer(schema);
+				batch.add(schema.onUpdated());
 			});
 
 		}, () -> ac.send(NO_CONTENT));
@@ -272,13 +269,11 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		utils.syncTx(ac, (tx) -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			Tuple<EventQueueBatch, String> info = db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			String version = utils.eventAction(batch -> {
 				SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
-				return Tuple.tuple(batch, newVersion.getVersion());
+				return newVersion.getVersion();
 			});
-			info.v1().dispatch();
-			return message(ac, "schema_changes_applied", schema.getName(), info.v2());
+			return message(ac, "schema_changes_applied", schema.getName(), version);
 		}, model -> ac.send(model, OK));
 
 	}

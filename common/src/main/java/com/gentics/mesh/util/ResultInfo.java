@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Result container which can be used to return information from within a transaction handler.
@@ -12,8 +11,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 public class ResultInfo {
 
 	private RestModel model;
-
-	private EventQueueBatch batch;
 
 	Map<String, String> properties = new HashMap<>();
 
@@ -23,18 +20,8 @@ public class ResultInfo {
 	 * @param model
 	 * @param batch
 	 */
-	public ResultInfo(RestModel model, EventQueueBatch batch) {
+	public ResultInfo(RestModel model) {
 		this.model = model;
-		this.batch = batch;
-	}
-
-	/**
-	 * Create a new result.
-	 * 
-	 * @param model
-	 */
-	public ResultInfo(EventQueueBatch batch) {
-		this.batch = batch;
 	}
 
 	/**
@@ -44,15 +31,6 @@ public class ResultInfo {
 	 */
 	public RestModel getModel() {
 		return model;
-	}
-
-	/**
-	 * Return the stored search queue batch.
-	 * 
-	 * @return
-	 */
-	public EventQueueBatch getBatch() {
-		return batch;
 	}
 
 	/**

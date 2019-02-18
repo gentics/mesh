@@ -249,9 +249,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			// Update the project and its nodes in the index
 			batch.add(onUpdated());
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	@Override

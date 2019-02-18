@@ -28,9 +28,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -132,8 +130,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 				// Prepare the sets for revoke and grant actions
-				Tuple<EventQueueBatch, String> tuple = db.tx(() -> {
-					EventQueueBatch batch = EventQueueBatch.create();
+				String name = utils.eventAction(batch -> {
 					Set<GraphPermission> permissionsToGrant = new HashSet<>();
 					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 
@@ -156,11 +153,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 					// 3. Apply the permission actions
 					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
-					return Tuple.tuple(batch, role.getName());
+					return role.getName();
 				});
-
-				String name = tuple.v2();
-				tuple.v1().dispatch();
 				return message(ac, "role_updated_permission", name);
 			});
 		}, model -> ac.send(model, OK));

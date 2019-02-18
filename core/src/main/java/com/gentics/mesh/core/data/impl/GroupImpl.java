@@ -208,9 +208,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			setName(requestModel.getName());
 			batch.add(onUpdated());
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -78,14 +79,11 @@ public class HandlerUtilities {
 
 			// Load the name and uuid of the element. We need this info after deletion.
 			String elementUuid = element.getUuid();
-			EventQueueBatch b = database.tx(() -> {
-				BulkActionContext bac = BulkActionContext.create();
+			bulkableAction(bac -> {
 				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, "delete");
 				element.delete(bac);
-				return bac.batch();
 			});
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			b.dispatch();
 		}, () -> ac.send(NO_CONTENT));
 	}
 
@@ -117,58 +115,40 @@ public class HandlerUtilities {
 		TxAction1<RootVertex<T>> handler) {
 
 		AtomicBoolean created = new AtomicBoolean(false);
-		try {
-			ResultInfo result = database.tx(tx -> {
-				RootVertex<T> root = handler.handle();
+		syncTx(ac, tx -> {
+			RootVertex<T> root = handler.handle();
 
-				// 1. Load the element from the root element using the given uuid (if not null)
-				T element = null;
-				if (uuid != null) {
-					if (!UUIDUtil.isUUID(uuid)) {
-						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
-					}
-					element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
+			// 1. Load the element from the root element using the given uuid (if not null)
+			T element = null;
+			if (uuid != null) {
+				if (!UUIDUtil.isUUID(uuid)) {
+					throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
 				}
+				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
+			}
 
-				// Check whether we need to update a found element or whether we need to create a new one.
-				if (element != null) {
-					final T updateElement = element;
-					Tuple<Boolean, EventQueueBatch> tuple = database.tx(() -> {
-						EventQueueBatch batch = EventQueueBatch.create();
-						boolean updated = updateElement.update(ac, batch);
-						return Tuple.tuple(updated, batch);
-					});
-					EventQueueBatch b = tuple.v2();
-					Boolean isUpdated = tuple.v1();
-					RM model = updateElement.transformToRestSync(ac, 0);
-					ResultInfo info = new ResultInfo(model, b);
-					if (isUpdated) {
-						b.add(updateElement.onUpdated());
-					}
-					return info;
-				} else {
-					Tuple<T, EventQueueBatch> tuple = database.tx(() -> {
-						EventQueueBatch batch = EventQueueBatch.create();
-						created.set(true);
-						return Tuple.tuple(root.create(ac, batch, uuid), batch);
-					});
-					EventQueueBatch b = tuple.v2();
-					T createdElement = tuple.v1();
-					RM model = createdElement.transformToRestSync(ac, 0);
-					String path = createdElement.getAPIPath(ac);
-					ResultInfo info = new ResultInfo(model, b);
-					info.setProperty("path", path);
-					createdElement.onCreated();
-					ac.setLocation(path);
-					return info;
-				}
-			});
+			// Check whether we need to update a found element or whether we need to create a new one.
+			if (element != null) {
+				final T updateElement = element;
+				eventAction(batch -> {
+					return updateElement.update(ac, batch);
+				});
+				return updateElement.transformToRestSync(ac, 0);
+			} else {
+				T createdElement = eventAction(batch -> {
+					created.set(true);
+					return root.create(ac, batch, uuid);
+				});
+				RM model = createdElement.transformToRestSync(ac, 0);
+				String path = createdElement.getAPIPath(ac);
+				ResultInfo info = new ResultInfo(model);
+				info.setProperty("path", path);
+				createdElement.onCreated();
+				ac.setLocation(path);
+				return model;
+			}
 
-			result.getBatch().dispatch();
-			ac.send(result.getModel(), created.get() ? CREATED : OK);
-		} catch (Throwable t) {
-			ac.fail(t);
-		}
+		}, model -> ac.send(model, created.get() ? CREATED : OK));
 	}
 
 	/**
@@ -247,6 +227,13 @@ public class HandlerUtilities {
 		}
 	}
 
+	/**
+	 * Invoke sync action in a tx.
+	 * 
+	 * @param ac
+	 * @param handler
+	 * @param action
+	 */
 	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
 		try {
 			database.tx(handler);
@@ -254,6 +241,50 @@ public class HandlerUtilities {
 		} catch (Throwable t) {
 			ac.fail(t);
 		}
+	}
+
+	/**
+	 * Invoke a bulkable action.
+	 * 
+	 * @param function
+	 */
+	public void bulkableAction(Consumer<BulkActionContext> function) {
+		BulkActionContext b = database.tx(tx -> {
+			BulkActionContext bac = BulkActionContext.create();
+			function.accept(bac);
+			return bac;
+		});
+		b.process(true);
+	}
+
+	/**
+	 * Invoke an event action.
+	 * 
+	 * @param function
+	 */
+	public void eventAction(Consumer<EventQueueBatch> function) {
+		EventQueueBatch b = database.tx(tx -> {
+			EventQueueBatch batch = EventQueueBatch.create();
+			function.accept(batch);
+			return batch;
+		});
+		b.dispatch();
+	}
+
+	/**
+	 * Invoke an event action which returns a result.
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public <T> T eventAction(Function<EventQueueBatch, T> function) {
+		Tuple<T, EventQueueBatch> tuple = database.tx(tx -> {
+			EventQueueBatch batch = EventQueueBatch.create();
+			T result = function.apply(batch);
+			return Tuple.tuple(result, batch);
+		});
+		tuple.v2().dispatch();
+		return tuple.v1();
 	}
 
 }

@@ -655,12 +655,12 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * 
 	 * @throws Exception
 	 */
-	public void waitForEvents() throws Exception {
+	public void waitForEvents() {
 		for (Entry<CompletableFuture<JsonObject>, MeshEvent> entry : futures.entrySet()) {
 			MeshEvent event = entry.getValue();
 			try {
 				entry.getKey().get(1, TimeUnit.SECONDS);
-			} catch (TimeoutException e) {
+			} catch (Exception e) {
 				throw new RuntimeException("Did not receive event for {" + event.getAddress() + "}", e);
 			}
 		}
