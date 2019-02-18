@@ -51,11 +51,13 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.router.RouterStorage;
@@ -89,7 +91,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	private OkHttpClient httpClient;
 
-	private Map<CompletableFuture<JsonObject>, MeshEvent> futures = new HashMap<>();
+	private Map<CompletableFuture<? extends MeshEventModel>, MeshEvent> futures = new HashMap<>();
 
 	@Rule
 	@ClassRule
@@ -618,24 +620,50 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		return stopRestVerticle().andThen(startRestVerticle());
 	}
 
-	/**
-	 * Add an expectation of an event.
-	 * 
-	 * @param event
-	 * @param expectedCount
-	 * @param asserter
-	 * @return
-	 */
-	public CompletableFuture<JsonObject> expectEvents(MeshEvent event, int expectedCount, Predicate<JsonObject> asserter) {
-		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
+	// /**
+	// * Add an expectation of an event.
+	// *
+	// * @param event
+	// * @param expectedCount
+	// * @param asserter
+	// * @return
+	// */
+	// public CompletableFuture<JsonObject> expectEvents(MeshEvent event, int expectedCount, Predicate<JsonObject> asserter) {
+	// CompletableFuture<JsonObject> fut = new CompletableFuture<>();
+	// AtomicInteger counter = new AtomicInteger(0);
+	// vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
+	// counter.incrementAndGet();
+	// try {
+	// JsonObject json = mh.body();
+	// // Only complete the future if the event is accepted.
+	// if (asserter.test(json)) {
+	// fut.complete(json);
+	// }
+	// } catch (Throwable e) {
+	// fut.completeExceptionally(e);
+	// }
+	// });
+	// futures.put(fut, event);
+	// CompletableFuture<Integer> count = CompletableFuture.supplyAsync(() -> {
+	// return counter.get();
+	// });
+	// // futures.put(count, event);
+	// // TODO assert event count
+	// return fut;
+	// }
+
+	public <EM extends MeshEventModel> CompletableFuture<EM> expectEvents(MeshEvent event, int expectedCount, Class<EM> clazzOfEM,
+		Predicate<EM> asserter) {
+		CompletableFuture<EM> fut = new CompletableFuture<>();
 		AtomicInteger counter = new AtomicInteger(0);
 		vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
 			counter.incrementAndGet();
 			try {
 				JsonObject json = mh.body();
+				EM model = JsonUtil.readValue(json.toString(), clazzOfEM);
 				// Only complete the future if the event is accepted.
-				if (asserter.test(json)) {
-					fut.complete(json);
+				if (asserter.test(model)) {
+					fut.complete(model);
 				}
 			} catch (Throwable e) {
 				fut.completeExceptionally(e);
@@ -656,7 +684,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @throws Exception
 	 */
 	public void waitForEvents() {
-		for (Entry<CompletableFuture<JsonObject>, MeshEvent> entry : futures.entrySet()) {
+		for (Entry<CompletableFuture<? extends MeshEventModel>, MeshEvent> entry : futures.entrySet()) {
 			MeshEvent event = entry.getValue();
 			try {
 				entry.getKey().get(1, TimeUnit.SECONDS);

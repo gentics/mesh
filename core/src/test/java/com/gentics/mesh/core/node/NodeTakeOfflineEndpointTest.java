@@ -67,13 +67,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 
-		expectEvents(NODE_DELETED, 2, event -> {
-			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
-			assertNotNull(model.getUuid());
-			assertEquals(initialBranchUuid(), model.getBranchUuid());
-			assertEquals("folder", model.getSchema().getName());
-			assertEquals(schemaUuid, model.getSchema().getUuid());
-			assertEquals("en", model.getLanguageTag());
+		expectEvents(NODE_DELETED, 2, NodeMeshEventModel.class, event -> {
+			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchemaName("folder").hasSchemaUuid(schemaUuid).hasLanguage("en");
 			return true;
 		});
 

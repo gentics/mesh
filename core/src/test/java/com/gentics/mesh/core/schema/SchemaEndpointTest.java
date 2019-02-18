@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -83,9 +84,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
-		expectEvents(SCHEMA_CREATED, 1, event -> {
-			assertEquals(createRequest.getName(), event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+		expectEvents(SCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(createRequest.getName()).uuidNotNull();
 			return true;
 		});
 
@@ -467,9 +467,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			return tx.getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
 		}));
 
-		expectEvents(SCHEMA_DELETED, 1, event -> {
-			assertEquals("content", event.getString("name"));
-			assertEquals(uuid, event.getString("uuid"));
+		expectEvents(SCHEMA_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("content").hasUuid(uuid);
 			return true;
 		});
 

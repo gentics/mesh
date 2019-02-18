@@ -74,7 +74,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -251,13 +250,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 
-		expectEvents(NODE_CREATED, 1, event -> {
-			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
-			assertNotNull(model.getUuid());
-			assertEquals(initialBranchUuid(), model.getBranchUuid());
-			assertEquals("content", model.getSchema().getName());
-			assertEquals(schemaUuid, model.getSchema().getUuid());
-			assertEquals("en", model.getLanguageTag());
+		expectEvents(NODE_CREATED, 1, NodeMeshEventModel.class, event -> {
+			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchemaName("content").hasSchemaUuid(schemaUuid).hasLanguage("en");
 			return true;
 		});
 
@@ -1639,15 +1633,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 3. Invoke update
 		searchProvider().clear().blockingAwait();
 
-		expectEvents(NODE_UPDATED, 1, event -> {
-			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
-			assertEquals("Uuid in the event did not match up.", uuid, model.getUuid());
-			assertEquals("Branch uuid in the event did not match.", initialBranchUuid(), model.getBranchUuid());
-			assertEquals("Schema name in the event did not match up.", "content", model.getSchema().getName());
-			assertEquals("Schema uuid did not match up.", contentSchemaUuid, model.getSchema().getUuid());
-			assertEquals("Language tag in the event did not match up", "en", model.getLanguageTag());
-			assertEquals("Project name does not match up", PROJECT_NAME, model.getProject().getName());
-			assertEquals("Project uuid does not match up", projectUuid(), model.getProject().getUuid());
+		expectEvents(NODE_UPDATED, 1, NodeMeshEventModel.class, event -> {
+			assertThat(event).hasProject(PROJECT_NAME, projectUuid()).hasLanguage("en").hasSchema("content", contentSchemaUuid).hasUuid(uuid)
+				.hasBranchUuid(initialBranchUuid());
 			return true;
 		});
 
@@ -1867,13 +1855,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = tx(() -> content("concorde").getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 
-		expectEvents(NODE_DELETED, 1, event -> {
-			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
-			assertNotNull(model.getUuid());
-			assertEquals(initialBranchUuid(), model.getBranchUuid());
-			assertEquals("content", model.getSchema().getName());
-			assertEquals(schemaUuid, model.getSchema().getUuid());
-			assertEquals("en", model.getLanguageTag());
+		expectEvents(NODE_DELETED, 1, NodeMeshEventModel.class, event -> {
+			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasLanguage("en").hasSchemaName("content").hasSchemaUuid(schemaUuid);
 			return true;
 		});
 

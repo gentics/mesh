@@ -4,8 +4,10 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -21,16 +23,17 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class GroupUserEndpointTest extends AbstractMeshTest {
@@ -79,16 +82,30 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
-		User extraUser;
-		try (Tx tx = tx()) {
+		final String userName = "extraUser";
+		User extraUser = tx(() -> {
 			UserRoot userRoot = meshRoot().getUserRoot();
-			extraUser = userRoot.create("extraUser", user());
-			role().grantPermissions(extraUser, READ_PERM);
-			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
-			tx.success();
-		}
+			User user = userRoot.create("extraUser", user());
+			role().grantPermissions(user, READ_PERM);
+			assertFalse("User should not be member of the group.", group().hasUser(user));
+			return user;
+		});
 
-		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), tx(() -> extraUser.getUuid())));
+		String userUuid = tx(() -> extraUser.getUuid());
+		expectEvents(USER_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(userName).hasUuid(userUuid);
+			return true;
+		});
+
+		String groupName = tx(() -> group().getName());
+		expectEvents(GROUP_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(groupName).hasUuid(groupUuid());
+			return true;
+		});
+
+		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), userUuid));
+		waitForEvents();
+
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(group());
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), user().getUuid());
@@ -98,6 +115,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			trackingSearchProvider().clear().blockingAwait();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
+		// Test for idempotency
+		call(() -> client().addUserToGroup(groupUuid(), userUuid));
 
 	}
 
@@ -114,7 +133,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), UPDATE_PERM.getRestPerm().getName());
+			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
+				UPDATE_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 
@@ -131,7 +151,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(), READ_PERM.getRestPerm().getName());
+			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(),
+				READ_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 	}
@@ -144,7 +165,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
+			UPDATE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
 			assertTrue("User should still be a member of the group.", group().hasUser(user()));
 		}

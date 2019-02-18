@@ -22,7 +22,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +52,7 @@ import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -176,9 +176,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
 
-		expectEvents(BRANCH_CREATED, 1, event -> {
-			assertEquals(branchName, event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+		expectEvents(BRANCH_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(branchName).uuidNotNull();
 			return true;
 		});
 
@@ -600,9 +599,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String newName = "New Branch Name";
 		String anotherNewName = "Another New Branch Name";
 
-		expectEvents(BRANCH_UPDATED, 1, event -> {
-			assertEquals(newName, event.getString("name"));
-			assertEquals(initialBranchUuid(), event.getString("uuid"));
+		expectEvents(BRANCH_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(newName).hasUuid(initialBranchUuid());
 			return true;
 		});
 

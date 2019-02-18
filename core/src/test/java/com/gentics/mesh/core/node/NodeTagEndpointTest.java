@@ -32,7 +32,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -68,13 +67,8 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
-		expectEvents(NODE_UPDATED, 2, event -> {
-			NodeMeshEventModel model = JsonUtil.readValue(event.toString(), NodeMeshEventModel.class);
-			assertNotNull(model.getUuid());
-			assertEquals(initialBranchUuid(), model.getBranchUuid());
-			assertEquals("folder", model.getSchema().getName());
-			assertEquals(schemaUuid, model.getSchema().getUuid());
-			assertEquals("en", model.getLanguageTag());
+		expectEvents(NODE_UPDATED, 2, NodeMeshEventModel.class, event -> {
+			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchema("folder", schemaUuid).hasLanguage("en");
 			return true;
 		});
 

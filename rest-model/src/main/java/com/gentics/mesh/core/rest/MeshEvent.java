@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -199,7 +200,7 @@ public enum MeshEvent {
 	SEARCH_IDLE("mesh.search.process.idle", null);
 
 	public final String address;
-	public final Class bodyModel;
+	public final Class<? extends MeshEventModel> bodyModel;
 
 	private static final Map<String, MeshEvent> events = createEventMap();
 
@@ -220,7 +221,7 @@ public enum MeshEvent {
 				Function.identity()));
 	}
 
-	MeshEvent(String address, Class bodyModel) {
+	MeshEvent(String address, Class<? extends MeshEventModel> bodyModel) {
 		this.address = address;
 		this.bodyModel = bodyModel;
 	}
@@ -363,5 +364,9 @@ public enum MeshEvent {
 
 	public String getAddress() {
 		return address;
+	}
+
+	public Class<? extends MeshEventModel> getBodyModel() {
+		return bodyModel;
 	}
 }

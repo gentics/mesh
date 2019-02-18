@@ -57,6 +57,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
@@ -526,9 +527,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername(newName);
 
-		expectEvents(USER_UPDATED, 1, event -> {
-			assertEquals(newName, event.getString("name"));
-			assertEquals(uuid, event.getString("uuid"));
+		expectEvents(USER_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(newName).hasUuid(uuid);
 			return true;
 		});
 
@@ -653,9 +653,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		newUser.setGroupUuid(groupUuid());
 		newUser.setPassword("test1234");
 
-		expectEvents(USER_CREATED, 1, event -> {
-			assertEquals("new_user", event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+		expectEvents(USER_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("new_user").uuidNotNull();
 			return true;
 		});
 
@@ -1252,9 +1251,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
 
-			expectEvents(USER_DELETED, 1, event -> {
-				assertEquals("new_user", event.getString("name"));
-				assertEquals(uuid, event.getString("uuid"));
+			expectEvents(USER_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+				assertThat(event).hasName("new_user").hasUuid(uuid);
 				return true;
 			});
 

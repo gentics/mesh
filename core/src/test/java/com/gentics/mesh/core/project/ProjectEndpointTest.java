@@ -61,6 +61,8 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -146,16 +148,15 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
-		expectEvents(PROJECT_CREATED, 1, event -> {
-			assertEquals("Name of project create event not set.", name, event.getString("name"));
-			assertNotNull("Uuid of project create event not set.", event.getString("uuid"));
+		expectEvents(PROJECT_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(name).uuidNotNull();
 			return true;
 		});
 
 		// Base node of the project
-		expectEvents(NODE_CREATED, 1, event -> {
-			assertNull("No name should be set for the base node.", event.getString("name"));
-			assertNotNull("Uuid of base node creation event not set.", event.getString("uuid"));
+		expectEvents(NODE_CREATED, 1, NodeMeshEventModel.class, event -> {
+			assertThat(event).uuidNotNull();
+			assertNull("No name should be set for the base node.", event.getName());
 			return true;
 		});
 
@@ -537,9 +538,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(newName);
 		assertThat(trackingSearchProvider()).hasNoStoreEvents();
 
-		expectEvents(PROJECT_UPDATED, 1, event -> {
-			assertEquals(newName, event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+		expectEvents(PROJECT_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(newName).uuidNotNull();
 			return true;
 		});
 
@@ -644,15 +644,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		System.out.println("BASE:" + baseNodeUuid);
 
-		expectEvents(PROJECT_DELETED, 1, event -> {
-			assertEquals("Project name in event did not match.", PROJECT_NAME, event.getString("name"));
-			assertEquals("Project uuid did not match up. ", projectUuid(), event.getString("uuid"));
+		expectEvents(PROJECT_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(PROJECT_NAME).hasUuid(projectUuid());
 			return true;
 		});
 
-		expectEvents(NODE_DELETED, 1, event -> {
-			if (baseNodeUuid.equals(event.getString("uuid"))) {
-				assertEquals("Content uuid did not match up.", baseNodeUuid, event.getString("uuid"));
+		expectEvents(NODE_DELETED, 1, NodeMeshEventModel.class, event -> {
+			if (baseNodeUuid.equals(event.getUuid())) {
+				assertThat(event).hasUuid(baseNodeUuid);
 				return true;
 			}
 			return false;
