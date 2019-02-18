@@ -151,7 +151,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + uuid + ":" + name + "}");
 		}
-		bac.batch().add(onDeleted());
+		bac.add(onDeleted());
 
 		// Nodes which used this tag must be updated in the search index for all branches
 		for (Branch branch : getProject().getBranchRoot().findAll()) {

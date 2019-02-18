@@ -12,9 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
@@ -30,7 +28,6 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -49,6 +46,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	public void testTakeNodeOfflineManyChildren() throws Exception {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String folderSchemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 
 		// Create a lot of test nodes
@@ -60,16 +58,24 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			request.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(schemaReference);
 			request.setLanguage("en");
+			request.setSchema(schemaReference);
 			request.setParentNodeUuid(parentNodeUuid);
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 
 		expectEvents(NODE_DELETED, 2, NodeMeshEventModel.class, event -> {
-			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchemaName("folder").hasSchemaUuid(schemaUuid).hasLanguage("en");
-			return true;
+			if (baseNodeUuid.equals(event.getUuid())) {
+				assertThat(event)
+					.uuidNotNull()
+					.hasBranchUuid(initialBranchUuid())
+					.hasSchemaName("folder")
+					.hasSchemaUuid(folderSchemaUuid)
+					.hasLanguage("en");
+				return true;
+			}
+			return false;
 		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));

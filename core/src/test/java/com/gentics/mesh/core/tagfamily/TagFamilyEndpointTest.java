@@ -287,10 +287,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		TagFamily basicTagFamily = tagFamily("basic");
+		String tagFamilyUuid = tx(() -> basicTagFamily.getUuid());
 		try (Tx tx = tx()) {
-			TagFamily basicTagFamily = tagFamily("basic");
-			String uuid = basicTagFamily.getUuid();
-			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
+			assertNotNull(project().getTagFamilyRoot().findByUuid(tagFamilyUuid));
 		}
 
 		String uuid = db().tx(() -> tagFamily("basic").getUuid());
@@ -301,7 +301,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		});
 
 		expectEvents(TAG_DELETED, 1, TagMeshEventModel.class, event -> {
-			assertThat(event).hasName("Vehicle").uuidNotNull().hasProject(PROJECT_NAME, projectUuid()).hasTagFamily("", "");
+			assertThat(event).hasName("Vehicle").uuidNotNull().hasProject(PROJECT_NAME, projectUuid()).hasTagFamily("basic", tagFamilyUuid);
 			// JetFigther , Twinjet , Plane , Bus , Motorcycle , Bike, Jeep, Car
 			return true;
 		});

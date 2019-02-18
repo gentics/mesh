@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -681,14 +682,22 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	/**
 	 * Await all futures.
 	 * 
+	 * @throws Throwable
+	 * 
 	 * @throws Exception
 	 */
 	public void waitForEvents() {
 		for (Entry<CompletableFuture<? extends MeshEventModel>, MeshEvent> entry : futures.entrySet()) {
 			MeshEvent event = entry.getValue();
 			try {
-				entry.getKey().get(1, TimeUnit.SECONDS);
-			} catch (Exception e) {
+				entry.getKey().get(4, TimeUnit.SECONDS);
+			} catch (ExecutionException | TimeoutException | InterruptedException e) {
+				if (e instanceof ExecutionException) {
+					Throwable cause = e.getCause();
+					if (cause instanceof AssertionError) {
+						throw (AssertionError) cause;
+					}
+				}
 				throw new RuntimeException("Did not receive event for {" + event.getAddress() + "}", e);
 			}
 		}
