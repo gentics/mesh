@@ -159,11 +159,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		MeshInternal.get().searchProvider().clear().blockingAwait();
-		for (IndexHandler<?> handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
-			handler.init().blockingAwait();
-			handler.syncIndices().blockingAwait();
-		}
+		vertx().eventBus().send(MeshEvent.INDEX_SYNC_WORKER_ADDRESS.address, null);
 	}
 
 	public String getJson(Node node) throws Exception {

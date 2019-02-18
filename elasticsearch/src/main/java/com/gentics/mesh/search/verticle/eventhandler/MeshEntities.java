@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -15,6 +16,8 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -60,6 +63,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 @Singleton
 public class MeshEntities {
@@ -100,20 +104,27 @@ public class MeshEntities {
 	}
 
 	private Optional<Tag> toTag(MeshEventModel eventModel) {
-		return toTagFamily(eventModel)
+		TagMeshEventModel event = Util.requireType(TagMeshEventModel.class, eventModel);
+		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
 	private Optional<NodeGraphFieldContainer> toNode(MeshEventModel eventModel) {
-		throw new RuntimeException("Not implemented");
+		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
+		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
+			.flatMap(node -> warningOptional(
+				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
+				node.getGraphFieldContainer(event.getLanguageTag(), event.getBranchUuid(), ContainerType.get(event.getType()))
+			));
 	}
 
 	private <T extends MeshCoreVertex<? extends RestModel, T>> Optional<T> findElementByUuid(RootVertex<T> rootVertex, String uuid) {
-		Optional<T> val = Optional.ofNullable(rootVertex.findByUuid(uuid));
-		if (!val.isPresent()) {
-			log.warn(String.format("Could not find element with uuid {%s} in class {%s}", uuid, rootVertex.getClass().getSimpleName()));
-		}
-		return val;
+		return warningOptional(
+			String.format("Could not find element with uuid {%s} in class {%s}", uuid, rootVertex.getClass().getSimpleName()),
+			rootVertex.findByUuid(uuid)
+		);
 	}
 
 	private <T extends MeshCoreVertex<? extends RestModel, T>> EventVertexMapper<T> byUuid(RootVertex<T> rootVertex) {
