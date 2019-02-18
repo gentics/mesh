@@ -1,7 +1,5 @@
 package com.gentics.mesh.changelog.changes;
 
-import java.io.IOException;
-
 import com.gentics.mesh.changelog.AbstractChange;
 
 public class ReindexDatabase extends AbstractChange {

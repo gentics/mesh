@@ -1,11 +1,14 @@
 package com.gentics.mesh.context.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -23,6 +26,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 	private final AtomicLong batchCounter = new AtomicLong(1);
 	private final AtomicLong elementCounter = new AtomicLong(0);
 
+	private List<Completable> asyncActions = new ArrayList<>();
 	private EventQueueBatch batch;
 
 	public BulkActionContextImpl() {
@@ -43,8 +47,10 @@ public class BulkActionContextImpl implements BulkActionContext {
 	public void process(boolean force) {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
-			// TODO can we run the dispatch process in the background? Async?
 			Tx.getActive().getGraph().commit();
+			Completable.merge(asyncActions).subscribe(() -> {
+				log.trace("Async action processed");
+			});
 			batch().dispatch();
 			// Reset the counter back to zero
 			elementCounter.set(0);
@@ -55,6 +61,11 @@ public class BulkActionContextImpl implements BulkActionContext {
 	@Override
 	public EventQueueBatch batch() {
 		return batch;
+	}
+
+	@Override
+	public void add(Completable action) {
+		asyncActions.add(action);
 	}
 
 }

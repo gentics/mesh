@@ -8,14 +8,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 public abstract class AbstractMeshEventModel implements MeshEventModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Uuid of the referenced element.")
-	private String uuid;
-
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Name of the referenced element.")
-	private String name;
-
-	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the mesh node from which the event originates.")
 	private String origin;
 
@@ -25,23 +17,6 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 
 	@JsonIgnore
 	private MeshEvent event;
-
-	@Override
-	public String getUuid() {
-		return uuid;
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	@Override
 	public String getOrigin() {
@@ -70,5 +45,4 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 	public void setCause(EventCauseInfo cause) {
 		this.cause = cause;
 	}
-
 }

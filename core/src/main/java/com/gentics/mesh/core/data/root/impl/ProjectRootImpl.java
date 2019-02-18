@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
@@ -215,7 +216,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 		// Add event for created basenode
 		project.getBaseNode().getDraftGraphFieldContainers().forEach(c -> {
-			batch.add(c.onUpdated(branchUuid, ContainerType.DRAFT));
+			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 
 		return project;

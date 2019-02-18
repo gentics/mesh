@@ -9,7 +9,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
@@ -22,6 +25,36 @@ import io.vertx.core.eventbus.EventBus;
 public enum MeshEvent {
 
 	MESH_MIGRATION("mesh.migration", null),
+
+	/**
+	 * Schema migration start event.
+	 */
+	SCHEMEA_MIGRATION_START("mesh.schema.migration.start", SchemaMigrationMeshEventModel.class),
+
+	/**
+	 * Schema migration finished event (contains status information)
+	 */
+	SCHEMEA_MIGRATION_FINISHED("mesh.schema.migration.finished", SchemaMigrationMeshEventModel.class),
+
+	/**
+	 * Microschema migration start event.
+	 */
+	MICROSCHEMEA_MIGRATION_START("mesh.microschema.migration.start", MicroschemaMigrationMeshEventModel.class),
+
+	/**
+	 * Microschema migration finished event.
+	 */
+	MICROSCHEMEA_MIGRATION_FINISHED("mesh.microschema.migration.finished", MicroschemaMigrationMeshEventModel.class),
+
+	/**
+	 * Branch migration start event.
+	 */
+	BRANCH_MIGRATION_START("mesh.branch.migration.start", BranchMigrationMeshEventModel.class),
+
+	/**
+	 * Branch migration finished event.
+	 */
+	BRANCH_MIGRATION_FINISHED("mesh.branch.migration.finished", BranchMigrationMeshEventModel.class),
 
 	/**
 	 * Event which is send once the mesh instance is fully started and ready to accept requests.
@@ -65,27 +98,27 @@ public enum MeshEvent {
 
 	/* User */
 
-	USER_CREATED("mesh.user.created", MeshEventModelImpl.class),
+	USER_CREATED("mesh.user.created", MeshElementEventModelImpl.class),
 
-	USER_UPDATED("mesh.user.updated", MeshEventModelImpl.class),
+	USER_UPDATED("mesh.user.updated", MeshElementEventModelImpl.class),
 
-	USER_DELETED("mesh.user.deleted", MeshEventModelImpl.class),
+	USER_DELETED("mesh.user.deleted", MeshElementEventModelImpl.class),
 
 	/* Group */
 
-	GROUP_CREATED("mesh.group.created", MeshEventModelImpl.class),
+	GROUP_CREATED("mesh.group.created", MeshElementEventModelImpl.class),
 
-	GROUP_UPDATED("mesh.group.updated", MeshEventModelImpl.class),
+	GROUP_UPDATED("mesh.group.updated", MeshElementEventModelImpl.class),
 
-	GROUP_DELETED("mesh.group.deleted", MeshEventModelImpl.class),
+	GROUP_DELETED("mesh.group.deleted", MeshElementEventModelImpl.class),
 
 	/* Role */
 
-	ROLE_CREATED("mesh.role.created", MeshEventModelImpl.class),
+	ROLE_CREATED("mesh.role.created", MeshElementEventModelImpl.class),
 
-	ROLE_UPDATED("mesh.role.updated", MeshEventModelImpl.class),
+	ROLE_UPDATED("mesh.role.updated", MeshElementEventModelImpl.class),
 
-	ROLE_DELETED("mesh.role.deleted", MeshEventModelImpl.class),
+	ROLE_DELETED("mesh.role.deleted", MeshElementEventModelImpl.class),
 
 	/* Tag */
 
@@ -105,11 +138,11 @@ public enum MeshEvent {
 
 	/* Project */
 
-	PROJECT_CREATED("mesh.project.created", MeshEventModelImpl.class),
+	PROJECT_CREATED("mesh.project.created", MeshElementEventModelImpl.class),
 
-	PROJECT_UPDATED("mesh.project.updated", MeshEventModelImpl.class),
+	PROJECT_UPDATED("mesh.project.updated", MeshElementEventModelImpl.class),
 
-	PROJECT_DELETED("mesh.project.deleted", MeshEventModelImpl.class),
+	PROJECT_DELETED("mesh.project.deleted", MeshElementEventModelImpl.class),
 
 	/* Node */
 
@@ -121,27 +154,27 @@ public enum MeshEvent {
 
 	/* Schema */
 
-	SCHEMA_CREATED("mesh.schema.created", MeshEventModelImpl.class),
+	SCHEMA_CREATED("mesh.schema.created", MeshElementEventModelImpl.class),
 
-	SCHEMA_UPDATED("mesh.schema.updated", MeshEventModelImpl.class),
+	SCHEMA_UPDATED("mesh.schema.updated", MeshElementEventModelImpl.class),
 
-	SCHEMA_DELETED("mesh.schema.deleted", MeshEventModelImpl.class),
+	SCHEMA_DELETED("mesh.schema.deleted", MeshElementEventModelImpl.class),
 
 	/* Microschema */
 
-	MICROSCHEMA_CREATED("mesh.microschema.created", MeshEventModelImpl.class),
+	MICROSCHEMA_CREATED("mesh.microschema.created", MeshElementEventModelImpl.class),
 
-	MICROSCHEMA_UPDATED("mesh.microschema.updated", MeshEventModelImpl.class),
+	MICROSCHEMA_UPDATED("mesh.microschema.updated", MeshElementEventModelImpl.class),
 
-	MICROSCHEMA_DELETED("mesh.microschema.deleted", MeshEventModelImpl.class),
+	MICROSCHEMA_DELETED("mesh.microschema.deleted", MeshElementEventModelImpl.class),
 
 	/* Branch */
 
-	BRANCH_CREATED("mesh.branch.created", MeshEventModelImpl.class),
+	BRANCH_CREATED("mesh.branch.created", MeshElementEventModelImpl.class),
 
-	BRANCH_UPDATED("mesh.branch.updated", MeshEventModelImpl.class),
+	BRANCH_UPDATED("mesh.branch.updated", MeshElementEventModelImpl.class),
 
-	BRANCH_DELETED("mesh.branch.deleted", MeshEventModelImpl.class),
+	BRANCH_DELETED("mesh.branch.deleted", MeshElementEventModelImpl.class),
 
 	/* Search index related */
 
@@ -165,15 +198,13 @@ public enum MeshEvent {
 	 */
 	SEARCH_IDLE("mesh.search.process.idle", null);
 
-
 	public final String address;
 	public final Class bodyModel;
 
 	private static final Map<String, MeshEvent> events = createEventMap();
 
 	/**
-	 * Gets the event with the given address.
-	 * Returns an empty optional if the address is invalid.
+	 * Gets the event with the given address. Returns an empty optional if the address is invalid.
 	 *
 	 * @param address
 	 * @return
@@ -186,8 +217,7 @@ public enum MeshEvent {
 		return Stream.of(values())
 			.collect(Collectors.toMap(
 				MeshEvent::getAddress,
-				Function.identity()
-			));
+				Function.identity()));
 	}
 
 	MeshEvent(String address, Class bodyModel) {
@@ -221,6 +251,15 @@ public enum MeshEvent {
 		List<MeshEvent> events = new ArrayList<>();
 
 		events.add(MESH_MIGRATION);
+
+		events.add(BRANCH_MIGRATION_START);
+		events.add(BRANCH_MIGRATION_FINISHED);
+
+		events.add(SCHEMEA_MIGRATION_START);
+		events.add(SCHEMEA_MIGRATION_FINISHED);
+
+		events.add(MICROSCHEMEA_MIGRATION_START);
+		events.add(MICROSCHEMEA_MIGRATION_FINISHED);
 
 		events.add(STARTUP);
 

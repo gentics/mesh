@@ -14,10 +14,9 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -33,7 +32,6 @@ import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import java.util.Optional;
 
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
@@ -97,20 +95,18 @@ public class MeshEntities {
 		node = new MeshEntity<>(nodeTransformer, NODE_CREATED, NODE_UPDATED, NODE_DELETED, this::toNode);
 	}
 
-	private Optional<TagFamily> toTagFamily(MeshEventModel eventModel) {
+	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), eventModel.getUuid()));
 	}
 
-	private Optional<Tag> toTag(MeshEventModel eventModel) {
-		TagMeshEventModel event = Util.requireType(TagMeshEventModel.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
+	private Optional<Tag> toTag(MeshElementEventModel eventModel) {
+		return toTagFamily(eventModel)
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
-	private Optional<NodeGraphFieldContainer> toNode(MeshEventModel eventModel) {
+	private Optional<NodeGraphFieldContainer> toNode(MeshElementEventModel eventModel) {
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))

@@ -2,6 +2,9 @@ package com.gentics.mesh.context;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.event.EventQueueBatch;
+
+import io.reactivex.Completable;
+
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
 public interface BulkActionContext {
@@ -61,5 +64,12 @@ public interface BulkActionContext {
 	default void setRootCause(String type, String uuid, String action) {
 		batch().setRootCause(type, uuid, action);
 	}
+
+	/**
+	 * Add action which will be invoked once the context will be processed.
+	 * 
+	 * @param action
+	 */
+	void add(Completable action);
 
 }

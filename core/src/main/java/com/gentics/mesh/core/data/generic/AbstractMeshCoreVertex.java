@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.core.rest.event.impl.MeshEventModelImpl;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -125,30 +125,30 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public MeshEventModel onUpdated() {
-		MeshEventModel event = new MeshEventModelImpl();
+	public MeshElementEventModel onUpdated() {
+		MeshElementEventModel event = new MeshElementEventModelImpl();
 		event.setEvent(getTypeInfo().getOnUpdated());
 		fillEventInfo(event);
 		return event;
 	}
 
 	@Override
-	public MeshEventModel onCreated() {
-		MeshEventModel event = new MeshEventModelImpl();
+	public MeshElementEventModel onCreated() {
+		MeshElementEventModel event = new MeshElementEventModelImpl();
 		event.setEvent(getTypeInfo().getOnCreated());
 		fillEventInfo(event);
 		return event;
 	}
 
 	@Override
-	public MeshEventModel onDeleted() {
-		MeshEventModel event = new MeshEventModelImpl();
+	public MeshElementEventModel onDeleted() {
+		MeshElementEventModel event = new MeshElementEventModelImpl();
 		event.setEvent(getTypeInfo().getOnDeleted());
 		fillEventInfo(event);
 		return event;
 	}
 
-	protected void fillEventInfo(MeshEventModel event) {
+	protected void fillEventInfo(MeshElementEventModel event) {
 		if (this instanceof NamedElement) {
 			event.setName(((NamedElement) this).getName());
 		}

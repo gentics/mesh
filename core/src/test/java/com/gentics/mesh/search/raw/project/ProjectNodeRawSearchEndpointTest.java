@@ -7,7 +7,6 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.junit.Assert.assertNotNull;
 
 import io.vertx.core.json.JsonObject;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;

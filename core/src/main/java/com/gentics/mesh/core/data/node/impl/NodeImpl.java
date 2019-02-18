@@ -81,7 +81,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -457,10 +457,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	protected List<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+	protected Iterable<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
 			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return edgeTraversal.toList();
+		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
+	}
+
+	protected Iterable<GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(ContainerType type) {
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
 	}
 
 	@Override
@@ -1114,7 +1119,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, Branch branch, BulkActionContext bac) {
-		String branchUuid = branch.getUuid();
 		PublishParameters parameters = ac.getPublishParameters();
 
 		// .store(this, branchUuid, ContainerType.PUBLISHED, false);
@@ -1174,7 +1178,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Remove the published edge for each found container
 		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
-		getGraphFieldContainerEdges(branchUuid, PUBLISHED).stream().forEach(EdgeFrame::remove);
+		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
 
 		assertPublishConsistency(ac, branch);
 
@@ -1249,17 +1253,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag) {
 		String branchUuid = branch.getUuid();
 
-		// 1. Locate the published container
+		// Locate the published container
 		NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, branchUuid, PUBLISHED);
 		if (published == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
-		// 2. Remove the "published" edge
+		bac.add(published.onDeleted(branchUuid, PUBLISHED));
+
+		// Remove the "published" edge
 		getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED).remove();
 		assertPublishConsistency(ac, branch);
 
-		// 3. Invoke an event so that the published element is removed
-		bac.add(published.onDeleted(branchUuid, PUBLISHED));
 		bac.process();
 	}
 
@@ -1387,6 +1391,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				child.deleteFully(bac, recursive);
 			}
 		}
+
+		// getGraphFieldContainerEdges(DRAFT).forEach(e -> {
+		// bac.add(e.getNodeContainer().onDeleted(e.getBranchUuid(), DRAFT));
+		// });
+		// getGraphFieldContainerEdges(PUBLISHED).forEach(e -> {
+		// bac.add(e.getNodeContainer().onDeleted(e.getBranchUuid(), PUBLISHED));
+		// });
 
 		for (NodeGraphFieldContainer container : getGraphFieldContainersIt(INITIAL)) {
 			container.delete(bac);
@@ -2058,7 +2069,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public MeshEventModel onDeleted() {
+	public MeshElementEventModel onDeleted() {
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
 	}
 

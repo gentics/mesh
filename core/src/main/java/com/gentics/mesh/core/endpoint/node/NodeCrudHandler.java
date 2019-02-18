@@ -76,12 +76,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 			}
 			// Create the batch first since we can't delete the container and access it later in batch creation
-			db.tx(() -> {
+			BulkActionContext b = db.tx(() -> {
 				BulkActionContext bac = BulkActionContext.create();
 				node.deleteFromBranch(ac, ac.getBranch(), bac, false);
-				return bac.batch();
-			}).dispatch();
-
+				return bac;
+			});
+			b.process(true);
 		}, () -> ac.send(NO_CONTENT));
 	}
 

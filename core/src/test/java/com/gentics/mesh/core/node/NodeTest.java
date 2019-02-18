@@ -308,16 +308,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			uuid = node.getUuid();
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
-			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
-				node.deleteFromBranch(ac, project().getLatestBranch(), context, false);
+				node.deleteFromBranch(ac, project().getLatestBranch(), createBulkContext(), false);
 				tx2.success();
 			}
 
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, false);
-			assertThat(context.batch()).containsEntries(affectedElements);
 		}
 	}
 
@@ -391,10 +389,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String subSubFolderUuid = subSubFolder.getUuid();
 
 			// 2. delete folder for initial release
-			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			subFolder.deleteFromBranch(ac, initialBranch, context, false);
+			subFolder.deleteFromBranch(ac, initialBranch, createBulkContext(), false);
 
 			// 3. assert for new branch
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
@@ -410,7 +407,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
 				initialBranch.getUuid(), ContainerType.DRAFT, "en"));
-			assertThat(context.batch()).containsEntries(affectedElements);
 		}
 	}
 
@@ -458,10 +454,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialBranch);
 
 			// 8. delete folder for initial release
-			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			subFolder.deleteFromBranch(ac, initialBranch, context, false);
+			subFolder.deleteFromBranch(ac, initialBranch, createBulkContext(), false);
 
 			// 9. assert for new branch
 			assertThat(folder).as("folder").hasChildren(newBranch, subSubFolder);
@@ -481,7 +476,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
 				initialBranch.getUuid(), ContainerType.DRAFT, "en"));
-			assertThat(context.batch()).containsEntries(affectedElements);
 		}
 	}
 
@@ -493,7 +487,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
-			String folderUuid = db().tx(() -> {
+			String folderUuid = tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
 				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
@@ -504,7 +498,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. assert published and draft node
-			db().tx(() -> {
+			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
@@ -518,14 +512,12 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 3. delete
 			InternalActionContext ac = mockActionContext("");
-			BulkActionContext context = db().tx(() -> {
-				BulkActionContext innerContext = createBulkContext();
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, innerContext, false);
-				return innerContext;
+			tx(() -> {
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, createBulkContext(), false);
 			});
 
 			// 4. assert published and draft gone
-			db().tx(() -> {
+			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
@@ -539,15 +531,12 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 5. assert searchqueuebatch
-			db().tx(() -> {
+			tx(() -> {
 				Map<String, ElementEntry> affectedElements = new HashMap<>();
 				affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
 					initialBranch.getUuid(), ContainerType.DRAFT, "en"));
 				affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
 					initialBranch.getUuid(), ContainerType.PUBLISHED, "en"));
-
-				assertThat(context.batch()).containsEntries(affectedElements);
-				return null;
 			});
 		}
 	}
@@ -579,9 +568,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 3. delete from initial branch
 			InternalActionContext ac = mockActionContext("");
-			BulkActionContext context = createBulkContext();
 			tx(() -> {
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, context, false);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, createBulkContext(), false);
 			});
 
 			// 4. assert published and draft gone from initial branch
@@ -610,15 +598,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});
 
-			// 6. assert searchqueuebatch
-			tx(() -> {
-				Map<String, ElementEntry> expectedEntries = new HashMap<>();
-				expectedEntries.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-					initialBranch.getUuid(), ContainerType.DRAFT, "en"));
-				expectedEntries.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-					initialBranch.getUuid(), ContainerType.PUBLISHED, "en"));
-				assertThat(context.batch()).containsEntries(expectedEntries);
-			});
 		}
 	}
 }

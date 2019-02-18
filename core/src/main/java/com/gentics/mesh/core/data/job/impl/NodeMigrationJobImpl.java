@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMEA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -19,9 +20,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -45,16 +46,21 @@ public class NodeMigrationJobImpl extends JobImpl {
 	 */
 	@Override
 	public void prepare() {
+		EventQueueBatch batch = EventQueueBatch.create();
+		SchemaMigrationMeshEventModel event = new SchemaMigrationMeshEventModel();
+		event.setEvent(SCHEMEA_MIGRATION_START);
+
+		SchemaContainerVersion toVersion = getToSchemaVersion();
+		event.setToVersion(toVersion.transformToReference());
+
+		SchemaContainerVersion fromVersion = getFromSchemaVersion();
+		event.setFromVersion(fromVersion.transformToReference());
+
 		Branch branch = getBranch();
 		Project project = branch.getProject();
-		SchemaContainerVersion toVersion = getToSchemaVersion();
-		SchemaModel newSchema = toVersion.getSchema();
-
-		// New indices need to be created
-		EventQueueBatch batch = EventQueueBatch.create();
-		//TODO add migration prepare event
-		
-		batch.dispatch();
+		event.setProject(project.transformToReference());
+		event.setBranch(branch.transformToReference());
+		batch.add(event).dispatch();
 	}
 
 	protected Completable processTask() {
@@ -160,6 +166,8 @@ public class NodeMigrationJobImpl extends JobImpl {
 			}
 			tx.success();
 		}
+		// TODO Use events here instead
+		// MeshEvent.NODE_MIGRATION_FINISHED
 		// Remove old indices
 		MeshInternal.get().searchProvider()
 			.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), DRAFT))
