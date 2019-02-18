@@ -49,7 +49,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	@Override
 	public void delete(BulkActionContext bac) {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
-		storage.delete(getUuid()).blockingAwait();
+		bac.add(storage.delete(getUuid()));
 		getElement().remove();
 	}
 

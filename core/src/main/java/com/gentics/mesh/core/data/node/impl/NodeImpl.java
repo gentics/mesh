@@ -1253,17 +1253,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag) {
 		String branchUuid = branch.getUuid();
 
-		// 1. Locate the published container
+		// Locate the published container
 		NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, branchUuid, PUBLISHED);
 		if (published == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
-		// 2. Remove the "published" edge
+		bac.add(published.onDeleted(branchUuid, PUBLISHED));
+
+		// Remove the "published" edge
 		getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED).remove();
 		assertPublishConsistency(ac, branch);
 
-		// 3. Invoke an event so that the published element is removed
-		bac.add(published.onDeleted(branchUuid, PUBLISHED));
 		bac.process();
 	}
 

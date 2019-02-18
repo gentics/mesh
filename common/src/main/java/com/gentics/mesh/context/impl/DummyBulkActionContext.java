@@ -3,6 +3,8 @@ package com.gentics.mesh.context.impl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.event.EventQueueBatch;
 
+import io.reactivex.Completable;
+
 public class DummyBulkActionContext implements BulkActionContext {
 
 	@Override
@@ -25,6 +27,10 @@ public class DummyBulkActionContext implements BulkActionContext {
 
 	@Override
 	public void setRootCause(String type, String uuid, String action) {
+	}
+
+	@Override
+	public void add(Completable action) {
 	}
 
 }
