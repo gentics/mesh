@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
+import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,7 +34,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -47,7 +47,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Before
 	public void setup() throws Exception {
 		getProvider().clear().blockingAwait();
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 	}
 
 	@Test
@@ -93,21 +93,21 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 				boot().userRoot().create("user_" + i, user(), null);
 			}
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("user", 400, 0, 0);
 
 		// Assert update
 		tx(() -> {
 			user().setUsername("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("user", 0, 1, 0);
 
 		// Assert deletion
 		tx(() -> {
 			boot().userRoot().findByName("user_3").getElement().remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("user", 0, 0, 1);
 	}
 
@@ -119,21 +119,21 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 				boot().groupRoot().create("group_" + i, user(), null);
 			}
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("group", 400, 0, 0);
 
 		// Assert update
 		tx(() -> {
 			group().setName("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("group", 0, 1, 0);
 
 		// Assert deletion
 		tx(() -> {
 			boot().groupRoot().findByName("group_3").getElement().remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("group", 0, 0, 1);
 	}
 
@@ -145,21 +145,21 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 				boot().roleRoot().create("role_" + i, user(), null);
 			}
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("role", 400, 0, 0);
 
 		// Assert update
 		tx(() -> {
 			role().setName("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("role", 0, 1, 0);
 
 		// Assert deletion
 		tx(() -> {
 			boot().roleRoot().findByName("role_3").getElement().remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("role", 0, 0, 1);
 	}
 
@@ -172,7 +172,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 				tagFamily("colors").create("tag_" + i, project(), user());
 			}
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		// 400: The additional tags needs to be added to the index
 		// 3: Tag family needs to be updated and the two color tags
 		assertMetrics("tag", 400, 3, 0);
@@ -181,14 +181,14 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(() -> {
 			tag("red").setName("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("tag", 0, 1, 0);
 
 		// Assert deletion
 		tx(() -> {
 			boot().tagRoot().findByName("tag_3").getElement().remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("tag", 0, 0, 1);
 	}
 
@@ -200,24 +200,24 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 				project().getTagFamilyRoot().create("tagfamily_" + i, user());
 			}
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		// 400: The additional tag families need to be added to the index
 		assertMetrics("tagfamily", 400, 0, 0);
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("tagfamily", 0, 0, 0);
 
 		// Assert update
 		tx(() -> {
 			tagFamily("colors").setName("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("tagfamily", 0, 1, 0);
 
 		// Assert deletion
 		tx(() -> {
 			boot().tagFamilyRoot().findByName("tagfamily_3").getElement().remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("tagfamily", 0, 0, 1);
 	}
 
@@ -231,14 +231,14 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			}
 		});
 		getProvider().clear().blockingAwait();
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("project", 4, 0, 0);
 
 		// Assert update
 		tx(() -> {
 			project().setName("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("project", 0, 1, 0);
 
 		// Now manually delete the project
@@ -249,7 +249,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			project.delete(context);
 		});
 		// Assert that the deletion was detected
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("project", 0, 0, 1);
 	}
 
@@ -260,9 +260,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			Node node = folder("2015");
 			node.createGraphFieldContainer(german(), initialBranch(), user());
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("node", 1, 2, 0);
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("node", 0, 0, 0);
 
 		// Assert update
@@ -270,7 +270,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			NodeGraphFieldContainer draft = content().getGraphFieldContainer(english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("node", 0, 2, 0);
 
 		// Assert deletion
@@ -278,7 +278,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			NodeGraphFieldContainer draft = folder("2015").getGraphFieldContainer(german(), latestBranch(), ContainerType.DRAFT);
 			draft.remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("node", 0, 2, 1);
 	}
 
@@ -292,7 +292,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 				boot().schemaContainerRoot().create(model, user());
 			}
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("schema", 400, 0, 0);
 
 		// Assert update
@@ -300,7 +300,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(() -> {
 			boot().schemaContainerRoot().findByUuid(response.getUuid()).setName("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("schema", 0, 1, 0);
 
 		// Assert deletion
@@ -309,7 +309,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			schema.getLatestVersion().remove();
 			schema.remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("schema", 0, 0, 1);
 	}
 
@@ -323,14 +323,14 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 				boot().microschemaContainerRoot().create(model, user());
 			}
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("microschema", 400, 0, 0);
 
 		// Assert update
 		tx(() -> {
 			boot().microschemaContainerRoot().findByName("microschema_100").setName("updated");
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("microschema", 0, 1, 0);
 
 		// Assert deletion
@@ -339,7 +339,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			microschema.getLatestVersion().remove();
 			microschema.remove();
 		});
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 		assertMetrics("microschema", 0, 0, 1);
 	}
 

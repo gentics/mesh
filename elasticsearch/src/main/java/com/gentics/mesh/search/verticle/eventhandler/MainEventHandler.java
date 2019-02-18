@@ -7,7 +7,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.request.ElasticsearchRequest;
 import io.vertx.core.logging.Logger;
@@ -35,7 +34,7 @@ import static java.util.Collections.singletonList;
 public class MainEventHandler implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(MainEventHandler.class);
 
-	private final ElasticsearchSyncVerticle elasticsearchSyncVerticle;
+	private final SyncHandler syncHandler;
 	private final ElasticSearchProvider elasticSearchProvider;
 
 	private final MeshHelper helper;
@@ -48,8 +47,8 @@ public class MainEventHandler implements EventHandler {
 	private final NodeHandler nodeHandler;
 
 	@Inject
-	public MainEventHandler(ElasticsearchSyncVerticle elasticsearchSyncVerticle, ElasticSearchProvider elasticSearchProvider, MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities, NodeHandler nodeHandler) {
-		this.elasticsearchSyncVerticle = elasticsearchSyncVerticle;
+	public MainEventHandler(SyncHandler syncHandler, ElasticSearchProvider elasticSearchProvider, MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities, NodeHandler nodeHandler) {
+		this.syncHandler = syncHandler;
 		this.elasticSearchProvider = elasticSearchProvider;
 		this.helper = helper;
 		this.groupHandler = groupHandler;
@@ -63,7 +62,7 @@ public class MainEventHandler implements EventHandler {
 
 	private Map<MeshEvent, EventHandler> createHandlers() {
 		return Stream.of(
-			forEvent(INDEX_SYNC_WORKER_ADDRESS, event -> singletonList(client -> elasticsearchSyncVerticle.executeJob(null))),
+			forEvent(INDEX_SYNC_WORKER_ADDRESS, event -> singletonList(client -> syncHandler.executeJob(null))),
 			forEvent(INDEX_CLEAR_REQUEST, event -> singletonList(client -> elasticSearchProvider.clear())),
 			new SimpleEventHandler<>(helper, entities.schema, SchemaContainer.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.microschema, MicroschemaContainer.composeIndexName()),

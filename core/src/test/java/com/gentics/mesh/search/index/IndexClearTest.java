@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
+import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -22,7 +22,7 @@ public class IndexClearTest extends AbstractMeshTest {
 
 	@Test
 	public void testClear() throws Exception {
-		waitForEvent(INDEX_SYNC, ElasticsearchSyncVerticle::invokeSync);
+		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 
 		call(() -> client().invokeIndexClear(), FORBIDDEN, "error_admin_permission_required");
 		tx(() -> group().addRole(roles().get("admin")));

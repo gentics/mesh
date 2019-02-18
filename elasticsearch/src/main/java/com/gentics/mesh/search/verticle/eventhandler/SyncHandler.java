@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.verticle;
+package com.gentics.mesh.search.verticle.eventhandler;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 
@@ -27,9 +27,9 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Verticle which will execute the elasticsearch sync.
  */
-public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
+public class SyncHandler extends AbstractJobVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(ElasticsearchSyncVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(SyncHandler.class);
 
 	public static final String GLOBAL_SYNC_LOCK_NAME = "mesh.internal.synclock";
 
@@ -45,7 +45,7 @@ public class ElasticsearchSyncVerticle extends AbstractJobVerticle {
 	}
 
 	@Inject
-	public ElasticsearchSyncVerticle(Lazy<IndexHandlerRegistry> registry, SearchProvider provider) {
+	public SyncHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider) {
 		this.registry = registry;
 		this.provider = provider;
 	}

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
+import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import io.reactivex.Observable;
@@ -42,14 +42,14 @@ public class AdminIndexHandler {
 
 	private SearchProvider searchProvider;
 
-	private ElasticsearchSyncVerticle syncVerticle;
+	private SyncHandler syncVerticle;
 
 	private IndexHandlerRegistry registry;
 
 	private HandlerUtilities utils;
 
 	@Inject
-	public AdminIndexHandler(Database db, SearchProvider searchProvider, ElasticsearchSyncVerticle syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
+	public AdminIndexHandler(Database db, SearchProvider searchProvider, SyncHandler syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.syncVerticle = syncVerticle;
