@@ -40,6 +40,7 @@ import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -47,7 +48,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
@@ -56,6 +56,7 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.reactivex.Flowable;
@@ -196,7 +197,49 @@ public class BinaryFieldHandler extends AbstractHandler {
 		// (if the transaction failed and has to be repeated).
 		ac.put("sourceFile", ul.uploadedFileName());
 
+		String hash = FileUtils.hash(ul.uploadedFileName());
+		BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+
+		UploadContext ctx = new UploadContext();
+		ctx.setUpload(ul);
+
 		db.tx(() -> {
+			// Check whether the binary with the given hashsum was already stored
+			Binary binary = binaryRoot.findByHash(hash);
+
+			// Create a new binary if the data was not already stored
+			if (binary == null) {
+				String uuid = UUIDUtil.randomUUID();
+				binary = binaryRoot.create(uuid, hash, ul.size());
+				ctx.setStore(true);
+			}
+
+			ctx.setBinary(binary);
+		});
+
+		Single<UploadContext> storeAction;
+		if (ctx.isStore()) {
+			String uploadFile = ul.uploadedFileName();
+			// TODO open file async
+			AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
+			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
+			storeAction = binaryStorage.store(stream, ctx.getBinaryUuid()).andThen(Single.just(ctx));
+		} else {
+			storeAction = Single.just(ctx);
+		}
+
+		storeAction.map(c -> {
+			return postUploadAction(ac, c, nodeUuid, languageTag, nodeVersion, fieldName);
+		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+
+	}
+
+	private NodeResponse postUploadAction(InternalActionContext ac, UploadContext context, String nodeUuid, String languageTag, String nodeVersion,
+		String fieldName) {
+		FileUpload upload = context.getUpload();
+
+		return db.tx(() -> {
+			Binary binary = context.getBinary();
 			Project project = ac.getProject();
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
@@ -206,69 +249,60 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
-			// Load the current latest draft
-			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
+			utils.bulkableAction(bac -> {
 
-			if (latestDraftVersion == null) {
-				// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
-				// TODO Maybe it would be better to just create a new field container for the language?
-				// In that case we would also need to:
-				// * check for segment field conflicts
-				// * update display name
-				// * fail if mandatory fields are missing
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
+				// Load the current latest draft
+				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
 
-			// Load the base version field container in order to create the diff
-			NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, branch.getUuid(), nodeVersion);
-			if (baseVersionContainer == null) {
-				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
-			}
+				if (latestDraftVersion == null) {
+					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
+					// TODO Maybe it would be better to just create a new field container for the language?
+					// In that case we would also need to:
+					// * check for segment field conflicts
+					// * update display name
+					// * fail if mandatory fields are missing
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
 
-			List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
-			List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				// Load the base version field container in order to create the diff
+				NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, branch.getUuid(), nodeVersion);
+				if (baseVersionContainer == null) {
+					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
+				}
 
-			// Compare both sets of change sets
-			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
+				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+				List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 
-			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-			if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+				// Compare both sets of change sets
+				List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
 
-				// Check whether a conflict has been detected
-				if (intersect.size() > 0) {
-					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
-					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
-					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
-					for (FieldContainerChange fcc : intersect) {
-						conflictException.addConflict(fcc.getFieldCoordinates());
+				// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+				if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+
+					// Check whether a conflict has been detected
+					if (intersect.size() > 0) {
+						NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+						conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+						conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+						for (FieldContainerChange fcc : intersect) {
+							conflictException.addConflict(fcc.getFieldCoordinates());
+						}
+						throw conflictException;
 					}
-					throw conflictException;
 				}
-			}
 
-			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
-			if (fieldSchema == null) {
-				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-			}
-			if (!(fieldSchema instanceof BinaryFieldSchema)) {
-				// TODO Add support for other field types
-				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-			}
+				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+				if (fieldSchema == null) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+				}
+				if (!(fieldSchema instanceof BinaryFieldSchema)) {
+					// TODO Add support for other field types
+					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+				}
 
-			utils.eventAction(batch -> {
 				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(), latestDraftVersion, true);
-
-				// Check whether the binary with the given hashsum was already stored
-				BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
-				String hash = FileUtils.hash(ul.uploadedFileName());
-				Binary binary = binaryRoot.findByHash(hash);
-
-				// Create a new binary if the data was not already stored
-				boolean storeBinary = binary == null;
-				if (storeBinary) {
-					binary = binaryRoot.create(hash, ul.size());
-				}
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(), latestDraftVersion,
+					true);
 
 				// Get the potential existing field
 				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
@@ -276,18 +310,18 @@ public class BinaryFieldHandler extends AbstractHandler {
 				// Create the new field
 				BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
+				// Process the upload which will update the binary field
+				processUpload(upload, field);
+
 				// Reuse the existing properties
 				if (oldField != null) {
 					oldField.copyTo(field);
 
 					// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
-					if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(ul.contentType())) {
+					if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(upload.contentType())) {
 						field.setImageDominantColor(null);
 					}
 				}
-
-				// Process the upload which will update the binary field
-				processUpload(ac, ul, field, storeBinary);
 
 				// Now get rid of the old field
 				if (oldField != null) {
@@ -298,25 +332,22 @@ public class BinaryFieldHandler extends AbstractHandler {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
-				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				bac.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 			});
-			return node.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			return node.transformToRestSync(ac, 0);
+		});
 	}
 
 	/**
 	 * Processes the upload and set the binary information (e.g.: image dimensions) within the provided field. The binary data will be stored in the
 	 * {@link BinaryStorage} if desired.
 	 * 
-	 * @param ac
 	 * @param ul
 	 *            Upload to process
 	 * @param field
 	 *            Field which will be updated with the extracted information
-	 * @param storeBinary
-	 *            Whether to store the data in the binary store
 	 */
-	private void processUpload(ActionContext ac, FileUpload ul, BinaryGraphField field, boolean storeBinary) {
+	private void processUpload(FileUpload ul, BinaryGraphField field) {
 
 		// Process the upload and extract needed information
 		String contentType = ul.contentType();
@@ -326,16 +357,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 			} catch (Exception e) {
 				log.warn("Processing of upload {" + ul.fileName() + "/" + ul.uploadedFileName() + "} in handler {" + p.getClass() + "}", e);
 			}
-		}
-
-		// Store the data
-		if (storeBinary) {
-			Binary binary = field.getBinary();
-			String binaryUuid = binary.getUuid();
-			String uploadFile = ul.uploadedFileName();
-			AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
-			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-			binaryStorage.store(stream, binaryUuid).andThen(Single.just(ul.size())).blockingGet();
 		}
 
 	}
@@ -449,7 +470,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					if (binary == null) {
 						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
 						Flowable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toFlowable().flatMap(RxUtil::toBufferFlow);
-						binary = binaryRoot.create(hash, result.getSize());
+						binary = binaryRoot.create(UUIDUtil.randomUUID(), hash, result.getSize());
 						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
 					} else {
 						log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");

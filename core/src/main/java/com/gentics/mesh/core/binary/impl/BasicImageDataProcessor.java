@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Single;
@@ -39,22 +40,23 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 
 	@Override
 	public void process(FileUpload upload, BinaryGraphField field) {
-		Optional<ImageInfo> infoOpt = imageManipulator.readImageInfo(upload.uploadedFileName()).map(Optional::of)
+		imageManipulator.readImageInfo(upload.uploadedFileName()).map(Optional::of)
 			.onErrorResumeNext(e -> {
 				if (log.isDebugEnabled()) {
 					log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
 				}
 				return Single.just(Optional.empty());
-			}).blockingGet();
-
-		
-		if (infoOpt.isPresent()) {
-			ImageInfo info = infoOpt.get();
-			Binary binary = field.getBinary();
-			binary.setImageHeight(info.getHeight());
-			binary.setImageWidth(info.getWidth());
-			field.setImageDominantColor(info.getDominantColor());
-		}
+			}).subscribe(infoOpt -> {
+				if (infoOpt.isPresent()) {
+					DB.get().tx(() -> {
+						ImageInfo info = infoOpt.get();
+						Binary binary = field.getBinary();
+						binary.setImageHeight(info.getHeight());
+						binary.setImageWidth(info.getWidth());
+						field.setImageDominantColor(info.getDominantColor());
+					});
+				}
+			});
 
 	}
 

@@ -30,6 +30,8 @@ public final class FileUtils {
 	 * @param path
 	 */
 	public static String hash(String path) {
+		// TODO refactor this implementation to use buffers and process the file data async using the vertx fs methods.
+		// This way the processing of the data will not permanently block the execution
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
 			try (InputStream is = Files.newInputStream(Paths.get(path)); DigestInputStream mis = new DigestInputStream(is, md)) {
