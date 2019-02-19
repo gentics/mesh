@@ -45,6 +45,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
+import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -56,8 +58,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -200,13 +200,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
 
-		expectEvents(TAG_FAMILY_CREATED, 1, event -> {
-			assertEquals("newTagFamily", event.getString("name"));
-			assertNotNull(event.getString("uuid"));
-			JsonObject project = event.getJsonObject("project");
-			assertNotNull("The project reference is missing", project);
-			assertEquals("The project name does not match.", PROJECT_NAME, project.getString("name"));
-			assertEquals("The project uuid does not match.", projectUuid(), project.getString("uuid"));
+		expectEvents(TAG_FAMILY_CREATED, 1, TagFamilyMeshEventModel.class, event -> {
+			assertThat(event).hasName("newTagFamily").uuidNotNull().hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
 
@@ -292,36 +287,22 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		TagFamily basicTagFamily = tagFamily("basic");
+		String tagFamilyUuid = tx(() -> basicTagFamily.getUuid());
 		try (Tx tx = tx()) {
-			TagFamily basicTagFamily = tagFamily("basic");
-			String uuid = basicTagFamily.getUuid();
-			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
+			assertNotNull(project().getTagFamilyRoot().findByUuid(tagFamilyUuid));
 		}
 
 		String uuid = db().tx(() -> tagFamily("basic").getUuid());
 
-		expectEvents(TAG_FAMILY_DELETED, 1, event -> {
-			assertEquals("basic", event.getString("name"));
-			assertEquals(uuid, event.getString("uuid"));
-			JsonObject project = event.getJsonObject("project");
-			assertNotNull("The project reference is missing", project);
-			assertEquals("The project name does not match.", PROJECT_NAME, project.getString("name"));
-			assertEquals("The project uuid does not match.", projectUuid(), project.getString("uuid"));
+		expectEvents(TAG_FAMILY_DELETED, 1, TagFamilyMeshEventModel.class, event -> {
+			assertThat(event).hasName("basic").hasUuid(uuid).hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
 
-		expectEvents(TAG_DELETED, 1, event -> {
-			System.out.println(event.getString("name"));
-			assertEquals("Vehicle", event.getString("name"));
+		expectEvents(TAG_DELETED, 1, TagMeshEventModel.class, event -> {
+			assertThat(event).hasName("Vehicle").uuidNotNull().hasProject(PROJECT_NAME, projectUuid()).hasTagFamily("basic", tagFamilyUuid);
 			// JetFigther , Twinjet , Plane , Bus , Motorcycle , Bike, Jeep, Car
-			assertNotNull(event.getString("uuid"));
-			JsonObject project = event.getJsonObject("project");
-			assertNotNull("The project reference is missing", project);
-			assertEquals("The project name does not match.", PROJECT_NAME, project.getString("name"));
-			assertEquals("The project uuid does not match.", projectUuid(), project.getString("uuid"));
-
-			JsonObject tagFamily = event.getJsonObject("tagFamily");
-			assertNotNull("The tagfamily reference of the tag is missing.", tagFamily);
 			return true;
 		});
 
@@ -382,13 +363,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("new Name");
 
-		expectEvents(TAG_FAMILY_UPDATED, 1, event -> {
-			assertEquals("new Name", event.getString("name"));
-			assertEquals(uuid, event.getString("uuid"));
-			JsonObject project = event.getJsonObject("project");
-			assertNotNull("The project reference is missing", project);
-			assertEquals("The project name does not match.", PROJECT_NAME, project.getString("name"));
-			assertEquals("The project uuid does not match.", projectUuid(), project.getString("uuid"));
+		expectEvents(TAG_FAMILY_UPDATED, 1, TagFamilyMeshEventModel.class, event -> {
+			assertThat(event).hasName("new Name").hasUuid(uuid).hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
 

@@ -18,11 +18,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.util.ResultInfo;
-import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -79,25 +76,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			// Handle idempotency
-			Tuple<Group, EventQueueBatch> tuple;
 			if (group.hasRole(role)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
 				}
-				tuple = Tuple.tuple(group, EventQueueBatch.create());
 			} else {
-				tuple = db.tx(() -> {
-					EventQueueBatch batch = EventQueueBatch.create();
+				utils.eventAction(batch -> {
 					group.addRole(role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
 					// No need to update users as well. Those documents are not affected by this modification
 					batch.add(group.onUpdated());
-					return Tuple.tuple(group, batch);
 				});
 			}
-			tuple.v2().dispatch();
-			return tuple.v1().transformToRestSync(ac, 0);
+			return group.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 
 	}
@@ -116,19 +108,22 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 
 		utils.syncTx(ac, () -> {
-			// TODO check whether the role is actually part of the group
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			// No need to update the group if it is not assigned
+			if (!group.hasRole(role)) {
+				return;
+			}
+
+			utils.eventAction(batch -> {
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
 				batch.add(group.onUpdated());
-				// TODO add role update?
+				batch.add(role.onUpdated());
 				return batch;
-			}).dispatch();
+			});
 
 		}, () -> ac.send(NO_CONTENT));
 	}
@@ -168,16 +163,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		utils.syncTx(ac, tx -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			ResultInfo info = db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			return utils.eventAction(batch -> {
 				group.addUser(user);
 				batch.add(group.onUpdated());
-				// TODO add user update event?
-				GroupResponse model = group.transformToRestSync(ac, 0);
-				return new ResultInfo(model, batch);
+				batch.add(user.onUpdated());
+				return group.transformToRestSync(ac, 0);
 			});
-			info.getBatch().dispatch();
-			return info.getModel();
 		}, model -> ac.send(model, OK));
 
 	}
@@ -198,14 +189,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		utils.syncTx(ac, () -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-
-			db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			utils.eventAction(batch -> {
 				batch.add(group.onUpdated());
 				batch.add(user.onUpdated());
 				group.removeUser(user);
-				return batch;
-			}).dispatch();
+			});
 		}, () -> ac.send(NO_CONTENT));
 	}
 

@@ -217,9 +217,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			this.setName(newName);
 			batch.add(onUpdated());
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	@Override

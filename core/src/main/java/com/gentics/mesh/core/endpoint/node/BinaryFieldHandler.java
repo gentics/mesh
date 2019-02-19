@@ -44,8 +44,8 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -90,13 +90,16 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private BinaryProcessorRegistry binaryProcessorRegistry;
 
+	private HandlerUtilities utils;
+
 	@Inject
 	public BinaryFieldHandler(ImageManipulator imageManipulator,
 		Database db,
 		Lazy<BootstrapInitializer> boot,
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
-		BinaryProcessorRegistry binaryProcessorRegistry) {
+		BinaryProcessorRegistry binaryProcessorRegistry,
+		HandlerUtilities utils) {
 
 		this.imageManipulator = imageManipulator;
 		this.db = db;
@@ -104,6 +107,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
+		this.utils = utils;
 	}
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
@@ -251,50 +255,51 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			EventQueueBatch batch = EventQueueBatch.create();
-			// Create a new node version field container to store the upload
-			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(), latestDraftVersion, true);
+			utils.eventAction(batch -> {
+				// Create a new node version field container to store the upload
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(), latestDraftVersion, true);
 
-			// Check whether the binary with the given hashsum was already stored
-			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
-			String hash = FileUtils.hash(ul.uploadedFileName());
-			Binary binary = binaryRoot.findByHash(hash);
+				// Check whether the binary with the given hashsum was already stored
+				BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+				String hash = FileUtils.hash(ul.uploadedFileName());
+				Binary binary = binaryRoot.findByHash(hash);
 
-			// Create a new binary if the data was not already stored
-			boolean storeBinary = binary == null;
-			if (storeBinary) {
-				binary = binaryRoot.create(hash, ul.size());
-			}
-
-			// Get the potential existing field
-			BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
-
-			// Create the new field
-			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
-
-			// Reuse the existing properties
-			if (oldField != null) {
-				oldField.copyTo(field);
-
-				// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
-				if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(ul.contentType())) {
-					field.setImageDominantColor(null);
+				// Create a new binary if the data was not already stored
+				boolean storeBinary = binary == null;
+				if (storeBinary) {
+					binary = binaryRoot.create(hash, ul.size());
 				}
-			}
 
-			// Process the upload which will update the binary field
-			processUpload(ac, ul, field, storeBinary);
+				// Get the potential existing field
+				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
 
-			// Now get rid of the old field
-			if (oldField != null) {
-				oldField.removeField(newDraftVersion);
-			}
-			// If the binary field is the segment field, we need to update the webroot info in the node
-			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
-			}
+				// Create the new field
+				BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
-			batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT)).dispatch();
+				// Reuse the existing properties
+				if (oldField != null) {
+					oldField.copyTo(field);
+
+					// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
+					if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(ul.contentType())) {
+						field.setImageDominantColor(null);
+					}
+				}
+
+				// Process the upload which will update the binary field
+				processUpload(ac, ul, field, storeBinary);
+
+				// Now get rid of the old field
+				if (oldField != null) {
+					oldField.removeField(newDraftVersion);
+				}
+				// If the binary field is the segment field, we need to update the webroot info in the node
+				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+				}
+
+				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+			});
 			return node.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
@@ -399,12 +404,12 @@ public class BinaryFieldHandler extends AbstractHandler {
 				parameters.validate();
 
 				// Update the binary field with the new information
-				EventQueueBatch sqb = db.tx(() -> {
-					EventQueueBatch batch = EventQueueBatch.create();
+				utils.eventAction(batch -> {
 					Branch branch = ac.getBranch();
 
 					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language.getLanguageTag(), branch, ac.getUser(), latestDraftVersion,
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language.getLanguageTag(), branch, ac.getUser(),
+						latestDraftVersion,
 						true);
 
 					String binaryUuid = initialField.getBinary().getUuid();
@@ -464,10 +469,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 					field.getBinary().setImageWidth(result.getImageInfo().getWidth());
 					String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
 					batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
-					return batch;
 				});
 				// Finally update the search index and return the updated node
-				sqb.dispatch();
 				return node.transformToRest(ac, 0);
 			} catch (GenericRestException e) {
 				throw e;

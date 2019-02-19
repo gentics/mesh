@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -66,9 +67,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
 
-		expectEvents(GROUP_CREATED, 1, event -> {
-			assertEquals("test12345", event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+		expectEvents(GROUP_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("test12345").uuidNotNull();
 			return true;
 		});
 
@@ -334,9 +334,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 
-		expectEvents(GROUP_UPDATED, 1, event -> {
-			assertEquals(name, event.getString("name"));
-			assertEquals(groupUuid, event.getString("uuid"));
+		expectEvents(GROUP_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(name).hasUuid(groupUuid);
 			return true;
 		});
 
@@ -458,14 +457,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		String name = tx(() -> group().getName());
 		String uuid = groupUuid();
 
-		expectEvents(GROUP_DELETED, 1, event -> {
-			assertEquals(name, event.getString("name"));
-			assertEquals(uuid, event.getString("uuid"));
+		expectEvents(GROUP_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(name).hasUuid(uuid);
 			return true;
 		});
 
 		call(() -> client().deleteGroup(uuid));
-
 		waitForEvents();
 
 		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);

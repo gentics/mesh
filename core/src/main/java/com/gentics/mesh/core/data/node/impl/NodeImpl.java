@@ -1178,26 +1178,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Remove the published edge for each found container
 		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
+		for (NodeGraphFieldContainer container : publishedContainers) {
+			bac.add(container.onDeleted(branchUuid, PUBLISHED));
+		}
 		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
 
 		assertPublishConsistency(ac, branch);
 
-		// Remove the published node from the index
-		for (NodeGraphFieldContainer container : publishedContainers) {
-			bac.add(container.onDeleted(branchUuid, PUBLISHED));
-		}
 		bac.process();
 	}
 
 	@Override
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
-		Database db = MeshInternal.get().database();
 		Branch branch = ac.getBranch(getProject());
 		PublishParameters parameters = ac.getPublishParameters();
-		db.tx(() -> {
-			takeOffline(ac, bac, branch, parameters);
-			return this;
-		});
+		takeOffline(ac, bac, branch, parameters);
 	}
 
 	@Override

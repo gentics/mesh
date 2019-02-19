@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -55,8 +56,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -223,14 +222,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
-		expectEvents(TAG_UPDATED, 1, event -> {
-			assertEquals(newName, event.getString("name"));
-			assertEquals(tagUuid, event.getString("uuid"));
-
-			JsonObject tagFamily = event.getJsonObject("tagFamily");
-			assertNotNull(tagFamily);
-			assertEquals("basic", tagFamily.getString("name"));
-			assertEquals(parentTagFamilyUuid, tagFamily.getString("uuid"));
+		expectEvents(TAG_UPDATED, 1, TagMeshEventModel.class, event -> {
+			assertThat(event).hasName(newName).hasUuid(tagUuid).hasTagFamily("basic", parentTagFamilyUuid);
 			return true;
 		});
 
@@ -336,14 +329,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		final String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
 		final String tagUuid = tx(() -> tag.getUuid());
 
-		expectEvents(TAG_DELETED, 1, event -> {
-			assertEquals("Vehicle", event.getString("name"));
-			assertEquals(tagUuid, event.getString("uuid"));
-
-			JsonObject tagFamily = event.getJsonObject("tagFamily");
-			assertNotNull(tagFamily);
-			assertEquals("basic", tagFamily.getString("name"));
-			assertEquals(parentTagFamilyUuid, tagFamily.getString("uuid"));
+		expectEvents(TAG_DELETED, 1, TagMeshEventModel.class, event -> {
+			assertThat(event).hasName("Vehicle").hasUuid(tagUuid).hasTagFamily("basic", parentTagFamilyUuid);
 			return true;
 		});
 
@@ -422,14 +409,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		trackingSearchProvider().clear().blockingAwait();
 
-		expectEvents(TAG_CREATED, 1, event -> {
-			assertEquals("SomeName", event.getString("name"));
-			assertNotNull(event.getString("uuid"));
-
-			JsonObject tagFamily = event.getJsonObject("tagFamily");
-			assertNotNull(tagFamily);
-			assertEquals("colors", tagFamily.getString("name"));
-			assertEquals(parentTagFamilyUuid, tagFamily.getString("uuid"));
+		expectEvents(TAG_CREATED, 1, TagMeshEventModel.class,event -> {
+			assertThat(event).hasName("SomeName").uuidNotNull().hasTagFamily("colors", parentTagFamilyUuid);
 			return true;
 		});
 

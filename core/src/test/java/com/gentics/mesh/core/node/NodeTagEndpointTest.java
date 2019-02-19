@@ -1,10 +1,9 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -18,14 +17,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -58,7 +58,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	public void testAddTagToNode() throws Exception {
 		Node node = folder("2015");
 		String nodeUuid = tx(() -> node.getUuid());
-		String schemaVersionUuid = tx(() -> node.getSchemaContainer().getLatestVersion().getUuid());
+		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 		Tag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 
@@ -67,21 +67,15 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
-		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
-		assertThat(trackingSearchProvider()).as(
-			"Recorded store events after node update occured. Published and draft of the node should have been updated.")
-			.recordedStoreEvents(2);
-		trackingSearchProvider().printStoreEvents(false);
-		// Document Index:
-		// [node-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
-		String draftIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-			schemaVersionUuid, DRAFT);
-		String publishedIndexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-			schemaVersionUuid, PUBLISHED);
-		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(draftIndexName + "-" + nodeUuid + "-en"));
-		assertTrue(trackingSearchProvider().getStoreEvents().containsKey(publishedIndexName + "-" + nodeUuid + "-en"));
+		expectEvents(NODE_UPDATED, 2, NodeMeshEventModel.class, event -> {
+			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchema("folder", schemaUuid).hasLanguage("en");
+			return true;
+		});
 
+		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
 		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
+
+		waitForEvents();
 
 		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
@@ -103,7 +97,8 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", node.getUuid(),
+				UPDATE_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {
@@ -123,7 +118,8 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()), FORBIDDEN, "error_missing_perm", tag.getUuid(),
+				READ_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {
@@ -175,7 +171,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN,
-					"error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
+				"error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
 			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 	}
@@ -208,22 +204,22 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
+				() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
+				tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
+				() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
+				response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
-					new VersioningParametersImpl().setBranch(branchOne)));
+				new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
-					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 		}
 
@@ -249,32 +245,32 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
+				() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
+				tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("blue")).count());
+				tagsForNode.getData().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
+				() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
+				response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
+				response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
-					new VersioningParametersImpl().setBranch(branchTwo)));
+				new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
-					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
-					new VersioningParametersImpl().setBranch(branchTwo)));
+				new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
-					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 		}
 
@@ -283,7 +279,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			Tag tag = tag("red");
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(),
-					new VersioningParametersImpl().setBranch(branchOne)));
+				new VersioningParametersImpl().setBranch(branchOne)));
 		}
 
 		// Assert that the node is still tagged with both tags in branchTwo
@@ -291,19 +287,19 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
+				() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
+				tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("blue")).count());
+				tagsForNode.getData().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
+				() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
+				response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
+				response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
@@ -358,7 +354,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN,
-					"error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
+				"error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {

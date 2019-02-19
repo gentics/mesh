@@ -15,8 +15,6 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -26,13 +24,10 @@ import com.gentics.mesh.util.ResultInfo;
  */
 public class TagCrudHandler extends AbstractHandler {
 
-	private Database db;
-
 	private HandlerUtilities utils;
 
 	@Inject
-	public TagCrudHandler(Database db, HandlerUtilities utils) {
-		this.db = db;
+	public TagCrudHandler(HandlerUtilities utils) {
 		this.utils = utils;
 	}
 
@@ -93,19 +88,17 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		utils.syncTx(ac, tx -> {
-			ResultInfo info = db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			ResultInfo info = utils.eventAction(batch -> {
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);
 				String path = tag.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model, batch);
+				ResultInfo resultInfo = new ResultInfo(model);
 				resultInfo.setProperty("path", path);
 				return resultInfo;
 			});
 
 			String path = info.getProperty("path");
 			ac.setLocation(path);
-			info.getBatch().dispatch();
 			return info.getModel();
 		}, model -> ac.send(model, CREATED));
 

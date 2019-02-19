@@ -30,11 +30,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
-import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 
@@ -76,8 +74,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			}
 			User user = ac.getUser();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-			Tuple<EventQueueBatch, String> info = db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			String version = utils.eventAction(batch -> {
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				if (updateParams.getUpdateAssignedBranches()) {
@@ -97,15 +94,14 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						branch.assignMicroschemaVersion(user, createdVersion);
 					}
 				}
-				return Tuple.tuple(batch, createdVersion.getVersion());
+				return createdVersion.getVersion();
 			});
 
-			info.v1().dispatch();
 			if (updateParams.getUpdateAssignedBranches()) {
 				MeshEvent.triggerJobWorker();
-				return message(ac, "schema_updated_migration_invoked", name, info.v2());
+				return message(ac, "schema_updated_migration_invoked", name, version);
 			} else {
-				return message(ac, "schema_updated_migration_deferred", name, info.v2());
+				return message(ac, "schema_updated_migration_deferred", name, version);
 			}
 
 		}, model -> ac.send(model, OK));
@@ -139,11 +135,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		utils.syncTx(ac, (tx) -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			utils.eventAction(batch -> {
 				schema.getLatestVersion().applyChanges(ac, batch);
-				return batch;
-			}).dispatch();
+			});
 			return message(ac, "migration_invoked", schema.getName());
 		}, model -> ac.send(model, OK));
 
@@ -182,8 +176,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				return microschema.transformToRestSync(ac, 0);
 			}
 
+			// Assign the microschema to the project
 			return db.tx(() -> {
-				// Assign the microschema to the project
+				// TODO check whether we should dispatch events
 				root.addMicroschema(ac.getUser(), microschema);
 				return microschema.transformToRestSync(ac, 0);
 			});
@@ -202,6 +197,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			// TODO check whether microschema is assigned to project
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			db.tx(() -> {
+				// TODO check whether we should dispatch events
 				project.getMicroschemaContainerRoot().removeMicroschema(microschema);
 			});
 		}, () -> ac.send(NO_CONTENT));

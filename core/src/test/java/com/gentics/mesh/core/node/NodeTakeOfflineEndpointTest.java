@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -23,6 +24,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -41,9 +43,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testTakeNodeOfflineManyChildren() {
+	public void testTakeNodeOfflineManyChildren() throws Exception {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String folderSchemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 
 		// Create a lot of test nodes
@@ -55,14 +58,29 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			request.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(schemaReference);
 			request.setLanguage("en");
+			request.setSchema(schemaReference);
 			request.setParentNodeUuid(parentNodeUuid);
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 
+		expectEvents(NODE_DELETED, 2, NodeMeshEventModel.class, event -> {
+			if (baseNodeUuid.equals(event.getUuid())) {
+				assertThat(event)
+					.uuidNotNull()
+					.hasBranchUuid(initialBranchUuid())
+					.hasSchemaName("folder")
+					.hasSchemaUuid(folderSchemaUuid)
+					.hasLanguage("en");
+				return true;
+			}
+			return false;
+		});
+
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+
+		waitForEvents();
 
 	}
 
@@ -146,7 +164,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid,
+				PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -162,7 +181,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid, PUBLISH_PERM.getRestPerm().getName());
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid,
+				PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 

@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -63,9 +64,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		expectEvents(ROLE_CREATED, 1, event -> {
-			assertEquals("new_role", event.getString("name"));
-			assertNotNull(event.getString("uuid"));
+		expectEvents(ROLE_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("new_role").uuidNotNull();
 			return true;
 		});
 
@@ -340,9 +340,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			return extraRole.getUuid();
 		});
 
-		expectEvents(ROLE_UPDATED, 1, event -> {
-			assertEquals("renamed role", event.getString("name"));
-			assertEquals(extraRoleUuid, event.getString("uuid"));
+		expectEvents(ROLE_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("renamed role").hasUuid(extraRoleUuid);
 			return true;
 		});
 
@@ -437,9 +436,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			return extraRole.getUuid();
 		});
 
-		expectEvents(ROLE_DELETED, 1, event -> {
-			assertEquals("extra role", event.getString("name"));
-			assertEquals(extraRoleUuid, event.getString("uuid"));
+		expectEvents(ROLE_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("extra role").hasUuid(extraRoleUuid);
 			return true;
 		});
 
