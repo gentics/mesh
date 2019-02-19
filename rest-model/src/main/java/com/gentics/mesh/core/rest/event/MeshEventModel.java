@@ -62,8 +62,13 @@ public interface MeshEventModel extends RestModel {
 		MeshEvent event = MeshEvent.fromAddress(address)
 			.orElseThrow(() -> new RuntimeException(String.format("No event found for address %s", address)));
 
+		JsonObject body = message.body();
 		// TODO Find better way to deserialize
-		return (T) JsonUtil.readValue(message.body().toString(), event.bodyModel);
+		if (body == null) {
+			return null;
+		} else {
+			return (T) JsonUtil.readValue(body.toString(), event.bodyModel);
+		}
 	}
 
 }

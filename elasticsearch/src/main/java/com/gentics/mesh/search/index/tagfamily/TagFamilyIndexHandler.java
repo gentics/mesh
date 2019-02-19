@@ -19,12 +19,15 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
 @Singleton
@@ -37,8 +40,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	TagFamilyMappingProvider mappingProvider;
 
 	@Inject
-	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -98,22 +101,17 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return db.tx(() -> {
-				ProjectRoot root = boot.meshRoot().getProjectRoot();
-				SyncMetric metric = new SyncMetric(getType());
+	public Flowable<SearchRequest> syncIndices() {
+		return Flowable.defer(() -> db.tx(() -> {
+			SyncMetric metric = new SyncMetric(getType());
 
-				Set<Completable> actions = new HashSet<>();
-				for (Project project : root.findAll()) {
+			return boot.meshRoot().getProjectRoot().findAll().stream()
+				.map(project -> {
 					String uuid = project.getUuid();
 					String indexName = TagFamily.composeIndexName(uuid);
-					actions.add(diffAndSync(indexName, uuid, metric));
-				}
-
-				return Completable.merge(actions);
-			});
-		});
+					return diffAndSync(indexName, uuid, metric);
+				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
+		}));
 	}
 
 	@Override

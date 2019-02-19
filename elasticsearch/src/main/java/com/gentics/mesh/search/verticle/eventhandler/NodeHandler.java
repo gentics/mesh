@@ -58,17 +58,16 @@ public class NodeHandler implements EventHandler {
 
 	private Optional<SearchRequest> upsertNodes(NodeMeshEventModel message) {
 		return helper.getDb().tx(() -> entities.node.getDocument(message))
-			.map(doc -> new CreateDocumentRequest(
-				helper.prefixIndexName(getIndexName(message)),
+			.map(doc -> helper.createDocumentRequest(
+				getIndexName(message),
 				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
 				doc
 			));
 	}
 
 	private SearchRequest deleteNodes(NodeMeshEventModel message) {
-		return new DeleteDocumentRequest(
-			helper.prefixIndexName(getIndexName(message)),
-			NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag())
+		return helper.deleteDocumentRequest(
+			getIndexName(message), NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag())
 		);
 	}
 

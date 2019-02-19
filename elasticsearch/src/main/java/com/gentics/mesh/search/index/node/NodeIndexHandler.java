@@ -2,8 +2,6 @@ package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -15,12 +13,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -41,19 +40,22 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.entry.UpdateDocumentEntryImpl;
 import com.gentics.mesh.search.index.metric.SyncMetric;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
@@ -86,8 +88,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public AttachmentIngestConfigProvider ingestConfigProvider;
 
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -144,7 +146,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							log.debug("Adding index to map of known indices {" + draftIndexName + "}");
 							log.debug("Adding index to map of known indices {" + publishIndexName + "}");
 						}
-						branch.findAllMicroschemaVersions();
 						// Load the index mapping information for the index
 						SchemaModel schema = containerVersion.getSchema();
 						JsonObject mapping = getMappingProvider().getMapping(schema, branch);
@@ -198,37 +199,26 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return db.tx(() -> {
-				SyncMetric metric = new SyncMetric(getType());
-				Set<Completable> actions = new HashSet<>();
-				for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
-					for (Branch branch : project.getBranchRoot().findAll()) {
-						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-							for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-								actions.add(diffAndSync(project, branch, version, type, metric));
-							}
-						}
-					}
-				}
-				// Nothing will be synced if there is no managed index
-				return Completable.merge(actions);
-			});
-		});
+	public Flowable<SearchRequest> syncIndices() {
+		return Flowable.defer(() -> db.tx(() -> {
+			SyncMetric metric = new SyncMetric(getType());
+			return boot.meshRoot().getProjectRoot().findAll().stream()
+				.flatMap(project -> project.getBranchRoot().findAll().stream()
+				.flatMap(branch -> branch.findActiveSchemaVersions().stream()
+				.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
+				.map(type -> diffAndSync(project, branch, version, type, metric)))))
+				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
+		}));
 	}
 
-	private Map<String, String> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
-		Map<String, String> versions = new HashMap<>();
-		String branchUuid = branch.getUuid();
-		version.getFieldContainers(branchUuid)
-			.filter(c -> c.getSchemaContainerVersion().equals(version))
-			.filter(c -> c.isType(type, branchUuid))
-			.forEach(c -> {
-				String v = generateVersion(c, branchUuid, type);
-				versions.put(c.getParentNode().getUuid() + "-" + c.getLanguageTag(), v);
-			});
-		return versions;
+	private Map<String, NodeGraphFieldContainer> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
+		return db.tx(() -> {
+			String branchUuid = branch.getUuid();
+			return version.getFieldContainers(branchUuid)
+				.filter(c -> c.getSchemaContainerVersion().equals(version))
+				.filter(c -> c.isType(type, branchUuid))
+				.collect(Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity()));
+		});
 	}
 
 	/**
@@ -246,94 +236,50 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private Completable diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, SyncMetric metric)
-		throws HttpErrorException {
+	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, SyncMetric metric) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
 			version.getUuid(), type);
 
-		log.info("Handling index sync on handler {" + getClass().getName() + "}");
+		return Single.zip(
+			loadVersionsFromIndex(indexName),
+			Single.fromCallable(() -> loadVersionsFromGraph(branch, version, type)),
+			(sinkVersions, sourceNodes) -> {
+				log.info("Handling index sync on handler {" + getClass().getName() + "}");
+				String branchUuid = branch.getUuid();
 
-		try (Tx tx = db.tx()) {
+				Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), branchUuid, type))));
 
-			// 1. Load versions from the local graph (source of truth)
-			Map<String, String> sourceVersions = loadVersionsFromGraph(branch, version, type);
+				// 3. Diff the maps
+				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
+				if (diff.areEqual()) {
+					return Flowable.<SearchRequest>empty();
+				}
+				Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
+				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
+				Set<String> needUpdate = diff.entriesDiffering().keySet();
 
-			// 2. Load the version from the elasticsearch index (sink)
-			Map<String, String> sinkVersions = loadVersionsFromIndex(indexName);
+				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
+				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
+				log.info("Pending updates on {" + indexName + "}:" + needUpdate.size());
 
-			// 3. Diff the maps
-			MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
-			if (diff.areEqual()) {
-				return Completable.complete();
-			}
-			Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
-			Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
-			Set<String> needUpdate = diff.entriesDiffering().keySet();
+				metric.incInsert(needInsertionInES.size());
+				metric.incDelete(needRemovalInES.size());
+				metric.incUpdate(needUpdate.size());
 
-			log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
-			log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
-			log.info("Pending updates on {" + indexName + "}:" + needUpdate.size());
+				Flowable<SearchRequest> toInsert = Flowable.merge(
+					Flowable.fromIterable(diff.entriesOnlyOnLeft().keySet()),
+					Flowable.fromIterable(diff.entriesDiffering().keySet())
+				).map(uuid -> {
+					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
+					return helper.createDocumentRequest(indexName, uuid, doc);
+				});
 
-			metric.incInsert(needInsertionInES.size());
-			metric.incDelete(needRemovalInES.size());
-			metric.incUpdate(needUpdate.size());
+				Flowable<SearchRequest> toDelete = Flowable.fromIterable(diff.entriesOnlyOnRight().keySet())
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid));
 
-			String versionUuid = version.getUuid();
-			String projectUuid = project.getUuid();
-			String branchUuid = branch.getUuid();
-
-			// 4. Create the SQB's
-			EventQueueBatch storeBatch = EventQueueBatch.create();
-			for (String uuidLang : needInsertionInES) {
-				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
-				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
-				GenericEntryContext context = new GenericEntryContextImpl();
-				context.setContainerType(type);
-				context.setProjectUuid(projectUuid);
-				context.setBranchUuid(branchUuid);
-				context.setLanguageTag(lang);
-				context.setSchemaContainerVersionUuid(versionUuid);
-				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
-				entry.setOnProcessAction(metric::decInsert);
-//				storeBatch.addEntry(entry);
-			}
-			EventQueueBatch removalBatch = EventQueueBatch.create();
-			for (String uuidLang : needRemovalInES) {
-				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
-				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
-				GenericEntryContext context = new GenericEntryContextImpl();
-				context.setContainerType(type);
-				context.setProjectUuid(projectUuid);
-				context.setBranchUuid(branchUuid);
-				context.setSchemaContainerVersionUuid(versionUuid);
-				context.setLanguageTag(lang);
-				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, DELETE_ACTION);
-				entry.setOnProcessAction(metric::decDelete);
-//				removalBatch.addEntry(entry);
-			}
-			EventQueueBatch updateBatch = EventQueueBatch.create();
-			for (String uuidLang : needUpdate) {
-				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
-				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
-				GenericEntryContext context = new GenericEntryContextImpl();
-				context.setContainerType(type);
-				context.setProjectUuid(projectUuid);
-				context.setBranchUuid(branchUuid);
-				context.setSchemaContainerVersionUuid(versionUuid);
-				context.setLanguageTag(lang);
-				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
-				entry.setOnProcessAction(metric::decUpdate);
-//				updateBatch.addEntry(entry);
-			}
-
-			removalBatch.dispatch();
-			storeBatch.dispatch();
-			updateBatch.dispatch();
-			// TODO refactor this
-			return Completable.complete();
-
-		}
-
+				return Flowable.merge(toInsert, toDelete);
+		}).flatMapPublisher(x -> x);
 	}
 
 	@Override

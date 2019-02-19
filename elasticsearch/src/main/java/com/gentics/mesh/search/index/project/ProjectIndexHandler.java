@@ -14,12 +14,14 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
-import io.reactivex.Completable;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import io.reactivex.Flowable;
 
 /**
  * Handler for the project specific search index.
@@ -34,8 +36,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	ProjectMappingProvider mappingProvider;
 
 	@Inject
-	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -69,10 +71,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return diffAndSync(Project.composeIndexName(), null, new SyncMetric(getType()));
-		});
+	public Flowable<SearchRequest> syncIndices() {
+		return diffAndSync(Project.composeIndexName(), null, new SyncMetric(getType()));
 	}
 
 	@Override

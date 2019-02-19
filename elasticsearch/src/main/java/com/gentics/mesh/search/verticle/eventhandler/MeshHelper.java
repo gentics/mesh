@@ -1,8 +1,11 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -22,11 +25,19 @@ public class MeshHelper {
 		this.boot = boot;
 	}
 
-	public String prefixIndexName(String index) {
+	private String prefixIndexName(String index) {
 		String prefix = options.getSearchOptions().getPrefix();
 		return prefix == null
 			? index
 			: prefix + index;
+	}
+
+	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc) {
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc);
+	}
+
+	public DeleteDocumentRequest deleteDocumentRequest(String index, String id) {
+		return new DeleteDocumentRequest(index, prefixIndexName(index), id);
 	}
 
 	public Database getDb() {

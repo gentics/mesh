@@ -42,15 +42,13 @@ public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>
 		MeshEvent event = eventModel.event;
 		if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
 			return toFlowable(helper.getDb().tx(() -> entity.getDocument(eventModel.message))
-				.map(document -> new CreateDocumentRequest(
-					helper.prefixIndexName(indexName),
-					eventModel.message.getUuid(),
+				.map(document -> helper.createDocumentRequest(
+					indexName, eventModel.message.getUuid(),
 					document
 				)));
 		} else if (event == entity.getDeleteEvent()) {
-			return Flowable.just(new DeleteDocumentRequest(
-				helper.prefixIndexName(indexName),
-				eventModel.message.getUuid()
+			return Flowable.just(helper.deleteDocumentRequest(
+				indexName, eventModel.message.getUuid()
 			));
 		} else {
 			throw new RuntimeException("Unexpected event " + event.address);

@@ -4,15 +4,17 @@ import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class DeleteDocumentRequest implements Bulkable {
 	private final String index;
+	private final String transformedIndex;
 	private final String id;
 
-	public DeleteDocumentRequest(String index, String id) {
+	public DeleteDocumentRequest(String index, String transformedIndex, String id) {
 		this.index = index;
+		this.transformedIndex = transformedIndex;
 		this.id = id;
 	}
 
@@ -23,10 +25,10 @@ public class DeleteDocumentRequest implements Bulkable {
 
 	@Override
 	public List<String> toBulkActions() {
-		return Arrays.asList(
+		return Collections.singletonList(
 			new JsonObject()
 				.put("delete", new JsonObject()
-					.put("_index", index)
+					.put("_index", transformedIndex)
 					.put("_type", SearchProvider.DEFAULT_TYPE)
 					.put("_id", id)
 				).encode()

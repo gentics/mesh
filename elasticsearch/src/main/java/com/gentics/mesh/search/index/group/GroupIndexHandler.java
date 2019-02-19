@@ -13,12 +13,14 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
-import io.reactivex.Completable;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import io.reactivex.Flowable;
 
 /**
  * Handler for the elastic search group index.
@@ -33,8 +35,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	GroupMappingProvider mappingProvider;
 
 	@Inject
-	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -85,10 +87,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return diffAndSync(Group.composeIndexName(), null, new SyncMetric(getType()));
-		});
+	public Flowable<SearchRequest> syncIndices() {
+		return diffAndSync(Group.composeIndexName(), null, new SyncMetric(getType()));
 	}
 
 	@Override

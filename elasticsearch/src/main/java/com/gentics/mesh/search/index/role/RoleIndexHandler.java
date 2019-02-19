@@ -13,13 +13,15 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
-import io.reactivex.Completable;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import io.reactivex.Flowable;
 
 /**
  * Handler for the elasticsearch role index.
@@ -34,8 +36,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	RoleMappingProvider mappingProvider;
 
 	@Inject
-	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -76,10 +78,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return diffAndSync(Role.composeIndexName(), null, new SyncMetric(getType()));
-		});
+	public Flowable<SearchRequest> syncIndices() {
+		return diffAndSync(Role.composeIndexName(), null, new SyncMetric(getType()));
 	}
 
 	@Override

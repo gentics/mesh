@@ -9,8 +9,12 @@ import com.gentics.mesh.search.index.metric.SyncMetric;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -20,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 
 /**
@@ -29,9 +34,11 @@ public class SyncHandler implements EventHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SyncHandler.class);
 
-	private Lazy<IndexHandlerRegistry> registry;
+	private final Lazy<IndexHandlerRegistry> registry;
 
-	private SearchProvider provider;
+	private final SearchProvider provider;
+
+	private final Vertx vertx;
 
 	/**
 	 * Send the index sync event which will trigger the index sync job.
@@ -40,22 +47,46 @@ public class SyncHandler implements EventHandler {
 		Mesh.mesh().getVertx().eventBus().send(INDEX_SYNC_WORKER_ADDRESS.address, null);
 	}
 
+	public static Completable invokeSyncCompletable() {
+		return Completable.create(sub -> {
+			EventBus eventbus = Mesh.mesh().getVertx().eventBus();
+			MessageConsumer<Object> consumer = eventbus.consumer(INDEX_SYNC.address)
+				.handler(event -> sub.onComplete())
+				.exceptionHandler(sub::onError);
+			sub.setCancellable(consumer::unregister);
+			invokeSync();
+		});
+	}
+
 	@Inject
-	public SyncHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider) {
+	public SyncHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx) {
 		this.registry = registry;
 		this.provider = provider;
+		this.vertx = vertx;
 	}
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.concatArray(
 			purgeOldIndices(),
-			syncIndices()
+			syncIndices(),
+			publishSyncEndEvent()
 		).doOnSubscribe(ignore -> {
 			log.info("Processing index sync job.");
 			SyncMetric.reset();
 		});
-		// TODO Publish event on sync finish
+	}
+
+	/**
+	 * This is actually not a search event, but instead just signals the end of an index sync.
+	 * TODO Find a better way to do this, this will not work on an error
+	 */
+	private Flowable<SearchRequest> publishSyncEndEvent() {
+		return Flowable.just(provider -> {
+			log.debug("Sending sync complete event");
+			vertx.eventBus().send(INDEX_SYNC.address, null);
+			return Completable.complete();
+		});
 	}
 
 	@Override
@@ -65,7 +96,13 @@ public class SyncHandler implements EventHandler {
 
 	private Flowable<SearchRequest> syncIndices() {
 		return Flowable.fromIterable(registry.get().getHandlers())
-			.flatMapCompletable(handler -> handler.init().andThen(handler.syncIndices()));
+			.flatMap(handler ->
+				handler.init()
+					.doOnSubscribe(ignore -> log.debug("Init for {}", handler.getClass()))
+					.doOnComplete(() -> log.debug("Init for {} complete", handler.getClass()))
+				.andThen(handler.syncIndices()
+					.doOnSubscribe(ignore -> log.debug("Syncing for {}", handler.getClass()))
+			));
 	}
 
 	private Flowable<SearchRequest> purgeOldIndices() {

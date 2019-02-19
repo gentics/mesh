@@ -128,18 +128,18 @@ public class MeshEntities {
 	}
 
 	public CreateDocumentRequest createRequest(Group element) {
-		return new CreateDocumentRequest(helper.prefixIndexName(Group.composeIndexName()), element.getUuid(), group.transform(element));
+		return helper.createDocumentRequest(Group.composeIndexName(), element.getUuid(), group.transform(element));
 	}
 
 	public CreateDocumentRequest createRequest(User element) {
-		return new CreateDocumentRequest(helper.prefixIndexName(User.composeIndexName()), element.getUuid(), user.transform(element));
+		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element));
 	}
 
 	public CreateDocumentRequest createRequest(TagFamily element, String projectUuid) {
-		return new CreateDocumentRequest(helper.prefixIndexName(TagFamily.composeIndexName(projectUuid)), element.getUuid(), tagFamily.transform(element));
+		return helper.createDocumentRequest(TagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element));
 	}
 
 	public CreateDocumentRequest createRequest(Tag element, String projectUuid) {
-		return new CreateDocumentRequest(helper.prefixIndexName(Tag.composeIndexName(projectUuid)), element.getUuid(), tag.transform(element));
+		return helper.createDocumentRequest(Tag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element));
 	}
 }

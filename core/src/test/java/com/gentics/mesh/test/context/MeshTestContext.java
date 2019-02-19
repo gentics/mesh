@@ -207,7 +207,6 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	private void setupData() throws Exception {
 		meshDagger.database().setMassInsertIntent();
-		meshDagger.boot().createSearchIndicesAndMappings();
 		dataProvider.setup();
 		meshDagger.database().resetIntent();
 	}

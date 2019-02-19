@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
+import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -163,15 +164,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			return;
 		}
 		// Ensure indices are setup and sync the documents
-		IndexHandlerRegistry registry = indexHandlerRegistry.get();
-		for (IndexHandler<?> handler : registry.getHandlers()) {
-			String handlerName = handler.getClass().getSimpleName();
-			try (Tx tx = db.tx()) {
-				log.info("Invoking index sync on handler {" + handlerName + "}. This may take some time..");
-				handler.init().andThen(handler.syncIndices()).blockingAwait();
-				log.info("Index sync on handler {" + handlerName + "} completed.");
-			}
-		}
+		log.info("Invoking index sync. This may take some time..");
+		SyncHandler.invokeSyncCompletable().blockingAwait();
+		log.info("Index sync completed.");
 	});
 
 	@Inject

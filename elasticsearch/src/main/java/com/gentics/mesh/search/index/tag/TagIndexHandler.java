@@ -19,12 +19,15 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
 /**
@@ -45,8 +48,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	TagMappingProvider mappingProvider;
 
 	@Inject
-	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -106,20 +109,15 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return db.tx(() -> {
-				ProjectRoot root = boot.meshRoot().getProjectRoot();
-				Set<Completable> actions = new HashSet<>();
-				SyncMetric metric = new SyncMetric(getType());
-				for (Project project : root.findAll()) {
+	public Flowable<SearchRequest> syncIndices() {
+		return Flowable.defer(() -> db.tx(() -> {
+			SyncMetric metric = new SyncMetric(getType());
+			return boot.meshRoot().getProjectRoot().findAll().stream()
+				.map(project -> {
 					String uuid = project.getUuid();
-					actions.add(diffAndSync(Tag.composeIndexName(uuid), uuid, metric));
-				}
-
-				return Completable.merge(actions);
-			});
-		});
+					return diffAndSync(Tag.composeIndexName(uuid), uuid, metric);
+				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
+		}));
 	}
 
 	@Override

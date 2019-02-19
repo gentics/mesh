@@ -112,7 +112,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.concatMap(this::generateRequests, 1)
 			.doOnNext(request -> {
 				if (log.isTraceEnabled()) {
-					log.trace(String.format("Generated request with class {%s}", request.getClass().getSimpleName()));
+					log.trace(String.format("Generated request of class {%s}", request.getClass().getSimpleName()));
 				}
 			})
 			.toObservable()

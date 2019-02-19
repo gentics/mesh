@@ -62,7 +62,7 @@ public class MainEventHandler implements EventHandler {
 
 	private Map<MeshEvent, EventHandler> createHandlers() {
 		return Stream.of(
-			forEvent(INDEX_SYNC_WORKER_ADDRESS, event -> singletonList(client -> syncHandler.executeJob(null))),
+			syncHandler,
 			forEvent(INDEX_CLEAR_REQUEST, event -> Flowable.just(client -> elasticSearchProvider.clear())),
 			new SimpleEventHandler<>(helper, entities.schema, SchemaContainer.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.microschema, MicroschemaContainer.composeIndexName()),

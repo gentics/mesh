@@ -118,7 +118,6 @@ public class CoreVerticleLoader {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
 		if (configuration.getSearchOptions().getUrl() != null) {
-			verticles.add(indexSyncVerticle.get());
 			verticles.add(elasticsearchProcessVerticle.get());
 		}
 		return verticles;

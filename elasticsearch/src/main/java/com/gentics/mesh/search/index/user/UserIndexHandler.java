@@ -13,13 +13,15 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
-import io.reactivex.Completable;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import io.reactivex.Flowable;
 
 @Singleton
 public class UserIndexHandler extends AbstractIndexHandler<User> {
@@ -33,8 +35,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	UserMappingProvider mappingProvider;
 
 	@Inject
-	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -68,10 +70,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return diffAndSync(User.composeIndexName(), null, new SyncMetric(getType()));
-		});
+	public Flowable<SearchRequest> syncIndices() {
+		return diffAndSync(User.composeIndexName(), null, new SyncMetric(getType()));
 	}
 
 	@Override

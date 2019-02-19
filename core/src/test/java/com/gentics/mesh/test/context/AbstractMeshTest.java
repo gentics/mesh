@@ -30,6 +30,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -159,7 +161,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		vertx().eventBus().send(MeshEvent.INDEX_SYNC_WORKER_ADDRESS.address, null);
+		SyncHandler.invokeSyncCompletable().blockingAwait();
+		((BootstrapInitializerImpl) boot()).loader.get().elasticsearchProcessVerticle.get().refresh().blockingAwait();
 	}
 
 	public String getJson(Node node) throws Exception {

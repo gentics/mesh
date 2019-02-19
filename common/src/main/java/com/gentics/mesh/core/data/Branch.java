@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -284,7 +285,7 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions();
+	TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which

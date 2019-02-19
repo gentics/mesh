@@ -105,7 +105,9 @@ public class AdminIndexHandler {
 	public void handleClear(InternalActionContext ac) {
 		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole())).flatMapCompletable(hasAdminRole -> {
 			if (hasAdminRole) {
-				return searchProvider.clear().andThen(Observable.fromIterable(registry.getHandlers()).flatMapCompletable(handler -> handler.init()));
+				return searchProvider.clear()
+					.andThen(Observable.fromIterable(registry.getHandlers())
+					.flatMapCompletable(handler -> handler.init()));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

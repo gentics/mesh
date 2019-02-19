@@ -48,9 +48,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testCustomQuery() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", "content"),
 				new VersioningParametersImpl().draft()));

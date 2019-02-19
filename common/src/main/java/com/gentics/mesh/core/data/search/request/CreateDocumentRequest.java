@@ -9,11 +9,13 @@ import java.util.List;
 
 public class CreateDocumentRequest implements Bulkable {
 	private final String index;
+	private final String transformedIndex;
 	private final String id;
 	private final JsonObject doc;
 
-	public CreateDocumentRequest(String index, String id, JsonObject doc) {
+	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc) {
 		this.index = index;
+		this.transformedIndex = transformedIndex;
 		this.id = id;
 		this.doc = doc;
 	}
@@ -28,7 +30,7 @@ public class CreateDocumentRequest implements Bulkable {
 		return Arrays.asList(
 			new JsonObject()
 				.put("index", new JsonObject()
-					.put("_index", index)
+					.put("_index", transformedIndex)
 					.put("_type", SearchProvider.DEFAULT_TYPE)
 					.put("_id", id)
 				).encode(),

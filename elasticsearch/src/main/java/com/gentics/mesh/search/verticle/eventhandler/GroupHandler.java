@@ -51,7 +51,7 @@ public class GroupHandler implements EventHandler {
 		} else if (event == GROUP_DELETED) {
 			// TODO Update users that were part of that group.
 			// At the moment we cannot look up users that were in the group if the group is already deleted.
-			return Flowable.just(new DeleteDocumentRequest(helper.prefixIndexName(Group.composeIndexName()), messageEvent.message.getUuid()));
+			return Flowable.just(helper.deleteDocumentRequest(Group.composeIndexName(), messageEvent.message.getUuid()));
 		} else {
 			throw new RuntimeException("Unexpected event " + event.address);
 		}

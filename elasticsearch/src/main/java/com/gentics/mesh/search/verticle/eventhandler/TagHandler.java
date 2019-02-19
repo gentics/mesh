@@ -56,7 +56,7 @@ public class TagHandler implements EventHandler {
 		} else if (event == TAG_DELETED) {
 			// TODO Update related elements.
 			// At the moment we cannot look up related elements, because the element was already deleted.
-			return Flowable.just(new DeleteDocumentRequest(helper.prefixIndexName(Tag.composeIndexName(projectUuid)), messageEvent.message.getUuid()));
+			return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), messageEvent.message.getUuid()));
 		} else {
 			throw new RuntimeException("Unexpected event " + event.address);
 		}

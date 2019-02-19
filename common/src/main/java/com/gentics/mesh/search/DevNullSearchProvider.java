@@ -7,6 +7,7 @@ import java.util.Set;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.reactivex.Completable;
@@ -79,6 +80,11 @@ public class DevNullSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable processBulk(String actions) {
 		return Completable.complete();
 	}
 

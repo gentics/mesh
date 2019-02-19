@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.rest.schema.Schema;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -115,6 +116,11 @@ public class TrackingSearchProvider implements SearchProvider {
 				break;
 			}
 		}
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable processBulk(String actions) {
 		return Completable.complete();
 	}
 
