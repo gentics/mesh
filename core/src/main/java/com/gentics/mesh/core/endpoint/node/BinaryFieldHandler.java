@@ -14,6 +14,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -55,12 +56,11 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -230,16 +230,13 @@ public class BinaryFieldHandler extends AbstractHandler {
 					storeAction = Single.just(ctx);
 				}
 
+				// Process the upload which will update the binary field
+				postProcessUpload(ul).flatMap(fieldModifier -> {
+
+				});
+
 				return storeAction.map(c -> {
 					return storeUploadInGraph(ac, c, nodeUuid, languageTag, nodeVersion, fieldName);
-				}).flatMap(r -> {
-					// Process the upload which will update the binary field
-					return postProcessUpload(ul, r.v1()).andThen(Single.just(r.v2()))
-						.doOnSuccess(n -> {
-							if (log.isTraceEnabled()) {
-								log.trace("All upload processors done");
-							}
-						});
 				}).map(n -> {
 					return db.tx(() -> {
 						if (log.isTraceEnabled()) {
@@ -253,7 +250,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	}
 
-	private Tuple<BinaryGraphField, Node> storeUploadInGraph(InternalActionContext ac, UploadContext context, String nodeUuid,
+	private Node storeUploadInGraph(InternalActionContext ac, UploadContext context, String nodeUuid,
 		String languageTag, String nodeVersion,
 		String fieldName) {
 		FileUpload upload = context.getUpload();
@@ -366,7 +363,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 				return field;
 			});
-			return Tuple.tuple(binaryField, node);
+			return node;
 		});
 	}
 
@@ -376,30 +373,23 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * 
 	 * @param upload
 	 *            Upload to process
-	 * @param field
-	 *            Field which will be updated with the extracted information
+	 * @return Consumers which modify the graph field
 	 */
-	private Completable postProcessUpload(FileUpload upload, BinaryGraphField field) {
-
-		// Process the upload and extract needed information
+	private Observable<Consumer<BinaryGraphField>> postProcessUpload(FileUpload upload) {
 		String contentType = upload.contentType();
 		List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(contentType);
-		List<Completable> processorActions = processors.stream()
-			.map(p -> p.process(upload, field)
-				.doOnComplete(() -> {
-					log.info(
-						"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
-							+ "} completed.");
-				})
-				.doOnError(e -> {
-					log.warn(
-						"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
-							+ "} failed.",
-						e);
-				}).onErrorComplete())
-			.collect(Collectors.toList());
-		return Completable.concat(processorActions);
-
+		return Observable.fromIterable(processors).flatMapSingle(p -> p.process(upload)
+			.doOnSuccess(s -> {
+				log.info(
+					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
+						+ "} completed.");
+			})
+			.doOnError(e -> {
+				log.warn(
+					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
+						+ "} failed.",
+					e);
+			}));
 	}
 
 	/**

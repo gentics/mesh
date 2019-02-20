@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.binary;
 
+import java.util.function.Consumer;
+
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
-import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -20,12 +22,11 @@ public interface BinaryDataProcessor {
 	boolean accepts(String contentType);
 
 	/**
-	 * Process the binary data and store the found meta data in the binary field.
+	 * Process the binary data and return a consumer for the binary field.
 	 * 
 	 * @param upload
-	 * @param field
-	 * @return
+	 * @return Modifier for the binary graph field.
 	 */
-	Completable process(FileUpload upload, BinaryGraphField field);
+	Single<Consumer<BinaryGraphField>> process(FileUpload upload);
 
 }

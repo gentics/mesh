@@ -3,26 +3,30 @@ package com.gentics.mesh.core.binary.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
-import com.gentics.mesh.graphdb.spi.Database;
 
-import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.RxHelper;
 
 @Singleton
 public class TikaBinaryProcessor extends AbstractBinaryProcessor {
@@ -35,11 +39,8 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final Parser parser = new AutoDetectParser();
 
-	private final Database db;
-
 	@Inject
-	public TikaBinaryProcessor(Database db) {
-		this.db = db;
+	public TikaBinaryProcessor() {
 		// Accepted types
 		acceptedTypes.add("application/pdf");
 		acceptedTypes.add("application/msword");
@@ -82,10 +83,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Completable process(FileUpload upload, BinaryGraphField field) {
+	public Single<Consumer<BinaryGraphField>> process(FileUpload upload) {
 
 		File uploadFile = new File(upload.uploadedFileName());
-		return db.asyncTx(() -> {
+		Single<Consumer<BinaryGraphField>> result = Single.create(sub -> {
+			Location loc = new Location();
+			Map<String, String> fields = new HashedMap<>();
 			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
 				Metadata metadata = new Metadata();
 				ParseContext context = new ParseContext();
@@ -102,7 +105,6 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 				}
 
 				String[] metadataNames = metadata.names();
-				Location loc = new Location();
 				for (String name : metadataNames) {
 					String value = metadata.get(name);
 					name = sanitizeName(name);
@@ -135,16 +137,26 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 					}
 
 					log.debug("Adding property {" + name + "}={" + value + "}");
-					field.setMetadata(name, value);
+					fields.put(name, value);
 				}
 
-				if (loc.isPresent()) {
-					field.setLocation(loc);
-				}
+				Consumer<BinaryGraphField> consumer = field -> {
+					fields.forEach((e, k) -> {
+						field.setMetadata(e, k);
+					});
+					if (loc.isPresent()) {
+						field.setLocation(loc);
+					}
+				};
+				sub.onSuccess(consumer);
 			} catch (Exception e) {
 				log.warn("Tika processing of upload failed", e);
+				sub.onError(e);
 			}
 		});
+
+		return result.observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false));
+
 	}
 
 	/**
