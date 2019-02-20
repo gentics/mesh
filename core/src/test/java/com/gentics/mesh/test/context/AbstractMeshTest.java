@@ -1,14 +1,53 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.CoreVerticleLoader;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.router.ProjectsRouter;
+import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.search.impl.ElasticSearchProvider;
+import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
+import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Predicate;
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import io.vertx.ext.web.RoutingContext;
+import okhttp3.OkHttpClient;
+import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -31,59 +70,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
-import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Rule;
-
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.cli.CoreVerticleLoader;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
-import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.core.rest.job.JobListResponse;
-import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.client.PagingParametersImpl;
-import com.gentics.mesh.router.ProjectsRouter;
-import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.test.TestDataProvider;
-import com.gentics.mesh.test.util.TestUtils;
-import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
-
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Predicate;
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import io.vertx.ext.web.RoutingContext;
-import okhttp3.OkHttpClient;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMethods {
 
@@ -702,4 +696,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		}
 	}
 
+	protected void waitForSearchIdleEvent() {
+		testContext.waitForSearchIdleEvent();
+	}
 }

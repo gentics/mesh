@@ -109,7 +109,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 		call(() -> client().createNode(PROJECT_NAME, create));
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		// Search again and make sure we found our document
 		response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2L),

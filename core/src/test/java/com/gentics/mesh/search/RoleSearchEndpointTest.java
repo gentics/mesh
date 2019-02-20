@@ -1,18 +1,17 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.junit.Assert.assertEquals;
-
-import org.codehaus.jettison.json.JSONException;
-import org.junit.Test;
-
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
+import org.codehaus.jettison.json.JSONException;
+import org.junit.Test;
+
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(useElasticsearch = true, startServer = true, testSize = TestSize.PROJECT)
 public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
@@ -23,7 +22,7 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		String roleName = "rolename42a";
 		createRole(roleName, db().tx(() -> group().getUuid()));
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		RoleListResponse list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(1, list.getData().size());
@@ -35,14 +34,14 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		String roleName = "rolename42a";
 		RoleResponse role = createRole(roleName, db().tx(() -> group().getUuid()));
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		RoleListResponse list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(1, list.getData().size());
 
 		deleteRole(role.getUuid());
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(0, list.getData().size());
@@ -54,7 +53,7 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		String roleName = "rolename42a";
 		RoleResponse role = createRole(roleName, db().tx(() -> group().getUuid()));
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		RoleListResponse list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(1, list.getData().size());
@@ -62,7 +61,7 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		String newRoleName = "updatedrolename";
 		updateRole(role.getUuid(), newRoleName);
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", newRoleName)));
 		assertEquals(1, list.getData().size());

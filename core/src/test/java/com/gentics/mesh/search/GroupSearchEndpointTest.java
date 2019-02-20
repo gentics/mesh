@@ -1,20 +1,19 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-
-import org.codehaus.jettison.json.JSONException;
-import org.junit.Test;
-
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
+import org.codehaus.jettison.json.JSONException;
+import org.junit.Test;
+
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(useElasticsearch = true, startServer = true, testSize = TestSize.PROJECT)
 public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
@@ -27,7 +26,7 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 			createGroup(groupName + i);
 		}
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		GroupListResponse response = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName + 8)));
 		assertEquals(1, response.getData()
@@ -39,7 +38,7 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		// 1. Search with bogus query
 		call(() -> client().searchGroups("HudriWudri"), BAD_REQUEST, "search_query_not_parsable");
@@ -57,7 +56,7 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
 		assertThat(result.getData()).hasSize(1);
@@ -71,7 +70,7 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		String groupName = "test-grou  %!p42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(1);
@@ -88,7 +87,7 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);
@@ -103,7 +102,7 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
 
-		testContext.waitForSearchIdleEvent();
+		waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);
