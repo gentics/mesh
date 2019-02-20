@@ -1,5 +1,15 @@
 package com.gentics.mesh.search;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -9,17 +19,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-
-import org.junit.Test;
-
-import com.syncleus.ferma.tx.Tx;
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
@@ -109,6 +108,8 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		create.setParentNodeUuid(db().tx(() -> folder("2015").getUuid()));
 
 		call(() -> client().createNode(PROJECT_NAME, create));
+
+		testContext.waitForSearchIdleEvent();
 
 		// Search again and make sure we found our document
 		response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2L),

@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.verticle.eventhandler;
+package com.gentics.mesh.search.verticle.entity;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -26,7 +27,9 @@ import com.gentics.mesh.search.index.schema.SchemaTransformer;
 import com.gentics.mesh.search.index.tag.TagTransformer;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyTransformer;
 import com.gentics.mesh.search.index.user.UserTransformer;
-import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import com.gentics.mesh.search.verticle.eventhandler.Util;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -84,15 +87,15 @@ public class MeshEntities {
 	public MeshEntities(MeshHelper helper, BootstrapInitializer boot, UserTransformer userTransformer, RoleTransformer roleTransformer, TagTransformer tagTransformer, ProjectTransformer projectTransformer, GroupTransformer groupTransformer, TagFamilyTransformer tagFamilyTransformer, SchemaTransformer schemaTransformer, MicroschemaTransformer microschemaTransformer, NodeContainerTransformer nodeTransformer) {
 		this.helper = helper;
 		this.boot = boot;
-		schema = new MeshEntity<>(schemaTransformer, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED, byUuid(boot.schemaContainerRoot()));
-		microschema = new MeshEntity<>(microschemaTransformer, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, MICROSCHEMA_DELETED, byUuid(boot.microschemaContainerRoot()));
-		user = new MeshEntity<>(userTransformer, USER_CREATED, USER_UPDATED, USER_DELETED, byUuid(boot.userRoot()));
-		group = new MeshEntity<>(groupTransformer, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED, byUuid(boot.groupRoot()));
-		role = new MeshEntity<>(roleTransformer, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED, byUuid(boot.roleRoot()));
-		project = new MeshEntity<>(projectTransformer, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED, byUuid(boot.projectRoot()));
-		tagFamily = new MeshEntity<>(tagFamilyTransformer, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED, this::toTagFamily);
-		tag = new MeshEntity<>(tagTransformer, TAG_CREATED, TAG_UPDATED, TAG_DELETED, this::toTag);
-		node = new MeshEntity<>(nodeTransformer, NODE_CREATED, NODE_UPDATED, NODE_DELETED, this::toNode);
+		schema = new SimpleMeshEntity<>(schemaTransformer, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED, byUuid(boot.schemaContainerRoot()));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, MICROSCHEMA_DELETED, byUuid(boot.microschemaContainerRoot()));
+		user = new SimpleMeshEntity<>(userTransformer, USER_CREATED, USER_UPDATED, USER_DELETED, byUuid(boot.userRoot()));
+		group = new SimpleMeshEntity<>(groupTransformer, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED, byUuid(boot.groupRoot()));
+		role = new SimpleMeshEntity<>(roleTransformer, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED, byUuid(boot.roleRoot()));
+		project = new SimpleMeshEntity<>(projectTransformer, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED, byUuid(boot.projectRoot()));
+		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED, this::toTagFamily);
+		tag = new SimpleMeshEntity<>(tagTransformer, TAG_CREATED, TAG_UPDATED, TAG_DELETED, this::toTag);
+		node = new NodeMeshEntity(nodeTransformer, NODE_CREATED, NODE_UPDATED, NODE_DELETED, this::toNode);
 	}
 
 	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
@@ -112,7 +115,7 @@ public class MeshEntities {
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
-				node.getGraphFieldContainer(event.getLanguageTag(), event.getBranchUuid(), ContainerType.get(event.getType()))
+				node.getGraphFieldContainer(event.getLanguageTag(), event.getBranchUuid(), ContainerType.forVersion(event.getType()))
 			));
 	}
 

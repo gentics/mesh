@@ -1,10 +1,10 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
 
 import javax.inject.Inject;

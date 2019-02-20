@@ -4,12 +4,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
-import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
 
 import javax.inject.Inject;
@@ -82,7 +81,7 @@ public class NodeHandler implements EventHandler {
 
 	private String getSchemaVersionUuid(NodeMeshEventModel message) {
 		return helper.getDb().tx(() -> {
-			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getUuid());
+			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getSchema().getUuid());
 			return boot.projectRoot().findByUuid(message.getProject().getUuid())
 				.getBranchRoot().findByUuid(message.getBranchUuid())
 				.findLatestSchemaVersion(schema)

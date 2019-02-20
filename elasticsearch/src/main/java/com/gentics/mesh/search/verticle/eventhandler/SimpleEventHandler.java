@@ -1,20 +1,17 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import java.util.Collection;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
-import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
-
+import com.gentics.mesh.search.verticle.entity.MeshEntity;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collection;
 
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 

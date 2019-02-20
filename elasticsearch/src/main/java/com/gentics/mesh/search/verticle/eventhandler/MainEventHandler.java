@@ -1,14 +1,15 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -20,10 +21,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_REQUEST;
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 import static com.gentics.mesh.search.verticle.eventhandler.EventHandler.forEvent;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toListWithMultipleKeys;
-import static java.util.Collections.singletonList;
 
 /**
  * Maps events from mesh to elastic search requests.
