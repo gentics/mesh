@@ -84,9 +84,10 @@ public interface Database extends TxFactory {
 		}
 
 		return Completable.create(sub -> {
+
 			Mesh.vertx().executeBlocking(bc -> {
-				try (Tx tx = tx()) {
-					txHandler.handle();
+				try {
+					tx(txHandler);
 					bc.complete();
 				} catch (Exception e) {
 					if (log.isTraceEnabled()) {

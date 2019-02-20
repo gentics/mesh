@@ -47,13 +47,19 @@ public final class FileUtils {
 		}
 	}
 
+	/**
+	 * Generate a SHA 512 checksum from the given buffer flow and return a hex encoded hash as a string.
+	 * 
+	 * @param stream
+	 * @return Hashing result
+	 */
 	public static Single<String> hash(Flowable<Buffer> stream) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
 			return stream.reduce(md, (digest, buffer) -> {
 				digest.update(buffer.getBytes());
 				return digest;
-			}).map(digest -> digest.digest()).map(FileUtils::bytesToHex);
+			}).map(MessageDigest::digest).map(FileUtils::bytesToHex);
 		} catch (Exception e) {
 			log.error("Error while hashing data", e);
 			return Single.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e));

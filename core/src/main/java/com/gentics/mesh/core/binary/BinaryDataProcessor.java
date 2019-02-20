@@ -2,6 +2,7 @@ package com.gentics.mesh.core.binary;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
+import io.reactivex.Completable;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -23,7 +24,8 @@ public interface BinaryDataProcessor {
 	 * 
 	 * @param upload
 	 * @param field
+	 * @return
 	 */
-	void process(FileUpload upload, BinaryGraphField field);
+	Completable process(FileUpload upload, BinaryGraphField field);
 
 }

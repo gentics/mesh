@@ -40,7 +40,6 @@ import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -56,9 +55,11 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -192,64 +193,90 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}
 		FileUpload ul = fileUploads.iterator().next();
 		validateFileUpload(ul, fieldName);
+
 		// This the name and path of the file to be moved to a new location.
 		// This will be changed because it is possible that the file has to be moved multiple times
 		// (if the transaction failed and has to be repeated).
 		ac.put("sourceFile", ul.uploadedFileName());
 
-		String hash = FileUtils.hash(ul.uploadedFileName());
-		BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+		String uploadFilePath = ul.uploadedFileName();
+		FileSystem fs = Mesh.rxVertx().fileSystem();
+		fs.rxOpen(uploadFilePath, new OpenOptions())
+			.flatMapPublisher(RxUtil::toBufferFlow)
+			.to(FileUtils::hash).flatMap(hash -> {
+				UploadContext ctx = new UploadContext();
+				ctx.setUpload(ul);
+				ctx.setHash(hash);
 
-		UploadContext ctx = new UploadContext();
-		ctx.setUpload(ul);
+				// Check whether the binary with the given hashsum was already stored
+				boolean store = db.tx(() -> {
+					BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+					Binary binary = binaryRoot.findByHash(hash);
 
-		db.tx(() -> {
-			// Check whether the binary with the given hashsum was already stored
-			Binary binary = binaryRoot.findByHash(hash);
+					// Create a new binary uuid if the data was not already stored
+					if (binary == null) {
+						ctx.setBinaryUuid(UUIDUtil.randomUUID());
+						return true;
+					}
+					return false;
+				});
+				Single<UploadContext> storeAction;
+				if (store) {
+					// TODO open file async
+					AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFilePath, new OpenOptions());
+					Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
+					storeAction = binaryStorage.store(stream, ctx.getBinaryUuid()).andThen(Single.just(ctx));
+				} else {
+					storeAction = Single.just(ctx);
+				}
 
-			// Create a new binary if the data was not already stored
-			if (binary == null) {
-				String uuid = UUIDUtil.randomUUID();
-				binary = binaryRoot.create(uuid, hash, ul.size());
-				ctx.setStore(true);
-			}
+				return storeAction.map(c -> {
+					return storeUploadInGraph(ac, c, nodeUuid, languageTag, nodeVersion, fieldName);
+				}).flatMap(r -> {
+					// Process the upload which will update the binary field
+					return postProcessUpload(ul, r.v1()).andThen(Single.just(r.v2()))
+						.doOnSuccess(n -> {
+							if (log.isTraceEnabled()) {
+								log.trace("All upload processors done");
+							}
+						});
+				}).map(n -> {
+					return db.tx(() -> {
+						if (log.isTraceEnabled()) {
+							log.trace("Generating final node response for upload now");
+						}
+						return n.transformToRestSync(ac, 0);
+					});
+				});
 
-			ctx.setBinary(binary);
-		});
-
-		Single<UploadContext> storeAction;
-		if (ctx.isStore()) {
-			String uploadFile = ul.uploadedFileName();
-			// TODO open file async
-			AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFile, new OpenOptions());
-			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-			storeAction = binaryStorage.store(stream, ctx.getBinaryUuid()).andThen(Single.just(ctx));
-		} else {
-			storeAction = Single.just(ctx);
-		}
-
-		storeAction.map(c -> {
-			return postUploadAction(ac, c, nodeUuid, languageTag, nodeVersion, fieldName);
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
 	}
 
-	private NodeResponse postUploadAction(InternalActionContext ac, UploadContext context, String nodeUuid, String languageTag, String nodeVersion,
+	private Tuple<BinaryGraphField, Node> storeUploadInGraph(InternalActionContext ac, UploadContext context, String nodeUuid,
+		String languageTag, String nodeVersion,
 		String fieldName) {
 		FileUpload upload = context.getUpload();
+		String hash = context.getHash();
+		String binaryUuid = context.getBinaryUuid();
 
 		return db.tx(() -> {
-			Binary binary = context.getBinary();
+			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
 			Project project = ac.getProject();
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
-			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
+			BinaryGraphField binaryField = utils.eventAction(batch -> {
 
-			utils.bulkableAction(bac -> {
+				// We need to check whether someone else has stored the binary in the meanwhile
+				Binary binary = binaryRoot.findByHash(hash);
+				if (binary == null) {
+					binary = binaryRoot.create(binaryUuid, hash, upload.size());
+				}
+				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
 
 				// Load the current latest draft
 				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
@@ -310,9 +337,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 				// Create the new field
 				BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
-				// Process the upload which will update the binary field
-				processUpload(upload, field);
-
 				// Reuse the existing properties
 				if (oldField != null) {
 					oldField.copyTo(field);
@@ -323,6 +347,13 @@ public class BinaryFieldHandler extends AbstractHandler {
 					}
 				}
 
+				// Now set the field infos. This will override any copied values as well.
+				field.setFileName(upload.fileName());
+				field.setMimeType(upload.contentType());
+				field.getBinary().setSize(upload.size());
+
+				// List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(upload.contentType());
+
 				// Now get rid of the old field
 				if (oldField != null) {
 					oldField.removeField(newDraftVersion);
@@ -332,9 +363,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
-				bac.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				return field;
 			});
-			return node.transformToRestSync(ac, 0);
+			return Tuple.tuple(binaryField, node);
 		});
 	}
 
@@ -342,22 +374,31 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * Processes the upload and set the binary information (e.g.: image dimensions) within the provided field. The binary data will be stored in the
 	 * {@link BinaryStorage} if desired.
 	 * 
-	 * @param ul
+	 * @param upload
 	 *            Upload to process
 	 * @param field
 	 *            Field which will be updated with the extracted information
 	 */
-	private void processUpload(FileUpload ul, BinaryGraphField field) {
+	private Completable postProcessUpload(FileUpload upload, BinaryGraphField field) {
 
 		// Process the upload and extract needed information
-		String contentType = ul.contentType();
-		for (BinaryDataProcessor p : binaryProcessorRegistry.getProcessors(contentType)) {
-			try {
-				p.process(ul, field);
-			} catch (Exception e) {
-				log.warn("Processing of upload {" + ul.fileName() + "/" + ul.uploadedFileName() + "} in handler {" + p.getClass() + "}", e);
-			}
-		}
+		String contentType = upload.contentType();
+		List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(contentType);
+		List<Completable> processorActions = processors.stream()
+			.map(p -> p.process(upload, field)
+				.doOnComplete(() -> {
+					log.info(
+						"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
+							+ "} completed.");
+				})
+				.doOnError(e -> {
+					log.warn(
+						"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
+							+ "} failed.",
+						e);
+				}).onErrorComplete())
+			.collect(Collectors.toList());
+		return Completable.concat(processorActions);
 
 	}
 

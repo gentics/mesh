@@ -46,7 +46,6 @@ public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 
 	@Override
 	public Binary findByHash(String hash) {
-
 		FramedGraph graph = Tx.getActive().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { Binary.SHA512SUM_KEY }, new String[] { hash });
@@ -54,14 +53,12 @@ public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-					.getId(), id()));
+				.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
 		}
 		return null;
-		// TODO use index
-		// return out(HAS_BINARY).has(Binary.SHA512SUM_KEY, hash).nextOrDefaultExplicit(BinaryImpl.class, null);
 	}
 
 }

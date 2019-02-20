@@ -85,6 +85,12 @@ public final class RxUtil {
 		return toBufferFlow(new io.vertx.reactivex.core.file.AsyncFile(file));
 	}
 
+	/**
+	 * Transform the async file into a flowable which returns the content. This method will also take care of closing the async file.
+	 * 
+	 * @param file
+	 * @return
+	 */
 	public static Flowable<Buffer> toBufferFlow(io.vertx.reactivex.core.file.AsyncFile file) {
 		return file.toFlowable()
 			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
@@ -94,6 +100,7 @@ public final class RxUtil {
 
 	/**
 	 * Flips a completable. Emits an error when the source has completed, and completes when the source emits an error.
+	 * 
 	 * @param source
 	 * @return
 	 */

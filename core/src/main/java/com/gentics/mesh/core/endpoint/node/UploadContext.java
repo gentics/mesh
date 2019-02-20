@@ -1,43 +1,20 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import com.gentics.mesh.core.data.binary.Binary;
-
 import io.vertx.ext.web.FileUpload;
 
 public class UploadContext {
-
-	/**
-	 * Flag which indicates whether a store action is needed
-	 */
-	private boolean store = false;
-
-	/**
-	 * Binary vertex which holds the binary reference
-	 */
-	private Binary binary;
 
 	private String binaryUuid;
 
 	private FileUpload ul;
 
+	private String hash;
+
 	public UploadContext() {
 	}
 
-	public boolean isStore() {
-		return store;
-	}
-
-	public void setStore(boolean store) {
-		this.store = store;
-	}
-
-	public Binary getBinary() {
-		return binary;
-	}
-
-	public void setBinary(Binary binary) {
-		this.binary = binary;
-		this.binaryUuid = binary.getUuid();
+	public void setBinaryUuid(String binaryUuid) {
+		this.binaryUuid = binaryUuid;
 	}
 
 	public String getBinaryUuid() {
@@ -50,6 +27,14 @@ public class UploadContext {
 
 	public FileUpload getUpload() {
 		return ul;
+	}
+
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
+
+	public String getHash() {
+		return hash;
 	}
 
 }

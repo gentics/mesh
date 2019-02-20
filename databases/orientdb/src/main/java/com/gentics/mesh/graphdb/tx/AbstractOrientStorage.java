@@ -4,8 +4,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.intent.OIntentNoCache;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 import io.vertx.core.logging.Logger;
@@ -33,8 +36,19 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 			log.debug("Clearing graph");
 		}
 
+		// OrientGraph tx = rawTx();
+		// tx.declareIntent(new OIntentNoCache());
+		// for (Edge edge : tx.getEdges()) {
+		// edge.remove();
+		// }
+		// for (Vertex vertex : tx.getVertices()) {
+		// vertex.remove();
+		// }
+		// tx.commit();
+		// OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
+		// manager.getIndexes().forEach(i -> i.rebuild());
+		// tx.shutdown();
 		OrientGraphNoTx tx2 = rawNoTx();
-		tx2.declareIntent(new OIntentNoCache());
 		try {
 			for (Vertex vertex : tx2.getVertices()) {
 				vertex.remove();

@@ -38,10 +38,10 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	private static OkHttpClient defaultClient() {
 		if (defaultClient == null) {
 			defaultClient = new OkHttpClient.Builder()
-				.callTimeout(Duration.ofMinutes(1))
-				.connectTimeout(Duration.ofMinutes(1))
-				.writeTimeout(Duration.ofMinutes(1))
-				.readTimeout(Duration.ofMinutes(1))
+				.callTimeout(Duration.ofMinutes(10))
+				.connectTimeout(Duration.ofMinutes(01))
+				.writeTimeout(Duration.ofMinutes(10))
+				.readTimeout(Duration.ofMinutes(10))
 				.build();
 		}
 		return defaultClient;

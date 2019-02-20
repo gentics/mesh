@@ -68,13 +68,13 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 			log.warn(
 				"More than one cache file found:"
-				+ System.lineSeparator() + "  hash: " + sha512sum
-				+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
-				+ System.lineSeparator() + "  files:"
-				+ indent
-				+ Arrays.stream(foundFiles).map(File::getName).collect(Collectors.joining(indent))
-				+ System.lineSeparator()
-				+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
+					+ System.lineSeparator() + "  hash: " + sha512sum
+					+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
+					+ System.lineSeparator() + "  files:"
+					+ indent
+					+ Arrays.stream(foundFiles).map(File::getName).collect(Collectors.joining(indent))
+					+ System.lineSeparator()
+					+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
 		}
 
 		if (log.isDebugEnabled()) {
@@ -85,13 +85,19 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(String file) {
+	public Single<ImageInfo> readImageInfo(String path) {
 		return vertx.rxExecuteBlocking(bh -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Reading image information from stream");
 			}
 			try {
-				BufferedImage image = ImageIO.read(new File(file));
+				File file = new File(path);
+				if (!file.exists()) {
+					log.error("The image file {" + file.getAbsolutePath() + "} could not be found.");
+					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
+					return;
+				}
+				BufferedImage image = ImageIO.read(file);
 				if (image == null) {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 				} else {

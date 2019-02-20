@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.binary.impl.BasicImageDataProcessor;
-import com.gentics.mesh.core.binary.impl.BasicUploadDataProcessor;
 import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
 
 /**
@@ -20,10 +19,9 @@ public class BinaryProcessorRegistry {
 	private List<BinaryDataProcessor> processors = new ArrayList<>();
 
 	@Inject
-	public BinaryProcessorRegistry(BasicUploadDataProcessor basicProcessor, BasicImageDataProcessor imageProcessor,
+	public BinaryProcessorRegistry(BasicImageDataProcessor imageProcessor,
 		TikaBinaryProcessor tikaProcessor) {
 		// Add build-in processors
-		addProcesor(basicProcessor);
 		addProcesor(imageProcessor);
 		addProcesor(tikaProcessor);
 	}
