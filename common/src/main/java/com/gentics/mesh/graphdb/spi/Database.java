@@ -1,12 +1,5 @@
 package com.gentics.mesh.graphdb.spi;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
@@ -25,12 +18,20 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Function;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Main description of a graph database.
@@ -586,4 +587,41 @@ public interface Database extends TxFactory {
 	 */
 	void initConfigurationFiles() throws IOException;
 
+	default <T> Transactional<T> transactional(Function<Tx, T> txFunction) {
+		return new Transactional<T>() {
+			@Override
+			public T runInExistingTx(Tx tx) {
+				try {
+					return txFunction.apply(tx);
+				} catch (Exception e) {
+					// TODO Maybe use other Exception
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public T runInNewTx() {
+				return tx(this::runInExistingTx);
+			}
+
+//			@Override
+//			public <R> Transactional<R> map(Function<T, R> mapper) {
+//				// TODO run map outside Tx (needs MappingTransactional)
+//				return transactional(tx -> mapper.apply(txFunction.apply(tx)));
+//			}
+
+			@Override
+			public <R> Transactional<R> mapInTx(BiFunction<Tx, T, R> mapper) {
+				return transactional(tx -> mapper.apply(tx, txFunction.apply(tx)));
+			}
+
+			@Override
+			public <R> Transactional<R> flatMap(Function<T, Transactional<R>> mapper) {
+				return transactional(tx -> {
+					T val = txFunction.apply(tx);
+					return mapper.apply(val).runInExistingTx(tx);
+				});
+			}
+		};
+	}
 }

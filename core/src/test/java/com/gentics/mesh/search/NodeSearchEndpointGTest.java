@@ -1,15 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -27,16 +17,22 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftNodes() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
@@ -58,6 +54,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
+		waitForSearchIdleEvent();
+
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
 				.draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
@@ -74,9 +72,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testMicronodeMigrationSearch() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		// Assert initial condition
 		NodeListResponse response1 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
@@ -108,6 +104,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
+
+		waitForSearchIdleEvent();
 
 		// Assert that the nodes were migrated and added to the new index. The data should be searchable
 		NodeListResponse response2 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
@@ -154,6 +152,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		updateRequest.getFields().put("micro", micronodeField);
 		call(() -> client().updateNode(PROJECT_NAME, nodeResponse.getUuid(), updateRequest));
 
+		waitForSearchIdleEvent();
+
 		// Verify that the micronode has been migrated
 		NodeResponse nodeResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
 		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
@@ -167,9 +167,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchPublishedInBranch() throws Exception {
 		grantAdminRole();
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String uuid = tx(() -> content("concorde").getUuid());
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
@@ -189,9 +187,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchTagFamilies() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String query = getESText("tagFamilySearch.es");
 

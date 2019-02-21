@@ -98,6 +98,42 @@ public class MeshEntities {
 		node = new NodeMeshEntity(nodeTransformer, NODE_CREATED, NODE_UPDATED, NODE_DELETED, this::toNode);
 	}
 
+	public MeshEntity<User> getUser() {
+		return user;
+	}
+
+	public MeshEntity<Group> getGroup() {
+		return group;
+	}
+
+	public MeshEntity<Role> getRole() {
+		return role;
+	}
+
+	public MeshEntity<Project> getProject() {
+		return project;
+	}
+
+	public MeshEntity<Tag> getTag() {
+		return tag;
+	}
+
+	public MeshEntity<TagFamily> getTagFamily() {
+		return tagFamily;
+	}
+
+	public MeshEntity<SchemaContainer> getSchema() {
+		return schema;
+	}
+
+	public MeshEntity<MicroschemaContainer> getMicroschema() {
+		return microschema;
+	}
+
+	public MeshEntity<NodeGraphFieldContainer> getNode() {
+		return node;
+	}
+
 	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())

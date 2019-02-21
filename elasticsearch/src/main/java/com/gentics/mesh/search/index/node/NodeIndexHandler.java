@@ -1,25 +1,5 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -40,12 +20,11 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
-import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
-import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
@@ -53,7 +32,6 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -62,6 +40,25 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Handler for the node specific search index.
@@ -129,44 +126,52 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		return db.tx(() -> {
+		return db.tx(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
 			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
 				// Add the draft and published index names per branch to the map
-				for (Branch branch : project.getBranchRoot().findAll()) {
-					// Each branch specific index has also document type specific mappings
-					for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
-						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-							.getUuid(), DRAFT);
-						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-							.getUuid(), PUBLISHED);
-						if (log.isDebugEnabled()) {
-							log.debug("Adding index to map of known indices {" + draftIndexName + "}");
-							log.debug("Adding index to map of known indices {" + publishIndexName + "}");
-						}
-						// Load the index mapping information for the index
-						SchemaModel schema = containerVersion.getSchema();
-						JsonObject mapping = getMappingProvider().getMapping(schema, branch);
-						JsonObject settings = schema.getElasticsearch();
-						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
-						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+				indexInfo.putAll(getIndices(project).runInExistingTx(tx));
+			}
+			return indexInfo;
+		});
+	}
 
-						// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
-						JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
-						draftInfo.setIngestPipelineSettings(ingestConfig);
-						publishInfo.setIngestPipelineSettings(ingestConfig);
-
-						indexInfo.put(draftIndexName, draftInfo);
-						indexInfo.put(publishIndexName, publishInfo);
-
+	public Transactional<Map<String, IndexInfo>> getIndices(Project project) {
+		return db.transactional(tx -> {
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			for (Branch branch : project.getBranchRoot().findAll()) {
+				// Each branch specific index has also document type specific mappings
+				for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
+					String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+						.getUuid(), DRAFT);
+					String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+						.getUuid(), PUBLISHED);
+					if (log.isDebugEnabled()) {
+						log.debug("Adding index to map of known indices {" + draftIndexName + "}");
+						log.debug("Adding index to map of known indices {" + publishIndexName + "}");
 					}
+					// Load the index mapping information for the index
+					SchemaModel schema = containerVersion.getSchema();
+					JsonObject mapping = getMappingProvider().getMapping(schema, branch);
+					JsonObject settings = schema.getElasticsearch();
+					IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+					IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+
+					// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
+					JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
+					draftInfo.setIngestPipelineSettings(ingestConfig);
+					publishInfo.setIngestPipelineSettings(ingestConfig);
+
+					indexInfo.put(draftIndexName, draftInfo);
+					indexInfo.put(publishIndexName, publishInfo);
 				}
 			}
 			return indexInfo;
 		});
 	}
+
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {

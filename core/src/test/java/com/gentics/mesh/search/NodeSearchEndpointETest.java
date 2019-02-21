@@ -7,7 +7,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 import org.junit.Test;
 
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -25,14 +24,14 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentDeletion() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
 				new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()));
+
+		waitForSearchIdleEvent();
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"), new PagingParametersImpl().setPage(1)
 				.setPerPage(2L), new VersioningParametersImpl().draft()));
@@ -58,9 +57,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchForChildNodes() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String parentNodeUuid = db().tx(() -> folder("news").getUuid());
 
@@ -77,9 +74,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentCreation() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		// Invoke a dummy search on an empty index
 		String json = "{";

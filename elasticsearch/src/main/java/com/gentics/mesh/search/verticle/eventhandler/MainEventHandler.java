@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -30,27 +29,27 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.toListWithMulti
 public class MainEventHandler implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(MainEventHandler.class);
 
-	private final SyncHandler syncHandler;
+	private final EventHandlerFactory eventHandlerFactory;
 
-	private final MeshHelper helper;
 	private final GroupHandler groupHandler;
 	private final TagHandler tagHandler;
 	private final TagFamilyHandler tagFamilyHandler;
-	private final MeshEntities entities;
+	private final NodeHandler nodeHandler;
+	private final ProjectHandler projectHandler;
 
 	private final Map<MeshEvent, EventHandler> handlers;
-	private final NodeHandler nodeHandler;
 	private final ClearHandler clearHandler;
+	private final SyncHandler syncHandler;
 
 	@Inject
-	public MainEventHandler(SyncHandler syncHandler, MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities, NodeHandler nodeHandler, ClearHandler clearHandler) {
+	public MainEventHandler(SyncHandler syncHandler, EventHandlerFactory eventHandlerFactory, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, NodeHandler nodeHandler, ProjectHandler projectHandler, ClearHandler clearHandler) {
 		this.syncHandler = syncHandler;
-		this.helper = helper;
+		this.eventHandlerFactory = eventHandlerFactory;
 		this.groupHandler = groupHandler;
 		this.tagHandler = tagHandler;
 		this.tagFamilyHandler = tagFamilyHandler;
-		this.entities = entities;
 		this.nodeHandler = nodeHandler;
+		this.projectHandler = projectHandler;
 		this.clearHandler = clearHandler;
 
 		handlers = createHandlers();
@@ -60,11 +59,11 @@ public class MainEventHandler implements EventHandler {
 		return Stream.of(
 			syncHandler,
 			clearHandler,
-			new SimpleEventHandler<>(helper, entities.schema, SchemaContainer.composeIndexName()),
-			new SimpleEventHandler<>(helper, entities.microschema, MicroschemaContainer.composeIndexName()),
-			new SimpleEventHandler<>(helper, entities.user, User.composeIndexName()),
-			new SimpleEventHandler<>(helper, entities.role, Role.composeIndexName()),
-			new SimpleEventHandler<>(helper, entities.project, Project.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, SchemaContainer.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, MicroschemaContainer.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, User.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getRole, Role.composeIndexName()),
+			projectHandler,
 			groupHandler,
 			tagHandler,
 			tagFamilyHandler,
