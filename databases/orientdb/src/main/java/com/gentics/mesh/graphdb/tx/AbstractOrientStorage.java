@@ -36,19 +36,8 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 			log.debug("Clearing graph");
 		}
 
-		// OrientGraph tx = rawTx();
-		// tx.declareIntent(new OIntentNoCache());
-		// for (Edge edge : tx.getEdges()) {
-		// edge.remove();
-		// }
-		// for (Vertex vertex : tx.getVertices()) {
-		// vertex.remove();
-		// }
-		// tx.commit();
-		// OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
-		// manager.getIndexes().forEach(i -> i.rebuild());
-		// tx.shutdown();
 		OrientGraphNoTx tx2 = rawNoTx();
+		tx2.declareIntent(new OIntentNoCache());
 		try {
 			for (Vertex vertex : tx2.getVertices()) {
 				vertex.remove();
