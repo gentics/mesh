@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.ProjectEvent;
+import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
 
 @Singleton
@@ -40,12 +41,13 @@ public class TagHandler implements EventHandler {
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		MeshEvent event = messageEvent.event;
-		String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
+		MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
+		String projectUuid = model.getProject().getUuid();
 
 		if (event == TAG_CREATED || event == TAG_UPDATED) {
 			return helper.getDb().tx(() -> {
 				// We also need to update the tag family
-				Optional<Tag> tag = entities.tag.getElement(messageEvent.message);
+				Optional<Tag> tag = entities.tag.getElement(model);
 				Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
 
 				return Stream.concat(
@@ -56,7 +58,7 @@ public class TagHandler implements EventHandler {
 		} else if (event == TAG_DELETED) {
 			// TODO Update related elements.
 			// At the moment we cannot look up related elements, because the element was already deleted.
-			return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), messageEvent.message.getUuid()));
+			return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid()));
 		} else {
 			throw new RuntimeException("Unexpected event " + event.address);
 		}

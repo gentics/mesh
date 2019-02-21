@@ -103,6 +103,8 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().updateSchema(schema.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)));
 		}, COMPLETED, 1);
 
+		waitForSearchIdleEvent();
+
 		// Now search again and verify that we still find the same amount of elements
 		newCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
 

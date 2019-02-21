@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -56,5 +58,10 @@ public final class Util {
 		return opt.isPresent()
 			? Flowable.just(opt.get())
 			: Flowable.empty();
+	}
+
+	public static Flowable<SearchRequest> toRequests(Map<String, IndexInfo> map) {
+		return Flowable.fromIterable(map.values())
+			.map(index -> provider -> provider.createIndex(index));
 	}
 }

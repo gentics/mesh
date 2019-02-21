@@ -144,29 +144,37 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			// Each branch specific index has also document type specific mappings
 			for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
-				String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), DRAFT);
-				String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), PUBLISHED);
-				if (log.isDebugEnabled()) {
-					log.debug("Adding index to map of known indices {" + draftIndexName + "}");
-					log.debug("Adding index to map of known indices {" + publishIndexName + "}");
-				}
-				// Load the index mapping information for the index
-				SchemaModel schema = containerVersion.getSchema();
-				JsonObject mapping = getMappingProvider().getMapping(schema, branch);
-				JsonObject settings = schema.getElasticsearch();
-				IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
-				IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
-
-				// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
-				JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
-				draftInfo.setIngestPipelineSettings(ingestConfig);
-				publishInfo.setIngestPipelineSettings(ingestConfig);
-
-				indexInfo.put(draftIndexName, draftInfo);
-				indexInfo.put(publishIndexName, publishInfo);
+				indexInfo.putAll(getIndices(project, branch, containerVersion).runInExistingTx(tx));
 			}
+			return indexInfo;
+		});
+	}
+
+	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaContainerVersion containerVersion) {
+		return db.transactional(tx -> {
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				.getUuid(), DRAFT);
+			String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				.getUuid(), PUBLISHED);
+			if (log.isDebugEnabled()) {
+				log.debug("Adding index to map of known indices {" + draftIndexName + "}");
+				log.debug("Adding index to map of known indices {" + publishIndexName + "}");
+			}
+			// Load the index mapping information for the index
+			SchemaModel schema = containerVersion.getSchema();
+			JsonObject mapping = getMappingProvider().getMapping(schema, branch);
+			JsonObject settings = schema.getElasticsearch();
+			IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+			IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+
+			// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
+			JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
+			draftInfo.setIngestPipelineSettings(ingestConfig);
+			publishInfo.setIngestPipelineSettings(ingestConfig);
+
+			indexInfo.put(draftIndexName, draftInfo);
+			indexInfo.put(publishIndexName, publishInfo);
 			return indexInfo;
 		});
 	}
@@ -665,5 +673,4 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		return getTransformer().generateVersion(container, branchUuid, type);
 	}
-
 }

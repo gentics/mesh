@@ -41,9 +41,10 @@ public class MainEventHandler implements EventHandler {
 	private final ClearHandler clearHandler;
 	private final SyncHandler syncHandler;
 	private final BranchHandler branchHandler;
+	private final SchemaMigrationHandler schemaMigrationHandler;
 
 	@Inject
-	public MainEventHandler(SyncHandler syncHandler, EventHandlerFactory eventHandlerFactory, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, NodeHandler nodeHandler, ClearHandler clearHandler, BranchHandler branchHandler) {
+	public MainEventHandler(SyncHandler syncHandler, EventHandlerFactory eventHandlerFactory, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, NodeHandler nodeHandler, ClearHandler clearHandler, BranchHandler branchHandler, SchemaMigrationHandler schemaMigrationHandler) {
 		this.syncHandler = syncHandler;
 		this.eventHandlerFactory = eventHandlerFactory;
 		this.groupHandler = groupHandler;
@@ -52,6 +53,7 @@ public class MainEventHandler implements EventHandler {
 		this.nodeHandler = nodeHandler;
 		this.clearHandler = clearHandler;
 		this.branchHandler = branchHandler;
+		this.schemaMigrationHandler = schemaMigrationHandler;
 
 		handlers = createHandlers();
 	}
@@ -69,7 +71,8 @@ public class MainEventHandler implements EventHandler {
 			tagHandler,
 			tagFamilyHandler,
 			nodeHandler,
-			branchHandler
+			branchHandler,
+			schemaMigrationHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
 	}
 

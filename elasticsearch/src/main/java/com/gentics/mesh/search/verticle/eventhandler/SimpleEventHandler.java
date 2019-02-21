@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntity;
 import io.reactivex.Flowable;
@@ -13,6 +14,7 @@ import io.vertx.core.logging.LoggerFactory;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
 
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
 @ParametersAreNonnullByDefault
@@ -37,15 +39,17 @@ public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent eventModel) {
 		MeshEvent event = eventModel.event;
+		MeshElementEventModel model = requireType(MeshElementEventModel.class, eventModel.message);
+
 		if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
-			return toFlowable(helper.getDb().tx(() -> entity.getDocument(eventModel.message))
+			return toFlowable(helper.getDb().tx(() -> entity.getDocument(model))
 				.map(document -> helper.createDocumentRequest(
-					indexName, eventModel.message.getUuid(),
+					indexName, model.getUuid(),
 					document
 				)));
 		} else if (event == entity.getDeleteEvent()) {
 			return Flowable.just(helper.deleteDocumentRequest(
-				indexName, eventModel.message.getUuid()
+				indexName, model.getUuid()
 			));
 		} else {
 			throw new RuntimeException("Unexpected event " + event.address);

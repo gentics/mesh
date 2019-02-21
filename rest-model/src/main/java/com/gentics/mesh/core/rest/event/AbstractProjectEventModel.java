@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 
-public abstract class AbstractProjectEventModel extends AbstractElementMeshEventModel implements ProjectEvent {
+public abstract class AbstractProjectEventModel extends AbstractElementMeshEventModel implements MeshProjectElementEventModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the project to which the element belonged.")

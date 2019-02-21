@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.ProjectEvent;
+import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import io.reactivex.Flowable;
@@ -20,6 +20,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 
 @Singleton
 public class BranchHandler implements EventHandler {
@@ -36,15 +37,14 @@ public class BranchHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		ProjectEvent model = requireType(ProjectEvent.class, messageEvent.message);
+		MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
 			Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
-			Branch branch = project.getBranchRoot().findByUuid(messageEvent.message.getUuid());
+			Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
 			return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
 		}).runInNewTx();
 
-		return Flowable.fromIterable(map.values())
-			.map(index -> provider -> provider.createIndex(index));
+		return toRequests(map);
 	}
 
 	@Override
