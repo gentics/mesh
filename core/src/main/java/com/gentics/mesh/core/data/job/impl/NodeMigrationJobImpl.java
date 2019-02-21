@@ -1,13 +1,5 @@
 package com.gentics.mesh.core.data.job.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMEA_MIGRATION_START;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -28,10 +20,17 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 public class NodeMigrationJobImpl extends JobImpl {
 
@@ -48,7 +47,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	public void prepare() {
 		EventQueueBatch batch = EventQueueBatch.create();
 		SchemaMigrationMeshEventModel event = new SchemaMigrationMeshEventModel();
-		event.setEvent(SCHEMEA_MIGRATION_START);
+		event.setEvent(SCHEMA_MIGRATION_START);
 
 		SchemaContainerVersion toVersion = getToSchemaVersion();
 		event.setToVersion(toVersion.transformToReference());

@@ -30,22 +30,22 @@ public enum MeshEvent {
 	/**
 	 * Schema migration start event.
 	 */
-	SCHEMEA_MIGRATION_START("mesh.schema.migration.start", SchemaMigrationMeshEventModel.class),
+	SCHEMA_MIGRATION_START("mesh.schema.migration.start", SchemaMigrationMeshEventModel.class),
 
 	/**
 	 * Schema migration finished event (contains status information)
 	 */
-	SCHEMEA_MIGRATION_FINISHED("mesh.schema.migration.finished", SchemaMigrationMeshEventModel.class),
+	SCHEMA_MIGRATION_FINISHED("mesh.schema.migration.finished", SchemaMigrationMeshEventModel.class),
 
 	/**
 	 * Microschema migration start event.
 	 */
-	MICROSCHEMEA_MIGRATION_START("mesh.microschema.migration.start", MicroschemaMigrationMeshEventModel.class),
+	MICROSCHEMA_MIGRATION_START("mesh.microschema.migration.start", MicroschemaMigrationMeshEventModel.class),
 
 	/**
 	 * Microschema migration finished event.
 	 */
-	MICROSCHEMEA_MIGRATION_FINISHED("mesh.microschema.migration.finished", MicroschemaMigrationMeshEventModel.class),
+	MICROSCHEMA_MIGRATION_FINISHED("mesh.microschema.migration.finished", MicroschemaMigrationMeshEventModel.class),
 
 	/**
 	 * Branch migration start event.
@@ -261,11 +261,11 @@ public enum MeshEvent {
 		events.add(BRANCH_MIGRATION_START);
 		events.add(BRANCH_MIGRATION_FINISHED);
 
-		events.add(SCHEMEA_MIGRATION_START);
-		events.add(SCHEMEA_MIGRATION_FINISHED);
+		events.add(SCHEMA_MIGRATION_START);
+		events.add(SCHEMA_MIGRATION_FINISHED);
 
-		events.add(MICROSCHEMEA_MIGRATION_START);
-		events.add(MICROSCHEMEA_MIGRATION_FINISHED);
+		events.add(MICROSCHEMA_MIGRATION_START);
+		events.add(MICROSCHEMA_MIGRATION_FINISHED);
 
 		events.add(STARTUP);
 
