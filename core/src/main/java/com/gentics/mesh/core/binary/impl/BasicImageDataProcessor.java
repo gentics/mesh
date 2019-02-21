@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.util.NodeUtil;
 
-import io.reactivex.Single;
+import io.reactivex.Maybe;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -37,7 +37,7 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Single<Consumer<BinaryGraphField>> process(FileUpload upload) {
+	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload) {
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
 			Consumer<BinaryGraphField> consumer = field -> {
 				log.info("Setting info to binary field " + field.getUuid() + " - " + info);
@@ -51,7 +51,7 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 			if (log.isDebugEnabled()) {
 				log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
 			}
-		});
+		}).toMaybe().onErrorComplete();
 
 	}
 

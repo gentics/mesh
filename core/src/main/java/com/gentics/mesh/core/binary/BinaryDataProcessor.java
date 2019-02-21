@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
-import io.reactivex.Single;
+import io.reactivex.Maybe;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -27,6 +27,6 @@ public interface BinaryDataProcessor {
 	 * @param upload
 	 * @return Modifier for the binary graph field.
 	 */
-	Single<Consumer<BinaryGraphField>> process(FileUpload upload);
+	Maybe<Consumer<BinaryGraphField>> process(FileUpload upload);
 
 }

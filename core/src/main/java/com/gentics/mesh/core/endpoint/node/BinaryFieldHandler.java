@@ -231,12 +231,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 				}
 
 				// Process the upload which will update the binary field
-				postProcessUpload(ul).flatMap(fieldModifier -> {
-
-				});
-
-				return storeAction.map(c -> {
-					return storeUploadInGraph(ac, c, nodeUuid, languageTag, nodeVersion, fieldName);
+				Single<List<Consumer<BinaryGraphField>>> modifier = postProcessUpload(ul).toList();
+				return Single.zip(modifier, storeAction, (list, ignore) -> {
+					return storeUploadInGraph(ac, list, ctx, nodeUuid, languageTag, nodeVersion, fieldName);
 				}).map(n -> {
 					return db.tx(() -> {
 						if (log.isTraceEnabled()) {
@@ -250,7 +247,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	}
 
-	private Node storeUploadInGraph(InternalActionContext ac, UploadContext context, String nodeUuid,
+	private Node storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryGraphField>> fieldModifier, UploadContext context, String nodeUuid,
 		String languageTag, String nodeVersion,
 		String fieldName) {
 		FileUpload upload = context.getUpload();
@@ -263,7 +260,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
-			BinaryGraphField binaryField = utils.eventAction(batch -> {
+			utils.eventAction(batch -> {
 
 				// We need to check whether someone else has stored the binary in the meanwhile
 				Binary binary = binaryRoot.findByHash(hash);
@@ -349,7 +346,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 				field.setMimeType(upload.contentType());
 				field.getBinary().setSize(upload.size());
 
-				// List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(upload.contentType());
+				for (Consumer<BinaryGraphField> modifier : fieldModifier) {
+					modifier.accept(field);
+				}
 
 				// Now get rid of the old field
 				if (oldField != null) {
@@ -378,7 +377,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 	private Observable<Consumer<BinaryGraphField>> postProcessUpload(FileUpload upload) {
 		String contentType = upload.contentType();
 		List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(contentType);
-		return Observable.fromIterable(processors).flatMapSingle(p -> p.process(upload)
+
+		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(upload)
 			.doOnSuccess(s -> {
 				log.info(
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()

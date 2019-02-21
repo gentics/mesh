@@ -22,7 +22,7 @@ import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 
-import io.reactivex.Single;
+import io.reactivex.Maybe;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -83,10 +83,10 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Single<Consumer<BinaryGraphField>> process(FileUpload upload) {
+	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload) {
 
 		File uploadFile = new File(upload.uploadedFileName());
-		Single<Consumer<BinaryGraphField>> result = Single.create(sub -> {
+		Maybe<Consumer<BinaryGraphField>> result = Maybe.create(sub -> {
 			Location loc = new Location();
 			Map<String, String> fields = new HashedMap<>();
 			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
@@ -155,7 +155,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			}
 		});
 
-		return result.observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false));
+		return result.observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).onErrorComplete();
 
 	}
 
