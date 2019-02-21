@@ -1,19 +1,10 @@
 package com.gentics.mesh.search.verticle;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.MainEventHandler;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
-
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -26,6 +17,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
+
+import javax.inject.Inject;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessVerticle.class);
@@ -93,7 +91,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 */
 	public Completable refresh() {
 		return searchProvider.refreshIndex()
-			.doOnSubscribe(ignore -> log.trace("Refreshing all Elasticsearch indices..."));
+			.doOnSubscribe(ignore -> log.trace("Refreshing all Elasticsearch indices..."))
+			.doOnComplete(() -> log.trace("Refresh complete."));
 	}
 
 	/**

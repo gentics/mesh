@@ -34,7 +34,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		String newContent = "urschnell";
 		// "urschnell" not found in published nodes
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent)));
-		System.out.println(response.toJson());
+
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		String uuid = db().tx(() -> content("concorde").getUuid());
@@ -43,10 +43,12 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
+		waitForSearchIdleEvent();
+
 		// "supersonic" found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
 			.published()));
-		System.out.println(response.toJson());
+
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// Change draft version of content
@@ -55,6 +57,8 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
 		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
+
+		waitForSearchIdleEvent();
 
 		// "supersonic" still found, "urschnell" not found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
@@ -66,6 +70,8 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 		// publish content "urschnell"
 		call(() -> client().publishNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid())));
+
+		waitForSearchIdleEvent();
 
 		// "supersonic" no longer found, but "urschnell" found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));

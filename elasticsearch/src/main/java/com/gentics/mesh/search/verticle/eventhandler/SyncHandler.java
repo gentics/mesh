@@ -67,8 +67,8 @@ public class SyncHandler implements EventHandler {
 			MessageConsumer<Object> consumer = eventbus.consumer(event.address)
 				.handler(ev -> sub.onComplete())
 				.exceptionHandler(sub::onError);
+			consumer.completionHandler(ignore -> runnable.run());
 			sub.setCancellable(consumer::unregister);
-			runnable.run();
 		});
 	}
 

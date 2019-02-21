@@ -1,17 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -21,17 +9,21 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
-import com.gentics.mesh.verticle.AbstractJobVerticle;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.eventbus.Message;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 @Singleton
 public class AdminIndexHandler {
@@ -75,27 +67,12 @@ public class AdminIndexHandler {
 		).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
-	private void triggerSync(InternalActionContext ac) {
-		Single<Message<JsonObject>> reply = Mesh.mesh().getRxVertx().eventBus().rxSend(MeshEvent.INDEX_SYNC_WORKER_ADDRESS.address, null);
-		reply.subscribe(msg -> {
-			JsonObject info = msg.body();
-			String status = info.getString("status");
-			if (AbstractJobVerticle.STATUS_ACCEPTED.equals(status)) {
-				ac.send(message(ac, "search_admin_index_sync_invoked"), OK);
-			} else {
-				ac.send(message(ac, "search_admin_index_sync_already_in_progress"), SERVICE_UNAVAILABLE);
-			}
-		}, error -> {
-			log.error("Error while handling event", error);
-			ac.send(message(ac, "search_admin_index_sync_already_in_progress"), SERVICE_UNAVAILABLE);
-		});
-	}
-
 	public void handleSync(InternalActionContext ac) {
 		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole()))
 			.subscribe(hasAdminRole -> {
 				if (hasAdminRole) {
-					triggerSync(ac);
+					SyncHandler.invokeSync();
+					ac.send(message(ac, "search_admin_index_sync_invoked"), OK);
 				} else {
 					ac.fail(error(FORBIDDEN, "error_admin_permission_required"));
 				}

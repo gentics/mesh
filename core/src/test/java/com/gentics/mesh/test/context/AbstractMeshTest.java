@@ -39,6 +39,7 @@ import io.reactivex.functions.Predicate;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -513,11 +514,17 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 */
 	protected void waitForEvent(String address, Action code) throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
-		vertx().eventBus().consumer(address, handler -> {
-			latch.countDown();
+		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
+		consumer.handler(msg -> latch.countDown());
+		consumer.completionHandler(res -> {
+			try {
+				code.run();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		});
-		code.run();
 		latch.await(2000, TimeUnit.SECONDS);
+		consumer.unregister();
 	}
 
 	/**
