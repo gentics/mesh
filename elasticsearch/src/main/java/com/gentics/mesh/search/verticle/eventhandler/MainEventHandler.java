@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -35,22 +36,22 @@ public class MainEventHandler implements EventHandler {
 	private final TagHandler tagHandler;
 	private final TagFamilyHandler tagFamilyHandler;
 	private final NodeHandler nodeHandler;
-	private final ProjectHandler projectHandler;
 
 	private final Map<MeshEvent, EventHandler> handlers;
 	private final ClearHandler clearHandler;
 	private final SyncHandler syncHandler;
+	private final BranchHandler branchHandler;
 
 	@Inject
-	public MainEventHandler(SyncHandler syncHandler, EventHandlerFactory eventHandlerFactory, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, NodeHandler nodeHandler, ProjectHandler projectHandler, ClearHandler clearHandler) {
+	public MainEventHandler(SyncHandler syncHandler, EventHandlerFactory eventHandlerFactory, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, NodeHandler nodeHandler, ClearHandler clearHandler, BranchHandler branchHandler) {
 		this.syncHandler = syncHandler;
 		this.eventHandlerFactory = eventHandlerFactory;
 		this.groupHandler = groupHandler;
 		this.tagHandler = tagHandler;
 		this.tagFamilyHandler = tagFamilyHandler;
 		this.nodeHandler = nodeHandler;
-		this.projectHandler = projectHandler;
 		this.clearHandler = clearHandler;
+		this.branchHandler = branchHandler;
 
 		handlers = createHandlers();
 	}
@@ -63,11 +64,12 @@ public class MainEventHandler implements EventHandler {
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, MicroschemaContainer.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, User.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getRole, Role.composeIndexName()),
-			projectHandler,
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getProject, Project.composeIndexName()),
 			groupHandler,
 			tagHandler,
 			tagFamilyHandler,
-			nodeHandler
+			nodeHandler,
+			branchHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
 	}
 

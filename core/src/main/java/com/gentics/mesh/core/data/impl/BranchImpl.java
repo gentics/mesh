@@ -1,25 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -53,7 +33,8 @@ import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
-import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -66,9 +47,28 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 /**
  * @see Branch
@@ -516,10 +516,31 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public MeshElementEventModel onCreated() {
-		MeshElementEventModel event = super.onCreated();
-		// TODO make this configurable via query parameter. It should be possible to postpone the migration.
+	public BranchMeshEventModel onCreated() {
 		MeshEvent.triggerJobWorker();
+		return createEvent(getTypeInfo().getOnCreated());
+	}
+
+	@Override
+	public BranchMeshEventModel onUpdated() {
+		return createEvent(getTypeInfo().getOnUpdated());
+	}
+
+	@Override
+	public BranchMeshEventModel onDeleted() {
+		return createEvent(getTypeInfo().getOnDeleted());
+	}
+
+	private BranchMeshEventModel createEvent(MeshEvent type) {
+		BranchMeshEventModel event = new BranchMeshEventModel();
+		event.setEvent(type);
+		fillEventInfo(event);
+
+		// .project
+		Project project = getProject();
+		ProjectReference reference = project.transformToReference();
+		event.setProject(reference);
+
 		return event;
 	}
 

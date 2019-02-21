@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -170,11 +171,11 @@ public enum MeshEvent {
 
 	/* Branch */
 
-	BRANCH_CREATED("mesh.branch.created", MeshElementEventModelImpl.class),
+	BRANCH_CREATED("mesh.branch.created", BranchMeshEventModel.class),
 
-	BRANCH_UPDATED("mesh.branch.updated", MeshElementEventModelImpl.class),
+	BRANCH_UPDATED("mesh.branch.updated", BranchMeshEventModel.class),
 
-	BRANCH_DELETED("mesh.branch.deleted", MeshElementEventModelImpl.class),
+	BRANCH_DELETED("mesh.branch.deleted", BranchMeshEventModel.class),
 
 	/* Search index related */
 

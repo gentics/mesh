@@ -179,6 +179,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		createBranch.setName(branchName);
 		waitForLatestJob(() -> call(() -> client().createBranch(PROJECT_NAME, createBranch)));
 
+		waitForSearchIdleEvent();
+
 		// Assert that the node can be found within the publish index within the new branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
 				new VersioningParametersImpl().setBranch(branchName).setVersion("published")));
