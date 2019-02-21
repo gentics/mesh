@@ -158,6 +158,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
+		SyncHandler.invokeClearCompletable().blockingAwait();
 		SyncHandler.invokeSyncCompletable().blockingAwait();
 		((BootstrapInitializerImpl) boot()).loader.get().elasticsearchProcessVerticle.get().refresh().blockingAwait();
 	}

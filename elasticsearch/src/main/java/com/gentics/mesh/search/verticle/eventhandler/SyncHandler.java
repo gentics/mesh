@@ -2,12 +2,12 @@ package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_COMPLETED;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_REQUEST;
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 
@@ -48,13 +50,25 @@ public class SyncHandler implements EventHandler {
 	}
 
 	public static Completable invokeSyncCompletable() {
+		return doAndWaitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
+	}
+
+	public static void invokeClear() {
+		Mesh.mesh().getVertx().eventBus().send(INDEX_CLEAR_REQUEST.address, null);
+	}
+
+	public static Completable invokeClearCompletable() {
+		return doAndWaitForEvent(INDEX_CLEAR_COMPLETED, SyncHandler::invokeClear);
+	}
+
+	private static Completable doAndWaitForEvent(MeshEvent event, Runnable runnable) {
 		return Completable.create(sub -> {
 			EventBus eventbus = Mesh.mesh().getVertx().eventBus();
-			MessageConsumer<Object> consumer = eventbus.consumer(INDEX_SYNC.address)
-				.handler(event -> sub.onComplete())
+			MessageConsumer<Object> consumer = eventbus.consumer(event.address)
+				.handler(ev -> sub.onComplete())
 				.exceptionHandler(sub::onError);
 			sub.setCancellable(consumer::unregister);
-			invokeSync();
+			runnable.run();
 		});
 	}
 

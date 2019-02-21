@@ -1,13 +1,5 @@
 package com.gentics.mesh.core.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -17,8 +9,15 @@ import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
-
 import io.vertx.core.eventbus.EventBus;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Central list of used eventbus addresses.
@@ -193,6 +192,11 @@ public enum MeshEvent {
 	 * Emitted when an index clear is requested.
 	 */
 	INDEX_CLEAR_REQUEST("mesh.search.index.clear.request", null),
+
+	/**
+	 * Emitted when an index clear has completed.
+	 */
+	INDEX_CLEAR_COMPLETED("mesh.search.index.clear.completed", null),
 
 	/**
 	 * Event that is emitted when the search verticle has been working and is now idle.

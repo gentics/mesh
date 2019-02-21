@@ -7,7 +7,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
@@ -20,8 +19,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_REQUEST;
-import static com.gentics.mesh.search.verticle.eventhandler.EventHandler.forEvent;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toListWithMultipleKeys;
 
 /**
@@ -34,7 +31,6 @@ public class MainEventHandler implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(MainEventHandler.class);
 
 	private final SyncHandler syncHandler;
-	private final ElasticSearchProvider elasticSearchProvider;
 
 	private final MeshHelper helper;
 	private final GroupHandler groupHandler;
@@ -44,17 +40,18 @@ public class MainEventHandler implements EventHandler {
 
 	private final Map<MeshEvent, EventHandler> handlers;
 	private final NodeHandler nodeHandler;
+	private final ClearHandler clearHandler;
 
 	@Inject
-	public MainEventHandler(SyncHandler syncHandler, ElasticSearchProvider elasticSearchProvider, MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities, NodeHandler nodeHandler) {
+	public MainEventHandler(SyncHandler syncHandler, MeshHelper helper, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, MeshEntities entities, NodeHandler nodeHandler, ClearHandler clearHandler) {
 		this.syncHandler = syncHandler;
-		this.elasticSearchProvider = elasticSearchProvider;
 		this.helper = helper;
 		this.groupHandler = groupHandler;
 		this.tagHandler = tagHandler;
 		this.tagFamilyHandler = tagFamilyHandler;
 		this.entities = entities;
 		this.nodeHandler = nodeHandler;
+		this.clearHandler = clearHandler;
 
 		handlers = createHandlers();
 	}
@@ -62,7 +59,7 @@ public class MainEventHandler implements EventHandler {
 	private Map<MeshEvent, EventHandler> createHandlers() {
 		return Stream.of(
 			syncHandler,
-			forEvent(INDEX_CLEAR_REQUEST, event -> Flowable.just(client -> elasticSearchProvider.clear())),
+			clearHandler,
 			new SimpleEventHandler<>(helper, entities.schema, SchemaContainer.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.microschema, MicroschemaContainer.composeIndexName()),
 			new SimpleEventHandler<>(helper, entities.user, User.composeIndexName()),

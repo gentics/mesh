@@ -1,17 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -23,16 +11,24 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.client.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import java.util.List;
+
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchPublishedNodes() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
@@ -80,9 +76,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAfterSchemaUpdate() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String query = getSimpleTermQuery("schema.name.raw", "content");
 		long oldCount, newCount;
