@@ -25,29 +25,6 @@ public final class FileUtils {
 	}
 
 	/**
-	 * Generate a SHA 512 checksum from the given file and asynchronously return the hex encoded hash as a string.
-	 * 
-	 * @param path
-	 */
-	public static String hash(String path) {
-		// TODO refactor this implementation to use buffers and process the file data async using the vertx fs methods.
-		// This way the processing of the data will not permanently block the execution
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-512");
-			try (InputStream is = Files.newInputStream(Paths.get(path)); DigestInputStream mis = new DigestInputStream(is, md)) {
-				byte[] buffer = new byte[4096];
-				while (mis.read(buffer) >= 0) {
-				}
-			}
-			byte[] digest = md.digest();
-			return bytesToHex(digest);
-		} catch (Exception e) {
-			log.error("Error while hashing file {" + path + "}", e);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e);
-		}
-	}
-
-	/**
 	 * Generate a SHA 512 checksum from the given buffer flow and return a hex encoded hash as a string.
 	 * 
 	 * @param stream

@@ -22,8 +22,8 @@ public class BinaryProcessorRegistry {
 	public BinaryProcessorRegistry(BasicImageDataProcessor imageProcessor,
 		TikaBinaryProcessor tikaProcessor) {
 		// Add build-in processors
-		addProcesor(imageProcessor);
-		addProcesor(tikaProcessor);
+		addProcessor(imageProcessor);
+		addProcessor(tikaProcessor);
 	}
 
 	/**
@@ -31,7 +31,7 @@ public class BinaryProcessorRegistry {
 	 * 
 	 * @param processor
 	 */
-	public void addProcesor(BinaryDataProcessor processor) {
+	public void addProcessor(BinaryDataProcessor processor) {
 		processors.add(processor);
 	}
 

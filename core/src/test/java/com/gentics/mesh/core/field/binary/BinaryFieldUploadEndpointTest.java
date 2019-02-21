@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -44,10 +43,12 @@ import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
@@ -194,7 +195,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}).lastOrError().toCompletable().blockingAwait();
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-		System.out.println(response.toJson());
 		for (String field : fields) {
 			BinaryField binaryField = response.getFields().getBinaryField(field);
 			assertNotNull(binaryField.getDominantColor());
@@ -251,7 +251,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Ignore
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		Buffer buffer = getBuffer("/pictures/android-gps.jpg");
@@ -603,18 +602,23 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		// 2. Update node a
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0);
 		Node folder2014 = folder("2014");
 		// upload file to folder 2014
 		call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1);
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()), new NodeParametersImpl().setResolveLinks(
 			LinkType.FULL)));
 
 		Node folder2015 = folder("2015");
+
 		// try to upload same file to folder 2015
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1);
 		call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
 			"node_conflicting_segmentfield_upload", "binary", fileName);
 
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1);
 	}
 
 	@Test

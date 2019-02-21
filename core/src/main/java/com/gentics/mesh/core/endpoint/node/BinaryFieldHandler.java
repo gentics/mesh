@@ -59,12 +59,12 @@ import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -220,19 +220,19 @@ public class BinaryFieldHandler extends AbstractHandler {
 					}
 					return false;
 				});
-				Single<UploadContext> storeAction;
+				Completable storeAction;
 				if (store) {
-					// TODO open file async
-					AsyncFile asyncFile = Mesh.vertx().fileSystem().openBlocking(uploadFilePath, new OpenOptions());
-					Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-					storeAction = binaryStorage.store(stream, ctx.getBinaryUuid()).andThen(Single.just(ctx));
+					storeAction = fs.rxOpen(uploadFilePath, new OpenOptions()).flatMapCompletable(asyncFile -> {
+						Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
+						return binaryStorage.store(stream, ctx.getBinaryUuid());
+					});
 				} else {
-					storeAction = Single.just(ctx);
+					storeAction = Completable.complete();
 				}
 
 				// Process the upload which will update the binary field
 				Single<List<Consumer<BinaryGraphField>>> modifier = postProcessUpload(ul).toList();
-				return Single.zip(modifier, storeAction, (list, ignore) -> {
+				return Single.zip(modifier, storeAction.toSingleDefault(ctx), (list, ignore) -> {
 					return storeUploadInGraph(ac, list, ctx, nodeUuid, languageTag, nodeVersion, fieldName);
 				}).map(n -> {
 					return db.tx(() -> {
@@ -360,7 +360,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
-				return field;
 			});
 			return node;
 		});
@@ -384,11 +383,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
 						+ "} completed.");
 			})
-			.doOnError(e -> {
+			.doOnComplete(() -> {
 				log.warn(
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
-						+ "} failed.",
-					e);
+						+ "} completed.");
 			}));
 	}
 
@@ -501,7 +499,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					if (binary == null) {
 						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
 						Flowable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toFlowable().flatMap(RxUtil::toBufferFlow);
-						binary = binaryRoot.create(UUIDUtil.randomUUID(), hash, result.getSize());
+						binary = binaryRoot.create(hash, result.getSize());
 						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
 					} else {
 						log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");
