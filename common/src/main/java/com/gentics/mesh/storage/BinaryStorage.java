@@ -12,14 +12,37 @@ import io.vertx.core.buffer.Buffer;
 public interface BinaryStorage {
 
 	/**
-	 * Stores the contents of the stream.
+	 * Stores the contents of the stream in the temporary location.
 	 * 
 	 * @param stream
 	 * @param uuid
 	 *            Uuid of the binary to be stored
+	 * @param temporaryId
 	 * @return
 	 */
-	Completable store(Flowable<Buffer> stream, String uuid);
+	Completable storeInTemp(Flowable<Buffer> stream, String uuid, String temporaryId);
+
+	/**
+	 * Store the stream directly.
+	 * 
+	 * @param stream
+	 * @param uuid
+	 * @return
+	 * @deprecated Use {@link #storeInTemp(Flowable, String, String)} in combination with {@link #moveInPlace(String, String)} instead.
+	 */
+	@Deprecated
+	default Completable store(Flowable<Buffer> stream, String uuid) {
+		return storeInTemp(stream, uuid, null);
+	}
+
+	/**
+	 * Move the temporary uploaded binary into place.
+	 * 
+	 * @param uuid
+	 * @param temporaryId
+	 * @return
+	 */
+	Completable moveInPlace(String uuid, String temporaryId);
 
 	/**
 	 * Checks whether the binary data for the given field exists
@@ -61,5 +84,14 @@ public interface BinaryStorage {
 	 * @param uuid
 	 */
 	Completable delete(String uuid);
+
+	/**
+	 * Delete the temporary upload with the given uuid.
+	 * 
+	 * @param uuid
+	 * @param temporaryId
+	 * @return
+	 */
+	Completable purgeTemporaryUpload(String uuid, String temporaryId);
 
 }

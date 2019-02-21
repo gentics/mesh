@@ -116,10 +116,6 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		});
 	}
 
-	private static <T> Completable fromFutureCompletable(Consumer<Future<T>> consumer) {
-		return fromFuture(consumer).ignoreElement();
-	}
-
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;

@@ -4,11 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.intent.OIntentNoCache;
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 import io.vertx.core.logging.Logger;

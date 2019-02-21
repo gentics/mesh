@@ -12,8 +12,6 @@ import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.BinaryStorageService;
 
 import dagger.Module;
 import dagger.Provides;
@@ -50,18 +48,6 @@ public class MeshModule {
 	@Singleton
 	public static DatabaseService databaseService() {
 		return DatabaseService.getInstance();
-	}
-
-	@Provides
-	@Singleton
-	public static BinaryStorageService storageService() {
-		return BinaryStorageService.getInstance();
-	}
-
-	@Provides
-	@Singleton
-	public static BinaryStorage binaryStorage() {
-		return storageService().getStorage();
 	}
 
 	@Provides

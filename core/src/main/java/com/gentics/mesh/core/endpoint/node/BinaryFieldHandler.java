@@ -209,22 +209,21 @@ public class BinaryFieldHandler extends AbstractHandler {
 				ctx.setHash(hash);
 
 				// Check whether the binary with the given hashsum was already stored
-				boolean store = db.tx(() -> {
+				db.tx(() -> {
 					BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
 					Binary binary = binaryRoot.findByHash(hash);
 
 					// Create a new binary uuid if the data was not already stored
 					if (binary == null) {
 						ctx.setBinaryUuid(UUIDUtil.randomUUID());
-						return true;
+						ctx.setInvokeStore();
 					}
-					return false;
 				});
 				Completable storeAction;
-				if (store) {
+				if (ctx.isInvokeStore()) {
 					storeAction = fs.rxOpen(uploadFilePath, new OpenOptions()).flatMapCompletable(asyncFile -> {
 						Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-						return binaryStorage.store(stream, ctx.getBinaryUuid());
+						return binaryStorage.storeInTemp(stream, ctx.getBinaryUuid(), ctx.getTemporaryId());
 					});
 				} else {
 					storeAction = Completable.complete();
@@ -241,8 +240,29 @@ public class BinaryFieldHandler extends AbstractHandler {
 						}
 						return n.transformToRestSync(ac, 0);
 					});
+				}).onErrorResumeNext(e -> {
+					if (ctx.isInvokeStore()) {
+						String uuid = ctx.getBinaryUuid();
+						String tmpId = ctx.getTemporaryId();
+						if (log.isDebugEnabled()) {
+							log.debug("Error detected. Purging previously stored upload for uuid {} and tempId {}", uuid, tmpId, e);
+						}
+						return binaryStorage.purgeTemporaryUpload(uuid, ctx.getTemporaryId()).andThen(Single.error(e));
+					} else {
+						return Single.error(e);
+					}
+				}).flatMap(n -> {
+					if (ctx.isInvokeStore()) {
+						String uuid = ctx.getBinaryUuid();
+						String tmpId = ctx.getTemporaryId();
+						if (log.isDebugEnabled()) {
+							log.debug("Moving upload with uuid {} and tempId {} into place", uuid, tmpId);
+						}
+						return binaryStorage.moveInPlace(uuid, ctx.getTemporaryId()).andThen(Single.just(n));
+					} else {
+						return Single.just(n);
+					}
 				});
-
 			}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
 	}
@@ -407,6 +427,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 		if (isEmpty(transformation.getLanguage())) {
 			throw error(BAD_REQUEST, "image_error_language_not_set");
 		}
+		String temporaryId = UUIDUtil.randomUUID();
 
 		FileSystem fs = new Vertx(vertx).fileSystem();
 		db.asyncTx(() -> {
@@ -500,7 +521,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
 						Flowable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toFlowable().flatMap(RxUtil::toBufferFlow);
 						binary = binaryRoot.create(hash, result.getSize());
-						binaryStorage.store(data, binary.getUuid()).andThen(Single.just(result)).toCompletable().blockingAwait();
+						// TODO Refactor this
+						binaryStorage.storeInTemp(data, binaryUuid, temporaryId).andThen(Single.just(result)).toCompletable().blockingAwait();
+						binaryStorage.moveInPlace(binaryUuid, temporaryId).blockingAwait();
 					} else {
 						log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");
 					}

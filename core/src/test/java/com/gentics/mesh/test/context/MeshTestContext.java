@@ -2,6 +2,7 @@ package com.gentics.mesh.test.context;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +31,8 @@ import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
@@ -45,6 +48,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import okhttp3.OkHttpClient;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -62,6 +66,13 @@ public class MeshTestContext extends TestWatcher {
 
 	public static KeycloakContainer keycloak;
 
+	public static OkHttpClient okHttp = new OkHttpClient.Builder()
+		.callTimeout(Duration.ofMinutes(15))
+		.connectTimeout(Duration.ofMinutes(15))
+		.writeTimeout(Duration.ofMinutes(15))
+		.readTimeout(Duration.ofMinutes(15))
+		.build();
+
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
@@ -76,7 +87,6 @@ public class MeshTestContext extends TestWatcher {
 
 	private CountDownLatch idleLatch;
 	private MessageConsumer<Object> idleConsumer;
-
 
 	@Override
 	protected void starting(Description description) {
@@ -179,7 +189,12 @@ public class MeshTestContext extends TestWatcher {
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
 			boolean ssl = settings.ssl();
-			client = MeshRestClient.create("localhost", port, ssl);
+			MeshRestClientConfig clientConfig = new MeshRestClientConfig.Builder()
+				.setHost("localhost")
+				.setPort(port)
+				.setSsl(ssl)
+				.build();
+			client = new MeshRestOkHttpClientImpl(clientConfig, okHttp);
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().blockingGet();
 		}

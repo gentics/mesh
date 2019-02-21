@@ -10,6 +10,8 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
+import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.storage.LocalBinaryStorage;
 
 import dagger.Binds;
 import dagger.Module;
@@ -31,4 +33,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract MeshOAuthService bindOAuthHandler(MeshOAuth2ServiceImpl e);
+
+	@Binds
+	abstract BinaryStorage bindBinaryStorage(LocalBinaryStorage e);
 }

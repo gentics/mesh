@@ -39,6 +39,7 @@ import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.storage.LocalBinaryStorage;
 
 import dagger.BindsInstance;
 import dagger.Component;
@@ -87,6 +88,8 @@ public interface MeshComponent {
 	WebRootLinkReplacer webRootLinkReplacer();
 
 	IndexHandlerRegistry indexHandlerRegistry();
+
+	LocalBinaryStorage localBinaryStorage();
 
 	ProjectIndexHandler projectIndexHandler();
 

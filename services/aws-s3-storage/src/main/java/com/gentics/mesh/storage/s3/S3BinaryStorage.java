@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
 
@@ -29,6 +32,7 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+@Singleton
 public class S3BinaryStorage extends AbstractBinaryStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(S3BinaryStorage.class);
@@ -37,8 +41,9 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 
 	private S3StorageOptions options;
 
-	private Vertx vertx;
+	private final Vertx vertx;
 
+	@Inject
 	public S3BinaryStorage(S3StorageOptions options, Vertx vertx) {
 		this.options = options;
 		this.vertx = vertx;
@@ -160,7 +165,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable store(Flowable<Buffer> stream, String hashsum) {
+	public Completable storeInTemp(Flowable<Buffer> stream, String hashsum, String temporaryId) {
 		return Completable.create(sub -> {
 			PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(options.getBucketName())
@@ -168,20 +173,12 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 				.build();
 
 			/*
-			client.putObject(request, new AsyncRequestBody() {
-
-				@Override
-				public void subscribe(Subscriber<? super ByteBuffer> s) {
-					stream.map(Buffer::getByteBuf).map(ByteBuf::nioBuffer).subscribe(s);
-				}
-
-				@Override
-				public Optional<Long> contentLength() {
-					// return Optional.from(10L);
-					return null;
-				}
-			});
-			*/
+			 * client.putObject(request, new AsyncRequestBody() {
+			 * 
+			 * @Override public void subscribe(Subscriber<? super ByteBuffer> s) { stream.map(Buffer::getByteBuf).map(ByteBuf::nioBuffer).subscribe(s); }
+			 * 
+			 * @Override public Optional<Long> contentLength() { // return Optional.from(10L); return null; } });
+			 */
 		});
 
 		// try {
@@ -213,13 +210,22 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 
 	@Override
 	public Completable delete(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return Completable.complete();
 	}
 
 	@Override
 	public Buffer readAllSync(String uuid) {
 		// TODO implement
 		return null;
+	}
+
+	@Override
+	public Completable moveInPlace(String uuid, String temporaryId) {
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable purgeTemporaryUpload(String uuid, String temporaryId) {
+		return Completable.complete();
 	}
 }

@@ -74,7 +74,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			// file
 			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
+			MeshInternal.get().binaryStorage().storeInTemp(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid(), null).blockingAwait();
 
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
@@ -157,7 +157,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
+			MeshInternal.get().binaryStorage().storeInTemp(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid(), null).blockingAwait();
 			recreateIndices();
 
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),

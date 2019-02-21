@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
@@ -83,7 +82,7 @@ public class BinaryFieldHandlerTest extends AbstractMeshTest {
 			assertEquals("Size of the file did not match.", 7, field.getBinary().getSize());
 			assertEquals("mimetype did not match.", "text/plain", field.getMimeType());
 			String uuid = field.getBinary().getUuid();
-			String path = LocalBinaryStorage.getFilePath(uuid);
+			String path = localBinaryStorage().getFilePath(uuid);
 			assertTrue("The file should be placed in the local binary storage.", new File(path).exists());
 		}
 
@@ -104,7 +103,7 @@ public class BinaryFieldHandlerTest extends AbstractMeshTest {
 			// Assert result
 			BinaryGraphField field = content().getLatestDraftFieldContainer(english()).getBinary("binaryField");
 			String uuid = field.getBinary().getUuid();
-			String path = LocalBinaryStorage.getFilePath(uuid);
+			String path = localBinaryStorage().getFilePath(uuid);
 			assertTrue("The file should be placed in the local binary storage.", new File(path).exists());
 			assertTrue("The upload folder {" + uploadFolder.getAbsolutePath() + "} should have been created.", uploadFolder.exists());
 		}

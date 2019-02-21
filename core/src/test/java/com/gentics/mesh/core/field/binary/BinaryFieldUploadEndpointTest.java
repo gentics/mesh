@@ -47,7 +47,6 @@ import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -427,7 +426,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			BinaryGraphField binaryGraphField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
-			String path = LocalBinaryStorage.getFilePath(binaryUuid);
+			String path = localBinaryStorage().getFilePath(binaryUuid);
 			File binaryFile = new File(path);
 			assertTrue("The binary file could not be found.", binaryFile.exists());
 			assertEquals("The expected length of the file did not match.", binaryLen, binaryFile.length());
@@ -462,7 +461,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			BinaryGraphField binaryGraphField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
-			binaryFile = new File(LocalBinaryStorage.getFilePath(binaryUuid));
+			binaryFile = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFile.exists());
 			hash = binaryGraphField.getBinary().getSHA512Sum();
 		}
@@ -547,7 +546,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			BinaryGraphField binaryGraphField = nodeA.getLatestDraftFieldContainer(english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
-			binaryFileA = new File(LocalBinaryStorage.getFilePath(binaryUuid));
+			binaryFileA = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFileA.exists());
 			hashA = binaryGraphField.getBinary().getSHA512Sum();
 		}
@@ -557,7 +556,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			BinaryGraphField binaryGraphField = nodeB.getLatestDraftFieldContainer(english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
-			binaryFileB = new File(LocalBinaryStorage.getFilePath(binaryUuid));
+			binaryFileB = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFileB.exists());
 			hashB = binaryGraphField.getBinary().getSHA512Sum();
 		}
