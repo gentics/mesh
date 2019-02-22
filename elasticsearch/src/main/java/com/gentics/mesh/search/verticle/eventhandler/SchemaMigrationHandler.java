@@ -12,6 +12,8 @@ import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import io.reactivex.Flowable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,6 +28,7 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 
 @Singleton
 public class SchemaMigrationHandler implements EventHandler {
+	private static final Logger log = LoggerFactory.getLogger(SchemaMigrationHandler.class);
 
 	private final NodeIndexHandler nodeIndexHandler;
 	private final MeshHelper helper;
@@ -38,18 +41,22 @@ public class SchemaMigrationHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
+		SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
 		if (messageEvent.event == SCHEMA_MIGRATION_START) {
-			return migrationStart(messageEvent);
+			return migrationStart(model);
 		} else if (messageEvent.event == SCHEMA_MIGRATION_FINISHED) {
-			// TODO Implement
-			throw new RuntimeException("Not implemented");
+			return migrationEnd(model);
 		} else {
 			throw new RuntimeException("Unexpected event " + messageEvent.event.address);
 		}
 	}
 
-	public Flowable<SearchRequest> migrationStart(MessageEvent messageEvent) {
-		SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
+	private Flowable<SearchRequest> migrationEnd(SchemaMigrationMeshEventModel model) {
+		// TODO Delete indices if there are no documents left
+		return Flowable.<SearchRequest>empty().doOnSubscribe(ignore -> log.info("Schema migration ended. No requests sent to Elasticsearch."));
+	}
+
+	public Flowable<SearchRequest> migrationStart(SchemaMigrationMeshEventModel model) {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
 			Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
 			Branch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());

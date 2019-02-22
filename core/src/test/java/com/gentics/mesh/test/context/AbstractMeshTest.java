@@ -707,4 +707,12 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	protected void waitForSearchIdleEvent() {
 		testContext.waitForSearchIdleEvent();
 	}
+
+	protected void waitForSearchIdleEvent(Action action) {
+		try {
+			waitForEvent(MeshEvent.SEARCH_IDLE, action);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

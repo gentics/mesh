@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -19,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.gentics.mesh.search.verticle.eventhandler.EventHandler.forEvent;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toListWithMultipleKeys;
 
 /**
@@ -62,6 +64,7 @@ public class MainEventHandler implements EventHandler {
 		return Stream.of(
 			syncHandler,
 			clearHandler,
+			forEvent(MeshEvent.SEARCH_FLUSH_REQUEST, MainEventHandler::flushRequest),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, SchemaContainer.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, MicroschemaContainer.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, User.composeIndexName()),
@@ -74,6 +77,10 @@ public class MainEventHandler implements EventHandler {
 			branchHandler,
 			schemaMigrationHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
+	}
+
+	private static Flowable<SearchRequest> flushRequest(MessageEvent event) {
+		return Flowable.just(provider -> Completable.complete());
 	}
 
 	@Override

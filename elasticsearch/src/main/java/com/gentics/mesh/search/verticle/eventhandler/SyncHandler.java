@@ -13,8 +13,6 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -50,7 +48,7 @@ public class SyncHandler implements EventHandler {
 	}
 
 	public static Completable invokeSyncCompletable() {
-		return doAndWaitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
+		return MeshEvent.doAndWaitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
 	}
 
 	public static void invokeClear() {
@@ -58,18 +56,7 @@ public class SyncHandler implements EventHandler {
 	}
 
 	public static Completable invokeClearCompletable() {
-		return doAndWaitForEvent(INDEX_CLEAR_COMPLETED, SyncHandler::invokeClear);
-	}
-
-	private static Completable doAndWaitForEvent(MeshEvent event, Runnable runnable) {
-		return Completable.create(sub -> {
-			EventBus eventbus = Mesh.mesh().getVertx().eventBus();
-			MessageConsumer<Object> consumer = eventbus.consumer(event.address)
-				.handler(ev -> sub.onComplete())
-				.exceptionHandler(sub::onError);
-			consumer.completionHandler(ignore -> runnable.run());
-			sub.setCancellable(consumer::unregister);
-		});
+		return MeshEvent.doAndWaitForEvent(INDEX_CLEAR_COMPLETED, SyncHandler::invokeClear);
 	}
 
 	@Inject

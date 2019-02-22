@@ -10,7 +10,10 @@ import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
+import io.reactivex.Completable;
+import io.reactivex.functions.Action;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.MessageConsumer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -202,7 +205,12 @@ public enum MeshEvent {
 	/**
 	 * Event that is emitted when the search verticle has been working and is now idle.
 	 */
-	SEARCH_IDLE("mesh.search.process.idle", null);
+	SEARCH_IDLE("mesh.search.process.idle", null),
+
+	/**
+	 * Event that will cause all pending Elasticsearch requests to be sent.
+	 */
+	SEARCH_FLUSH_REQUEST("mesh.search.flush.request", null);
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;
@@ -229,6 +237,23 @@ public enum MeshEvent {
 	MeshEvent(String address, Class<? extends MeshEventModel> bodyModel) {
 		this.address = address;
 		this.bodyModel = bodyModel;
+	}
+
+	public static Completable doAndWaitForEvent(MeshEvent event, Action runnable) {
+		return Completable.create(sub -> {
+			EventBus eventbus = Mesh.mesh().getVertx().eventBus();
+			MessageConsumer<Object> consumer = eventbus.consumer(event.address)
+				.handler(ev -> sub.onComplete())
+				.exceptionHandler(sub::onError);
+			consumer.completionHandler(ignore -> {
+				try {
+					runnable.run();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+			sub.setCancellable(consumer::unregister);
+		});
 	}
 
 	@Override

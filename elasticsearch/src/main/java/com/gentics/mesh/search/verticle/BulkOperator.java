@@ -66,9 +66,13 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 					}
 					bulkableRequests.add((Bulkable) elasticSearchRequest);
 					if (bulkableRequests.size() >= requestLimit) {
+						log.trace("Flushing {} requests because size limit of {} has been reached.",
+							bulkableRequests.size(), requestLimit);
 						flush();
 					}
 				} else {
+					log.trace("Flushing {} requests because non-bulkable request of class {{}} has been received.",
+						bulkableRequests.size(), elasticSearchRequest.getClass().getSimpleName());
 					flush();
 					observer.onNext(elasticSearchRequest);
 				}
@@ -77,7 +81,11 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 			private void resetTimer() {
 				if (bulkTime > 0) {
 					cancelTimer();
-					timer = vertx.setTimer(bulkTime, l -> flush());
+					timer = vertx.setTimer(bulkTime, l -> {
+						log.trace("Flushing {} requests because time limit of {}ms has been reached.",
+							bulkableRequests.size(), bulkTime);
+						flush();
+					});
 				}
 			}
 
@@ -121,7 +129,7 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 	 * Bundles the bulkable requests and flushes a single {@link BulkRequest} if there is at least one bulkable request.
 	 */
 	public void flush() {
-		log.info("Flushing bulked requests");
+		log.info("Manually flushing bulked requests");
 		if (subscriber != null) {
 			subscriber.flush();
 		}

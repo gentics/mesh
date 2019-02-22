@@ -1,18 +1,5 @@
 package com.gentics.mesh.search.migration;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -27,7 +14,18 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
-import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import java.util.List;
+
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
@@ -70,6 +68,8 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
 
+		waitForSearchIdleEvent();
+
 		// Before update
 		assertEquals(10, call(() -> client().searchNodes(PROJECT_NAME, queryName("sameValue"))).getMetainfo().getTotalCount());
 
@@ -83,6 +83,8 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaResponse.getUuid(), schemaUpdateRequest));
 		}, MigrationStatus.COMPLETED, 1);
+
+		waitForSearchIdleEvent();
 
 		// After update
 		assertEquals(1, call(() -> client().searchNodes(PROJECT_NAME, queryName("sameValue"))).getMetainfo().getTotalCount());
@@ -109,9 +111,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAfterSchemaUpdate() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String query = getSimpleTermQuery("schema.name.raw", "content");
 		long oldCount, newCount;
@@ -131,6 +131,8 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 			SchemaUpdateRequest updateRequest = new SchemaUpdateRequest().setFields(fields).setName(schema.getName());
 			call(() -> client().updateSchema(schema.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)));
 		}, COMPLETED, 1);
+
+		waitForSearchIdleEvent();
 
 		// Now search again and verify that we still find the same amount of elements
 		newCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
