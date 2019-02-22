@@ -379,10 +379,12 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), BAD_REQUEST, "node_error_uploadlimit_reached",
-				"9 KB", "9 KB");
-		}
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), BAD_REQUEST, "node_error_uploadlimit_reached",
+			"9 KB", "9 KB");
+
+		sleep(250);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
 	}
 
 	@Test
