@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.util.TestUtils.sleep;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -531,15 +532,16 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(nodeB, "", "binary");
 			tx.success();
 		}
-		// Clear the upload folder
-		File uploadFolder = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
-		FileUtils.deleteDirectory(uploadFolder);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
 
 		// Upload the binary in both nodes
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidA, "en", versionA, "binary", new ByteArrayInputStream(buffer.getBytes()),
 			buffer.length(), fileName, contentType));
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidB, "en", versionB, "binary", new ByteArrayInputStream(buffer.getBytes()),
 			buffer.length(), fileName, contentType));
+
+		sleep(250);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		File binaryFileA;
 		String hashA;
@@ -570,6 +572,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				hashA));
 		}
 		assertTrue("The binary file should not have been deleted since there is still one node which uses it.", binaryFileA.exists());
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		// Now delete nodeB
 		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
@@ -580,6 +583,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());
 
+		// The folder is not removed. Removing the parent folder of the upload would require us to lock uploads.
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 1).hasTempFiles(0).hasTempUploads(0);
 	}
 
 	@Test
@@ -601,11 +606,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		// 2. Update node a
-		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
 		Node folder2014 = folder("2014");
 		// upload file to folder 2014
 		call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
-		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()), new NodeParametersImpl().setResolveLinks(
 			LinkType.FULL)));
@@ -613,11 +618,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		Node folder2015 = folder("2015");
 
 		// try to upload same file to folder 2015
-		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 		call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
 			"node_conflicting_segmentfield_upload", "binary", fileName);
 
-		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 	}
 
 	@Test

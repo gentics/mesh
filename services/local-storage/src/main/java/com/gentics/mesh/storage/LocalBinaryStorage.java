@@ -31,11 +31,11 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	private final Vertx rxVertx;
 	private final FileSystem fileSystem;
 
-	private MeshUploadOptions uploadOptions;
+	private MeshUploadOptions options;
 
 	@Inject
 	public LocalBinaryStorage(MeshOptions options, Vertx rxVertx) {
-		this.uploadOptions = options.getUploadOptions();
+		this.options = options.getUploadOptions();
 		this.rxVertx = rxVertx;
 		this.fileSystem = rxVertx.fileSystem();
 	}
@@ -51,7 +51,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			if (log.isDebugEnabled()) {
 				log.debug("Moving '{}' to '{}'", source, target);
 			}
-			File uploadFolder = new File(uploadOptions.getDirectory(), getSegmentedPath(uuid));
+			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(uuid));
 			return createParentPath(uploadFolder.getAbsolutePath()).andThen(fileSystem.rxMove(source, target));
 		});
 	}
@@ -75,7 +75,8 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			if (log.isDebugEnabled()) {
 				log.debug("Saving data for field to path {}", path);
 			}
-			File tempFolder = new File(uploadOptions.getDirectory(), "temp");
+			// First ensure that the temp folder can be created and finally store the data in the folder.
+			File tempFolder = new File(options.getDirectory(), "temp");
 			return createParentPath(tempFolder.getAbsolutePath())
 				.andThen(fileSystem.rxOpen(path, new OpenOptions()).flatMapCompletable(file -> stream
 					.map(io.vertx.reactivex.core.buffer.Buffer::new)
@@ -117,14 +118,14 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
 		Objects.requireNonNull(temporaryId, "The temporary id was specified.");
 
-		File tempFolder = new File(uploadOptions.getDirectory(), "temp");
+		File tempFolder = new File(options.getDirectory(), "temp");
 		File binaryFile = new File(tempFolder, binaryUuid + "." + temporaryId + ".tmp");
 		return binaryFile.getAbsolutePath();
 	}
 
 	public String getFilePath(String binaryUuid) {
 		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
-		File folder = new File(uploadOptions.getDirectory(), getSegmentedPath(binaryUuid));
+		File folder = new File(options.getDirectory(), getSegmentedPath(binaryUuid));
 		File binaryFile = new File(folder, binaryUuid + ".bin");
 		return binaryFile.getAbsolutePath();
 	}

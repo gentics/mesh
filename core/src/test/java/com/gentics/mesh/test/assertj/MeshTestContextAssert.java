@@ -55,6 +55,7 @@ public class MeshTestContextAssert extends AbstractAssert<MeshTestContextAssert,
 	 * @param expected
 	 * @return
 	 * @throws IOException
+	 * @return Fluent API
 	 */
 	public MeshTestContextAssert hasUploadFolders(long expected) throws IOException {
 		String dir = actual.getOptions().getUploadOptions().getDirectory();
@@ -70,22 +71,31 @@ public class MeshTestContextAssert extends AbstractAssert<MeshTestContextAssert,
 		return this;
 	}
 
-	private void assertCount(String msg, String path, Predicate<? super Path> filter, long expected) throws IOException {
-		long count = count(path, filter);
-		assertEquals(msg + "\nFound:\n" + list(path, filter) + "\n\n", expected, count);
-
-	}
-
 	/**
-	 * Assert that the temporary directory only contained the expected amount of files.
+	 * Assert that the temporary directory only contains the expected amount of files.
 	 * 
 	 * @param expected
 	 * @return
 	 * @throws IOException
+	 * @return Fluent API
 	 */
 	public MeshTestContextAssert hasTempFiles(long expected) throws IOException {
 		String dir = actual.getOptions().getTempDirectory();
 		assertCount("The tempdirectory did not contain the expected amount of files.", dir, Files::isRegularFile, expected);
+		return this;
+	}
+
+	/**
+	 * Asserts that the upload temporary directory only contains the expected amount of files.
+	 * 
+	 * @param expected
+	 * @return
+	 * @throws IOException
+	 * @return Fluent API
+	 */
+	public MeshTestContextAssert hasTempUploads(long expected) throws IOException {
+		String dir = actual.getOptions().getUploadOptions().getTempDirectory();
+		assertCount("The upload tempdirectory did not contain the expected amount of files.", dir, Files::isRegularFile, expected);
 		return this;
 	}
 
@@ -107,6 +117,12 @@ public class MeshTestContextAssert extends AbstractAssert<MeshTestContextAssert,
 			.filter(p -> !p.equals(Paths.get(path)))
 			.filter(Files::isDirectory)
 			.filter(p -> p.toFile().listFiles(File::isDirectory).length == 0);
+	}
+
+	private void assertCount(String msg, String path, Predicate<? super Path> filter, long expected) throws IOException {
+		long count = count(path, filter);
+		assertEquals(msg + "\nFound:\n" + list(path, filter) + "\n\n", expected, count);
+
 	}
 
 }

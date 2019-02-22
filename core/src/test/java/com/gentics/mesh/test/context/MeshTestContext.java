@@ -252,14 +252,15 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
 		BootstrapInitializerImpl.clearReferences();
+		Database db = MeshInternal.get().database();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			MeshInternal.get().database().clear();
+			db.clear();
 		} else {
-			MeshInternal.get().database().stop();
+			db.stop();
 			File dbDir = new File(Mesh.mesh().getOptions().getStorageOptions().getDirectory());
 			FileUtils.deleteDirectory(dbDir);
-			MeshInternal.get().database().setupConnectionPool();
+			db.setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
@@ -313,11 +314,15 @@ public class MeshTestContext extends TestWatcher {
 		meshOptions.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
 		meshOptions.setNodeName("testNode");
 
+		// Temporary Folders
 		String uploads = newFolder("testuploads");
 		meshOptions.getUploadOptions().setDirectory(uploads);
 
-		String targetTmpDir = newFolder("tmpdir");
-		meshOptions.getUploadOptions().setTempDirectory(targetTmpDir);
+		String tmpDir = newFolder("tmpDir");
+		meshOptions.setTempDirectory(tmpDir);
+
+		String targetUploadTmpDir = newFolder("uploadTmpDir");
+		meshOptions.getUploadOptions().setTempDirectory(targetUploadTmpDir);
 
 		String imageCacheDir = newFolder("image_cache");
 		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
