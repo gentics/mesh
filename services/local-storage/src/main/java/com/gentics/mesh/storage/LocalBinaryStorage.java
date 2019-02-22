@@ -46,7 +46,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			if (log.isDebugEnabled()) {
 				log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, temporaryId);
 			}
-			String source = getTemporaryFilePath(uuid, temporaryId);
+			String source = getTemporaryFilePath(temporaryId);
 			String target = getFilePath(uuid);
 			if (log.isDebugEnabled()) {
 				log.debug("Moving '{}' to '{}'", source, target);
@@ -57,23 +57,23 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable purgeTemporaryUpload(String uuid, String temporaryId) {
+	public Completable purgeTemporaryUpload(String temporaryId) {
 		return Completable.defer(() -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Purging temporary upload for uuid '{}' and tempId '{}'", uuid, temporaryId);
+				log.debug("Purging temporary upload for tempId '{}'", temporaryId);
 			}
-			String path = getTemporaryFilePath(uuid, temporaryId);
+			String path = getTemporaryFilePath(temporaryId);
 			return fileSystem.rxDelete(path);
 		});
 	}
 
 	@Override
-	public Completable storeInTemp(Flowable<Buffer> stream, String uuid, String temporaryId) {
-		Objects.requireNonNull(uuid, "The binary uuid was not specified");
+	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
+		Objects.requireNonNull(temporaryId, "The temporary id was not specified.");
 		return Completable.defer(() -> {
-			String path = getTemporaryFilePath(uuid, temporaryId);
+			String path = getTemporaryFilePath(temporaryId);
 			if (log.isDebugEnabled()) {
-				log.debug("Saving data for field to path {}", path);
+				log.debug("Saving data for field to path '{}'.", path);
 			}
 			// First ensure that the temp folder can be created and finally store the data in the folder.
 			File tempFolder = new File(options.getDirectory(), "temp");
@@ -114,12 +114,11 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	 * @param temporaryId
 	 * @return
 	 */
-	public String getTemporaryFilePath(String binaryUuid, String temporaryId) {
-		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
+	public String getTemporaryFilePath(String temporaryId) {
 		Objects.requireNonNull(temporaryId, "The temporary id was specified.");
 
 		File tempFolder = new File(options.getDirectory(), "temp");
-		File binaryFile = new File(tempFolder, binaryUuid + "." + temporaryId + ".tmp");
+		File binaryFile = new File(tempFolder, temporaryId + ".tmp");
 		return binaryFile.getAbsolutePath();
 	}
 

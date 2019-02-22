@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Ignore;
@@ -234,20 +233,23 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadMultipleBrokenImages() {
 		String contentType = "image/jpeg";
 		int binaryLen = 10000;
+		Node node = folder("news");
 
+		// Add a schema called nonBinary
 		try (Tx tx = tx()) {
-			Node node = folder("news");
-
-			// Add a schema called nonBinary
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-			for (int i = 0; i < 100; i++) {
-				String fileName = "somefile" + i + ".dat";
-				call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
-			}
+			tx.success();
 		}
+
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
+		for (int i = 0; i < 100; i++) {
+			String fileName = "somefile" + i + ".dat";
+			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
+		}
+		sleep(250);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(100, 100).hasTempFiles(0).hasTempUploads(0);
 	}
 
 	@Test
@@ -395,13 +397,10 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(node, "", "binary");
 			tx.success();
 		}
-		File uploadFolder = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
-		FileUtils.deleteDirectory(uploadFolder);
-
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
 		NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
-		assertTrue("The upload should have created the tmp folder", uploadFolder.exists());
-		Thread.sleep(1000);
-		assertThat(uploadFolder.list()).as("Folder should not contain any remaining tmp upload file").isEmpty();
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
+		sleep(250);
 
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		BinaryField binaryField = response.getFields().getBinaryField("binary");
@@ -452,10 +451,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(node, "", "binary");
 			tx.success();
 		}
-		File uploadFolder = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
-		FileUtils.deleteDirectory(uploadFolder);
-
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
 		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		File binaryFile;
 		String hash;
@@ -473,6 +471,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				.findByHash(hash));
 		}
 		assertFalse("The binary file should have been removed.", binaryFile.exists());
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 1).hasTempFiles(0).hasTempUploads(0);
 
 	}
 
@@ -621,7 +620,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 		call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
 			"node_conflicting_segmentfield_upload", "binary", fileName);
-
+		sleep(250);
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 	}
 

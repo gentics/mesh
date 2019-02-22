@@ -223,7 +223,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 				if (ctx.isInvokeStore()) {
 					storeAction = fs.rxOpen(uploadFilePath, new OpenOptions()).flatMapCompletable(asyncFile -> {
 						Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-						return binaryStorage.storeInTemp(stream, ctx.getBinaryUuid(), ctx.getTemporaryId());
+						return binaryStorage.storeInTemp(stream, ctx.getTemporaryId());
 					});
 				} else {
 					storeAction = Completable.complete();
@@ -242,13 +242,12 @@ public class BinaryFieldHandler extends AbstractHandler {
 					});
 				}).onErrorResumeNext(e -> {
 					if (ctx.isInvokeStore()) {
-						String uuid = ctx.getBinaryUuid();
 						String tmpId = ctx.getTemporaryId();
 						if (log.isDebugEnabled()) {
-							log.debug("Error detected. Purging previously stored upload for uuid {} and tempId {}", uuid, tmpId, e);
+							log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
 						}
-						return binaryStorage.purgeTemporaryUpload(uuid, tmpId).doOnError(e1 -> {
-							log.error("Error while purging temporary upload for uuid {} of tempId {}", uuid, tmpId, e1);
+						return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
+							log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
 						}).onErrorComplete().andThen(Single.error(e));
 					} else {
 						return Single.error(e);
@@ -525,7 +524,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 						binary = binaryRoot.create(hash, result.getSize());
 						// TODO Refactor this
 						binaryStorage.store(data, binaryUuid).andThen(Single.just(result)).toCompletable().blockingAwait();
-						binaryStorage.moveInPlace(binaryUuid, temporaryId).blockingAwait();
 					} else {
 						log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");
 					}

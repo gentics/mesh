@@ -1,6 +1,7 @@
 package com.gentics.mesh.storage;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -20,7 +21,7 @@ public interface BinaryStorage {
 	 * @param temporaryId
 	 * @return
 	 */
-	Completable storeInTemp(Flowable<Buffer> stream, String uuid, String temporaryId);
+	Completable storeInTemp(Flowable<Buffer> stream, String temporaryId);
 
 	/**
 	 * Store the stream directly.
@@ -32,7 +33,8 @@ public interface BinaryStorage {
 	 */
 	@Deprecated
 	default Completable store(Flowable<Buffer> stream, String uuid) {
-		return storeInTemp(stream, uuid, null);
+		String id = UUIDUtil.randomUUID();
+		return storeInTemp(stream, id).andThen(moveInPlace(uuid, id));
 	}
 
 	/**
@@ -88,12 +90,11 @@ public interface BinaryStorage {
 	Completable delete(String uuid);
 
 	/**
-	 * Delete the temporary upload with the given uuid.
+	 * Delete the temporary upload with the given id.
 	 * 
-	 * @param uuid
 	 * @param temporaryId
 	 * @return
 	 */
-	Completable purgeTemporaryUpload(String uuid, String temporaryId);
+	Completable purgeTemporaryUpload(String temporaryId);
 
 }

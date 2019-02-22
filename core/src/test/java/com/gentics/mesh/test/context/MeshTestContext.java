@@ -1,5 +1,7 @@
 package com.gentics.mesh.test.context;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -104,6 +106,7 @@ public class MeshTestContext extends TestWatcher {
 				if (!settings.inMemoryDB()) {
 					DatabaseHelper.init(meshDagger.database());
 				}
+				initFolders(Mesh.mesh().getOptions());
 				setupData();
 				if (settings.useElasticsearch()) {
 					setupIndexHandlers();
@@ -314,24 +317,7 @@ public class MeshTestContext extends TestWatcher {
 		meshOptions.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
 		meshOptions.setNodeName("testNode");
 
-		// Temporary Folders
-		String uploads = newFolder("testuploads");
-		meshOptions.getUploadOptions().setDirectory(uploads);
-
-		String tmpDir = newFolder("tmpDir");
-		meshOptions.setTempDirectory(tmpDir);
-
-		String targetUploadTmpDir = newFolder("uploadTmpDir");
-		meshOptions.getUploadOptions().setTempDirectory(targetUploadTmpDir);
-
-		String imageCacheDir = newFolder("image_cache");
-		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
-
-		String backupPath = newFolder("backups");
-		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
-
-		String exportPath = newFolder("exports");
-		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+		initFolders(meshOptions);
 
 		HttpServerConfig httpOptions = meshOptions.getHttpServerOptions();
 		httpOptions.setPort(port);
@@ -393,6 +379,24 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
+	private void initFolders(MeshOptions meshOptions2) throws IOException {
+		String tmpDir = newFolder("tmpDir");
+		meshOptions.setTempDirectory(tmpDir);
+
+		String uploads = newFolder("testuploads");
+		meshOptions.getUploadOptions().setDirectory(uploads);
+		String targetUploadTmpDir = newFolder("uploadTmpDir");
+		meshOptions.getUploadOptions().setTempDirectory(targetUploadTmpDir);
+
+		String imageCacheDir = newFolder("image_cache");
+		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
+
+		String backupPath = newFolder("backups");
+		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
+		String exportPath = newFolder("exports");
+		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+	}
+
 	/**
 	 * Create a new folder which will be automatically be deleted once the rule finishes.
 	 * 
@@ -405,7 +409,7 @@ public class MeshTestContext extends TestWatcher {
 		File directory = new File(path);
 		FileUtils.deleteDirectory(directory);
 		directory.deleteOnExit();
-		directory.mkdirs();
+		assertTrue("Could not create dir for path {" + path + "}", directory.mkdirs());
 		tmpFolders.add(directory);
 		return path;
 	}

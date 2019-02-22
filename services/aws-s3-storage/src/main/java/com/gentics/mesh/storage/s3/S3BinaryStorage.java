@@ -165,11 +165,11 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable storeInTemp(Flowable<Buffer> stream, String hashsum, String temporaryId) {
+	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
 		return Completable.create(sub -> {
 			PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(options.getBucketName())
-				.key(hashsum)
+				.key(temporaryId)
 				.build();
 
 			/*
@@ -225,7 +225,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable purgeTemporaryUpload(String uuid, String temporaryId) {
+	public Completable purgeTemporaryUpload(String temporaryId) {
 		return Completable.complete();
 	}
 }
