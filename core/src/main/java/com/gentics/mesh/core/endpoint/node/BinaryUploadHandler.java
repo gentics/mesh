@@ -1,14 +1,11 @@
 package com.gentics.mesh.core.endpoint.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
@@ -22,7 +19,6 @@ import javax.inject.Inject;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.data.Branch;
@@ -37,21 +33,14 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
-import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.parameter.image.CropMode;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
@@ -69,71 +58,44 @@ import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
 /**
  * Handler which contains field API specific request handlers.
  */
-public class BinaryFieldHandler extends AbstractHandler {
+public class BinaryUploadHandler extends AbstractHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(BinaryFieldHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(BinaryUploadHandler.class);
 
-	private ImageManipulator imageManipulator;
+	private final Database db;
 
-	private Database db;
+	private final Lazy<BootstrapInitializer> boot;
 
-	private Lazy<BootstrapInitializer> boot;
+	private final BinaryStorage binaryStorage;
 
-	private BinaryFieldResponseHandler binaryFieldResponseHandler;
+	private final BinaryProcessorRegistry binaryProcessorRegistry;
 
-	private BinaryStorage binaryStorage;
+	private final HandlerUtilities utils;
 
-	private BinaryProcessorRegistry binaryProcessorRegistry;
-
-	private HandlerUtilities utils;
+	private final Vertx rxVertx;
 
 	@Inject
-	public BinaryFieldHandler(ImageManipulator imageManipulator,
+	public BinaryUploadHandler(ImageManipulator imageManipulator,
 		Database db,
 		Lazy<BootstrapInitializer> boot,
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
 		BinaryProcessorRegistry binaryProcessorRegistry,
-		HandlerUtilities utils) {
+		HandlerUtilities utils, Vertx rxVertx) {
 
-		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
-		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
+
 		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
 		this.utils = utils;
-	}
-
-	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		db.asyncTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PUBLISHED_PERM);
-			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-			// if (language == null) {
-			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			// }
-
-			Branch branch = ac.getBranch(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), branch.getUuid(),
-				ac.getVersioningParameters().getVersion());
-			if (fieldContainer == null) {
-				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
-			}
-			BinaryGraphField binaryField = fieldContainer.getBinary(fieldName);
-			if (binaryField == null) {
-				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
-			}
-			binaryFieldResponseHandler.handle(rc, binaryField);
-		}).doOnError(ac::fail).subscribe();
+		this.rxVertx = rxVertx;
 	}
 
 	private void validateFileUpload(FileUpload ul, String fieldName) {
@@ -200,7 +162,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 		ac.put("sourceFile", ul.uploadedFileName());
 
 		String uploadFilePath = ul.uploadedFileName();
-		FileSystem fs = Mesh.rxVertx().fileSystem();
+		FileSystem fs = rxVertx.fileSystem();
 		fs.rxOpen(uploadFilePath, new OpenOptions())
 			.flatMapPublisher(RxUtil::toBufferFlow)
 			.to(FileUtils::hash).flatMap(hash -> {
@@ -233,13 +195,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 				Single<List<Consumer<BinaryGraphField>>> modifier = postProcessUpload(ul).toList();
 				return Single.zip(modifier, storeAction.toSingleDefault(ctx), (list, ignore) -> {
 					return storeUploadInGraph(ac, list, ctx, nodeUuid, languageTag, nodeVersion, fieldName);
-				}).map(n -> {
-					return db.tx(() -> {
-						if (log.isTraceEnabled()) {
-							log.trace("Generating final node response for upload now");
-						}
-						return n.transformToRestSync(ac, 0);
-					});
 				}).onErrorResumeNext(e -> {
 					if (ctx.isInvokeStore()) {
 						String tmpId = ctx.getTemporaryId();
@@ -254,12 +209,12 @@ public class BinaryFieldHandler extends AbstractHandler {
 					}
 				}).flatMap(n -> {
 					if (ctx.isInvokeStore()) {
-						String uuid = ctx.getBinaryUuid();
+						String binaryUuid = ctx.getBinaryUuid();
 						String tmpId = ctx.getTemporaryId();
 						if (log.isDebugEnabled()) {
-							log.debug("Moving upload with uuid {} and tempId {} into place", uuid, tmpId);
+							log.debug("Moving upload with binaryUuid {} and tempId {} into place", binaryUuid, tmpId);
 						}
-						return binaryStorage.moveInPlace(uuid, tmpId).andThen(Single.just(n));
+						return binaryStorage.moveInPlace(binaryUuid, tmpId).andThen(Single.just(n));
 					} else {
 						return Single.just(n);
 					}
@@ -268,7 +223,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	}
 
-	private Node storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryGraphField>> fieldModifier, UploadContext context, String nodeUuid,
+	private NodeResponse storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryGraphField>> fieldModifier, UploadContext context,
+		String nodeUuid,
 		String languageTag, String nodeVersion,
 		String fieldName) {
 		FileUpload upload = context.getUpload();
@@ -382,7 +338,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 			});
-			return node;
+			return node.transformToRestSync(ac, 0);
 		});
 	}
 
@@ -409,149 +365,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
 						+ "} completed.");
 			}));
-	}
-
-	/**
-	 * Handle image transformation. This operation will utilize the binary data of the existing field and apply the transformation options. The new binary data
-	 * will be stored and the field will be updated accordingly.
-	 * 
-	 * @param rc
-	 *            routing context
-	 * @param uuid
-	 * @param fieldName
-	 */
-	public void handleTransformImage(RoutingContext rc, String uuid, String fieldName) {
-		validateParameter(uuid, "uuid");
-		validateParameter(fieldName, "fieldName");
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
-		if (isEmpty(transformation.getLanguage())) {
-			throw error(BAD_REQUEST, "image_error_language_not_set");
-		}
-		String temporaryId = UUIDUtil.randomUUID();
-
-		FileSystem fs = new Vertx(vertx).fileSystem();
-		db.asyncTx(() -> {
-			// Load needed elements
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-
-			Language language = boot.get().languageRoot().findByLanguageTag(transformation.getLanguage());
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
-			}
-
-			NodeGraphFieldContainer latestDraftVersion = node.getLatestDraftFieldContainer(language.getLanguageTag());
-			if (latestDraftVersion == null) {
-				throw error(NOT_FOUND, "error_language_not_found", language.getLanguageTag());
-			}
-
-			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
-			if (fieldSchema == null) {
-				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-			}
-			if (!(fieldSchema instanceof BinaryFieldSchema)) {
-				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-			}
-
-			BinaryGraphField initialField = latestDraftVersion.getBinary(fieldName);
-			if (initialField == null) {
-				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
-			}
-
-			if (!initialField.hasProcessableImage()) {
-				throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
-			}
-
-			try {
-				// Prepare the imageManipulationParameter using the transformation request as source
-				ImageManipulationParameters parameters = new ImageManipulationParametersImpl();
-				parameters.setWidth(transformation.getWidth());
-				parameters.setHeight(transformation.getHeight());
-				parameters.setRect(transformation.getCropRect());
-				if (parameters.getRect() != null) {
-					parameters.setCropMode(CropMode.RECT);
-				}
-
-				parameters.validate();
-
-				// Update the binary field with the new information
-				utils.eventAction(batch -> {
-					Branch branch = ac.getBranch();
-
-					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language.getLanguageTag(), branch, ac.getUser(),
-						latestDraftVersion,
-						true);
-
-					String binaryUuid = initialField.getBinary().getUuid();
-					Flowable<Buffer> stream = binaryStorage.read(binaryUuid);
-
-					// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
-					// Otherwise the query parameter focal point will be used and thus override the stored focal point.
-					FocalPoint focalPoint = initialField.getImageFocalPoint();
-					if (parameters.getFocalPoint() == null && focalPoint != null) {
-						parameters.setFocalPoint(focalPoint);
-					}
-
-					// Resize the original image and store the result in the filesystem
-					Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, binaryUuid, parameters).flatMap(file -> {
-						Flowable<Buffer> obs = RxUtil.toBufferFlow(file.getFile());
-
-						// Hash the resized image data and store it using the computed fieldUuid + hash
-						Single<String> hash = FileUtils.hash(obs);
-
-						// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-						Single<ImageInfo> info = imageManipulator.readImageInfo(file.getPath());
-
-						return Single.zip(hash, info, (hashV, infoV) -> {
-							// Return a POJO which hold all information that is needed to update the field
-							TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV, file.getPath());
-							return Single.just(result);
-						}).flatMap(e -> e);
-					});
-
-					// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
-					TransformationResult result = obsTransformation.blockingGet();
-					String hash = result.getHash();
-					BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
-					Binary binary = binaryRoot.findByHash(hash);
-
-					// Check whether the binary was already stored.
-					if (binary == null) {
-						// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
-						Flowable<Buffer> data = fs.rxOpen(result.getFilePath(), new OpenOptions()).toFlowable().flatMap(RxUtil::toBufferFlow);
-						binary = binaryRoot.create(hash, result.getSize());
-						// TODO Refactor this
-						binaryStorage.store(data, binaryUuid).andThen(Single.just(result)).toCompletable().blockingAwait();
-					} else {
-						log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");
-					}
-
-					// Now create the binary field in which we store the information about the file
-					BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
-					BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
-					if (oldField != null) {
-						oldField.copyTo(field);
-						oldField.remove();
-					}
-					field.getBinary().setSize(result.getSize());
-					field.setMimeType(result.getMimeType());
-					// TODO should we rename the image, if the extension is wrong?
-					field.getBinary().setImageHeight(result.getImageInfo().getHeight());
-					field.getBinary().setImageWidth(result.getImageInfo().getWidth());
-					String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
-					batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
-				});
-				// Finally update the search index and return the updated node
-				return node.transformToRest(ac, 0);
-			} catch (GenericRestException e) {
-				throw e;
-			} catch (Exception e) {
-				log.error("Error while transforming image", e);
-				throw error(INTERNAL_SERVER_ERROR, "error_internal");
-			}
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 }

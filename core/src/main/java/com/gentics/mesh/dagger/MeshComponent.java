@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
@@ -107,7 +107,7 @@ public interface MeshComponent {
 
 	TagFamilyIndexHandler tagFamilyIndexHandler();
 
-	BinaryFieldHandler nodeFieldAPIHandler();
+	BinaryUploadHandler nodeFieldAPIHandler();
 
 	ImageManipulator imageManipulator();
 

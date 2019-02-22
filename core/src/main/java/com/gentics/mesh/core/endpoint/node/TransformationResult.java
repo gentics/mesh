@@ -3,6 +3,7 @@ package com.gentics.mesh.core.endpoint.node;
 import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 
 import com.gentics.mesh.core.image.spi.ImageInfo;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.util.MimeTypeUtils;
 
 /**
@@ -105,4 +106,5 @@ public class TransformationResult {
 	public String getMimeType() {
 		return mimeType;
 	}
+
 }

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -41,9 +41,9 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected Database db;
 
-	protected BinaryFieldHandler binaryFieldHandler;
+	protected BinaryUploadHandler binaryFieldHandler;
 
-	public AbstractMigrationHandler(Database db, BinaryFieldHandler binaryFieldHandler) {
+	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;
 	}

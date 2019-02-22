@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -38,7 +38,7 @@ import io.vertx.ext.web.FileUpload;
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BinaryFieldHandlerTest extends AbstractMeshTest {
 
-	private BinaryFieldHandler handler;
+	private BinaryUploadHandler handler;
 
 	private MeshUploadOptions uploadOptions;
 
