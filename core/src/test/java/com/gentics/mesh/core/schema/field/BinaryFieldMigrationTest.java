@@ -51,7 +51,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		meshDagger().binaryStorage().storeInTemp(Flowable.just(buffer), binary.getUuid(), null).blockingAwait();
+		meshDagger().binaryStorage().store(Flowable.just(buffer), binary.getUuid()).blockingAwait();
 	};
 
 	@Test

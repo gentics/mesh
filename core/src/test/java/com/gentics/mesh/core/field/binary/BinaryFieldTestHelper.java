@@ -28,7 +28,7 @@ public interface BinaryFieldTestHelper {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
 		Binary binary = MeshInternal.get().boot().binaryRoot().create(sha512Sum, Long.valueOf(buffer.length()));
-		MeshInternal.get().binaryStorage().storeInTemp(Flowable.just(buffer), binary.getUuid(), null).blockingAwait();
+		MeshInternal.get().binaryStorage().store(Flowable.just(buffer), binary.getUuid()).blockingAwait();
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);

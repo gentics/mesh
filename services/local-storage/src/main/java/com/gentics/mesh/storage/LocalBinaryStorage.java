@@ -69,27 +69,35 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			log.debug("Saving data for field to path {" + path + "}");
 			MeshUploadOptions uploadOptions = options.getUploadOptions();
 			File uploadFolder = new File(uploadOptions.getDirectory(), getSegmentedPath(uuid));
-
-			if (!uploadFolder.exists()) {
-				if (!uploadFolder.mkdirs()) {
-					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}");
-					throw error(BAD_REQUEST, "node_error_upload_failed");
-				}
-
-				if (log.isDebugEnabled()) {
-					log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
-				}
-			}
-
-			File targetFile = new File(path);
-			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).flatMapCompletable(file -> stream
-				.map(io.vertx.reactivex.core.buffer.Buffer::new)
-				.doOnNext(file::write)
-				.ignoreElements()
-				.andThen(file.rxFlush())
-				.andThen(file.rxClose())
-				.doOnError(err -> file.close()));
+			return createParentPath(uploadFolder.getAbsolutePath())
+				.andThen(fileSystem.rxOpen(path, new OpenOptions()).flatMapCompletable(file -> stream
+					.map(io.vertx.reactivex.core.buffer.Buffer::new)
+					.doOnNext(file::write)
+					.ignoreElements()
+					.andThen(file.rxFlush())
+					.andThen(file.rxClose())
+					.doOnError(err -> file.close())));
 		});
+	}
+
+	private Completable createParentPath(String folderPath) {
+		FileSystem fileSystem = rxVertx.fileSystem();
+		return fileSystem.rxExists(folderPath)
+			.flatMapCompletable(exists -> {
+				if (exists.booleanValue()) {
+					return Completable.complete();
+				} else {
+					return fileSystem.rxMkdirs(folderPath).onErrorResumeNext(e -> {
+						log.error("Failed to create target folder {" + folderPath + "}");
+						return Completable.error(error(BAD_REQUEST, "node_error_upload_failed"));
+					}).doOnComplete(() -> {
+						if (log.isDebugEnabled()) {
+							log.debug("Created folders for path {" + folderPath + "}");
+						}
+					});
+				}
+			});
+
 	}
 
 	/**
