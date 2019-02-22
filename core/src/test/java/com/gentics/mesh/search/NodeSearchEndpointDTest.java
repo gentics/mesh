@@ -131,7 +131,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
-		// searchProvider().refreshIndex();
+		waitForSearchIdleEvent();
 
 		// 6. Assert that the two migrated language variations can be found
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(

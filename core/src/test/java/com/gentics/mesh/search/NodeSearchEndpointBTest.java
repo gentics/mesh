@@ -134,6 +134,8 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		createBranch.setName("newbranch");
 		waitForLatestJob(() -> call(() -> client().createBranch(PROJECT_NAME, createBranch)));
 
+		waitForSearchIdleEvent();
+
 		// 2. Search within the newly create branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
 				new VersioningParametersImpl().draft()));
