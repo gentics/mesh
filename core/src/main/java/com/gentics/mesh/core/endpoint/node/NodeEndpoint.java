@@ -181,7 +181,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.method(GET);
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
-		fieldGet.handler(rc -> {
+		fieldGet.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
@@ -200,7 +200,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The source or target node could not be found.");
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String toUuid = ac.getParameter("toUuid");
