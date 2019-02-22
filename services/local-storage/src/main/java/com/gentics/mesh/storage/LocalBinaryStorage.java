@@ -10,7 +10,6 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
@@ -29,32 +28,40 @@ import io.vertx.reactivex.core.file.FileSystem;
 public class LocalBinaryStorage extends AbstractBinaryStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(LocalBinaryStorage.class);
-
-	private final MeshOptions options;
 	private final Vertx rxVertx;
+	private final FileSystem fileSystem;
+
+	private MeshUploadOptions uploadOptions;
 
 	@Inject
 	public LocalBinaryStorage(MeshOptions options, Vertx rxVertx) {
-		this.options = options;
+		this.uploadOptions = options.getUploadOptions();
 		this.rxVertx = rxVertx;
+		this.fileSystem = rxVertx.fileSystem();
 	}
 
 	@Override
 	public Completable moveInPlace(String uuid, String temporaryId) {
 		return Completable.defer(() -> {
-			FileSystem fileSystem = rxVertx.fileSystem();
-			log.debug("Move temporary upload for uuid '{}' into place.", uuid);
-			String tempPath = getTemporaryFilePath(uuid, temporaryId);
-			String finalPath = getFilePath(uuid);
-			return fileSystem.rxMove(tempPath, finalPath);
+			if (log.isDebugEnabled()) {
+				log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, temporaryId);
+			}
+			String source = getTemporaryFilePath(uuid, temporaryId);
+			String target = getFilePath(uuid);
+			if (log.isDebugEnabled()) {
+				log.debug("Moving '{}' to '{}'", source, target);
+			}
+			File uploadFolder = new File(uploadOptions.getDirectory(), getSegmentedPath(uuid));
+			return createParentPath(uploadFolder.getAbsolutePath()).andThen(fileSystem.rxMove(source, target));
 		});
 	}
 
 	@Override
 	public Completable purgeTemporaryUpload(String uuid, String temporaryId) {
 		return Completable.defer(() -> {
-			FileSystem fileSystem = rxVertx.fileSystem();
-			log.debug("Purging temporary upload for uuid '{}'", uuid);
+			if (log.isDebugEnabled()) {
+				log.debug("Purging temporary upload for uuid '{}' and tempId '{}'", uuid, temporaryId);
+			}
 			String path = getTemporaryFilePath(uuid, temporaryId);
 			return fileSystem.rxDelete(path);
 		});
@@ -64,12 +71,12 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	public Completable storeInTemp(Flowable<Buffer> stream, String uuid, String temporaryId) {
 		Objects.requireNonNull(uuid, "The binary uuid was not specified");
 		return Completable.defer(() -> {
-			FileSystem fileSystem = rxVertx.fileSystem();
 			String path = getTemporaryFilePath(uuid, temporaryId);
-			log.debug("Saving data for field to path {" + path + "}");
-			MeshUploadOptions uploadOptions = options.getUploadOptions();
-			File uploadFolder = new File(uploadOptions.getDirectory(), getSegmentedPath(uuid));
-			return createParentPath(uploadFolder.getAbsolutePath())
+			if (log.isDebugEnabled()) {
+				log.debug("Saving data for field to path {}", path);
+			}
+			File tempFolder = new File(uploadOptions.getDirectory(), "temp");
+			return createParentPath(tempFolder.getAbsolutePath())
 				.andThen(fileSystem.rxOpen(path, new OpenOptions()).flatMapCompletable(file -> stream
 					.map(io.vertx.reactivex.core.buffer.Buffer::new)
 					.doOnNext(file::write)
@@ -81,18 +88,17 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	private Completable createParentPath(String folderPath) {
-		FileSystem fileSystem = rxVertx.fileSystem();
 		return fileSystem.rxExists(folderPath)
 			.flatMapCompletable(exists -> {
 				if (exists.booleanValue()) {
 					return Completable.complete();
 				} else {
 					return fileSystem.rxMkdirs(folderPath).onErrorResumeNext(e -> {
-						log.error("Failed to create target folder {" + folderPath + "}");
+						log.error("Failed to create target folder {}", folderPath);
 						return Completable.error(error(BAD_REQUEST, "node_error_upload_failed"));
 					}).doOnComplete(() -> {
 						if (log.isDebugEnabled()) {
-							log.debug("Created folders for path {" + folderPath + "}");
+							log.debug("Created folders for path {}", folderPath);
 						}
 					});
 				}
@@ -101,26 +107,26 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	/**
-	 * Return the absolute path to the binary data for the given uuid.
+	 * Return the temporary file path.
 	 * 
 	 * @param binaryUuid
 	 * @param temporaryId
 	 * @return
 	 */
-	public String getFilePath(String binaryUuid, String temporaryId) {
-		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified");
-		File folder = new File(options.getUploadOptions().getDirectory(), getSegmentedPath(binaryUuid));
-		String postfix = temporaryId == null ? "" : "." + temporaryId + ".temp";
-		File binaryFile = new File(folder, binaryUuid + ".bin" + postfix);
+	public String getTemporaryFilePath(String binaryUuid, String temporaryId) {
+		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
+		Objects.requireNonNull(temporaryId, "The temporary id was specified.");
+
+		File tempFolder = new File(uploadOptions.getDirectory(), "temp");
+		File binaryFile = new File(tempFolder, binaryUuid + "." + temporaryId + ".tmp");
 		return binaryFile.getAbsolutePath();
 	}
 
-	public String getTemporaryFilePath(String binaryUuid, String temporaryId) {
-		return getFilePath(binaryUuid, temporaryId);
-	}
-
 	public String getFilePath(String binaryUuid) {
-		return getFilePath(binaryUuid, null);
+		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
+		File folder = new File(uploadOptions.getDirectory(), getSegmentedPath(binaryUuid));
+		File binaryFile = new File(folder, binaryUuid + ".bin");
+		return binaryFile.getAbsolutePath();
 	}
 
 	@Override
@@ -132,7 +138,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Flowable<Buffer> read(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
-		Flowable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem())
+		Flowable<Buffer> obs = fileSystem
 			.rxOpen(path, new OpenOptions())
 			.toFlowable()
 			.flatMap(RxUtil::toBufferFlow);
@@ -141,7 +147,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 
 	@Override
 	public Buffer readAllSync(String binaryUuid) {
-		return Mesh.vertx().fileSystem().readFileBlocking(getFilePath(binaryUuid));
+		return fileSystem.getDelegate().readFileBlocking(getFilePath(binaryUuid));
 	}
 
 	@Override

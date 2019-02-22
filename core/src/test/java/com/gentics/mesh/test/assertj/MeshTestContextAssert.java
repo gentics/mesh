@@ -103,6 +103,7 @@ public class MeshTestContextAssert extends AbstractAssert<MeshTestContextAssert,
 
 	private Stream<Path> listFolders(String path) throws IOException {
 		return Files.walk(Paths.get(path))
+			.filter(p -> !p.endsWith("temp"))
 			.filter(p -> !p.equals(Paths.get(path)))
 			.filter(Files::isDirectory)
 			.filter(p -> p.toFile().listFiles(File::isDirectory).length == 0);

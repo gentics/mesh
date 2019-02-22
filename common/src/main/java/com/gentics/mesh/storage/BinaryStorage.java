@@ -65,7 +65,9 @@ public interface BinaryStorage {
 	 *
 	 * @param uuid
 	 * @return
+	 * @deprecated Use async variant instead
 	 */
+	@Deprecated
 	Buffer readAllSync(String uuid);
 
 	/**
