@@ -601,11 +601,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		// 2. Update node a
-		MeshCoreAssertion.assertThat(testContext).hasUploads(0);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0);
 		Node folder2014 = folder("2014");
 		// upload file to folder 2014
 		call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
-		MeshCoreAssertion.assertThat(testContext).hasUploads(1);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1);
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()), new NodeParametersImpl().setResolveLinks(
 			LinkType.FULL)));
@@ -613,11 +613,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		Node folder2015 = folder("2015");
 
 		// try to upload same file to folder 2015
-		MeshCoreAssertion.assertThat(testContext).hasUploads(1);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1);
 		call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
 			"node_conflicting_segmentfield_upload", "binary", fileName);
 
-		MeshCoreAssertion.assertThat(testContext).hasUploads(1);
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1);
 	}
 
 	@Test
