@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.AbstractAssert;
+import org.junit.Assert;
 
 import com.gentics.mesh.test.context.MeshTestContext;
 
@@ -63,7 +64,7 @@ public class MeshTestContextAssert extends AbstractAssert<MeshTestContextAssert,
 			String info = listFolders(dir)
 				.map(p -> p.toAbsolutePath().toString())
 				.collect(Collectors.joining("\n"));
-			fail(msg + "\nFound:\n" + info + "\n\n");
+			assertEquals(msg + "\nFound:\n" + info + "\n\n", expected, count);
 		}
 		return this;
 	}

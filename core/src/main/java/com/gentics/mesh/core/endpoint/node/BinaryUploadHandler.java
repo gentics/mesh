@@ -49,11 +49,9 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -78,7 +76,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
 
-	private final Vertx rxVertx;
+	private FileSystem fs;
 
 	@Inject
 	public BinaryUploadHandler(ImageManipulator imageManipulator,
@@ -95,7 +93,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
 		this.utils = utils;
-		this.rxVertx = rxVertx;
+		this.fs = rxVertx.fileSystem();
 	}
 
 	private void validateFileUpload(FileUpload ul, String fieldName) {
@@ -154,73 +152,87 @@ public class BinaryUploadHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
 		}
 		FileUpload ul = fileUploads.iterator().next();
+		// TODO fail on multiple multipart formdata files
 		validateFileUpload(ul, fieldName);
 
-		// This the name and path of the file to be moved to a new location.
-		// This will be changed because it is possible that the file has to be moved multiple times
-		// (if the transaction failed and has to be repeated).
-		ac.put("sourceFile", ul.uploadedFileName());
+		UploadContext ctx = new UploadContext();
+		ctx.setUpload(ul);
 
-		String uploadFilePath = ul.uploadedFileName();
-		FileSystem fs = rxVertx.fileSystem();
-		fs.rxOpen(uploadFilePath, new OpenOptions())
-			.flatMapPublisher(RxUtil::toBufferFlow)
-			.to(FileUtils::hash).flatMap(hash -> {
-				UploadContext ctx = new UploadContext();
-				ctx.setUpload(ul);
-				ctx.setHash(hash);
+		// First process the upload data
+		Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul).toList();
+		Single<String> hashOp = hashUpload(ul);
+		RxUtil.flatZip(modifierOp, hashOp, (modifierList, hash) -> {
+			ctx.setHash(hash);
 
-				// Check whether the binary with the given hashsum was already stored
-				db.tx(() -> {
-					BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
-					Binary binary = binaryRoot.findByHash(hash);
+			// Check whether the binary with the given hashsum was already stored
+			db.tx(() -> {
+				BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+				Binary binary = binaryRoot.findByHash(hash);
 
-					// Create a new binary uuid if the data was not already stored
-					if (binary == null) {
-						ctx.setBinaryUuid(UUIDUtil.randomUUID());
-						ctx.setInvokeStore();
-					}
-				});
-				Completable storeAction;
-				if (ctx.isInvokeStore()) {
-					storeAction = fs.rxOpen(uploadFilePath, new OpenOptions()).flatMapCompletable(asyncFile -> {
-						Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-						return binaryStorage.storeInTemp(stream, ctx.getTemporaryId());
-					});
-				} else {
-					storeAction = Completable.complete();
+				// Create a new binary uuid if the data was not already stored
+				if (binary == null) {
+					ctx.setBinaryUuid(UUIDUtil.randomUUID());
+					ctx.setInvokeStore();
 				}
+			});
 
-				// Process the upload which will update the binary field
-				Single<List<Consumer<BinaryGraphField>>> modifier = postProcessUpload(ul).toList();
-				return Single.zip(modifier, storeAction.toSingleDefault(ctx), (list, ignore) -> {
-					return storeUploadInGraph(ac, list, ctx, nodeUuid, languageTag, nodeVersion, fieldName);
-				}).onErrorResumeNext(e -> {
-					if (ctx.isInvokeStore()) {
-						String tmpId = ctx.getTemporaryId();
-						if (log.isDebugEnabled()) {
-							log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
-						}
-						return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
-							log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
-						}).onErrorComplete().andThen(Single.error(e));
-					} else {
-						return Single.error(e);
-					}
-				}).flatMap(n -> {
-					if (ctx.isInvokeStore()) {
-						String binaryUuid = ctx.getBinaryUuid();
-						String tmpId = ctx.getTemporaryId();
-						if (log.isDebugEnabled()) {
-							log.debug("Moving upload with binaryUuid {} and tempId {} into place", binaryUuid, tmpId);
-						}
-						return binaryStorage.moveInPlace(binaryUuid, tmpId).andThen(Single.just(n));
-					} else {
-						return Single.just(n);
-					}
-				});
-			}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			return storeUploadInTemp(ctx, ul, hash).andThen(Single.defer(() -> {
+				NodeResponse response = storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName);
+				return Single.just(response);
+			}));
 
+		}).onErrorResumeNext(e -> {
+			if (ctx.isInvokeStore()) {
+				String tmpId = ctx.getTemporaryId();
+				if (log.isDebugEnabled()) {
+					log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
+				}
+				return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
+					log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
+				}).onErrorComplete().andThen(Single.error(e));
+			} else {
+				return Single.error(e);
+			}
+		}).flatMap(n -> {
+			if (ctx.isInvokeStore()) {
+				String binaryUuid = ctx.getBinaryUuid();
+				String tmpId = ctx.getTemporaryId();
+				if (log.isDebugEnabled()) {
+					log.debug("Moving upload with binaryUuid {} and tempId {} into place", binaryUuid, tmpId);
+				}
+				return binaryStorage.moveInPlace(binaryUuid, tmpId).andThen(Single.just(n));
+			} else {
+				return Single.just(n);
+			}
+		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+
+	}
+
+	private Completable storeUploadInTemp(UploadContext ctx, FileUpload ul, String hash) {
+		String uploadFilePath = ul.uploadedFileName();
+		if (ctx.isInvokeStore()) {
+			return binaryStorage.storeInTemp(uploadFilePath, ctx.getTemporaryId());
+		} else {
+			// File has already been stored. Lets remove the upload from the vert.x tmpdir. We no longer need it.
+			return fs.rxDelete(uploadFilePath)
+				.doOnComplete(() -> {
+					if (log.isTraceEnabled()) {
+						log.trace("Removed temporary file {}", uploadFilePath);
+					}
+				})
+				.doOnError(e -> {
+					log.warn("Failed to remove upload from tmpDir {}", uploadFilePath, e);
+				}).onErrorComplete();
+		}
+	}
+
+	private Single<String> hashUpload(FileUpload ul) {
+		String uploadFilePath = ul.uploadedFileName();
+		return fs.rxOpen(uploadFilePath, new OpenOptions())
+			.flatMapPublisher(RxUtil::toBufferFlow)
+			.to(FileUtils::hash).doOnError(e -> {
+				log.error("Error while hashing upload {}", uploadFilePath, e);
+			});
 	}
 
 	private NodeResponse storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryGraphField>> fieldModifier, UploadContext context,

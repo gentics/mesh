@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
 import io.reactivex.Flowable;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.reactivex.core.Vertx;
 
 @Ignore
 public class S3BinaryStorageTest {

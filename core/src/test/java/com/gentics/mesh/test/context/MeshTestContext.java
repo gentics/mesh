@@ -379,7 +379,7 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
-	private void initFolders(MeshOptions meshOptions2) throws IOException {
+	private void initFolders(MeshOptions meshOptions) throws IOException {
 		String tmpDir = newFolder("tmpDir");
 		meshOptions.setTempDirectory(tmpDir);
 

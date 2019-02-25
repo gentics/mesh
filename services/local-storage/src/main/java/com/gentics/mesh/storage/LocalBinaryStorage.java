@@ -1,7 +1,7 @@
 package com.gentics.mesh.storage;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
@@ -52,7 +52,10 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 				log.debug("Moving '{}' to '{}'", source, target);
 			}
 			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(uuid));
-			return createParentPath(uploadFolder.getAbsolutePath()).andThen(fileSystem.rxMove(source, target));
+			return createParentPath(uploadFolder.getAbsolutePath())
+				.andThen(fileSystem.rxMove(source, target).doOnError(e -> {
+					log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
+				}));
 		});
 	}
 
@@ -64,6 +67,31 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			}
 			String path = getTemporaryFilePath(temporaryId);
 			return fileSystem.rxDelete(path);
+		});
+	}
+
+	/**
+	 * Store the upload in the local binary storage. This method will in fact only move the upload file to the tempdir location.
+	 * 
+	 * @param sourceFilePath
+	 * @param temporaryId
+	 * @return
+	 */
+	@Override
+	public Completable storeInTemp(String sourceFilePath, String temporaryId) {
+		Objects.requireNonNull(temporaryId, "The temporary id was not specified.");
+		return Completable.defer(() -> {
+			String path = getTemporaryFilePath(temporaryId);
+			if (log.isDebugEnabled()) {
+				log.debug("Moving upload file '{}' for field to path '{}'.", sourceFilePath, path);
+			}
+
+			// First ensure that the temp folder can be created and finally store the data in the folder.
+			File tempFolder = new File(options.getDirectory(), "temp");
+			return createParentPath(tempFolder.getAbsolutePath())
+				.andThen(fileSystem.rxMove(sourceFilePath, path).doOnError(e -> {
+					log.error("Failed to move upload file {} to temp dir {}", sourceFilePath, path, e);
+				}));
 		});
 	}
 
@@ -91,17 +119,18 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	private Completable createParentPath(String folderPath) {
 		return fileSystem.rxExists(folderPath)
 			.flatMapCompletable(exists -> {
-				if (exists.booleanValue()) {
+				if (exists) {
 					return Completable.complete();
 				} else {
-					return fileSystem.rxMkdirs(folderPath).onErrorResumeNext(e -> {
-						log.error("Failed to create target folder {}", folderPath);
-						return Completable.error(error(BAD_REQUEST, "node_error_upload_failed"));
-					}).doOnComplete(() -> {
-						if (log.isDebugEnabled()) {
-							log.debug("Created folders for path {}", folderPath);
-						}
-					});
+					return fileSystem.rxMkdirs(folderPath)
+						.onErrorResumeNext(e -> {
+							log.error("Failed to create target folder {}", folderPath);
+							return Completable.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed"));
+						}).doOnComplete(() -> {
+							if (log.isDebugEnabled()) {
+								log.debug("Created folders for path {}", folderPath);
+							}
+						});
 				}
 			});
 

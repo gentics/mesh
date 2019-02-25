@@ -6,11 +6,21 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.FileUpload;
 
 /**
  * A binary storage provides means to store and retrieve binary data.
  */
 public interface BinaryStorage {
+
+	/**
+	 * Store the upload in the temporary dir.
+	 * 
+	 * @param sourceFilePath
+	 * @param temporaryId
+	 * @return
+	 */
+	Completable storeInTemp(String sourceFilePath, String temporaryId);
 
 	/**
 	 * Stores the contents of the stream in the temporary location.

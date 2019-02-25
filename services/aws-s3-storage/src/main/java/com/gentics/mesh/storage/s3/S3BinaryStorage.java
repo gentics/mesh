@@ -10,13 +10,16 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.FileSystem;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -41,12 +44,15 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 
 	private S3StorageOptions options;
 
-	private final Vertx vertx;
+	private final Vertx rxVertx;
+
+	private FileSystem fs;
 
 	@Inject
-	public S3BinaryStorage(S3StorageOptions options, Vertx vertx) {
+	public S3BinaryStorage(S3StorageOptions options, Vertx rxVertx) {
 		this.options = options;
-		this.vertx = vertx;
+		this.rxVertx = rxVertx;
+		this.fs = rxVertx.fileSystem();
 		init();
 	}
 
@@ -161,6 +167,16 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 			// }
 			// }
 			// sub.onComplete();
+		});
+	}
+
+	@Override
+	public Completable storeInTemp(String sourceFilePath, String temporaryId) {
+		return fs.rxOpen(sourceFilePath, new OpenOptions()).flatMapCompletable(asyncFile -> {
+			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
+			return storeInTemp(stream, temporaryId);
+		}).doOnError(e -> {
+			log.error("Error while storing file {} in temp with id {}", sourceFilePath, temporaryId, e);
 		});
 	}
 

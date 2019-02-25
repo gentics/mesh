@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.TestUtils.sleep;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -248,7 +247,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			String fileName = "somefile" + i + ".dat";
 			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
 		}
-		sleep(250);
 		MeshCoreAssertion.assertThat(testContext).hasUploads(100, 100).hasTempFiles(0).hasTempUploads(0);
 	}
 
@@ -383,8 +381,24 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), BAD_REQUEST, "node_error_uploadlimit_reached",
 			"9 KB", "9 KB");
 
-		sleep(250);
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
+	}
+
+	@Test
+	public void testSingleUpload() throws IOException {
+		int binaryLen = 10000;
+		String contentType = "application/octet-stream";
+		String fileName = "somefile.dat";
+		Node node = folder("news");
+
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", "binary");
+			tx.success();
+		}
+
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 	}
 
 	@Test
@@ -402,7 +416,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
 		NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
-		sleep(250);
 
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		BinaryField binaryField = response.getFields().getBinaryField("binary");
@@ -541,7 +554,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidB, "en", versionB, "binary", new ByteArrayInputStream(buffer.getBytes()),
 			buffer.length(), fileName, contentType));
 
-		sleep(250);
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		File binaryFileA;
@@ -622,7 +634,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 		call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
 			"node_conflicting_segmentfield_upload", "binary", fileName);
-		sleep(250);
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 	}
 
