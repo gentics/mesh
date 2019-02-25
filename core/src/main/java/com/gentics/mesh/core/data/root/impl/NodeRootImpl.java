@@ -302,6 +302,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
 					schemaInfo.getSchema().getUuid(), READ_PERM);
 			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			if (schemaVersion == null) {
+				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
+			}
 			return createNode(ac, schemaVersion, batch, uuid);
 		}
 
@@ -314,6 +317,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				String schemaUuid = schemaByName.getUuid();
 				if (requestUser.hasPermission(schemaByName, READ_PERM)) {
 					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					if (schemaVersion == null) {
+						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(), project.getName());
+					}
 					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName, READ_PERM.getRestPerm().getName());
