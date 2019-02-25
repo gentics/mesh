@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-	<conversionRule conversionWord="meshName"
-		converterClass="com.gentics.mesh.log.MeshLogNameConverter" />
+	<conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
 
 	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
 		<target>System.err</target>
@@ -23,8 +22,7 @@
 			</pattern>
 		</encoder>
 	</appender>
-
-	<root level="ERROR">
-		<appender-ref ref="STDOUT" />
+	<root level="INFO">
+		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>
