@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
@@ -17,6 +16,8 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
 import com.gentics.mesh.util.RxUtil;
 
+import hu.akarnokd.rxjava2.interop.CompletableInterop;
+import hu.akarnokd.rxjava2.interop.FlowableInterop;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
@@ -30,17 +31,13 @@ import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 @Singleton
 public class S3BinaryStorage extends AbstractBinaryStorage {
@@ -96,13 +93,6 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 		}
 		// }
 
-		// s3Client = AmazonS3ClientBuilder
-		// .standard()
-		// .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(options.getUrl(), options.getRegion()))
-		// .withPathStyleAccessEnabled(true)
-		// .withClientConfiguration(clientConfiguration)
-		// .withCredentials(new AWSStaticCredentialsProvider(credentials))
-		// .build();
 		//
 		// String bucketName = options.getBucketName();
 		// if (!s3Client.doesBucketExist(bucketName)) {
@@ -134,48 +124,18 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Flowable<Buffer> read(String hashsum) {
-		return Flowable.generate(sub -> {
+	public Flowable<Buffer> read(String uuid) {
+		return Flowable.defer(() -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Loading data for hash {" + hashsum + "}");
+				log.debug("Loading data for hash {" + uuid + "}");
 			}
 			// GetObjectRequest rangeObjectRequest = new GetObjectRequest(options.getBucketName(), hashsum);
 			GetObjectRequest request = GetObjectRequest.builder()
 				.bucket(options.getBucketName())
-				.key(hashsum)
+				.key(uuid)
 				.build();
-			CompletableFuture<String> fut = client.getObject(request, new AsyncResponseTransformer<GetObjectResponse, String>() {
-
-				@Override
-				public CompletableFuture<String> prepare() {
-					return CompletableFuture.completedFuture("");
-				}
-
-				@Override
-				public void onResponse(GetObjectResponse response) {
-					sub.onComplete();
-				}
-
-				@Override
-				public void onStream(SdkPublisher<ByteBuffer> publisher) {
-					publisher.subscribe(b -> {
-						sub.onNext(Buffer.buffer(b.array()));
-					});
-				}
-
-				@Override
-				public void exceptionOccurred(Throwable error) {
-					sub.onError(error);
-				}
-			});
-			fut.whenComplete((result, error) -> {
-				if (error != null) {
-					sub.onError(error);
-				} else {
-					sub.onComplete();
-				}
-			});
-		});
+			return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
+		}).map(f -> Buffer.buffer(f.asByteArray()));
 	}
 
 	@Override
@@ -190,7 +150,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 
 	@Override
 	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
-		return Completable.create(sub -> {
+		return Completable.defer(() -> {
 			PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(options.getBucketName())
 				.key(temporaryId)
@@ -198,14 +158,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 				.build();
 
 			Publisher<ByteBuffer> publisher = stream.map(b -> ByteBuffer.wrap(b.getBytes()));
-			CompletableFuture<PutObjectResponse> fut = client.putObject(request, AsyncRequestBody.fromPublisher(publisher));
-			fut.whenComplete((result, error) -> {
-				if (error != null) {
-					sub.onError(error);
-				} else {
-					sub.onComplete();
-				}
-			});
+			return CompletableInterop.fromFuture(client.putObject(request, AsyncRequestBody.fromPublisher(publisher)));
 		});
 	}
 

@@ -38,16 +38,19 @@ public class S3BinaryStorageTest extends AbstractMinioTest {
 
 	@Test
 	public void testStore() throws IOException {
-		BinaryGraphField mockField = Mockito.mock(BinaryGraphField.class);
+		final Flowable<Buffer> data = Flowable.just(Buffer.buffer("test"));
+		final String uuid = "test123";
+
 		Binary binary = Mockito.mock(Binary.class);
+		Mockito.when(binary.getSHA512Sum()).thenReturn(uuid);
+
+		BinaryGraphField mockField = Mockito.mock(BinaryGraphField.class);
 		Mockito.when(mockField.getBinary()).thenReturn(binary);
-		Mockito.when(binary.getSHA512Sum()).thenReturn("test");
 
 		// assertFalse(storage.exists(mockField));
-		Flowable<Buffer> data = Flowable.just(Buffer.buffer("test"));
-		storage.storeInTemp(data, "test").blockingAwait();
+		storage.storeInTemp(data, uuid).blockingAwait();
 		assertTrue(storage.exists(mockField));
-		Single<Buffer> buf = RxUtil.readEntireData(storage.read("test"));
+		Single<Buffer> buf = RxUtil.readEntireData(storage.read(uuid));
 		System.out.println("Data: " + buf.blockingGet().toString());
 	}
 
