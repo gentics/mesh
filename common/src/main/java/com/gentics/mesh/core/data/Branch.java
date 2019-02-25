@@ -1,11 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
-
-import java.util.List;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
@@ -22,6 +16,13 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+
+import java.util.List;
+
+import static com.gentics.mesh.ElementType.BRANCH;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
 /**
  * The Branch domain model interface.
@@ -46,12 +47,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 public interface Branch
 	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "branch";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

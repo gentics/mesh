@@ -5,6 +5,7 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +21,11 @@ public class BulkRequest implements Bulkable {
 			.flatMap(bulkable -> bulkable.toBulkActions().stream())
 			.collect(Collectors.joining("\n"));
 	}
+
+	public BulkRequest(Bulkable... requests) {
+		this(Arrays.asList(requests));
+	}
+
 
 	@Override
 	public Completable execute(SearchProvider searchProvider) {

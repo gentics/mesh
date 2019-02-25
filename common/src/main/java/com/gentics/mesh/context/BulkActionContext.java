@@ -1,11 +1,11 @@
 package com.gentics.mesh.context;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
-import com.gentics.mesh.event.EventQueueBatch;
-
-import io.reactivex.Completable;
-
+import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.event.EventQueueBatch;
+import io.reactivex.Completable;
 
 public interface BulkActionContext {
 
@@ -58,10 +58,10 @@ public interface BulkActionContext {
 	 * Set the root cause of the action being invoked.
 	 * 
 	 * @param type
-	 * @param element
+	 * @param uuid
 	 * @param action
 	 */
-	default void setRootCause(String type, String uuid, String action) {
+	default void setRootCause(ElementType type, String uuid, EventCauseAction action) {
 		batch().setRootCause(type, uuid, action);
 	}
 
