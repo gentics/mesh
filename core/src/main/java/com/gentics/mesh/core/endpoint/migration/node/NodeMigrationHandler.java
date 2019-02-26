@@ -19,12 +19,12 @@ import javax.validation.constraints.NotNull;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -56,21 +56,17 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	/**
 	 * Migrate all nodes of a branch referencing the given schema container to the latest version of the schema.
 	 *
-	 * @param project
-	 *            Specific project to handle
-	 * @param branch
-	 *            Specific branch to handle
-	 * @param fromVersion
-	 *            Old container version
-	 * @param toVersion
-	 *            New container version
+	 * @param ac
+	 *            Migration context
 	 * @param status
 	 *            status handler which will be used to track the progress
 	 * @return Completable which is completed once the migration finishes
 	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Branch branch, SchemaContainerVersion fromVersion,
-		SchemaContainerVersion toVersion,
-		@NotNull MigrationStatusHandler status) {
+	public Completable migrateNodes(NodeMigrationActionContextImpl ac, @NotNull MigrationStatusHandler status) {
+		SchemaContainerVersion fromVersion = ac.getFromVersion();
+		SchemaContainerVersion toVersion = ac.getToVersion();
+		SchemaMigrationCause cause = ac.getCause();
+		Branch branch = ac.getBranch();
 
 		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
@@ -79,10 +75,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		try (Tx tx = db.tx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
-
-			ac.setProject(project);
-			ac.setBranch(branch);
-
 			if (status != null) {
 				status.setStatus(RUNNING);
 				status.commit();
@@ -111,9 +103,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			return Completable.complete();
 		}
 
-		List<Exception> errorsDetected = migrateLoop(containers, status, (batch, container, errors) ->
-			migrateContainer(ac, batch, container, toVersion, migrationScripts, branch, newSchema, errors, touchedFields)
-		);
+		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> migrateContainer(ac, batch, container,
+			migrationScripts, newSchema, errors, touchedFields));
 
 		// TODO prepare errors. They should be easy to understand and to grasp
 		Completable result = Completable.complete();
@@ -145,13 +136,15 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return
 	 */
 	private void migrateContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, NodeGraphFieldContainer container,
-		SchemaContainerVersion toVersion,
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Branch branch, SchemaModel newSchema, List<Exception> errorsDetected,
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
 		if (log.isDebugEnabled()) {
 			log.debug("Migrating container {" + container.getUuid() + "}");
 		}
+
+		Branch branch = ac.getBranch();
+		SchemaContainerVersion toVersion = ac.getToVersion();
 		try {
 			Node node = container.getParentNode();
 			String languageTag = container.getLanguageTag();

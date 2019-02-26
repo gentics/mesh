@@ -12,6 +12,7 @@ import java.util.Set;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -23,9 +24,11 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -57,7 +60,7 @@ import io.vertx.ext.web.FileUpload;
 /**
  * Action context implementation which will be used within the node migration.
  */
-public class NodeMigrationActionContextImpl extends AbstractInternalActionContext {
+public class NodeMigrationActionContextImpl extends AbstractInternalActionContext implements NodeMigrationActionContext {
 
 	private Map<String, Object> data;
 
@@ -72,6 +75,17 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	private Project project;
 
 	private Branch branch;
+
+	private SchemaMigrationCause cause;
+
+	private SchemaContainerVersion fromContainerVersion;
+
+	private SchemaContainerVersion toContainerVersion;
+
+	@Override
+	public Branch getBranch() {
+		return branch;
+	}
 
 	/**
 	 * Set the body.
@@ -114,6 +128,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		// TODO Auto-generated method stub
 	}
 
+	@Override
+	public Project getProject() {
+		return project;
+	}
+
 	/**
 	 * Set the project
 	 * 
@@ -124,17 +143,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public Project getProject() {
-		return project;
+	public Branch getBranch(Project project) {
+		return branch;
 	}
 
 	public void setBranch(Branch branch) {
 		this.branch = branch;
-	}
-
-	@Override
-	public Branch getBranch(Project project) {
-		return branch;
 	}
 
 	@Override
@@ -943,6 +957,33 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	 */
 	public Set<ConflictWarning> getConflicts() {
 		return conflicts;
+	}
+
+	@Override
+	public SchemaMigrationCause getCause() {
+		return cause;
+	}
+
+	public void setCause(SchemaMigrationCause cause) {
+		this.cause = cause;
+	}
+
+	@Override
+	public SchemaContainerVersion getFromVersion() {
+		return fromContainerVersion;
+	}
+
+	public void setFromVersion(SchemaContainerVersion fromContainerVersion) {
+		this.fromContainerVersion = fromContainerVersion;
+	}
+
+	@Override
+	public SchemaContainerVersion getToVersion() {
+		return toContainerVersion;
+	}
+
+	public void setToVersion(SchemaContainerVersion toContainerVersion) {
+		this.toContainerVersion = toContainerVersion;
 	}
 
 }

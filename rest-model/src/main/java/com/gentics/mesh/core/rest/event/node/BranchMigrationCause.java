@@ -3,11 +3,11 @@ package com.gentics.mesh.core.rest.event.node;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
-import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 
-public class SchemaMigrationCause extends SchemaMigrationMeshEventModel implements EventCauseInfo {
+public class BranchMigrationCause extends BranchMigrationMeshEventModel implements EventCauseInfo {
 
-	public SchemaMigrationCause() {
+	public BranchMigrationCause() {
 	}
 
 	@Override

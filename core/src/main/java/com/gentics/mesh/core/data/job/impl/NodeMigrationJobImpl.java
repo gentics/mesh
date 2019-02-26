@@ -1,9 +1,13 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -11,8 +15,11 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.dagger.DB;
@@ -20,17 +27,11 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Completable;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 public class NodeMigrationJobImpl extends JobImpl {
 
@@ -67,30 +68,27 @@ public class NodeMigrationJobImpl extends JobImpl {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
 
 		return Completable.defer(() -> {
-			AtomicReference<Project> projectRef = new AtomicReference<>(null);
-			AtomicReference<Branch> branchRef = new AtomicReference<>(null);
-			AtomicReference<SchemaContainerVersion> fromContainerVersionRef = new AtomicReference<>(null);
-			AtomicReference<SchemaContainerVersion> toContainerVersionRef = new AtomicReference<>(null);
 
+			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 			try (Tx tx = DB.get().tx()) {
 
 				Branch branch = getBranch();
 				if (branch == null) {
 					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
 				}
-				branchRef.set(branch);
+				ac.setBranch(branch);
 
 				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
 				}
-				fromContainerVersionRef.set(fromContainerVersion);
+				ac.setFromVersion(fromContainerVersion);
 
 				SchemaContainerVersion toContainerVersion = getToSchemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
 				}
-				toContainerVersionRef.set(toContainerVersion);
+				ac.setToVersion(toContainerVersion);
 
 				SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
 				if (schemaContainer == null) {
@@ -101,7 +99,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 				if (project == null) {
 					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
 				}
-				projectRef.set(project);
+				ac.setProject(project);
 
 				BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
 				status.setVersionEdge(branchVersionEdge);
@@ -109,6 +107,15 @@ public class NodeMigrationJobImpl extends JobImpl {
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
 					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
 					+ "} in project {" + project.getUuid() + "}");
+
+
+				SchemaMigrationCause cause = new SchemaMigrationCause();
+				cause.setFromVersion(fromContainerVersion.transformToReference());
+				cause.setToVersion(toContainerVersion.transformToReference());
+				cause.setProject(project.transformToReference());
+				cause.setBranch(branch.transformToReference());
+				cause.setUuid(getUuid());
+				ac.setCause(cause);
 
 				status.commit();
 				tx.success();
@@ -119,10 +126,11 @@ public class NodeMigrationJobImpl extends JobImpl {
 				throw e;
 			}
 
-			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
+			
+					
 			// for (int i = 0; i < MIGRATION_ATTEMPT_COUNT; i++) {
-			Completable migration = MeshInternal.get().nodeMigrationHandler()
-				.migrateNodes(ac, projectRef.get(), branchRef.get(), fromContainerVersionRef.get(), toContainerVersionRef.get(), status);
+			NodeMigrationHandler handler = MeshInternal.get().nodeMigrationHandler();
+			Completable migration = handler.migrateNodes(ac, status);
 			migration = migration.doOnComplete(() -> {
 				DB.get().tx(() -> {
 					JobWarningList warnings = new JobWarningList();
@@ -133,7 +141,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 						}
 					}
 					setWarnings(warnings);
-					finalizeMigration(projectRef.get(), branchRef.get(), fromContainerVersionRef.get());
+					finalizeMigration(ac);
 					status.done();
 				});
 			}).doOnError(err -> {
@@ -156,26 +164,19 @@ public class NodeMigrationJobImpl extends JobImpl {
 		});
 	}
 
-	private void finalizeMigration(Project project, Branch branch, SchemaContainerVersion fromContainerVersion) {
+	private void finalizeMigration(NodeMigrationActionContext context) {
 		// Deactivate edge
 		try (Tx tx = DB.get().tx()) {
+			Branch branch = context.getBranch();
+			SchemaContainerVersion fromContainerVersion = context.getFromVersion();
 			BranchSchemaEdge edge = branch.findBranchSchemaEdge(fromContainerVersion);
 			if (edge != null) {
 				edge.setActive(false);
 			}
 			tx.success();
 		}
-		// TODO Use events here instead
-		// MeshEvent.NODE_MIGRATION_FINISHED
-		// Remove old indices
-		MeshInternal.get().searchProvider()
-			.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), DRAFT))
-			.blockingAwait();
-		MeshInternal.get().searchProvider()
-			.deleteIndex(
-				NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), fromContainerVersion.getUuid(), PUBLISHED))
-			.blockingAwait();
-
+		EventBus eb = Mesh.vertx().eventBus();
+		eb.publish(MeshEvent.SCHEMA_MIGRATION_FINISHED.address, null);
 	}
 
 }

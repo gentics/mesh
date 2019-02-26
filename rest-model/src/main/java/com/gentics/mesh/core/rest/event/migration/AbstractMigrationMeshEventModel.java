@@ -18,30 +18,58 @@ public abstract class AbstractMigrationMeshEventModel extends AbstractMeshEventM
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Uuid of the corresponding job.")
-	private String jobUuid;
+	private String uuid;
 
+	/**
+	 * Return the referenced branch.
+	 * @return
+	 */
 	public BranchReference getBranch() {
 		return branch;
 	}
 
+	/**
+	 * Set the referenced branch.
+	 * @param branch
+	 */
 	public void setBranch(BranchReference branch) {
 		this.branch = branch;
 	}
 
+	/**
+	 * Return the referenced project.
+	 * 
+	 * @return
+	 */
 	public ProjectReference getProject() {
 		return project;
 	}
 
+	/**
+	 * Set the referenced project.
+	 * 
+	 * @param project
+	 */
 	public void setProject(ProjectReference project) {
 		this.project = project;
 	}
 
-	public String getJobUuid() {
-		return jobUuid;
+	/**
+	 * Return the job uuid.
+	 * 
+	 * @return
+	 */
+	public String getUuid() {
+		return uuid;
 	}
 
-	public void setJobUuid(String jobUuid) {
-		this.jobUuid = jobUuid;
+	/**
+	 * Set the job uuid.
+	 * 
+	 * @param jobUuid
+	 */
+	public void setUuid(String jobUuid) {
+		this.uuid = jobUuid;
 	}
 
 }

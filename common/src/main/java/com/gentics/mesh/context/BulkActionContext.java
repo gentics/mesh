@@ -62,7 +62,7 @@ public interface BulkActionContext {
 	 * @param action
 	 */
 	default void setRootCause(ElementType type, String uuid, EventCauseAction action) {
-		batch().setRootCause(type, uuid, action);
+		batch().setCause(type, uuid, action);
 	}
 
 	/**

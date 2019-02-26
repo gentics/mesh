@@ -2,6 +2,7 @@ package com.gentics.mesh.context.impl;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -124,13 +125,18 @@ public class DummyEventQueueBatch implements EventQueueBatch {
 	}
 
 	@Override
-	public void setRootCause(ElementType type, String uuid, EventCauseAction action) {
+	public EventCauseInfoImpl getCause() {
+		return null;
+	}
+
+	@Override
+	public void setCause(ElementType type, String uuid, EventCauseAction action) {
 
 	}
 
 	@Override
-	public EventCauseInfoImpl getCause() {
-		return null;
+	public void setCause(EventCauseInfo cause) {
+
 	}
 
 }

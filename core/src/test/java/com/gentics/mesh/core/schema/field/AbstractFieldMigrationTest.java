@@ -155,7 +155,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
+
+		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		context.setProject(project());
+		context.setBranch(project().getLatestBranch());
+		context.setFromVersion(versionA);
+		context.setToVersion(versionB);
+		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -316,7 +322,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
+		
+		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		context.setProject(project());
+		context.setBranch(project().getLatestBranch());
+		context.setFromVersion(versionA);
+		context.setToVersion(versionB);
+		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -489,7 +501,14 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
+
+		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		context.setProject(project());
+		context.setBranch(project().getLatestBranch());
+		context.setFromVersion(versionA);
+		context.setToVersion(versionB);
+
+		nodeMigrationHandler.migrateNodes(context , DummyMigrationStatus.get()).blockingAwait();
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
@@ -669,7 +688,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
+		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		context.setProject(project());
+		context.setBranch(project().getLatestBranch());
+		context.setFromVersion(versionA);
+		context.setToVersion(versionB);
+		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -827,7 +851,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(new NodeMigrationActionContextImpl(), project(), project().getLatestBranch(), versionA, versionB, DummyMigrationStatus.get()).blockingAwait();
+		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		context.setProject(project());
+		context.setBranch(project().getLatestBranch());
+		context.setFromVersion(versionA);
+		context.setToVersion(versionB);
+		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
 	}
 
 	/**

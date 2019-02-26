@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -98,8 +99,10 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			}
 			return Completable.complete();
 		}
-
-		List<Exception> errorsDetected = migrateLoop(fieldContainersResult, status, (batch, container, errors) ->
+		MicroschemaMigrationCause cause = new MicroschemaMigrationCause();
+		cause.setFromVersion(fromVersion.transformToReference());
+		cause.setToVersion(toVersion.transformToReference());
+		List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status, (batch, container, errors) ->
 			migrateMicronodeContainer(ac, batch, branch, fromVersion, toVersion, container, touchedFields, migrationScripts, errors)
 		);
 

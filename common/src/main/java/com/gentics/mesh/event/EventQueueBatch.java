@@ -1,13 +1,13 @@
 package com.gentics.mesh.event;
 
-import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.rest.event.EventCauseAction;
-import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
-
 import java.util.List;
 import java.util.Objects;
+
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.rest.event.EventCauseAction;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 
 /**
  * A batch of event queue entries.
@@ -66,7 +66,6 @@ public interface EventQueueBatch {
 	default EventQueueBatch add(MeshEventModel event) {
 		Objects.requireNonNull(event);
 		Objects.requireNonNull(event.getEvent(), "The event model does not contain the event info");
-		event.setCause(getCause());
 		getEntries().add(event);
 		return this;
 	}
@@ -75,13 +74,27 @@ public interface EventQueueBatch {
 		getEntries().addAll(containerBatch.getEntries());
 	}
 
-	void setRootCause(ElementType type, String uuid, EventCauseAction action);
-
 	/**
 	 * Return the root info that was assigned to the batch. Each batch has a root action which created the batch.
 	 * 
 	 * @return
 	 */
-	EventCauseInfoImpl getCause();
+	EventCauseInfo getCause();
+
+	/**
+	 * Set a basic root cause for all events in the batch.
+	 * 
+	 * @param type
+	 * @param uuid
+	 * @param action
+	 */
+	void setCause(ElementType type, String uuid, EventCauseAction action);
+
+	/**
+	 * Set the root cause info.
+	 * 
+	 * @param cause
+	 */
+	void setCause(EventCauseInfo cause);
 
 }

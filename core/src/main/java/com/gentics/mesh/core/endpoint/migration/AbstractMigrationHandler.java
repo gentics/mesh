@@ -19,6 +19,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -140,11 +141,12 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	@ParametersAreNonnullByDefault
-	protected <T> List<Exception> migrateLoop(Iterable<T> containers, MigrationStatusHandler status, TriConsumer<EventQueueBatch, T, List<Exception>> migrator) {
+	protected <T> List<Exception> migrateLoop(Iterable<T> containers, EventCauseInfo cause, MigrationStatusHandler status, TriConsumer<EventQueueBatch, T, List<Exception>> migrator) {
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
 		EventQueueBatch sqb = EventQueueBatch.create();
+		sqb.setCause(cause);
 		for (T container : containers) {
 			try {
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
