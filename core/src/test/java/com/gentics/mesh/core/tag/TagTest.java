@@ -180,6 +180,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. Migrate nodes to new branch
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
+			context.setOldBranch(initialBranch);
 			branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 			// 4. Create and Tag a node
@@ -239,6 +240,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 4. Migrate nodes to new branch
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
+			context.setOldBranch(initialBranch);
 			branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 			// 5. Assert

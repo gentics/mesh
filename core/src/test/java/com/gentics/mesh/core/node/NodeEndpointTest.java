@@ -1931,16 +1931,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = tx(() -> node.getUuid());
 		Project project = project();
 
-		Branch newBranch = tx(() -> {
-			// Create new branch
-			Branch branch = project.getBranchRoot().create("newbranch", user());
-
-			// Migrate nodes to new branch
-			return branch;
-		});
+		// Create new branch
+		Branch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user()));
 
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
+		context.setOldBranch(tx(() -> initialBranch()));
 		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		String newBranchUuid = tx(() -> newBranch.getUuid());
@@ -1976,6 +1972,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Migrate nodes
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(b);
+			context.setOldBranch(initialBranch());
 			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 			return b;
 		});
@@ -2048,6 +2045,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
+			context.setOldBranch(initialBranch);
 			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 			// create node in one branch

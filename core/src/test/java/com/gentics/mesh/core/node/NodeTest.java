@@ -434,6 +434,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. migrate nodes
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
+			context.setOldBranch(initialBranch);
 			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 			// 4. assert nodes in new branch
@@ -563,14 +564,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. create new branch and migrate nodes
-			Branch newBranch = tx(() -> {
-				Branch branch = project.getBranchRoot().create("newbranch", user());
-				System.out.println("Branch UUID: " + branch.getUuid());
-				return branch;
-			});
+			Branch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user()));
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
+			context.setOldBranch(initialBranch);
 			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 			// 3. delete from initial branch
 			InternalActionContext ac = mockActionContext("");

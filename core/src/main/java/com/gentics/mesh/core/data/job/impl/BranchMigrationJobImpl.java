@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_START;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -11,7 +10,6 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -56,15 +54,14 @@ public class BranchMigrationJobImpl extends JobImpl {
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setStatus(new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch));
 
-			Branch branch = getBranch();
-			if (branch == null) {
+			Branch newBranch = getBranch();
+			if (newBranch == null) {
 				throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
 			}
-
-			Branch newBranch = context.getNewBranch();
 			if (newBranch.isMigrated()) {
 				throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
 			}
+			context.setNewBranch(newBranch);
 
 			Branch oldBranch = newBranch.getPreviousBranch();
 			if (oldBranch == null) {
@@ -76,11 +73,10 @@ public class BranchMigrationJobImpl extends JobImpl {
 					+ oldBranch.getName() + "} is not fully migrated yet.");
 			}
 
-			context.setNewBranch(branch);
 			context.setOldBranch(oldBranch);
 
 			BranchMigrationCause cause = new BranchMigrationCause();
-			cause.setProject(branch.getProject().transformToReference());
+			cause.setProject(newBranch.getProject().transformToReference());
 			cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
 			cause.setUuid(getUuid());
 			context.setCause(cause);
