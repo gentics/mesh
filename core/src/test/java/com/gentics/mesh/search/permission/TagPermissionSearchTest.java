@@ -1,11 +1,5 @@
 package com.gentics.mesh.search.permission;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -16,6 +10,11 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
 public class TagPermissionSearchTest extends AbstractMeshTest {
@@ -35,9 +34,7 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String json = getESText("tagWildcard.es");
 
@@ -54,9 +51,7 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		list = call(() -> client().searchTags(json));
 		assertEquals("The tag should be found since we added the permission to see it", 1, list.getData().size());
@@ -71,6 +66,8 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 
 		String json = getESText("tagWildcard.es");
 
+		waitForSearchIdleEvent();
+
 		TagListResponse list = call(() -> client().searchTags(json));
 		assertEquals("The tag should be found since the requestor has permission to see it", 1, list.getData().size());
 
@@ -78,6 +75,8 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.getPermissions().setRead(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/tagFamilies/" + tagFamilyUuid + "/tags/" + response.getUuid(), request));
+
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchTags(json));
 		assertEquals("The tag should not be found since the requestor has no permission to see it", 0, list.getData().size());

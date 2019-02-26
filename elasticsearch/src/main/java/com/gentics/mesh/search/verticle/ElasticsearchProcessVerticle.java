@@ -106,7 +106,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private void assemble() {
 		// TODO Make bulk operator options configurable
-		bulker = new BulkOperator(vertx, Duration.ofSeconds(30), 1000);
+		bulker = new BulkOperator(vertx, Duration.ofSeconds(5), 1000);
 		requests.toFlowable(BackpressureStrategy.MISSING)
 			.onBackpressureBuffer(1000)
 			.concatMap(this::generateRequests, 1)

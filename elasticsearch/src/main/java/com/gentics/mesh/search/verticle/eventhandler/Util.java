@@ -54,7 +54,7 @@ public final class Util {
 		return Collectors.collectingAndThen(Collectors.toList(), Flowable::fromIterable);
 	}
 
-	public static <T> Flowable<T> toFlowable(Optional<T> opt) {
+	public static <T> Flowable<T> toFlowable(Optional<? extends T> opt) {
 		return opt.isPresent()
 			? Flowable.just(opt.get())
 			: Flowable.empty();

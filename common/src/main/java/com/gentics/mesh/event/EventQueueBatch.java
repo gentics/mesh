@@ -1,11 +1,13 @@
 package com.gentics.mesh.event;
 
-import java.util.List;
-import java.util.Objects;
-
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.rest.event.EventCauseAction;
+import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A batch of event queue entries.
@@ -73,13 +75,13 @@ public interface EventQueueBatch {
 		getEntries().addAll(containerBatch.getEntries());
 	}
 
-	void setRootCause(String type, String uuid, String action);
+	void setRootCause(ElementType type, String uuid, EventCauseAction action);
 
 	/**
 	 * Return the root info that was assigned to the batch. Each batch has a root action which created the batch.
 	 * 
 	 * @return
 	 */
-	EventCauseInfo getCause();
+	EventCauseInfoImpl getCause();
 
 }

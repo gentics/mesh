@@ -1,20 +1,5 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -32,10 +17,24 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
-
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 /**
  * Common request handler methods which can be used for CRUD operations.
@@ -80,7 +79,7 @@ public class HandlerUtilities {
 			// Load the name and uuid of the element. We need this info after deletion.
 			String elementUuid = element.getUuid();
 			bulkableAction(bac -> {
-				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, "delete");
+				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
 				element.delete(bac);
 			});
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");

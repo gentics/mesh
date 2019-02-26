@@ -1,0 +1,18 @@
+package com.gentics.mesh;
+
+public enum ElementType {
+	JOB,
+	LANGUAGE,
+	USER,
+	GROUP,
+	ROLE,
+	SCHEMACONTAINER,
+	SCHEMAVERSION,
+	MICROSCHEMA,
+	MICROSCHEMAVERSION,
+	PROJECT,
+	TAGFAMILY,
+	TAG,
+	BRANCH,
+	NODE;
+}

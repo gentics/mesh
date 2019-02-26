@@ -1,17 +1,15 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SearchEndpointTest extends AbstractMeshTest {
@@ -32,9 +30,10 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");
 
-			searchProvider().deleteDocument(Node.TYPE, documentId).blockingAwait();
-			assertTrue("The document with uuid {" + uuid + "} could still be found within the search index. Used document id {" + documentId + "}",
-				searchProvider().getDocument(Node.TYPE, documentId).blockingGet().isEmpty());
+			throw new RuntimeException("TODO Fix this");
+//			searchProvider().deleteDocument(Node.TYPE, documentId).blockingAwait();
+//			assertTrue("The document with uuid {" + uuid + "} could still be found within the search index. Used document id {" + documentId + "}",
+//				searchProvider().getDocument(Node.TYPE, documentId).blockingGet().isEmpty());
 		}
 	}
 

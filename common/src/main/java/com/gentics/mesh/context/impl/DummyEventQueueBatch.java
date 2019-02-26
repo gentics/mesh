@@ -1,10 +1,12 @@
 package com.gentics.mesh.context.impl;
 
-import java.util.List;
-
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.rest.event.EventCauseAction;
+import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
+
+import java.util.List;
 
 /**
  * Dummy search queue batch which can be used to avoid creation of unwanted batch entries. This is useful if a drop index is more efficient then removing each
@@ -122,12 +124,12 @@ public class DummyEventQueueBatch implements EventQueueBatch {
 	}
 
 	@Override
-	public void setRootCause(String type, String uuid, String action) {
+	public void setRootCause(ElementType type, String uuid, EventCauseAction action) {
 
 	}
 
 	@Override
-	public EventCauseInfo getCause() {
+	public EventCauseInfoImpl getCause() {
 		return null;
 	}
 

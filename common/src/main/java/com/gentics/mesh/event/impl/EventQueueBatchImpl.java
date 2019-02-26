@@ -1,19 +1,20 @@
 package com.gentics.mesh.event.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.EventCauseAction;
+import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @see EventQueueBatch
@@ -26,7 +27,7 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 
 	private List<MeshEventModel> bulkEntries = new ArrayList<>();
 
-	private EventCauseInfo cause;
+	private EventCauseInfoImpl cause;
 
 	public EventQueueBatchImpl() {
 
@@ -238,8 +239,8 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 	//
 
 	@Override
-	public void setRootCause(String type, String uuid, String action) {
-		this.cause = new EventCauseInfo(type, uuid, action);
+	public void setRootCause(ElementType type, String uuid, EventCauseAction action) {
+		this.cause = new EventCauseInfoImpl(type, uuid, action);
 	}
 
 	@Override
@@ -266,7 +267,7 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 	}
 
 	@Override
-	public EventCauseInfo getCause() {
+	public EventCauseInfoImpl getCause() {
 		return cause;
 	}
 

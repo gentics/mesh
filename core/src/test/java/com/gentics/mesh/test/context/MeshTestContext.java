@@ -451,6 +451,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private void listenToSearchIdleEvent() {
 		idleConsumer = vertx.eventBus().consumer(MeshEvent.SEARCH_IDLE.address, handler -> {
+			log.info("Got search idle event");
 			if (idleLatch != null) {
 				idleLatch.countDown();
 			}
@@ -466,7 +467,10 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			verticle.flush();
 			idleLatch = new CountDownLatch(1);
-			idleLatch.await(30, TimeUnit.SECONDS);
+			boolean timedout = idleLatch.await(30, TimeUnit.SECONDS);
+			if (timedout) {
+				throw new RuntimeException("Timed out while waiting for search idle event");
+			}
 			verticle.refresh().blockingAwait();
 		} catch (InterruptedException e) {
 			e.printStackTrace();

@@ -1,12 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
-
-import java.util.List;
-import java.util.Objects;
-
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -15,6 +9,13 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
+import java.util.List;
+import java.util.Objects;
+
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
+
 /**
  * Graph domain model interface for a tag.
  * 
@@ -22,12 +23,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "tag";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
 
 	/**
 	 * Compose the index name for tags. Use the projectUuid in order to create a project specific index.
@@ -38,7 +34,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	static String composeIndexName(String projectUuid) {
 		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
 		StringBuilder indexName = new StringBuilder();
-		indexName.append(TYPE.toLowerCase());
+		indexName.append("tag");
 		indexName.append("-").append(projectUuid);
 		return indexName.toString();
 	}

@@ -1,8 +1,9 @@
 package com.gentics.mesh.context.impl;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.event.EventQueueBatch;
-
 import io.reactivex.Completable;
 
 public class DummyBulkActionContext implements BulkActionContext {
@@ -26,7 +27,7 @@ public class DummyBulkActionContext implements BulkActionContext {
 	}
 
 	@Override
-	public void setRootCause(String type, String uuid, String action) {
+	public void setRootCause(ElementType type, String uuid, EventCauseAction action) {
 	}
 
 	@Override
