@@ -30,23 +30,25 @@ public interface BinaryStorage {
 	 * @param stream
 	 * @param uuid
 	 *            Uuid of the binary to be stored
+	 * @param size
 	 * @param temporaryId
 	 * @return
 	 */
-	Completable storeInTemp(Flowable<Buffer> stream, String temporaryId);
+	Completable storeInTemp(Flowable<Buffer> stream, long size, String temporaryId);
 
 	/**
 	 * Store the stream directly.
 	 * 
 	 * @param stream
+	 * @param size
 	 * @param uuid
 	 * @return
-	 * @deprecated Use {@link #storeInTemp(Flowable, String, String)} in combination with {@link #moveInPlace(String, String)} instead.
+	 * @deprecated Use {@link #storeInTemp(Flowable, long, String)} in combination with {@link #moveInPlace(String, String)} instead.
 	 */
 	@Deprecated
-	default Completable store(Flowable<Buffer> stream, String uuid) {
+	default Completable store(Flowable<Buffer> stream, long size, String uuid) {
 		String id = UUIDUtil.randomUUID();
-		return storeInTemp(stream, id).andThen(moveInPlace(uuid, id));
+		return storeInTemp(stream, size, id).andThen(moveInPlace(uuid, id));
 	}
 
 	/**

@@ -20,11 +20,14 @@ import hu.akarnokd.rxjava2.interop.CompletableInterop;
 import hu.akarnokd.rxjava2.interop.FlowableInterop;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.AsyncFile;
+import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
@@ -140,21 +143,24 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 
 	@Override
 	public Completable storeInTemp(String sourceFilePath, String temporaryId) {
-		return fs.rxOpen(sourceFilePath, new OpenOptions()).flatMapCompletable(asyncFile -> {
-			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-			return storeInTemp(stream, temporaryId);
+		Single<AsyncFile> open = fs.rxOpen(sourceFilePath, new OpenOptions());
+		Single<FileProps> props = fs.rxProps(sourceFilePath);
+		return Single.zip(open, props, (file, info) -> {
+			Flowable<Buffer> stream = RxUtil.toBufferFlow(file);
+			long size = info.size();
+			return storeInTemp(stream, size, temporaryId);
 		}).doOnError(e -> {
 			log.error("Error while storing file {} in temp with id {}", sourceFilePath, temporaryId, e);
-		});
+		}).toCompletable();
 	}
 
 	@Override
-	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
+	public Completable storeInTemp(Flowable<Buffer> stream, long size, String temporaryId) {
 		return Completable.defer(() -> {
 			PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(options.getBucketName())
 				.key(temporaryId)
-				.contentLength(4L)
+				.contentLength(size)
 				.build();
 
 			Publisher<ByteBuffer> publisher = stream.map(b -> ByteBuffer.wrap(b.getBytes()));

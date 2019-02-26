@@ -317,7 +317,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		Single<ImageInfo> info = mesh().imageManipulator().readImageInfo(file.getAbsolutePath());
 		// Two obs handler
 		Single<String> hash = FileUtils.hash(obs);
-		Single<String> store = mesh().binaryStorage().store(obs, "bogus").toSingleDefault("null");
+		Single<String> store = mesh().binaryStorage().store(obs, bytes.length, "bogus").toSingleDefault("null");
 
 		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
 			return new TransformationResult(hashV, 0, infoV, "blume.jpg");

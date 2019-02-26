@@ -134,7 +134,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
+			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)),  data.length(), binary.getBinary().getUuid()).blockingAwait();
 			tx.success();
 		}
 

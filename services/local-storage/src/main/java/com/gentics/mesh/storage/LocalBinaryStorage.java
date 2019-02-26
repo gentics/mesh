@@ -100,7 +100,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
+	public Completable storeInTemp(Flowable<Buffer> stream, long size, String temporaryId) {
 		Objects.requireNonNull(temporaryId, "The temporary id was not specified.");
 		return Completable.defer(() -> {
 			String path = getTemporaryFilePath(temporaryId);

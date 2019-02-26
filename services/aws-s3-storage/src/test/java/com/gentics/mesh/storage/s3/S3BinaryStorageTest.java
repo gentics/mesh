@@ -2,6 +2,7 @@ package com.gentics.mesh.storage.s3;
 
 import static com.gentics.mesh.storage.s3.MinioContainer.MINIO_ACCESS_KEY;
 import static com.gentics.mesh.storage.s3.MinioContainer.MINIO_SECRET_KEY;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -38,7 +39,8 @@ public class S3BinaryStorageTest extends AbstractMinioTest {
 
 	@Test
 	public void testStore() throws IOException {
-		final Flowable<Buffer> data = Flowable.just(Buffer.buffer("test"));
+		Buffer data = Buffer.buffer("test1234");
+		final Flowable<Buffer> flow = Flowable.just(data);
 		final String uuid = "test123";
 
 		Binary binary = Mockito.mock(Binary.class);
@@ -47,8 +49,8 @@ public class S3BinaryStorageTest extends AbstractMinioTest {
 		BinaryGraphField mockField = Mockito.mock(BinaryGraphField.class);
 		Mockito.when(mockField.getBinary()).thenReturn(binary);
 
-		// assertFalse(storage.exists(mockField));
-		storage.storeInTemp(data, uuid).blockingAwait();
+		assertFalse(storage.exists(mockField));
+		storage.storeInTemp(flow, data.length(), uuid).blockingAwait();
 		assertTrue(storage.exists(mockField));
 		Single<Buffer> buf = RxUtil.readEntireData(storage.read(uuid));
 		System.out.println("Data: " + buf.blockingGet().toString());
