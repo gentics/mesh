@@ -1,25 +1,5 @@
 package com.gentics.mesh.search.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -29,7 +9,6 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
-
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
@@ -44,6 +23,26 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import joptsimple.internal.Strings;
 import net.lingala.zip4j.exception.ZipException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -407,7 +406,25 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulk(List<? extends BulkEntry> entries) {
+	public Completable processBulk(Collection<? extends Bulkable> entries) {
+		if (entries.isEmpty()) {
+			return Completable.complete();
+		}
+
+		String bulkData = entries.stream()
+			.flatMap(bulkable -> bulkable.toBulkActions().stream())
+			.collect(Collectors.joining("\n"));
+
+		if (log.isTraceEnabled()) {
+			log.trace("Using bulk payload:");
+			log.trace(bulkData);
+		}
+
+		return processBulk(bulkData);
+	}
+
+	@Override
+	public Completable processBulkOld(List<? extends BulkEntry> entries) {
 		if (entries.isEmpty()) {
 			return Completable.complete();
 		}

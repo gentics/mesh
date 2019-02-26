@@ -1,28 +1,37 @@
 package com.gentics.mesh.search;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.Bulkable;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
  */
 public class TrackingSearchProvider implements SearchProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(TrackingSearchProvider.class);
 
 	private Map<String, JsonObject> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();
@@ -97,7 +106,29 @@ public class TrackingSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulk(List<? extends BulkEntry> entries) {
+	public Completable processBulk(Collection<? extends Bulkable> entries) {
+		for (Bulkable entry : entries) {
+			if (entry instanceof CreateDocumentRequest) {
+				CreateDocumentRequest request = (CreateDocumentRequest) entry;
+				storeEvents.put(request.getTransformedIndex() + "-" + request.getId(), request.getDoc());
+			} else if (entry instanceof DeleteDocumentRequest) {
+				DeleteDocumentRequest request = (DeleteDocumentRequest) entry;
+				deleteEvents.add(request.getTransformedIndex() + "-" + request.getId());
+			} else if (entry instanceof UpdateDocumentRequest) {
+				UpdateDocumentRequest request = (UpdateDocumentRequest) entry;
+				updateEvents.put(request.getTransformedIndex() + "-" + request.getId(), request.getDoc());
+			} else if (entry instanceof BulkRequest) {
+				BulkRequest request = (BulkRequest) entry;
+				processBulk(request.getRequests());
+			} else {
+				log.warn("Unknown bulkable request found: {}", entry);
+			}
+		}
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable processBulkOld(List<? extends BulkEntry> entries) {
 		for (BulkEntry entry : entries) {
 			BulkEntry.Action action = entry.getBulkAction();
 			switch (action) {

@@ -34,4 +34,16 @@ public class DeleteDocumentRequest implements Bulkable {
 				).encode()
 		);
 	}
+
+	public String getIndex() {
+		return index;
+	}
+
+	public String getTransformedIndex() {
+		return transformedIndex;
+	}
+
+	public String getId() {
+		return id;
+	}
 }

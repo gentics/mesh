@@ -1,14 +1,14 @@
 package com.gentics.mesh.search.verticle.event.impl;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 public class EventProcessorImpl {
@@ -56,7 +56,7 @@ public class EventProcessorImpl {
 //				AtomicLong counter = new AtomicLong();
 //				Completable bulkProcessing = bulks
 //					.buffer(bulkLimit)
-//					.flatMapCompletable(bulk -> searchProvider.processBulk(bulk).doOnComplete(() -> {
+//					.flatMapCompletable(bulk -> searchProvider.processBulkOld(bulk).doOnComplete(() -> {
 //						log.debug("Bulk completed {" + counter.incrementAndGet() + "}");
 //					}));
 //				obs = obs.andThen(bulkProcessing);

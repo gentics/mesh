@@ -37,4 +37,20 @@ public class CreateDocumentRequest implements Bulkable {
 			doc.encode()
 		);
 	}
+
+	public String getIndex() {
+		return index;
+	}
+
+	public String getTransformedIndex() {
+		return transformedIndex;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public JsonObject getDoc() {
+		return doc;
+	}
 }
