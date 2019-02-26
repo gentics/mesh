@@ -56,7 +56,7 @@ public class NodeHandler implements EventHandler {
 
 		if (event == NODE_CREATED || event == NODE_UPDATED) {
 			EventCauseInfo cause = message.getCause();
-			if (cause.getAction() == SCHEMA_MIGRATION) {
+			if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
 				return migrationUpdate(message);
 			} else {
 				return toFlowable(upsertNodes(message));

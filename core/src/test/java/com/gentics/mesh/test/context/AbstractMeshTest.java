@@ -32,6 +32,7 @@ import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
@@ -710,5 +711,11 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	protected Observable<NodeResponse> findNodesBySchema(String schemaName) {
+		return client().findNodes(PROJECT_NAME).toObservable()
+			.flatMap(nodes -> Observable.fromIterable(nodes.getData()))
+			.filter(node -> node.getSchema().getName().equals(schemaName));
 	}
 }

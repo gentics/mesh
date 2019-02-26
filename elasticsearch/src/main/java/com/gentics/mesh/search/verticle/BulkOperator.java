@@ -11,6 +11,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -100,7 +101,7 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 			public void flush() {
 				cancelTimer();
 				if (!bulkableRequests.isEmpty()) {
-					BulkRequest request = new BulkRequest(bulkableRequests);
+					BulkRequest request = new BulkRequest(new ArrayList<>(bulkableRequests));
 					bulkableRequests.clear();
 					observer.onNext(request);
 				}

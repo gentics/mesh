@@ -40,6 +40,7 @@ public class TrackingSearchProvider implements SearchProvider {
 	private List<String> dropIndexEvents = new ArrayList<>();
 	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
 	private Map<String, JsonObject> pipelineEvents = new HashMap<>();
+	private List<Bulkable> bulkRequests = new ArrayList<>();
 
 	@Override
 	public SearchProvider init() {
@@ -124,6 +125,7 @@ public class TrackingSearchProvider implements SearchProvider {
 				log.warn("Unknown bulkable request found: {}", entry);
 			}
 		}
+		bulkRequests.addAll(entries);
 		return Completable.complete();
 	}
 
@@ -221,6 +223,10 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	public List<String> getDropIndexEvents() {
 		return dropIndexEvents;
+	}
+
+	public List<Bulkable> getBulkRequests() {
+		return bulkRequests;
 	}
 
 	@Override

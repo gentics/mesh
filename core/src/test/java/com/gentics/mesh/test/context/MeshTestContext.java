@@ -1,56 +1,54 @@
-package com.gentics.mesh.test.context;
+ package com.gentics.mesh.test.context;
 
-import static org.junit.Assert.assertTrue;
+ import com.gentics.mesh.Mesh;
+ import com.gentics.mesh.cli.BootstrapInitializerImpl;
+ import com.gentics.mesh.core.cache.PermissionStore;
+ import com.gentics.mesh.core.data.impl.DatabaseHelper;
+ import com.gentics.mesh.core.data.search.IndexHandler;
+ import com.gentics.mesh.core.rest.MeshEvent;
+ import com.gentics.mesh.crypto.KeyStoreHelper;
+ import com.gentics.mesh.dagger.DaggerMeshComponent;
+ import com.gentics.mesh.dagger.MeshComponent;
+ import com.gentics.mesh.dagger.MeshInternal;
+ import com.gentics.mesh.etc.config.HttpServerConfig;
+ import com.gentics.mesh.etc.config.MeshOptions;
+ import com.gentics.mesh.etc.config.OAuth2Options;
+ import com.gentics.mesh.etc.config.OAuth2ServerConfig;
+ import com.gentics.mesh.graphdb.spi.Database;
+ import com.gentics.mesh.impl.MeshFactoryImpl;
+ import com.gentics.mesh.rest.client.MeshRestClient;
+ import com.gentics.mesh.rest.client.MeshRestClientConfig;
+ import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
+ import com.gentics.mesh.router.RouterStorage;
+ import com.gentics.mesh.search.TrackingSearchProvider;
+ import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+ import com.gentics.mesh.test.TestDataProvider;
+ import com.gentics.mesh.test.TestSize;
+ import com.gentics.mesh.test.docker.ElasticsearchContainer;
+ import com.gentics.mesh.test.docker.KeycloakContainer;
+ import com.gentics.mesh.test.util.TestUtils;
+ import com.gentics.mesh.util.UUIDUtil;
+ import com.syncleus.ferma.tx.Tx;
+ import io.vertx.core.Vertx;
+ import io.vertx.core.eventbus.MessageConsumer;
+ import io.vertx.core.logging.Logger;
+ import io.vertx.core.logging.LoggerFactory;
+ import okhttp3.OkHttpClient;
+ import org.apache.commons.io.FileUtils;
+ import org.junit.rules.TestWatcher;
+ import org.junit.runner.Description;
+ import org.testcontainers.containers.wait.Wait;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+ import java.io.File;
+ import java.io.IOException;
+ import java.time.Duration;
+ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.Objects;
+ import java.util.concurrent.CountDownLatch;
+ import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.testcontainers.containers.wait.Wait;
-
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.core.cache.PermissionStore;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
-import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.crypto.KeyStoreHelper;
-import com.gentics.mesh.dagger.DaggerMeshComponent;
-import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OAuth2Options;
-import com.gentics.mesh.etc.config.OAuth2ServerConfig;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.impl.MeshFactoryImpl;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshRestClientConfig;
-import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
-import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.search.TrackingSearchProvider;
-import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
-import com.gentics.mesh.test.TestDataProvider;
-import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.docker.ElasticsearchContainer;
-import com.gentics.mesh.test.docker.KeycloakContainer;
-import com.gentics.mesh.test.util.TestUtils;
-import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import okhttp3.OkHttpClient;
+ import static org.junit.Assert.assertTrue;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -108,9 +106,9 @@ public class MeshTestContext extends TestWatcher {
 				}
 				initFolders(Mesh.mesh().getOptions());
 				setupData();
+				listenToSearchIdleEvent();
 				if (settings.useElasticsearch()) {
 					setupIndexHandlers();
-					listenToSearchIdleEvent();
 				}
 				if (settings.startServer()) {
 					setupRestEndpoints(settings);
@@ -141,9 +139,9 @@ public class MeshTestContext extends TestWatcher {
 					undeployAndReset();
 					closeClient();
 				}
+				idleConsumer.unregister();
 				if (settings.useElasticsearch()) {
 					meshDagger.searchProvider().clear().blockingAwait();
-					idleConsumer.unregister();
 				} else {
 					meshDagger.trackingSearchProvider().clear();
 				}
@@ -467,8 +465,8 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			verticle.flush();
 			idleLatch = new CountDownLatch(1);
-			boolean timedout = idleLatch.await(30, TimeUnit.SECONDS);
-			if (timedout) {
+			boolean success = idleLatch.await(30, TimeUnit.SECONDS);
+			if (!success) {
 				throw new RuntimeException("Timed out while waiting for search idle event");
 			}
 			verticle.refresh().blockingAwait();

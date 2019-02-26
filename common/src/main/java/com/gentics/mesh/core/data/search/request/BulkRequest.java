@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 public class BulkRequest implements Bulkable {
 	private static final Logger log = LoggerFactory.getLogger(BulkRequest.class);
 
-	private Collection<Bulkable> requests;
+	private List<Bulkable> requests;
 
-	public BulkRequest(Collection<Bulkable> requests) {
+	public BulkRequest(List<Bulkable> requests) {
 		this.requests = requests;
 	}
 

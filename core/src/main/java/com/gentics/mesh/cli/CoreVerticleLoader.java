@@ -1,21 +1,11 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
-
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -23,6 +13,14 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 
 /**
  * Central loader for core verticles. Needed verticles will be listed and deployed here.
@@ -117,9 +115,8 @@ public class CoreVerticleLoader {
 	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
-		if (configuration.getSearchOptions().getUrl() != null) {
-			verticles.add(elasticsearchProcessVerticle.get());
-		}
+		// TODO Only add verticle if necessary
+		verticles.add(elasticsearchProcessVerticle.get());
 		return verticles;
 	}
 

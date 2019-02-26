@@ -1,13 +1,23 @@
 package com.gentics.mesh.assertj.impl;
 
-import org.assertj.core.api.AbstractAssert;
-
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.request.Bulkable;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.util.Tuple;
+import org.assertj.core.api.AbstractAssert;
+
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.junit.Assert.assertEquals;
 
 public class DummySearchProviderAssert extends AbstractAssert<DummySearchProviderAssert, TrackingSearchProvider> {
 
@@ -120,23 +130,23 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param createIndexEvents
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasEvents(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents) {
-//		String storeInfo = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-//		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + storeInfo + "\n}", storeEvents,
-//				actual.getStoreEvents().size());
-//
-//		String deleteInfo = actual.getDeleteEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-//		assertEquals("The search provider did not record the correct amount of delete events. Found events: {\n" + deleteInfo + "\n}", deleteEvents,
-//				actual.getDeleteEvents().size());
-//
-//		String dropInfo = actual.getDropIndexEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-//		assertEquals("The search provider did not record the correct amount of drop index events. Found events: {\n" + dropInfo + "\n}",
-//				dropIndexEvents, actual.getDropIndexEvents().size());
-//
-//		String createInfo = actual.getCreateIndexEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-//		assertEquals("The search provider did not record the correct amount of create index events. Found events: {\n" + createInfo + "\n}",
-//				createIndexEvents, actual.getCreateIndexEvents().size());
-//
+	public DummySearchProviderAssert hasEvents(long storeEvents, long deleteEvents, long dropIndexEvents, long createIndexEvents) {
+		String storeInfo = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + storeInfo + "\n}", storeEvents,
+				actual.getStoreEvents().size());
+
+		String deleteInfo = actual.getDeleteEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of delete events. Found events: {\n" + deleteInfo + "\n}", deleteEvents,
+				actual.getDeleteEvents().size());
+
+		String dropInfo = actual.getDropIndexEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of drop index events. Found events: {\n" + dropInfo + "\n}",
+				dropIndexEvents, actual.getDropIndexEvents().size());
+
+		String createInfo = actual.getCreateIndexEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of create index events. Found events: {\n" + createInfo + "\n}",
+				createIndexEvents, actual.getCreateIndexEvents().size());
+
 		return this;
 	}
 
@@ -194,4 +204,49 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		return this;
 	}
 
+	/**
+	 * Assert that there is a node document delete event for every node document create event.
+	 * @return
+	 */
+	public DummySearchProviderAssert hasSymmetricNodeRequests() {
+		List<Tuple<CreateDocumentRequest, DeleteDocumentRequest>> requests = actual.getBulkRequests()
+			.stream()
+			.filter(this::isDocumentRequest)
+			.collect(toPairs(CreateDocumentRequest.class, DeleteDocumentRequest.class));
+		requests.forEach(this::assertMatching);
+		return this;
+	}
+
+	private boolean isDocumentRequest(Bulkable request) {
+		return request instanceof CreateDocumentRequest || request instanceof DeleteDocumentRequest;
+	}
+
+	private void assertMatching(Tuple<CreateDocumentRequest, DeleteDocumentRequest> requests) {
+		String id1 = requests.v1().getId();
+		String id2 = requests.v2().getId();
+		assertEquals(String.format("Found non-matching pair:\n%s\n%s", id1, id2),
+			id1, id2);
+	}
+
+	private <T, R1, R2> Collector<T, ?, List<Tuple<R1, R2>>> toPairs(Class<R1> r1Class, Class<R2> r2Class) {
+		return Collectors.collectingAndThen(Collectors.toList(), list ->
+			IntStream.iterate(0, i -> i + 2)
+			.limit(list.size() / 2)
+			.mapToObj(i ->
+				Tuple.tuple(
+					requireType(r1Class, list.get(i)),
+					requireType(r2Class, list.get(i+1))
+				)
+			)
+			.collect(Collectors.toList())
+		);
+	}
+
+	private <T> T requireType(Class<T> clazz, Object obj) {
+		if (clazz.isAssignableFrom(obj.getClass())) {
+			return (T) obj;
+		} else {
+			throw new RuntimeException(String.format("Unexpected type. Required {%s}, but got {%s}", clazz.getSimpleName(), obj.getClass().getSimpleName()));
+		}
+	}
 }
