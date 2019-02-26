@@ -41,9 +41,9 @@ public class S3BinaryStorageTest extends AbstractMinioTest {
 	@Test
 	public void testStore() throws IOException {
 		Buffer data = Buffer.buffer("test1234");
-		final Flowable<Buffer> flow = Flowable.just(data);
-		final String uuid = UUIDUtil.randomUUID();
-		final String temporaryId = UUIDUtil.randomUUID();
+		Flowable<Buffer> flow = Flowable.just(data);
+		String uuid = UUIDUtil.randomUUID();
+		String temporaryId = UUIDUtil.randomUUID();
 
 		Binary binary = Mockito.mock(Binary.class);
 		Mockito.when(binary.getSHA512Sum()).thenReturn(uuid);
@@ -71,6 +71,10 @@ public class S3BinaryStorageTest extends AbstractMinioTest {
 		// Delete file & check
 		storage.delete(uuid).blockingAwait();
 		assertFalse(storage.exists(mockField).blockingGet());
+
+		flow = Flowable.just(data);
+		storage.storeInTemp(flow, data.length(), temporaryId).blockingAwait();
+		storage.purgeTemporaryUpload(temporaryId);
 	}
 
 }
