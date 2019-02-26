@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -81,6 +82,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	private SchemaContainerVersion fromContainerVersion;
 
 	private SchemaContainerVersion toContainerVersion;
+
+	private MigrationStatusHandler status;
 
 	@Override
 	public Branch getBranch() {
@@ -984,6 +987,15 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	public void setToVersion(SchemaContainerVersion toContainerVersion) {
 		this.toContainerVersion = toContainerVersion;
+	}
+
+	public void setStatus(MigrationStatusHandler status) {
+		this.status = status;
+	}
+
+	@Override
+	public MigrationStatusHandler getStatus() {
+		return status;
 	}
 
 }

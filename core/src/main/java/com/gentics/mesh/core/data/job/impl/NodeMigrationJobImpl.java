@@ -63,75 +63,77 @@ public class NodeMigrationJobImpl extends JobImpl {
 		batch.add(event).dispatch();
 	}
 
-	protected Completable processTask() {
+	private NodeMigrationActionContextImpl prepareContext() {
+		return DB.get().tx(() -> {
+			NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
+			context.setStatus(new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema));
 
-		return Completable.defer(() -> {
+			Branch branch = getBranch();
+			if (branch == null) {
+				throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
+			}
+			context.setBranch(branch);
 
-			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
-			try (Tx tx = DB.get().tx()) {
+			SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
+			if (fromContainerVersion == null) {
+				throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
+			}
+			context.setFromVersion(fromContainerVersion);
 
-				Branch branch = getBranch();
-				if (branch == null) {
-					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
-				}
-				ac.setBranch(branch);
+			SchemaContainerVersion toContainerVersion = getToSchemaVersion();
+			if (toContainerVersion == null) {
+				throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
+			}
+			context.setToVersion(toContainerVersion);
 
-				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
-				if (fromContainerVersion == null) {
-					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
-				}
-				ac.setFromVersion(fromContainerVersion);
-
-				SchemaContainerVersion toContainerVersion = getToSchemaVersion();
-				if (toContainerVersion == null) {
-					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
-				}
-				ac.setToVersion(toContainerVersion);
-
-				SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
-				if (schemaContainer == null) {
-					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
-				}
-
-				Project project = branch.getProject();
-				if (project == null) {
-					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
-				}
-				ac.setProject(project);
-
-				BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
-				status.setVersionEdge(branchVersionEdge);
-
-				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
-					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
-					+ "} in project {" + project.getUuid() + "}");
-
-
-				SchemaMigrationCause cause = new SchemaMigrationCause();
-				cause.setFromVersion(fromContainerVersion.transformToReference());
-				cause.setToVersion(toContainerVersion.transformToReference());
-				cause.setProject(project.transformToReference());
-				cause.setBranch(branch.transformToReference());
-				cause.setUuid(getUuid());
-				ac.setCause(cause);
-
-				status.commit();
-				tx.success();
-			} catch (Exception e) {
-				DB.get().tx(() -> {
-					status.error(e, "Error while preparing node migration.");
-				});
-				throw e;
+			SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
+			if (schemaContainer == null) {
+				throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
 			}
 
-			
-					
-			// for (int i = 0; i < MIGRATION_ATTEMPT_COUNT; i++) {
-			NodeMigrationHandler handler = MeshInternal.get().nodeMigrationHandler();
-			Completable migration = handler.migrateNodes(ac, status);
-			migration = migration.doOnComplete(() -> {
+			Project project = branch.getProject();
+			if (project == null) {
+				throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
+			}
+			context.setProject(project);
+
+			BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
+			context.getStatus().setVersionEdge(branchVersionEdge);
+
+			log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
+				+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
+				+ "} in project {" + project.getUuid() + "}");
+
+			SchemaMigrationCause cause = new SchemaMigrationCause();
+			cause.setFromVersion(fromContainerVersion.transformToReference());
+			cause.setToVersion(toContainerVersion.transformToReference());
+			cause.setProject(project.transformToReference());
+			cause.setBranch(branch.transformToReference());
+			cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
+			cause.setUuid(getUuid());
+			context.setCause(cause);
+
+			context.getStatus().commit();
+			return context;
+		});
+
+		// catch (Exception e) {
+		// DB.get().tx(() -> {
+		// ac.getStatus().error(e, "Error while preparing node migration.");
+		// });
+		// throw e;
+		// }
+	}
+
+	protected Completable processTask() {
+		NodeMigrationHandler handler = MeshInternal.get().nodeMigrationHandler();
+
+		return Completable.defer(() -> {
+			NodeMigrationActionContextImpl ac = prepareContext();
+
+			Completable migration = handler.migrateNodes(ac);
+			return migration.doOnComplete(() -> {
 				DB.get().tx(() -> {
 					JobWarningList warnings = new JobWarningList();
 					if (!ac.getConflicts().isEmpty()) {
@@ -142,25 +144,14 @@ public class NodeMigrationJobImpl extends JobImpl {
 					}
 					setWarnings(warnings);
 					finalizeMigration(ac);
-					status.done();
+					ac.getStatus().done();
 				});
 			}).doOnError(err -> {
 				DB.get().tx(() -> {
-					status.error(err, "Error in node migration.");
+					ac.getStatus().error(err, "Error in node migration.");
 				});
 			});
-			// // Check migration result
-			// boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(branch.getUuid()).hasNext();
-			// if (i == MIGRATION_ATTEMPT_COUNT - 1 && hasRemainingContainers) {
-			// log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
-			// } else if (hasRemainingContainers) {
-			// log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
-			// + fromContainerVersion.getVersion() + "} invoking migration again.");
-			// } else {
-			// break;
-			// }
-			// }
-			return migration;
+
 		});
 	}
 

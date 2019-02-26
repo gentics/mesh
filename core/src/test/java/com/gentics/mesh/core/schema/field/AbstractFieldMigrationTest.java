@@ -161,7 +161,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
 		context.setToVersion(versionB);
-		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
+		context.setStatus(DummyMigrationStatus.get());
+
+		nodeMigrationHandler.migrateNodes(context).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -328,7 +330,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
 		context.setToVersion(versionB);
-		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
+		context.setStatus(DummyMigrationStatus.get());
+		nodeMigrationHandler.migrateNodes(context).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -507,8 +510,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
 		context.setToVersion(versionB);
+		context.setStatus(DummyMigrationStatus.get());
 
-		nodeMigrationHandler.migrateNodes(context , DummyMigrationStatus.get()).blockingAwait();
+		nodeMigrationHandler.migrateNodes(context).blockingAwait();
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
@@ -693,7 +697,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
 		context.setToVersion(versionB);
-		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
+		context.setStatus(DummyMigrationStatus.get());
+
+		nodeMigrationHandler.migrateNodes(context).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -856,7 +862,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
 		context.setToVersion(versionB);
-		nodeMigrationHandler.migrateNodes(context, DummyMigrationStatus.get()).blockingAwait();
+		context.setStatus(DummyMigrationStatus.get());
+		nodeMigrationHandler.migrateNodes(context).blockingAwait();
 	}
 
 	/**

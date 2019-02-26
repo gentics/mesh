@@ -14,7 +14,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -58,15 +57,14 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *
 	 * @param ac
 	 *            Migration context
-	 * @param status
-	 *            status handler which will be used to track the progress
 	 * @return Completable which is completed once the migration finishes
 	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl ac, @NotNull MigrationStatusHandler status) {
+	public Completable migrateNodes(NodeMigrationActionContextImpl ac) {
 		SchemaContainerVersion fromVersion = ac.getFromVersion();
 		SchemaContainerVersion toVersion = ac.getToVersion();
 		SchemaMigrationCause cause = ac.getCause();
 		Branch branch = ac.getBranch();
+		MigrationStatusHandler status = ac.getStatus();
 
 		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();

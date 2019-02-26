@@ -8,8 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
@@ -68,7 +69,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 			// 6. Move Node B into FolderA
 			call(() -> client().moveNode(PROJECT_NAME, nodeB.getUuid(), folderA.getUuid()), CONFLICT, "node_conflicting_segmentfield_move",
-					"slug", conflictingName);
+				"slug", conflictingName);
 
 		}
 	}
@@ -89,7 +90,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.getFields().put("teaser", createStringField("some name"));
 			create.getFields().put("slug", createStringField(conflictingName));
 			create.getFields().put("content", createStringField("Blessed mealtime!"));
-			NodeResponse response = client().createNode(PROJECT_NAME, create).blockingGet();
+			client().createNode(PROJECT_NAME, create).blockingGet();
 
 			// try to create the new content with same slug
 			NodeCreateRequest create2 = new NodeCreateRequest();
@@ -210,7 +211,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 			// try to move the original node
 			call(() -> client().moveNode(PROJECT_NAME, uuid, otherParent.getUuid()), CONFLICT, "node_conflicting_segmentfield_move", "slug",
-					conflictingName);
+				conflictingName);
 			return null;
 		});
 	}
@@ -224,11 +225,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			return schemaContainer("content");
 		});
 		// 1. Create new branch and migrate nodes
-		db().tx(() -> {
-			Branch newBranch = project().getBranchRoot().create(newBranchName, user());
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
-			return null;
-		});
+		Branch newBranch = db().tx(() -> project().getBranchRoot().create(newBranchName, user()));
+		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		context.setNewBranch(newBranch);
+		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		// 2. Create content in new branch
 		db().tx(() -> {
@@ -269,11 +269,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			return schemaContainer("content");
 		});
 		// 1. Create new branch and migrate nodes
-		db().tx(() -> {
-			Branch newBranch = project().getBranchRoot().create(newBranchName, user());
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
-			return null;
-		});
+		Branch newBranch = db().tx(() -> project().getBranchRoot().create(newBranchName, user()));
+		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		context.setNewBranch(newBranch);
+		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		// 2. Create content in new branch
 		NodeResponse response = db().tx(() -> {
@@ -298,7 +297,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> client().createNode(response.getUuid(), PROJECT_NAME, create, new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
+			call(() -> client().createNode(response.getUuid(), PROJECT_NAME, create,
+				new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
 
 			return null;
 		});
@@ -312,11 +312,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			return schemaContainer("content");
 		});
 		// 1. Create new branch and migrate nodes
-		db().tx(() -> {
-			Branch newBranch = project().getBranchRoot().create(newBranchName, user());
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
-			return null;
-		});
+		Branch newBranch = db().tx(() -> project().getBranchRoot().create(newBranchName, user()));
+		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		context.setNewBranch(newBranch);
+		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		// 2. Create "conflicting" content in initial branch
 		NodeResponse response = db().tx(() -> {
@@ -329,7 +328,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 
-			return call(() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
+			return call(
+				() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
 		});
 
 		// 3. Create content in new branch
@@ -444,7 +444,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			update.setVersion("0.1");
 			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			call(() -> client().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "slug",
-					conflictingName);
+				conflictingName);
 			return null;
 		});
 
@@ -502,7 +502,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		// 4. Publish conflicting content
 		db().tx(() -> {
 			call(() -> client().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "slug",
-					conflictingName);
+				conflictingName);
 
 			return null;
 		});

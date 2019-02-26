@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -431,7 +432,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
 
 			// 3. migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(newBranch);
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 			// 4. assert nodes in new branch
 			assertThat(folder).as("folder").hasOnlyChildren(newBranch, subFolder);
@@ -560,12 +563,15 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. create new branch and migrate nodes
-			tx(() -> {
-				Branch newBranch = project.getBranchRoot().create("newbranch", user());
-				meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
-				System.out.println("Branch UUID: " + newBranch.getUuid());
+			Branch newBranch = tx(() -> {
+				Branch branch = project.getBranchRoot().create("newbranch", user());
+				System.out.println("Branch UUID: " + branch.getUuid());
+				return branch;
 			});
 
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(newBranch);
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 			// 3. delete from initial branch
 			InternalActionContext ac = mockActionContext("");
 			tx(() -> {

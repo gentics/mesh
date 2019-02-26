@@ -50,6 +50,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -1935,9 +1936,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Branch branch = project.getBranchRoot().create("newbranch", user());
 
 			// Migrate nodes to new branch
-			meshDagger().branchMigrationHandler().migrateBranch(branch, null).blockingAwait();
 			return branch;
 		});
+
+		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		context.setNewBranch(newBranch);
+		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		String newBranchUuid = tx(() -> newBranch.getUuid());
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
@@ -1970,7 +1974,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Branch b = project.getBranchRoot().create("newbranch", user());
 
 			// Migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(b, null).blockingAwait();
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(b);
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 			return b;
 		});
 
@@ -2040,7 +2046,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
 			Branch newBranch = project.getBranchRoot().create("newbranch", user());
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(newBranch);
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 			// create node in one branch
 			Node node = content("concorde");
