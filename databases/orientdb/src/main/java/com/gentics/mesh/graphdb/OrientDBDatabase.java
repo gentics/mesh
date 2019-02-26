@@ -75,7 +75,7 @@ import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.syncleus.ferma.ext.orientdb.OrientDBTx;
+import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
