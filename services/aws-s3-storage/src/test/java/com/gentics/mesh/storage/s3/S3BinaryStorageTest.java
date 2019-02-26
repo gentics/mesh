@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -41,7 +42,8 @@ public class S3BinaryStorageTest extends AbstractMinioTest {
 	public void testStore() throws IOException {
 		Buffer data = Buffer.buffer("test1234");
 		final Flowable<Buffer> flow = Flowable.just(data);
-		final String uuid = "test123";
+		final String uuid = UUIDUtil.randomUUID();
+		final String temporaryId = UUIDUtil.randomUUID();
 
 		Binary binary = Mockito.mock(Binary.class);
 		Mockito.when(binary.getSHA512Sum()).thenReturn(uuid);
@@ -49,11 +51,26 @@ public class S3BinaryStorageTest extends AbstractMinioTest {
 		BinaryGraphField mockField = Mockito.mock(BinaryGraphField.class);
 		Mockito.when(mockField.getBinary()).thenReturn(binary);
 
-		assertFalse(storage.exists(mockField));
-		storage.storeInTemp(flow, data.length(), uuid).blockingAwait();
-		assertTrue(storage.exists(mockField));
+		// Check initialy - file does not exists
+		assertFalse(storage.exists(mockField).blockingGet());
+
+		// Upload in temp
+		storage.storeInTemp(flow, data.length(), temporaryId).blockingAwait();
+		assertFalse(storage.exists(mockField).blockingGet());
+
+		// Move into place
+		storage.moveInPlace(uuid, temporaryId).blockingAwait();
+
+		// Check file exists
+		assertTrue(storage.exists(mockField).blockingGet());
+
+		// Read file
 		Single<Buffer> buf = RxUtil.readEntireData(storage.read(uuid));
 		System.out.println("Data: " + buf.blockingGet().toString());
+
+		// Delete file & check
+		storage.delete(uuid).blockingAwait();
+		assertFalse(storage.exists(mockField).blockingGet());
 	}
 
 }

@@ -8,6 +8,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -66,7 +67,7 @@ public interface BinaryStorage {
 	 * @param binaryField
 	 * @return
 	 */
-	boolean exists(BinaryGraphField field);
+	Single<Boolean> exists(BinaryGraphField field);
 
 	/**
 	 * Read the binary data which is identified by the given binary uuid.

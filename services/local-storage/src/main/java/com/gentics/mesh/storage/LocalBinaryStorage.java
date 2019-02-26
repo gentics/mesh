@@ -21,6 +21,7 @@ import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
@@ -163,9 +164,9 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public boolean exists(BinaryGraphField field) {
+	public Single<Boolean> exists(BinaryGraphField field) {
 		String uuid = field.getBinary().getUuid();
-		return new File(getFilePath(uuid)).exists();
+		return fileSystem.rxExists(getFilePath(uuid));
 	}
 
 	@Override
