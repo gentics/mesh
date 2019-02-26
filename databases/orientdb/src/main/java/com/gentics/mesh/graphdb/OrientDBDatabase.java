@@ -930,7 +930,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 	}
 
+	/**
+	 * @deprecated Don't use tx method directly. Use {@link #tx(com.syncleus.ferma.tx.TxAction0)} instead to avoid tx commit issues.
+	 */
 	@Override
+	@Deprecated
 	public Tx tx() {
 		return new OrientDBTx(txProvider, resolver);
 	}

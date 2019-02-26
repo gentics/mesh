@@ -23,6 +23,11 @@ title: Changelog
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.31.0]]
+== 0.31.0 (TBD)
+
+icon:check[] The `.vertx` cache folder was moved to the configurable `data/tmp` folder.
+
 [[v0.30.0]]
 == 0.30.0 (TBD)
 

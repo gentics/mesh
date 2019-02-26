@@ -8,12 +8,11 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.HttpServerConfig;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.BinaryStorageService;
 
 import dagger.Module;
 import dagger.Provides;
@@ -54,18 +53,6 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public static BinaryStorageService storageService() {
-		return BinaryStorageService.getInstance();
-	}
-
-	@Provides
-	@Singleton
-	public static BinaryStorage binaryStorage() {
-		return storageService().getStorage();
-	}
-
-	@Provides
-	@Singleton
 	public static Database database() {
 		Database database = databaseService().getDatabase();
 		if (database == null) {
@@ -89,8 +76,8 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static CorsHandler corsHandler() {
-		HttpServerConfig serverOptions = Mesh.mesh().getOptions().getHttpServerOptions();
+	public static CorsHandler corsHandler(MeshOptions options) {
+		HttpServerConfig serverOptions = options.getHttpServerOptions();
 		String pattern = serverOptions.getCorsAllowedOriginPattern();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
 		boolean allowCredentials = serverOptions.getCorsAllowCredentials();
@@ -125,10 +112,10 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static BodyHandlerImpl bodyHandler() {
-		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
+	public static BodyHandlerImpl bodyHandler(MeshOptions options) {
+		String tempDirectory = options.getUploadOptions().getTempDirectory();
 		BodyHandlerImpl handler = new MeshBodyHandlerImpl(tempDirectory);
-		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
+		handler.setBodyLimit(options.getUploadOptions().getByteLimit());
 		// TODO check for windows issues
 		handler.setUploadsDirectory(tempDirectory);
 		handler.setMergeFormAttributes(false);

@@ -41,21 +41,28 @@ import io.vertx.core.MultiMap;
  */
 public class NodeEndpoint extends AbstractProjectEndpoint {
 
-	private NodeCrudHandler crudHandler;
-
 	private Resource resource = new Resource();
 
-	private BinaryFieldHandler binaryFieldHandler;
+	private NodeCrudHandler crudHandler;
+
+	private BinaryUploadHandler binaryUploadHandler;
+
+	private BinaryTransformHandler binaryTransformHandler;
+
+	private BinaryDownloadHandler binaryDownloadHandler;
 
 	public NodeEndpoint() {
 		super("nodes", null, null);
 	}
 
 	@Inject
-	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryFieldHandler fieldAPIHandler) {
+	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
+		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler) {
 		super("nodes", chain, boot);
 		this.crudHandler = crudHandler;
-		this.binaryFieldHandler = fieldAPIHandler;
+		this.binaryUploadHandler = binaryUploadHandler;
+		this.binaryTransformHandler = binaryTransformHandler;
+		this.binaryDownloadHandler = binaryDownloadHandler;
 	}
 
 	@Override
@@ -145,8 +152,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = wrap(rc);
-			binaryFieldHandler.handleUpdateField(ac, uuid, fieldName, attributes);
-		}, false);
+			binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
+		});
 
 		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
@@ -159,10 +166,10 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
 		imageTransform.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Transformation was executed and updated node was returned.");
 		imageTransform.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
-		imageTransform.handler(rc -> {
+		imageTransform.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryFieldHandler.handleTransformImage(rc, uuid, fieldName);
+			binaryTransformHandler.handleTransformImage(rc, uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldGet = createRoute();
@@ -174,10 +181,10 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.method(GET);
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
-		fieldGet.handler(rc -> {
+		fieldGet.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryFieldHandler.handleReadBinaryField(rc, uuid, fieldName);
+			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
 		});
 
 	}
@@ -193,7 +200,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The source or target node could not be found.");
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String toUuid = ac.getParameter("toUuid");

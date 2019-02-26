@@ -1,5 +1,21 @@
 package com.gentics.mesh.test.context;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.testcontainers.containers.wait.Wait;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -17,6 +33,8 @@ import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
@@ -27,22 +45,12 @@ import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.testcontainers.containers.wait.Wait;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -60,6 +68,13 @@ public class MeshTestContext extends TestWatcher {
 
 	public static KeycloakContainer keycloak;
 
+	public static OkHttpClient okHttp = new OkHttpClient.Builder()
+		.callTimeout(Duration.ofMinutes(15))
+		.connectTimeout(Duration.ofMinutes(15))
+		.writeTimeout(Duration.ofMinutes(15))
+		.readTimeout(Duration.ofMinutes(15))
+		.build();
+
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
@@ -74,7 +89,6 @@ public class MeshTestContext extends TestWatcher {
 
 	private CountDownLatch idleLatch;
 	private MessageConsumer<Object> idleConsumer;
-
 
 	@Override
 	protected void starting(Description description) {
@@ -92,6 +106,7 @@ public class MeshTestContext extends TestWatcher {
 				if (!settings.inMemoryDB()) {
 					DatabaseHelper.init(meshDagger.database());
 				}
+				initFolders(Mesh.mesh().getOptions());
 				setupData();
 				if (settings.useElasticsearch()) {
 					setupIndexHandlers();
@@ -177,7 +192,12 @@ public class MeshTestContext extends TestWatcher {
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
 			boolean ssl = settings.ssl();
-			client = MeshRestClient.create("localhost", port, ssl);
+			MeshRestClientConfig clientConfig = new MeshRestClientConfig.Builder()
+				.setHost("localhost")
+				.setPort(port)
+				.setSsl(ssl)
+				.build();
+			client = new MeshRestOkHttpClientImpl(clientConfig, okHttp);
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().blockingGet();
 		}
@@ -234,14 +254,15 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
 		BootstrapInitializerImpl.clearReferences();
+		Database db = MeshInternal.get().database();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			MeshInternal.get().database().clear();
+			db.clear();
 		} else {
-			MeshInternal.get().database().stop();
+			db.stop();
 			File dbDir = new File(Mesh.mesh().getOptions().getStorageOptions().getDirectory());
 			FileUtils.deleteDirectory(dbDir);
-			MeshInternal.get().database().setupConnectionPool();
+			db.setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
@@ -295,20 +316,7 @@ public class MeshTestContext extends TestWatcher {
 		meshOptions.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
 		meshOptions.setNodeName("testNode");
 
-		String uploads = newFolder("testuploads");
-		meshOptions.getUploadOptions().setDirectory(uploads);
-
-		String targetTmpDir = newFolder("tmpdir");
-		meshOptions.getUploadOptions().setTempDirectory(targetTmpDir);
-
-		String imageCacheDir = newFolder("image_cache");
-		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
-
-		String backupPath = newFolder("backups");
-		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
-
-		String exportPath = newFolder("exports");
-		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+		initFolders(meshOptions);
 
 		HttpServerConfig httpOptions = meshOptions.getHttpServerOptions();
 		httpOptions.setPort(port);
@@ -370,6 +378,24 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
+	private void initFolders(MeshOptions meshOptions) throws IOException {
+		String tmpDir = newFolder("tmpDir");
+		meshOptions.setTempDirectory(tmpDir);
+
+		String uploads = newFolder("testuploads");
+		meshOptions.getUploadOptions().setDirectory(uploads);
+		String targetUploadTmpDir = newFolder("uploadTmpDir");
+		meshOptions.getUploadOptions().setTempDirectory(targetUploadTmpDir);
+
+		String imageCacheDir = newFolder("image_cache");
+		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
+
+		String backupPath = newFolder("backups");
+		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
+		String exportPath = newFolder("exports");
+		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+	}
+
 	/**
 	 * Create a new folder which will be automatically be deleted once the rule finishes.
 	 * 
@@ -382,7 +408,7 @@ public class MeshTestContext extends TestWatcher {
 		File directory = new File(path);
 		FileUtils.deleteDirectory(directory);
 		directory.deleteOnExit();
-		directory.mkdirs();
+		assertTrue("Could not create dir for path {" + path + "}", directory.mkdirs());
 		tmpFolders.add(directory);
 		return path;
 	}

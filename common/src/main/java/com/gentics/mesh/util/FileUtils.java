@@ -25,33 +25,18 @@ public final class FileUtils {
 	}
 
 	/**
-	 * Generate a SHA 512 checksum from the given file and asynchronously return the hex encoded hash as a string.
+	 * Generate a SHA 512 checksum from the given buffer flow and return a hex encoded hash as a string.
 	 * 
-	 * @param path
+	 * @param stream
+	 * @return Hashing result
 	 */
-	public static String hash(String path) {
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-512");
-			try (InputStream is = Files.newInputStream(Paths.get(path)); DigestInputStream mis = new DigestInputStream(is, md)) {
-				byte[] buffer = new byte[4096];
-				while (mis.read(buffer) >= 0) {
-				}
-			}
-			byte[] digest = md.digest();
-			return bytesToHex(digest);
-		} catch (Exception e) {
-			log.error("Error while hashing file {" + path + "}", e);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e);
-		}
-	}
-
 	public static Single<String> hash(Flowable<Buffer> stream) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
 			return stream.reduce(md, (digest, buffer) -> {
 				digest.update(buffer.getBytes());
 				return digest;
-			}).map(digest -> digest.digest()).map(FileUtils::bytesToHex);
+			}).map(MessageDigest::digest).map(FileUtils::bytesToHex);
 		} catch (Exception e) {
 			log.error("Error while hashing data", e);
 			return Single.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e));

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -35,7 +35,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandler.class);
 
 	@Inject
-	public BranchMigrationHandler(Database db, BinaryFieldHandler nodeFieldAPIHandler) {
+	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler) {
 		super(db, nodeFieldAPIHandler);
 	}
 

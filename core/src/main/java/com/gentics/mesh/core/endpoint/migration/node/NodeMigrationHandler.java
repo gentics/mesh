@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -49,7 +49,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
 	@Inject
-	public NodeMigrationHandler(Database db, BinaryFieldHandler nodeFieldAPIHandler) {
+	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler) {
 		super(db, nodeFieldAPIHandler);
 	}
 

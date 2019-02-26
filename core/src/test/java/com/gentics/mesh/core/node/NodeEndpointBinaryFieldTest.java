@@ -17,8 +17,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import com.gentics.mesh.util.VersionNumber;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,9 +38,11 @@ import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;

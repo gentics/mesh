@@ -258,6 +258,22 @@ public class HandlerUtilities {
 	}
 
 	/**
+	 * Invoke a bulkable action.
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public <T> T bulkableAction(Function<BulkActionContext, T> function) {
+		Tuple<T, BulkActionContext> r = database.tx(tx -> {
+			BulkActionContext bac = BulkActionContext.create();
+			T result = function.apply(bac);
+			return Tuple.tuple(result, bac);
+		});
+		r.v2().process(true);
+		return r.v1();
+	}
+
+	/**
 	 * Invoke an event action.
 	 * 
 	 * @param function

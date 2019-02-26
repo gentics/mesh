@@ -113,10 +113,6 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		});
 	}
 
-	private static <T> Completable fromFutureCompletable(Consumer<Future<T>> consumer) {
-		return fromFuture(consumer).ignoreElement();
-	}
-
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;
@@ -496,8 +492,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	}
 
 	protected int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
-		String uuid = node.getUuid();
-		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
+		String uuid = tx(() -> node.getUuid());
+		VersionNumber version = tx(() -> node.getGraphFieldContainer(languageTag).getVersion());
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			filename, contentType));

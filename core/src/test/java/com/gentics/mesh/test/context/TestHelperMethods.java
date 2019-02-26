@@ -77,6 +77,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
@@ -132,6 +133,10 @@ public interface TestHelperMethods {
 
 	default TestDataProvider data() {
 		return getTestContext().getData();
+	}
+
+	default LocalBinaryStorage localBinaryStorage() {
+		return MeshInternal.get().localBinaryStorage();
 	}
 
 	default Role role() {
@@ -559,7 +564,8 @@ public interface TestHelperMethods {
 		String uuid = tx(() -> node.getUuid());
 
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName, contentType,
+		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey,
+			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName, contentType,
 			new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
@@ -576,7 +582,8 @@ public interface TestHelperMethods {
 		Buffer buffer = Buffer.buffer(bytes);
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 
-		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName, new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName,
+			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
 			contentType));
 	}
 
