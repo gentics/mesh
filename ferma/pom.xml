@@ -27,6 +27,10 @@
 		</license>
 	</licenses>
 
+	<properties>
+		<projectRoot>${project.basedir}/..</projectRoot>
+	</properties>
+
 	<organization>
 		<name>Syncleus</name>
 		<url>http://www.syncleus.com</url>
