@@ -106,7 +106,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private void assemble() {
 		// TODO Make bulk operator options configurable
-		bulker = new BulkOperator(vertx, Duration.ofSeconds(5), 1000);
+		bulker = new BulkOperator(vertx, Duration.ofSeconds(500), 1000);
 		requests.toFlowable(BackpressureStrategy.MISSING)
 			.onBackpressureBuffer(1000)
 			.concatMap(this::generateRequests, 1)
@@ -137,7 +137,13 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private Flowable<SearchRequest> generateRequests(MessageEvent messageEvent) {
 		try {
 			return this.mainEventhandler.handle(messageEvent)
-				.doOnComplete(pendingTransformations::decrementAndGet);
+				.doOnComplete(() -> {
+					if (log.isTraceEnabled()) {
+						String body = messageEvent.message == null ? null : messageEvent.message.toJson();
+						log.trace("Done transforming event {} with body {}", messageEvent.event, body);
+					}
+					pendingTransformations.decrementAndGet();
+				});
 		} catch (Exception e) {
 			// TODO Error handling
 			e.printStackTrace();

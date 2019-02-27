@@ -1,13 +1,20 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.CreateIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -38,6 +45,14 @@ public final class Util {
 		}
 	}
 
+	private Single<List<String>> loadResultItems() {
+
+		return Maybe.just(Collections.singletonList(""))
+			.flatMapSingleElement(bla -> Observable.just("a", "b")
+			.<List<String>>collectInto(new ArrayList<>(), List::add))
+			.toSingle(Collections.emptyList());
+	}
+
 	public static <T> Optional<T> warningOptional(String warningMessage, T value) {
 		Optional<T> opt = Optional.ofNullable(value);
 		if (!opt.isPresent()) {
@@ -62,6 +77,6 @@ public final class Util {
 
 	public static Flowable<SearchRequest> toRequests(Map<String, IndexInfo> map) {
 		return Flowable.fromIterable(map.values())
-			.map(index -> provider -> provider.createIndex(index));
+			.map(CreateIndexRequest::new);
 	}
 }

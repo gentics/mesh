@@ -85,7 +85,12 @@ public class MainEventHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return handlers.get(messageEvent.event).handle(messageEvent);
+		return handlers.get(messageEvent.event).handle(messageEvent)
+			.onErrorResumeNext(err -> {
+				String body = messageEvent.message == null ? null : messageEvent.message.toJson();
+				log.error("Error while handling event {} with body {}", messageEvent.event, body, err);
+				return Flowable.empty();
+			});
 	}
 
 	@Override
