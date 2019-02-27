@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -43,7 +44,7 @@ public enum MeshEvent {
 	/**
 	 * Event which is send once the schema gets assigned to a branch.
 	 */
-	SCHEMA_BRANCH_ASSIGN("mesh.schema-branch.assign", null),
+	SCHEMA_BRANCH_ASSIGN("mesh.schema-branch.assign", BranchSchemaAssignEventModel.class),
 
 	/**
 	 * Microschema migration start event.

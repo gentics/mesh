@@ -15,13 +15,18 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
@@ -47,6 +52,7 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.OkHttpClient;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -741,5 +747,27 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return client().findNodes(PROJECT_NAME).toObservable()
 			.flatMap(nodes -> Observable.fromIterable(nodes.getData()))
 			.filter(node -> node.getSchema().getName().equals(schemaName));
+	}
+
+	protected Completable migrateSchema(String schemaName) {
+		return findSchemaByName(schemaName)
+			.flatMapCompletable(schema -> client().updateSchema(schema.getUuid(), addRandomField(schema)).toCompletable())
+			.andThen(MeshEvent.waitForEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED));
+	}
+
+	private SchemaUpdateRequest addRandomField(SchemaResponse schemaResponse) {
+		SchemaUpdateRequest request = schemaResponse.toUpdateRequest();
+		request.getFields().add(new StringFieldSchemaImpl().setName(RandomStringUtils.randomAlphabetic(10)));
+		return request;
+	}
+
+	private Single<SchemaResponse> findSchemaByName(String schemaName) {
+		return fetchList(client().findSchemas())
+			.filter(schema -> schema.getName().equals(schemaName))
+			.singleOrError();
+	}
+
+	private <T> Observable<T> fetchList(MeshRequest<? extends ListResponse<T>> request) {
+		return request.toObservable().flatMap(response -> Observable.fromIterable(response.getData()));
 	}
 }

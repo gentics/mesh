@@ -116,7 +116,7 @@ public class CoreVerticleLoader {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
 		// TODO Only add verticle if necessary
-		//verticles.add(elasticsearchProcessVerticle.get());
+		verticles.add(elasticsearchProcessVerticle.get());
 		return verticles;
 	}
 

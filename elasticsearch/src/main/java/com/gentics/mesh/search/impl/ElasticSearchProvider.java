@@ -413,7 +413,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		String bulkData = entries.stream()
 			.flatMap(bulkable -> bulkable.toBulkActions().stream())
-			.collect(Collectors.joining("\n"));
+			.collect(Collectors.joining("\n")) + "\n";
 
 		if (log.isTraceEnabled()) {
 			log.trace("Using bulk payload:");
