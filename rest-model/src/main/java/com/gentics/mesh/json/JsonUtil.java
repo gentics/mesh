@@ -1,12 +1,5 @@
 package com.gentics.mesh.json;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.io.IOException;
-
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -22,6 +15,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
@@ -38,6 +32,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
+import com.gentics.mesh.json.deserializer.EventCauseInfoDeserializer;
 import com.gentics.mesh.json.deserializer.FieldDeserializer;
 import com.gentics.mesh.json.deserializer.FieldMapDeserializer;
 import com.gentics.mesh.json.deserializer.FieldSchemaDeserializer;
@@ -50,11 +45,16 @@ import com.gentics.mesh.json.serializer.BasicFieldSerializer;
 import com.gentics.mesh.json.serializer.FieldListSerializer;
 import com.gentics.mesh.json.serializer.JsonArraySerializer;
 import com.gentics.mesh.json.serializer.JsonObjectSerializer;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.codehaus.jettison.json.JSONObject;
+
+import java.io.IOException;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
@@ -104,6 +104,7 @@ public final class JsonUtil {
 		module.addDeserializer(ExpandableNode.class, new UserNodeReferenceDeserializer());
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
+		module.addDeserializer(EventCauseInfo.class, new EventCauseInfoDeserializer());
 
 		defaultMapper.registerModule(module);
 		defaultMapper.registerModule(new SimpleModule("interfaceMapping") {

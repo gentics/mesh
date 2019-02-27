@@ -1,22 +1,25 @@
 package com.gentics.mesh.core.rest.event;
 
-import com.gentics.mesh.core.rest.event.migration.AbstractMigrationMeshEventModel;
-import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
-import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
-import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
+import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
+import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 
 public enum EventCauseAction {
-	SCHEMA_MIGRATION(SchemaMigrationMeshEventModel.class),
+	SCHEMA_MIGRATION(SchemaMigrationCause.class),
 
-	MICROSCHEMA_MIGRATION(MicroschemaMigrationMeshEventModel.class),
+	MICROSCHEMA_MIGRATION(MicroschemaMigrationCause.class),
 
-	BRANCH_MIGRATION(BranchMigrationMeshEventModel.class),
+	BRANCH_MIGRATION(BranchMigrationCause.class),
 
 	DELETE(null);
 
 	private final Class modelClass;
 
-	EventCauseAction(Class<? extends AbstractMigrationMeshEventModel> modelClass) {
+	<T extends EventCauseInfo> EventCauseAction(Class<T> modelClass) {
 		this.modelClass = modelClass;
+	}
+
+	public <T extends EventCauseInfo> Class<T> getModelClass() {
+		return modelClass;
 	}
 }
